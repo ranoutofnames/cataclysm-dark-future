@@ -156,9 +156,13 @@ TEST_CASE("grid_and_vehicle_outside_bubble", "[grids][vehicle]") {
     map& m = get_map();
     const auto old_abs_sub = m.get_abs_sub();
     // Ugly: we move the real map instead of the detached test map to reuse clear_map() results
-    m.load(m.get_abs_sub() + point(m.getmapsize(), 0), true);
+    // Use the runtime bubble size (g_mapsize) rather than the compile-time MAPSIZE,
+    // since the test map is never resized by game::setup() and retains the default
+    // size of T_MAPSIZE
+    m.load(m.get_abs_sub() + point(g_mapsize, 0), true);
     GIVEN("vehicle and battery are on one grid") {
         map tm(2);
+        tm.bind_dimension( m.get_bound_dimension() );
         tm.load(old_abs_sub, false);
         auto setup = set_up_grid(tm);
         test_grid_veh(setup.grid, setup.veh, setup.battery);
@@ -372,21 +376,21 @@ TEST_CASE("grid_furn_transform_queue_in_bubble", "[grids]") {
     clear_all_state();
     calendar::turn = calendar::turn_zero;
     const auto z = g->u.abs_pos().z();
+    auto& here = g->u.get_mapbuffer();
     move_player_out_of_the_way();
 
-    const auto pos_local = tripoint_bub_ms(22, 7, z);
-    const auto pos_abs = tripoint_abs_ms(map_local_to_abs(get_map(), pos_local));
+    const auto pos_abs = tripoint_abs_ms(22, 7, z);
 
     grid_furn_transform_queue tf_queue;
     tf_queue.add(pos_abs, f_floor_lamp_on, "");
 
     CAPTURE(pos_abs);
-    REQUIRE(get_map().furn(pos_local).id() != f_floor_lamp_on);
+    REQUIRE(here.furn(pos_abs)->id() != f_floor_lamp_on);
     REQUIRE(active_tiles::furn_at<active_tile_data>(pos_abs) == nullptr);
 
-    tf_queue.apply(MAPBUFFER, get_distribution_grid_tracker(), get_player_character(), get_map());
+    tf_queue.apply(MAPBUFFER, get_distribution_grid_tracker(), get_player_character());
 
-    REQUIRE(get_map().furn(pos_local).id() == f_floor_lamp_on);
+    REQUIRE(here.furn(pos_abs)->id() == f_floor_lamp_on);
     REQUIRE(active_tiles::furn_at<steady_consumer_tile>(pos_abs) != nullptr);
 }
 
@@ -396,8 +400,7 @@ TEST_CASE("grid_furn_transform_queue_outside_bubble", "[grids]") {
     const auto z = g->u.abs_pos().z();
     move_player_out_of_the_way();
 
-    const auto pos_local = tripoint_bub_ms(22, 7, z);
-    const auto pos_abs = tripoint_abs_ms(map_local_to_abs(get_map(), pos_local));
+    const auto pos_abs = tripoint_abs_ms(22, 7, z);
     tripoint_abs_sm pos_abs_sm;
     point_sm_ms pos_in_sm;
     std::tie(pos_abs_sm, pos_in_sm) = project_remain<coords::sm>(pos_abs);
@@ -418,7 +421,7 @@ TEST_CASE("grid_furn_transform_queue_outside_bubble", "[grids]") {
     REQUIRE(sm->get_furn(pos_in_sm).id() != f_floor_lamp_on);
     REQUIRE(active_tiles::furn_at<active_tile_data>(pos_abs) == nullptr);
 
-    tf_queue.apply(MAPBUFFER, get_distribution_grid_tracker(), get_player_character(), get_map());
+    tf_queue.apply(MAPBUFFER, get_distribution_grid_tracker(), get_player_character());
 
     sm = MAPBUFFER.lookup_submap(pos_abs_sm);
     REQUIRE(sm);
@@ -431,13 +434,14 @@ TEST_CASE("grid_power_stats", "[grids]") {
     const auto z = g->u.abs_pos().z();
     move_player_out_of_the_way();
     clear_grid_connections(get_map());
+    auto& here = g->u.get_mapbuffer();
 
     GIVEN("battery, solar panel and consumer on one grid") {
-        const auto solar_local = tripoint_bub_ms(15, 10, z);
-        const auto consumer_local = tripoint_bub_ms(13, 10, z);
-        const auto battery_local = tripoint_bub_ms(14, 10, z);
-        const auto solar_abs = tripoint_abs_ms(map_local_to_abs(get_map(), solar_local));
-        const auto consumer_abs = tripoint_abs_ms(map_local_to_abs(get_map(), consumer_local));
+        const auto solar_abs = tripoint_abs_ms(15, 10, z);
+        const auto consumer_abs = tripoint_abs_ms(13, 10, z);
+        const auto solar_local = abs_to_bub(solar_abs);
+        const auto consumer_local = abs_to_bub(consumer_abs);
+        const auto battery_local = abs_to_bub(tripoint_abs_ms(14, 10, z));
 
         get_map().furn_set(consumer_local, f_floor_lamp_on);
         get_map().furn_set(battery_local, f_battery);

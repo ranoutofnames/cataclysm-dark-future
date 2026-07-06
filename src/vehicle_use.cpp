@@ -538,16 +538,9 @@ bool vehicle::interact_vehicle_locked()
                 const int hotwire_time = 6000 / ( ( mechanics_skill > 0 ) ? mechanics_skill : 1 );
                 const int moves = to_moves<int>( time_duration::from_turns( hotwire_time ) );
                 //assign long activity
-                g->u.assign_activity( ACT_HOTWIRE_CAR, moves, -1, INT_MIN, _( "Hotwire" ) );
-                // use part 0 as the reference point
-                auto q = coord_translate( parts[0].mount );
-                const auto abs_veh_pos = abs_ms_location();
-                //[0]
-                g->u.activity->values.push_back( abs_veh_pos.x() + q.x() );
-                //[1]
-                g->u.activity->values.push_back( abs_veh_pos.y() + q.y() );
-                //[2]
-                g->u.activity->values.push_back( g->u.get_skill_level( skill_mechanics ) );
+                g->u.assign_activity( std::make_unique<player_activity>(
+                    std::make_unique<hotwire_car_actor>(
+                        g->u.abs_pos(), g->u.get_skill_level( skill_mechanics ) ) ) );
             } else {
                 if( has_security_working() && query_yn( _( "Trigger the %s's Alarm?" ), name ) ) {
                     is_alarm_on = true;
@@ -772,7 +765,7 @@ void vehicle::use_controls( const tripoint_bub_ms &pos )
                 {
                     add_msg( _( "You turn the engine off and let go of the controls." ) );
                     sound_event se;
-                    se.origin = pos;
+                    se.origin = bub_to_abs( pos );
                     se.volume = 40;
                     se.category = sounds::sound_t::movement;
                     se.movement_noise = true;
@@ -819,7 +812,7 @@ void vehicle::use_controls( const tripoint_bub_ms &pos )
                 {
                     engine_on = false;
                     sound_event se;
-                    se.origin = pos;
+                    se.origin = bub_to_abs( pos );
                     se.volume = 40;
                     se.category = sounds::sound_t::movement;
                     se.movement_noise = true;
@@ -1146,7 +1139,7 @@ bool vehicle::start_engine( const int e )
     // Immobilizers need removing before the vehicle can be started
     if( eng.faults().contains( fault_immobiliser ) ) {
         sound_event se;
-        se.origin = pos;
+        se.origin = bub_to_abs( pos );
         se.volume = 60;
         se.category = sounds::sound_t::alarm;
         se.description = string_format( _( "the %s making a long beep" ), eng.name() );
@@ -1160,7 +1153,7 @@ bool vehicle::start_engine( const int e )
     if( eng.faults_potential().contains( fault_starter ) ) {
         if( eng.faults().contains( fault_starter ) ) {
             sound_event se;
-            se.origin = pos;
+            se.origin = bub_to_abs( pos );
             se.volume = noise;
             se.category = sounds::sound_t::alarm;
             se.description = string_format( _( "the %s clicking once" ), eng.name() );
@@ -1175,7 +1168,7 @@ bool vehicle::start_engine( const int e )
                                    1_turns * start_moves / 100 );
         if( discharge_battery( start_draw_bat, true ) != 0 ) {
             sound_event se;
-            se.origin = pos;
+            se.origin = bub_to_abs( pos );
             se.volume = noise;
             se.category = sounds::sound_t::alarm;
             se.movement_noise = true;
@@ -1190,7 +1183,7 @@ bool vehicle::start_engine( const int e )
     // Engines always fail to start with faulty fuel pumps
     if( eng.faults().contains( fault_pump ) || eng.faults().contains( fault_diesel ) ) {
         sound_event se;
-        se.origin = pos;
+        se.origin = bub_to_abs( pos );
         se.volume = noise;
         se.category = sounds::sound_t::movement;
         se.movement_noise = true;
@@ -1205,7 +1198,7 @@ bool vehicle::start_engine( const int e )
     if( !( is_engine_type( e, fuel_type_battery ) || is_engine_type( e, fuel_type_muscle ) ) &&
         x_in_y( dmg * 100, 120 ) ) {
         sound_event se;
-        se.origin = pos;
+        se.origin = bub_to_abs( pos );
         se.volume = noise;
         se.category = sounds::sound_t::movement;
         se.movement_noise = true;
@@ -1216,7 +1209,7 @@ bool vehicle::start_engine( const int e )
         return false;
     }
     sound_event se;
-    se.origin = pos;
+    se.origin = bub_to_abs( pos );
     se.volume = noise;
     se.category = sounds::sound_t::movement;
     se.movement_noise = true;
@@ -1304,9 +1297,8 @@ void vehicle::start_engines( const bool take_control, const bool autodrive )
     }
 
     if( !autodrive ) {
-        g->u.assign_activity( ACT_START_ENGINES, start_time );
-        g->u.activity->placement = starting_engine_position;
-        g->u.activity->values.push_back( take_control );
+        g->u.assign_activity( std::make_unique<player_activity>(
+            std::make_unique<start_engines_actor>( take_control, starting_engine_position ) ) );
     }
 }
 
@@ -1334,11 +1326,9 @@ void vehicle::honk_horn()
             add_msg( _( "You honk the horn!" ) );
             honked = true;
         }
-        //Get global position of horn
-        const tripoint_bub_ms horn_pos = vp.pos();
         //Determine sound
         sound_event se;
-        se.origin = horn_pos;
+        se.origin = vp.abs_pos();
         se.volume = horn_type.bonus;
         se.category = sounds::sound_t::alarm;
         se.id = "vehicle";
@@ -1421,7 +1411,7 @@ void vehicle::beeper_sound()
 
         //~ Beeper sound
         sound_event se;
-        se.origin = vp.pos();
+        se.origin = vp.abs_pos();
         se.volume = vp.info().bonus;
         se.category = sounds::sound_t::alarm;
         se.description = _( "beep!" );
@@ -1434,7 +1424,7 @@ void vehicle::beeper_sound()
 void vehicle::play_music()
 {
     for( const vpart_reference &vp : get_enabled_parts( "STEREO" ) ) {
-        iuse::play_music( g->u, vp.pos(), 70, 30 );
+        ::play_music( g->u, vp.abs_pos(), 70, 30 );
     }
 }
 
@@ -1446,7 +1436,7 @@ void vehicle::play_chimes()
 
     for( const vpart_reference &vp : get_enabled_parts( "CHIMES" ) ) {
         sound_event se;
-        se.origin = vp.pos();
+        se.origin = vp.abs_pos();
         se.volume = 80;
         se.category = sounds::sound_t::music;
         se.description = _( "a simple melody blaring from the loudspeakers." );
@@ -1463,14 +1453,14 @@ void vehicle::crash_terrain_around()
     }
     for( const vpart_reference &vp : get_enabled_parts( "CRASH_TERRAIN_AROUND" ) ) {
         tripoint_bub_ms crush_target( 0, 0, -OVERMAP_LAYERS );
-        const tripoint_bub_ms start_pos = vp.pos();
+        const auto start_pos = vp.bub_pos();
         const transform_terrain_data &ttd = vp.info().transform_terrain;
         for( size_t i = 0; i < eight_horizontal_neighbors.size() &&
              !g->m.inbounds_z( crush_target.z() ); i++ ) {
             auto cur_pos = start_pos + eight_horizontal_neighbors.at( i );
             bool busy_pos = false;
             for( const vpart_reference &vp_tmp : get_all_parts() ) {
-                busy_pos |= vp_tmp.pos() == cur_pos;
+                busy_pos |= vp_tmp.bub_pos() == cur_pos;
             }
             for( const std::string &flag : ttd.pre_flags ) {
                 if( g->m.has_flag( flag, cur_pos ) && !busy_pos ) {
@@ -1485,7 +1475,7 @@ void vehicle::crash_terrain_around()
             cruise_velocity = 0;
             g->m.destroy( crush_target );
             sound_event se;
-            se.origin = crush_target;
+            se.origin = bub_to_abs( crush_target );
             se.volume = rng( 50, 120 );
             se.category = sounds::sound_t::combat;
             se.description = _( "Clanggggg!" );
@@ -1499,7 +1489,7 @@ void vehicle::crash_terrain_around()
 void vehicle::transform_terrain()
 {
     for( const vpart_reference &vp : get_enabled_parts( "TRANSFORM_TERRAIN" ) ) {
-        const tripoint_bub_ms start_pos = vp.pos();
+        const auto start_pos = vp.bub_pos();
         const transform_terrain_data &ttd = vp.info().transform_terrain;
         bool prereq_fulfilled = ttd.diggable && g->m.ter( start_pos )->is_diggable();
         for( const std::string &flag : ttd.pre_flags ) {
@@ -1526,7 +1516,7 @@ void vehicle::transform_terrain()
             int v_damage = rng( 3, speed );
             damage( vp.part_index(), v_damage, DT_BASH, false );
             sound_event se;
-            se.origin = start_pos;
+            se.origin = vp.abs_pos();
             se.volume = rng( 50, 120 );
             se.category = sounds::sound_t::combat;
             se.description = _( "Clanggggg!" );
@@ -1541,7 +1531,7 @@ void vehicle::operate_reaper()
 {
     for( const vpart_reference &vp : get_enabled_parts( "REAPER" ) ) {
         const size_t reaper_id = vp.part_index();
-        const tripoint_bub_ms reaper_pos = vp.pos();
+        const auto reaper_pos = vp.bub_pos();
         const int plant_produced = rng( 1, vp.info().bonus );
         const int seed_produced = rng( 1, 3 );
         const units::volume max_pickup_volume = vp.info().size / 20;
@@ -1568,7 +1558,7 @@ void vehicle::operate_reaper()
             g->m.add_item_or_charges( reaper_pos, std::move( i ) );
         }
         sound_event se;
-        se.origin = reaper_pos;
+        se.origin = bub_to_abs( reaper_pos );
         se.volume = rng( 50, 80 );
         se.category = sounds::sound_t::combat;
         se.description = _( "Swish" );
@@ -1590,7 +1580,7 @@ void vehicle::operate_planter()
 {
     for( const vpart_reference &vp : get_enabled_parts( "PLANTER" ) ) {
         const size_t planter_id = vp.part_index();
-        const tripoint_bub_ms loc = vp.pos();
+        const auto loc = vp.bub_pos();
         vehicle_stack v = get_items( planter_id );
         for( auto it = v.begin(); it != v.end(); it++ ) {
             //TODO!: check allllla this
@@ -1606,7 +1596,7 @@ void vehicle::operate_planter()
                     //If it isn't plowable terrain, then it will most likely be damaged.
                     damage( planter_id, rng( 1, 10 ), DT_BASH, false );
                     sound_event se;
-                    se.origin = loc;
+                    se.origin = vp.abs_pos();
                     se.volume = rng( 60, 70 );
                     se.category = sounds::sound_t::combat;
                     se.description = _( "Clink" );
@@ -1645,7 +1635,7 @@ void vehicle::operate_scoop()
             }
         };
         sound_event se;
-        se.origin = bub_part_location( scoop );
+        se.origin = abs_part_location( scoop );
         se.volume = rng( 60, 95 );
         se.category = sounds::sound_t::combat;
         se.description = random_entry_ref( sound_msgs );
@@ -1682,7 +1672,7 @@ void vehicle::operate_scoop()
                 that_item_there->inc_damage( DT_BASH );
                 //The scoop gets a lot louder when breaking an item.
                 sound_event se;
-                se.origin = position;
+                se.origin = bub_to_abs( position );
                 se.volume = std::min( 90, rng( 30,
                                                that_item_there->volume() / units::legacy_volume_factor * 2 + 30 ) );
                 se.category = sounds::sound_t::combat;
@@ -1714,7 +1704,7 @@ void vehicle::alarm()
                 }
             };
             sound_event se;
-            se.origin = bub_ms_location();
+            se.origin = abs_ms_location();
             se.volume = rng( 80, 130 );
             se.category = sounds::sound_t::combat;
             se.description = random_entry_ref( sound_msgs );
@@ -1835,7 +1825,7 @@ void vehicle::use_monster_capture( int part, const tripoint_bub_ms &pos )
         return;
     }
     item &base = parts[part].get_base();
-    base.type->invoke( g->u, base, pos );
+    base.type->invoke( g->u, base, bub_to_abs( pos ) );
     if( base.has_var( "contained_name" ) ) {
         parts[part].set_flag( vehicle_part::animal_flag );
     } else {
@@ -2140,7 +2130,7 @@ void vehicle::interact_with( const tripoint_bub_ms &pos, int interact_part )
         auto capacity = pseudo.ammo_capacity( true );
         auto qty = capacity - discharge_battery( capacity );
         pseudo.ammo_set( itype_battery, qty );
-        you.invoke_item( &pseudo, pos );
+        you.invoke_item( &pseudo, bub_to_abs( pos ) );
         charge_battery( pseudo.ammo_remaining() );
         return true;
     };
@@ -2168,7 +2158,8 @@ void vehicle::interact_with( const tripoint_bub_ms &pos, int interact_part )
             return;
         }
         case USE_TOWEL: {
-            iuse::towel_common( &you, nullptr, false );
+            const tripoint_abs_ms abs = bub_to_abs( pos );
+            iuse::towel_common( &you, nullptr, false, &abs );
             return;
         }
         case USE_SHOWER: {
@@ -2226,7 +2217,7 @@ void vehicle::interact_with( const tripoint_bub_ms &pos, int interact_part )
             fake_item.item_tags.insert( flag_PSEUDO );
             fake_item.charges = fuel_left( itype_battery, true );
             int original_charges = fake_item.charges;
-            you.invoke_item( &fake_item, pos );
+            you.invoke_item( &fake_item, bub_to_abs( pos ) );
             // HACK: Evil hack incoming
             activity_handlers::repair_activity_hack::patch_activity_for_vehicle(
                 *you.activity, pos, *this, interact_part, fake_item.typeId()

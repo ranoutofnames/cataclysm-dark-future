@@ -37,7 +37,7 @@ namespace {
 void set_off_explosion(item& explosive, const tripoint_bub_ms& origin) {
     explosion_handler::get_explosion_queue().clear();
     explosive.charges = 0;
-    explosive.type->invoke(g->u, explosive, origin);
+    explosive.type->invoke(g->u, explosive, bub_to_abs(origin));
     explosion_handler::get_explosion_queue().execute();
 }
 
@@ -206,7 +206,7 @@ TEST_CASE("shrapnel at huge range", "[grenade][explosion]") {
 TEST_CASE("shrapnel at max grenade range", "[grenade][explosion]") {
     clear_all_state();
     move_player_out_of_the_way();
-    const auto origin = tripoint_bub_ms(60, 60, 0);
+    const auto origin = bub_test_origin();
 
     item& grenade = *item::spawn_temporary("test_shrapnel_blast");
     REQUIRE(grenade.get_use("explosion") != nullptr);
@@ -240,7 +240,7 @@ TEST_CASE("shrapnel at max grenade range", "[grenade][explosion]") {
 TEST_CASE("rotated_vehicle_walls_block_explosions") {
     clear_all_state();
     move_player_out_of_the_way();
-    const auto origin = tripoint_bub_ms(60, 60, 0);
+    const auto origin = bub_test_origin();
 
     item& grenade = *item::spawn_temporary("test_shrapnel_blast");
 

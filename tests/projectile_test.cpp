@@ -24,8 +24,8 @@
 #include <set>
 #include <vector>
 
-static tripoint_bub_ms projectile_end_point(
-    const std::vector<tripoint_bub_ms>& range, const item& gun, int proj_range) {
+static tripoint_abs_ms projectile_end_point(
+    const std::vector<tripoint_abs_ms>& range, const item& gun, int proj_range) {
     projectile test_proj;
     test_proj.speed = gun.gun_speed();
     test_proj.range = proj_range;
@@ -33,20 +33,17 @@ static tripoint_bub_ms projectile_end_point(
     for (const ammo_effect_str_id& ae_id : gun.ammo_effects()) { test_proj.add_effect(ae_id); }
 
     dealt_projectile_attack attack;
+    map& here = get_map();
 
     attack = projectile_attack(
-        test_proj, range[0], range[2], dispersion_sources(), &get_avatar(), nullptr);
+        test_proj, range[0], range[2],
+        dispersion_sources(), &get_avatar(), nullptr);
 
     return attack.end_point;
 }
 
-static auto centered_projectile_test_pos(const int dx, const int dy, const int z = 0)
-    -> tripoint_bub_ms {
-    return tripoint_bub_ms(g_half_mapsize_x + dx, g_half_mapsize_y + dy, z);
-}
-
 static auto clear_projectile_test_line(
-    map& here, const tripoint_bub_ms& from, const tripoint_bub_ms& to) -> void {
+    map& here, const tripoint_abs_ms& from, const tripoint_abs_ms& to) -> void {
     REQUIRE(from.y() == to.y());
     REQUIRE(from.z() == to.z());
 
@@ -63,24 +60,25 @@ static auto clear_projectile_test_line(
 TEST_CASE("projectiles_through_obstacles", "[projectile]") {
     clear_all_state();
     // Move the player out of the way of the test area
-    get_avatar().setpos(tripoint_bub_ms{2, 2, 0});
+    get_avatar().setpos(tripoint_abs_ms{2, 2, 0});
 
-    map& here = get_map();
+    map& map = get_map();
+    auto& here = map.get_mapbuffer();
     // Ensure that a projectile fired from a gun can pass through a wall
     // First, set up a test area - three tiles in a row
     // One on either side clear, with a wooden wall in the middle
-    std::vector<tripoint_bub_ms> range =
-        {tripoint_bub_ms::zero(), tripoint_bub_ms::east(), tripoint_bub_ms(2, 0, 0)};
-    for (const tripoint_bub_ms& pt : range) {
-        REQUIRE(here.inbounds(pt));
-        here.ter_set(pt, ter_id("t_dirt"));
-        here.furn_set(pt, furn_id("f_null"));
+    std::vector<tripoint_abs_ms> range =
+        {tripoint_abs_ms::zero(), tripoint_abs_ms::east(), tripoint_abs_ms(2, 0, 0)};
+    for (const tripoint_abs_ms& pt : range) {
+        REQUIRE(map.inbounds(pt));
+        here.set_ter(pt, ter_id("t_dirt"));
+        here.set_furn(pt, furn_id("f_null"));
         REQUIRE_FALSE(g->critter_at(pt));
         REQUIRE(here.is_transparent(pt));
     }
 
     // Set first obstacle in the way, a wooden wall
-    here.ter_set(range[1], ter_id("t_wall_wood"));
+    here.set_ter(range[1], ter_id("t_wall_wood"));
 
     // Create two guns to fire a projectile from, one won't penetrate obstacles
     detached_ptr<item> gun_penetrating = item::spawn(itype_id("m1a"));
@@ -92,14 +90,14 @@ TEST_CASE("projectiles_through_obstacles", "[projectile]") {
     INFO("rifle bullet vs. wooden wall");
     CHECK(projectile_end_point(range, *gun_penetrating, 3) == range[2]);
     INFO("dragon's breath shell vs. wooden wall");
-    CHECK(projectile_end_point(range, *gun_nonpenetrating, 3) == range[0]);
+    CHECK(projectile_end_point(range, *gun_nonpenetrating, 3) == range[1]);
 
     // Change obstacle to something tougher
-    here.ter_set(range[1], ter_id("t_rock"));
+    here.set_ter(range[1], ter_id("t_rock"));
 
     // Check that the rifle bullet cannot go through a tougher wall
     INFO("rifle bullet vs. solid rock");
-    CHECK(projectile_end_point(range, *gun_penetrating, 3) == range[0]);
+    CHECK(projectile_end_point(range, *gun_penetrating, 3) == range[1]);
 }
 
 TEST_CASE("projectiles_stop_at_reality_bubble_edge", "[projectile][ballistics]") {
@@ -130,8 +128,9 @@ TEST_CASE("projectiles_stop_at_reality_bubble_edge", "[projectile][ballistics]")
     test_proj.range = 20;
     test_proj.impact = gun.gun_damage();
 
-    const auto attack =
-        projectile_attack(test_proj, shooter_pos, target_pos, dispersion_sources{}, &shooter, &gun);
+    const auto attack = projectile_attack(
+        test_proj, map_local_to_abs(here, shooter_pos), map_local_to_abs(here, target_pos),
+        dispersion_sources{}, &shooter, &gun);
 
     CHECK(here.inbounds(attack.end_point));
 }
@@ -160,11 +159,12 @@ TEST_CASE("projectiles_stop_at_z_bounds", "[projectile][ballistics]") {
     test_proj.range = 20;
     test_proj.impact = gun.gun_damage();
 
-    const auto attack =
-        projectile_attack(test_proj, shooter_pos, target_pos, dispersion_sources{}, &shooter, &gun);
+    const auto attack = projectile_attack(
+        test_proj, map_local_to_abs(here, shooter_pos), map_local_to_abs(here, target_pos),
+        dispersion_sources{}, &shooter, &gun);
 
     CHECK(here.inbounds(attack.end_point));
-    CHECK(attack.end_point == shooter_pos);
+    CHECK(attack.end_point == map_local_to_abs(here, shooter_pos));
 }
 
 TEST_CASE("adjacent_friendly_fire_prevention", "[projectile][ballistics]") {
@@ -173,14 +173,14 @@ TEST_CASE("adjacent_friendly_fire_prevention", "[projectile][ballistics]") {
 
     // Set up a centered test area with shooter, adjacent friendly NPC, and target.
     // Positions near map center so spawned NPCs are within load_npcs radius (4 submaps).
-    const auto shooter_pos = centered_projectile_test_pos(0, 0);
-    const auto friendly_pos = centered_projectile_test_pos(1, 0);
-    const auto target_pos = centered_projectile_test_pos(5, 0);
+    const auto shooter_pos = tripoint_abs_ms(0, 0, 0);
+    const auto friendly_pos = tripoint_abs_ms(1, 0, 0);
+    const auto target_pos = tripoint_abs_ms(5, 0, 0);
 
     clear_projectile_test_line(here, shooter_pos, target_pos);
 
     // Create friendly NPC at adjacent position
-    auto& ally = spawn_npc(friendly_pos, "thug");
+    auto& ally = spawn_npc(abs_to_bub(friendly_pos), "thug");
     ally.set_fac(faction_id("your_followers"));
     ally.set_attitude(NPCATT_FOLLOW);
     REQUIRE(g->critter_at(friendly_pos) == &ally);
@@ -207,7 +207,8 @@ TEST_CASE("adjacent_friendly_fire_prevention", "[projectile][ballistics]") {
 
     // Fire projectile toward target with high dispersion (simulating a miss toward the ally)
     dealt_projectile_attack attack = projectile_attack(
-        test_proj, shooter_pos, target_pos, dispersion_sources(5000), &shooter, &gun);
+        test_proj, shooter_pos, target_pos,
+        dispersion_sources(5000), &shooter, &gun);
 
     // Verify friendly was not hit despite being adjacent to shooter in projectile path
     const int final_friendly_hp = ally.get_hp();
@@ -223,24 +224,24 @@ TEST_CASE("npc_adjacent_friendly_fire_prevention", "[projectile][ballistics]") {
 
     // Set up a centered test area with NPC shooter, adjacent friendly NPC, and target.
     // Positions near map center so spawned NPCs are within load_npcs radius (4 submaps).
-    const auto shooter_pos = centered_projectile_test_pos(0, 0);
-    const auto friendly_pos = centered_projectile_test_pos(1, 0);
-    const auto target_pos = centered_projectile_test_pos(5, 0);
+    const auto shooter_pos = tripoint_abs_ms(0, 0, 0);
+    const auto friendly_pos = tripoint_abs_ms(1, 0, 0);
+    const auto target_pos = tripoint_abs_ms(5, 0, 0);
 
     clear_projectile_test_line(here, shooter_pos, target_pos);
 
     // Move player out of the way before NPCs are spawned.
-    get_avatar().setpos(centered_projectile_test_pos(0, 2));
+    get_avatar().setpos(tripoint_abs_ms(0, 2, 0));
 
     // Create NPC shooter
-    auto& shooter = spawn_npc(shooter_pos, "thug");
+    auto& shooter = spawn_npc(abs_to_bub(shooter_pos), "thug");
     shooter.set_fac(faction_id("your_followers"));
     shooter.set_attitude(NPCATT_FOLLOW);
     REQUIRE(g->critter_at(shooter_pos) == &shooter);
     REQUIRE(shooter.is_player_ally());
 
     // Create friendly NPC at adjacent position
-    auto& ally = spawn_npc(friendly_pos, "thug");
+    auto& ally = spawn_npc(abs_to_bub(friendly_pos), "thug");
     ally.set_fac(faction_id("your_followers"));
     ally.set_attitude(NPCATT_FOLLOW);
     REQUIRE(g->critter_at(friendly_pos) == &ally);
@@ -265,7 +266,8 @@ TEST_CASE("npc_adjacent_friendly_fire_prevention", "[projectile][ballistics]") {
 
     // Fire projectile toward target with high dispersion
     dealt_projectile_attack attack = projectile_attack(
-        test_proj, shooter_pos, target_pos, dispersion_sources(5000), &shooter, &gun);
+        test_proj, shooter_pos, target_pos,
+        dispersion_sources(5000), &shooter, &gun);
 
     // Verify friendly NPC was not hit despite being adjacent to shooter
     const int final_friendly_hp = ally.get_hp();
@@ -281,9 +283,9 @@ TEST_CASE("npc_protects_adjacent_player", "[projectile][ballistics]") {
 
     // Set up a centered test area with NPC shooter, adjacent player, and target.
     // Positions near map center so spawned NPCs are within load_npcs radius (4 submaps).
-    const auto shooter_pos = centered_projectile_test_pos(0, 0);
-    const auto player_pos = centered_projectile_test_pos(1, 0);
-    const auto target_pos = centered_projectile_test_pos(5, 0);
+    const auto shooter_pos = tripoint_abs_ms(0, 0, 0);
+    const auto player_pos = tripoint_abs_ms(1, 0, 0);
+    const auto target_pos = tripoint_abs_ms(5, 0, 0);
 
     clear_projectile_test_line(here, shooter_pos, target_pos);
 
@@ -294,7 +296,7 @@ TEST_CASE("npc_protects_adjacent_player", "[projectile][ballistics]") {
     REQUIRE(g->critter_at(player_pos) == &player);
 
     // Create NPC shooter
-    auto& shooter = spawn_npc(shooter_pos, "thug");
+    auto& shooter = spawn_npc(abs_to_bub(shooter_pos), "thug");
     shooter.set_fac(faction_id("your_followers"));
     shooter.set_attitude(NPCATT_FOLLOW);
     REQUIRE(g->critter_at(shooter_pos) == &shooter);
@@ -319,7 +321,8 @@ TEST_CASE("npc_protects_adjacent_player", "[projectile][ballistics]") {
 
     // Fire projectile toward target with high dispersion
     dealt_projectile_attack attack = projectile_attack(
-        test_proj, shooter_pos, target_pos, dispersion_sources(5000), &shooter, &gun);
+        test_proj, shooter_pos, target_pos,
+        dispersion_sources(5000), &shooter, &gun);
 
     // Verify player was not hit despite being adjacent to NPC shooter
     const int final_player_hp = player.get_hp();
@@ -334,18 +337,18 @@ TEST_CASE("monster_adjacent_ally_fire_prevention", "[projectile][ballistics]") {
     map& here = get_map();
 
     // Set up a centered test area away from the map edge.
-    const auto shooter_pos = centered_projectile_test_pos(0, 0);
-    const auto ally_pos = centered_projectile_test_pos(1, 0);
-    const auto target_pos = centered_projectile_test_pos(5, 0);
+    const auto shooter_pos = tripoint_abs_ms(0, 0, 0);
+    const auto ally_pos = tripoint_abs_ms(1, 0, 0);
+    const auto target_pos = tripoint_abs_ms(5, 0, 0);
 
     clear_projectile_test_line(here, shooter_pos, target_pos);
 
     // Move player out of the way
-    get_avatar().setpos(centered_projectile_test_pos(0, 2));
+    get_avatar().setpos(tripoint_abs_ms(0, 2, 0));
 
     // Create two monsters from the same faction
-    monster& shooter = spawn_test_monster("mon_zombie", shooter_pos);
-    monster& ally = spawn_test_monster("mon_zombie", ally_pos);
+    monster& shooter = spawn_test_monster("mon_zombie", abs_to_bub(shooter_pos));
+    monster& ally = spawn_test_monster("mon_zombie", abs_to_bub(ally_pos));
 
     REQUIRE(g->critter_at(shooter_pos) == &shooter);
     REQUIRE(g->critter_at(ally_pos) == &ally);
@@ -364,7 +367,8 @@ TEST_CASE("monster_adjacent_ally_fire_prevention", "[projectile][ballistics]") {
 
     // Fire projectile toward target with high dispersion
     dealt_projectile_attack attack = projectile_attack(
-        test_proj, shooter_pos, target_pos, dispersion_sources(5000), &shooter, nullptr);
+        test_proj, shooter_pos, target_pos,
+        dispersion_sources(5000), &shooter, nullptr);
 
     // Verify allied monster was not hit despite being adjacent to shooter
     const int final_ally_hp = ally.get_hp();
@@ -380,21 +384,21 @@ TEST_CASE("hostile_npc_adjacent_ally_fire_prevention", "[projectile][ballistics]
 
     // Set up a centered test area with hostile NPC shooter, allied hostile NPC, and target.
     // Positions near map center so spawned NPCs are within load_npcs radius (4 submaps).
-    const auto shooter_pos = centered_projectile_test_pos(0, 0);
-    const auto ally_pos = centered_projectile_test_pos(1, 0);
-    const auto target_pos = centered_projectile_test_pos(5, 0);
+    const auto shooter_pos = tripoint_abs_ms(0, 0, 0);
+    const auto ally_pos = tripoint_abs_ms(1, 0, 0);
+    const auto target_pos = tripoint_abs_ms(5, 0, 0);
 
     clear_projectile_test_line(here, shooter_pos, target_pos);
 
     // Move player out of the way before NPCs are spawned.
-    get_avatar().setpos(centered_projectile_test_pos(0, 2));
+    get_avatar().setpos(tripoint_abs_ms(0, 2, 0));
 
     // Create two hostile NPCs from the same faction.
-    auto& shooter = spawn_npc(shooter_pos, "thug");
+    auto& shooter = spawn_npc(abs_to_bub(shooter_pos), "thug");
     shooter.set_fac(faction_id("hells_raiders"));
     shooter.set_attitude(NPCATT_KILL);
 
-    auto& ally = spawn_npc(ally_pos, "thug");
+    auto& ally = spawn_npc(abs_to_bub(ally_pos), "thug");
     ally.set_fac(faction_id("hells_raiders"));
     ally.set_attitude(NPCATT_KILL);
 
@@ -420,7 +424,8 @@ TEST_CASE("hostile_npc_adjacent_ally_fire_prevention", "[projectile][ballistics]
 
     // Fire projectile toward target with high dispersion
     dealt_projectile_attack attack = projectile_attack(
-        test_proj, shooter_pos, target_pos, dispersion_sources(5000), &shooter, &gun);
+        test_proj, shooter_pos, target_pos,
+        dispersion_sources(5000), &shooter, &gun);
 
     // Verify allied hostile NPC was not hit despite being adjacent to shooter
     const int final_ally_hp = ally.get_hp();
@@ -436,9 +441,9 @@ TEST_CASE("friendly_monster_iff_respects_adjacent_player", "[projectile][monster
 
     // Set up test area: friendly monster, adjacent player, hostile behind the player.
     // This tests that IFF checks still apply when player is adjacent to friendly monster
-    const auto monster_pos = centered_projectile_test_pos(0, 0);
-    const auto player_pos = centered_projectile_test_pos(1, 0);
-    const auto hostile_pos = centered_projectile_test_pos(2, 0);
+    const auto monster_pos = tripoint_abs_ms(0, 0, 0);
+    const auto player_pos = tripoint_abs_ms(1, 0, 0);
+    const auto hostile_pos = tripoint_abs_ms(2, 0, 0);
 
     clear_projectile_test_line(here, monster_pos, hostile_pos);
 
@@ -450,7 +455,7 @@ TEST_CASE("friendly_monster_iff_respects_adjacent_player", "[projectile][monster
     REQUIRE(g->critter_at(player_pos) == &player);
 
     // Create friendly monster
-    monster& friendly_mon = spawn_test_monster("mon_zombie", monster_pos);
+    monster& friendly_mon = spawn_test_monster("mon_zombie", abs_to_bub(monster_pos));
     friendly_mon.friendly = 1;
     REQUIRE(g->critter_at(monster_pos) == &friendly_mon);
     REQUIRE(friendly_mon.friendly != 0);
@@ -459,7 +464,7 @@ TEST_CASE("friendly_monster_iff_respects_adjacent_player", "[projectile][monster
     REQUIRE(friendly_mon.attitude_to(player) == Attitude::A_FRIENDLY);
 
     // Create hostile monster directly behind player (in line of fire)
-    monster& hostile = spawn_test_monster("mon_zombie_tough", hostile_pos);
+    monster& hostile = spawn_test_monster("mon_zombie_tough", abs_to_bub(hostile_pos));
     hostile.friendly = 0;
     REQUIRE(g->critter_at(hostile_pos) == &hostile);
 

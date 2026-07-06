@@ -63,9 +63,9 @@
 #include "options.h"
 #include "output.h"
 #include "overmap.h"
-#include "legacy_pathfinding.h"
 #include "player.h"
 #include "player_activity.h"
+#include "activity_actor_definitions.h"
 #include "recipe.h"
 #include "ret_val.h"
 #include "rng.h"
@@ -579,6 +579,7 @@ bool avatar::read( item *loc, const bool continuous )
     //reading only for fun
     std::map<npc *, std::string> fun_learners;
     std::map<npc *, std::string> nonlearners;
+    std::vector<read_activity_actor::npc_learner> npc_learners;
     auto candidates = character_funcs::get_crafting_helpers( *this );
     for( npc *elem : candidates ) {
         const int lvl = elem->get_skill_level( skill );
@@ -602,12 +603,10 @@ bool avatar::read( item *loc, const bool continuous )
         } else if( skill && lvl < type->level ) {
             const double penalty = static_cast<double>( time_taken ) / time_to_read( it, *reader, elem );
             learners.insert( {elem, elem == reader ? _( " (reading aloud to you)" ) : ""} );
-            act.values.push_back( elem->getID().get_value() );
-            act.str_values.push_back( std::to_string( penalty ) );
+            npc_learners.push_back( { elem->getID(), static_cast<float>( penalty ) } );
         } else {
             fun_learners.insert( {elem, elem == reader ? _( " (reading aloud to you)" ) : "" } );
-            act.values.push_back( elem->getID().get_value() );
-            act.str_values.emplace_back( "1" );
+            npc_learners.push_back( { elem->getID(), 1.0f } );
         }
     }
 
@@ -684,7 +683,6 @@ bool avatar::read( item *loc, const bool continuous )
                 add_msg( m_info, _( "Never mind." ) );
                 return false;
             }
-            act.index = menu.ret;
         }
         if( it.type->use_methods.contains( "MA_MANUAL" ) ) {
 
@@ -704,7 +702,6 @@ bool avatar::read( item *loc, const bool continuous )
                 add_msg( m_info, _( "Never mind." ) );
                 return false;
             }
-            act.index = menu.ret;
         }
         add_msg( m_info, _( "Now reading %s, %s to stop early." ),
                  it.type_name(), press_x( ACTION_PAUSE ) );
@@ -776,17 +773,21 @@ bool avatar::read( item *loc, const bool continuous )
     }
 
     // push an indentifier of martial art book to the action handling
+    bool is_martial_arts = false;
     if( it.type->use_methods.contains( "MA_MANUAL" ) ) {
 
         if( get_stamina() < get_stamina_max() / 10 ) {
             add_msg( m_info, _( "You are too exhausted to train martial arts." ) );
             return false;
         }
-        act.str_values.clear();
-        act.str_values.emplace_back( "martial_art" );
+        is_martial_arts = true;
     }
 
-    assign_activity( std::make_unique<player_activity>( std::move( act ) ) ) ;
+    auto read_actor = std::make_unique<read_activity_actor>(
+        safe_reference<item>( &it ), std::move( npc_learners ), is_martial_arts, time_taken
+    );
+    read_actor->continuous_reader_id = continuous ? this->activity->index : 0;
+    assign_activity( std::make_unique<player_activity>( std::move( read_actor ) ) );
 
     // Reinforce any existing morale bonus/penalty, so it doesn't decay
     // away while you read more.
@@ -812,7 +813,7 @@ void avatar::grab( object_type grab_type, const tripoint_rel_ms &grab_point )
     this->grab_type = grab_type;
     this->grab_point = grab_point;
 
-    path_settings->avoid_rough_terrain = grab_type != OBJECT_NONE;
+    path_settings->rough_terrain_cost = grab_type == OBJECT_NONE ? 0 : 16.0f;
 }
 
 object_type avatar::get_grab_type() const
@@ -885,7 +886,9 @@ static void skim_book_msg( const item &book, avatar &u )
     add_msg( _( "You note that you have a copy of %s in your possession." ), book.type_name() );
 }
 
-void avatar::do_read( item *loc )
+void avatar::do_read( item *loc,
+                      const std::vector<std::pair<character_id, float>> &learners,
+                      int continuous_reader )
 {
     if( !loc ) {
         activity->set_to_null();
@@ -910,17 +913,25 @@ void avatar::do_read( item *loc )
 
     const bool allow_recipes = get_option<bool>( "ALLOW_LEARNING_BOOK_RECIPES" );
 
-    //learners and their penalties
-    std::vector<std::pair<player *, double>> learners;
-    for( size_t i = 0; i < activity->values.size(); i++ ) {
-        player *n = g->find_npc( character_id( activity->values[i] ) );
-        if( n != nullptr ) {
-            const std::string &s = activity->get_str_value( i, "1" );
-            learners.emplace_back( n, strtod( s.c_str(), nullptr ) );
+    // Build learners list from parameter (preferred) or legacy fields (fallback)
+    std::vector<std::pair<player *, double>> learner_ptrs;
+    if( !learners.empty() ) {
+        for( const auto &l : learners ) {
+            player *n = g->find_npc( l.first );
+            if( n != nullptr ) {
+                learner_ptrs.emplace_back( n, l.second );
+            }
         }
-        // Otherwise they must have died/teleported or something
+    } else {
+        for( size_t i = 0; i < activity->values.size(); i++ ) {
+            player *n = g->find_npc( character_id( activity->values[i] ) );
+            if( n != nullptr ) {
+                const std::string &s = activity->get_str_value( i, "1" );
+                learner_ptrs.emplace_back( n, strtod( s.c_str(), nullptr ) );
+            }
+        }
     }
-    learners.emplace_back( this, 1.0 );
+    learner_ptrs.emplace_back( this, 1.0 );
     //whether to continue reading or not
     bool continuous = false;
     // NPCs who learned a little about the skill
@@ -928,7 +939,7 @@ void avatar::do_read( item *loc )
     std::set<std::string> cant_learn;
     std::list<std::string> out_of_chapters;
 
-    for( auto &elem : learners ) {
+    for( auto &elem : learner_ptrs ) {
         player *learner = elem.first;
 
         int book_fun_for = character_funcs::get_book_fun_for( *learner, book );
@@ -998,7 +1009,7 @@ void avatar::do_read( item *loc )
                 }
             } else {
                 //skill_level == originalSkillLevel
-                if( activity->index == learner->getID().get_value() ) {
+                if( continuous_reader == learner->getID().get_value() ) {
                     continuous = true;
                 }
                 if( learner->is_player() ) {
@@ -1056,7 +1067,7 @@ void avatar::do_read( item *loc )
         add_msg( m_debug, _( "Chance to learn one in: %d" ), difficulty );
 
         if( one_in( difficulty ) ) {
-            m->second.call( *this, book, false, bub_pos() );
+            m->second.call( *this, book, false, abs_pos() );
             continuous = false;
         } else {
             if( activity->index == getID().get_value() ) {
@@ -1548,7 +1559,7 @@ detached_ptr<item> avatar::wield( detached_ptr<item> &&target )
     return detached_ptr<item>();
 }
 
-bool avatar::invoke_item( item *used, const tripoint_bub_ms &pt )
+bool avatar::invoke_item( item *used, const tripoint_abs_ms &pt )
 {
     std::map<std::string, use_function> use_methods;
     use_methods.insert( used->type->use_methods.begin(), used->type->use_methods.end() );
@@ -1595,7 +1606,7 @@ bool avatar::invoke_item( item *used )
     return Character::invoke_item( used );
 }
 
-bool avatar::invoke_item( item *used, const std::string &method, const tripoint_bub_ms &pt )
+bool avatar::invoke_item( item *used, const std::string &method, const tripoint_abs_ms &pt )
 {
     return Character::invoke_item( used, method, pt );
 }

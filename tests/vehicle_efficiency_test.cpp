@@ -48,7 +48,7 @@ static auto reset_efficiency_state() -> void {
 
     // Move player somewhere safe
     REQUIRE_FALSE(g->u.in_vehicle);
-    g->u.setpos(tripoint_bub_ms(g_half_mapsize_x + SEEX - 1, g_half_mapsize_y + SEEY - 1, -2));
+    put_player_underground();
     // Blind the player to avoid needless drawing-related overhead
     g->u.add_effect(effect_blind, 365_days, bodypart_str_id::NULL_ID());
 }
@@ -190,7 +190,7 @@ static int test_efficiency(
     // Remove all items from cargo to normalize weight.
     for (const vpart_reference vp : veh.get_all_parts()) {
         veh_ptr->get_items(vp.part_index()).clear();
-        vp.part().ammo_consume(vp.part().ammo_remaining(), vp.pos());
+        vp.part().ammo_consume(vp.part().ammo_remaining(), vp.bub_pos());
     }
     for (const vpart_reference vp : veh.get_avail_parts("OPENABLE")) { veh.close(vp.part_index()); }
 
