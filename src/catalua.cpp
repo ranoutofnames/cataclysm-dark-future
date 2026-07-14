@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "iexamine.h"
+#include "monster.h"
+#include "monstergenerator.h"
 #include "trap.h"
 
 constexpr int LUA_API_VERSION = 2;
@@ -353,8 +355,9 @@ void init_global_state_tables( lua_state &state, const std::vector<mod_id> &modl
     gt["mapgen_functions"] = lua.create_table();
 
     // monster / npc functions
-    gt["monster_attitude_functions"] = lua.create_table();
     gt["monster_ai_functions"] = lua.create_table();
+    gt["monster_attitude_functions"] = lua.create_table();
+    gt["monster_examine_functions"] = lua.create_table();
     gt["npc_ai_functions"] = lua.create_table();
 
     // hooks
@@ -468,10 +471,11 @@ void run_mod_main_script( lua_state &state, const mod_id &mod )
 namespace
 {
 // Owning storage for bionic/mutation Lua callback actors.
-// Populated during reg_lua_icallback_actors(), resolved during resolve_lua_bionic_and_mutation_callbacks().
+// Populated during reg_lua_icallback_actors(), resolved during resolve_extra_lua_callbacks().
 std::map<std::string, std::unique_ptr<lua_bionic_callback_actor>> bionic_callback_actors;
 std::map<std::string, std::unique_ptr<lua_mutation_callback_actor>> mutation_callback_actors;
 std::map<std::string, std::unique_ptr<lua_itrap_actor>> lua_itrap_actors;
+std::map<std::string, std::unique_ptr<lua_monster_callback_actor>> monster_callback_actors;
 } // namespace
 
 namespace
@@ -692,6 +696,7 @@ void reg_lua_icallback_actors( lua_state &state, Item_factory &ifactory )
     const sol::table imelee_funcs = lua.globals()["game"]["imelee_functions"];
     const sol::table iranged_funcs = lua.globals()["game"]["iranged_functions"];
     const sol::table itrap_funcs = lua.globals()["game"]["itrap_functions"];
+    const sol::table monster_funcs = lua.globals()["game"]["monster_functions"];
 
     auto it = iuse_funcs.begin();
     while( it != iuse_funcs.end() ) {
@@ -988,11 +993,41 @@ void reg_lua_icallback_actors( lua_state &state, Item_factory &ifactory )
             ++it;
         }
     }
+
+    // --- monster examine callback registration ---
+    {
+        auto it = monster_funcs.begin();
+        while( it != monster_funcs.end() ) {
+            const auto ref = *it;
+            std::string key;
+            try {
+                key = ref.first.as<std::string>();
+                if( ref.second.get_type() != sol::type::table ) {
+                    throw std::runtime_error( "monster_examine_functions entry must be a table" );
+                }
+                const auto tbl = ref.second.as<sol::table>();
+                auto on_tame = tbl.get_or<sol::function>( "on_tame", sol::lua_nil );
+                auto get_examine_menu_entries = tbl.get_or<sol::function>( "get_examine_menu_entries",
+                                                sol::lua_nil );
+                auto on_examine_menu_entry = tbl.get_or<sol::function>( "on_examine_menu_entry", sol::lua_nil );
+                monster_callback_actors[key] = std::make_unique<lua_monster_callback_actor>(
+                                                   key, std::move( on_tame ), std::move( get_examine_menu_entries ),
+                                                   std::move( on_examine_menu_entry )
+                                               );
+
+            } catch( std::runtime_error &e ) {
+                debugmsg( "Failed to extract monster_examine_functions k='%s': %s", key, e.what() );
+                break;
+            }
+            ++it;
+        }
+    }
 }
 
 void resolve_extra_lua_callbacks()
 {
     bionic_data::resolve_lua_callbacks( bionic_callback_actors );
+    MonsterGenerator::generator().resolve_lua_monster_callbacks( monster_callback_actors );
     mutation_branch::resolve_lua_callbacks( mutation_callback_actors );
     trap::resolve_lua_callbacks( lua_itrap_actors );
 }
@@ -1046,6 +1081,11 @@ auto get_lua_activity_on_turn( const player_activity &act ) -> std::string
     return get_lua_activity_prefixed_value( act, lua_activity_on_turn_prefix );
 }
 
+const std::map<std::string, std::unique_ptr<lua_monster_callback_actor>> &get_lua_monster_actors()
+{
+    return monster_callback_actors;
+}
+
 auto run_lua_activity_callback( const std::string &callback_id, player &who,
                                 player_activity &act ) -> void
 {
@@ -1078,6 +1118,7 @@ void lua_state_deleter::operator()( lua_state *state ) const
     bionic_callback_actors.clear();
     mutation_callback_actors.clear();
     lua_itrap_actors.clear();
+    monster_callback_actors.clear();
     get_hook_cache().clear();
     delete state;
 }
