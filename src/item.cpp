@@ -924,9 +924,9 @@ bool item::attempt_split( int qty,
         }
         return false;
     }
-    item &after_split = *det;
-    int starting_charges = after_split.charges;
-    det = cb( std::move( det ) );
+    detached_ptr<item> after_split = std::move( det );
+    int starting_charges = after_split->charges;
+    det = cb( std::move( after_split ) );
     bool ret = true;
     bool changed = false;
     if( det ) {
@@ -943,6 +943,14 @@ bool item::attempt_split( int qty,
         ret = false;
     } else {
         changed = true;
+        if( charges == 0 && loc != nullptr ) {
+            contents_item_location *c_loc = dynamic_cast<contents_item_location *>( &*loc );
+            if( c_loc ) {
+                c_loc->on_changed( this );
+            }
+            detach();
+            return true;
+        }
     }
     if( changed ) {
         contents_item_location *contents_loc = dynamic_cast<contents_item_location *>( &*loc );
@@ -950,7 +958,6 @@ bool item::attempt_split( int qty,
             contents_loc->on_changed( this );
         }
     }
-    after_split.unsafe_rejoin( *this );
     return ret;
 }
 

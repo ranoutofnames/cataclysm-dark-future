@@ -1148,6 +1148,7 @@ void Item_factory::init()
     add_actor( std::make_unique<iuse_portal_link>() );
     add_actor( std::make_unique<iuse_paint_stuff>() );
     add_actor( std::make_unique<iuse_paint_stuff_config>() );
+    add_actor( std::make_unique<fluid_pickup_actor>() );
 
     // An empty dummy group, it will not spawn anything. However, it makes that item group
     // id valid, so it can be used all over the place without need to explicitly check for it.
