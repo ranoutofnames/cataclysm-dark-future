@@ -1,3 +1,9 @@
+# Cataclysm: Dark Future
+
+> Working name. This is a fork of [Cataclysm: Bright Nights](https://github.com/cataclysmbn/Cataclysm-BN), which is itself a fork of [Cataclysm: Dark Days Ahead](https://github.com/CleverRaven/Cataclysm-DDA). See `D:\Library\Games\PC Games\Cataclysm\CDF\Dark-Future-Dev-Docs\` for design notes and research, and [`FORK_BASE.md`](FORK_BASE.md) for how this repo relates to upstream.
+
+---
+
 # Cataclysm: Bright Nights
 
 <header align="center">
