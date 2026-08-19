@@ -73,6 +73,7 @@
 #include "crafting.h"
 #include "creature_throw.h"
 #include "creature_tracker.h"
+#include "monster_hallucination.h"
 #include "monster.h"
 #include "monster_action.h"
 #include "monster_plan.h"
@@ -332,6 +333,7 @@ static const efftype_id effect_adrenaline_mycus( "adrenaline_mycus" );
 static const efftype_id effect_ai_controlled( "ai_controlled" );
 static const efftype_id effect_ai_waiting( "ai_waiting" );
 static const efftype_id effect_assisted( "assisted" );
+static const efftype_id effect_bleed( "bleed" );
 static const efftype_id effect_blind( "blind" );
 static const efftype_id effect_bouldering( "bouldering" );
 static const efftype_id effect_contacts( "contacts" );
@@ -2121,6 +2123,7 @@ bool game::do_turn()
     {
         ZoneScopedN( "do_turn_pre_action_updates" );
         perhaps_add_random_npc();
+        refresh_player_visibility_cache_if_needed();
         process_voluntary_act_interrupt();
         process_activity();
         update_performance_bubble();
@@ -2814,9 +2817,10 @@ auto game::run_activity_skip_batch_turns( const int skipped_turns ) -> void
     }
 
     {
-        ZoneScopedN( "activity_fixed_window_flush_items" );
-        m.process_items();
+        ZoneScopedN( "do_map_process_items" );
+        m.process_items( skipped_turns );
     }
+
     explosion_handler::get_explosion_queue().execute();
     cleanup_dead();
     Pathfinding::clear_d_maps();
@@ -3405,6 +3409,7 @@ input_context get_default_mode_input_context()
     ctxt.register_action( "smash" );
     ctxt.register_action( "loot" );
     ctxt.register_action( "examine" );
+    ctxt.register_action( "jump" );
     ctxt.register_action( "advinv" );
     ctxt.register_action( "pickup" );
     ctxt.register_action( "pickup_all" );
@@ -6149,6 +6154,12 @@ void game::monmove( const monster_activity_ai_mode mode, activity_monmove_cache 
                 critter.process_turn();
             }
 
+            if( monster_hallucination::needs_lifecycle_expiry( critter ) &&
+                one_in( monster_hallucination::expiry_one_in ) ) {
+                critter.die( nullptr );
+                continue;
+            }
+
             m.creature_in_field( critter );
             if( action_time_scale::once_every_this_tick( 1_days ) ) {
                 if( critter.has_flag( MF_MILKABLE ) ) {
@@ -8888,8 +8899,9 @@ void game::print_terrain_info( const tripoint_bub_ms &lp, const catacurses::wind
     const auto location_color = cur_ter_m->get_color( uistate.overmap_show_land_use_codes );
     const auto terrain_desc = terrain.description.translated();
     const std::string tile = m.tername( lp );
-    const auto coverage = m.coverage( lp );
-    const auto block_chance = m.obstacle_coverage( u.bub_pos(), lp );
+    const auto concealment = m.coverage( lp );
+    const auto cover = m.has_furn( lp ) ? m.furn( lp ).obj().bash.ranged->block_unaimed_chance : m.ter(
+                           lp ).obj().bash.ranged->block_unaimed_chance;
     const auto move_cost = m.move_cost( lp );
     const auto move_cost_is_zero = move_cost == 0;
     const auto move_cost_str = move_cost_is_zero ? _( "Impassable " ) :
@@ -8926,13 +8938,13 @@ void game::print_terrain_info( const tripoint_bub_ms &lp, const catacurses::wind
         }
     }
 
-    if( coverage > 0 ) {
+    if( concealment > 0 ) {
         fold_and_print( w_look, point( column, ++line ), max_width, c_dark_gray,
-                        _( "Cover: %d%%" ), coverage );
+                        _( "Concealment: %d%%" ), concealment );
     }
-    if( block_chance > 0 ) {
+    if( cover > 0_pct ) {
         fold_and_print( w_look, point( column, ++line ), max_width, c_dark_gray,
-                        _( "Block: %d%%" ), block_chance );
+                        _( "Cover: %d%%" ), cover / 1_pct );
     }
 
     std::vector<std::string> feature_lines = foldstring( m.features( lp ), max_width );
@@ -12293,6 +12305,13 @@ bool game::is_dangerous_tile( const tripoint_bub_ms &dest_loc ) const
 
 bool game::prompt_dangerous_tile( const tripoint_bub_ms &dest_loc ) const
 {
+    return prompt_dangerous_tile( dest_loc, _( "Really step into %s?" ), true );
+}
+
+bool game::prompt_dangerous_tile( const tripoint_bub_ms &dest_loc,
+                                  std::string_view query_message,
+                                  const bool allow_ledge_examine ) const
+{
     static const iexamine_function ledge_examine = iexamine_function_from_string( "ledge" );
     std::vector<std::string> harmful_stuff = get_dangerous_tile( dest_loc );
 
@@ -12300,8 +12319,9 @@ bool game::prompt_dangerous_tile( const tripoint_bub_ms &dest_loc ) const
         return true;
     }
 
-    if( !( harmful_stuff.size() == 1 && m.tr_at( dest_loc ).loadid == tr_ledge ) ) {
-        return query_yn( _( "Really step into %s?" ), enumerate_as_string( harmful_stuff ) ) ;
+    if( !allow_ledge_examine ||
+        !( harmful_stuff.size() == 1 && m.tr_at( dest_loc ).loadid == tr_ledge ) ) {
+        return query_yn( query_message.data(), enumerate_as_string( harmful_stuff ) );
     }
 
     if( !u.is_mounted() ) {
@@ -12313,8 +12333,8 @@ bool game::prompt_dangerous_tile( const tripoint_bub_ms &dest_loc ) const
     } else {
         auto crit = u.mounted_creature.get();
         if( crit->has_flag( MF_MOUNTABLE_LEDGE ) ) {
-            return query_yn( _( "Really step into %s?" ),
-                             enumerate_as_string( harmful_stuff ) ) ; // mount can climb down ledges
+            return query_yn( query_message.data(),
+                             enumerate_as_string( harmful_stuff ) ); // mount can climb down ledges
         }
     }
 
@@ -12719,7 +12739,8 @@ bool game::walk_move( const tripoint_bub_ms &dest_loc, const bool via_ramp )
             u.mod_fatigue( 1 );
         }
     }
-    if( !u.has_artifact_with( AEP_STEALTH ) ) {
+    if( !u.has_artifact_with( AEP_STEALTH ) &&
+        !u.has_enchantment_flag( enchantment_flag_id( "SILENT" ) ) ) {
         int volume = u.is_stealthy() ? 30 : 50;
         volume *= u.mutation_value( "noise_modifier" );
         volume += u.bonus_from_enchantments( volume, enchantment_value_id( "NOISE" ) );
@@ -12889,12 +12910,16 @@ auto game::place_player( const tripoint_bub_ms &dest_loc ) -> point_rel_sm
             u.mounted_creature->apply_damage( nullptr, bodypart_id( "torso" ), rng( 1, 10 ) );
         } else {
             const bodypart_id bp = u.get_random_body_part();
+            const auto damaged_bp = bp->main_part.id();
             if( u.deal_damage( nullptr, bp, damage_instance( DT_CUT, rng( 1, 10 ) ) ).total_damage() > 0 ) {
                 //~ 1$s - bodypart name in accusative, 2$s is terrain name.
                 add_msg( m_bad, _( "You cut your %1$s on the %2$s!" ),
-                         body_part_name_accusative( bp->token ),
+                         body_part_name_accusative( damaged_bp ),
                          m.has_flag_ter( "SHARP", dest_loc ) ? m.tername( dest_loc ) : m.furnname(
                              dest_loc ) );
+                if( one_in( 2 ) && !u.is_immune_effect( effect_bleed ) ) {
+                    u.add_effect( effect_bleed, rng( 2_minutes, 5_minutes ), bp.id() );
+                }
             }
         }
     }
@@ -14192,8 +14217,13 @@ void game::vertical_move( int movez, bool force, bool peeking )
                         get_avatar().mutation_spend_resources( tid );
                     }
                 }
-                add_msg( m_info, _( "There is something above blocking your way." ) );
-                return;
+                if( dest.z() > OVERMAP_HEIGHT ) {
+                    add_msg( m_info, _( "It would be unsafe to try and ascend further." ) );
+                    return;
+                } else {
+                    add_msg( m_info, _( "There is something above blocking your way." ) );
+                    return;
+                }
             } else {
                 if( dest.z() > OVERMAP_HEIGHT ) {
                     add_msg( m_info, _( "Tried to move outside of zlevel world bounds." ) );
@@ -14370,7 +14400,8 @@ void game::vertical_move( int movez, bool force, bool peeking )
     // Find the corresponding staircase
     bool rope_ladder = false;
     // TODO: Remove the stairfinding, make the mapgen gen aligned maps
-    const bool special_move = climbing || swimming || can_fly;
+    // Don't check can_fly here, flight was handled earlier and doing that would just embed you in a wall instead
+    const bool special_move = climbing || swimming;
 
     if( !force && !special_move ) {
         const std::optional<tripoint_bub_ms> pnt = find_or_make_stairs( m, z_after, rope_ladder,

@@ -52,6 +52,7 @@
 #include "gates.h"
 #include "gun_mode.h"
 #include "help.h"
+#include "iexamine.h"
 #include "input.h"
 #include "int_id.h"
 #include "item.h"
@@ -724,6 +725,27 @@ static void close()
     }
 }
 
+static auto jump() -> void
+{
+    auto &you = get_avatar();
+    if( !iexamine::can_start_jump_over_tile( you, true ) ) {
+        return;
+    }
+
+    const auto allowed = [&you]( const tripoint_bub_ms & pos ) {
+        return iexamine::can_jump_over_tile( you, pos );
+    };
+    const auto jump_target = choose_adjacent_highlight(
+                                 _( "Jump across where?" ),
+                                 _( "There is no adjacent tile you can jump across." ),
+                                 allowed );
+    if( !jump_target ) {
+        return;
+    }
+
+    iexamine::jump_over_tile( you, *jump_target );
+}
+
 // Establish or release a grab on a vehicle
 static void grab()
 {
@@ -822,7 +844,7 @@ static void smash()
         !query_yn( _( "Are you sure you want to smash with an item that might shatter?" ) ) ) {
         return;
     }
-    const int move_cost = !u.is_armed() ? 80 : weapon.attack_cost() * 0.8;
+    const int move_cost = !u.is_armed() ? 80 : u.attack_cost( weapon ) * 0.8;
 
     bool didit = false;
     bool mech_smash = false;
@@ -2365,6 +2387,14 @@ bool game::handle_action()
                     examine( *mouse_target );
                 } else {
                     examine();
+                }
+                break;
+
+            case ACTION_JUMP:
+                if( mouse_target && iexamine::can_jump_over_tile( u, *mouse_target ) ) {
+                    iexamine::jump_over_tile( u, *mouse_target );
+                } else {
+                    jump();
                 }
                 break;
 

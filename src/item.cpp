@@ -29,6 +29,7 @@
 #include "bionics.h"
 #include "bodypart.h"
 #include "cached_item_options.h"
+#include "calendar.h"
 #include "catalua_icallback_actor.h"
 #include "cata_utility.h"
 #include "catacharset.h"
@@ -3455,7 +3456,7 @@ void item::component_info( std::vector<iteminfo> &info, const iteminfo_query *pa
         // TODO: Extract into a more proper place (function in namespace)
         std::string bionics_string = enumerate_as_string( components.begin(), components.end(),
         []( const item * const & entry ) -> std::string {
-            return entry->is_bionic() ? entry->display_name() : "";
+            return entry->is_bionic() ? entry->type_name() : "";
         }, enumeration_conjunction::none );
         info.emplace_back( "DESCRIPTION", string_format( _( "Contains: %s" ),
                            bionics_string ) );
@@ -4499,12 +4500,14 @@ void item::enchantment_info( std::vector<iteminfo> &info, const iteminfo_query &
                              int batch,
                              bool debug ) const
 {
-    const std::vector<enchantment> &enchs = get_enchantments();
+    std::vector<enchantment> enchs = get_enchantments( true );
+    std::vector<enchantment> enchs_2 = get_enchantments( false );
+    enchs.insert( enchs.end(), enchs_2.begin(), enchs_2.end() );
     if( is_null() || enchs.empty() || has_flag( flag_SECRET_ENCHANTMENTS ) ) {
         return;
     }
     insert_separation_line( info );
-    for( const enchantment &ench : get_enchantments() ) {
+    for( const enchantment ench : enchs ) {
         for( std::string str : ench.get_effect_string( true ) ) {
             info.emplace_back( "DESCRIPTION", str );
         }
@@ -5870,10 +5873,9 @@ int item::lift_strength() const
 
 int item::attack_cost() const
 {
-    int base = 65 + ( volume() / 62.5_ml + weight() / 60_gram ) / count();
-    int bonus = bonus_from_enchantments_wielded( base, enchantment_value_id( "ITEM_ATTACK_COST" ),
-                true );
-    return std::max( 0, base + bonus );
+    int cost = 65 + ( volume() / 62.5_ml + weight() / 60_gram ) / count();
+    cost += bonus_from_enchantments( cost, enchantment_value_id( "ITEM_ATTACK_COST" ) );
+    return std::max( 0, cost );
 }
 
 int item::stamina_cost() const
@@ -5904,14 +5906,6 @@ int item::damage_melee( const attack_statblock &attack, damage_type dt ) const
                 res *= 0.5;
             }
             break;
-
-        case DT_CUT:
-        case DT_STAB:
-            if( has_flag( flag_DIAMOND ) ) {
-                res *= 1.3;
-            }
-            break;
-
         default:
             break;
     }
@@ -5926,8 +5920,8 @@ int item::damage_melee( const attack_statblock &attack, damage_type dt ) const
 
     }
     auto internal_name = damage_unit( dt, 0.0 ).get_internal_name();
-    res += bonus_from_enchantments_wielded( res, enchantment_value_id( "ITEM_DAMAGE_" + internal_name ),
-                                            true );
+    res += bonus_from_enchantments( res, enchantment_value_id( "ITEM_DAMAGE_" + internal_name ),
+                                    true );
     // Apply melee damage bonus
     const auto &bonus = get_melee_damage_bonus();
     res += bonus.type_damage( dt );
@@ -5957,20 +5951,12 @@ std::map<std::string, attack_statblock> item::get_attacks() const
                         du.amount *= 0.5;
                     }
                     break;
-
-                case DT_CUT:
-                case DT_STAB:
-                    if( has_flag( flag_DIAMOND ) ) {
-                        du.amount *= 1.3;
-                    }
-                    break;
-
                 default:
                     break;
             }
 
-            du.amount += bonus_from_enchantments_wielded( du.amount,
-                         enchantment_value_id( "ITEM_DAMAGE_" + du.get_internal_name() ), true );
+            du.amount += bonus_from_enchantments( du.amount,
+                                                  enchantment_value_id( "ITEM_DAMAGE_" + du.get_internal_name() ), true );
             // Apply melee damage bonus
             du.amount += bonus.type_damage( du.type );
         }
@@ -6469,6 +6455,10 @@ time_duration item::get_shelf_life() const
 
 double item::get_relative_rot() const
 {
+    // Components are frozen in time, when they are returned they are new items
+    if( has_flag( flag_id( "COMPONENT" ) ) ) {
+        return rot / get_shelf_life();
+    }
     if( goes_bad() ) {
         const_cast<item *>( this )->update_rot_from_location( temperature_flag::TEMP_NORMAL );
         return rot / get_shelf_life();
@@ -8051,51 +8041,68 @@ bool item::is_relic( bool not_itype ) const
     return !!relic_data || ( !not_itype && type->relic_data );
 }
 
-const std::vector<enchantment> &item::get_enchantments() const
+bool item::add_enchantment( const enchantment_id &ench )
 {
-    if( !is_relic() ) {
-        static const std::vector<enchantment> fallback;
-        return fallback;
+    if( !ench.is_valid() ) {
+        return false;
     }
-    if( is_relic( true ) ) {
+    if( !relic_data ) {
+        relic_data = cata::make_value<relic>();
+    }
+    relic_data->add_passive_effect( ench.obj() );
+    return true;
+}
+
+const std::vector<enchantment> &item::get_enchantments( bool dynamic ) const
+{
+    if( dynamic && is_relic( true ) ) {
         return relic_data->get_enchantments();
-    } else {
+    } else if( !dynamic && type->relic_data ) {
         return type->relic_data->get_enchantments();
     }
+    static const std::vector<enchantment> fallback;
+    return fallback;
 }
 
 double item::bonus_from_enchantments( const Character &owner, double base,
                                       enchantment_value_id value, bool round ) const
 {
-    double add = 0.0;
-    double mul = 0.0;
-    for( const enchantment &ench : get_enchantments() ) {
+    double ret = 0.0;
+    for( const enchantment &ench : get_enchantments( true ) ) {
         if( ench.is_active( owner, *this ) ) {
-            add += ench.get_value_add( value );
-            mul += ench.get_value_multiply( value );
+            ret += ench.calc_bonus( value, base, round );
         }
     }
-    // TODO: this part duplicates enchantment::calc_bonus()
-    double ret = add + base * mul;
+    for( const enchantment &ench : get_enchantments( false ) ) {
+        if( ench.is_active( owner, *this ) ) {
+            ret += ench.calc_bonus( value, base, round );
+        }
+    }
+    // In case of floating point errors
     if( round ) {
         ret = trunc( ret );
     }
     return ret;
 }
 
-double item::bonus_from_enchantments_wielded( double base, enchantment_value_id value,
-        bool round ) const
+double item::bonus_from_enchantments( double base, enchantment_value_id value,
+                                      bool round ) const
 {
-    double add = 0.0;
-    double mul = 0.0;
-    for( const enchantment &ench : get_enchantments() ) {
-        if( ench.is_active_when_wielded() ) {
-            add += ench.get_value_add( value );
-            mul += ench.get_value_multiply( value );
+    // Check if it has the value first, because these enchantments
+    // Are more limited in scope then most enchantments
+    // Thus it can cause unwanted errors if `has_value` is not checked first
+    double ret = 0.0;
+    for( const enchantment &ench : get_enchantments( true ) ) {
+        if( ench.has_value( value ) && ench.is_active( *this ) ) {
+            ret += ench.calc_bonus( value, base, round );
         }
     }
-    // TODO: this part duplicates enchantment::calc_bonus()
-    double ret = add + base * mul;
+    for( const enchantment &ench : get_enchantments( false ) ) {
+        if( ench.has_value( value ) && ench.is_active( *this ) ) {
+            ret += ench.calc_bonus( value, base, round );
+        }
+    }
+    // In case of floating point errors
     if( round ) {
         ret = trunc( ret );
     }
@@ -10483,12 +10490,19 @@ std::vector<trait_id> item::mutations_from_wearing( const Character &guy ) const
     }
     std::vector<trait_id> muts;
 
-    const auto rel_data = is_relic( true ) ? relic_data : type->relic_data;
-    for( const enchantment &ench : rel_data->get_enchantments() ) {
-        if( ench.is_active( guy, is_active() ) ) {
+    for( const enchantment &ench : get_enchantments( true ) ) {
+        if( ench.is_active( guy, *this ) ) {
             for( const trait_id &mut : ench.get_mutations() ) {
                 // this may not be perfectly accurate due to conditions
-                muts.push_back( mut );
+                muts.push_back( trait_id( mut.str() ) );
+            }
+        }
+    }
+    for( const enchantment &ench : get_enchantments( false ) ) {
+        if( ench.is_active( guy, *this ) ) {
+            for( const trait_id &mut : ench.get_mutations() ) {
+                // this may not be perfectly accurate due to conditions
+                muts.push_back( trait_id( mut.str() ) );
             }
         }
     }
@@ -10511,16 +10525,6 @@ void item::process_relic( Character *carrier )
     if( !is_relic() ) {
         return;
     }
-    std::vector<enchantment> active_enchantments;
-
-    if( carrier ) {
-        for( const enchantment &ench : get_enchantments() ) {
-            if( ench.is_active( *carrier, *this ) ) {
-                active_enchantments.emplace_back( ench );
-            }
-        }
-    }
-
     relic_funcs::process_recharge( *this, carrier );
 }
 
@@ -10655,6 +10659,9 @@ detached_ptr<item> item::process_litcig( detached_ptr<item> &&self, player *carr
             duration = 30_seconds;
         }
         carrier->add_msg_if_player( m_neutral, _( "You take a puff of your %s." ), it.tname() );
+        if( it.type->istate_callbacks ) {
+            it.type->istate_callbacks->call_on_puff( *carrier, it );
+        }
 
         // we need to figure out a way to get the item before this got converted,
         // but i don't think that's going to be very easy...
@@ -11644,6 +11651,12 @@ bool item::on_drop( const tripoint_bub_ms &pos, map &m )
         }
     }
 
+    // Prevent items with DESTROY_ON_DROP from being dropped onto the ground
+    if( has_flag( flag_DESTROY_ON_DROP ) && ( !made_of( LIQUID ) ||
+            !m.has_flag( flag_LIQUIDCONT, pos ) ) ) {
+        return true;
+    }
+
     // dropping liquids, even currently frozen ones, on the ground makes them
     // dirty
     if( made_of( LIQUID ) && !m.has_flag( flag_LIQUIDCONT, pos ) &&
@@ -11907,6 +11920,7 @@ detached_ptr<item> item::remove_component( item &it )
 void item::add_component( detached_ptr<item> &&comp )
 {
     components.push_back( std::move( comp ) );
+    components.back()->set_flag( flag_id( "COMPONENT" ) );
 }
 
 const location_vector<item> &item::get_components() const

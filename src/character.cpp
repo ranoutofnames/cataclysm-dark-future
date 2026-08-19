@@ -132,6 +132,7 @@ static const activity_id ACT_TRY_SLEEP( "ACT_TRY_SLEEP" );
 static const activity_id ACT_WAIT_STAMINA( "ACT_WAIT_STAMINA" );
 
 static const bionic_id bio_eye_optic( "bio_eye_optic" );
+static const bionic_id bio_cqb( "bio_cqb" );
 
 static const matec_id WBLOCK_1( "WBLOCK_1" );
 static const matec_id WBLOCK_2( "WBLOCK_2" );
@@ -230,6 +231,7 @@ static const skill_id skill_throw( "throw" );
 
 static const species_id HUMAN( "HUMAN" );
 static const species_id ROBOT( "ROBOT" );
+static const species_id ROBOT_FLYING( "ROBOT_FLYING" );
 
 namespace
 {
@@ -252,7 +254,6 @@ static const trait_id trait_ANTLERS( "ANTLERS" );
 static const trait_id trait_ASTHMA( "ASTHMA" );
 static const trait_id trait_BADBACK( "BADBACK" );
 static const trait_id trait_CF_HAIR( "CF_HAIR" );
-static const trait_id trait_GLASSJAW( "GLASSJAW" );
 static const trait_id trait_DEBUG_NODMG( "DEBUG_NODMG" );
 static const trait_id trait_DEBUG_STAMINA( "DEBUG_STAMINA" );
 static const trait_id trait_DEFT( "DEFT" );
@@ -376,6 +377,22 @@ static const trait_flag_str_id flag_NO_RADIATION( "NO_RADIATION" );
 static const trait_flag_str_id flag_NON_THRESH( "NON_THRESH" );
 
 static const activity_id ACT_ASSIST( "ACT_ASSIST" );
+
+static const enchantment_flag_id ench_flag_NO_THERMAL_WAKE( "NO_THERMAL_WAKE" );
+static const enchantment_flag_id ench_flag_NO_DAMAGE_WAKE( "NO_DAMAGE_WAKE" );
+static const enchantment_flag_id ench_flag_FIRE_FIELD_IMMUNE( "FIRE_FIELD_IMMUNE" );
+static const enchantment_flag_id ench_flag_BLIND( "BLIND" );
+static const enchantment_flag_id ench_flag_ELECTROSENSE( "ELECTROSENSE" );
+static const enchantment_flag_id ench_flag_VIEW_DRONE_CAM( "VIEW_DRONE_CAM" );
+static const enchantment_flag_id ench_flag_UNDERWATER_SIGHT( "UNDERWATER_SIGHT" );
+static const enchantment_flag_id ench_flag_NEARSIGHTED( "NEARSIGHTED" );
+static const enchantment_flag_id ench_flag_ALARMCLOCK( "ALARMCLOCK" );
+static const enchantment_flag_id ench_flag_WATCH( "WATCH" );
+static const enchantment_flag_id ench_flag_SLEEP_SIGHT( "SLEEP_SIGHT" );
+static const enchantment_flag_id ench_flag_INFRARED_VISION( "INFRARED_VISION" );
+static const enchantment_flag_id ench_flag_SONAR( "SONAR" );
+
+static const enchantment_value_id ench_val_GROUNDED_CREATURE_SIGHT( "GROUNDED_CREATURE_SIGHT" );
 
 namespace io
 {
@@ -973,8 +990,8 @@ bool Character::sight_impaired() const
     return ( ( ( has_effect( effect_boomered ) || has_effect( effect_no_sight ) ||
                  has_effect( effect_darkness ) ) && !has_trait( trait_PER_SLIME_OK ) ) ||
              ( is_underwater() && !worn_with_flag( flag_SWIM_GOGGLES ) &&
-               !has_enchantment_flag( enchantment_flag_id( "UNDERWATER_SIGHT" ) ) ) ||
-             ( has_enchantment_flag( enchantment_flag_id( "NEARSIGHTED" ) ) &&
+               !has_enchantment_flag( ench_flag_UNDERWATER_SIGHT ) ) ||
+             ( has_enchantment_flag( ench_flag_NEARSIGHTED ) &&
                !worn_with_flag( flag_FIX_NEARSIGHT ) && !has_effect( effect_contacts ) ) ||
              has_trait( trait_PER_SLIME ) );
 }
@@ -985,7 +1002,7 @@ bool Character::has_alarm_clock() const
     return ( has_item_with_flag( flag_ALARMCLOCK, true ) ||
              ( here.veh_at( bub_pos() ) &&
                !here.veh_at( bub_pos() )->vehicle().get_avail_parts( "ALARMCLOCK" ).empty() ) ||
-             has_enchantment_flag( enchantment_flag_id( "ALARMCLOCK" ) ) );
+             has_enchantment_flag( ench_flag_ALARMCLOCK ) );
 }
 
 bool Character::has_watch() const
@@ -994,7 +1011,7 @@ bool Character::has_watch() const
     return ( has_item_with_flag( flag_WATCH, true ) ||
              ( here.veh_at( bub_pos() ) &&
                !here.veh_at( bub_pos() )->vehicle().get_avail_parts( "WATCH" ).empty() ) ||
-             has_enchantment_flag( enchantment_flag_id( "WATCH" ) ) );
+             has_enchantment_flag( ench_flag_WATCH ) );
 }
 
 void Character::react_to_felt_pain( int intensity )
@@ -1967,11 +1984,10 @@ void Character::calc_all_parts_hp( float hp_mod, float hp_adjustment, int str_ma
         float hp_ratio = static_cast<float>( bp.get_hp_cur() ) / bp.get_hp_max();
         int new_max = ( part.first->base_hp + str_max * 3 + hp_adjustment ) * hp_mod;
 
-        if( has_trait( trait_GLASSJAW ) && part.first == bodypart_str_id( "head" ) ) {
-            new_max *= 0.8;
+        const auto ench = enchantment_value_id( "HEALTH_POINTS_" + to_upper_case( part.first.str() ) );
+        if( ench.is_valid() ) {
+            new_max += bonus_from_enchantments( new_max, ench, true );
         }
-
-        new_max += bonus_from_enchantments( new_max, enchantment_value_id( "HEALTH_POINTS" ) );
         new_max = std::max( new_max, 1 );
         int new_cur = std::ceil( static_cast<float>( new_max ) * hp_ratio );
 
@@ -2014,7 +2030,7 @@ void Character::recalc_sight_limits()
 
     // Set sight_max.
     if( is_blind() || ( in_sleep_state() &&
-                        !has_enchantment_flag( enchantment_flag_id( "SLEEP_SIGHT" ) ) ) ||
+                        !has_enchantment_flag( ench_flag_SLEEP_SIGHT ) ) ||
         has_effect( effect_narcosis ) ) {
         sight_max = 0;
     } else if( has_effect( effect_boomered ) && ( !( has_trait( trait_PER_SLIME_OK ) ) ) ) {
@@ -2022,12 +2038,12 @@ void Character::recalc_sight_limits()
         vision_mode_cache.set( BOOMERED );
     } else if( has_effect( effect_in_pit ) || has_effect( effect_no_sight ) ||
                ( is_underwater() && !worn_with_flag( flag_SWIM_GOGGLES ) &&
-                 !has_enchantment_flag( enchantment_flag_id( "UNDERWATER_SIGHT" ) ) ) ) {
+                 !has_enchantment_flag( ench_flag_UNDERWATER_SIGHT ) ) ) {
         sight_max = 1;
     } else if( has_active_mutation( trait_SHELL2 ) ) {
         // You can kinda see out a bit.
         sight_max = 2;
-    } else if( has_enchantment_flag( enchantment_flag_id( "NEARSIGHTED" ) ) &&
+    } else if( has_enchantment_flag( ench_flag_NEARSIGHTED ) &&
                !worn_with_flag( flag_FIX_NEARSIGHT ) && !has_effect( effect_contacts ) ) {
         sight_max = 4;
     } else if( has_trait( trait_PER_SLIME ) ) {
@@ -2069,7 +2085,7 @@ void Character::recalc_sight_limits()
     }
 
     // Not exactly a sight limit thing, but related enough
-    if( has_enchantment_flag( enchantment_flag_id( "INFRARED_VISION" ) ) ||
+    if( has_enchantment_flag( ench_flag_INFRARED_VISION ) ||
         worn_with_flag( flag_IR_EFFECT ) ||
         ( is_mounted() && mounted_creature->has_flag( MF_MECH_RECON_VISION ) ) ) {
         vision_mode_cache.set( IR_VISION );
@@ -3361,7 +3377,7 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
             return ret_val<bool>::make_failure(
                        _( "You can only wear power armor components with power armor!" ) );
         }
-        if( it.has_flag( flag_POWERARMOR_EXTERNAL ) ) {
+        if( it.has_flag( flag_POWERARMOR_EXTERNAL ) && !it.has_flag( flag_POWERARMOR_PLATING ) ) {
             for( auto &elem : worn ) {
                 if( elem->has_flag( flag_POWERARMOR_EXO ) &&
                     elem->get_covered_body_parts().make_intersection( it.get_covered_body_parts() ).any() ) {
@@ -3369,6 +3385,14 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
                 } else if( elem->has_flag( flag_POWERARMOR_EXTERNAL ) &&
                            elem->get_covered_body_parts().make_intersection( it.get_covered_body_parts() ).any() ) {
                     return ret_val<bool>::make_failure( _( "Can't wear externals over one another!" ) );
+                }
+            }
+        }
+        if( it.has_flag( flag_POWERARMOR_PLATING ) ) {
+            for( auto &elem : worn ) {
+                if( elem->has_flag( flag_POWERARMOR_PLATING ) &&
+                    elem->get_covered_body_parts().make_intersection( it.get_covered_body_parts() ).any() ) {
+                    return ret_val<bool>::make_failure( _( "Can't wear overlapping sets of plating!" ) );
                 }
             }
         }
@@ -3389,7 +3413,8 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
                 // To check if there's an external/exoskeleton for the mod to attach to.
                 for( std::pair< bodypart_str_id, bool > &attachment : attachments ) {
                     if( elem->get_covered_body_parts().test( attachment.first ) &&
-                        ( elem->has_flag( flag_POWERARMOR_EXO ) || elem->has_flag( flag_POWERARMOR_EXTERNAL ) ) ) {
+                        ( elem->has_flag( flag_POWERARMOR_EXO ) || elem->has_flag( flag_POWERARMOR_EXTERNAL ) ) &&
+                        !elem->has_flag( flag_POWERARMOR_PLATING ) ) {
                         if( elem->is_sided() && elem->get_side() == attachment.first->part_side ) {
                             attachment.second = true;
                         } else {
@@ -3474,7 +3499,7 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
           ( it.covers( bodypart_id( "foot_r" ) ) && is_wearing_shoes( side::RIGHT ) ) ) &&
         ( !it.has_flag( flag_OVERSIZE ) || !it.has_flag( flag_OUTER ) ) && !it.has_flag( flag_SKINTIGHT ) &&
         !it.has_flag( flag_BELTED ) && !it.has_flag( flag_PERSONAL ) && !it.has_flag( flag_AURA ) &&
-        !it.has_flag( flag_SEMITANGIBLE ) ) {
+        !it.has_flag( flag_SEMITANGIBLE ) && !it.has_flag( flag_POWERARMOR_PLATING ) ) {
         // Checks to see if the player is wearing shoes
         return ret_val<bool>::make_failure( ( is_player() ? _( "You're already wearing footwear!" )
                                               : string_format( _( "%s is already wearing footwear!" ), name ) ) );
@@ -4493,16 +4518,14 @@ char_encumbrance_data Character::calc_encumbrance( const item &new_item ) const
     mut_cbm_encumb( enc );
 
     // Get swimming skill level
-    if( get_option<bool>( "althletics_encumbrance_buff" ) ) {
-        int swim_skill = get_skill_level( skill_swimming );
+    int swim_skill = get_skill_level( skill_swimming );
+    bool althletics_buff = get_option<bool>( "althletics_encumbrance_buff" );
+    for( auto &iter : enc.elems ) {
+        encumbrance_data &edata = iter.second;
 
-        // Reduce encumbrance for each body part based on swimming skill
-        for( auto &iter : enc.elems ) {
-            encumbrance_data &edata = iter.second;
-
-            // Reduce encumbrance by swim_skill, clamped at 0
-            edata.encumbrance = std::max( 0, edata.encumbrance - swim_skill );
-        }
+        // Reduce encumbrance by swim_skill, clamped at 0
+        // Enchantments can bring encumbrance below 0, so account for that here too
+        edata.encumbrance = std::max( 0, edata.encumbrance - ( althletics_buff ? swim_skill : 0 ) );
     }
 
     return enc;
@@ -4887,17 +4910,18 @@ void Character::mut_cbm_encumb( char_encumbrance_data &vals ) const
         }
     }
 
-    if( has_active_bionic( bio_shock_absorber ) ) {
-        for( auto &val : vals.elems ) {
-            val.second.encumbrance += 3; // Slight encumbrance to all parts except eyes
-        }
-        vals.elems[body_part_eyes].encumbrance -= 3;
-    }
-
     // Lower penalty for bps covered only by XL armor
     const auto oversize = exclusive_flag_coverage( flag_OVERSIZE );
     for( const trait_id &mut : get_mutations() ) {
         apply_mut_encumbrance( vals, mut, oversize );
+    }
+
+    for( const auto &id : get_all_body_parts() ) {
+        const auto ench_id = enchantment_value_id( "ENCUMBRANCE_" + to_upper_case( id.id().str() ) );
+        if( ench_id.is_valid() ) {
+            vals.elems[id.id()].encumbrance += bonus_from_enchantments( vals.elems[id.id()].encumbrance,
+                                               ench_id );
+        }
     }
 }
 
@@ -5205,7 +5229,7 @@ std::pair<std::string, nc_color> Character::get_thirst_description() const
         hydration_string = _( "Dehydrated" );
     } else if( thirst > thirst_levels::very_thirsty ) {
         hydration_color = c_yellow;
-        hydration_string = _( "Very thirsty" );
+        hydration_string = _( "Very Thirsty" );
     } else if( thirst > thirst_levels::thirsty ) {
         hydration_color = c_yellow;
         hydration_string = _( "Thirsty" );
@@ -6295,7 +6319,7 @@ void Character::update_bodytemp( const map &m, const weather_manager &weather )
         }
 
         // Climate Control eases the effects of high and low ambient temps
-        bp_conv = temp_corrected_by_climate_control( bp_conv );
+        bp_conv = temp_corrected_by_climate_control( bp_conv, bp );
 
         int bonus_fire_warmth = best_fire * 500;
 
@@ -6549,11 +6573,12 @@ void Character::update_bodytemp( const map &m, const weather_manager &weather )
         // AND you have frostbite, then that also prevents you from sleeping
         if( in_sleep_state() ) {
             int curr_temperature = bp_stats.get_temp_cur();
-            if( bp == body_part_torso && curr_temperature <= BODYTEMP_COLD ) {
+            if( bp == body_part_torso && curr_temperature <= BODYTEMP_COLD &&
+                !has_enchantment_flag( ench_flag_NO_THERMAL_WAKE ) ) {
                 add_msg( m_warning, _( "Your shivering prevents you from sleeping." ) );
                 wake_up();
             } else if( bp != body_part_torso && curr_temperature <= BODYTEMP_VERY_COLD &&
-                       has_effect( effect_frostbite ) ) {
+                       has_effect( effect_frostbite ) && !has_enchantment_flag( ench_flag_NO_THERMAL_WAKE ) ) {
                 add_msg( m_warning, _( "You are too cold.  Your frostbite prevents you from sleeping." ) );
                 wake_up();
             }
@@ -6631,7 +6656,9 @@ float Character::get_dodge_base() const
 {
     /** @EFFECT_DEX increases dodge base */
     /** @EFFECT_DODGE increases dodge_base */
-    return get_dex() / 4.0f + get_skill_level( skill_dodge );
+    return get_dex() / 4.0f + ( has_active_bionic( bionic_id( bio_cqb ) ) ? std::max( get_skill_level(
+                                    skill_dodge ), BIO_CQB_LEVEL ) : get_skill_level(
+                                    skill_dodge ) );
 }
 float Character::get_hit_base() const
 {
@@ -7082,7 +7109,7 @@ bool Character::is_immune_field( const field_type_id &fid ) const
         return is_elec_immune();
     }
     if( ft.has_fire ) {
-        return has_enchantment_flag( enchantment_flag_id( "FIRE_FIELD_IMMUNE" ) );
+        return has_enchantment_flag( ench_flag_FIRE_FIELD_IMMUNE );
     }
     if( ft.has_acid ) {
         return !is_on_ground() && get_env_resist( bodypart_id( "foot_l" ) ) >= 15 &&
@@ -7260,7 +7287,7 @@ tripoint_abs_omt Character::abs_omt_pos() const
 bool Character::is_blind() const
 {
     return worn_with_flag( flag_BLIND ) || has_effect( effect_blind ) ||
-           has_enchantment_flag( enchantment_flag_id( "BLIND" ) );
+           has_enchantment_flag( ench_flag_BLIND );
 }
 
 bool Character::is_invisible() const
@@ -7366,12 +7393,13 @@ bool Character::sees_with_specials( const Creature &critter ) const
     }
 
     // electroreceptors grants vision of robots and electric monsters through walls
-    if( has_enchantment_flag( enchantment_flag_id( "ELECTROSENSE" ) ) &&
-        ( critter.in_species( ROBOT ) || critter.has_flag( MF_ELECTRIC ) ) ) {
+    if( has_enchantment_flag( ench_flag_ELECTROSENSE ) &&
+        ( critter.in_species( ROBOT ) || critter.in_species( ROBOT_FLYING ) ||
+          critter.has_flag( MF_ELECTRIC ) || critter.has_flag( MF_ELECTRONIC ) ) ) {
         return true;
     }
 
-    if( critter.digging() && has_active_bionic( bio_ground_sonar ) ) {
+    if( critter.digging() && has_enchantment_flag( ench_flag_SONAR ) ) {
         // Bypass the check below, the bionic sonar also bypasses the sees(point) check because
         // walls don't block sonar which is transmitted in the ground, not the air.
         // TODO: this might need checks whether the player is in the air, or otherwise not connected
@@ -7380,13 +7408,20 @@ bool Character::sees_with_specials( const Creature &critter ) const
     }
     // Friendly eyebots can designate targets for the player
     if( critter.has_effect( effect_drone_marker ) && ( has_item_with_flag( flag_DRONE_CAM ) ||
-            has_enchantment_flag( enchantment_flag_id( "VIEW_DRONE_CAM" ) ) ) ) {
+            has_enchantment_flag( ench_flag_VIEW_DRONE_CAM ) ) ) {
         return true;
     }
 
     const int dist = rl_dist( bub_pos(), critter.bub_pos() );
-    return ( dist <= 5 && ( has_active_mutation( trait_ANTENNAE ) ||
-                            ( has_active_bionic( bio_ground_sonar ) && !critter.has_flag( MF_FLIES ) ) ) );
+
+    // Distance cannot be 0, so this is always safe
+    if( dist <= bonus_from_enchantments( 0, ench_val_GROUNDED_CREATURE_SIGHT ) &&
+        !critter.has_flag( MF_FLIES ) ) {
+        return true;
+    }
+
+    // TODO: Add more range based enchantments here ( I.E. Limited Electrosense ranges )
+    return false;
 }
 
 detached_ptr<item> Character::pour_into( item &container, detached_ptr<item> &&liquid, int limit )
@@ -8140,9 +8175,11 @@ void Character::set_stamina( int new_stamina )
 
 void Character::mod_stamina( int mod, bool skill )
 {
+    int lost_stamina = ( stamina + mod >= 0 ) ? mod : -stamina;
     // If we're burning stamina then train athletics, unless we're losing stamina due to status effects or other non-standard causes.
-    if( skill && mod < 0 ) {
-        as_player()->practice( skill_swimming, roll_remainder( std::abs( mod ) / 500.0 ), 10, true );
+    if( skill && lost_stamina < 0 ) {
+        as_player()->practice( skill_swimming, roll_remainder( std::abs( lost_stamina ) / 500.0 ), 10,
+                               true );
         // Athletics skill also reduces stamina drain for relevant activities.
         const int skill = get_skill_level( skill_swimming );
         const float skill_cost = std::max( 0.667f, ( ( 30.0f - skill ) / 30.0f ) );
@@ -8963,7 +9000,13 @@ void Character::recalculate_enchantment_cache()
     enchantment_sources.clear();
 
     visit_items( [&]( const item * it ) {
-        for( const enchantment &ench : it->get_enchantments() ) {
+        for( const enchantment &ench : it->get_enchantments( true ) ) {
+            if( ench.is_active( *this, *it ) ) {
+                enchantment_cache->force_add( ench );
+                enchantment_sources.emplace_back( &ench, it );
+            }
+        }
+        for( const enchantment &ench : it->get_enchantments( false ) ) {
             if( ench.is_active( *this, *it ) ) {
                 enchantment_cache->force_add( ench );
                 enchantment_sources.emplace_back( &ench, it );
@@ -9011,6 +9054,14 @@ void Character::recalculate_enchantment_cache()
         }
     }
 
+    for( const auto &[eff_type, eff_by_part] : get_effects() ) {
+        const effect &eff = eff_by_part.begin()->second;
+        for( const enchantment &ench : eff.get_enchantments() ) {
+            if( ench.is_active( *this, true ) ) {
+                enchantment_cache->force_add( ench );
+            }
+        }
+    }
     enchantment_cache->activate_effects( *this );
     enchantment_cache->deactivate_removed_effects( *this, old_ench_sources );
 
@@ -9018,6 +9069,9 @@ void Character::recalculate_enchantment_cache()
 
     // Enchantments can give HP now, so recalc it
     recalc_hp();
+
+    // Enchantments can also give encumbrance
+    reset_encumbrance();
 }
 
 void Character::rebuild_mutation_cache()
@@ -9287,10 +9341,11 @@ bool Character::armor_absorb( damage_unit &du, item &armor, const bodypart_id &b
         if( !one_in( num_parts_covered ) ) {
             return false;
         }
-        const int dmg_percent = std::max( raw_dmg - armor.chip_resistance( !armor.has_flag( flag_STURDY ) ),
-                                          1 );
-        // Chance to avoid armor damage is 50/67% (if sturdy) + 100 - ( raw_dmg - chip_resist )%
-        if( !one_in( armor.has_flag( flag_STURDY ) ? 3 : 2 ) || !x_in_y( dmg_percent, 100 ) ) {
+        const int armor_chip_resist = armor.chip_resistance( !armor.has_flag( flag_STURDY ) );
+        const bool armor_resisted = raw_dmg >= armor_chip_resist ? rng( 1,
+                                    raw_dmg ) <= armor_chip_resist : !one_in( 100 );
+        // Base chance to avoid armor damage is 50/67% (if sturdy), or if chip resist exceeds 1d<damage> (floor of 1%)
+        if( !one_in( armor.has_flag( flag_STURDY ) ? 3 : 2 ) || armor_resisted ) {
             return false;
         }
     }
@@ -9414,7 +9469,10 @@ void Character::on_dodge( Creature *source, int difficulty )
 
     // Even if we are not to train still call practice to prevent skill rust
     difficulty = std::max( difficulty, 0 );
-    as_player()->practice( skill_dodge, difficulty * 2, difficulty );
+    // Practice dodge skill except when using CQB bionic
+    if( !has_active_bionic( bio_cqb ) ) {
+        as_player()->practice( skill_dodge, difficulty * 2, difficulty );
+    }
 
     martial_arts_data->ma_ondodge_effects( *this );
 
@@ -9864,7 +9922,8 @@ void Character::on_hurt( Creature *source, bool disturb /*= true*/ )
     }
 
     if( disturb ) {
-        if( has_effect( effect_sleep ) && !has_effect( effect_narcosis ) ) {
+        if( has_effect( effect_sleep ) && !has_effect( effect_narcosis ) &&
+            !has_enchantment_flag( ench_flag_NO_DAMAGE_WAKE ) ) {
             wake_up();
         }
         if( !is_npc() && !has_effect( effect_narcosis ) ) {
@@ -10789,11 +10848,11 @@ int Character::bodytemp_modifier_traits_floor() const
     return mod;
 }
 
-int Character::temp_corrected_by_climate_control( int temperature )
+int Character::temp_corrected_by_climate_control( int temperature, bodypart_id id )
 {
     if( temperature > BODYTEMP_NORM ) {
         temperature -= bonus_from_enchantments( temperature,
-                                                enchantment_value_id( "CLIMATE_CONTROL_COOLING" ) );
+                                                enchantment_value_id( "CLIMATE_CONTROL_COOLING_" + to_upper_case( id.id().str() ) ) );
         if( in_climate_control() ) {
             temperature -= 1250;
         }
@@ -10803,7 +10862,7 @@ int Character::temp_corrected_by_climate_control( int temperature )
             temperature += 1250;
         }
         temperature += bonus_from_enchantments( temperature,
-                                                enchantment_value_id( "CLIMATE_CONTROL_HEATING" ) );
+                                                enchantment_value_id( "CLIMATE_CONTROL_HEATING_" + to_upper_case( id.id().str() ) ) );
         return std::min( BODYTEMP_NORM, temperature );
     }
     return temperature;
@@ -11863,9 +11922,9 @@ bool Character::sees( const Creature &critter ) const
 {
     // This handles only the player/npc specific stuff (monsters don't have traits or bionics).
     const int dist = rl_dist( bub_pos(), critter.bub_pos() );
-    if( bub_pos().z() == critter.bub_pos().z() && dist <= 5 &&
-        ( has_active_mutation( trait_ANTENNAE ) ||
-          ( has_active_bionic( bio_ground_sonar ) && !critter.has_flag( MF_FLIES ) ) ) ) {
+    if( bub_pos().z() == critter.bub_pos().z() &&
+        dist <= bonus_from_enchantments( 0, ench_val_GROUNDED_CREATURE_SIGHT ) &&
+        !critter.has_flag( MF_FLIES ) ) {
         return true;
     }
 
