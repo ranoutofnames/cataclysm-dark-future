@@ -1,33 +1,32 @@
+#include "artifact_enum_traits.h"
 #include "calendar.h"
 #include "catalua_bindings.h"
-#include "catalua_bindings_utils.h"
 #include "catalua_bindings_coords_common.h"
+#include "catalua_bindings_utils.h"
 #include "catalua_coord.h"
 #include "catalua_luna.h"
 #include "catalua_luna_doc.h"
-
 #include "coordinates.h"
+#include "detached_ptr.h"
+#include "distribution_grid.h"
+#include "enum_conversions.h"
 #include "enums.h"
 #include "game.h"
-#include "artifact_enum_traits.h"
-#include "enum_conversions.h"
-#include "distribution_grid.h"
-#include "field.h"
-#include "map.h"
+#include "map/field.h"
+#include "map/map.h"
 #include "map_iterator.h"
-#include "mapgen_constructor.h"
+#include "mapgen/mapgen_constructor.h"
 #include "npc.h"
-#include "overmap.h"
+#include "overmap/overmap.h"
 #include "sol/sol.hpp"
 #include "sounds.h"
 #include "trap.h"
-#include "detached_ptr.h"
-#include "veh_type.h"
 #include "type_id.h"
 #include "units_angle.h"
-#include "vehicle.h"
-#include "vpart_position.h"
-#include "weather.h"
+#include "vehicle/veh_type.h"
+#include "vehicle/vehicle.h"
+#include "vehicle/vpart_position.h"
+#include "weather/weather.h"
 
 #include <algorithm>
 #include <cmath>
@@ -376,7 +375,9 @@ void cata::detail::reg_map( sol::state &lua )
             return g->find_npc( char_id );
         } );
 
-        DOC( "Creates a new item(s) at a position on the map." );
+        DOC( "Creates a new item at a position on the map." );
+        DOC( "`count` sets the item's charges, not the number of items: exactly one item is created." );
+        DOC( "For stackable (count-by-charges) items such as ammo, `count` is the stack size. For non-stackable items, pass a negative value (e.g. -1), since a positive one is still applied as charges. Tools spawned with a negative value get their default charges." );
         DOC( "Returns nil. Use gapi.create_item and Map:add_item to modify before placement." );
         luna::set_fx( ut, "create_item_at", []( map & m, const tripoint_bub_ms & p, const itype_id & itype,
         int count ) -> void {
@@ -560,6 +561,17 @@ void cata::detail::reg_map( sol::state &lua )
             return m.add_field( p, fid, intensity, age );
         } );
         luna::set_fx( ut, "remove_field_at", &map::remove_field );
+        luna::set_fx( ut, "get_field_ids_at", []( const map & m,
+        const tripoint_bub_ms & p ) -> std::vector<field_type_id> {
+            auto field_ids = std::vector<field_type_id>{};
+            const auto &fields = m.field_at( p );
+            for( const auto &[field_id, entry] : fields )
+            {
+                static_cast<void>( entry );
+                field_ids.push_back( field_id );
+            }
+            return field_ids;
+        } );
         luna::set_fx( ut, "get_field_name_at", []( map & m, const tripoint_bub_ms & p,
         const field_type_id & fid ) -> std::string {
             field_entry *fe = m.get_field( p, fid );
@@ -606,7 +618,9 @@ void cata::detail::reg_map( sol::state &lua )
             return g->find_npc( char_id );
         } );
 
-        DOC( "Creates a new item(s) at a position on the mapgen surface." );
+        DOC( "Creates a new item at a position on the mapgen surface." );
+        DOC( "`count` sets the item's charges, not the number of items: exactly one item is created." );
+        DOC( "For stackable (count-by-charges) items such as ammo, `count` is the stack size. For non-stackable items, pass a negative value (e.g. -1), since a positive one is still applied as charges. Tools spawned with a negative value get their default charges." );
         luna::set_fx( ut, "create_item_at", []( mapgen_constructor & m, const point_omt_ms & p,
         const itype_id & itype, int count ) -> void {
             auto new_item = item::spawn( itype, calendar::turn, count );

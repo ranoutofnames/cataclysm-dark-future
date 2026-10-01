@@ -1,14 +1,5 @@
 #include "martialarts.h"
 
-#include <algorithm>
-#include <cstdlib>
-#include <iterator>
-#include <map>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <utility>
-
 #include "avatar.h"
 #include "character.h"
 #include "character_martial_arts.h"
@@ -25,13 +16,14 @@
 #include "item_factory.h"
 #include "itype.h"
 #include "json.h"
-#include "map.h"
+#include "map/map.h"
 #include "messages.h"
 #include "mutation.h"
 #include "output.h"
 #include "pimpl.h"
 #include "player.h"
 #include "pldata.h"
+#include "profile.h"
 #include "point.h"
 #include "skill.h"
 #include "string_formatter.h"
@@ -41,6 +33,15 @@
 #include "type_id_implement.h"
 #include "ui_manager.h"
 #include "value_ptr.h"
+
+#include <algorithm>
+#include <cstdlib>
+#include <iterator>
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 static const skill_id skill_unarmed( "unarmed" );
 
@@ -1075,6 +1076,7 @@ bool character_martial_arts::is_force_unarmed() const
 // event handlers
 void character_martial_arts::ma_static_effects( Character &owner )
 {
+    ZoneScoped;
     style_selected->apply_static_buffs( owner );
 }
 void character_martial_arts::ma_onmove_effects( Character &owner )
@@ -1180,6 +1182,7 @@ int Character::mabuff_block_bonus() const
 }
 int Character::mabuff_speed_bonus() const
 {
+    ZoneScoped;
     int ret = 0;
     accumulate_ma_buff_effects( *effects, [&ret, this]( const ma_buff & b, const effect & d ) {
         ret += d.get_intensity() * b.speed_bonus( *this );
