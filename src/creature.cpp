@@ -3,6 +3,7 @@
 #include "action_time_scale.h"
 #include "anatomy.h"
 #include "avatar.h"
+#include "cached_options.h"
 #include "calendar.h"
 #include "catalua_hooks.h"
 #include "catalua_sol.h"
@@ -298,12 +299,14 @@ void Creature::process_turn()
     if( is_dead_state() ) {
         return;
     }
-    reset_bonuses();
-
-    process_effects();
 
     // Call this in case any effects have changed our stats
-    reset_stats();
+    if( !g->u.in_skip_state ||
+        action_time_scale::once_every_this_tick( activity_skip_stat_update_ticks ) ) {
+        reset_bonuses();
+        reset_stats();
+    }
+    process_effects();
 
     // add an appropriate number of moves
     if( !has_effect( effect_ridden ) ) {
@@ -1357,10 +1360,13 @@ void Creature::deal_damage_handle_type( const damage_unit &du, bodypart_id bp, i
             // Cause bleed if high damage goes through armor and enemy is made of flesh
             if( adjusted_damage > 15 ) {
                 if( !is_immune_effect( effect_bleed ) ) {
-                    if( is_monster() ) {
-                        add_effect( effect_bleed, 4_seconds * rng( 1, adjusted_damage ), bp.id() );
-                    } else {
-                        add_effect( effect_bleed, 1_minutes * rng( 1, adjusted_damage ), bp.id() );
+                    int bleed_intensity = std::min( 3, std::max( 1, adjusted_damage / 25 ) );
+                    for( int i = 0; i < bleed_intensity; i++ ) {
+                        if( is_monster() ) {
+                            add_effect( effect_bleed, 4_seconds * rng( 1, adjusted_damage ), bp.id() );
+                        } else {
+                            add_effect( effect_bleed, 1_minutes * rng( 1, adjusted_damage ), bp.id() );
+                        }
                     }
                 }
             }
@@ -1371,10 +1377,13 @@ void Creature::deal_damage_handle_type( const damage_unit &du, bodypart_id bp, i
             // Cause bleed if high damage goes through armor and enemy is made of flesh
             if( adjusted_damage > 15 ) {
                 if( !is_immune_effect( effect_bleed ) ) {
-                    if( is_monster() ) {
-                        add_effect( effect_bleed, 4_seconds * rng( 1, adjusted_damage ), bp.id() );
-                    } else {
-                        add_effect( effect_bleed, 1_minutes * rng( 1, adjusted_damage ), bp.id() );
+                    int bleed_intensity = std::min( 3, std::max( 1, adjusted_damage / 25 ) );
+                    for( int i = 0; i < bleed_intensity; i++ ) {
+                        if( is_monster() ) {
+                            add_effect( effect_bleed, 4_seconds * rng( 1, adjusted_damage ), bp.id() );
+                        } else {
+                            add_effect( effect_bleed, 1_minutes * rng( 1, adjusted_damage ), bp.id() );
+                        }
                     }
                 }
             }
@@ -1549,6 +1558,10 @@ void Creature::add_effect( const efftype_id &eff_id, const time_duration &dur,
             if( is_player() && !type.get_apply_message().empty() ) {
                 add_msg( type.gain_game_message_type(), _( type.get_apply_message() ) );
             }
+            // Knockdown changes your stance.
+            if( eff_id == effect_downed ) {
+                ch->force_movement_mode( CMM_PRONE );
+            }
         }
         on_effect_int_change( e.get_id(), e.get_intensity(), e.get_bp() );
         // Perform any effect addition effects.
@@ -1605,6 +1618,10 @@ bool Creature::remove_effect( const efftype_id &eff_id, const bodypart_str_id &b
             }
         }
         g->events().send<event_type::character_loses_effect>( ch->getID(), eff_id );
+        // Stand back up after knockdown, unless we're aiming since we're busy retaliating against what knocked us over
+        if( eff_id == effect_downed && !ch->has_activity( activity_id( "ACT_AIM" ) ) ) {
+            ch->force_movement_mode( CMM_WALK );
+        }
     }
 
     if( type.has_flag( flag_EFFECT_LUA_ON_REMOVED ) ) {

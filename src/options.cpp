@@ -2417,6 +2417,11 @@ void options_manager::add_options_graphics()
 
     get_option( "LOADING_SCREEN_IMAGES" ).setPrerequisite( "USE_TILES" );
 
+    add( "LOADING_PROGRESS_COMPACT", graphics, translate_marker( "Compact loading progress bar" ),
+         translate_marker( "If true, shows loading progress info as a compact bar at the bottom of the screen instead of a centered list of all steps. Good for enabled loading screen images." ),
+         true
+       );
+
     add_empty_line();
 
     add( "MEMORY_MAP_MODE", graphics, translate_marker( "Memory map drawing mode" ),
@@ -4373,6 +4378,8 @@ void options_manager::cache_to_globals()
     activity_skip_mon_skip = ::get_option<bool>( "ACTIVITY_SKIP_MON_SKIP" );
     activity_skip_npc_skip = ::get_option<bool>( "ACTIVITY_SKIP_NPC_SKIP" );
     activity_skip_sound_skip = ::get_option<bool>( "ACTIVITY_SKIP_SOUND_SKIP" );
+    activity_skip_stat_update_ticks = ::get_option<int>( "ACTIVITY_SKIP_STAT_UPDATE_TICKS" ) *
+                                      1_seconds;
     // Temporary fix for #8726: force out-of-bubble fire spread off while the
     // corresponding options are commented out above.
     reality_bubble_fire_spread = false;
