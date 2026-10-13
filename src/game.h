@@ -280,6 +280,16 @@ class game : public submap_load_listener
          */
         void vertical_move( int z, bool force, bool peeking = false );
         void start_hauling( const tripoint_bub_ms &pos );
+        /// Runtime-only (unsaved). True once a world is fully loaded or newly started; Lua hooks
+        /// for mutation changes and OMT travel only fire while this is set.
+        bool lua_state_hooks_ready = false;
+        /// Compares the avatar's current dimension/OMT with the last seen one and fires
+        /// `on_avatar_enters_omt` when it changed. The first call after load only records it.
+        /// Walking fires immediately (place_player); other relocations (vehicles, phasing,
+        /// knockback, Lua set_pos) fire by the end of the turn via do_turn.
+        void track_avatar_omt();
+        /// Last dimension id and OMT seen by track_avatar_omt(); unsaved.
+        std::optional<std::pair<dimension_id, tripoint_abs_omt>> last_avatar_omt_;
         /**
         * Moves the player to an alternate dimension.
         *
@@ -300,7 +310,8 @@ class game : public submap_load_listener
                                   const world_type_id &world_type,
                                   const std::optional<pocket_dimension_data> &pd_info = std::nullopt,
                                   const std::optional<tripoint_abs_sm> &load_pos = std::nullopt,
-                                  const std::function<void()> &pre_load_callback = nullptr );
+                                  const std::function<void()> &pre_load_callback = nullptr,
+                                  bool track_omt = true );
         auto delete_dimension( const dimension_id &dim_id ) -> bool;
         auto reset_dimension( const dimension_id &dim_id ) -> bool;
 

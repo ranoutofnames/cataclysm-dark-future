@@ -463,8 +463,10 @@ auto place_player_dimension_at( const dimension_travel_options &opts ) -> bool
     const auto original_dimension = g->get_current_dimension_id();
     const auto original_pos = get_avatar().abs_pos();
     const auto original_origin = player_reality_bubble_origin();
+    // Suppress travel's own OMT tracking: the avatar is moved to the landing below, and the
+    // hook must fire once, for the final position.
     if( !g->travel_to_dimension( opts.dim_id, world_type, pocket_data, load_pos,
-                                 preload_callback ) ) {
+                                 preload_callback, false ) ) {
         return false;
     }
 
@@ -473,15 +475,17 @@ auto place_player_dimension_at( const dimension_travel_options &opts ) -> bool
     const auto landing = find_safe_spawn( target_local );
     if( !landing ) {
         if( !g->travel_to_dimension( original_dimension, world_type_id(), std::nullopt,
-                                     original_origin ) ) {
+                                     original_origin, nullptr, false ) ) {
             throw std::runtime_error( "Failed to restore original dimension after blocked landing" );
         }
         avatar.setpos( original_pos );
         g->update_map( avatar );
+        g->track_avatar_omt();
         return false;
     }
     avatar.setpos( *landing );
     g->update_map( avatar );
+    g->track_avatar_omt();
     return true;
 }
 

@@ -596,6 +596,19 @@ game.bionic_functions["bio_laser"] = {
 }
 ```
 
+### Global trait, OMT and death hooks
+
+Registered via `game.add_hook`. The first three are observational; `on_character_death` can revive by restoring HP.
+
+| Hook                           | params fields                                | When fired                                                          |
+| ------------------------------ | -------------------------------------------- | ------------------------------------------------------------------- |
+| `on_character_gains_mutation`  | `char`, `trait_id`                           | After any Character gains a trait (after the trait's own `on_gain`) |
+| `on_character_loses_mutation`  | `char`, `trait_id`                           | After any Character loses a trait (after the trait's own `on_loss`) |
+| `on_avatar_enters_omt`         | `avatar`, `from`, `to`, `oter`, `dimension`  | The avatar's overmap tile, z-level or dimension changed             |
+| `on_character_death`           | `char`, `killer` (nil for the avatar)        | A character dies                                                    |
+
+The trait and OMT hooks do not fire while a world loads, during character creation, or at game start (the first position is a silent baseline). They fire once per real change; a trait transformation gives one loss and one gain. `on_character_death` may revive the character by restoring HP (e.g. `char:set_all_parts_hp_cur(10)`); see `data/mods/resurrection_mod`. Scheduled timers (`lib.cdf_sched`) can be re-armed from `on_character_gains_mutation`.
+
 ### Mutation callbacks
 
 `game.mutation_functions` is keyed by trait string id.

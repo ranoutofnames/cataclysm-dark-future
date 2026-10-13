@@ -687,6 +687,8 @@ void game::reenter_fullscreen()
  */
 void game::setup( bool load_world_modfiles )
 {
+    lua_state_hooks_ready = false;
+    last_avatar_omt_.reset();
     loading_ui ui( true );
 
     // Clear all dimension overmapbuffers before reloading JSON data.
@@ -1238,6 +1240,8 @@ bool game::start_game()
     }
 
     cata::run_hooks( "on_game_started" );
+    lua_state_hooks_ready = true;
+    track_avatar_omt();
     return true;
 }
 
@@ -2385,6 +2389,13 @@ bool game::do_turn()
     {
         ZoneScopedN( "do_turn_cleanup_dead" );
         cleanup_dead();
+    }
+
+    {
+        // Catches relocations that bypass place_player: vehicle movement, phasing, knockback,
+        // mounted falls, swap_character and Lua set_pos. These fire by the end of the turn.
+        ZoneScopedN( "do_turn_track_avatar_omt" );
+        track_avatar_omt();
     }
 
     if( u.moves < 0 && get_option<bool>( "FORCE_REDRAW" ) ) {
@@ -4234,6 +4245,8 @@ bool game::load( const save_t &name )
     cata::load_world_lua_state( get_active_world(), "lua_state.json" );
 
     cata::run_on_game_load_hooks( *DynamicDataLoader::get_instance().lua );
+    lua_state_hooks_ready = true;
+    track_avatar_omt();
 
     // Build caches once so any immediate post-load draws don't use uninitialized lighting/visibility,
     // then re-invalidate so the first real in-game draw rebuilds everything again.
@@ -13465,6 +13478,7 @@ auto game::place_player( const tripoint_bub_ms &dest_loc ) -> point_rel_sm
                u.is_mounted() ) {
         add_msg( _( "There are vehicle controls here but you cannot reach them whilst mounted." ) );
     }
+    track_avatar_omt();
     return submap_shift;
 }
 
@@ -13504,6 +13518,7 @@ void game::place_player_overmap( const tripoint_abs_omt &om_dest )
     update_overmap_seen();
     // load_npcs() scans around the player's absolute position, updated by place_player().
     load_npcs();
+    track_avatar_omt();
 }
 
 bool game::phasing_move( const tripoint_bub_ms &dest_loc, const bool via_ramp )
@@ -14978,7 +14993,8 @@ auto game::travel_to_dimension( const dimension_id &dim_id,
                                 const world_type_id &world_type,
                                 const std::optional<pocket_dimension_data> &pd_info,
                                 const std::optional<tripoint_abs_sm> &load_pos,
-                                const std::function<void()> &pre_load_callback ) -> bool
+                                const std::function<void()> &pre_load_callback,
+                                bool track_omt ) -> bool
 {
     auto *const active_world = get_active_world();
     if( !active_world ) {
@@ -15199,6 +15215,9 @@ auto game::travel_to_dimension( const dimension_id &dim_id,
         debugmsg( "Failed to save dimension data after dimension travel" );
     }
 
+    if( track_omt ) {
+        track_avatar_omt();
+    }
     return true;
 }
 
@@ -16978,10 +16997,41 @@ void game::remove_fake_item( item *it )
 {
     fake_items.remove( it );
 }
+
+void game::track_avatar_omt()
+{
+    if( !lua_state_hooks_ready ) {
+        return;
+    }
+    const dimension_id &dim = get_current_dimension_id();
+    const tripoint_abs_omt omt = u.abs_omt_pos();
+    if( !last_avatar_omt_ ) {
+        last_avatar_omt_ = std::make_pair( dim, omt );
+        return;
+    }
+    if( last_avatar_omt_->first == dim && last_avatar_omt_->second == omt ) {
+        return;
+    }
+    // Store before firing so a handler that moves the avatar cannot recurse forever.
+    const tripoint_abs_omt from = last_avatar_omt_->second;
+    last_avatar_omt_ = std::make_pair( dim, omt );
+    if( !cata::has_hooks( "on_avatar_enters_omt" ) ) {
+        return;
+    }
+    cata::run_hooks( "on_avatar_enters_omt", [&]( auto & params ) {
+        params["avatar"] = &u;
+        params["from"] = from;
+        params["to"] = omt;
+        params["oter"] = get_active_overmapbuffer().ter( omt );
+        params["dimension"] = dim.str();
+    } );
+}
+
 namespace cata_event_dispatch
 {
 void avatar_moves( const avatar &u, const map &m, const tripoint_abs_ms &pos )
 {
+    g->track_avatar_omt();
     mtype_id mount_type;
     if( u.is_mounted() ) {
         mount_type = u.mounted_creature->type->id;

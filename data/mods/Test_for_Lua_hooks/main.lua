@@ -14,3 +14,18 @@ mod.chicken_death = function(params)
     end
   end
 end
+
+mod.on_gain_mutation = function(params)
+  gdebug.log_info("LUA HOOKS TEST: gained " .. params.trait_id:str())
+  gapi.add_msg(MsgType.mixed, "Hook: gained trait " .. params.trait_id:str())
+end
+
+mod.on_lose_mutation = function(params)
+  gdebug.log_info("LUA HOOKS TEST: lost " .. params.trait_id:str())
+  gapi.add_msg(MsgType.mixed, "Hook: lost trait " .. params.trait_id:str())
+end
+
+mod.on_enter_omt = function(params)
+  gdebug.log_info("LUA HOOKS TEST: entered omt " .. params.oter:str())
+  gapi.add_msg(MsgType.mixed, "Hook: entered " .. params.oter:str())
+end

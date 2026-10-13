@@ -2,6 +2,7 @@
 
 #include "avatar_action.h"
 #include "bionics.h"
+#include "catalua_hooks.h"
 #include "catalua_icallback_actor.h"
 #include "character.h"
 #include "color.h"
@@ -184,6 +185,18 @@ void Character::toggle_trait( const trait_id &trait_ )
     }
 }
 
+// Observational Lua hook; skipped during load and character creation (see game::lua_state_hooks_ready).
+static void run_mutation_change_hook( Character &who, const char *hook, const trait_id &trait )
+{
+    if( g == nullptr || !g->lua_state_hooks_ready || !cata::has_hooks( hook ) ) {
+        return;
+    }
+    cata::run_hooks( hook, [&]( auto & params ) {
+        params["char"] = &who;
+        params["trait_id"] = trait;
+    } );
+}
+
 void Character::set_mutation( const trait_id &trait )
 {
     const auto iter = my_mutations.find( trait );
@@ -195,6 +208,7 @@ void Character::set_mutation( const trait_id &trait )
     mutation_effect( trait );
     recalc_sight_limits();
     reset_encumbrance();
+    run_mutation_change_hook( *this, "on_character_gains_mutation", trait );
 }
 
 void Character::unset_mutation( const trait_id &trait_ )
@@ -212,6 +226,7 @@ void Character::unset_mutation( const trait_id &trait_ )
     mutation_loss_effect( trait );
     recalc_sight_limits();
     reset_encumbrance();
+    run_mutation_change_hook( *this, "on_character_loses_mutation", trait );
 }
 
 void Character::switch_mutations( const trait_id &switched, const trait_id &target,

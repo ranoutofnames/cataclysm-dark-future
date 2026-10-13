@@ -3439,3 +3439,265 @@ TEST_CASE("lua_lib_query", "[lua][lualib]") {
 
     CHECK(test_data.get<bool>("ok"));
 }
+
+// L2: mutation, OMT and death hooks
+namespace {
+struct l2_hook_counter {
+    int count = 0;
+    std::vector<std::string> ids;
+};
+
+// Returns an RAII guard; the hook is restored when the guard leaves scope.
+auto l2_install_hook( const std::string &hook_name, std::function<void( sol::table )> fn )
+    -> on_out_of_scope {
+    auto &lua = DynamicDataLoader::get_instance().lua->lua;
+    auto hooks = lua["game"]["hooks"].get<sol::table>();
+    const auto previous = hooks[hook_name].get<sol::object>();
+    // Flush the hook entry cache (keyed by table length) before installing.
+    hooks[hook_name] = lua.create_table();
+    cata::has_hooks(hook_name);
+    auto list = lua.create_table();
+    list[1] = fn;
+    hooks[hook_name] = list;
+    REQUIRE(cata::has_hooks(hook_name));
+    return on_out_of_scope( [&lua, hooks, hook_name, previous]() mutable {
+        // Flush the cache the same way install does: the cache is keyed by table length, so
+        // restoring a same-length table would otherwise keep the test's entry alive.
+        hooks[hook_name] = lua.create_table();
+        cata::has_hooks(hook_name);
+        hooks[hook_name] = previous;
+        cata::has_hooks(hook_name);
+    });
+}
+} // namespace
+
+TEST_CASE("lua_hook_mutation_gain_loss_fire_once", "[lua][hooks]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() {
+        g->lua_state_hooks_ready = false;
+        clear_all_state();
+    });
+    g->lua_state_hooks_ready = true;
+    l2_hook_counter gains;
+    l2_hook_counter losses;
+    const auto r1 = l2_install_hook("on_character_gains_mutation", [&](sol::table p) {
+        ++gains.count;
+        gains.ids.push_back(p.get<trait_id>("trait_id").str());
+    });
+    const auto r2 = l2_install_hook("on_character_loses_mutation", [&](sol::table p) {
+        ++losses.count;
+        losses.ids.push_back(p.get<trait_id>("trait_id").str());
+    });
+
+    avatar &u = get_avatar();
+    const trait_id tough("TOUGH");
+    u.set_mutation(tough);
+    CHECK(gains.count == 1);
+    CHECK(gains.ids.back() == "TOUGH");
+    u.set_mutation(tough);
+    CHECK(gains.count == 1);
+    u.unset_mutation(tough);
+    CHECK(losses.count == 1);
+    CHECK(losses.ids.back() == "TOUGH");
+    u.unset_mutation(tough);
+    CHECK(losses.count == 1);
+
+    u.toggle_trait(tough);
+    u.toggle_trait(tough);
+    CHECK(gains.count == 2);
+    CHECK(losses.count == 2);
+
+    npc& guy = spawn_npc(tripoint_bub_ms(62, 60, 0), "thug");
+    guy.unset_mutation(tough);
+    gains.count = 2; // NPC creation may already have granted innate traits
+    losses.count = 2;
+    guy.set_mutation(tough);
+    CHECK(gains.count == 3);
+    guy.unset_mutation(tough);
+    CHECK(losses.count == 3);
+
+    SECTION("switch_mutations fires one loss and one gain") {
+        u.set_mutation(tough);
+        gains.count = 0;
+        losses.count = 0;
+        u.switch_mutations(tough, trait_id("QUICK"), false);
+        CHECK(losses.count == 1);
+        CHECK(gains.count == 1);
+        u.unset_mutation(trait_id("QUICK"));
+    }
+
+    SECTION("not ready (load / chargen) does not fire") {
+        g->lua_state_hooks_ready = false;
+        const int before = gains.count;
+        u.set_mutation(tough);
+        CHECK(gains.count == before);
+        u.unset_mutation(tough);
+        CHECK(losses.count == 3);
+    }
+}
+
+TEST_CASE("lua_hook_avatar_enters_omt", "[lua][hooks]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() {
+        g->lua_state_hooks_ready = false;
+        g->last_avatar_omt_.reset();
+        clear_all_state();
+    });
+    g->lua_state_hooks_ready = true;
+    g->last_avatar_omt_.reset();
+    int fired = 0;
+    tripoint_abs_omt last_from;
+    tripoint_abs_omt last_to;
+    const auto restore = l2_install_hook("on_avatar_enters_omt", [&](sol::table p) {
+        ++fired;
+        last_from = p.get<tripoint_abs_omt>("from");
+        last_to = p.get<tripoint_abs_omt>("to");
+    });
+
+    avatar &u = get_avatar();
+    g->track_avatar_omt(); // baseline
+    CHECK(fired == 0);
+    g->track_avatar_omt();
+    CHECK(fired == 0);
+
+    const tripoint_abs_omt start = u.abs_omt_pos();
+    // Same OMT: no fire
+    g->place_player(u.bub_pos());
+    CHECK(fired == 0);
+
+    // Move well into another OMT
+    const tripoint_abs_ms far_pos = u.abs_pos() + tripoint(48, 0, 0);
+    u.setpos(far_pos);
+    g->update_map(u);
+    g->place_player(u.bub_pos());
+    REQUIRE(u.abs_omt_pos() != start);
+    CHECK(fired == 1);
+    CHECK(last_from == start);
+    CHECK(last_to == u.abs_omt_pos());
+    g->place_player(u.bub_pos());
+    CHECK(fired == 1);
+
+    SECTION("not ready does not fire") {
+        g->lua_state_hooks_ready = false;
+        g->track_avatar_omt();
+        CHECK(fired == 1);
+    }
+
+    SECTION("z-level change fires") {
+        const tripoint_abs_omt before = u.abs_omt_pos();
+        g->vertical_move(-1, true);
+        REQUIRE(u.abs_omt_pos() != before);
+        CHECK(fired == 2);
+        CHECK(last_from == before);
+        CHECK(last_to.z() == before.z() - 1);
+    }
+
+    SECTION("place_player_overmap teleport fires") {
+        const tripoint_abs_omt before = u.abs_omt_pos();
+        const tripoint_abs_omt dest = before + tripoint_rel_omt(3, 0, 0);
+        g->place_player_overmap(dest);
+        CHECK(u.abs_omt_pos() == dest);
+        CHECK(fired == 2);
+        CHECK(last_from == before);
+        CHECK(last_to == dest);
+    }
+
+    SECTION("per-turn poll catches relocation that skips place_player") {
+        const tripoint_abs_omt before = u.abs_omt_pos();
+        u.setpos(u.abs_pos() + tripoint(48, 0, 0));
+        CHECK(fired == 1);
+        g->track_avatar_omt();
+        CHECK(fired == 2);
+        CHECK(last_from == before);
+        CHECK(last_to == u.abs_omt_pos());
+    }
+}
+
+// Hidden ([.]): map::board_vehicle reports "vehicle not found" for a bicycle added at an OMT edge,
+// even with the same boarding call that ranged_vehicle_recoil_test.cpp uses. The hook path itself
+// (displace_vehicle + per-turn poll) is untested until this setup is fixed.
+TEST_CASE("lua_hook_avatar_enters_omt_vehicle", "[lua][hooks][.]") {
+    clear_all_state();
+    build_test_map(ter_id("t_pavement"));
+    const auto cleanup = on_out_of_scope([]() {
+        g->lua_state_hooks_ready = false;
+        g->last_avatar_omt_.reset();
+        clear_all_state();
+    });
+    auto &here = get_map();
+    avatar &u = get_avatar();
+    // Find a bubble tile on the east edge of an overmap tile (abs x % 24 == 23).
+    tripoint_bub_ms edge(60, 60, 0);
+    while (project_remain<coords::omt>(bub_to_abs(edge)).remainder_tripoint.x() != 23) {
+        edge += tripoint_west;
+    }
+    auto* veh = here.add_vehicle(vproto_id("bicycle"), edge, 0_degrees, 0, 0);
+    REQUIRE(veh != nullptr);
+    // Board at the vehicle origin, the same way ranged_vehicle_recoil_test.cpp boards a bicycle.
+    u.setpos(edge);
+    here.board_vehicle(edge, &u);
+    REQUIRE(u.in_vehicle);
+    REQUIRE(u.bub_pos() == edge);
+
+    g->lua_state_hooks_ready = true;
+    g->last_avatar_omt_.reset();
+    int fired = 0;
+    tripoint_abs_omt last_to;
+    const auto restore = l2_install_hook("on_avatar_enters_omt", [&](sol::table p) {
+        ++fired;
+        last_to = p.get<tripoint_abs_omt>("to");
+    });
+    g->track_avatar_omt();
+    const tripoint_abs_omt start = u.abs_omt_pos();
+    REQUIRE(here.displace_vehicle(*veh, tripoint_rel_ms(1, 0, 0)));
+    REQUIRE(u.abs_omt_pos() != start);
+    CHECK(fired == 0); // displacement itself does not fire; the per-turn poll does
+    g->track_avatar_omt();
+    CHECK(fired == 1);
+    CHECK(last_to == u.abs_omt_pos());
+}
+
+TEST_CASE("lua_hook_avatar_enters_omt_dimension_travel", "[lua][hooks]") {
+    clear_all_state();
+    const auto target_dimension_id = dimension_id("l2_omt_hook_pocket");
+    const auto test_cleanup = dimension_test_cleanup({target_dimension_id});
+    const auto cleanup = on_out_of_scope([]() {
+        g->lua_state_hooks_ready = false;
+        g->last_avatar_omt_.reset();
+    });
+    g->lua_state_hooks_ready = true;
+    g->last_avatar_omt_.reset();
+    g->track_avatar_omt();
+    int fired = 0;
+    std::string last_dim;
+    const auto restore = l2_install_hook("on_avatar_enters_omt", [&](sol::table p) {
+        ++fired;
+        last_dim = p.get<std::string>("dimension");
+    });
+    enter_test_pocket(target_dimension_id, tripoint_abs_omt(24, 24, 0));
+    CHECK(fired == 1);
+    CHECK(last_dim == target_dimension_id.str());
+}
+
+TEST_CASE("lua_hook_character_death_can_revive", "[lua][hooks]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() { clear_all_state(); });
+    avatar &u = get_avatar();
+    int fired = 0;
+    SECTION("reviving hook") {
+        const auto restore = l2_install_hook("on_character_death", [&](sol::table p) {
+            ++fired;
+            p.get<Character*>("char")->set_all_parts_hp_cur(10);
+        });
+        u.set_part_hp_cur(bodypart_id("torso"), 0);
+        CHECK_FALSE(u.is_dead_state());
+        CHECK(fired == 1);
+    }
+    SECTION("non-reviving hook fires once") {
+        const auto restore = l2_install_hook("on_character_death", [&](sol::table) { ++fired; });
+        u.set_part_hp_cur(bodypart_id("torso"), 0);
+        CHECK(u.is_dead_state());
+        CHECK(u.is_dead_state());
+        CHECK(fired == 1);
+    }
+}

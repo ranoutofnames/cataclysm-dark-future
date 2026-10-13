@@ -677,6 +677,8 @@ void Character::load( const JsonObject &data )
         it++;
     }
 
+    // Note: for NPCs loaded mid-game (flag already set), migrating legacy saves can fire
+    // on_character_gains_mutation; the trait really is gained then. Avatar load is suppressed.
     for( const trait_id &tid : migrations_to_add ) {
         if( !has_trait( tid ) ) {
             if( !has_base_trait( tid ) ) {

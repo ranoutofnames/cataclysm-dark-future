@@ -835,7 +835,38 @@ void cata::detail::reg_hooks_examples( sol::state &lua )
     DOC_PARAMS( "params" );
     luna::set_fx( lib, "on_character_effect_removed", []( const sol::table & ) {} );
 
+    DOC( "Called after a character gains a trait or mutation (any Character, avatar or NPC).  " );
+    DOC( "Fires once per real change, after the trait's own `on_gain` callback; observational only.  " );
+    DOC( "Not fired while a world is loading or during character creation.  " );
+    DOC( "The hook receives a table with keys:  " );
+    DOC( "* `char` (Character)  " );
+    DOC( "* `trait_id` (MutationBranchId)  " );
+    DOC_PARAMS( "params" );
+    luna::set_fx( lib, "on_character_gains_mutation", []( const sol::table & ) {} );
+
+    DOC( "Called after a character loses a trait or mutation (any Character, avatar or NPC).  " );
+    DOC( "Fires once per real change, after the trait's own `on_loss` callback; observational only.  " );
+    DOC( "Not fired while a world is loading or during character creation.  " );
+    DOC( "The hook receives a table with keys:  " );
+    DOC( "* `char` (Character)  " );
+    DOC( "* `trait_id` (MutationBranchId)  " );
+    DOC_PARAMS( "params" );
+    luna::set_fx( lib, "on_character_loses_mutation", []( const sol::table & ) {} );
+
+    DOC( "Called when the avatar's overmap terrain tile (or z-level, or dimension) changes.  " );
+    DOC( "Walking, stairs, teleport and dimension travel fire immediately; other relocations (vehicle movement, phasing, knockback, `set_pos`) fire by the end of the turn. Not fired at game start or load.  " );
+    DOC( "The hook receives a table with keys:  " );
+    DOC( "* `avatar` (Avatar)  " );
+    DOC( "* `from` (TripointAbsOmt)  " );
+    DOC( "* `to` (TripointAbsOmt)  " );
+    DOC( "* `oter` (OterId) terrain at `to`  " );
+    DOC( "* `dimension` (string) current dimension id, empty for the overworld  " );
+    DOC_PARAMS( "params" );
+    luna::set_fx( lib, "on_avatar_enters_omt", []( const sol::table & ) {} );
+
     DOC( "Called when a character is dead.  " );
+    DOC( "A hook may revive the character by restoring HP (e.g. `set_all_parts_hp_cur`); the death is then cancelled.  " );
+    DOC( "For the avatar `killer` is nil.  " );
     DOC( "The hook receives a table with keys:  " );
     DOC( "* `char` (Character)  " );
     DOC( "* `killer` (Creature)  " );
