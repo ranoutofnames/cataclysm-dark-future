@@ -58,6 +58,7 @@
 #include "legacy_pathfinding.h"
 #include "lightmap.h"
 #include "line.h"
+#include "magic/magic_ter_furn_transform.h"
 #include "map_feature_descriptions.h"
 #include "map_iterator.h"
 #include "map_memory.h"
@@ -2549,6 +2550,53 @@ auto map::ter_set(const tripoint_bub_ms& p, const ter_id& new_terrain) -> bool {
     if (get_mapbuffer().is_outside_pocket_dimension_bounds(abs_pos)) { return false; }
 
     return get_mapbuffer().set_ter(abs_pos, new_terrain, resident_item_lookup());
+}
+
+auto map::transform_radius(
+    const ter_furn_transform_id& transform, const int radius, const tripoint_bub_ms& center) -> int {
+    if (!transform.is_valid() || radius < 0) { return 0; }
+    auto count = 0;
+    for (const auto& t : points_in_radius(center, static_cast<size_t>(radius), 0)) {
+        if (trig_dist(center, t) <= static_cast<float>(radius)) {
+            transform->transform(*this, t);
+            ++count;
+        }
+    }
+    if (count > 0) { invalidate_map_cache(center.z()); }
+    return count;
+}
+
+auto map::transform_line(
+    const ter_furn_transform_id& transform, const tripoint_bub_ms& first,
+    const tripoint_bub_ms& second) -> int {
+    if (!transform.is_valid()) { return 0; }
+    auto count = 0;
+    auto touched_z = std::set<int>{};
+    // Like DDA: line_to excludes `first` and includes `second`. Lines may cross z-levels.
+    for (const auto& t : line_to(first, second)) {
+        if (!inbounds(t)) { continue; }
+        transform->transform(*this, t);
+        touched_z.insert(t.z());
+        ++count;
+    }
+    for (const auto z : touched_z) { invalidate_map_cache(z); }
+    return count;
+}
+
+auto map::mark_omt_caches_dirty(const tripoint_abs_omt& omt) -> void {
+    const auto begin = project_to<coords::sm>(omt);
+    const auto end = project_to<coords::sm>(omt + point_rel_omt(1, 1));
+    get_mapbuffer().mark_submap_caches_dirty({
+        .begin = begin.xy(),
+        .end = end.xy(),
+        .zlev = omt.z(),
+        .transparency = true,
+        .floor = true,
+        .outside = true,
+        .absorption = true,
+        .pathfinding = true,
+    });
+    invalidate_map_cache(omt.z());
 }
 
 auto map::tername(const tripoint_bub_ms& p) const -> std::string { return ter(p).obj().name(); }

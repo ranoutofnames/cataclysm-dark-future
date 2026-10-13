@@ -6149,6 +6149,11 @@ auto add_mapgen_update_func(const JsonObject& jo, bool& defer) -> mapgen_update_
     return update_function;
 }
 
+auto has_update_mapgen_func(const std::string& update_mapgen_id) -> bool {
+    const auto it = update_mapgen.find(update_mapgen_id);
+    return it != update_mapgen.end() && !it->second.empty();
+}
+
 auto run_mapgen_update_func(
     const std::string& update_mapgen_id, const tripoint_abs_omt& omt_pos, mission* miss,
     bool cancel_on_collision) -> bool {

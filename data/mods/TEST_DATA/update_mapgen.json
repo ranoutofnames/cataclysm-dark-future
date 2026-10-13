@@ -1,0 +1,19 @@
+[
+  {
+    "type": "mapgen",
+    "update_mapgen_id": "lua_test_update",
+    "method": "json",
+    "object": { "place_terrain": [ { "ter": "t_lava", "x": 5, "y": 5 } ] }
+  },
+  {
+    "type": "mapgen",
+    "update_mapgen_id": "lua_test_wall_update",
+    "method": "json",
+    "object": { "place_terrain": [ { "ter": "t_floor", "x": 6, "y": 6 } ] }
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "lua_test_wall_to_floor",
+    "terrain": [ { "result": "t_floor", "valid_terrain": [ "t_wall" ] } ]
+  }
+]

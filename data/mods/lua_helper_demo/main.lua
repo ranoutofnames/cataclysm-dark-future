@@ -42,3 +42,21 @@ mod.show_status = function()
     )
   )
 end
+
+-- Terrain transform / update mapgen demo (L3).
+mod.transform_here = function()
+  local me = gapi.get_avatar()
+  -- "mapgen_test" turns grass into dirt; r=3 disc around the player.
+  local n = gapi.transform_radius_abs("mapgen_test", 3, me:global_square_location())
+  gapi.add_msg(string.format("Helper demo: transformed %d tiles", n))
+end
+
+mod.update_mapgen_here = function()
+  local me = gapi.get_avatar()
+  local omt = coords.project_to_omt(me:global_square_location())
+  local ok = gapi.run_mapgen_update("release_the_bots", omt)
+  -- run_mapgen_update only reports that the update ran; it is written for lab tiles, so on
+  -- other terrain it may change nothing.
+  gapi.add_msg(ok and "Helper demo: update mapgen ran (it only changes lab tiles)"
+    or "Helper demo: update mapgen not found")
+end

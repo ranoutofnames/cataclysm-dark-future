@@ -1253,6 +1253,26 @@ public:
 
     auto ter_set(const tripoint_bub_ms& p, const ter_id& new_terrain) -> bool;
 
+    /**
+     * Applies a ter_furn_transform to every in-bounds tile within a disc (trig_dist <= radius)
+     * on the center's z-level. Out-of-bounds tiles are skipped. Returns the number of tiles visited.
+     */
+    auto transform_radius(
+        const ter_furn_transform_id& transform, int radius, const tripoint_bub_ms& center) -> int;
+    /**
+     * Applies a ter_furn_transform along line_to(first, second): `first` is excluded, `second`
+     * included (as in DDA). The line may cross z-levels. Returns the number of in-bounds tiles visited.
+     */
+    auto transform_line(
+        const ter_furn_transform_id& transform, const tripoint_bub_ms& first,
+        const tripoint_bub_ms& second) -> int;
+    /**
+     * Marks the cached per-submap data (transparency, floor, outside, absorption, pathfinding) of
+     * an overmap terrain's submaps dirty and invalidates the level caches. Needed after editing
+     * submaps directly (mapgen_constructor paths bypass mapbuffer::set_ter).
+     */
+    auto mark_omt_caches_dirty(const tripoint_abs_omt& omt) -> void;
+
     auto tername(const tripoint_bub_ms& p) const -> std::string;
 
     auto has_nearby(

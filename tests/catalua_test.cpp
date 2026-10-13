@@ -31,6 +31,7 @@
 #include "iexamine.h"
 #include "init.h"
 #include "json.h"
+#include "magic/magic_ter_furn_transform.h"
 #include "map/mapbuffer.h"
 #include "map/mapbuffer_registry.h"
 #include "map/submap_load_manager.h"
@@ -3700,4 +3701,262 @@ TEST_CASE("lua_hook_character_death_can_revive", "[lua][hooks]") {
         CHECK(u.is_dead_state());
         CHECK(fired == 1);
     }
+}
+
+// ---- L3: terrain transform / update mapgen bindings ----
+namespace
+{
+
+auto l3_set_floor_dirt(map& here, const tripoint_bub_ms& center, const int half, const ter_id& t) -> void {
+    for (auto x = -half; x <= half; ++x) {
+        for (auto y = -half; y <= half; ++y) {
+            here.ter_set(center + tripoint_rel_ms(x, y, 0), t);
+        }
+    }
+}
+
+} // namespace
+
+TEST_CASE("lua_map_transform", "[lua][map]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto center = tripoint_bub_ms{50, 50, 0};
+    const auto single = tripoint_bub_ms{50, 40, 0};
+    const auto line_a = tripoint_bub_ms{50, 60, 0};
+    const auto line_b = tripoint_bub_ms{54, 60, 0};
+    l3_set_floor_dirt(here, center, 4, ter_id("t_dirt"));
+    here.ter_set(single, ter_id("t_dirt"));
+    here.ter_set(line_a, ter_id("t_dirt"));
+    for (auto x = 50; x <= 54; ++x) { here.ter_set(tripoint_bub_ms{x, 60, 0}, ter_id("t_dirt")); }
+    here.ter_set(tripoint_bub_ms{50, 50, 1}, ter_id("t_dirt"));
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["map"] = &here;
+    test_data["transform_id"] = std::string("test_lava_terrain");
+    test_data["single"] = single;
+    test_data["center"] = center;
+    test_data["line_a"] = line_a;
+    test_data["line_b"] = line_b;
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "terrain_transform_test.lua");
+
+    CHECK(test_data.get<bool>("at_ok"));
+    CHECK_FALSE(test_data.get<bool>("at_unknown"));
+    CHECK(here.ter(single) == ter_id("t_lava"));
+    CHECK(test_data.get<int>("radius_count") == 13);
+    CHECK(here.ter(center) == ter_id("t_lava"));
+    CHECK(here.ter(center + tripoint_rel_ms(2, 0, 0)) == ter_id("t_lava"));
+    CHECK(here.ter(center + tripoint_rel_ms(1, 1, 0)) == ter_id("t_lava"));
+    CHECK(here.ter(center + tripoint_rel_ms(2, 2, 0)) == ter_id("t_dirt"));
+    CHECK(here.ter(center + tripoint_rel_ms(3, 0, 0)) == ter_id("t_dirt"));
+    CHECK(here.ter(tripoint_bub_ms{50, 50, 1}) == ter_id("t_dirt"));
+    CHECK(test_data.get<int>("radius_unknown") == 0);
+    // The start tile is excluded (DDA semantics), the end tile included.
+    CHECK(test_data.get<int>("line_count") == 4);
+    CHECK(here.ter(line_a) == ter_id("t_dirt"));
+    for (auto x = 51; x <= 54; ++x) { CHECK(here.ter(tripoint_bub_ms{x, 60, 0}) == ter_id("t_lava")); }
+    CHECK(test_data.get<int>("line_unknown") == 0);
+}
+
+TEST_CASE("lua_map_transform_valid_terrain_and_cache", "[lua][map]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto p = tripoint_bub_ms{50, 50, 0};
+    here.ter_set(p, ter_id("t_grass"));
+    here.ter_set(p + tripoint_rel_ms(1, 0, 0), ter_id("t_floor"));
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["map"] = &here;
+    test_data["transform_id"] = std::string("mapgen_test");
+    test_data["single"] = p;
+    test_data["center"] = p;
+    test_data["line_a"] = p;
+    test_data["line_b"] = p;
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "terrain_transform_test.lua");
+
+    CHECK(here.ter(p) == ter_id("t_dirt"));
+    CHECK(here.ter(p + tripoint_rel_ms(1, 0, 0)) == ter_id("t_floor"));
+
+    SECTION("wall to floor is reflected immediately") {
+        const auto w = tripoint_bub_ms{60, 60, 0};
+        here.ter_set(w, ter_id("t_wall"));
+        here.build_map_cache(0);
+        REQUIRE_FALSE(here.passable(w));
+        REQUIRE_FALSE(here.is_transparent(w));
+        REQUIRE_FALSE(here.get_cache_ref(0).transparency_cache_dirty.any());
+        CHECK(here.transform_radius(ter_furn_transform_id("lua_test_wall_to_floor"), 0, w) == 1);
+        CHECK(here.ter(w) == ter_id("t_floor"));
+        // No build_map_cache in between: the transform itself must invalidate.
+        CHECK(here.get_cache_ref(0).transparency_cache_dirty.any());
+        CHECK(here.passable(w));
+        CHECK(here.get_transparency(w) > LIGHT_TRANSPARENCY_SOLID);
+        here.build_map_cache(0);
+        CHECK(here.is_transparent(w));
+    }
+}
+
+TEST_CASE("lua_map_transform_line_crosses_z", "[lua][map]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto a = tripoint_bub_ms{50, 70, 0};
+    const auto b = tripoint_bub_ms{50, 70, 2};
+    for (auto z = 0; z <= 2; ++z) { here.ter_set(tripoint_bub_ms{50, 70, z}, ter_id("t_wall")); }
+    here.build_map_cache(0);
+    here.build_map_cache(1);
+    here.build_map_cache(2);
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["map"] = &here;
+    test_data["a"] = a;
+    test_data["b"] = b;
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "transform_line_z_test.lua");
+
+    CHECK(test_data.get<int>("count") == 2);
+    CHECK(here.ter(a) == ter_id("t_wall"));
+    CHECK(here.ter(tripoint_bub_ms{50, 70, 1}) == ter_id("t_floor"));
+    CHECK(here.ter(b) == ter_id("t_floor"));
+    CHECK(here.get_cache_ref(1).transparency_cache_dirty.any());
+    CHECK(here.get_cache_ref(2).transparency_cache_dirty.any());
+    CHECK(here.get_transparency(tripoint_bub_ms{50, 70, 1}) > LIGHT_TRANSPARENCY_SOLID);
+    CHECK(here.get_transparency(b) > LIGHT_TRANSPARENCY_SOLID);
+    here.build_map_cache(1);
+    here.build_map_cache(2);
+    CHECK(here.is_transparent(tripoint_bub_ms{50, 70, 1}));
+    CHECK(here.is_transparent(b));
+}
+
+TEST_CASE("lua_mapgen_transform_at", "[lua][mapgen]") {
+    clear_all_state();
+    auto& buffer = MAPBUFFER_REGISTRY.get(mapbuffer_registry::primary_dimension_id());
+    auto tm = mapgen_constructor(buffer);
+    tm.reset_scratch_omt(
+        tripoint_abs_omt(11, 13, 0), ter_id("t_grass"), furn_id("f_null"), trap_id("tr_null"));
+    const auto pos = point_omt_ms(12, 12);
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["target"] = &tm;
+    test_data["pos"] = pos;
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "mapgen_transform_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+    CHECK_FALSE(test_data.get<bool>("unknown"));
+    CHECK(tm.ter(pos) == ter_id("t_dirt"));
+    CHECK(tm.ter(point_omt_ms(13, 12)) == ter_id("t_grass"));
+}
+
+TEST_CASE("lua_gapi_transform_radius_abs", "[lua][map]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto near_bub = tripoint_bub_ms{50, 50, 0};
+    l3_set_floor_dirt(here, near_bub, 2, ter_id("t_dirt"));
+    const auto near_abs = bub_to_abs(near_bub);
+
+    auto& buffer = MAPBUFFER_REGISTRY.get(g_active_dimension_id);
+    const auto far_omt = tripoint_abs_omt(200, 200, 0);
+    auto ctor = mapgen_constructor(buffer);
+    REQUIRE(ctor.load(far_omt));
+    ctor.ter_set(point_omt_ms(10, 10), ter_id("t_dirt"));
+    ctor.ter_set(point_omt_ms(11, 10), ter_id("t_dirt"));
+    const auto far_abs = project_to<coords::ms>(far_omt) + tripoint_rel_ms(10, 10, 0);
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["transform_id"] = std::string("test_lava_terrain");
+    test_data["near"] = near_abs;
+    test_data["far"] = far_abs;
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "transform_abs_test.lua");
+
+    CHECK(test_data.get<int>("near_count") == 5);
+    CHECK(here.ter(near_bub) == ter_id("t_lava"));
+    CHECK(test_data.get<int>("far_count") == 5);
+    CHECK(test_data.get<int>("unknown_count") == 0);
+    auto check = mapgen_constructor(buffer);
+    REQUIRE(check.load(far_omt));
+    CHECK(check.ter(point_omt_ms(10, 10)) == ter_id("t_lava"));
+    CHECK(check.ter(point_omt_ms(11, 10)) == ter_id("t_lava"));
+}
+
+TEST_CASE("lua_run_mapgen_update", "[lua][mapgen]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto omt = project_to<coords::omt>(bub_to_abs(tripoint_bub_ms{60, 60, 0}));
+    const auto origin = project_to<coords::ms>(omt);
+    const auto target = abs_to_bub(origin + tripoint_rel_ms(5, 5, 0));
+    REQUIRE(here.inbounds(target));
+    here.ter_set(target, ter_id("t_dirt"));
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["omt"] = omt;
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "mapgen_update_test.lua");
+
+    CHECK(test_data.get<bool>("has_known"));
+    CHECK_FALSE(test_data.get<bool>("has_unknown"));
+    CHECK_FALSE(test_data.get<bool>("unknown_ok"));
+    CHECK(test_data.get<bool>("run_ok"));
+    CHECK(here.ter(target) == ter_id("t_lava"));
+}
+
+TEST_CASE("lua_transform_radius_abs_stale_transparency", "[lua][map]") {
+    clear_all_state();
+    auto& here = get_map();
+    // Near the bubble edge, so the square is not fully inbounds and the constructor path is used.
+    const auto center = tripoint_bub_ms{1, 60, 0};
+    const auto w = tripoint_bub_ms{2, 60, 0};
+    REQUIRE_FALSE(here.inbounds(tripoint_bub_ms{-1, 58, 0}));
+    here.ter_set(w, ter_id("t_wall"));
+    here.build_map_cache(0);
+    REQUIRE_FALSE(here.passable(w));
+    REQUIRE_FALSE(here.is_transparent(w));
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["center"] = bub_to_abs(center);
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "transform_abs_wall_test.lua");
+
+    CHECK(test_data.get<int>("count") > 0);
+    CHECK(here.ter(w) == ter_id("t_floor"));
+    // No build_map_cache in between: the per-submap transparency cache must be dirty again.
+    CHECK(here.passable(w));
+    CHECK(here.get_transparency(w) > LIGHT_TRANSPARENCY_SOLID);
+    here.build_map_cache(0);
+    CHECK(here.is_transparent(w));
+}
+
+TEST_CASE("lua_run_mapgen_update_stale_transparency", "[lua][mapgen]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto omt = project_to<coords::omt>(bub_to_abs(tripoint_bub_ms{60, 60, 0}));
+    const auto origin = project_to<coords::ms>(omt);
+    const auto target = abs_to_bub(origin + tripoint_rel_ms(6, 6, 0));
+    REQUIRE(here.inbounds(target));
+    here.ter_set(target, ter_id("t_wall"));
+    here.build_map_cache(0);
+    REQUIRE_FALSE(here.passable(target));
+    REQUIRE_FALSE(here.is_transparent(target));
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["omt"] = omt;
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "mapgen_update_wall_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+    CHECK(here.ter(target) == ter_id("t_floor"));
+    // No build_map_cache in between: the per-submap transparency cache must be dirty again.
+    CHECK(here.passable(target));
+    CHECK(here.get_transparency(target) > LIGHT_TRANSPARENCY_SOLID);
+    here.build_map_cache(0);
+    CHECK(here.is_transparent(target));
 }

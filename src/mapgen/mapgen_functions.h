@@ -92,6 +92,7 @@ void mtrap_set(mapgen_constructor* m, const point_omt_ms&, trap_id type);
 void madd_field(mapgen_constructor* m, const point_omt_ms&, field_type_id type, int intensity);
 
 auto add_mapgen_update_func(const JsonObject& jo, bool& defer) -> mapgen_update_func;
+auto has_update_mapgen_func(const std::string& update_mapgen_id) -> bool;
 auto run_mapgen_update_func(
     const std::string& update_mapgen_id, const tripoint_abs_omt& omt_pos, mission* miss = nullptr,
     bool cancel_on_collision = true) -> bool;

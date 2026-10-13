@@ -13,6 +13,7 @@
 #include "enum_conversions.h"
 #include "enums.h"
 #include "game.h"
+#include "magic/magic_ter_furn_transform.h"
 #include "map/field.h"
 #include "map/map.h"
 #include "map_iterator.h"
@@ -671,6 +672,30 @@ void cata::detail::reg_map( sol::state &lua )
         luna::set_fx( ut, "make_rubble", []( map & m, tripoint_bub_ms point, furn_id & fid, ter_id & tid ) { m.make_rubble( point, fid, tid ); } );
         luna::set_fx( ut, "destroy", []( map & m, tripoint_bub_ms point ) { m.destroy( point ); } );
         luna::set_fx( ut, "set_temperature", []( map & m, tripoint_bub_ms point, int temp ) { m.set_temperature( point, temp ); } );
+        // L3: terrain transforms (kept together to ease merges with upstream binding edits)
+        DOC( "Applies a JSON ter_furn_transform (by id string) to one tile. Returns true if the terrain or furniture changed; false for an unknown id, an out-of-bounds tile or a no-op transform." );
+        luna::set_fx( ut, "transform_at", []( map & m, const std::string & id, const tripoint_bub_ms & p ) -> bool {
+            const auto tid = ter_furn_transform_id( id );
+            if( !tid.is_valid() || !m.inbounds( p ) )
+            {
+                return false;
+            }
+            const auto old_ter = m.ter( p );
+            const auto old_furn = m.furn( p );
+            tid->transform( m, p );
+            m.invalidate_map_cache( p.z() );
+            return m.ter( p ) != old_ter || m.furn( p ) != old_furn;
+        } );
+        DOC( "Applies a ter_furn_transform to every in-bounds tile in a disc (trig_dist <= radius) on the center's z-level. Returns the number of tiles visited; 0 for an unknown id." );
+        luna::set_fx( ut, "transform_radius", []( map & m, const std::string & id, int radius,
+        const tripoint_bub_ms & center ) -> int {
+            return m.transform_radius( ter_furn_transform_id( id ), radius, center );
+        } );
+        DOC( "Applies a ter_furn_transform along the line from a to b: a is excluded, b included (like DDA). The line may cross z-levels. Returns the number of in-bounds tiles visited; 0 for an unknown id." );
+        luna::set_fx( ut, "transform_line", []( map & m, const std::string & id, const tripoint_bub_ms & a,
+        const tripoint_bub_ms & b ) -> int {
+            return m.transform_line( ter_furn_transform_id( id ), a, b );
+        } );
     }
 
     // Register mapgen constructor surface to be used in Lua mapgen hooks.
@@ -869,6 +894,21 @@ void cata::detail::reg_map( sol::state &lua )
         luna::set_fx( ut, "make_rubble", []( mapgen_constructor & m, point_omt_ms point,
         furn_id & fid, ter_id & tid ) { m.make_rubble( point, fid, tid ); } );
         luna::set_fx( ut, "destroy", []( mapgen_constructor & m, point_omt_ms point ) { m.destroy( point ); } );
+        // L3: terrain transform
+        DOC( "Applies a JSON ter_furn_transform (by id string) to one tile of the map being generated. Returns true if the terrain or furniture changed; false for an unknown id, an out-of-range tile or a no-op transform." );
+        luna::set_fx( ut, "transform_at", []( mapgen_constructor & m, const std::string & id,
+        const point_omt_ms & p ) -> bool {
+            const auto tid = ter_furn_transform_id( id );
+            constexpr auto omt_size = SEEX * 2;
+            if( !tid.is_valid() || p.x() < 0 || p.y() < 0 || p.x() >= omt_size || p.y() >= omt_size )
+            {
+                return false;
+            }
+            const auto old_ter = m.ter( p );
+            const auto old_furn = m.furn( p );
+            tid->transform( m, p );
+            return m.ter( p ) != old_ter || m.furn( p ) != old_furn;
+        } );
     }
 
     // Register 'item_stack' class to be used in Lua

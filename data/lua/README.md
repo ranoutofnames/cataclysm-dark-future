@@ -52,3 +52,15 @@ local pretty = require("lib.pl.pretty")
 `lib/cdf_query.lua` (condition queries) and `lib/cdf_time.lua` (time conversions) are pure Lua helpers
 replacing common EOC features. Use `require("lib.cdf_sched")` etc. See
 `docs/en/mod/lua/guides/helper_library.md`; `data/mods/lua_helper_demo` is a working sample.
+
+## Terrain transforms and update mapgen
+
+Lua can apply JSON `ter_furn_transform`s and run JSON `update_mapgen`s (replacing the EOC effects
+`u_transform_radius`, `transform_line` and `mapgen_update`). Ids are plain strings:
+
+- `Map:transform_at(id, pos)`, `Map:transform_radius(id, radius, center)`, `Map:transform_line(id, a, b)`
+- `MapgenConstructor:transform_at(id, pos)` (for maps being generated)
+- `gapi.transform_radius_abs(id, radius, center_abs_ms)` (works outside the reality bubble)
+- `gapi.has_update_mapgen(id)`, `gapi.run_mapgen_update(id, omt, opts?)`
+
+See `docs/en/mod/lua/guides/terrain_transform_mapgen_update.md`.
