@@ -608,8 +608,13 @@ class item : public location_visitable<item>, public game_object<item>
          * stacks like "3 items-count-by-charge (5)".
          */
         bool display_stacked_with( const item &rhs, bool check_components = false ) const;
+        /**
+         * @param depth how deep the comparison already is inside contained items; the
+         * comparison gives up (no stacking) past @ref max_stack_depth (DDA #63589).
+         */
         bool stacks_with( const item &rhs, bool check_components = false,
-                          bool skip_type_check = false ) const;
+                          bool skip_type_check = false, int depth = 0 ) const;
+        static constexpr int max_stack_depth = 10;
         /**
          * Merge charges of the other item into this item. Destroying rhs in the process.
          * @return true if the items have been merged, otherwise false.
@@ -861,6 +866,8 @@ class item : public location_visitable<item>, public game_object<item>
          * save loading and other non-player paths.
          */
         void put_in( detached_ptr<item> &&payload );
+        /** Like @p n calls of @ref put_in with copies of @p proto, but cheaper (DDA #67349). */
+        void put_in_copies( const item &proto, int n );
         /**
          * Player-driven insert (CDF P1a, owner Q3): puts @p payload into the best
          * pocket of type @p type if it fits. On failure nothing moves, @p payload
@@ -1300,6 +1307,18 @@ class item : public location_visitable<item>, public game_object<item>
          */
         bool needs_processing() const;
         auto invalidate_processing_cache_upwards() -> void;
+        /**
+         * True if this item's volume and weight can only change through the pockets of this
+         * item or of items inside it (no charges, liquids, corpses, crafts, size variables
+         * or size-changing flags anywhere inside). Pockets only cache sizes of such items.
+         */
+        auto size_is_stable() const -> bool;
+        /**
+         * Drops the cached contents volume and weight of the pockets of this item and of
+         * every item it is inside. Call after changing anything that
+         * @ref size_is_stable relies on.
+         */
+        auto invalidate_pocket_caches_upwards() -> void;
         /**
          * The rate at which an item should be processed, in number of turns between updates.
          */

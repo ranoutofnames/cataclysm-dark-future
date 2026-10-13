@@ -624,8 +624,31 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
 
     if( contents != nullptr ) {
         std::vector<detached_ptr<item>> contentitems = contents->create( new_item->birthday() );
-        for( detached_ptr<item> &it : contentitems ) {
-            new_item->put_in( std::move( it ) );
+        // Runs of identical items are put in together (DDA #87184). Only items that are the
+        // same in every respect that matters qualify: non-liquid, not counted by charges,
+        // stackable with the run's first item, equally old and equally rotten.
+        for( size_t i = 0; i < contentitems.size(); ) {
+            const item &first = *contentitems[i];
+            size_t run = 1;
+            if( !first.count_by_charges() && !first.made_of( LIQUID ) ) {
+                while( i + run < contentitems.size() ) {
+                    const item &next = *contentitems[i + run];
+                    if( !first.stacks_with( next ) || first.age() != next.age() ||
+                        first.get_rot() != next.get_rot() ) {
+                        break;
+                    }
+                    run++;
+                }
+            }
+            if( run > 1 ) {
+                new_item->put_in_copies( first, static_cast<int>( run ) );
+                for( size_t j = 0; j < run; j++ ) {
+                    contentitems[i + j] = detached_ptr<item>();
+                }
+            } else {
+                new_item->put_in( std::move( contentitems[i] ) );
+            }
+            i += run;
         }
     }
 

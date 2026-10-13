@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <optional>
 #include <set>
@@ -153,6 +154,17 @@ class item_pocket
          */
         void insert( detached_ptr<item> &&it );
 
+        /**
+         * Drops the cached volume and weight of what the pocket holds. The cache only
+         * holds sums of items whose size cannot change on its own (item::size_is_stable)
+         * and is also checked against the item list, so adding or removing items by any
+         * route is safe. Call it when changing something size-related of a contained item
+         * (item::invalidate_pocket_caches_upwards does, for every pocket above it).
+         */
+        void invalidate_cache() const {
+            cache.state = size_cache::state_t::NONE;
+        }
+
         location_vector<item> &items() {
             return contents;
         }
@@ -164,6 +176,24 @@ class item_pocket
         const pocket_data *data;
         location_vector<item> contents;
         bool _sealed = false;
+
+        struct size_cache {
+            enum class state_t : int {
+                NONE, // nothing known
+                STABLE, // the sums are valid while the item list is unchanged
+                UNSTABLE, // something inside may change size on its own: sum every time
+            };
+            state_t state = state_t::NONE;
+            bool volume_known = false;
+            bool weight_known = false;
+            size_t count = 0;
+            uintptr_t signature = 0;
+            units::volume volume = 0_ml;
+            units::mass weight = 0_gram;
+        };
+        mutable size_cache cache;
+        /** Revalidates the cache against the current item list. */
+        void refresh_cache() const;
 };
 
 template<>

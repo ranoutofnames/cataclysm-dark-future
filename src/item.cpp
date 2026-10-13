@@ -605,6 +605,8 @@ void item::convert( const itype_id &new_type )
     // re-home contents into the new type's pockets (CDF P1a)
     contents.rebuild_pockets();
     invalidate_processing_cache_upwards();
+    // a new type means new volume and weight
+    invalidate_pocket_caches_upwards();
 }
 
 void item::deactivate()
@@ -1137,8 +1139,13 @@ bool item::display_stacked_with( const item &rhs, bool check_components ) const
     return !count_by_charges() && stacks_with( rhs, check_components );
 }
 
-bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_check ) const
+bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_check,
+                        int depth ) const
 {
+    if( depth > max_stack_depth ) {
+        // absurdly nested containers: don't walk them, just don't stack (DDA #63589)
+        return false;
+    }
     if( !skip_type_check && type != rhs.type ) {
         return false;
     }
@@ -1242,7 +1249,7 @@ bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_c
         }
     }
 
-    return contents.stacks_with( rhs.contents );
+    return contents.stacks_with( rhs.contents, depth + 1 );
 }
 
 namespace
@@ -1303,6 +1310,15 @@ void item::put_in( detached_ptr<item> &&payload )
         return;
     }
     contents.insert_item( std::move( payload ) );
+}
+
+void item::put_in_copies( const item &proto, int n )
+{
+    if( proto.typeId() == itype_id::NULL_ID() || &proto == this ) {
+        debugmsg( "Tried to insert non-item or the container itself into %s", debug_name() );
+        return;
+    }
+    contents.insert_copies( proto, n );
 }
 
 ret_val<bool> item::try_put_in( detached_ptr<item> &&payload, pocket_type type )
@@ -5227,6 +5243,7 @@ void item::on_contents_changed()
 
     encumbrance_update_ = true;
     invalidate_processing_cache_upwards();
+    invalidate_pocket_caches_upwards();
 
     if( !has_position() || where() != item_location_type::vehicle ) {
         return;
@@ -6243,14 +6260,36 @@ bool item::is_non_rigid() const
     return false;
 }
 
+namespace
+{
+
+// Flags that change an item's volume or weight (see item::volume and item::weight)
+bool is_size_flag( const flag_id &flag )
+{
+    return flag == flag_REDUCED_WEIGHT || flag == flag_NO_DROP || flag == flag_COLLAPSIBLE_STOCK;
+}
+
+template<typename Tags>
+bool affects_size_flag( const Tags &tags )
+{
+    return tags.count( flag_REDUCED_WEIGHT ) || tags.count( flag_NO_DROP ) ||
+           tags.count( flag_COLLAPSIBLE_STOCK );
+}
+
+} // namespace
+
 void item::unset_flags()
 {
     const bool affects_processing = item_tags.count( flag_RADIO_ACTIVATION ) ||
                                     item_tags.count( flag_ETHEREAL_ITEM ) ||
                                     item_tags.count( flag_PROCESSING );
+    const bool affects_size = affects_size_flag( item_tags );
     item_tags.clear();
     if( affects_processing ) {
         invalidate_processing_cache_upwards();
+    }
+    if( affects_size ) {
+        invalidate_pocket_caches_upwards();
     }
 }
 
@@ -6321,6 +6360,9 @@ void item::set_flag( const flag_id &flag )
         if( inserted && affects_processing ) {
             invalidate_processing_cache_upwards();
         }
+        if( inserted && is_size_flag( flag ) ) {
+            invalidate_pocket_caches_upwards();
+        }
     } else {
         debugmsg( "Attempted to set invalid flag_id %s", flag.str() );
     }
@@ -6333,6 +6375,9 @@ void item::unset_flag( const flag_id &flag )
     const bool erased = item_tags.erase( flag ) > 0;
     if( erased && affects_processing ) {
         invalidate_processing_cache_upwards();
+    }
+    if( erased && is_size_flag( flag ) ) {
+        invalidate_pocket_caches_upwards();
     }
 }
 
@@ -10349,6 +10394,33 @@ bool item::needs_processing() const
            ( !contents.empty() && contents.has_processing_items() ) ||
            ( magazine_current() && magazine_current()->needs_processing() ) ||
            is_artifact() || is_relic() || goes_bad();
+}
+
+auto item::size_is_stable() const -> bool
+{
+    if( count_by_charges() || made_of( LIQUID ) || made_of( GAS ) || is_corpse() || is_craft() ) {
+        return false;
+    }
+    // tools and guns with an integral magazine weigh more with more charges
+    if( ( is_tool() || is_gun() ) && magazine_integral() ) {
+        return false;
+    }
+    if( has_var( "volume" ) || has_var( "weight" ) || has_var( "integral_weight" ) ) {
+        return false;
+    }
+    if( affects_size_flag( item_tags ) ) {
+        return false;
+    }
+    return std::ranges::all_of( contents.all_items_top(), []( const item * e ) {
+        return e->size_is_stable();
+    } );
+}
+
+auto item::invalidate_pocket_caches_upwards() -> void
+{
+    for( auto *current = this; current != nullptr; current = current->parent_item() ) {
+        current->contents.invalidate_pocket_caches();
+    }
 }
 
 auto item::invalidate_processing_cache_upwards() -> void

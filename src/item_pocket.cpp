@@ -291,20 +291,66 @@ units::mass item_pocket::weight_capacity() const
     return data->max_contains_weight;
 }
 
+void item_pocket::refresh_cache() const
+{
+    // Cache key: item count plus the sum of item pointers. This catches inserts and removals
+    // by any route (location_vector access, visitable removal, item locations) without a
+    // call. It does NOT catch in-place size changes: every mutation route must call
+    // item_contents::contents_changed() (which invalidates this cache) for those.
+    uintptr_t signature = 0;
+    for( const item *it : contents ) {
+        signature += reinterpret_cast<uintptr_t>( it );
+    }
+    const size_t count = contents.size();
+    if( cache.state != size_cache::state_t::NONE && cache.count == count &&
+        cache.signature == signature ) {
+        return;
+    }
+    const bool stable = std::ranges::all_of( contents, []( const item * it ) {
+        return it->size_is_stable();
+    } );
+    cache = size_cache();
+    cache.state = stable ? size_cache::state_t::STABLE : size_cache::state_t::UNSTABLE;
+    cache.count = count;
+    cache.signature = signature;
+}
+
 units::volume item_pocket::contains_volume() const
 {
+    if( contents.empty() ) {
+        return 0_ml;
+    }
+    refresh_cache();
+    if( cache.state == size_cache::state_t::STABLE && cache.volume_known ) {
+        return cache.volume;
+    }
     units::volume vol = 0_ml;
     for( const item *it : contents ) {
         vol += it->volume();
+    }
+    if( cache.state == size_cache::state_t::STABLE ) {
+        cache.volume = vol;
+        cache.volume_known = true;
     }
     return vol;
 }
 
 units::mass item_pocket::contains_weight() const
 {
+    if( contents.empty() ) {
+        return 0_gram;
+    }
+    refresh_cache();
+    if( cache.state == size_cache::state_t::STABLE && cache.weight_known ) {
+        return cache.weight;
+    }
     units::mass wt = 0_gram;
     for( const item *it : contents ) {
         wt += it->weight();
+    }
+    if( cache.state == size_cache::state_t::STABLE ) {
+        cache.weight = wt;
+        cache.weight_known = true;
     }
     return wt;
 }
@@ -521,7 +567,8 @@ ret_val<item_pocket::contain_code> item_pocket::can_contain( const item &it,
     if( vol > volume_capacity() ) {
         return ret_val<code>::make_failure( code::ERR_TOO_BIG, _( "it is too big" ) );
     }
-    if( ignore_contents ) {
+    if( ignore_contents || contents.empty() ) {
+        // an empty pocket has all of its capacity left, which the checks above covered
         return ret_val<code>::make_success();
     }
     if( wt > remaining_weight() ) {

@@ -40,6 +40,8 @@ class item_contents
         auto has_processing_items() const -> bool;
         auto processing_items() const -> const std::vector<item *> &; // *NOPAD*
         auto invalidate_processing_cache() const -> void;
+        /** Drops the cached volume and weight of every pocket (this level only). */
+        void invalidate_pocket_caches() const;
 
         /** returns a list of pointers to all top-level items, in pocket order */
         const std::vector<item *> &all_items_top() const;
@@ -88,6 +90,12 @@ class item_contents
         void copy_from( const item_contents &source );
 
         ret_val<bool> insert_item( detached_ptr<item> &&it );
+        /**
+         * Puts @p n copies of @p proto into the contents, exactly as @p n calls of
+         * @ref insert_item with copies would (DDA #67349), but the pocket is only chosen
+         * again when it stops being the only candidate or fills up.
+         */
+        void insert_copies( const item &proto, int n );
 
         /**
          * returns the number of items stacks in contents
@@ -113,7 +121,7 @@ class item_contents
 
         void migrate_item( item &obj, const std::set<itype_id> &migrations );
         bool item_has_uses_recursive() const;
-        bool stacks_with( const item_contents &rhs ) const;
+        bool stacks_with( const item_contents &rhs, int depth = 0 ) const;
         /**
          * @relates visitable
          * NOTE: upon expansion, this may need to be filtered by type enum depending on accessibility

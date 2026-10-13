@@ -8841,6 +8841,7 @@ bool item::release_monster( const tripoint_bub_ms &target, const int radius )
     erase_var( "contained_json" );
     erase_var( "name" );
     erase_var( "weight" );
+    invalidate_pocket_caches_upwards();
     return true;
 }
 
@@ -8860,6 +8861,7 @@ int item::contain_monster( const tripoint_bub_ms &target )
                                     f.type->nname() ) );
     // Need to add the weight of the empty container because item::weight uses the "weight" variable directly.
     set_var( "weight", to_milligram( type->weight + f.get_weight() ) );
+    invalidate_pocket_caches_upwards();
     g->remove_zombie( f );
     return 0;
 }

@@ -59,6 +59,13 @@ class lua_item_pocket
 
 namespace
 {
+// Vars that feed item::weight / item::volume. Changing them must drop the pocket
+// size caches of this item and of everything it is inside (see item_contents::contents_changed).
+auto is_size_var( const std::string &name ) -> bool
+{
+    return name == "weight" || name == "volume" || name == "integral_weight";
+}
+
 auto artifact_effect_names( const std::vector<art_effect_passive> &effects
                           ) -> std::vector<std::string>
 {
@@ -357,9 +364,19 @@ void reg_item( sol::state &lua )
         DOC( "Check for variable of any type" );
         SET_FX( has_var );
         DOC( "Erase variable" );
-        SET_FX( erase_var );
+        luna::set_fx( ut, "erase_var", []( UT_CLASS & c, const std::string & name )
+        {
+            c.erase_var( name );
+            if( is_size_var( name ) ) {
+                c.invalidate_pocket_caches_upwards();
+            }
+        } );
         DOC( "Erase all variables" );
-        SET_FX( clear_vars );
+        luna::set_fx( ut, "clear_vars", []( UT_CLASS & c )
+        {
+            c.clear_vars();
+            c.invalidate_pocket_caches_upwards();
+        } );
         DOC( "Returns all stored item vars as a table" );
         luna::set_fx( ut, "vars_table", []( const item & it, sol::this_state state )
         {
@@ -623,18 +640,30 @@ void reg_item( sol::state &lua )
         luna::set_fx( ut, "set_var_str", []( UT_CLASS & c, const std::string & name, const std::string & val )
         {
             c.set_var( name, val );
+            if( is_size_var( name ) ) {
+                c.invalidate_pocket_caches_upwards();
+            }
         } );
         luna::set_fx( ut, "set_var_num", []( UT_CLASS & c, const std::string & name, const double & val )
         {
             c.set_var( name, val );
+            if( is_size_var( name ) ) {
+                c.invalidate_pocket_caches_upwards();
+            }
         } );
         luna::set_fx( ut, "set_var_tri", []( UT_CLASS & c, const std::string & name, const tripoint & val )
         {
             c.set_var( name, val );
+            if( is_size_var( name ) ) {
+                c.invalidate_pocket_caches_upwards();
+            }
         } );
         luna::set_fx( ut, "set_var_col", []( UT_CLASS & c, const std::string & name, const RGBColor & val )
         {
             c.set_var<RGBColor>( name, val );
+            if( is_size_var( name ) ) {
+                c.invalidate_pocket_caches_upwards();
+            }
         } );
         SET_FX( attack_cost );
         SET_FX( stamina_cost );

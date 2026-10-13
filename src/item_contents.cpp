@@ -85,9 +85,26 @@ void item_contents::copy_from( const item_contents &source )
     contents_changed();
 }
 
+void item_contents::invalidate_pocket_caches() const
+{
+    for( const item_pocket &pocket : pockets ) {
+        pocket.invalidate_cache();
+    }
+}
+
+// Invariant: every mutation of pocket contents, or of anything a pocket size depends on,
+// must call contents_changed() (or item::invalidate_pocket_caches_upwards() directly).
+// item_pocket::refresh_cache only detects changes to the item list itself; in-place
+// changes (weight/volume vars, convert, size flags, charges) rely on this call.
 void item_contents::contents_changed()
 {
     refresh_top_cache();
+    // the sizes of this item and of everything it is inside may have changed
+    if( owner != nullptr ) {
+        owner->invalidate_pocket_caches_upwards();
+    } else {
+        invalidate_pocket_caches();
+    }
     if( owner != nullptr ) {
         owner->invalidate_processing_cache_upwards();
     } else {
@@ -683,6 +700,39 @@ ret_val<bool> item_contents::insert_item( detached_ptr<item> &&it )
     return ret_val<bool>::make_success();
 }
 
+void item_contents::insert_copies( const item &proto, int n )
+{
+    if( n <= 0 ) {
+        return;
+    }
+    const bool adaptor = proto.type->mod && !proto.type->mod->magazine_adaptor.empty();
+    if( adaptor ) {
+        // changes the layout with every copy: nothing to share
+        for( int i = 0; i < n; i++ ) {
+            insert_item( item::spawn( proto ) );
+        }
+        return;
+    }
+    // The pocket insert_item would route to: while it is the only pocket of its type, can
+    // still hold a copy and no pocket of an earlier type took the copy, every further copy
+    // goes there too, so route() is not repeated.
+    ensure_pockets();
+    int left = n;
+    while( left > 0 ) {
+        detached_ptr<item> copy = item::spawn( proto );
+        item_pocket *dest = route( *copy );
+        const bool sole = dest->get_type() != pocket_type::MIGRATION &&
+                          get_pockets( dest->get_type() ).size() == 1;
+        dest->insert( std::move( copy ) );
+        left--;
+        while( sole && left > 0 && dest->can_contain( proto, false, true ).success() ) {
+            dest->insert( item::spawn( proto ) );
+            left--;
+        }
+    }
+    contents_changed();
+}
+
 size_t item_contents::num_item_stacks() const
 {
     return all_items_top().size();
@@ -789,16 +839,16 @@ bool item_contents::has_any_with( const std::function<bool( const item &it )> &f
     return std::ranges::any_of( all_items_top(), [&filter]( const item * it ) -> bool{ return filter( *it );} );
 }
 
-bool item_contents::stacks_with( const item_contents &rhs ) const
+bool item_contents::stacks_with( const item_contents &rhs, int depth ) const
 {
     const std::vector<item *> &lhs_items = all_items_top();
     const std::vector<item *> &rhs_items = rhs.all_items_top();
     if( lhs_items.size() != rhs_items.size() ) {
         return false;
     }
-    return std::equal( lhs_items.begin(), lhs_items.end(), rhs_items.begin(), []( const item * a,
+    return std::equal( lhs_items.begin(), lhs_items.end(), rhs_items.begin(), [depth]( const item * a,
     const item * b ) {
-        return a->charges == b->charges && a->stacks_with( *b );
+        return a->charges == b->charges && a->stacks_with( *b, false, false, depth );
     } );
 }
 
