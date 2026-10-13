@@ -178,20 +178,103 @@ static void deserialize( weak_ptr_fast<monster> &obj, JsonIn &jsin )
 
 void item_contents::serialize( JsonOut &json ) const
 {
-    if( !items.empty() ) {
+    // v30 (CDF P1a): {"pockets":[{"type":"CONTAINER","index":1,"items":[...]}, ...]}
+    // Pockets are matched on load by type and their ordinal among pockets of that type.
+    // Empty pockets and default values are not written (DDA #46763, #44019).
+    if( empty() ) {
+        return;
+    }
+    json.start_object();
+    json.member( "pockets" );
+    json.start_array();
+    std::map<pocket_type, int> ordinals;
+    for( const item_pocket &pocket : pockets ) {
+        const int index = ordinals[pocket.get_type()]++;
+        if( pocket.empty() ) {
+            continue;
+        }
         json.start_object();
-
-        json.member( "items", items );
-
+        json.member( "type", io::enum_to_string( pocket.get_type() ) );
+        if( index > 0 ) {
+            json.member( "index", index );
+        }
+        if( pocket.saved_sealed() ) {
+            json.member( "sealed", true );
+        }
+        json.member( "items", pocket.items() );
         json.end_object();
     }
+    json.end_array();
+    json.end_object();
 }
 
 void item_contents::deserialize( JsonIn &jsin )
 {
     JsonObject data = jsin.get_object();
     data.allow_omitted_members();
-    data.read( "items", items );
+    // reading replaces whatever was there, as it did before pockets
+    clear_items();
+
+    // Items whose saved pocket doesn't exist any more, and all pre-v30 contents,
+    // go through the router, so every item lands somewhere.
+    std::vector<detached_ptr<item>> unplaced;
+    // pre-v30 contents, or a saved pocket that no longer exists, make this a migration
+    bool migrated = false;
+    if( data.has_array( "pockets" ) ) {
+        ensure_pockets();
+        for( JsonObject jp : data.get_array( "pockets" ) ) {
+            jp.allow_omitted_members();
+            const pocket_type type = io::string_to_enum_fallback<pocket_type>(
+                                         jp.get_string( "type", "MIGRATION" ), pocket_type::MIGRATION );
+            const int index = jp.get_int( "index", 0 );
+            std::vector<detached_ptr<item>> loaded;
+            jp.read( "items", loaded );
+
+            item_pocket *dest = nullptr;
+            if( type != pocket_type::MIGRATION ) {
+                int seen = 0;
+                for( item_pocket &pocket : pockets ) {
+                    if( pocket.is_type( type ) && seen++ == index ) {
+                        dest = &pocket;
+                        break;
+                    }
+                }
+            }
+            if( dest == nullptr ) {
+                // saved MIGRATION items are re-placed too: they may now fit a real pocket
+                migrated |= type != pocket_type::MIGRATION || !loaded.empty();
+                for( detached_ptr<item> &it : loaded ) {
+                    unplaced.push_back( std::move( it ) );
+                }
+                continue;
+            }
+            if( jp.get_bool( "sealed", false ) ) {
+                dest->seal();
+            }
+            // no rule checks and no restacking on load (DDA #68051)
+            for( detached_ptr<item> &it : loaded ) {
+                dest->items().push_back( std::move( it ) );
+            }
+        }
+    } else {
+        // BN savegame v29 and earlier: {"items":[...]}
+        data.read( "items", unplaced );
+        migrated = true;
+    }
+    for( detached_ptr<item> &it : unplaced ) {
+        if( it ) {
+            insert_item( std::move( it ) );
+        }
+    }
+    contents_changed();
+    if( has_adaptor_mod() ) {
+        // an installed magazine_adaptor changes the pocket layout
+        rebuild_pockets();
+    }
+    if( migrated ) {
+        // items that don't fit any more overflow when the item is next processed
+        check_overflow();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2930,6 +3013,8 @@ void item::deserialize( JsonIn &jsin )
         for( detached_ptr<item> &obj : items ) {
             contents.insert_item( std::move( obj ) );
         }
+        // save migration is an overflow event (CDF P1a)
+        contents.check_overflow();
     } else {
         data.read( "contents", contents );
     }

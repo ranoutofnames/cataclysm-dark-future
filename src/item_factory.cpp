@@ -46,6 +46,7 @@
 class player;
 #include "material.h"
 #include "options.h"
+#include "output.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
 #include "relic.h"
@@ -639,6 +640,128 @@ void Item_factory::finalize_pre( itype &obj )
     }
 }
 
+void Item_factory::synthesize_pockets( itype &obj ) const
+{
+    // Explicit "pocket_data" always wins (CDF P1a step 2).
+    if( obj.explicit_pockets ) {
+        return;
+    }
+    obj.pockets.clear();
+
+    // BN container_data: one container pocket.
+    if( obj.container ) {
+        pocket_data pocket( pocket_type::CONTAINER );
+        pocket.rigid = obj.rigid;
+        pocket.volume_capacity = obj.container->contains;
+        pocket.watertight = obj.container->watertight;
+        if( obj.container->preserves ) {
+            pocket.spoil_multiplier = 0.0f;
+        }
+        if( !obj.container->unseals_into.is_null() ) {
+            // factory-sealed until opened; opening converts the item (DDA #82070, adapted)
+            sealable_data sealed;
+            sealed.spoil_multiplier = pocket.spoil_multiplier;
+            pocket.sealed_data = sealed;
+            pocket.sealed_by_type = true;
+        }
+        obj.pockets.push_back( pocket );
+    }
+
+    // BN holster use_action: one holster pocket per `multi`.
+    if( const use_function *use = obj.get_use( "holster" ) ) {
+        const auto *actor = dynamic_cast<const holster_actor *>( use->get_actor_ptr() );
+        if( actor != nullptr ) {
+            pocket_data pocket( pocket_type::CONTAINER );
+            pocket.rigid = obj.rigid;
+            pocket.holster = true;
+            pocket.volume_capacity = actor->max_volume;
+            pocket.max_item_volume = actor->max_volume;
+            pocket.min_item_volume = actor->min_volume;
+            if( actor->max_weight > 0_gram ) {
+                pocket.max_contains_weight = actor->max_weight;
+            }
+            for( const std::string &f : actor->flags ) {
+                pocket.flag_restriction.insert( flag_id( f ) );
+            }
+            for( const skill_id &sk : actor->skills ) {
+                pocket.skill_restriction.insert( sk );
+            }
+            if( actor->flags.empty() && actor->skills.empty() ) {
+                // BN: a holster with neither flags nor skills accepts nothing
+                pocket.item_restriction.insert( itype_id::NULL_ID() );
+            }
+            pocket.no_active_items = true;
+            pocket.moves = actor->draw_cost;
+            for( int i = 0; i < actor->multi; ++i ) {
+                obj.pockets.push_back( pocket );
+            }
+        }
+    }
+
+    // BN bandolier use_action: one ammo-restricted container pocket.
+    if( const use_function *use = obj.get_use( "bandolier" ) ) {
+        const auto *actor = dynamic_cast<const bandolier_actor *>( use->get_actor_ptr() );
+        if( actor != nullptr ) {
+            pocket_data pocket( pocket_type::CONTAINER );
+            pocket.rigid = obj.rigid;
+            for( const ammotype &at : actor->ammo ) {
+                pocket.ammo_restriction[at] = actor->capacity;
+            }
+            pocket.moves = actor->draw_cost;
+            obj.pockets.push_back( pocket );
+        }
+    }
+
+    // Magazines hold their ammo.
+    if( obj.magazine ) {
+        pocket_data pocket( pocket_type::MAGAZINE );
+        for( const ammotype &at : obj.magazine->type ) {
+            pocket.ammo_restriction[at] = obj.magazine->capacity;
+        }
+        pocket.fire_protection = obj.magazine->protects_contents;
+        obj.pockets.push_back( pocket );
+    }
+
+    // Guns and tools that take magazines get a magazine well.
+    if( ( obj.gun || obj.tool ) && !obj.magazines.empty() ) {
+        pocket_data pocket( pocket_type::MAGAZINE_WELL );
+        units::volume biggest = 0_ml;
+        for( const auto &mags : obj.magazines ) {
+            for( const itype_id &mag : mags.second ) {
+                pocket.item_restriction.insert( mag );
+                const auto found = m_templates.find( mag );
+                if( found != m_templates.end() ) {
+                    biggest = std::max( biggest, found->second.volume );
+                }
+            }
+        }
+        pocket.volume_capacity = std::max( biggest, 1_ml );
+        // BN: a magazine adds max( magazine volume - magazine_well, 0 ) to the item.
+        // A well at least as big as every magazine is the same as a rigid pocket.
+        if( obj.magazine_well > 0_ml && obj.magazine_well < pocket.volume_capacity ) {
+            pocket.magazine_well = obj.magazine_well;
+            pocket.rigid = false;
+        } else {
+            pocket.rigid = true;
+        }
+        obj.pockets.push_back( pocket );
+    }
+
+    // Guns take gunmods; tools that use ammo take toolmods (only pockets an item can use, #52874).
+    if( obj.gun || ( obj.tool && ( !obj.tool->ammo_id.empty() || !obj.magazines.empty() ) ) ) {
+        obj.pockets.emplace_back( pocket_type::MOD );
+    }
+
+    if( obj.has_flag( flag_CORPSE ) ) {
+        obj.pockets.emplace_back( pocket_type::CORPSE );
+    }
+
+    // Storage devices for software (src/computer_session.cpp).
+    if( obj.id == itype_id( "usb_drive" ) ) {
+        obj.pockets.emplace_back( pocket_type::SOFTWARE );
+    }
+}
+
 void Item_factory::register_cached_uses( const itype &obj )
 {
     for( auto &e : obj.use_methods ) {
@@ -740,6 +863,7 @@ void Item_factory::finalize()
 
     for( auto &e : m_templates ) {
         finalize_post( e.second );
+        synthesize_pockets( e.second );
     }
 
     // We may actually have some runtimes here - ones loaded from saved game
@@ -747,6 +871,7 @@ void Item_factory::finalize()
     for( auto &e : m_runtimes ) {
         finalize_pre( *e.second );
         finalize_post( *e.second );
+        synthesize_pockets( *e.second );
     }
 
     // Wire Lua callback actor pointers onto itype objects
@@ -943,6 +1068,7 @@ void Item_factory::add_item_type( const itype &def )
     if( frozen ) {
         finalize_pre( *new_item_ptr );
         finalize_post( *new_item_ptr );
+        synthesize_pockets( *new_item_ptr );
     }
 }
 
@@ -1226,6 +1352,20 @@ void Item_factory::check_definitions() const
                         observed_bps.insert( convert_bp( bp ) );
                     }
                 }
+            }
+        }
+
+        if( type->explicit_pockets && ( type->container || type->can_use( "holster" ) ||
+                                        type->can_use( "bandolier" ) ) ) {
+            DebugLog( DL::Warn, DC::Game ) << "item " << type->id.str() <<
+                                           ": both pocket_data and legacy container_data/holster/bandolier "
+                                           "are defined; pocket_data is used";
+        }
+        for( size_t i = 0; i < type->pockets.size(); ++i ) {
+            const std::string pocket_msg = type->pockets[i].check_definition();
+            if( !pocket_msg.empty() ) {
+                msg += string_format( "pocket %d (%s): %s", i,
+                                      io::enum_to_string( type->pockets[i].type ), pocket_msg );
             }
         }
 
@@ -1671,6 +1811,11 @@ void Item_factory::check_definitions() const
     for( const auto &elem : m_template_groups ) {
         elem.second->check_consistency( elem.first.str() );
         inp_mngr.pump_events();
+    }
+    if( !pocket_data::ignored_keys_seen().empty() ) {
+        // A warning, not an error: DDA-format item JSON is allowed to carry these keys.
+        DebugLog( DL::Warn, DC::Game ) << "pocket_data keys accepted but ignored by CDF: "
+                                     << enumerate_as_string( pocket_data::ignored_keys_seen() );
     }
 }
 
@@ -2936,6 +3081,15 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
     }
 
     load_slot_optional( def.container, jo, "container_data", src );
+    if( jo.has_array( "pocket_data" ) ) {
+        def.pockets.clear();
+        for( const JsonObject jo_pocket : jo.get_array( "pocket_data" ) ) {
+            pocket_data pocket;
+            pocket.load( jo_pocket );
+            def.pockets.push_back( pocket );
+        }
+        def.explicit_pockets = true;
+    }
     load_slot_optional( def.armor, jo, "armor_data", src );
     load_slot_optional( def.pet_armor, jo, "pet_armor_data", src );
     load_slot_optional( def.book, jo, "book_data", src );

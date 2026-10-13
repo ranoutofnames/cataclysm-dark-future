@@ -856,9 +856,19 @@ class item : public location_visitable<item>, public game_object<item>
          */
         units::volume get_total_capacity() const;
         /**
-         * Puts the given item into this one, no checks are performed.
+         * Puts the given item into this one. Never fails: an item that doesn't fit
+         * any pocket goes to the MIGRATION pocket. Use for spawns, crafting,
+         * save loading and other non-player paths.
          */
         void put_in( detached_ptr<item> &&payload );
+        /**
+         * Player-driven insert (CDF P1a, owner Q3): puts @p payload into the best
+         * pocket of type @p type if it fits. On failure nothing moves, @p payload
+         * is left untouched and the message says why, e.g.
+         * "The rock won't fit in the canteen: it has 0.25 L left."
+         */
+        ret_val<bool> try_put_in( detached_ptr<item> &&payload,
+                                  pocket_type type = pocket_type::CONTAINER );
 
         /**
          * Returns this item into its default container. If it does not have a default container,
@@ -1373,7 +1383,8 @@ class item : public location_visitable<item>, public game_object<item>
         /**
          * Can this item have given item/itype as content?
          *
-         * For example, airtight for gas, acidproof for acid etc.
+         * The item overload checks a container pocket right now (volume, weight,
+         * restrictions, sealing). The itype overload only checks the kind of item.
          */
         /*@{*/
         bool can_contain( const item &it ) const;
@@ -1474,6 +1485,8 @@ class item : public location_visitable<item>, public game_object<item>
          *  @param ignore only check item is compatible and ignore any existing contents
          */
         bool can_holster( const item &obj, bool ignore = false ) const;
+        /** True if a holster pocket of this item has room for another item. */
+        bool has_free_holster_pocket() const;
 
         /** Checks if item is a bandolier and currently capable of storing obj
          *  @param obj object that we want to holster

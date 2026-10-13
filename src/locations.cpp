@@ -656,14 +656,12 @@ item_location_type contents_item_location::where() const
 
 int contents_item_location::obtain_cost( const Character &ch, int qty, const item *it ) const
 {
-    if( container->get_use( "holster" ) ) {
-        auto ptr = dynamic_cast<const holster_actor *>
-                   ( container->type->get_use( "holster" )->get_actor_ptr() );
-        return dynamic_cast<const player *>( &ch )->item_handling_cost( *it, false, ptr->draw_cost );
-    } else if( container->get_use( "bandolier" ) ) {
-        auto ptr = dynamic_cast<const bandolier_actor *>
-                   ( container->type->get_use( "bandolier" )->get_actor_ptr() );
-        return dynamic_cast<const player *>( &ch )->item_handling_cost( *it, false, ptr->draw_cost );
+    // holster and bandolier pockets carry their own draw cost (CDF P1a)
+    if( const item_pocket *pocket = container->contents.pocket_of( it ) ) {
+        if( pocket->get_type() == pocket_type::CONTAINER &&
+            ( pocket->is_holster() || !pocket->get_data().ammo_restriction.empty() ) ) {
+            return dynamic_cast<const player *>( &ch )->item_handling_cost( *it, false, pocket->moves() );
+        }
     }
 
     return INVENTORY_HANDLING_PENALTY + container->obtain_cost( ch, qty );

@@ -980,5 +980,132 @@
     "symbol": "]",
     "color": "light_gray",
     "container_data": { "contains": "3000000 L" }
+  },
+  {
+    "id": "test_pocket_two",
+    "type": "GENERIC",
+    "name": "TEST two-pocket bag",
+    "description": "A test item with two explicit pockets.",
+    "weight": "200 g",
+    "volume": "1 L",
+    "price": "0 cent",
+    "material": "cotton",
+    "symbol": "[",
+    "color": "light_gray",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "moves": 120 },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "1 kg",
+        "watertight": true,
+        "rigid": true,
+        "moves": 80
+      }
+    ]
+  },
+  {
+    "id": "test_pocket_dda",
+    "type": "GENERIC",
+    "name": "TEST DDA-format pouch",
+    "description": "A test item using DDA-only pocket keys that CDF ignores.",
+    "weight": "100 g",
+    "volume": "250 ml",
+    "price": "0 cent",
+    "material": "cotton",
+    "symbol": "[",
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "20 cm",
+        "moves": 100,
+        "ripoff": 2,
+        "extra_encumbrance": 1,
+        "activity_noise": { "volume": 8, "chance": 60 }
+      }
+    ]
+  },
+  {
+    "id": "test_holster_two",
+    "type": "GENERIC",
+    "name": "TEST double holster",
+    "description": "A test holster with two slots for pistols or knives.",
+    "weight": "300 g",
+    "volume": "500 ml",
+    "price": "0 cent",
+    "material": "leather",
+    "symbol": "[",
+    "color": "light_gray",
+    "use_action": {
+      "type": "holster",
+      "max_volume": "1 L",
+      "min_volume": "100 ml",
+      "max_weight": "2 kg",
+      "multi": 2,
+      "draw_cost": 50,
+      "skills": [ "pistol" ],
+      "flags": [ "SHEATH_KNIFE" ]
+    }
+  },
+  {
+    "id": "test_pocket_rig",
+    "type": "GENERIC",
+    "name": "TEST rig",
+    "description": "A test rig with a bag and a pistol holster.",
+    "weight": "300 g",
+    "volume": "1 L",
+    "price": "0 cent",
+    "material": "cotton",
+    "symbol": "[",
+    "color": "light_gray",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "10 kg" },
+      { "pocket_type": "CONTAINER", "holster": true, "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 }
+    ]
+  },
+  {
+    "id": "test_holster_mixed",
+    "type": "GENERIC",
+    "name": "TEST mixed holster",
+    "description": "A test rig with one pistol holster and one knife sheath.",
+    "weight": "300 g",
+    "volume": "1 L",
+    "price": "0 cent",
+    "material": "leather",
+    "symbol": "[",
+    "color": "light_gray",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "holster": true, "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 },
+      { "pocket_type": "CONTAINER", "holster": true, "max_contains_volume": "1 L", "flag_restriction": [ "SHEATH_KNIFE" ], "moves": 50 }
+    ]
+  },
+  {
+    "id": "test_box",
+    "type": "GENERIC",
+    "name": "TEST box",
+    "description": "A rigid test box.",
+    "weight": "300 g",
+    "volume": "1100 ml",
+    "price": "0 cent",
+    "material": "plastic",
+    "symbol": "]",
+    "color": "light_gray",
+    "pocket_data": [ { "pocket_type": "CONTAINER", "max_contains_volume": "1 L", "rigid": true } ]
+  },
+  {
+    "id": "test_box_small",
+    "type": "GENERIC",
+    "name": "TEST small box",
+    "description": "A small rigid test box.",
+    "weight": "100 g",
+    "volume": "600 ml",
+    "price": "0 cent",
+    "material": "plastic",
+    "symbol": "]",
+    "color": "light_gray",
+    "pocket_data": [ { "pocket_type": "CONTAINER", "max_contains_volume": "500 ml", "rigid": true } ]
   }
 ]

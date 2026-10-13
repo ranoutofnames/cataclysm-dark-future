@@ -43,6 +43,35 @@ clean water
 
 </details>
 
+### Looking at item pockets and putting things in them
+
+Items store their contents in pockets. `item:get_pockets()` lists them (pass a `PocketType` to
+list only one kind), `item:try_put_in(item)` puts an item into the best pocket if it fits, and
+`item:can_contain_item(item)` asks without moving anything. Both return `true`, or `false` plus the
+reason. `try_put_in` only consumes the item when it succeeds. The old `item:can_contain(item)`,
+`item:current_magazine()` and `itype:slot_container()` keep working.
+
+```lua
+local you = gapi.get_avatar()
+
+for _, bag in pairs(you:all_items(false)) do
+  for _, pocket in ipairs(bag:get_pockets(PocketType.CONTAINER)) do
+    print(string.format("%s: %d of %d ml left, holster: %s", bag:tname(1, false, 0),
+      pocket:remaining_volume():to_milliliter(), pocket:volume_capacity():to_milliliter(),
+      tostring(pocket:is_holster())))
+    for _, it in ipairs(pocket:items()) do
+      print("  holds " .. it:tname(1, false, 0))
+    end
+  end
+end
+
+local rock = gapi.create_item(ItypeId.new("rock"), 1)
+local ok, why = you:all_items(false)[1]:try_put_in(rock)
+if not ok then
+  print("It didn't fit: " .. why)
+end
+```
+
 ## Monsters
 
 ### Spawning a dog near the player

@@ -30,6 +30,7 @@
 #include "name.h"
 #include "npc.h"
 #include "player.h"
+#include "pocket_type.h"
 #include "rng.h"
 #include "skill.h"
 #include "sounds.h"
@@ -551,6 +552,7 @@ void cata::detail::reg_enums( sol::state &lua )
     reg_enum<art_effect_passive>( lua );
     reg_enum<vitamin_type>( lua );
     reg_enum<moon_phase>( lua );
+    reg_enum<pocket_type>( lua );
 }
 
 static const auto lowercase = []( std::string t )

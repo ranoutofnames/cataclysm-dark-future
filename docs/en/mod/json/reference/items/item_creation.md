@@ -455,6 +455,72 @@ This defines a armor (you need to add all the armor specific entries), but makes
 container. It could also be written as a generic item ("type": "GENERIC") with "armor_data" and
 "container_data" entries.
 
+### Pockets (`pocket_data`)
+
+Every item stores its contents in pockets. Existing item JSON needs no change: when an item has no
+`pocket_data`, the game builds its pockets from the legacy fields (see the table below). New
+items may define pockets directly with an optional `pocket_data` array on any item type. The format
+is a subset of Cataclysm: DDA's, so DDA pocket definitions load, minus the ignored keys listed
+below. If an item has both `pocket_data` and legacy container, holster, bandolier or magazine
+fields, `pocket_data` wins and `--check-mods` warns.
+
+```json
+"pocket_data": [
+  {
+    "pocket_type": "CONTAINER",          // CONTAINER (default), MAGAZINE, MAGAZINE_WELL, MOD, CORPSE or SOFTWARE
+    "max_contains_volume": "2 L",        // total volume of the contents
+    "max_contains_weight": "10 kg",      // total weight of the contents
+    "max_item_volume": "500 ml",         // largest single item (optional)
+    "min_item_volume": "10 ml",          // smallest single item (optional)
+    "watertight": true,                  // can hold liquids
+    "airtight": false,                   // can hold gases
+    "rigid": false,                      // the pocket doesn't grow with its contents
+    "holster": false,                    // holds exactly one item (or one stack)
+    "open_container": false,             // contents spill when the item is put in another container
+    "moves": 100,                        // base moves to take an item out
+    "spoil_multiplier": 1.0,             // 0 stops spoilage
+    "weight_multiplier": 1.0,
+    "volume_multiplier": 1.0,
+    "fire_protection": false,
+    "transparent": false,                // stored for pocket settings
+    "sealed_data": { "spoil_multiplier": 0.0 },  // the pocket starts sealed; opening it unseals it
+    "flag_restriction": [ "SHEATH_KNIFE" ],      // only items with one of these flags
+    "item_restriction": [ "stanag30" ],          // only these item types
+    "ammo_restriction": { "223": 30 },           // only this ammo, up to this many rounds per type
+    "skill_restriction": [ "pistol" ],           // CDF: only guns using one of these skills
+    "magazine_well": "100 ml",                   // volume of the contents that may stick out of the item
+    "description": "A zipped pocket."
+  }
+]
+```
+
+`ammo_restriction` replaces the volume and weight limits. `max_item_length`, `min_item_length`,
+`volume_encumber_modifier` and `ablative` are read and stored; they take effect with item length,
+worn storage and plate armor. `extra_encumbrance`, `ripoff`, `activity_noise`, `inherits_flags`,
+`material_restriction`, `allowed_speedloaders` and `forbidden` are DDA keys that are accepted and
+ignored. `MIGRATION` pockets can't be defined in JSON: every item creates one when something
+doesn't fit in its other pockets, and the game moves such items out (to the parent container, the
+carrier, or the ground) the next time the pocket layout changes.
+
+When a flag has a `restriction` string in `flags.json`, item info uses it to say what the pocket
+accepts (for example "knives" for `SHEATH_KNIFE`).
+
+#### Pockets built from legacy fields
+
+| Legacy source | Pocket |
+|---|---|
+| `container_data` / `"type": "CONTAINER"` | one CONTAINER pocket: volume `contains`, `watertight`, sealed from `seals`/`unseals_into`, `preserves` sets spoil multiplier 0, `rigid` from the item |
+| `holster` use action | `multi` holster CONTAINER pockets: max item volume `max_volume`, min `min_volume`, weight `max_weight`, `flags` become `flag_restriction`, `skills` become `skill_restriction`, `draw_cost` becomes `moves` |
+| `bandolier` use action | one CONTAINER pocket with `ammo_restriction` |
+| MAGAZINE | one MAGAZINE pocket with `ammo_restriction` from the magazine's ammo and capacity |
+| gun or tool with `magazines` | one MAGAZINE_WELL pocket, `item_restriction` from the magazines |
+| gun or tool that takes mods | one MOD pocket |
+| corpse | one CORPSE pocket |
+| `usb_drive` | one SOFTWARE pocket |
+
+Armor `storage` isn't converted yet. A gunmod with `magazine_adaptor` replaces the magazines the
+MAGAZINE_WELL accepts while it is installed.
+
 ### Melee
 
 ```json

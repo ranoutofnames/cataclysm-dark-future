@@ -11,6 +11,7 @@
 #include "explosion.h"
 #include "game_constants.h"
 #include "hsv_color.h"
+#include "pocket_data.h"
 #include "iuse.h" // use_function
 #include "map/mapdata.h"
 #include "pldata.h" // add_type
@@ -947,6 +948,14 @@ struct itype {
         cata::value_ptr<relic> relic_data;
         cata::value_ptr<islot_milling> milling_data;
         /*@}*/
+
+        /**
+         * Pockets of this item type (CDF P1a, DDA #39406). Either loaded from
+         * "pocket_data" or synthesised from legacy JSON in Item_factory::finalize.
+         */
+        std::vector<pocket_data> pockets;
+        /** True if "pocket_data" was given in JSON, which disables synthesis. */
+        bool explicit_pockets = false;
 
     private:
         /** Can item be combined with other identical items? */

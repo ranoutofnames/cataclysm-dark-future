@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ret_val.h"
 #include "type_id.h"
 
 #include <optional>
@@ -139,8 +140,8 @@ void normalize( Character &who );
  * @param penalties Whether item volume and temporary effects (e.g. GRABBED, DOWNED) should be considered
  * @param base_cost Cost due to storage type
  */
-void store_in_container( Character &who, item &container, detached_ptr<item> &&put, bool penalties,
-                         int base_cost );
+ret_val<bool> store_in_container( Character &who, item &container, detached_ptr<item> &&put,
+                                  bool penalties, int base_cost );
 
 /**
  * Try to wield a contained item consuming moves proportional to weapon skill and volume.

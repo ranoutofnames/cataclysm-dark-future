@@ -630,12 +630,17 @@ void normalize( Character &who )
     who.set_stamina( who.get_stamina_max() );
 }
 
-void store_in_container( Character &who, item &container, detached_ptr<item> &&put, bool penalties,
-                         int base_cost )
+ret_val<bool> store_in_container( Character &who, item &container, detached_ptr<item> &&put,
+                                  bool penalties, int base_cost )
 {
-    who.moves -= who.item_store_cost( *put, container, penalties, base_cost );
-    container.put_in( std::move( put ) );
-    who.reset_encumbrance();
+    // refused if it doesn't fit; then nothing moves and @p put is left untouched (owner Q3)
+    const int cost = who.item_store_cost( *put, container, penalties, base_cost );
+    ret_val<bool> stored = container.try_put_in( std::move( put ) );
+    if( stored.success() ) {
+        who.moves -= cost;
+        who.reset_encumbrance();
+    }
+    return stored;
 }
 
 bool try_wield_contents( Character &who, item &container, item *internal_item, bool penalties,
@@ -1002,9 +1007,7 @@ std::vector<item *> find_reloadables( Character &who )
                          node->ammo_remaining() < node->ammo_capacity();
         }
         if( node->is_holster() ) {
-            const holster_actor *ptr = dynamic_cast<const holster_actor *>
-                                       ( node->get_use( "holster" )->get_actor_ptr() );
-            if( static_cast<int>( node->contents.num_item_stacks() ) < ptr->multi ) {
+            if( node->has_free_holster_pocket() ) {
                 reloadable = true;
             }
         }

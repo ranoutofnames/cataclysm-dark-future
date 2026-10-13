@@ -362,6 +362,8 @@ class Item_factory
         void register_cached_uses( const itype &obj );
         /** Applies part of finalization that depends on other items. */
         void finalize_post( itype &obj );
+        /** Creates pockets from legacy JSON for types without "pocket_data" (CDF P1a). */
+        void synthesize_pockets( itype &obj ) const;
 
         //iuse stuff
         std::map<item_action_id, use_function> iuse_function_list;

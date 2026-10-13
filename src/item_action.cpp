@@ -68,7 +68,7 @@ bool item::item_has_uses_recursive() const
 
 bool item_contents::item_has_uses_recursive() const
 {
-    for( const item * const &it : items ) {
+    for( const item *it : all_items_top() ) {
         if( it->item_has_uses_recursive() ) {
             return true;
         }

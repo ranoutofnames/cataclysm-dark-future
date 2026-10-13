@@ -484,7 +484,12 @@ auto produce_sap(const actualize_tile_options& options) -> void {
             new_charges = std::min(new_charges, capacity);
             sap->poison = one_in(10) ? 1 : 0;
             sap->charges = new_charges;
-            it->fill_with(std::move(sap));
+            const auto leftover = it->fill_with(std::move(sap));
+            if (leftover && leftover->charges == new_charges) {
+                // the container's pocket refused the sap: it is lost, but say so
+                DebugLog(DL::Warn, DC::Game)
+                    << "maple sap was refused by " << it->typeId().str();
+            }
         }
         break;
     }

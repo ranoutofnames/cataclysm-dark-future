@@ -3960,3 +3960,24 @@ TEST_CASE("lua_run_mapgen_update_stale_transparency", "[lua][mapgen]") {
     here.build_map_cache(0);
     CHECK(here.is_transparent(target));
 }
+
+TEST_CASE("lua_item_pocket_api", "[lua][pocket]") {
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "item_pocket_test.lua");
+
+    CHECK(test_data.get<int>("total") == 2);
+    CHECK(test_data.get<int>("containers") == 2);
+    CHECK(test_data.get<int>("mods") == 0);
+    CHECK(test_data.get<bool>("holster_found"));
+    CHECK(test_data.get<bool>("can_contain"));
+    CHECK(test_data.get<bool>("put_ok"));
+    CHECK(test_data.get<int>("holster_items") == 1);
+    CHECK_FALSE(test_data.get<bool>("jug_ok"));
+    CHECK(test_data.get<bool>("jug_why_given"));
+    CHECK(test_data.get<int>("type_pockets") == 2);
+    CHECK(test_data.get<int>("type_holsters") == 1);
+    CHECK(test_data.get<bool>("old_slot_container_nil"));
+}

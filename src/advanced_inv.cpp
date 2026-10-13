@@ -1699,7 +1699,11 @@ bool advanced_inventory::move_content( item &src_container, item &dest_container
         src_container.on_contents_changed();
     }
     detached_ptr<item> moved = src_contents.split( amount ) ;
-    dest_container.fill_with( std::move( moved ), amount );
+    detached_ptr<item> leftover = dest_container.fill_with( std::move( moved ), amount );
+    if( leftover ) {
+        // whatever didn't fit goes back where it came from
+        src_container.put_in( std::move( leftover ) );
+    }
 
     uistate.adv_inv_container_content_type = dest_container.contents.front().typeId();
 

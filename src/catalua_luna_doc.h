@@ -36,6 +36,7 @@ enum art_effect_passive : int;
 enum vitamin_type : int;
 enum class ot_match_type : int;
 enum moon_phase : int;
+enum class pocket_type : int;
 
 namespace sfx
 {
@@ -56,7 +57,9 @@ class enchantment_value;
 class enchantment_flag;
 class effect_type;
 class item;
+class lua_item_pocket;
 class item_stack;
+class pocket_data;
 class ma_technique;
 class ma_buff;
 class map;
@@ -198,9 +201,11 @@ LUNA_VAL( damage_instance, "DamageInstance" );
 LUNA_VAL( damage_unit, "DamageUnit" );
 LUNA_VAL( dealt_damage_instance, "DealtDamageInstance" );
 LUNA_VAL( distribution_grid, "DistributionGrid" );
+LUNA_VAL( pocket_data, "PocketData" );
 LUNA_VAL( power_stat, "PowerStat" );
 LUNA_VAL( distribution_grid_tracker, "DistributionGridTracker" );
 LUNA_PTR_VAL( item, "Item" );
+LUNA_VAL( lua_item_pocket, "ItemPocket" );
 LUNA_VAL( item_stack, "ItemStack" );
 LUNA_VAL( map, "Map" );
 LUNA_VAL( mapgen_constructor, "MapgenConstructor" );
@@ -315,6 +320,7 @@ LUNA_ENUM( art_effect_passive, "ArtifactEffectActive" )
 LUNA_ENUM( phase_id, "Phase" )
 LUNA_ENUM( vitamin_type, "VitaminType" )
 LUNA_ENUM( moon_phase, "MoonPhase" );
+LUNA_ENUM( pocket_type, "PocketType" );
 
 // ISlot
 LUNA_VAL( islot_container, "IslotContainer" );

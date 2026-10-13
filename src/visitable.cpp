@@ -433,9 +433,8 @@ namespace
 {
 
 auto visit_internal( std::function < VisitResponse( detached_ptr<item> &&e ) > filter,
-                     location_vector<item> &items ) -> bool
+                     location_vector<item> &items, VisitResponse &last ) -> bool
 {
-    auto last = VisitResponse::NEXT;
     auto processing_changed = false;
     items.remove_with( [&last, &processing_changed, &filter]( detached_ptr<item> &&e ) {
         if( last == VisitResponse::ABORT ) {
@@ -460,6 +459,13 @@ auto visit_internal( std::function < VisitResponse( detached_ptr<item> &&e ) > f
         return std::move( e );
     } );
     return processing_changed;
+}
+
+auto visit_internal( std::function < VisitResponse( detached_ptr<item> &&e ) > filter,
+                     location_vector<item> &items ) -> bool
+{
+    auto last = VisitResponse::NEXT;
+    return visit_internal( std::move( filter ), items, last );
 }
 
 } // namespace
@@ -495,12 +501,14 @@ static VisitResponse visit_internal( const std::function<VisitResponse( item *, 
 VisitResponse item_contents::visit_contents( const std::function<VisitResponse( item *, item * )>
         &func, item *parent )
 {
-    for( item *&e : items ) {
-        switch( visit_internal( func, e, parent ) ) {
-            case VisitResponse::ABORT:
-                return VisitResponse::ABORT;
-            default:
-                break;
+    for( item_pocket &pocket : pockets ) {
+        for( item *&e : pocket.items() ) {
+            switch( visit_internal( func, e, parent ) ) {
+                case VisitResponse::ABORT:
+                    return VisitResponse::ABORT;
+                default:
+                    break;
+            }
         }
     }
     return VisitResponse::NEXT;
@@ -695,16 +703,19 @@ detached_ptr<item> location_visitable<T>::remove_item( item &it )
 void item_contents::remove_items_with( const std::function < VisitResponse(
         detached_ptr<item> && ) > &filter )
 {
-    const auto old_size = items.size();
-    const auto processing_changed = visit_internal( filter, items );
-    if( items.size() == old_size && !processing_changed ) {
+    const auto old_size = num_item_stacks();
+    auto last = VisitResponse::NEXT;
+    auto processing_changed = false;
+    for( item_pocket &pocket : pockets ) {
+        if( last == VisitResponse::ABORT ) {
+            break;
+        }
+        processing_changed |= visit_internal( filter, pocket.items(), last );
+    }
+    if( num_item_stacks() == old_size && !processing_changed ) {
         return;
     }
-    if( owner != nullptr ) {
-        owner->invalidate_processing_cache_upwards();
-    } else {
-        invalidate_processing_cache();
-    }
+    contents_changed();
 }
 
 /** @relates visitable */

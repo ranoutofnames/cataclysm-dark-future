@@ -15,6 +15,8 @@
 #include "flag.h"
 #include "gun_mode.h"
 #include "hsv_color.h"
+#include "item_contents.h"
+#include "item_pocket.h"
 #include "itype.h"
 #include "map/emit.h"
 #include "martialarts.h"
@@ -29,6 +31,31 @@
 #include "vitamin.h"
 
 #include <ranges>
+#include <tuple>
+
+/**
+ * Lua handle to one pocket of an item. Pockets are rebuilt (and their storage freed) when an
+ * item converts or a magazine_adaptor mod changes, so a raw item_pocket pointer could dangle.
+ * The handle names the owner and the pocket index and resolves it on every call; a handle whose
+ * pocket no longer exists raises a Lua error.
+ */
+class lua_item_pocket
+{
+    public:
+        lua_item_pocket( item *owner, size_t index ) : owner( owner ), index( index ) {}
+        item_pocket &get() const {
+            size_t i = 0;
+            for( item_pocket &pocket : owner->contents.get_pockets() ) {
+                if( i++ == index ) {
+                    return pocket;
+                }
+            }
+            throw std::runtime_error( "ItemPocket is stale: the item's pockets changed" );
+        }
+    private:
+        item *owner;
+        size_t index;
+};
 
 namespace
 {
@@ -496,6 +523,38 @@ void reg_item( sol::state &lua )
                       sol::resolve<bool( const item & ) const>
                       ( &item::can_contain ) );
 
+        DOC( "Checks if this item could take another item into one of its pockets right now (of the given `PocketType`, default CONTAINER). Returns whether it can, and the reason if not." );
+        luna::set_fx( ut, "can_contain_item", []( const item & it, const item & other,
+                      sol::optional<pocket_type> type ) -> std::tuple<bool, std::string>
+        {
+            const ret_val<item_pocket::contain_code> res =
+                it.contents.can_contain( other, type.value_or( pocket_type::CONTAINER ) );
+            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+        } );
+
+        DOC( "The pockets of this item, optionally only those of the given `PocketType`." );
+        luna::set_fx( ut, "get_pockets", []( item & it, sol::optional<pocket_type> type )
+        {
+            std::vector<lua_item_pocket> ret;
+            size_t index = 0;
+            for( const item_pocket &pocket : it.contents.get_pockets() ) {
+                if( !type || pocket.get_type() == *type ) {
+                    ret.emplace_back( &it, index );
+                }
+                index++;
+            }
+            return ret;
+        } );
+
+        DOC( "Puts `item` into the best pocket of the given `PocketType` (default CONTAINER) if it fits. Returns whether it did, and the reason if not. The item is only consumed on success." );
+        luna::set_fx( ut, "try_put_in", []( item & it, detached_ptr<item> &payload,
+                      sol::optional<pocket_type> type ) -> std::tuple<bool, std::string>
+        {
+            const ret_val<bool> res = it.try_put_in( std::move( payload ),
+                                      type.value_or( pocket_type::CONTAINER ) );
+            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+        } );
+
         DOC( "Gets the remaining space available for a type of liquid" );
         luna::set_fx( ut, "remaining_capacity_for_id", &item::get_remaining_capacity_for_id );
 
@@ -639,6 +698,16 @@ void reg_itype( sol::state &lua )
         DOC( "Slots for various item type properties. Each slot may contain a valid value or nil" );
         sol::usertype<itype> ut = luna::new_usertype<itype>( lua, luna::no_bases, luna::no_constructor );
 
+        DOC( "The pockets this item type gives its items." );
+        luna::set_fx( ut, "pockets", []( const UT_CLASS & c )
+        {
+            std::vector<const pocket_data *> ret;
+            for( const pocket_data &data : c.pockets ) {
+                ret.push_back( &data );
+            }
+            return ret;
+        } );
+
         VALUE_PTR_MEMB_N( container, "slot_container" );
         VALUE_PTR_MEMB_N( tool, "slot_tool" );
         VALUE_PTR_MEMB_N( comestible, "slot_comestible" );
@@ -741,6 +810,52 @@ void reg_itype( sol::state &lua )
 
 void reg_islot( sol::state &lua )
 {
+#define UT_CLASS pocket_data
+    {
+        DOC( "Static definition of one pocket of an item type" );
+        sol::usertype<UT_CLASS> ut = luna::new_usertype<UT_CLASS>( lua, luna::no_bases, luna::no_constructor );
+
+        luna::set_fx( ut, "type", []( const UT_CLASS & c ) { return c.type; } );
+        luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) { return c.volume_capacity; } );
+        luna::set_fx( ut, "weight_capacity", []( const UT_CLASS & c ) { return c.max_contains_weight; } );
+        luna::set_fx( ut, "is_holster", []( const UT_CLASS & c ) { return c.holster; } );
+        luna::set_fx( ut, "watertight", []( const UT_CLASS & c ) { return c.watertight; } );
+        luna::set_fx( ut, "rigid", []( const UT_CLASS & c ) { return c.rigid; } );
+    }
+#undef UT_CLASS
+
+#define UT_CLASS lua_item_pocket
+    {
+        DOC( "One pocket of an item: a slot with its own capacity and rules. Resolved by index on every call; using it after the item's pockets changed raises an error." );
+        sol::usertype<UT_CLASS> ut = luna::new_usertype<UT_CLASS>( lua, luna::no_bases, luna::no_constructor );
+
+        luna::set_fx( ut, "type", []( const UT_CLASS & c ) { return c.get().get_type(); } );
+        luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) { return c.get().volume_capacity(); } );
+        luna::set_fx( ut, "remaining_volume", []( const UT_CLASS & c ) { return c.get().remaining_volume(); } );
+        luna::set_fx( ut, "weight_capacity", []( const UT_CLASS & c ) { return c.get().weight_capacity(); } );
+        luna::set_fx( ut, "remaining_weight", []( const UT_CLASS & c ) { return c.get().remaining_weight(); } );
+        luna::set_fx( ut, "is_holster", []( const UT_CLASS & c ) { return c.get().is_holster(); } );
+        luna::set_fx( ut, "watertight", []( const UT_CLASS & c ) { return c.get().watertight(); } );
+        luna::set_fx( ut, "sealed", []( const UT_CLASS & c ) { return c.get().sealed(); } );
+        DOC( "The items in this pocket" );
+        luna::set_fx( ut, "items", []( const UT_CLASS & c )
+        {
+            std::vector<item *> ret;
+            for( item *it : c.get().items() ) {
+                ret.push_back( it );
+            }
+            return ret;
+        } );
+        DOC( "Whether this pocket could take the item, and the reason if not" );
+        luna::set_fx( ut, "can_contain", []( const UT_CLASS & c, const item & it )
+                      -> std::tuple<bool, std::string>
+        {
+            const ret_val<item_pocket::contain_code> res = c.get().can_contain( it );
+            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+        } );
+    }
+#undef UT_CLASS
+
 #define UT_CLASS islot_container
     {
         sol::usertype<UT_CLASS> ut = luna::new_usertype<UT_CLASS>( lua, luna::no_bases, luna::no_constructor );

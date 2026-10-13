@@ -865,11 +865,10 @@ class holster_actor : public iuse_actor
         /** Items with any of these flags set can be holstered */
         std::vector<std::string> flags;
 
-        /** Check if obj could be stored in the holster */
-        bool can_holster( const item &obj ) const;
-
         /** Store an object in the holster */
         detached_ptr<item> store( player &p, item &holster, detached_ptr<item> &&obj ) const;
+        /** Store obj; anything the holster refuses goes back to the character (or their feet). */
+        void store_or_return( player &p, item &holster, detached_ptr<item> &&obj ) const;
 
         holster_actor( const std::string &type = "holster" ) : iuse_actor( type ) {}
 
