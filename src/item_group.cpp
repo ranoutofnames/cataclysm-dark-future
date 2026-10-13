@@ -13,7 +13,9 @@
 #include "flat_set.h"
 #include "game_constants.h"
 #include "item.h"
+#include "item_contents.h"
 #include "item_factory.h"
+#include "item_pocket.h"
 #include "itype.h"
 #include "iuse_actor.h"
 #include "json.h"
@@ -46,6 +48,36 @@ bool string_id<Item_group>::is_valid() const
     return item_group::group_is_defined( *this );
 }
 
+namespace
+{
+// Items that did not fit a spawned container by length; they are spawned next to it instead.
+// Collected during Item_modifier::modify and handed out by the create() functions.
+thread_local std::vector<detached_ptr<item>> spawn_extras;
+
+// True when every pocket that would otherwise take the item refuses it for its length.
+auto too_long_for( const item &container, const item &it ) -> bool
+{
+    bool any_long = false;
+    for( const item_pocket *pocket : container.contents.get_pockets( pocket_type::CONTAINER ) ) {
+        const auto ret = pocket->is_compatible( it );
+        if( ret.success() ) {
+            return false;
+        }
+        if( ret.value() == item_pocket::contain_code::ERR_TOO_LONG ) {
+            any_long = true;
+        }
+    }
+    return any_long;
+}
+
+void drain_extras( std::vector<detached_ptr<item>> &out )
+{
+    out.insert( out.end(), std::make_move_iterator( spawn_extras.begin() ),
+                std::make_move_iterator( spawn_extras.end() ) );
+    spawn_extras.clear();
+}
+} // namespace
+
 std::vector<detached_ptr<item>> Item_spawn_data::create( const time_point &birthday ) const
 {
     RecursionList rec;
@@ -55,7 +87,10 @@ std::vector<detached_ptr<item>> Item_spawn_data::create( const time_point &birth
 detached_ptr<item> Item_spawn_data::create_single( const time_point &birthday ) const
 {
     RecursionList rec;
-    return create_single( birthday, rec );
+    spawn_extras.clear();
+    detached_ptr<item> ret = create_single( birthday, rec );
+    spawn_extras.clear();
+    return ret;
 }
 
 Single_item_creator::Single_item_creator( const std::string &_id, Type _type, int _probability )
@@ -122,6 +157,7 @@ std::vector<detached_ptr<item>> Single_item_creator::create( const time_point &b
             if( itm && !itm->is_null() ) {
                 result.push_back( std::move( itm ) );
             }
+            drain_extras( result );
         } else {
             if( std::ranges::contains( rec, id ) ) {
                 debugmsg( "recursion in item spawn list %s", id.c_str() );
@@ -146,6 +182,7 @@ std::vector<detached_ptr<item>> Single_item_creator::create( const time_point &b
             }
             result.insert( result.end(), std::make_move_iterator( tmplist.begin() ),
                            std::make_move_iterator( tmplist.end() ) );
+            drain_extras( result );
         }
     }
     return result;
@@ -618,8 +655,13 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
     }
 
     if( cont != nullptr && !cont->is_null() ) {
-        cont->put_in( std::move( new_item ) );
-        new_item = std::move( cont );
+        if( too_long_for( *cont, *new_item ) ) {
+            // too long for its container: spawn it next to the container, not in it
+            spawn_extras.push_back( std::move( cont ) );
+        } else {
+            cont->put_in( std::move( new_item ) );
+            new_item = std::move( cont );
+        }
     }
 
     if( contents != nullptr ) {
@@ -640,7 +682,11 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
                     run++;
                 }
             }
-            if( run > 1 ) {
+            if( too_long_for( *new_item, first ) ) {
+                for( size_t j = 0; j < run; j++ ) {
+                    spawn_extras.push_back( std::move( contentitems[i + j] ) );
+                }
+            } else if( run > 1 ) {
                 new_item->put_in_copies( first, static_cast<int>( run ) );
                 for( size_t j = 0; j < run; j++ ) {
                     contentitems[i + j] = detached_ptr<item>();

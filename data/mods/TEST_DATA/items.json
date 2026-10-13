@@ -1029,6 +1029,31 @@
     ]
   },
   {
+    "id": "test_long_rod",
+    "type": "GENERIC",
+    "name": "TEST long rod",
+    "description": "A thin rod, longer than the DDA-format pouch allows.",
+    "weight": "100 g",
+    "volume": "50 ml",
+    "longest_side": "40 cm",
+    "price": "0 cent",
+    "material": "steel",
+    "symbol": "/",
+    "color": "light_gray"
+  },
+  {
+    "type": "item_group",
+    "id": "test_long_rod_in_pouch",
+    "subtype": "collection",
+    "entries": [ { "item": "test_long_rod", "container-item": "test_pocket_dda" } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_pouch_with_long_rod",
+    "subtype": "collection",
+    "entries": [ { "item": "test_pocket_dda", "contents-item": "test_long_rod" } ]
+  },
+  {
     "id": "test_holster_two",
     "type": "GENERIC",
     "name": "TEST double holster",

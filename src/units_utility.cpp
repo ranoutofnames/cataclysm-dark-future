@@ -1,6 +1,10 @@
 #include "units_utility.h"
 
+#include <cmath>
+#include <cstdint>
+
 #include "options.h"
+#include "string_formatter.h"
 
 const char *velocity_units( const units_type vel_units )
 {
@@ -117,4 +121,69 @@ double convert_volume( int volume, int *out_scale )
         *out_scale = scale;
     }
     return ret;
+}
+
+double convert_length_cm_in( const units::length &length )
+{
+    double ret = units::to_millimeter( length );
+    if( get_option<std::string>( "DISTANCE_UNITS" ) == "metric" ) {
+        ret /= 10;
+    } else {
+        ret /= 25.4;
+    }
+    return ret;
+}
+
+namespace
+{
+struct length_choice {
+    int value = 0;
+    const char *unit = "";
+};
+
+length_choice choose_length( const units::length &length )
+{
+    length_choice res;
+    const std::int64_t mm = units::to_millimeter( length );
+    if( get_option<std::string>( "DISTANCE_UNITS" ) == "metric" ) {
+        if( mm != 0 && mm % 1000000 == 0 ) {
+            res = { static_cast<int>( mm / 1000000 ), _( "km" ) };
+        } else if( mm != 0 && mm % 1000 == 0 ) {
+            res = { static_cast<int>( mm / 1000 ), _( "m" ) };
+        } else if( mm % 10 == 0 ) {
+            res = { static_cast<int>( mm / 10 ), _( "cm" ) };
+        } else {
+            res = { static_cast<int>( mm ), _( "mm" ) };
+        }
+    } else {
+        // Imperial can only be approximated: round to whole inches first.
+        const std::int64_t in = std::llround( static_cast<double>( mm ) / 25.4 );
+        if( in != 0 && in % 63360 == 0 ) {
+            res = { static_cast<int>( in / 63360 ), _( "mi" ) };
+        } else if( in != 0 && in % 36 == 0 ) {
+            res = { static_cast<int>( in / 36 ), _( "yd" ) };
+        } else if( in != 0 && in % 12 == 0 ) {
+            res = { static_cast<int>( in / 12 ), _( "ft" ) };
+        } else {
+            res = { static_cast<int>( in ), _( "in" ) };
+        }
+    }
+    return res;
+}
+} // namespace
+
+int convert_length( const units::length &length )
+{
+    return choose_length( length ).value;
+}
+
+std::string length_units( const units::length &length )
+{
+    return choose_length( length ).unit;
+}
+
+std::string string_format_length( const units::length &length, bool compact )
+{
+    const length_choice c = choose_length( length );
+    return string_format( "%d%s%s", c.value, compact ? "" : " ", c.unit );
 }

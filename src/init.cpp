@@ -396,6 +396,10 @@ void DynamicDataLoader::initialize()
 
     add( "ITEM_CATEGORY", &item_category::load_item_cat );
 
+    add( "item_overlay", []( const JsonObject & jo ) {
+        item_controller->load_item_overlay( jo );
+    } );
+
     add( "MIGRATION", []( const JsonObject & jo ) {
         item_controller->load_migration( jo );
     } );

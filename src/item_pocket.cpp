@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cmath>
 
 #include "ammo.h"
 #include "assign.h"
@@ -128,13 +129,11 @@ void pocket_data::load( const JsonObject &jo )
             max_item_volume = max_vol;
         }
         assign( jo, "min_item_volume", min_item_volume );
-        // Accepted now, parsed and enforced by item length (P1b).
-        if( jo.has_member( "max_item_length" ) ) {
-            max_item_length = jo.get_string( "max_item_length" );
+        units::length max_len = 0_mm;
+        if( assign( jo, "max_item_length", max_len ) ) {
+            max_item_length = max_len;
         }
-        if( jo.has_member( "min_item_length" ) ) {
-            min_item_length = jo.get_string( "min_item_length" );
-        }
+        assign( jo, "min_item_length", min_item_length );
         jo.read( "volume_encumber_modifier", volume_encumber_modifier );
     }
 
@@ -170,6 +169,27 @@ void pocket_data::load( const JsonObject &jo )
             ignored_keys_seen().insert( key );
         }
     }
+}
+
+namespace
+{
+// Factor on DDA's default maximum item length for container pockets (CDF owner decision:
+// generous limits). Tune here.
+constexpr double container_length_factor = 1.5;
+} // namespace
+
+std::optional<units::length> pocket_data::effective_max_item_length() const
+{
+    if( max_item_length ) {
+        return max_item_length;
+    }
+    if( type != pocket_type::CONTAINER || holster || volume_capacity <= 0_ml ) {
+        return std::nullopt;
+    }
+    const double cm = static_cast<double>( units::to_centimeter( units::default_length_from_volume(
+            volume_capacity ) ) );
+    return units::from_millimeter<std::int64_t>( std::llround( cm * 10.0 * M_SQRT2 *
+                                                 container_length_factor ) );
 }
 
 std::string pocket_data::check_definition() const
@@ -219,6 +239,12 @@ std::string pocket_data::check_definition() const
         }
         if( min_item_volume > volume_capacity ) {
             res += "min_item_volume is greater than the pocket volume, no item can fit\n";
+        }
+        if( max_item_length && *max_item_length <= 0_mm ) {
+            res += "max_item_length must be positive\n";
+        }
+        if( max_item_length && *max_item_length < min_item_length ) {
+            res += "max_item_length is less than min_item_length, no item can fit\n";
         }
     }
     if( magazine_well > 0_ml && rigid ) {
@@ -504,6 +530,19 @@ ret_val<item_pocket::contain_code> item_pocket::is_compatible( const item &it ) 
     }
     if( vol < data->min_item_volume ) {
         return ret_val<code>::make_failure( code::ERR_TOO_SMALL, _( "it is too small" ) );
+    }
+    // length limits; liquids and gases have no length
+    if( !it.made_of( LIQUID ) && !it.made_of( GAS ) ) {
+        const units::length len = it.length();
+        const std::optional<units::length> max_len = data->effective_max_item_length();
+        if( max_len && len > *max_len ) {
+            return ret_val<code>::make_failure( code::ERR_TOO_LONG, _( "it is too long (%1$s, max %2$s)" ),
+                                                string_format_length( len ), string_format_length( *max_len ) );
+        }
+        if( len < data->min_item_length ) {
+            return ret_val<code>::make_failure( code::ERR_TOO_SHORT, _( "it is too short (%1$s, min %2$s)" ),
+                                                string_format_length( len ), string_format_length( data->min_item_length ) );
+        }
     }
     return ret_val<code>::make_success();
 }

@@ -494,9 +494,10 @@ fields, `pocket_data` wins and `--check-mods` warns.
 ]
 ```
 
-`ammo_restriction` replaces the volume and weight limits. `max_item_length`, `min_item_length`,
-`volume_encumber_modifier` and `ablative` are read and stored; they take effect with item length,
-worn storage and plate armor. `extra_encumbrance`, `ripoff`, `activity_noise`, `inherits_flags`,
+`ammo_restriction` replaces the volume and weight limits. `max_item_length` and `min_item_length`
+are lengths such as `"30 cm"` (units `mm`, `cm`, `m`, `km`); see "Item length" below.
+`volume_encumber_modifier` and `ablative` are read and stored; they take effect with worn storage
+and plate armor. `extra_encumbrance`, `ripoff`, `activity_noise`, `inherits_flags`,
 `material_restriction`, `allowed_speedloaders` and `forbidden` are DDA keys that are accepted and
 ignored. `MIGRATION` pockets can't be defined in JSON: every item creates one when something
 doesn't fit in its other pockets, and the game moves such items out (to the parent container, the
@@ -1306,3 +1307,29 @@ One can also put the snippets directly in the item definition:
 
 This will automatically create a snippet category specific to that item and populate that category
 with the given snippets. The format also support snippet ids like above.
+
+## Item length
+
+`longest_side` (a length such as `"84 cm"`, DDA-compatible) is the length of an item's longest side.
+It is resolved per item type in this order, first match wins:
+
+1. an explicit `longest_side` in the item's own JSON;
+2. a CDF `item_overlay` entry (below);
+3. a category floor, `max(floor, derived)`: pistol 20 cm, SMG 45 cm, shotgun/rifle 80 cm,
+   launcher 90 cm, bow/archery 100 cm; `SHEATH_SWORD` 90 cm; `SPEAR`, `SHEATH_SPEAR`, `POLEARM`,
+   `REACH_ATTACK` 150 cm; `REACH3` 200 cm;
+4. derived: the side of a cube of the volume of one unit, `round(cbrt(volume in ml))` cm.
+
+Pockets refuse items longer than `max_item_length` or shorter than `min_item_length`. When
+`max_item_length` is not given, container pockets default to `cbrt(capacity) cm * sqrt(2) * 1.5`;
+holster, magazine, magazine well, mod, corpse, software and migration pockets have no limit.
+Spawning and loading never refuse an item.
+
+`item_overlay` objects set whitelisted fields on existing items without redefining them; later
+objects override earlier ones. Currently only `longest_side`:
+
+```json
+{ "type": "item_overlay", "id": "2x4", "longest_side": "122 cm" }
+```
+
+`data/json/items/cdf_overlay_lengths.json` is generated from DDA by `tools/cdf_port_dda_overlays.py`.

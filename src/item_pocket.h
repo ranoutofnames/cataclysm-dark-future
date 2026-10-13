@@ -46,6 +46,10 @@ class item_pocket
             ERR_TOO_HEAVY,
             // the item is below the minimum size
             ERR_TOO_SMALL,
+            // the item is longer than the pocket's maximum item length
+            ERR_TOO_LONG,
+            // the item is shorter than the pocket's minimum item length
+            ERR_TOO_SHORT,
             // not enough volume left
             ERR_NO_SPACE,
             // not enough weight capacity left

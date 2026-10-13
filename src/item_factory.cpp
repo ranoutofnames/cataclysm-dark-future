@@ -777,8 +777,85 @@ void Item_factory::register_cached_uses( const itype &obj )
     }
 }
 
+namespace
+{
+const flag_id flag_sheath_sword( "SHEATH_SWORD" );
+const flag_id flag_sheath_spear( "SHEATH_SPEAR" );
+const skill_id skill_pistol_len( "pistol" );
+const skill_id skill_smg_len( "smg" );
+const skill_id skill_shotgun_len( "shotgun" );
+const skill_id skill_rifle_len( "rifle" );
+const skill_id skill_launcher_len( "launcher" );
+const skill_id skill_archery_len( "archery" );
+} // namespace
+
+void Item_factory::finalize_length( itype &obj ) const
+{
+    // 1. An explicit `longest_side` in the item's own JSON (or inherited via copy-from) wins.
+    if( obj.longest_side >= 0_mm ) {
+        return;
+    }
+    // 2. item_overlay table.
+    const auto overlay = overlay_lengths.find( obj.id );
+    if( overlay != overlay_lengths.end() ) {
+        obj.longest_side = overlay->second;
+        return;
+    }
+    // 4. Derived: the side of a cube of the volume of one unit (DDA's default).
+    const units::volume effective_volume = obj.count_by_charges() && obj.stack_size > 0 ?
+                                           obj.volume / obj.stack_size : obj.volume;
+    units::length result = units::default_length_from_volume( effective_volume );
+    // 3. Category floors, documented in the item_creation reference. The floor is max( floor, derived ).
+    units::length floor = 0_mm;
+    if( obj.gun ) {
+        const skill_id &skill = obj.gun->skill_used;
+        if( skill == skill_pistol_len ) {
+            floor = 20_cm;
+        } else if( skill == skill_smg_len ) {
+            floor = 45_cm;
+        } else if( skill == skill_shotgun_len || skill == skill_rifle_len ) {
+            floor = 80_cm;
+        } else if( skill == skill_launcher_len ) {
+            floor = 90_cm;
+        } else if( skill == skill_archery_len ) {
+            floor = 100_cm;
+        }
+    }
+    if( obj.has_flag( flag_sheath_sword ) ) {
+        floor = std::max( floor, 90_cm );
+    }
+    if( obj.has_flag( flag_SPEAR ) || obj.has_flag( flag_sheath_spear ) ||
+        obj.has_flag( flag_POLEARM ) || obj.has_flag( flag_REACH_ATTACK ) ) {
+        floor = std::max( floor, 150_cm );
+    }
+    if( obj.has_flag( flag_REACH3 ) ) {
+        floor = std::max( floor, 200_cm );
+    }
+    obj.longest_side = std::max( result, floor );
+}
+
+void Item_factory::load_item_overlay( const JsonObject &jo )
+{
+    // Fields other than these are rejected so that typos do not silently do nothing.
+    const itype_id id( jo.get_string( "id" ) );
+    jo.get_string( "type" );
+    if( jo.has_member( "longest_side" ) ) {
+        units::length len = 0_mm;
+        assign( jo, "longest_side", len );
+        overlay_lengths[id] = len;
+    }
+    for( const JsonMember member : jo ) {
+        const std::string &name = member.name();
+        if( name != "type" && name != "id" && name != "longest_side" && name != "//" ) {
+            jo.throw_error( "item_overlay does not support the field '" + name + "'", name );
+        }
+    }
+}
+
 void Item_factory::finalize_post( itype &obj )
 {
+    finalize_length( obj );
+
     erase_if( obj.item_tags, [&]( const flag_id & f ) {
         if( !f.is_valid() ) {
             debugmsg( "itype '%s' uses undefined flag '%s'. Please add corresponding 'json_flag' entry to json.",
@@ -1330,6 +1407,13 @@ bool Item_factory::check_ammo_type( std::string &msg, const ammotype &ammo ) con
 
 void Item_factory::check_definitions() const
 {
+    for( const auto &ov : overlay_lengths ) {
+        if( !m_templates.contains( ov.first ) ) {
+            debugmsg( "item_overlay: id '%s' is not a known item", ov.first.str() );
+        } else if( ov.second <= 0_mm ) {
+            debugmsg( "item_overlay: longest_side of '%s' must be positive", ov.first.str() );
+        }
+    }
     for( const auto &elem : m_templates ) {
         std::string msg;
         const itype *type = &elem.second;
@@ -1366,6 +1450,23 @@ void Item_factory::check_definitions() const
             if( !pocket_msg.empty() ) {
                 msg += string_format( "pocket %d (%s): %s", i,
                                       io::enum_to_string( type->pockets[i].type ), pocket_msg );
+            }
+            // DDA #40591 style: a pocket whose length limit refuses every item it is restricted to
+            const pocket_data &pd = type->pockets[i];
+            const std::optional<units::length> max_len = pd.effective_max_item_length();
+            if( max_len && !pd.item_restriction.empty() ) {
+                bool any_fits = false;
+                for( const itype_id &allowed : pd.item_restriction ) {
+                    const auto found = m_templates.find( allowed );
+                    if( found == m_templates.end() || found->second.longest_side <= *max_len ) {
+                        any_fits = true;
+                        break;
+                    }
+                }
+                if( !any_fits ) {
+                    DebugLog( DL::Warn, DC::Game ) << "item " << type->id.str() << " pocket " << i <<
+                                                   ": max_item_length is shorter than every item in its item_restriction";
+                }
             }
         }
 
@@ -2846,6 +2947,7 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
     assign( jo, "integral_weight", def.integral_weight );
     assign( jo, "volume", def.volume );
     assign( jo, "integral_volume", def.integral_volume );
+    assign( jo, "longest_side", def.longest_side );
     assign( jo, "price", def.price, false, 0_cent );
     assign( jo, "price_postapoc", def.price_post, false, 0_cent );
     assign( jo, "stackable", def.stackable_, strict );
@@ -3261,6 +3363,7 @@ void Item_factory::clear()
     migrated_ammo.clear();
     migrated_magazines.clear();
     migrations.clear();
+    overlay_lengths.clear();
 
     iwieldable_actors.clear();
     iwearable_actors.clear();

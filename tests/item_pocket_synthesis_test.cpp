@@ -158,5 +158,5 @@ TEST_CASE("explicit pocket_data overrides synthesis", "[item][pocket][synthesis]
     const itype& dda = *itype_id("test_pocket_dda");
     REQUIRE(dda.pockets.size() == 1);
     CHECK(dda.pockets[0].volume_capacity == 1_liter);
-    CHECK(dda.pockets[0].max_item_length == "20 cm");
+    CHECK(dda.pockets[0].max_item_length == 20_cm);
 }

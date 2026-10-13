@@ -3,6 +3,7 @@
 #include "catch/catch.hpp"
 #include "item.h"
 #include "item_contents.h"
+#include "item_group.h"
 #include "item_pocket.h"
 #include "iteminfo_query.h"
 #include "itype.h"
@@ -75,8 +76,8 @@ TEST_CASE("pocket_data loads DDA-format JSON", "[item][pocket]") {
         CHECK(data.max_contains_weight == 3_kilogram);
         REQUIRE(data.max_item_volume.has_value());
         CHECK(*data.max_item_volume == 500_ml);
-        CHECK(data.max_item_length == "30 cm");
-        CHECK(data.min_item_length == "5 cm");
+        CHECK(data.max_item_length == 30_cm);
+        CHECK(data.min_item_length == 5_cm);
         CHECK(data.watertight);
         CHECK(data.airtight);
         CHECK(data.rigid);
@@ -696,5 +697,22 @@ TEST_CASE("item info lists each pocket", "[item][pocket][iteminfo]") {
         CHECK(info.find("This container") != std::string::npos);
         CHECK(info.find("watertight") != std::string::npos);
         CHECK(info.find("Pocket") == std::string::npos);
+    }
+}
+
+TEST_CASE("spawned items too long for a container appear next to it", "[item][pocket]") {
+    SECTION("container-item") {
+        auto spawned = item_group::items_from(item_group_id("test_long_rod_in_pouch"));
+        REQUIRE(spawned.size() == 2);
+        for (const detached_ptr<item>& it : spawned) {
+            CHECK(it->contents.empty());
+        }
+    }
+    SECTION("contents-item") {
+        auto spawned = item_group::items_from(item_group_id("test_pouch_with_long_rod"));
+        REQUIRE(spawned.size() == 2);
+        for (const detached_ptr<item>& it : spawned) {
+            CHECK(it->contents.empty());
+        }
     }
 }

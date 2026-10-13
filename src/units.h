@@ -10,6 +10,7 @@
 
 #include "units_angle.h"
 #include "units_volume.h"
+#include "units_length.h"
 #include "units_mass.h"
 #include "units_energy.h"
 #include "units_money.h"
@@ -31,6 +32,11 @@ inline std::ostream &operator<<( std::ostream &o, mass_in_milligram_tag )
 inline std::ostream &operator<<( std::ostream &o, volume_in_milliliter_tag )
 {
     return o << "ml";
+}
+
+inline std::ostream &operator<<( std::ostream &o, length_in_millimeter_tag )
+{
+    return o << "mm";
 }
 
 inline std::ostream &operator<<( std::ostream &o, energy_in_joule_tag )
@@ -101,6 +107,15 @@ static const std::vector<std::pair<std::string, money>> money_units = { {
 static const std::vector<std::pair<std::string, volume>> volume_units = { {
         { "ml", 1_ml },
         { "L", 1_liter }
+    }
+};
+static const std::vector<std::pair<std::string, length>> length_units = { {
+        { "mm", 1_mm },
+        { "cm", 1_cm },
+        { "km", 1_km },
+        // "meter" before "m": units are matched as prefixes, in order
+        { "meter", 1_m },
+        { "m", 1_m },
     }
 };
 static const std::vector<std::pair<std::string, angle>> angle_units = { {

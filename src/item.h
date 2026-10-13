@@ -632,6 +632,11 @@ class item : public location_visitable<item>, public game_object<item>
          * @param integral if true return effective volume if this item was integrated into another
          */
         units::volume volume( bool integral = false ) const;
+        /**
+         * Length of the longest side. 0 for liquids; corpses derive it from their volume;
+         * everything else uses itype::longest_side (see Item_factory::finalize_length).
+         */
+        units::length length() const;
 
         /**
          * Simplified, faster volume check for when processing time is important and exact volume is not.

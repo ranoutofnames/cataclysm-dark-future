@@ -1083,6 +1083,12 @@ struct itype {
         /** Number of items per above volume for @ref count_by_charges items */
         int stack_size = 0;
 
+        /**
+         * Length of the longest side (JSON `longest_side`, as DDA). -1 until resolved in
+         * Item_factory::finalize_post (explicit JSON, item_overlay, category floor, volume-derived).
+         */
+        units::length longest_side = -1_mm;
+
         /** Value before cataclysm. Price given is for a default-sized stack. */
         units::money price = 0_cent;
         /** Value after cataclysm, dependent upon practical usages. Price given is for a default-sized stack. */

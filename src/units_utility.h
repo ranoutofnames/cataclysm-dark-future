@@ -2,6 +2,7 @@
 
 #include "units.h"
 
+#include <string>
 #include <type_traits>
 
 /**
@@ -113,4 +114,15 @@ double convert_volume( int volume );
  */
 double convert_volume( int volume, int *out_scale );
 
-
+/**
+ * Convert a length to a whole number in the user's distance units (DISTANCE_UNITS),
+ * using the largest unit that divides it exactly. Imperial is approximated by rounding to
+ * whole inches. Pair it with @ref length_units, which names the unit chosen.
+ */
+int convert_length( const units::length &length );
+/** Name of the unit @ref convert_length chose for @p length ("mm", "cm", "m", "in", "ft"...). */
+std::string length_units( const units::length &length );
+/** Length converted to centimeters or inches; a fraction is kept. */
+double convert_length_cm_in( const units::length &length );
+/** "84 cm", "2 m" or "33 in" in the user's units; @p compact drops the space. */
+std::string string_format_length( const units::length &length, bool compact = false );

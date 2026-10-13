@@ -470,6 +470,8 @@ bool belongs_in_a_pocket( const std::list<item_pocket> &pockets, const item &it 
 
 } // namespace
 
+// Note: length is part of is_compatible(), so an over-length item spills on migration by design
+// (owner decision 2026-10-13); newly spawned items never reach this state.
 bool item_contents::needs_overflow() const
 {
     for( const item_pocket &pocket : get_pockets() ) {

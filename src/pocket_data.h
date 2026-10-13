@@ -50,11 +50,11 @@ class pocket_data
         /** Min volume of a single item. */
         units::volume min_item_volume = 0_ml;
         /**
-         * Item length limits. Accepted and kept as raw strings for now;
-         * item length (P1b) parses and enforces them.
+         * Longest and shortest item (DDA `max_item_length`/`min_item_length`). If unset,
+         * pocket_data::effective_max_item_length() applies the pocket-type default.
          */
-        std::string max_item_length;
-        std::string min_item_length;
+        std::optional<units::length> max_item_length;
+        units::length min_item_length = 0_mm;
 
         /** Can hold liquids. */
         bool watertight = false;
@@ -110,6 +110,14 @@ class pocket_data
         void load( const JsonObject &jo );
         /** Returns an error description, or an empty string if the data is consistent. */
         std::string check_definition() const;
+
+        /**
+         * The longest item this pocket accepts, nullopt for no limit. An explicit
+         * `max_item_length` is used as written. Otherwise container pockets default to
+         * cbrt( capacity ) * sqrt( 2 ) * 1.5 (DDA's default, made more generous for CDF) and
+         * holster, magazine, magazine well, mod, corpse, software and migration pockets have none.
+         */
+        std::optional<units::length> effective_max_item_length() const;
 
         /** Keys DDA defines that CDF accepts and ignores. */
         static const std::set<std::string> &ignored_keys();

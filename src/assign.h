@@ -321,6 +321,11 @@ bool assign( const JsonObject &jo, const std::string &name, units::volume &val,
              const units::volume lo = units::volume_min,
              const units::volume hi = units::volume_max );
 
+bool assign( const JsonObject &jo, const std::string &name, units::length &val,
+             bool strict = false,
+             const units::length lo = units::length_min,
+             const units::length hi = units::length_max );
+
 bool assign( const JsonObject &jo,
              const std::string &name,
              units::mass &val,

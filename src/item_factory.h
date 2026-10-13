@@ -180,6 +180,8 @@ class Item_factory
 
         /** Migrations transform items loaded from legacy saves */
         void load_migration( const JsonObject &jo );
+        /** CDF-only `item_overlay`: whitelisted fields applied on top of existing item types. */
+        void load_item_overlay( const JsonObject &jo );
 
         /** Applies any migration of the item id */
         itype_id migrate_id( const itype_id &id );
@@ -395,6 +397,11 @@ class Item_factory
         std::map<itype_id, std::unique_ptr<lua_iranged_actor>> iranged_actors;
 
         std::map<itype_id, migration> migrations;
+
+        /** item_overlay `longest_side` entries; later entries replace earlier ones. */
+        std::map<itype_id, units::length> overlay_lengths;
+        /** Resolves itype::longest_side if not set explicitly (see finalize_post). */
+        void finalize_length( itype &obj ) const;
 
         /**
          * Contains the tool subtype mappings for crafting (i.e. mess kit is a hotplate etc.).

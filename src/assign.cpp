@@ -106,6 +106,56 @@ bool assign( const JsonObject &jo, const std::string &name, units::volume &val,
     return true;
 }
 
+bool assign( const JsonObject &jo, const std::string &name, units::length &val,
+             bool,
+             const units::length lo,
+             const units::length hi )
+{
+    const auto parse = [&name]( const JsonObject & obj, units::length & out ) {
+        if( obj.has_string( name ) ) {
+            out = read_from_json_string<units::length>( *obj.get_raw( name ),
+                    units::length_units );
+            return true;
+        }
+        return false;
+    };
+
+    units::length out;
+
+    JsonObject err = jo;
+    err.allow_omitted_members();
+    JsonObject relative = jo.get_object( "relative" );
+    relative.allow_omitted_members();
+    JsonObject proportional = jo.get_object( "proportional" );
+    proportional.allow_omitted_members();
+
+    if( relative.has_member( name ) ) {
+        units::length tmp;
+        err = relative;
+        if( !parse( err, tmp ) ) {
+            err.throw_error( "invalid relative value specified", name );
+        }
+        out = val + tmp;
+    } else if( proportional.has_member( name ) ) {
+        double scalar;
+        err = proportional;
+        if( !err.read( name, scalar ) || scalar <= 0 || scalar == 1 ) {
+            err.throw_error( "multiplier must be a positive number other than 1", name );
+        }
+        out = val * scalar;
+    } else if( !parse( jo, out ) ) {
+        return false;
+    }
+
+    if( out < lo || out > hi ) {
+        err.throw_error( "value outside supported range", name );
+    }
+
+    val = out;
+
+    return true;
+}
+
 bool assign( const JsonObject &jo,
              const std::string &name,
              units::mass &val,

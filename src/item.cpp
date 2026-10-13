@@ -1799,6 +1799,9 @@ void item::basic_info( std::vector<iteminfo> &info, const iteminfo_query *parts,
                            iteminfo::lower_is_better | iteminfo::is_decimal,
                            convert_weight( weight() ) * batch );
     }
+    if( parts->test( iteminfo_parts::BASE_LENGTH ) && length() > 0_mm ) {
+        info.emplace_back( "BASE", string_format( _( "Length: %s" ), string_format_length( length() ) ) );
+    }
     if( !owner.is_null() ) {
         info.emplace_back( "BASE", string_format( _( "Owner: %s" ),
                            _( get_owner_name() ) ) );
@@ -5908,6 +5911,18 @@ units::volume item::base_volume() const
     }
 
     return type->volume;
+}
+
+units::length item::length() const
+{
+    if( is_null() || made_of( LIQUID ) ) {
+        return 0_mm;
+    }
+    if( is_corpse() ) {
+        return units::default_length_from_volume( corpse_volume( corpse ) );
+    }
+    // TODO: gunmod protrusion and sawn-off adjustments, once CDF has per-mod lengths.
+    return type->longest_side;
 }
 
 units::volume item::volume( bool integral ) const
