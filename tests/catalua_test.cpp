@@ -3728,10 +3728,10 @@ TEST_CASE("lua_hook_avatar_enters_omt", "[lua][hooks]") {
     }
 }
 
-// Hidden ([.]): map::board_vehicle reports "vehicle not found" for a bicycle added at an OMT edge,
-// even with the same boarding call that ranged_vehicle_recoil_test.cpp uses. The hook path itself
-// (displace_vehicle + per-turn poll) is untested until this setup is fixed.
-TEST_CASE("lua_hook_avatar_enters_omt_vehicle", "[lua][hooks][.]") {
+// Regression for the stale-bubble-coordinate trap: u.setpos() into another submap re-centres the
+// reality bubble (player::setpos -> game::update_map -> map::shift), so any bubble coordinate taken
+// before it is stale. Move the avatar first, then derive the seat from u.bub_pos().
+TEST_CASE("lua_hook_avatar_enters_omt_vehicle", "[lua][hooks]") {
     clear_all_state();
     build_test_map(ter_id("t_pavement"));
     const auto cleanup = on_out_of_scope([]() {
@@ -3746,13 +3746,16 @@ TEST_CASE("lua_hook_avatar_enters_omt_vehicle", "[lua][hooks][.]") {
     while (project_remain<coords::omt>(bub_to_abs(edge)).remainder_tripoint.x() != 23) {
         edge += tripoint_west;
     }
-    auto* veh = here.add_vehicle(vproto_id("bicycle"), edge, 0_degrees, 0, 0);
+    // Move first: the bubble may re-centre here, so `edge` is stale after this line.
+    u.setpos(edge);
+    const tripoint_bub_ms seat = u.bub_pos();
+    REQUIRE(project_remain<coords::omt>(u.abs_pos()).remainder_tripoint.x() == 23);
+    auto* veh = here.add_vehicle(vproto_id("bicycle"), seat, 0_degrees, 0, 0);
     REQUIRE(veh != nullptr);
     // Board at the vehicle origin, the same way ranged_vehicle_recoil_test.cpp boards a bicycle.
-    u.setpos(edge);
-    here.board_vehicle(edge, &u);
+    here.board_vehicle(seat, &u);
     REQUIRE(u.in_vehicle);
-    REQUIRE(u.bub_pos() == edge);
+    REQUIRE(u.bub_pos() == seat);
 
     g->lua_state_hooks_ready = true;
     g->last_avatar_omt_.reset();
