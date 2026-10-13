@@ -669,6 +669,7 @@ auto has_hooks( std::string_view hook_name, const hook_opts &opts ) -> bool
     }
 
     const auto &hooks = *maybe_hooks;
+    // No Lua runs between taking this reference and the check, so the cache cannot change under it.
     const auto &entries = get_hook_entries( lua, hook_name, hooks );
     return !entries.empty();
 }
@@ -714,12 +715,13 @@ auto run_hooks( std::string_view hook_name,
     }
 
     const auto &hooks = *maybe_hooks;
-    const auto &entries = get_hook_entries( lua, hook_name, hooks );
+    // Copy: a hook may add/remove hooks, which rebuilds and re-sorts the cached vector.
+    const auto entries = get_hook_entries( lua, hook_name, hooks );
 
     auto out_idx = 1;
     auto i = size_t{ 0 };
     while( i < entries.size() ) {
-        const hook_entry &e = entries[i];
+        const hook_entry &e = entries[i]; // entries is a local snapshot, safe across hook calls
         try {
             const sol::object obj = hooks.get_or<sol::object>( e.index, sol::lua_nil );
             if( obj == sol::lua_nil ) {

@@ -90,6 +90,7 @@
 #include "string_id_utils.h"
 #include "string_utils.h"
 #include "text_snippets.h"
+#include "thread_pool.h"
 #include "translations.h"
 #include "type_id.h"
 #include "units.h"
@@ -5048,7 +5049,8 @@ void item::on_wear( Character &who )
     }
     who.on_item_wear( *this );
 
-    if( type->iwearable_callbacks ) {
+    // Lua callbacks are skipped on pool worker threads (async mapgen NPC placement).
+    if( type->iwearable_callbacks && !is_pool_worker_thread() ) {
         type->iwearable_callbacks->call_on_wear( who, *this );
     }
 }
@@ -5072,7 +5074,8 @@ void item::on_takeoff( Character &who )
         actor->bypass( *who.as_player(), *this, false, who.bub_pos() );
     }
 
-    if( type->iwearable_callbacks ) {
+    // Lua callbacks are skipped on pool worker threads (async mapgen NPC placement).
+    if( type->iwearable_callbacks && !is_pool_worker_thread() ) {
         type->iwearable_callbacks->call_on_takeoff( who, *this );
     }
 }

@@ -33,6 +33,7 @@
 #include "player_activity.h"
 #include "rng.h"
 #include "string_id.h"
+#include "thread_pool.h"
 #include "translations.h"
 #include "units.h"
 #include "weighted_list.h"
@@ -185,10 +186,13 @@ void Character::toggle_trait( const trait_id &trait_ )
     }
 }
 
-// Observational Lua hook; skipped during load and character creation (see game::lua_state_hooks_ready).
+// Observational Lua hook; skipped during load and character creation (see game::lua_state_hooks_ready)
+// and on thread pool workers (async mapgen NPC placement), where Lua must not run.
+// The per-trait on_gain/on_loss callbacks are skipped on workers for the same reason.
 static void run_mutation_change_hook( Character &who, const char *hook, const trait_id &trait )
 {
-    if( g == nullptr || !g->lua_state_hooks_ready || !cata::has_hooks( hook ) ) {
+    if( is_pool_worker_thread() || g == nullptr || !g->lua_state_hooks_ready ||
+        !cata::has_hooks( hook ) ) {
         return;
     }
     cata::run_hooks( hook, [&]( auto & params ) {
@@ -372,7 +376,7 @@ void Character::mutation_effect( const trait_id &mut )
 
     on_mutation_gain( mut );
 
-    if( const auto *lcb = mut.obj().lua_callbacks ) {
+    if( const auto *lcb = mut.obj().lua_callbacks; lcb && !is_pool_worker_thread() ) {
         lcb->call_on_gain( *this, mut );
     }
 }
@@ -395,7 +399,7 @@ void Character::mutation_loss_effect( const trait_id &mut )
 
     on_mutation_loss( mut );
 
-    if( const auto *lcb = mut.obj().lua_callbacks ) {
+    if( const auto *lcb = mut.obj().lua_callbacks; lcb && !is_pool_worker_thread() ) {
         lcb->call_on_loss( *this, mut );
     }
 }
@@ -660,7 +664,7 @@ void Character::deactivate_mutation( const trait_id &mut )
         recalculate_enchantment_cache();
     }
 
-    if( const auto *lcb = mut.obj().lua_callbacks ) {
+    if( const auto *lcb = mut.obj().lua_callbacks; lcb && !is_pool_worker_thread() ) {
         lcb->call_on_deactivate( *this, mut );
     }
 }

@@ -838,8 +838,8 @@ void cata::detail::reg_hooks_examples( sol::state &lua )
     luna::set_fx( lib, "on_character_effect_removed", []( const sol::table & ) {} );
 
     DOC( "Called after a character gains a trait or mutation (any Character, avatar or NPC).  " );
-    DOC( "Fires once per real change, after the trait's own `on_gain` callback; observational only.  " );
-    DOC( "Not fired while a world is loading or during character creation.  " );
+    DOC( "Fires once per real change, after the trait's own `on_gain` callback (if it ran); observational only.  " );
+    DOC( "Not fired while a world is loading or during character creation, or when the change happens on a worker thread (async mapgen NPC placement; the trait's own `on_gain`/`on_loss` callbacks are skipped there too).  " );
     DOC( "The hook receives a table with keys:  " );
     DOC( "* `char` (Character)  " );
     DOC( "* `trait_id` (MutationBranchId)  " );
@@ -847,8 +847,8 @@ void cata::detail::reg_hooks_examples( sol::state &lua )
     luna::set_fx( lib, "on_character_gains_mutation", []( const sol::table & ) {} );
 
     DOC( "Called after a character loses a trait or mutation (any Character, avatar or NPC).  " );
-    DOC( "Fires once per real change, after the trait's own `on_loss` callback; observational only.  " );
-    DOC( "Not fired while a world is loading or during character creation.  " );
+    DOC( "Fires once per real change, after the trait's own `on_loss` callback (if it ran); observational only.  " );
+    DOC( "Not fired while a world is loading or during character creation, or when the change happens on a worker thread (async mapgen NPC placement; the trait's own `on_gain`/`on_loss` callbacks are skipped there too).  " );
     DOC( "The hook receives a table with keys:  " );
     DOC( "* `char` (Character)  " );
     DOC( "* `trait_id` (MutationBranchId)  " );

@@ -636,7 +636,7 @@ Registered via `game.add_hook`. The first three are observational; `on_character
 | `on_avatar_enters_omt`         | `avatar`, `from`, `to`, `oter`, `dimension`  | The avatar's overmap tile, z-level or dimension changed             |
 | `on_character_death`           | `char`, `killer` (nil for the avatar)        | A character dies                                                    |
 
-The trait and OMT hooks do not fire while a world loads, during character creation, or at game start (the first position is a silent baseline). They fire once per real change; a trait transformation gives one loss and one gain. `on_character_death` may revive the character by restoring HP (e.g. `char:set_all_parts_hp_cur(10)`); see `data/mods/resurrection_mod`. Scheduled timers (`lib.cdf_sched`) can be re-armed from `on_character_gains_mutation`.
+The trait and OMT hooks do not fire while a world loads, during character creation, on a pool worker thread (async mapgen NPC placement), or at game start (the first position is a silent baseline). They fire once per real change; a trait transformation gives one loss and one gain. `on_character_death` may revive the character by restoring HP (e.g. `char:set_all_parts_hp_cur(10)`); see `data/mods/resurrection_mod`. Scheduled timers (`lib.cdf_sched`) can be re-armed from `on_character_gains_mutation`.
 
 ### Mutation callbacks
 
@@ -648,6 +648,8 @@ The trait and OMT hooks do not fire while a world loads, during character creati
 | `on_deactivate` | `user`, `trait_id` | After mutation is toggled off |
 | `on_gain`       | `user`, `trait_id` | After mutation is gained      |
 | `on_loss`       | `user`, `trait_id` | After mutation is lost        |
+
+These callbacks are skipped when the change happens on a pool worker thread (async mapgen NPC placement). The iwearable `on_takeoff` Lua callback, which runs when a mutation pushes off a worn item, is skipped on workers too.
 
 ```lua
 game.mutation_functions["TRAIT_QUICK"] = {

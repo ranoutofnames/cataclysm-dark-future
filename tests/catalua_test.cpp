@@ -9,6 +9,7 @@
 #include "catalua.h"
 #include "catalua_coord.h"
 #include "catalua_hooks.h"
+#include "catalua_icallback_actor.h"
 #include "catalua_impl.h"
 #include "catalua_serde.h"
 #include "catalua_sol.h"
@@ -49,6 +50,7 @@
 #include "state_helpers.h"
 #include "string_formatter.h"
 #include "stringmaker.h"
+#include "thread_pool.h"
 #include "type_id.h"
 #include "units_angle.h"
 #include "units_energy.h"
@@ -3535,6 +3537,118 @@ TEST_CASE("lua_hook_mutation_gain_loss_fire_once", "[lua][hooks]") {
         u.unset_mutation(tough);
         CHECK(losses.count == 3);
     }
+}
+
+TEST_CASE("lua_hook_mutation_skipped_on_pool_worker", "[lua][hooks]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() {
+        g->lua_state_hooks_ready = false;
+        clear_all_state();
+    });
+    g->lua_state_hooks_ready = true;
+    l2_hook_counter gains;
+    const auto r1 = l2_install_hook("on_character_gains_mutation", [&](sol::table) {
+        ++gains.count;
+    });
+
+    auto &pool = get_thread_pool();
+    // Catch2 v2 has no SKIP(); SUCCEED() records an assertion so the early exit is explicit.
+    if (pool.num_workers() == 0) {
+        SUCCEED("skipped: no pool workers, worker path cannot be exercised");
+        return;
+    }
+
+    // A trait with a Lua on_gain/on_loss callback must not run it on a worker either.
+    auto &lua_state = DynamicDataLoader::get_instance().lua->lua;
+    int trait_gain_calls = 0;
+    int trait_loss_calls = 0;
+    lua_state["cdf_ls1_on_gain"] = [&](sol::table) {
+        ++trait_gain_calls;
+    };
+    lua_state["cdf_ls1_on_loss"] = [&](sol::table) {
+        ++trait_loss_calls;
+    };
+    const trait_id tough("TOUGH");
+    const auto *const old_callbacks = tough.obj().lua_callbacks;
+    const lua_mutation_callback_actor actor("TOUGH", sol::protected_function(),
+                                            sol::protected_function(),
+                                            lua_state["cdf_ls1_on_gain"].get<sol::protected_function>(),
+                                            lua_state["cdf_ls1_on_loss"].get<sol::protected_function>());
+    tough.obj().lua_callbacks = &actor;
+    const auto restore_callbacks = on_out_of_scope([&]() {
+        tough.obj().lua_callbacks = old_callbacks;
+    });
+
+    // Mirrors async mapgen NPC placement: a standalone npc mutated from a worker thread.
+    auto worker_result = pool.submit_returning([]() {
+        npc temp;
+        temp.set_mutation(trait_id("TOUGH"));
+        temp.unset_mutation(trait_id("TOUGH"));
+        return is_pool_worker_thread();
+    });
+    CHECK(worker_result.get());
+    CHECK(gains.count == 0);
+    CHECK(trait_gain_calls == 0);
+    CHECK(trait_loss_calls == 0);
+
+    // The same change on the main thread still fires.
+    get_avatar().set_mutation(trait_id("TOUGH"));
+    CHECK(gains.count == 1);
+    CHECK(trait_gain_calls == 1);
+    get_avatar().unset_mutation(trait_id("TOUGH"));
+    CHECK(trait_loss_calls == 1);
+}
+
+TEST_CASE("lua_hook_registering_hook_during_dispatch", "[lua][hooks]") {
+    clear_all_state();
+    auto &lua = DynamicDataLoader::get_instance().lua->lua;
+    const std::string hook_name = "on_character_gains_mutation";
+    auto hooks = lua["game"]["hooks"].get<sol::table>();
+    const auto previous = hooks[hook_name].get<sol::object>();
+    const auto cleanup = on_out_of_scope([&]() {
+        hooks[hook_name] = lua.create_table();
+        cata::has_hooks(hook_name);
+        hooks[hook_name] = previous;
+        cata::has_hooks(hook_name);
+    });
+
+    hooks[hook_name] = lua.create_table();
+    cata::has_hooks(hook_name);
+    auto list = lua.create_table();
+    int first_calls = 0;
+    int second_calls = 0;
+    list[1] = std::function<void(sol::table)>([&](sol::table) {
+        ++first_calls;
+        if (first_calls > 1) {
+            return;
+        }
+        // Grow the hook table and force the dispatch cache to rebuild mid-loop; the running
+        // dispatch must not touch the freed cache storage.
+        auto cur = lua["game"]["hooks"][hook_name].get<sol::table>();
+        for (int i = 2; i < 40; ++i) {
+            cur[i] = std::function<void(sol::table)>([&](sol::table) {
+                ++second_calls;
+            });
+        }
+        CHECK(cata::has_hooks(hook_name));
+    });
+    hooks[hook_name] = list;
+    REQUIRE(cata::has_hooks(hook_name));
+
+    // Dispatch iterates a snapshot: hooks appended mid-dispatch do not run in the same dispatch.
+    auto results = cata::run_hooks(hook_name, [](sol::table &) {});
+    CHECK(first_calls == 1);
+    CHECK(second_calls == 0);
+    REQUIRE(results[1].valid());
+    CHECK(results[1].get<sol::table>()["mod_id"].get_type() == sol::type::string);
+    CHECK(!results[2].valid());
+
+    // The next dispatch sees all of them, each exactly once.
+    results = cata::run_hooks(hook_name, [](sol::table &) {});
+    CHECK(first_calls == 2);
+    CHECK(second_calls == 38);
+    CHECK(results[39].valid());
+    CHECK(!results[40].valid());
 }
 
 TEST_CASE("lua_hook_avatar_enters_omt", "[lua][hooks]") {
