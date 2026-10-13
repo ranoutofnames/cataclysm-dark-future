@@ -1,0 +1,14 @@
+[
+  {
+    "type": "MOD_INFO",
+    "id": "lua_helper_demo",
+    "name": "Lua Helper Library Demo",
+    "authors": [ "CDF" ],
+    "description": "Demo and smoke-test fixture for the CDF Lua helper library (lib.cdf_sched, lib.cdf_vars, lib.cdf_query, lib.cdf_time).",
+    "category": "content",
+    "lua_api_version": 2,
+    "//": "Developer fixture, not meant for players.",
+    "obsolete": true,
+    "dependencies": [ "bn" ]
+  }
+]

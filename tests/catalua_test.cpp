@@ -3354,3 +3354,88 @@ TEST_CASE("lua_hook_wiring_mon_effect_removed", "[lua]") {
     CHECK(*cre_ptr == static_cast<Creature*>(&mon));
     CHECK(*eff_ptr != nullptr);
 }
+
+// ---- CDF Lua helper library (data/lua/lib/cdf_*.lua) ----
+
+TEST_CASE("lua_lib_time", "[lua][lualib]") {
+    sol::state lua = make_lua_state();
+    sol::table test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "lib_time_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+}
+
+TEST_CASE("lua_lib_vars", "[lua][lualib]") {
+    clear_all_state();
+    sol::state lua = make_lua_state();
+    sol::table test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "lib_vars_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+}
+
+TEST_CASE("lua_lib_sched_basic", "[lua][lualib]") {
+    sol::state lua = make_lua_state();
+    sol::table test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "lib_sched_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+}
+
+TEST_CASE("lua_lib_sched_load_order", "[lua][lualib]") {
+    sol::state lua = make_lua_state();
+    sol::table test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "lib_sched_load_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+}
+
+TEST_CASE("lua_lib_sched_persists", "[lua][lualib]") {
+    // Phase A in one Lua state, serialise the storage table, restore it into a fresh state.
+    std::string saved;
+    const auto dmsg = capture_debugmsg_during([&]() {
+        sol::state lua_a = make_lua_state();
+        sol::table data_a = lua_a.create_table();
+        data_a["storage"] = lua_a.create_table();
+        lua_a.globals()["test_data"] = data_a;
+        run_lua_test_script(lua_a, "lib_sched_persist_a.lua");
+        CHECK(data_a.get<bool>("ok"));
+        saved = serialize_table(data_a.get<sol::table>("storage"));
+
+        sol::state lua_b = make_lua_state();
+        sol::table data_b = lua_b.create_table();
+        data_b["storage"] = deserialize_table(lua_b, saved);
+        lua_b.globals()["test_data"] = data_b;
+        run_lua_test_script(lua_b, "lib_sched_persist_b.lua");
+        CHECK(data_b.get<bool>("ok"));
+    });
+    CHECK(dmsg.empty());
+}
+
+TEST_CASE("lua_lib_query", "[lua][lualib]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() { clear_all_state(); });
+    get_avatar().setpos(map_local_to_abs(get_map(), tripoint_bub_ms(65, 60, 0)));
+    monster& near_mon = spawn_test_monster("mon_zombie", tripoint_bub_ms(67, 60, 0));
+    monster& far_mon = spawn_test_monster("mon_zombie", tripoint_bub_ms(70, 60, 0));
+
+    sol::state lua = make_lua_state();
+    sol::table test_data = lua.create_table();
+    test_data["near_monster"] = &near_mon;
+    test_data["far_monster"] = &far_mon;
+    test_data["near_dist"] = 2;
+    test_data["far_dist"] = 5;
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "lib_query_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+}
