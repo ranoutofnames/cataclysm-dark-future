@@ -247,6 +247,14 @@ void weather_type::load(const JsonObject& jo, const std::string&) {
         optional(j, was_loaded, "acidic", requirements.acidic, false);
         optional(j, was_loaded, "time", requirements.time, weather_time_requirement_type::both);
         optional(j, was_loaded, "required_weathers", requirements.required_weathers);
+        // "lua:<ID>" selects game.weather_condition_functions[<ID>], like examine_action.
+        const auto lua_condition = j.get_string("lua_condition", "");
+        if (!lua_condition.empty()) {
+            if (lua_condition.rfind("lua:", 0) != 0 || lua_condition.size() == 4) {
+                j.throw_error("lua_condition must have the form \"lua:<ID>\"", "lua_condition");
+            }
+            requirements.lua_condition = lua_condition.substr(4);
+        }
         if (j.has_array("required_weather_patterns")) {
             for (const auto& pattern : j.get_string_array("required_weather_patterns")) {
                 requirements.required_weather_patterns.emplace(weather_pattern_id(pattern), 0.0);

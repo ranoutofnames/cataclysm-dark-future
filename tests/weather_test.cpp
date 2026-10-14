@@ -1,8 +1,13 @@
 #include "avatar.h"
 #include "calendar.h"
+#include "cata_utility.h"
+#include "catalua_impl.h"
+#include "catalua_sol.h"
 #include "catch/catch.hpp"
 #include "coordinates.h"
+#include "debug.h"
 #include "game.h"
+#include "init.h"
 #include "json.h"
 #include "map_helpers.h"
 #include "regional_settings.h"
@@ -442,5 +447,143 @@ TEST_CASE("local wind chill calculation", "[weather][wind_chill]") {
                 }
             }
         }
+    }
+}
+
+static auto weather_condition_callbacks() -> sol::table {
+    auto* state = DynamicDataLoader::get_instance().lua.get();
+    REQUIRE(state != nullptr);
+    return state->lua["game"]["weather_condition_functions"].get<sol::table>();
+}
+
+TEST_CASE("weather_lua_condition_gates_type", "[weather][lua]") {
+    const auto basic = weather_type_id("test_weather_basic");
+    const auto gated = weather_type_id("test_weather_lua_gated");
+    REQUIRE(gated.is_valid());
+    // The "lua:" prefix is stripped at load, like examine_action.
+    CHECK(gated->requirements.lua_condition == "TEST_WEATHER_GATE");
+    CHECK(basic->requirements.lua_condition.empty());
+
+    auto generator = weather_generator();
+    generator.weather_types = {basic, gated};
+    auto sample = w_point();
+    sample.temperature = 20_c;
+    sample.humidity = 55.0;
+    sample.pressure = 1010.0;
+    sample.windpower = 4.0;
+    sample.winddirection = 90;
+    sample.acidic = true;
+
+    auto callbacks = weather_condition_callbacks();
+    const auto id = std::string("TEST_WEATHER_GATE");
+    const auto previous = callbacks[id].get<sol::object>();
+    const auto restore = on_out_of_scope([&]() { callbacks[id] = previous; });
+
+    // An unregistered callback fails open (the type is allowed); it is reported once.
+    callbacks[id] = sol::lua_nil;
+    capture_debugmsg_during([&]() { CHECK(generator.get_weather_conditions(sample) == gated); });
+
+    callbacks[id] = [](sol::table) { return false; };
+    CHECK(generator.get_weather_conditions(sample) == basic);
+
+    callbacks[id] = [](sol::table) { return true; };
+    CHECK(generator.get_weather_conditions(sample) == gated);
+
+    // The callback receives the candidate type, the type chosen so far and the sample.
+    auto seen = std::vector<std::string>();
+    callbacks[id] = [&seen](sol::table params) {
+        seen.push_back(params.get<std::string>("weather_id"));
+        seen.push_back(params.get<std::string>("previous_weather_id"));
+        CHECK(params.get<double>("temperature") == Approx(20.0));
+        CHECK(params.get<double>("temperature_f") == Approx(68.0));
+        CHECK(params.get<double>("humidity") == Approx(55.0));
+        CHECK(params.get<double>("pressure") == Approx(1010.0));
+        CHECK(params.get<double>("windpower") == Approx(4.0));
+        CHECK(params.get<int>("winddirection") == 90);
+        CHECK(params.get<bool>("acidic"));
+        return true;
+    };
+    CHECK(generator.get_weather_conditions(sample) == gated);
+    REQUIRE(seen.size() == 2);
+    CHECK(seen[0] == "test_weather_lua_gated");
+    CHECK(seen[1] == "test_weather_basic");
+
+    // Only an explicit false vetoes: no return value and non-boolean values pass.
+    callbacks[id] = [](sol::table) {};
+    CHECK(generator.get_weather_conditions(sample) == gated);
+    callbacks[id] = [](sol::table) { return 0; };
+    CHECK(generator.get_weather_conditions(sample) == gated);
+
+    // Types without a lua_condition never call it.
+    auto calls = 0;
+    callbacks[id] = [&calls](sol::table) {
+        ++calls;
+        return true;
+    };
+    generator.weather_types = {basic};
+    CHECK(generator.get_weather_conditions(sample) == basic);
+    CHECK(calls == 0);
+    generator.weather_types = {basic, gated};
+    CHECK(generator.get_weather_conditions(sample) == gated);
+    CHECK(calls == 1);
+}
+
+TEST_CASE("weather_lua_condition_fails_open", "[weather][lua]") {
+    const auto basic = weather_type_id("test_weather_basic");
+    const auto missing = weather_type_id("test_weather_lua_missing");
+    const auto erroring = weather_type_id("test_weather_lua_error");
+    REQUIRE(missing.is_valid());
+    REQUIRE(erroring.is_valid());
+
+    auto generator = weather_generator();
+    const auto sample = w_point();
+    auto callbacks = weather_condition_callbacks();
+    const auto id = std::string("TEST_WEATHER_ERROR");
+    const auto previous = callbacks[id].get<sol::object>();
+    const auto restore = on_out_of_scope([&]() { callbacks[id] = previous; });
+
+    generator.weather_types = {basic, missing};
+    // A missing table key reads as sol::type::none through a proxy, not sol::type::lua_nil.
+    CHECK(callbacks["TEST_WEATHER_UNREGISTERED"].get_type() == sol::type::none);
+    capture_debugmsg_during([&]() { CHECK(generator.get_weather_conditions(sample) == missing); });
+
+    // A Lua error is reported once and the type is allowed.
+    auto& lua = DynamicDataLoader::get_instance().lua->lua;
+    const auto script = lua.safe_script(
+        R"(game.weather_condition_functions["TEST_WEATHER_ERROR"] = function() error("test weather boom") end)",
+        sol::script_pass_on_error);
+    REQUIRE(script.valid());
+    generator.weather_types = {basic, erroring};
+    const auto dmsg = capture_debugmsg_during(
+        [&]() { CHECK(generator.get_weather_conditions(sample) == erroring); });
+    CHECK_THAT(dmsg, Catch::Contains("test weather boom"));
+    // Evaluated again without a second report.
+    CHECK(generator.get_weather_conditions(sample) == erroring);
+}
+
+TEST_CASE("weather_lua_condition_applies_to_forecast_sampling", "[weather][lua]") {
+    // Forecast, sum_conditions and current_weather all select types through
+    // get_weather_conditions( w_point ), so the gate applies to them. Lua sees the current
+    // game state, not the state at the sampled time ("now" approximation).
+    const auto basic = weather_type_id("test_weather_basic");
+    const auto gated = weather_type_id("test_weather_lua_gated");
+    auto generator = get_weather().get_cur_weather_gen();
+    generator.weather_types = {basic, gated};
+
+    auto allow = false;
+    auto callbacks = weather_condition_callbacks();
+    const auto id = std::string("TEST_WEATHER_GATE");
+    const auto previous = callbacks[id].get<sol::object>();
+    const auto restore = on_out_of_scope([&]() { callbacks[id] = previous; });
+    callbacks[id] = [&allow](sol::table) { return allow; };
+
+    const auto location = tripoint_abs_ms::zero();
+    const auto seed = 4321u;
+    for (const auto offset : {0_turns, 1_days, 3_days}) {
+        const auto when = calendar::turn + offset;
+        allow = false;
+        CHECK(generator.get_weather_conditions(location, when, seed) == basic);
+        allow = true;
+        CHECK(generator.get_weather_conditions(location, when, seed) == gated);
     }
 }

@@ -637,6 +637,7 @@ doc_gen_func.impl = function()
 ---@field examine_functions table<string, fun(params: { user: Character, pos: TripointBubMs })>
 ---@field activity_functions table<string, LuaActivityFinishFunction>
 ---@field computer_functions table<string, fun(params: { user: Character, pos: TripointBubMs, option_name: string, computer_name: string }): boolean?>
+---@field weather_condition_functions table<string, fun(params: { weather_id: string, previous_weather_id: string, temperature: number, temperature_f: number, humidity: number, pressure: number, windpower: number, winddirection: integer, acidic: boolean }): boolean?>
 ---@field hooks hooks
 ---@field current_mod string
 ---@field current_mod_path string

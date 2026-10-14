@@ -147,6 +147,11 @@ All members are optional.
 | time                      | Time of day. Valid values are: day, night, and both.                                                                                                                                                                                              |
 | required_weathers         | Will only be selected if conditions match for any of the specified types, i.e. rain can only happen if the conditions for clouds, light drizzle or drizzle are present. Required weathers should be "before" this one in the region weather list. |
 | required_weather_patterns | Requires one or more `weather_pattern` values. Use an array to require patterns at value `>= 0`, or an object to set explicit minimum values per pattern id.                                                                                      |
+| lua_condition             | Optional `"lua:<ID>"`. After all other checks pass, calls `game.weather_condition_functions["<ID>"]`; an explicit `false` return vetoes this type. Fails open (type allowed) if Lua is unavailable, the callback is missing, it errors, or it returns anything but `false`. See the Lua cookbook, "Weather type conditions". |
+
+`lua_condition` must have the form `lua:<ID>` (the same convention as furniture
+`examine_action`); anything else is a load error. It is evaluated for every sample the game takes,
+including forecasts, so keep it a cheap predicate that does not change weather.
 
 For acid weather and similar variants, prefer `required_weather_patterns` over the legacy
 `acidic` requirement flag. For example:

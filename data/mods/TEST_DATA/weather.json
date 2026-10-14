@@ -36,6 +36,24 @@
     "requirements": { "required_weather_patterns": [ "test_weather_front" ] }
   },
   {
+    "type": "weather_type",
+    "id": "test_weather_lua_gated",
+    "copy-from": "test_weather_basic",
+    "requirements": { "lua_condition": "lua:TEST_WEATHER_GATE" }
+  },
+  {
+    "type": "weather_type",
+    "id": "test_weather_lua_missing",
+    "copy-from": "test_weather_basic",
+    "requirements": { "lua_condition": "lua:TEST_WEATHER_UNREGISTERED" }
+  },
+  {
+    "type": "weather_type",
+    "id": "test_weather_lua_error",
+    "copy-from": "test_weather_basic",
+    "requirements": { "lua_condition": "lua:TEST_WEATHER_ERROR" }
+  },
+  {
     "type": "base_weather",
     "id": "test_weather_base",
     "copy-from": "default",

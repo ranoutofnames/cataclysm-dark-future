@@ -81,6 +81,9 @@ struct weather_requirements {
     bool acidic = false;
     weather_time_requirement_type time = weather_time_requirement_type::both;
     std::vector<weather_type_id> required_weathers;
+    // ID from a "lua:<ID>" JSON value, looked up in game.weather_condition_functions.
+    // Empty = no gate.
+    std::string lua_condition;
     std::map<weather_pattern_id, double> required_weather_patterns;
 };
 

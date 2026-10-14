@@ -872,6 +872,50 @@ gapi.clear_omt_weather_override(center_omt, 2)
 Use `"thunder"` instead of `"lightning"` if you want thunderstorm weather without the stronger
 lightning-storm variant.
 
+## Weather type conditions
+
+A `weather_type` can carry a Lua gate. Put `lua_condition` in its `requirements`, with a string id,
+and register a function under that id in `game.weather_condition_functions`. The gate runs last,
+after the numeric, `time`, `required_weathers` and `required_weather_patterns` checks, so the
+function is only called for types that would otherwise be selected.
+
+```json
+{
+  "type": "weather_type",
+  "id": "my_mod_ash_storm",
+  "copy-from": "thunder",
+  "name": "ash storm",
+  "requirements": {
+    "required_weathers": [ "cloudy", "light_drizzle", "drizzle", "rain" ],
+    "lua_condition": "lua:MY_MOD_ASH_STORM"
+  }
+}
+```
+
+```lua
+local storage = game.mod_storage[game.current_mod] -- game.current_mod is only valid while loading
+
+game.weather_condition_functions["MY_MOD_ASH_STORM"] = function(params)
+  -- params.weather_id           the type being tested
+  -- params.previous_weather_id  the type selected so far (what it would replace)
+  -- params.temperature          degrees C of the sample
+  -- params.temperature_f        degrees F
+  -- params.humidity, params.pressure, params.windpower, params.winddirection
+  -- params.acidic               boolean
+  return storage.volcano_erupting == true
+end
+```
+
+Only an explicit `false` vetoes the type. Returning `true`, nothing, or any other value allows it,
+and so does a missing id or a Lua error (reported once as a debug message). A gate can therefore
+never stop the weather system, but a typo in the id silently disables the gate.
+
+The function is a pure predicate. Do not call weather-changing APIs from it, and keep it cheap:
+the game evaluates it for every weather sample, including the forecast and the hour-by-hour
+sums used for sunlight and rain. The parameters describe the sampled time, but anything else the
+function reads (mod storage, `gapi.current_turn()`) is the state *now*, so a forecast can disagree
+with what finally happens when the gate depends on something that changes over time.
+
 ## Carried items and pockets
 
 Carried items live in pockets of worn garments, not in a separate inventory. `add_item` and

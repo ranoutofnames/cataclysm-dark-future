@@ -3,6 +3,7 @@
 #include "assign.h"
 #include "cached_options.h"
 #include "cata_utility.h"
+#include "catalua.h"
 #include "fstream_utils.h"
 #include "game_constants.h"
 #include "generic_factory.h"
@@ -294,6 +295,11 @@ auto weather_generator::get_weather_conditions(const w_point& w) const -> const 
                 || (wrequires.time == weather_time_requirement_type::night && day)) {
                 continue;
             }
+        }
+        if (!wrequires.lua_condition.empty()
+            && !cata::run_lua_weather_condition(wrequires.lua_condition, type.str(),
+                                                 current_conditions->str(), w)) {
+            continue;
         }
         current_conditions = &type;
     }

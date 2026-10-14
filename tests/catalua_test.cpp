@@ -67,6 +67,7 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "weather/weather.h"
+#include "weather/weather_gen.h"
 #include "world.h"
 
 #include <algorithm>
@@ -4638,4 +4639,52 @@ TEST_CASE("lua_npc_rules_get_set", "[lua][npc]") {
     CHECK(!test_data.get<bool>("use_guns_effective_after"));
     CHECK(guy.rules.has_override_enable(ally_rule::use_guns));
     CHECK(!guy.rules.has_flag(ally_rule::use_guns, false));
+}
+
+TEST_CASE("lua_weather_condition_callback", "[lua][weather]") {
+    // A weather_type requirements "lua_condition": "lua:<ID>" calls
+    // game.weather_condition_functions[<ID>] and vetoes the type on an explicit false.
+    const auto basic = weather_type_id("test_weather_basic");
+    const auto gated = weather_type_id("test_weather_lua_gated");
+    REQUIRE(gated.is_valid());
+    REQUIRE(gated->requirements.lua_condition == "TEST_WEATHER_GATE");
+
+    auto& lua = DynamicDataLoader::get_instance().lua->lua;
+    auto callbacks = lua["game"]["weather_condition_functions"].get<sol::table>();
+    const auto id = std::string("TEST_WEATHER_GATE");
+    const auto previous = callbacks[id].get<sol::object>();
+    const auto restore = on_out_of_scope([&]() {
+        callbacks[id] = previous;
+        lua["weather_test"] = sol::lua_nil;
+    });
+    const auto script = lua.safe_script(
+        R"(
+        weather_test = { calls = 0 }
+        game.weather_condition_functions["TEST_WEATHER_GATE"] = function(params)
+          weather_test.calls = weather_test.calls + 1
+          weather_test.weather_id = params.weather_id
+          weather_test.previous = params.previous_weather_id
+          weather_test.temperature = params.temperature
+          weather_test.acidic = params.acidic
+          -- only warm samples allow the type
+          return params.temperature > 10
+        end
+    )",
+        sol::script_pass_on_error);
+    REQUIRE(script.valid());
+
+    auto generator = weather_generator();
+    generator.weather_types = {basic, gated};
+    auto sample = w_point();
+    sample.temperature = 5_c;
+    CHECK(generator.get_weather_conditions(sample) == basic);
+    sample.temperature = 15_c;
+    CHECK(generator.get_weather_conditions(sample) == gated);
+
+    auto results = lua["weather_test"].get<sol::table>();
+    CHECK(results.get<int>("calls") == 2);
+    CHECK(results.get<std::string>("weather_id") == "test_weather_lua_gated");
+    CHECK(results.get<std::string>("previous") == "test_weather_basic");
+    CHECK(results.get<double>("temperature") == Approx(15.0));
+    CHECK_FALSE(results.get<bool>("acidic"));
 }

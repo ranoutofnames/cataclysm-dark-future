@@ -15,6 +15,7 @@ class mapgen_constructor;
 class player;
 class player_activity;
 class world;
+struct w_point;
 
 namespace cata
 {
@@ -58,6 +59,16 @@ auto run_lua_examine( const std::string &callback_id, player &who,
 auto run_lua_computer_callback( const std::string &callback_id, player &who,
                                 const tripoint_bub_ms &pos, const std::string &option_name,
                                 const std::string &computer_name ) -> bool;
+
+/**
+ * Evaluates a weather_type requirements "lua_condition" (JSON "lua:<ID>") by calling
+ * game.weather_condition_functions[callback_id] with { weather_id, previous_weather_id,
+ * temperature (C), temperature_f, humidity, pressure, windpower, winddirection, acidic }.
+ * Fails open: returns true when there is no Lua state, on a worker thread, when the callback is
+ * missing or errors, or when it returns anything but boolean false. Only false vetoes.
+ */
+auto run_lua_weather_condition( const std::string &callback_id, const std::string &weather_id,
+                                const std::string &previous_weather_id, const w_point &w ) -> bool;
 auto get_lua_activity_on_finish( const player_activity &act ) -> std::string;
 auto get_lua_activity_on_turn( const player_activity &act ) -> std::string;
 auto run_lua_activity_callback( const std::string &callback_id, player &who,

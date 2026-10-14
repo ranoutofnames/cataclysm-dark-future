@@ -7,6 +7,7 @@
 #include <functional>
 #include <optional>
 #include <ranges>
+#include <set>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -51,6 +52,8 @@ constexpr int LUA_API_VERSION = 2;
 #include "path_info.h"
 #include "player_activity.h"
 #include "point.h"
+#include "thread_pool.h"
+#include "weather/weather_gen.h"
 #include "worldfactory.h"
 
 namespace cata
@@ -347,6 +350,7 @@ void init_global_state_tables( lua_state &state, const std::vector<mod_id> &modl
     gt["iranged_functions"] = lua.create_table();
     gt["itrap_functions"] = lua.create_table();
     gt["examine_functions"] = lua.create_table();
+    gt["weather_condition_functions"] = lua.create_table();
     gt["activity_functions"] = lua.create_table();
     gt["computer_functions"] = lua.create_table();
 
@@ -1260,6 +1264,61 @@ auto run_lua_computer_callback( const std::string &callback_id, player &who,
                   e.what() );
     }
     return false;
+}
+
+auto run_lua_weather_condition( const std::string &callback_id, const std::string &weather_id,
+                                const std::string &previous_weather_id, const w_point &w ) -> bool
+{
+    // Fail open: a gate that cannot run must not remove the weather type.
+    // Lua must not run on worker threads.
+    if( is_pool_worker_thread() ) {
+        return true;
+    }
+    lua_state *state = get_active_lua_state();
+    if( state == nullptr ) {
+        return true;
+    }
+
+    // The gate is evaluated many times per weather update, so report each problem once per id.
+    static std::set<std::string> reported;
+    const auto report = [&]( const std::string & message ) {
+        if( reported.insert( callback_id ).second ) {
+            debugmsg( "Weather lua_condition 'lua:%s': %s", callback_id, message );
+        }
+    };
+
+    try {
+        const auto maybe_table = state->lua.globals()["game"]["weather_condition_functions"]
+                                 .get<sol::optional<sol::table>>();
+        if( !maybe_table ) {
+            return true;
+        }
+        sol::protected_function callback =
+            maybe_table->get_or<sol::protected_function>( callback_id, sol::lua_nil );
+        if( callback == sol::lua_nil ) {
+            report( "not found in game.weather_condition_functions" );
+            return true;
+        }
+
+        auto params = state->lua.create_table();
+        params["weather_id"] = weather_id;
+        params["previous_weather_id"] = previous_weather_id;
+        const double celsius = units::to_millidegree_celsius( w.temperature ) / 1000.0;
+        params["temperature"] = celsius;
+        params["temperature_f"] = units::celsius_to_fahrenheit( celsius );
+        params["humidity"] = w.humidity;
+        params["pressure"] = w.pressure;
+        params["windpower"] = w.windpower;
+        params["winddirection"] = w.winddirection;
+        params["acidic"] = w.acidic;
+        sol::protected_function_result res = callback( params );
+        check_func_result( res );
+        // Only an explicit boolean false vetoes; nil and true both pass.
+        return !( res.get_type() == sol::type::boolean && !res.get<bool>() );
+    } catch( std::runtime_error &e ) {
+        report( string_format( "Lua error: %s", e.what() ) );
+    }
+    return true;
 }
 
 auto get_lua_activity_on_finish( const player_activity &act ) -> std::string
