@@ -49,6 +49,15 @@ void run_on_game_save_hooks( lua_state &state );
 void run_on_every_x_hooks( lua_state &state );
 auto run_lua_examine( const std::string &callback_id, player &who,
                       const tripoint_bub_ms &pos ) -> void;
+/**
+ * Runs game.computer_functions[callback_id] for a computer option with action "lua:<id>".
+ * The callback receives { user, pos, option_name, computer_name } and fails the option by
+ * returning false. A missing callback or a Lua error is also reported as failure.
+ * @return true if the option succeeded.
+ */
+auto run_lua_computer_callback( const std::string &callback_id, player &who,
+                                const tripoint_bub_ms &pos, const std::string &option_name,
+                                const std::string &computer_name ) -> bool;
 auto get_lua_activity_on_finish( const player_activity &act ) -> std::string;
 auto get_lua_activity_on_turn( const player_activity &act ) -> std::string;
 auto run_lua_activity_callback( const std::string &callback_id, player &who,

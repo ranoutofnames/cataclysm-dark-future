@@ -18,6 +18,7 @@
 #include "monstergenerator.h"
 #include "recipe_dictionary.h"
 #include "sol/sol.hpp"
+#include "thread_pool.h"
 #include "trap.h"
 #include "type_id.h"
 
@@ -347,6 +348,7 @@ void init_global_state_tables( lua_state &state, const std::vector<mod_id> &modl
     gt["itrap_functions"] = lua.create_table();
     gt["examine_functions"] = lua.create_table();
     gt["activity_functions"] = lua.create_table();
+    gt["computer_functions"] = lua.create_table();
 
     gt["recipe_functions"] = lua.create_table();
 
@@ -1220,6 +1222,44 @@ auto run_lua_examine( const std::string &callback_id, player &who,
         params["user"] = who.as_character();
         params["pos"] = pos;
     } );
+}
+
+auto run_lua_computer_callback( const std::string &callback_id, player &who,
+                                const tripoint_bub_ms &pos, const std::string &option_name,
+                                const std::string &computer_name ) -> bool
+{
+    // Lua must not run on mapgen worker threads
+    if( is_pool_worker_thread() ) {
+        return false;
+    }
+    lua_state *state = get_active_lua_state();
+    if( state == nullptr ) {
+        debugmsg( "Lua computer callback '%s' requested before Lua state was initialized",
+                  callback_id );
+        return false;
+    }
+
+    sol::protected_function callback = get_lua_callback( *state, "computer_functions", callback_id );
+    if( callback == sol::lua_nil ) {
+        debugmsg( "Lua callback '%s' was not found in game.computer_functions", callback_id );
+        return false;
+    }
+
+    try {
+        auto params = state->lua.create_table();
+        params["user"] = who.as_character();
+        params["pos"] = pos;
+        params["option_name"] = option_name;
+        params["computer_name"] = computer_name;
+        sol::protected_function_result res = callback( params );
+        check_func_result( res );
+        // Only an explicit boolean false is a failure; nil and true are both success.
+        return !( res.get_type() == sol::type::boolean && !res.get<bool>() );
+    } catch( std::runtime_error &e ) {
+        debugmsg( "Failed to run Lua callback '%s' from game.computer_functions: %s", callback_id,
+                  e.what() );
+    }
+    return false;
 }
 
 auto get_lua_activity_on_finish( const player_activity &act ) -> std::string

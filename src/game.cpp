@@ -7296,7 +7296,7 @@ void game::use_computer( const tripoint_bub_ms &p )
         return;
     }
 
-    computer_session( *used ).use();
+    computer_session( *used, p ).use();
 }
 
 template<typename T>

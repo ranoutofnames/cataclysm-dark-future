@@ -29,6 +29,7 @@ enum computer_action {
     COMPACT_IRRADIATOR,
     COMPACT_LIST_BIONICS,
     COMPACT_LOCK,
+    COMPACT_LUA,                // "lua:<ID>" runs game.computer_functions[ID]
     COMPACT_MAP_SEWER,
     COMPACT_MAP_SUBWAY,
     COMPACT_MAPS,
@@ -82,9 +83,12 @@ struct computer_option {
     std::string name;
     computer_action action;
     int security;
+    // For COMPACT_LUA: key in game.computer_functions, from an action of "lua:<ID>"
+    std::string lua_callback;
 
     computer_option();
     computer_option( const std::string &N, computer_action A, int S );
+    computer_option( const std::string &N, computer_action A, int S, const std::string &lua_id );
     // Save to/load from saves
     void serialize( JsonOut &jout ) const;
     void deserialize( JsonIn &jin );
@@ -118,6 +122,12 @@ class computer
         void add_failure( computer_failure_type failure );
         void set_access_denied_msg( const std::string &new_msg );
         void set_mission( int id );
+        const std::string &get_name() const {
+            return name;
+        }
+        const std::vector<computer_option> &get_options() const {
+            return options;
+        }
         // Save/load
         void load_legacy_data( const std::string &data );
         void serialize( JsonOut &jout ) const;

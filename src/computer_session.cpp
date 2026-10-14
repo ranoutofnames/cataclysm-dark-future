@@ -2,6 +2,7 @@
 
 #include "avatar.h"
 #include "calendar.h"
+#include "catalua.h"
 #include "character_id.h"
 #include "color.h"
 #include "debug.h"
@@ -83,7 +84,8 @@ static catacurses::window init_window()
     return catacurses::newwin( height, width, p );
 }
 
-computer_session::computer_session( computer &comp ) : comp( comp ),
+computer_session::computer_session( computer &comp, const tripoint_bub_ms &pos ) : comp( comp ),
+    comp_pos( pos ),
     win( init_window() ), left( 1 ), top( 1 ), width( getmaxx( win ) - 2 ),
     height( getmaxy( win ) - 2 )
 {
@@ -179,11 +181,19 @@ void computer_session::use()
                 } else {
                     // Successfully hacked function
                     comp.options[sel].security = 0;
-                    activate_function( current.action );
+                    if( !activate_option( current ) ) {
+                        activate_random_failure();
+                        reset_terminal();
+                        return;
+                    }
                 }
             }
         } else { // No need to hack, just activate
-            activate_function( current.action );
+            if( !activate_option( current ) ) {
+                activate_random_failure();
+                reset_terminal();
+                return;
+            }
         }
         reset_terminal();
         // Done processing a selected option.
@@ -309,6 +319,21 @@ void computer_session::activate_function( computer_action action )
         g->u.moves -= 30;
         ( this->*( it->second ) )();
     }
+}
+
+bool computer_session::activate_option( const computer_option &opt )
+{
+    if( opt.action == COMPACT_LUA ) {
+        g->u.moves -= 30;
+        return action_lua( opt );
+    }
+    activate_function( opt.action );
+    return true;
+}
+
+bool computer_session::action_lua( const computer_option &opt )
+{
+    return cata::run_lua_computer_callback( opt.lua_callback, g->u, comp_pos, opt.name, comp.name );
 }
 
 void computer_session::action_open_disarm()

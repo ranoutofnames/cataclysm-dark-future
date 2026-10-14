@@ -24,6 +24,12 @@ computer_option::computer_option( const std::string &N, computer_action A, int S
 {
 }
 
+computer_option::computer_option( const std::string &N, computer_action A, int S,
+                                  const std::string &lua_id )
+    : name( N ), action( A ), security( S ), lua_callback( lua_id )
+{
+}
+
 void computer_option::serialize( JsonOut &jout ) const
 {
     jout.start_object();
@@ -31,6 +37,9 @@ void computer_option::serialize( JsonOut &jout ) const
     jout.member( "action" );
     jout.write_as_string( action );
     jout.member( "security", security );
+    if( action == COMPACT_LUA ) {
+        jout.member( "lua_callback", lua_callback );
+    }
     jout.end_object();
 }
 
@@ -40,6 +49,7 @@ void computer_option::deserialize( JsonIn &jin )
     name = jo.get_string( "name" );
     action = jo.get_enum_value<computer_action>( "action" );
     security = jo.get_int( "security" );
+    lua_callback = jo.get_string( "lua_callback", "" );
 }
 
 computer_failure::computer_failure()
@@ -307,6 +317,7 @@ std::string enum_to_string<computer_action>( const computer_action act )
         case COMPACT_IRRADIATOR: return "irradiator";
         case COMPACT_LIST_BIONICS: return "list_bionics";
         case COMPACT_LOCK: return "lock";
+        case COMPACT_LUA: return "lua";
         case COMPACT_MAP_SEWER: return "map_sewer";
         case COMPACT_MAP_SUBWAY: return "map_subway";
         case COMPACT_MAPS: return "maps";
@@ -385,8 +396,22 @@ computer_option computer_option::from_json( const JsonObject &jo )
 {
     translation name;
     jo.read( "name", name );
-    const computer_action action = jo.get_enum_value<computer_action>( "action" );
     const int sec = jo.get_int( "security", 0 );
+    // "lua:<ID>" runs the Lua callback game.computer_functions[ID]
+    const std::string action_str = jo.get_string( "action" );
+    if( action_str.rfind( "lua:", 0 ) == 0 ) {
+        const std::string lua_id = action_str.substr( 4 );
+        if( lua_id.empty() ) {
+            jo.throw_error( "computer option action \"lua:\" needs a callback id after the colon",
+                            "action" );
+        }
+        return computer_option( name.translated(), COMPACT_LUA, sec, lua_id );
+    }
+    const computer_action action = jo.get_enum_value<computer_action>( "action" );
+    if( action == COMPACT_LUA ) {
+        // "lua" is only a valid enum string so saves round-trip; definitions need an id
+        jo.throw_error( "computer option action \"lua\" needs an id: use \"lua:<ID>\"", "action" );
+    }
     return computer_option( name.translated(), action, sec );
 }
 

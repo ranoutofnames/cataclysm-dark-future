@@ -18,6 +18,7 @@
 #include "character_id.h"
 #include "clzones.h"
 #include "color.h"
+#include "computer.h"
 #include "coordinates.h"
 #include "data_vars.h"
 #include "debug.h"
@@ -4507,4 +4508,94 @@ TEST_CASE("lua_item_pocket_handle_owner_destroyed", "[lua][pocket]") {
 
     CHECK(test_data.get<bool>("ok"));
     CHECK(!detached_owner);
+}
+
+TEST_CASE("lua_computer_option_callback", "[lua][computer]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() { clear_all_state(); });
+    auto& here = get_map();
+    const auto omt = project_to<coords::omt>(bub_to_abs(tripoint_bub_ms{60, 60, 0}));
+    const auto origin = project_to<coords::ms>(omt);
+    const auto target = abs_to_bub(origin + tripoint_rel_ms(8, 8, 0));
+    REQUIRE(here.inbounds(target));
+
+    // Place the TEST_DATA computer, whose options use "lua:<ID>" actions.
+    auto api_lua = make_lua_state();
+    api_lua.globals()["omt"] = omt;
+    const auto placed = api_lua.safe_script(
+        R"(return gapi.run_mapgen_update("lua_test_computer_update", omt, { cancel_on_collision = false }))",
+        sol::script_pass_on_error);
+    REQUIRE(placed.valid());
+    REQUIRE(placed.get<bool>());
+    computer* comp = here.computer_at(target);
+    REQUIRE(comp != nullptr);
+    const auto& options = comp->get_options();
+    REQUIRE(options.size() == 3);
+    CHECK(comp->get_name() == "Lua test terminal");
+    for (const auto& option : options) { CHECK(option.action == COMPACT_LUA); }
+    CHECK(options[0].lua_callback == "TEST_COMPUTER_OK");
+    CHECK(options[1].lua_callback == "TEST_COMPUTER_FAIL");
+    CHECK(options[2].lua_callback == "TEST_COMPUTER_QUIET");
+
+    // The callback id survives a save/load round trip.
+    auto saved = std::ostringstream{};
+    auto jsout = JsonOut(saved);
+    comp->serialize(jsout);
+    auto loaded_in = std::istringstream{saved.str()};
+    auto jsin = JsonIn(loaded_in);
+    auto loaded = computer("unnamed", 0);
+    loaded.deserialize(jsin);
+    REQUIRE(loaded.get_options().size() == 3);
+    CHECK(loaded.get_options()[1].action == COMPACT_LUA);
+    CHECK(loaded.get_options()[1].lua_callback == "TEST_COMPUTER_FAIL");
+
+    auto& lua = DynamicDataLoader::get_instance().lua->lua;
+    auto callbacks = lua["game"]["computer_functions"].get<sol::table>();
+    const auto ids = std::vector<std::string>{"TEST_COMPUTER_OK", "TEST_COMPUTER_FAIL", "TEST_COMPUTER_QUIET"};
+    auto previous = std::vector<sol::object>{};
+    for (const auto& id : ids) { previous.push_back(callbacks[id].get<sol::object>()); }
+    const auto restore_callbacks = on_out_of_scope([&]() {
+        for (auto i = size_t{0}; i < ids.size(); ++i) { callbacks[ids[i]] = previous[i]; }
+        lua["computer_test"] = sol::lua_nil;
+    });
+    const auto script = lua.safe_script(
+        R"(
+        computer_test = { ok_calls = 0, fail_calls = 0, quiet_calls = 0 }
+        game.computer_functions["TEST_COMPUTER_OK"] = function(params)
+          computer_test.ok_calls = computer_test.ok_calls + 1
+          computer_test.option_name = params.option_name
+          computer_test.computer_name = params.computer_name
+          computer_test.has_user = params.user ~= nil
+          computer_test.pos_x = params.pos.x
+          computer_test.pos_y = params.pos.y
+          return true
+        end
+        game.computer_functions["TEST_COMPUTER_FAIL"] = function(params)
+          computer_test.fail_calls = computer_test.fail_calls + 1
+          return false
+        end
+        game.computer_functions["TEST_COMPUTER_QUIET"] = function(params)
+          computer_test.quiet_calls = computer_test.quiet_calls + 1
+        end
+    )",
+        sol::script_pass_on_error);
+    REQUIRE(script.valid());
+
+    // Success, failure (explicit false) and no return value (counts as success).
+    CHECK(cata::run_lua_computer_callback(options[0].lua_callback, get_avatar(), target,
+                                          options[0].name, comp->get_name()));
+    CHECK_FALSE(cata::run_lua_computer_callback(options[1].lua_callback, get_avatar(), target,
+                                                options[1].name, comp->get_name()));
+    CHECK(cata::run_lua_computer_callback(options[2].lua_callback, get_avatar(), target,
+                                          options[2].name, comp->get_name()));
+
+    auto results = lua["computer_test"].get<sol::table>();
+    CHECK(results.get<int>("ok_calls") == 1);
+    CHECK(results.get<int>("fail_calls") == 1);
+    CHECK(results.get<int>("quiet_calls") == 1);
+    CHECK(results.get<std::string>("option_name") == "Lua test ok");
+    CHECK(results.get<std::string>("computer_name") == "Lua test terminal");
+    CHECK(results.get<bool>("has_user"));
+    CHECK(results.get<int>("pos_x") == target.x());
+    CHECK(results.get<int>("pos_y") == target.y());
 }

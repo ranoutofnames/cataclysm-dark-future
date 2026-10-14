@@ -875,3 +875,130 @@ local body = avatar:get_body_storage()
 relied on `remove_item` refusing items in pockets, or on the inventory being separate from worn
 contents, behave differently. `volume_carried`, `volume_capacity` and `can_pick_volume` keep their
 names and now use pocket totals.
+
+## Map hooks: computers, activities and furniture
+
+Computers, timed activities and furniture can each call back into Lua. In all three cases the
+JSON (or the `assign_lua_activity` call) only names a string id, and your script registers a
+function under that id in a `game` table. Register callbacks from your mod's `main.lua` or
+`preload.lua`, with ids that are unique to your mod.
+
+### Running Lua from a computer option
+
+A computer option whose `action` is `lua:<ID>` calls `game.computer_functions["<ID>"]`. Computers
+are defined in mapgen (`computers` palettes and `place_computers`):
+
+```json
+{
+  "type": "mapgen",
+  "update_mapgen_id": "my_mod_terminal",
+  "method": "json",
+  "object": {
+    "place_computers": [
+      {
+        "x": 8,
+        "y": 8,
+        "name": "Maintenance terminal",
+        "security": 2,
+        "options": [
+          { "name": "Vent the tanks", "action": "lua:MY_MOD_VENT_TANKS", "security": 1 },
+          { "name": "Download logs", "action": "download_software" }
+        ],
+        "failures": [ { "action": "alarm" }, { "action": "shutdown" } ]
+      }
+    ]
+  }
+}
+```
+
+```lua
+game.computer_functions["MY_MOD_VENT_TANKS"] = function(params)
+  -- params.user          Character using the terminal
+  -- params.pos           TripointBubMs of the terminal
+  -- params.option_name   the option's name, as shown in the menu
+  -- params.computer_name the computer's name
+  local you = params.user
+  if you:get_skill_level(SkillId.new("mechanics")) < 2 then
+    gapi.add_msg(MsgType.bad, "The vent controls make no sense to you.")
+    return false -- fails the option, like a failed hack
+  end
+  gapi.add_msg(MsgType.good, string.format("%s vents the tanks.", params.computer_name))
+  return true
+end
+```
+
+Returning `false` fails the option the same way a failed hack does: the computer's `failures` run
+(or the console shuts down if it has none) and the session ends. Returning `true` or nothing
+succeeds, and the player goes back to the menu. A missing callback id or a Lua error is reported
+as a debug message and also counts as a failure, so keep ids and spellings in sync with the JSON.
+The option still goes through the normal `security` check first, so a `lua:` option can be
+password protected like any other.
+
+A callback must not delete or replace its own computer (for example by running a mapgen update
+over its own overmap tile), because the open computer session still refers to it.
+
+### Finishing an activity with a Lua callback
+
+`assign_lua_activity` starts an ordinary activity and names the callbacks to run. `on_finish`
+runs once when the activity completes, `on_turn` (optional) runs each turn. Anything you put in
+`data` is saved with the activity and is handed back as a Lua table, so a save and load in the
+middle of the activity keeps working.
+
+```lua
+game.activity_functions["MY_MOD_FINISH_REPAIR"] = function(params)
+  -- params.user      Character that was doing the activity
+  -- params.activity  the player_activity
+  -- params.name      the name given when assigning
+  -- params.pos       TripointAbsMs, present only if `pos` was given
+  -- params.data      the table given as `data`
+  local count = params.data.parts
+  params.user:mod_pain(-1)
+  gapi.add_msg(MsgType.good, string.format("You finish repairing %d %s.", count, params.data.what))
+end
+
+local you = gapi.get_avatar()
+you:assign_lua_activity({
+  type = ActivityTypeId.new("ACT_WAIT"),
+  duration = TimeDuration.from_minutes(10),
+  on_finish = "MY_MOD_FINISH_REPAIR",
+  name = "repair",
+  pos = you:get_pos_ms(),
+  data = { parts = 3, what = "pipes" },
+})
+```
+
+The `type` must be an existing activity. `pos` is given in bubble coordinates when assigning and
+reported to the callbacks as absolute map-square coordinates. Pass `interruptable = false` to stop
+a keypress from cancelling it.
+
+### Furniture and terrain examine hooks
+
+Setting `"examine_action": "lua:<ID>"` on furniture or terrain makes examining it call
+`game.examine_functions["<ID>"]`:
+
+```json
+{
+  "type": "furniture",
+  "id": "f_my_mod_lever",
+  "name": "rusty lever",
+  "symbol": "/",
+  "color": "brown",
+  "move_cost_mod": 2,
+  "required_str": -1,
+  "flags": [ "TRANSPARENT", "MOUNTABLE" ],
+  "examine_action": "lua:MY_MOD_LEVER_EXAMINE"
+}
+```
+
+```lua
+game.examine_functions["MY_MOD_LEVER_EXAMINE"] = function(params)
+  -- params.user  Character examining the tile
+  -- params.pos   TripointBubMs of the furniture or terrain
+  local map = gapi.get_map()
+  map:set_furn_at(params.pos, FurnId.new("f_null"):int_id())
+  gapi.add_msg(MsgType.info, "The lever snaps off in your hand.")
+end
+```
+
+Examine callbacks have no return value. If a tile has both furniture and terrain with a Lua
+examine action, the furniture's callback runs.

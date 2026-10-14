@@ -636,6 +636,7 @@ doc_gen_func.impl = function()
 ---@field mapgen_functions table<string, MapgenFunction>
 ---@field examine_functions table<string, fun(params: { user: Character, pos: TripointBubMs })>
 ---@field activity_functions table<string, LuaActivityFinishFunction>
+---@field computer_functions table<string, fun(params: { user: Character, pos: TripointBubMs, option_name: string, computer_name: string }): boolean?>
 ---@field hooks hooks
 ---@field current_mod string
 ---@field current_mod_path string

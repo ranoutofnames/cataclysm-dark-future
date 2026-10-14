@@ -18,6 +18,27 @@
     "object": { "place_terrain": [ { "ter": "t_open_air", "x": 7, "y": 7 } ] }
   },
   {
+    "type": "mapgen",
+    "update_mapgen_id": "lua_test_computer_update",
+    "method": "json",
+    "object": {
+      "place_computers": [
+        {
+          "x": 8,
+          "y": 8,
+          "name": "Lua test terminal",
+          "security": 0,
+          "options": [
+            { "name": "Lua test ok", "action": "lua:TEST_COMPUTER_OK" },
+            { "name": "Lua test fail", "action": "lua:TEST_COMPUTER_FAIL" },
+            { "name": "Lua test quiet", "action": "lua:TEST_COMPUTER_QUIET" }
+          ],
+          "failures": [ { "action": "shutdown" } ]
+        }
+      ]
+    }
+  },
+  {
     "type": "ter_furn_transform",
     "id": "lua_test_wall_to_floor",
     "terrain": [ { "result": "t_floor", "valid_terrain": [ "t_wall" ] } ]

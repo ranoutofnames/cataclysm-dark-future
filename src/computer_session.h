@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "computer.h"
+#include "coordinates.h"
 #include "cursesdef.h"
 
 class Character;
@@ -13,13 +14,16 @@ class Character;
 class computer_session
 {
     public:
-        computer_session( computer &comp );
+        /** @param pos Location of the computer, passed to Lua callbacks (lua: options). */
+        computer_session( computer &comp, const tripoint_bub_ms &pos );
 
         /** Handles player use of a computer */
         void use();
 
     private:
         computer &comp;
+        // Where the computer is, for Lua callbacks
+        tripoint_bub_ms comp_pos;
         // Output window. This class assumes win's size does not change.
         catacurses::window win;
         const int left;
@@ -34,6 +38,9 @@ class computer_session
 
         // Called by use()
         void activate_function( computer_action action );
+        // Runs an option, including "lua:" options. Returns false if the option failed (a Lua
+        // callback returned false or errored) and the caller should treat it like a failed hack.
+        bool activate_option( const computer_option &opt );
         // ...but we can also choose a specific failure.
         void activate_failure( computer_failure_type fail );
         // Generally called when we fail a hack attempt
@@ -94,6 +101,8 @@ class computer_session
         void action_irradiator();
         void action_list_bionics();
         void action_lock();
+        // Not in computer_action_functions: needs the callback id, see activate_option()
+        bool action_lua( const computer_option &opt );
         void action_map_sewer();
         void action_map_subway();
         void action_maps();
