@@ -105,6 +105,7 @@ std::string io::enum_to_string<action_id>( action_id data )
             PAIR( ACTION_HAUL )
             PAIR( ACTION_BUTCHER )
             PAIR( ACTION_CHAT )
+            PAIR( ACTION_NPC_ORDERS )
             PAIR( ACTION_LOOK )
             PAIR( ACTION_PEEK )
             PAIR( ACTION_LIST_ITEMS )
@@ -331,6 +332,8 @@ std::string action_ident( action_id act )
             return "butcher";
         case ACTION_CHAT:
             return "chat";
+        case ACTION_NPC_ORDERS:
+            return "npc_orders";
         case ACTION_LOOK:
             return "look";
         case ACTION_PEEK:
@@ -1152,7 +1155,7 @@ action_id handle_action_menu()
         } else if( category_id == "interact" ) {
             register_actions( {
                 ACTION_EXAMINE, ACTION_JUMP, ACTION_SMASH, ACTION_MOVE_DOWN, ACTION_MOVE_UP,
-                ACTION_OPEN, ACTION_CLOSE, ACTION_CHAT, ACTION_PICKUP,
+                ACTION_OPEN, ACTION_CLOSE, ACTION_CHAT, ACTION_NPC_ORDERS, ACTION_PICKUP,
                 ACTION_PICKUP_ALL, ACTION_PICKUP_FEET, ACTION_GRAB, ACTION_HAUL, ACTION_BUTCHER, ACTION_LOOT,
             } );
             register_lua_action_entries( category_id );

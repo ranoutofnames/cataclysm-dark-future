@@ -118,6 +118,8 @@ enum action_id : int {
     ACTION_BUTCHER,
     /** Chat with something */
     ACTION_CHAT,
+    /** Set standing orders for followers (unbound by default) */
+    ACTION_NPC_ORDERS,
     /** Toggle look mode */
     ACTION_LOOK,
     /** Peek through something (e.g. out of a curtained window) */

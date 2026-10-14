@@ -2,8 +2,14 @@
 
 #include "type_id.h"
 
+#include <vector>
+
 class npc;
 class time_duration;
+
+enum class ally_rule : int;
+enum class combat_engagement : int;
+enum class aim_rule : int;
 
 namespace talk_function
 {
@@ -95,4 +101,13 @@ time_duration calc_skill_training_time( const npc &p, const skill_id &skill );
 int calc_skill_training_cost( const npc &p, const skill_id &skill );
 time_duration calc_ma_style_training_time( const npc &, const matype_id & /* id */ );
 int calc_ma_style_training_cost( const npc &p, const matype_id & /* id */ );
+
+// Standing-orders helpers (the chat menu and the Lua rules binding go through these).
+// They write the permanent rule state only: temporary overrides are left untouched.
+/** Sets or clears one permanent ally rule flag on every listed NPC (same state for all). */
+void apply_rule_batch( const std::vector<npc *> &npc_list, ally_rule rule, bool state );
+/** Sets the engagement rule on every listed NPC. */
+void apply_engagement_batch( const std::vector<npc *> &npc_list, combat_engagement engagement );
+/** Sets the aiming rule on every listed NPC. */
+void apply_aim_batch( const std::vector<npc *> &npc_list, aim_rule aim );
 

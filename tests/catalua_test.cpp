@@ -4599,3 +4599,43 @@ TEST_CASE("lua_computer_option_callback", "[lua][computer]") {
     CHECK(results.get<int>("pos_x") == target.x());
     CHECK(results.get<int>("pos_y") == target.y());
 }
+
+TEST_CASE("lua_npc_rules_get_set", "[lua][npc]") {
+    clear_all_state();
+    auto lua = make_lua_state();
+
+    auto test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    const auto pos = tripoint_bub_ms{50, 50, 0};
+    get_map().ter_set(pos, ter_id("t_dirt"));
+    auto& guy = spawn_npc(pos, "test_talker");
+    REQUIRE(guy.rules.has_flag(ally_rule::use_guns, false));
+    REQUIRE(!guy.rules.has_flag(ally_rule::allow_pick_up, false));
+    test_data["npc"] = &guy;
+
+    // A temporary "don't use guns" order is active while the script runs
+    guy.rules.set_specific_override_state(ally_rule::use_guns, false);
+
+    run_lua_test_script(lua, "npc_rules.lua");
+
+    CHECK(!test_data.get<bool>("pick_up_default"));
+    // the override is already in place for use_guns
+    CHECK(!test_data.get<bool>("use_guns_default"));
+
+    CHECK(test_data.get<bool>("set_on_ok"));
+    CHECK(test_data.get<bool>("pick_up_on"));
+    CHECK(test_data.get<bool>("set_off_ok"));
+    CHECK(!test_data.get<bool>("pick_up_off"));
+
+    CHECK(test_data.get<bool>("unknown_get_is_nil"));
+    CHECK(!test_data.get<bool>("unknown_set"));
+
+    CHECK(!test_data.get<bool>("use_guns_effective"));
+    CHECK(test_data.get<bool>("use_guns_permanent"));
+    CHECK(!test_data.get<bool>("use_guns_permanent_after"));
+    // the override still wins and was not disturbed
+    CHECK(!test_data.get<bool>("use_guns_effective_after"));
+    CHECK(guy.rules.has_override_enable(ally_rule::use_guns));
+    CHECK(!guy.rules.has_flag(ally_rule::use_guns, false));
+}

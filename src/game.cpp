@@ -3638,6 +3638,7 @@ input_context get_default_mode_input_context()
     ctxt.register_action( "haul" );
     ctxt.register_action( "butcher" );
     ctxt.register_action( "chat" );
+    ctxt.register_action( "npc_orders" );
     ctxt.register_action( "look" );
     ctxt.register_action( "peek" );
     ctxt.register_action( "listitems" );

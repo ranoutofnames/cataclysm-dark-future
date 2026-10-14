@@ -1945,6 +1945,13 @@
   },
   {
     "type": "keybinding",
+    "name": "Set standing orders for followers",
+    "category": "DEFAULTMODE",
+    "id": "npc_orders",
+    "bindings": [  ]
+  },
+  {
+    "type": "keybinding",
     "name": "Look Around",
     "category": "DEFAULTMODE",
     "id": "look",

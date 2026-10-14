@@ -1056,3 +1056,74 @@ TEST_CASE("npc_talk_effect_change_first_topic", "[npc_talk]") {
     effect_2.apply(d);
     CHECK(talker_npc.chatbin.first_topic == "TALK_TEST_CHANGE_FIRST_TOPIC_1");
 }
+
+TEST_CASE("npc_standing_orders_batch", "[npc][rules]") {
+    clear_all_state();
+    dialogue d;
+    npc& first = prep_test(d);
+    npc& second = create_test_talker(get_avatar().bub_pos() + point(5, 2));
+    REQUIRE(&first != &second);
+    const std::vector<npc*> both = {&first, &second};
+
+    SECTION("followers that differ converge to one state") {
+        first.rules.set_flag(ally_rule::allow_pick_up);
+        second.rules.clear_flag(ally_rule::allow_pick_up);
+        const auto other_flags = [](const npc& guy) {
+            return static_cast<int>(guy.rules.flags) & ~static_cast<int>(ally_rule::allow_pick_up);
+        };
+        const int first_other = other_flags(first);
+        const int second_other = other_flags(second);
+
+        apply_rule_batch(both, ally_rule::allow_pick_up, true);
+        CHECK(first.rules.has_flag(ally_rule::allow_pick_up, false));
+        CHECK(second.rules.has_flag(ally_rule::allow_pick_up, false));
+
+        apply_rule_batch(both, ally_rule::allow_pick_up, false);
+        CHECK(!first.rules.has_flag(ally_rule::allow_pick_up, false));
+        CHECK(!second.rules.has_flag(ally_rule::allow_pick_up, false));
+
+        // no other rule changed
+        CHECK(other_flags(first) == first_other);
+        CHECK(other_flags(second) == second_other);
+    }
+
+    SECTION("temporary overrides are not disturbed") {
+        second.rules.set_specific_override_state(ally_rule::forbid_engage, true);
+        const int enabled = static_cast<int>(second.rules.override_enable);
+        const int overrides = static_cast<int>(second.rules.overrides);
+        REQUIRE(second.rules.has_override_enable(ally_rule::forbid_engage));
+
+        apply_rule_batch(both, ally_rule::forbid_engage, false);
+
+        CHECK(static_cast<int>(second.rules.override_enable) == enabled);
+        CHECK(static_cast<int>(second.rules.overrides) == overrides);
+        // the permanent flag changed, the override still wins
+        CHECK(!second.rules.has_flag(ally_rule::forbid_engage, false));
+        CHECK(second.rules.has_flag(ally_rule::forbid_engage));
+        CHECK(!first.rules.has_override_enable(ally_rule::forbid_engage));
+    }
+
+    SECTION("engagement and aim") {
+        first.rules.engagement = combat_engagement::NONE;
+        second.rules.engagement = combat_engagement::ALL;
+        first.rules.aim = aim_rule::SPRAY;
+        second.rules.aim = aim_rule::PRECISE;
+
+        apply_engagement_batch(both, combat_engagement::HIT);
+        apply_aim_batch(both, aim_rule::STRICTLY_PRECISE);
+
+        for (const npc* guy : both) {
+            CHECK(guy->rules.engagement == combat_engagement::HIT);
+            CHECK(guy->rules.aim == aim_rule::STRICTLY_PRECISE);
+        }
+    }
+
+    SECTION("empty list and unlisted npcs") {
+        const bool before = first.rules.has_flag(ally_rule::allow_bash, false);
+        apply_rule_batch({}, ally_rule::allow_bash, !before);
+        CHECK(first.rules.has_flag(ally_rule::allow_bash, false) == before);
+        apply_rule_batch({&second}, ally_rule::allow_bash, !before);
+        CHECK(second.rules.has_flag(ally_rule::allow_bash, false) == !before);
+        CHECK(first.rules.has_flag(ally_rule::allow_bash, false) == before);
+    }
+}

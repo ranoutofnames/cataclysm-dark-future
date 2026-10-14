@@ -498,7 +498,7 @@ TEST_CASE("control_npc_updates_positions_and_reality_bubble", "[npc][control]") 
 TEST_CASE("npc_can_target_player") {
     clear_all_state();
     // Set to daytime for visibiliity
-    calendar::turn = calendar::turn_zero + 12_hours;
+    set_time(calendar::turn_zero + 12_hours);
 
     g->faction_manager_ptr->create_if_needed();
 
@@ -558,4 +558,48 @@ TEST_CASE("random npc spawn chance") {
     CHECK(npc_overmap::spawn_chance_in_hour(2 * days_in_year, 1.0) == Approx(0.5 / 24.0));
     CHECK(npc_overmap::spawn_chance_in_hour(4 * days_in_year, 1.0) == Approx(0.25 / 24.0));
     CHECK(npc_overmap::spawn_chance_in_hour(8 * days_in_year, 1.0) == Approx(0.125 / 24.0));
+}
+
+// Sets up a following ally with a hammer lying item_dist tiles away in open, lit terrain,
+// runs one item search and reports whether the ally decided to fetch it.
+static auto npc_pickup_search_fetches(const int item_dist, const bool allow_pick_up) -> bool {
+    clear_all_state();
+    clear_map();
+    set_time(calendar::turn_zero + 12_hours);
+    g->faction_manager_ptr->create_if_needed();
+    g->place_player(tripoint_bub_ms(40, 60, 0));
+
+    npc& guy = spawn_npc(tripoint_bub_ms(60, 60, 0), "test_talker");
+    clear_character(guy, true);
+    // Carried items need a worn pocket since P1c; a bare character cannot stash anything.
+    REQUIRE(!guy.wear_item(item::spawn(itype_id("backpack")), false));
+    guy.set_fac(faction_id("your_followers"));
+    guy.set_attitude(NPCATT_FOLLOW);
+    REQUIRE(guy.is_player_ally());
+    if (allow_pick_up) {
+        guy.rules.set_flag(ally_rule::allow_pick_up);
+    } else {
+        guy.rules.clear_flag(ally_rule::allow_pick_up);
+    }
+
+    map& here = get_map();
+    const tripoint_bub_ms item_pos = guy.bub_pos() + point(item_dist, 0);
+    here.add_item_or_charges(item_pos, item::spawn(itype_id("hammer")));
+    here.build_map_cache(0);
+
+    guy.find_item();
+    return guy.fetching_item;
+}
+
+TEST_CASE("npc_ally_pickup_range", "[npc][pickup]") {
+    SECTION("fetches items inside the pickup range") {
+        CHECK(npc_pickup_search_fetches(8, true));
+        CHECK(npc_pickup_search_fetches(10, true));
+    }
+    SECTION("ignores items beyond the pickup range") {
+        CHECK_FALSE(npc_pickup_search_fetches(12, true));
+    }
+    SECTION("does nothing when pickup is not allowed") {
+        CHECK_FALSE(npc_pickup_search_fetches(8, false));
+    }
 }

@@ -998,6 +998,7 @@ class game : public submap_load_listener
     private:
         auto player_visibility_cache_current() const -> bool;
         void chat(); // Talk to a nearby NPC  'C'
+        void npc_orders(); // Standing orders for followers, unbound by default
 
         // Internal methods to show "look around" info
         void print_fields_info( const tripoint_bub_ms &lp, const catacurses::window &w_look, int column,

@@ -223,6 +223,10 @@ static const itype_id itype_thorazine( "thorazine" );
 static const itype_id itype_oxygen_tank( "oxygen_tank" );
 
 static const itype_id fuel_wind( "wind" );
+
+// How far (in tiles) an ally or NPC looks for items to pick up in npc::find_item.
+// Tiles already scanned are cached in ai_cache.searched_tiles, which bounds the rescan cost.
+static constexpr int npc_pickup_range = 10;
 static const itype_id fuel_sunlight( "sunlight" );
 
 static constexpr float NPC_DANGER_VERY_LOW = 5.0f;
@@ -3216,10 +3220,7 @@ void npc::find_item()
     // Not perfect, but has to mirror pickup code
     units::volume volume_allowed = volume_capacity() - volume_carried();
     units::mass   weight_allowed = weight_capacity() - weight_carried();
-    // For some reason range limiting by vision doesn't work properly
-    const int range = 6;
-    //int range = sight_range( g->light_level( bub_pos().z() ) );
-    //range = std::max( 1, std::min( 12, range ) );
+    const int range = npc_pickup_range;
 
     static const zone_type_id zone_type_no_npc_pickup( "NO_NPC_PICKUP" );
 
@@ -3231,23 +3232,30 @@ void npc::find_item()
         return;
     }
 
+    // Follower list is built at most once per call (lazily, on the first candidate item)
+    // rather than once per candidate item.
+    std::vector<npc *> followers;
+    bool followers_built = false;
+    Character &player_character = get_player_character();
+
     const auto consider_item =
-        [&wanted, &best_value, whitelisting, volume_allowed, weight_allowed, this]
+        [&wanted, &best_value, &followers, &followers_built, &player_character, whitelisting,
+         volume_allowed, weight_allowed, this]
     ( const item & it, const tripoint_bub_ms & p ) {
         if( it.made_of( LIQUID ) ) {
             // Don't even consider liquids.
             return;
         }
-        std::vector<npc *> followers;
-        for( auto &elem : g->get_follower_list() ) {
-            shared_ptr_fast<npc> npc_to_get = get_overmapbuffer( get_dimension() ).find_npc( elem );
-            if( !npc_to_get ) {
-                continue;
+        if( !followers_built ) {
+            followers_built = true;
+            for( auto &elem : g->get_follower_list() ) {
+                shared_ptr_fast<npc> npc_to_get = get_overmapbuffer( get_dimension() ).find_npc( elem );
+                if( !npc_to_get ) {
+                    continue;
+                }
+                followers.push_back( npc_to_get.get() );
             }
-            npc *npc_to_add = npc_to_get.get();
-            followers.push_back( npc_to_add );
         }
-        Character &player_character = get_player_character();
         for( auto &elem : followers ) {
             if( !it.is_owned_by( *this, true ) && ( player_character.sees( bub_pos() ) ||
                                                     player_character.sees( wanted_item_pos ) ||

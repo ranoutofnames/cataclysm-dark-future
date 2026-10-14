@@ -208,6 +208,31 @@ mod.on_control_npc = function(params)
 end
 ```
 
+### Reading and changing a follower's standing orders
+
+Followers have permanent rules (the ones the `C` chat menu's "Set standing orders" entry and the
+dialogue topics change). `get_rule` and `set_rule` use the same names as the `toggle_npc_rule`
+dialogue effect, for example `allow_pick_up`, `use_guns`, `use_grenades`, `follow_close`,
+`allow_bash`, `hold_the_line` and `forbid_engage`.
+
+```lua
+-- guy is an NPC usertype value, for example from map:place_npc or a hook argument
+if guy:get_rule("allow_pick_up") == false then
+    guy:set_rule("allow_pick_up", true)
+end
+
+-- Unknown names give nil / false instead of raising an error
+print(guy:get_rule("no_such_rule")) -- nil
+print(guy:set_rule("no_such_rule", true)) -- false
+
+-- Temporary orders (the "relax" / "danger" commands) take precedence over the permanent rule.
+-- Pass false as the second argument to read the permanent setting only.
+local effective = guy:get_rule("use_guns")
+local permanent = guy:get_rule("use_guns", false)
+```
+
+`set_rule` only changes the permanent rule; it never clears a temporary order.
+
 ## Dimensions
 
 ### Checking the current dimension

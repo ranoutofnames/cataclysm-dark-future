@@ -2528,6 +2528,10 @@ bool game::handle_action()
                 chat();
                 break;
 
+            case ACTION_NPC_ORDERS:
+                npc_orders();
+                break;
+
             case ACTION_PEEK:
                 if( u.has_active_mutation( trait_SHELL2 ) ) {
                     add_msg( m_info, _( "You can't peek around corners while you're in your shell." ) );

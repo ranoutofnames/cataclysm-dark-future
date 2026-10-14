@@ -36,6 +36,7 @@
 #include "mtype.h"
 #include "mutation.h"
 #include "npc.h"
+#include "npctalk.h"
 #include "player.h"
 #include "player_activity.h"
 #include "pldata.h"
@@ -1666,6 +1667,33 @@ void cata::detail::reg_npc( sol::state &lua )
         SET_FX_T( set_attitude, void( npc_attitude new_attitude ) );
 
         SET_FX_T( has_activity, bool() const );
+
+        // N1: follower standing orders (permanent ally rules)
+        DOC( "Returns whether the named ally rule is on for this npc, or nil if the rule name is unknown. "
+             "Rule names are those used by the toggle_npc_rule dialogue effect, for example "
+             "\"allow_pick_up\", \"use_guns\", \"follow_close\" or \"hold_the_line\". "
+             "Temporary orders count unless `check_override` is false, which reads the permanent setting." );
+        luna::set_fx( ut, "get_rule", []( UT_CLASS & npchar, const std::string & rule,
+        sol::optional<bool> check_override ) -> sol::optional<bool> {
+            const auto it = ally_rule_strs.find( rule );
+            if( it == ally_rule_strs.end() ) {
+                return sol::nullopt;
+            }
+            return npchar.rules.has_flag( it->second.rule, check_override.value_or( true ) );
+        } );
+
+        DOC( "Sets the named permanent ally rule on or off for this npc, like the set_npc_rule and "
+             "clear_npc_rule dialogue effects. Temporary orders are left alone. "
+             "Returns false (and changes nothing) if the rule name is unknown." );
+        luna::set_fx( ut, "set_rule", []( UT_CLASS & npchar, const std::string & rule,
+        const bool state ) -> bool {
+            const auto it = ally_rule_strs.find( rule );
+            if( it == ally_rule_strs.end() ) {
+                return false;
+            }
+            apply_rule_batch( { &npchar }, it->second.rule, state );
+            return true;
+        } );
     }
 #undef UT_CLASS // #define UT_CLASS npc
 

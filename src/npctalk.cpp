@@ -222,7 +222,25 @@ enum npc_chat_menu {
     NPC_CHAT_ANIMAL_VEHICLE_FOLLOW,
     NPC_CHAT_ANIMAL_VEHICLE_STOP_FOLLOW,
     NPC_CHAT_COMMAND_MAGIC_VEHICLE_FOLLOW,
-    NPC_CHAT_COMMAND_MAGIC_VEHICLE_STOP_FOLLOW
+    NPC_CHAT_COMMAND_MAGIC_VEHICLE_STOP_FOLLOW,
+    NPC_CHAT_ACTIVITIES,
+    NPC_CHAT_RULES
+};
+
+// Tasks offered by the "Tell someone to work on…" chat entry.
+enum npc_task_menu {
+    NPC_TASK_LOOT,
+    NPC_TASK_CONSTRUCTION,
+    NPC_TASK_MINING,
+    NPC_TASK_VEHICLE_DECONSTRUCT,
+    NPC_TASK_VEHICLE_REPAIR,
+    NPC_TASK_CHOP_PLANKS,
+    NPC_TASK_CHOP_TREES,
+    NPC_TASK_FISHING,
+    NPC_TASK_FARMING,
+    NPC_TASK_BUTCHER,
+    NPC_TASK_DISSECT,
+    NPC_TASK_STOP
 };
 
 // given a vector of NPCs, presents a menu to allow a player to pick one.
@@ -348,6 +366,326 @@ static void npc_temp_orders_menu( const std::vector<npc *> &npc_list )
 
 }
 
+void apply_rule_batch( const std::vector<npc *> &npc_list, const ally_rule rule, const bool state )
+{
+    for( npc *p : npc_list ) {
+        if( p == nullptr ) {
+            continue;
+        }
+        if( state ) {
+            p->rules.set_flag( rule );
+        } else {
+            p->rules.clear_flag( rule );
+        }
+        // Same as the toggle/set/clear_npc_rule dialogue effects
+        p->wield_better_weapon();
+    }
+}
+
+void apply_engagement_batch( const std::vector<npc *> &npc_list, const combat_engagement engagement )
+{
+    for( npc *p : npc_list ) {
+        if( p == nullptr ) {
+            continue;
+        }
+        p->rules.engagement = engagement;
+        p->invalidate_range_cache();
+    }
+}
+
+void apply_aim_batch( const std::vector<npc *> &npc_list, const aim_rule aim )
+{
+    for( npc *p : npc_list ) {
+        if( p == nullptr ) {
+            continue;
+        }
+        p->rules.aim = aim;
+        p->invalidate_range_cache();
+    }
+}
+
+// The permanent rules in a stable (bit value) order; ally_rule_strs is an unordered map.
+static std::vector<const ally_rule_data *> npc_sorted_ally_rules()
+{
+    std::vector<const ally_rule_data *> ret;
+    ret.reserve( ally_rule_strs.size() );
+    for( const auto &rule : ally_rule_strs ) {
+        ret.push_back( &rule.second );
+    }
+    std::sort( ret.begin(), ret.end(), []( const ally_rule_data * lhs, const ally_rule_data * rhs ) {
+        return static_cast<int>( lhs->rule ) < static_cast<int>( rhs->rule );
+    } );
+    return ret;
+}
+
+// Engagement rules in the order the dialogue lists them (most cautious first).
+static const std::array<combat_engagement, 7> npc_engagement_order = { {
+        combat_engagement::NONE, combat_engagement::CLOSE, combat_engagement::WEAK,
+        combat_engagement::HIT, combat_engagement::NO_MOVE, combat_engagement::FREE_FIRE,
+        combat_engagement::ALL
+    }
+};
+
+static std::string npc_engagement_text( const combat_engagement engagement )
+{
+    switch( engagement ) {
+        case combat_engagement::NONE:
+            return _( "Don't fight unless your life depends on it" );
+        case combat_engagement::CLOSE:
+            return _( "Attack enemies that get too close" );
+        case combat_engagement::WEAK:
+            return _( "Attack enemies that can be killed easily" );
+        case combat_engagement::HIT:
+            return _( "Attack only enemies that I attack first" );
+        case combat_engagement::NO_MOVE:
+            return _( "Attack only enemies reachable without moving" );
+        case combat_engagement::FREE_FIRE:
+            return _( "Attack any enemy in range of a ranged weapon, but don't move" );
+        case combat_engagement::ALL:
+            return _( "Attack anything you want" );
+    }
+    return std::string();
+}
+
+// Aim rules, least to most careful.
+static const std::array<aim_rule, 4> npc_aim_order = { {
+        aim_rule::SPRAY, aim_rule::WHEN_CONVENIENT, aim_rule::PRECISE, aim_rule::STRICTLY_PRECISE
+    }
+};
+
+static std::string npc_aim_text( const aim_rule aim )
+{
+    switch( aim ) {
+        case aim_rule::SPRAY:
+            return _( "Don't bother aiming much" );
+        case aim_rule::WHEN_CONVENIENT:
+            return _( "Aim when it's convenient" );
+        case aim_rule::PRECISE:
+            return _( "Take your time and aim carefully" );
+        case aim_rule::STRICTLY_PRECISE:
+            return _( "Don't shoot unless you can aim very well" );
+    }
+    return std::string();
+}
+
+// Small picker used for the engagement and aim sub-menus.
+// Returns the index of the chosen option, or a negative number when cancelled.
+static int npc_standing_choice_menu( const std::string &title,
+                                     const std::vector<std::string> &options, const int current )
+{
+    uilist cmenu;
+    cmenu.text = title;
+    for( size_t i = 0; i < options.size(); i++ ) {
+        cmenu.addentry( static_cast<int>( i ), true, MENU_AUTOASSIGN, static_cast<int>( i ) == current ?
+                        string_format( _( "%s (current)" ), options[i] ) : options[i] );
+    }
+    if( current >= 0 ) {
+        cmenu.selected = current;
+    }
+    cmenu.query();
+    return cmenu.ret;
+}
+
+// Permanent ("standing") orders for the listed followers: ally rule flags, engagement and aim.
+// Every pick is applied to all listed NPCs, using the state opposite to the first NPC's
+// state, so a mixed group converges instead of flipping each member individually.
+static void npc_standing_orders_menu( const std::vector<npc *> &npc_list )
+{
+    if( npc_list.empty() ) {
+        return;
+    }
+    npc *guy = npc_list.front();
+    const std::vector<const ally_rule_data *> rule_list = npc_sorted_ally_rules();
+    const int engagement_id = rule_list.size();
+    const int aim_id = engagement_id + 1;
+    const int done_id = engagement_id + 2;
+    const bool team = npc_list.size() > 1;
+    int selected = 0;
+    bool done = false;
+
+    while( !done ) {
+        uilist nmenu;
+        nmenu.text = team ? _( "Standing orders for your team" ) :
+                     string_format( _( "Standing orders for %s" ), guy->get_name() );
+        if( team ) {
+            nmenu.text += std::string( "\n" ) +
+                          _( "A * marks a setting your followers don't agree on; picking it sets everyone "
+                             "the opposite way round from the first of them." );
+        }
+        nmenu.desc_enabled = true;
+
+        for( size_t i = 0; i < rule_list.size(); i++ ) {
+            const ally_rule rule = rule_list[i]->rule;
+            const bool state = guy->rules.has_flag( rule, false );
+            const bool differs = std::any_of( npc_list.begin(), npc_list.end(), [&]( const npc * p ) {
+                return p->rules.has_flag( rule, false ) != state;
+            } );
+            const bool overridden = std::any_of( npc_list.begin(), npc_list.end(), [&]( const npc * p ) {
+                return p->rules.has_override_enable( rule );
+            } );
+            std::string current = state ? rule_list[i]->rule_true_text : rule_list[i]->rule_false_text;
+            std::string other = state ? rule_list[i]->rule_false_text : rule_list[i]->rule_true_text;
+            parse_tags( current, get_avatar(), *guy );
+            parse_tags( other, get_avatar(), *guy );
+            std::string desc = string_format( _( "Select to change this to: %s" ), other );
+            if( overridden ) {
+                desc += std::string( "\n" ) +
+                        _( "A temporary order is overriding this setting for now." );
+            }
+            nmenu.addentry_desc( static_cast<int>( i ), true, MENU_AUTOASSIGN, ( differs ? "* " : "" ) + current, desc );
+        }
+
+        const auto engagement_it = std::find( npc_engagement_order.begin(),
+                                              npc_engagement_order.end(), guy->rules.engagement );
+        const bool engagement_differs = std::any_of( npc_list.begin(), npc_list.end(),
+        [&]( const npc * p ) {
+            return p->rules.engagement != guy->rules.engagement;
+        } );
+        nmenu.addentry_desc( engagement_id, true, MENU_AUTOASSIGN,
+                             string_format( _( "%sEngagement: %s" ), engagement_differs ? "* " : "",
+                                            npc_engagement_text( guy->rules.engagement ) ),
+                             _( "Select to choose when to start a fight." ) );
+        const auto aim_it = std::find( npc_aim_order.begin(), npc_aim_order.end(), guy->rules.aim );
+        const bool aim_differs = std::any_of( npc_list.begin(), npc_list.end(), [&]( const npc * p ) {
+            return p->rules.aim != guy->rules.aim;
+        } );
+        nmenu.addentry_desc( aim_id, true, MENU_AUTOASSIGN,
+                             string_format( _( "%sAiming: %s" ), aim_differs ? "* " : "",
+                                            npc_aim_text( guy->rules.aim ) ),
+                             _( "Select to choose how carefully to aim." ) );
+        nmenu.addentry( done_id, true, 'd', _( "Done giving standing orders" ) );
+        nmenu.selected = selected;
+        nmenu.query();
+
+        if( nmenu.ret < 0 || nmenu.ret == done_id ) {
+            done = true;
+        } else if( nmenu.ret == engagement_id ) {
+            selected = nmenu.ret;
+            std::vector<std::string> options;
+            for( const combat_engagement e : npc_engagement_order ) {
+                options.push_back( npc_engagement_text( e ) );
+            }
+            const int current = engagement_it == npc_engagement_order.end() ? -1 :
+                                static_cast<int>( std::distance( npc_engagement_order.begin(), engagement_it ) );
+            const int choice = npc_standing_choice_menu( _( "Engage enemies how?" ), options, current );
+            if( choice >= 0 && choice < static_cast<int>( npc_engagement_order.size() ) ) {
+                apply_engagement_batch( npc_list, npc_engagement_order[choice] );
+            }
+        } else if( nmenu.ret == aim_id ) {
+            selected = nmenu.ret;
+            std::vector<std::string> options;
+            for( const aim_rule a : npc_aim_order ) {
+                options.push_back( npc_aim_text( a ) );
+            }
+            const int current = aim_it == npc_aim_order.end() ? -1 :
+                                static_cast<int>( std::distance( npc_aim_order.begin(), aim_it ) );
+            const int choice = npc_standing_choice_menu( _( "Aim how?" ), options, current );
+            if( choice >= 0 && choice < static_cast<int>( npc_aim_order.size() ) ) {
+                apply_aim_batch( npc_list, npc_aim_order[choice] );
+            }
+        } else if( nmenu.ret < engagement_id ) {
+            selected = nmenu.ret;
+            const ally_rule rule = rule_list[nmenu.ret]->rule;
+            apply_rule_batch( npc_list, rule, !guy->rules.has_flag( rule, false ) );
+        } else {
+            done = true;
+        }
+    }
+}
+
+// Asks who the standing orders are for (one follower or everyone), then opens the menu.
+// Returns false if the player backed out before the menu opened.
+static bool npc_standing_orders_select( const std::vector<npc *> &npc_list )
+{
+    const int npcselect = npc_select_menu( npc_list, _( "Whose standing orders?" ) );
+    if( npcselect < 0 ) {
+        return false;
+    }
+    if( npcselect == static_cast<int>( npc_list.size() ) ) {
+        npc_standing_orders_menu( npc_list );
+    } else {
+        npc_standing_orders_menu( { npc_list[npcselect] } );
+    }
+    return true;
+}
+
+// Lets the player pick a task for the NPCs chosen in the chat menu.
+// Returns an npc_task_menu value, or a negative number when cancelled.
+static int npc_task_select_menu()
+{
+    uilist tmenu;
+    tmenu.text = _( "Work on what?" );
+    tmenu.addentry( NPC_TASK_LOOT, true, 'l', _( "Sort items in the loot zones" ) );
+    tmenu.addentry( NPC_TASK_CONSTRUCTION, true, 'c', _( "Do any construction work you can" ) );
+    tmenu.addentry( NPC_TASK_MINING, true, 'm', _( "Do any mining work you can" ) );
+    tmenu.addentry( NPC_TASK_VEHICLE_DECONSTRUCT, true, 'd',
+                    _( "Deconstruct any vehicles in a deconstruction zone" ) );
+    tmenu.addentry( NPC_TASK_VEHICLE_REPAIR, true, 'r',
+                    _( "Repair any vehicles in a repair zone" ) );
+    tmenu.addentry( NPC_TASK_CHOP_PLANKS, true, 'p', _( "Chop logs into planks" ) );
+    tmenu.addentry( NPC_TASK_CHOP_TREES, true, 't', _( "Chop down trees in a chopping zone" ) );
+    tmenu.addentry( NPC_TASK_FISHING, true, 'f', _( "Fish in a fishing zone" ) );
+    tmenu.addentry( NPC_TASK_FARMING, true, 'a', _( "Tend the crops in the farming zones" ) );
+    tmenu.addentry( NPC_TASK_BUTCHER, true, 'b', _( "Butcher any corpses you can" ) );
+    tmenu.addentry( NPC_TASK_DISSECT, true, 'x', _( "Dissect any corpses you can" ) );
+    tmenu.addentry( NPC_TASK_STOP, true, 's', _( "Stop what you are doing" ) );
+    tmenu.query();
+    return tmenu.ret;
+}
+
+// Hands one NPC a task from npc_task_select_menu.  Mirrors the TALK_ACTIVITIES dialogue:
+// an NPC that is already busy has to be told to stop before it takes a new task.
+static void npc_assign_task( npc &guy, const int task )
+{
+    if( task == NPC_TASK_STOP ) {
+        if( guy.has_activity() ) {
+            talk_function::revert_activity( guy );
+        }
+        return;
+    }
+    if( guy.has_activity() ) {
+        add_msg( m_info, _( "%s is busy.  Tell them to stop first." ), guy.get_name() );
+        return;
+    }
+    switch( task ) {
+        case NPC_TASK_LOOT:
+            talk_function::sort_loot( guy );
+            break;
+        case NPC_TASK_CONSTRUCTION:
+            talk_function::do_construction( guy );
+            break;
+        case NPC_TASK_MINING:
+            talk_function::do_mining( guy );
+            break;
+        case NPC_TASK_VEHICLE_DECONSTRUCT:
+            talk_function::do_vehicle_deconstruct( guy );
+            break;
+        case NPC_TASK_VEHICLE_REPAIR:
+            talk_function::do_vehicle_repair( guy );
+            break;
+        case NPC_TASK_CHOP_PLANKS:
+            talk_function::do_chop_plank( guy );
+            break;
+        case NPC_TASK_CHOP_TREES:
+            talk_function::do_chop_trees( guy );
+            break;
+        case NPC_TASK_FISHING:
+            talk_function::do_fishing( guy );
+            break;
+        case NPC_TASK_FARMING:
+            talk_function::do_farming( guy );
+            break;
+        case NPC_TASK_BUTCHER:
+            talk_function::do_butcher( guy );
+            break;
+        case NPC_TASK_DISSECT:
+            talk_function::do_dissect( guy );
+            break;
+        default:
+            break;
+    }
+}
+
 static void tell_veh_stop_following()
 {
     for( wrapped_vehicle &veh : get_map().get_vehicles() ) {
@@ -425,6 +763,21 @@ static bool handle_emote( player &u, efftype_id effect, int emote_choice )
     return true;
 }
 
+void game::npc_orders()
+{
+    const int volume = u.get_shout_volume();
+    const std::vector<npc *> followers = get_npcs_if( [&]( const npc & guy ) {
+        return guy.is_player_ally() && guy.is_following() && guy.can_hear( u.bub_pos(), volume );
+    } );
+    if( followers.empty() ) {
+        add_msg( m_info, _( "You have no followers in earshot to give orders to." ) );
+        return;
+    }
+    if( npc_standing_orders_select( followers ) ) {
+        u.moves -= 100;
+    }
+}
+
 void game::chat()
 {
     int volume = u.get_shout_volume();
@@ -444,6 +797,12 @@ void game::chat()
                guy.can_hear( u.bub_pos(), volume );
     } );
     const int guard_count = guards.size();
+    // Any ally in earshot can be given a task, followers or not (but not camp staff)
+    const std::vector<npc *> available_for_activities = get_npcs_if( [&]( const npc & guy ) {
+        return guy.is_player_ally() && guy.can_hear( u.bub_pos(), volume ) &&
+               guy.companion_mission_role_id != "FACTION CAMP";
+    } );
+    const int activity_count = available_for_activities.size();
 
     if( u.has_trait( trait_PROF_FOODP ) && !( u.is_wearing( itype_id( "foodperson_mask" ) ) ||
             u.is_wearing( itype_id( "foodperson_mask_on" ) ) ) ) {
@@ -532,6 +891,16 @@ void game::chat()
         nmenu.addentry( NPC_CHAT_CLEAR_OVERRIDES, true, 'r',
                         _( "Tell everyone on your team to relax (Clear Overrides)" ) );
         nmenu.addentry( NPC_CHAT_ORDERS, true, 'o', _( "Tell everyone on your team to temporarily…" ) );
+        nmenu.addentry( NPC_CHAT_RULES, true, 'R', follower_count == 1 ?
+                        string_format( _( "Set standing orders for %s…" ),
+                                       followers.front()->get_name() ) :
+                        _( "Set standing orders for your team…" ) );
+    }
+    if( !available_for_activities.empty() ) {
+        nmenu.addentry( NPC_CHAT_ACTIVITIES, true, 'A', activity_count == 1 ?
+                        string_format( _( "Tell %s to work on…" ),
+                                       available_for_activities.front()->get_name() ) :
+                        _( "Tell someone to work on…" ) );
     }
     std::string yell_msg;
     std::string monologue_msg;
@@ -793,6 +1162,33 @@ void game::chat()
         case NPC_CHAT_ORDERS: {
             is_yell = false;
             npc_temp_orders_menu( followers );
+            break;
+        }
+        case NPC_CHAT_RULES: {
+            is_yell = false;
+            if( !npc_standing_orders_select( followers ) ) {
+                return;
+            }
+            break;
+        }
+        case NPC_CHAT_ACTIVITIES: {
+            is_yell = false;
+            const int npcselect = npc_select_menu( available_for_activities,
+                                                   _( "Who should work on something?" ) );
+            if( npcselect < 0 ) {
+                return;
+            }
+            const int task = npc_task_select_menu();
+            if( task < 0 ) {
+                return;
+            }
+            if( npcselect == activity_count ) {
+                for( npc *them : available_for_activities ) {
+                    npc_assign_task( *them, task );
+                }
+            } else {
+                npc_assign_task( *available_for_activities[npcselect], task );
+            }
             break;
         }
         case NPC_CHAT_ANIMAL_VEHICLE_FOLLOW: {
