@@ -1,0 +1,15 @@
+[
+  {
+    "id": "CDF_LUA_DEMO_MISSION",
+    "type": "mission_definition",
+    "name": "Lua demo errand",
+    "description": "A demo mission whose start, end and fail phases run Lua.  A script completes or fails it.",
+    "goal": "MGOAL_KILL_MONSTERS",
+    "difficulty": 1,
+    "value": 0,
+    "has_generic_rewards": false,
+    "start": "lua:cdf_demo_mission_start",
+    "end": "lua:cdf_demo_mission_end",
+    "fail": "lua:cdf_demo_mission_fail"
+  }
+]

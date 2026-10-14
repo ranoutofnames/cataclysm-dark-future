@@ -49,7 +49,8 @@ local pretty = require("lib.pl.pretty")
 ## CDF helper library
 
 `lib/cdf_sched.lua` (persistent timers), `lib/cdf_vars.lua` (persistent variables),
-`lib/cdf_query.lua` (condition queries) and `lib/cdf_time.lua` (time conversions) are pure Lua helpers
+`lib/cdf_query.lua` (condition queries), `lib/cdf_time.lua` (time conversions) and
+`lib/cdf_mission.lua` (create, assign, complete and fail missions) are pure Lua helpers
 replacing common EOC features. Use `require("lib.cdf_sched")` etc. See
 `docs/en/mod/lua/guides/helper_library.md`; `data/mods/lua_helper_demo` is a working sample.
 

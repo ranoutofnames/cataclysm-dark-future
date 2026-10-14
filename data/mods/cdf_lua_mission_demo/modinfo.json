@@ -1,0 +1,14 @@
+[
+  {
+    "type": "MOD_INFO",
+    "id": "cdf_lua_mission_demo",
+    "name": "Lua Mission Demo",
+    "authors": [ "CDF" ],
+    "description": "Demo and smoke-test fixture for Lua mission phases (\"lua:<id>\") and lib.cdf_mission.",
+    "category": "content",
+    "lua_api_version": 2,
+    "//": "Developer fixture, not meant for players.",
+    "obsolete": true,
+    "dependencies": [ "bn" ]
+  }
+]

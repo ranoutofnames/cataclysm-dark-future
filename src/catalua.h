@@ -12,6 +12,7 @@ class lua_monster_callback_actor;
 class Item_factory;
 class map;
 class mapgen_constructor;
+class mission;
 class player;
 class player_activity;
 class world;
@@ -69,6 +70,13 @@ auto run_lua_computer_callback( const std::string &callback_id, player &who,
  */
 auto run_lua_weather_condition( const std::string &callback_id, const std::string &weather_id,
                                 const std::string &previous_weather_id, const w_point &w ) -> bool;
+
+/**
+ * Runs game.mission_functions[callback_id] for a mission phase written as "lua:<id>" in JSON.
+ * The callback receives { mission, mission_type }. A missing callback or a Lua error is
+ * reported with debugmsg and the phase is skipped.
+ */
+auto run_lua_mission_callback( const std::string &callback_id, mission &miss ) -> void;
 auto get_lua_activity_on_finish( const player_activity &act ) -> std::string;
 auto get_lua_activity_on_turn( const player_activity &act ) -> std::string;
 auto run_lua_activity_callback( const std::string &callback_id, player &who,

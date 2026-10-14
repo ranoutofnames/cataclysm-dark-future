@@ -41,6 +41,7 @@
 #include "map/submap_load_manager.h"
 #include "map_helpers.h"
 #include "mapgen/mapgen_constructor.h"
+#include "mission.h"
 #include "monster.h"
 #include "npc.h"
 #include "options.h"
@@ -4687,4 +4688,104 @@ TEST_CASE("lua_weather_condition_callback", "[lua][weather]") {
     CHECK(results.get<std::string>("previous") == "test_weather_basic");
     CHECK(results.get<double>("temperature") == Approx(15.0));
     CHECK_FALSE(results.get<bool>("acidic"));
+}
+
+// L7: Lua mission phases and lib.cdf_mission
+namespace {
+
+// Drops the missions a test created (the avatar keeps raw pointers into the world's list) and
+// removes the phase callbacks the Lua scripts registered.
+auto l7_mission_cleanup() -> on_out_of_scope {
+    avatar& u = get_avatar();
+    const character_id previous_id = u.getID();
+    // The game always gives the avatar a valid id. An invalid (-1) avatar id equals the default
+    // player id of an unassigned mission, so mission::assign would wrongly report it as assigned.
+    u.setID(character_id(1), true);
+    u.reset_all_missions();
+    mission::clear_all();
+    return on_out_of_scope([previous_id]() {
+        get_avatar().reset_all_missions();
+        mission::clear_all();
+        get_avatar().setID(previous_id, true);
+        auto& lua = DynamicDataLoader::get_instance().lua->lua;
+        auto callbacks = lua["game"]["mission_functions"].get<sol::table>();
+        for (const auto* id :
+             {"test_mission_start", "test_mission_end", "test_mission_fail"}) {
+            callbacks[id] = sol::lua_nil;
+        }
+    });
+}
+
+} // namespace
+
+TEST_CASE("lua_mission_roundtrip", "[lua][mission][npc]") {
+    clear_all_state();
+    const auto cleanup = l7_mission_cleanup();
+    auto& lua = DynamicDataLoader::get_instance().lua->lua;
+    auto test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    const auto dmsg = capture_debugmsg_during(
+        [&]() { run_lua_test_script(lua, "mission_roundtrip_test.lua"); });
+
+    CHECK(dmsg.empty());
+    CHECK(test_data.get<bool>("ok"));
+}
+
+TEST_CASE("lua_mission_persists", "[lua][mission][npc]") {
+    clear_all_state();
+    const auto cleanup = l7_mission_cleanup();
+    auto& lua = DynamicDataLoader::get_instance().lua->lua;
+    avatar& u = get_avatar();
+    auto test_data = lua.create_table();
+    lua.globals()["test_data"] = test_data;
+
+    const auto dmsg = capture_debugmsg_during([&]() {
+        run_lua_test_script(lua, "mission_roundtrip_persist_a.lua");
+        REQUIRE(test_data.get<bool>("ok"));
+        const auto uid = test_data.get<int>("uid");
+        REQUIRE(mission::find(uid) != nullptr);
+
+        // Save, drop everything, load again; phase callbacks are gone like in a fresh Lua state.
+        auto out = std::ostringstream{};
+        auto jsout = JsonOut(out);
+        mission::serialize_all(jsout);
+        u.reset_all_missions();
+        mission::clear_all();
+        auto callbacks = lua["game"]["mission_functions"].get<sol::table>();
+        for (const auto* id :
+             {"test_mission_start", "test_mission_end", "test_mission_fail"}) {
+            callbacks[id] = sol::lua_nil;
+        }
+        auto in = std::istringstream(out.str());
+        auto jsin = JsonIn(in);
+        mission::unserialize_all(jsin);
+
+        mission* restored = mission::find(uid);
+        REQUIRE(restored != nullptr);
+        CHECK(restored->in_progress());
+        CHECK(restored->get_assigned_player_id().get_value() == u.getID().get_value());
+        // The avatar's own save restores its active list; do the same here.
+        u.on_mission_assignment(*restored);
+
+        test_data["ok"] = false;
+        run_lua_test_script(lua, "mission_roundtrip_persist_b.lua");
+    });
+
+    CHECK(dmsg.empty());
+    CHECK(test_data.get<bool>("ok"));
+    CHECK(get_avatar().get_completed_missions().size() == 1);
+}
+
+TEST_CASE("lua_mission_unknown_phase_callback", "[lua][mission]") {
+    clear_all_state();
+    const auto cleanup = l7_mission_cleanup();
+    avatar& u = get_avatar();
+    // Must not crash and must not throw: the missing callback is reported through debugmsg.
+    auto* const miss =
+        mission::reserve_new(mission_type_id("TEST_LUA_MISSION_MISSING"), character_id());
+    REQUIRE(miss != nullptr);
+    const auto dmsg = capture_debugmsg_during([&]() { miss->assign(u); });
+    CHECK_THAT(dmsg, Catch::Contains("test_mission_missing_cb"));
+    CHECK(miss->in_progress());
 }

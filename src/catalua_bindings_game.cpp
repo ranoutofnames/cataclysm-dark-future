@@ -549,6 +549,25 @@ void cata::detail::reg_game_api( sol::state &lua )
     luna::set_fx( lib, "reset_dimension", []( const std::string & dim_id ) -> bool {
         return g->reset_dimension( dimension_id( dim_id ) );
     } );
+    DOC( "Registers the Lua function run for a mission phase written as \"lua:<id>\" in JSON." );
+    DOC( "Stores fn in game.mission_functions[id]; registering the same id again replaces the function." );
+    DOC_PARAMS( "id: string", "fn: function" );
+    luna::set_fx( lib, "register_mission_phase",
+    []( sol::this_state lua_this, const std::string &id, const sol::object &fn ) -> void {
+        if( id.empty() ) {
+            throw std::runtime_error( "register_mission_phase id must not be empty" );
+        }
+        if( fn.get_type() != sol::type::function ) {
+            throw std::runtime_error( "register_mission_phase fn must be a function" );
+        }
+        sol::state_view lua_view( lua_this );
+        auto callbacks =
+            lua_view.globals()["game"]["mission_functions"].get<sol::optional<sol::table>>();
+        if( !callbacks ) {
+            throw std::runtime_error( "game.mission_functions is not available" );
+        }
+        ( *callbacks )[id] = fn;
+    } );
     luna::set_fx( lib, "current_turn", []() -> time_point { return calendar::turn; } );
     luna::set_fx( lib, "turn_zero", []() -> time_point { return calendar::turn_zero; } );
     luna::set_fx( lib, "before_time_starts", []() -> time_point { return calendar::before_time_starts; } );

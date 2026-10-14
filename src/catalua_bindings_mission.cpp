@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 
 #include "catalua_bindings.h"
 #include "catalua_coord.h"
@@ -85,15 +86,28 @@ void cata::detail::reg_mission( sol::state &lua )
             return m.is_complete( npc_id.value_or( character_id() ) );
         } );
 
+        DOC( "Returns the mission status as a string: yet_to_start, in_progress, success or failure." );
+        luna::set_fx( ut, "get_status",
+        []( const mission & m ) -> std::string {
+            return mission::status_to_string( m.get_status() );
+        } );
+        DOC( "Returns the mission's unique ID (same as get_id)." );
+        SET_FX_N( get_id, "get_uid" );
+        DOC( "Returns the character ID of the player this mission is assigned to (invalid if unassigned)." );
+        SET_FX( get_assigned_player_id );
+
         DOC( "Assigns this mission to the given avatar." );
         luna::set_fx( ut, "assign",
         []( mission & m, avatar & u ) -> void {
             m.assign( u );
         } );
 
-        DOC( "Reserves a new mission of the given type for the specified NPC. Returns the new mission." );
+        DOC( "Reserves a new mission of the given type for the specified NPC. Returns the new mission, or nil if the mission type does not exist." );
         luna::set_fx( ut, "reserve_new",
         []( const mission_type_id & type, const character_id & npc_id ) -> mission * {
+            if( type.is_null() || !type.is_valid() ) {
+                return nullptr;
+            }
             return mission::reserve_new( type, npc_id );
         } );
 
@@ -101,6 +115,23 @@ void cata::detail::reg_mission( sol::state &lua )
         luna::set_fx( ut, "reserve_random",
         []( mission_origin origin, const tripoint_abs_omt & p, const character_id & npc_id ) -> mission * {
             return mission::reserve_random( origin, p, npc_id );
+        } );
+
+        DOC( "Finds a mission by unique ID. Returns nil if no such mission exists." );
+        luna::set_fx( ut, "find",
+        []( int uid ) -> mission * {
+            for( mission *m : mission::get_all_active() ) {
+                if( m->get_id() == uid ) {
+                    return m;
+                }
+            }
+            return nullptr;
+        } );
+
+        DOC( "Returns every mission in the world: unassigned, in progress and finished ones." );
+        luna::set_fx( ut, "get_all",
+        []() -> std::vector<mission *> {
+            return mission::get_all_active();
         } );
 
         reg_serde_functions( ut );

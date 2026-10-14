@@ -47,6 +47,7 @@ constexpr int LUA_API_VERSION = 2;
 #include "mapgen/mapgen_async.h"
 #include "mapgen/mapgen_constructor.h"
 #include "messages.h"
+#include "mission.h"
 #include "mod_manager.h"
 #include "mutation.h"
 #include "path_info.h"
@@ -353,6 +354,7 @@ void init_global_state_tables( lua_state &state, const std::vector<mod_id> &modl
     gt["weather_condition_functions"] = lua.create_table();
     gt["activity_functions"] = lua.create_table();
     gt["computer_functions"] = lua.create_table();
+    gt["mission_functions"] = lua.create_table();
 
     gt["recipe_functions"] = lua.create_table();
 
@@ -1319,6 +1321,14 @@ auto run_lua_weather_condition( const std::string &callback_id, const std::strin
         report( string_format( "Lua error: %s", e.what() ) );
     }
     return true;
+}
+
+auto run_lua_mission_callback( const std::string &callback_id, mission &miss ) -> void
+{
+    run_lua_callback( "mission_functions", callback_id, [&]( sol::table & params ) {
+        params["mission"] = &miss;
+        params["mission_type"] = &miss.get_type();
+    } );
 }
 
 auto get_lua_activity_on_finish( const player_activity &act ) -> std::string

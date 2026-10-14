@@ -1,4 +1,5 @@
 #include "avatar.h"
+#include "catalua.h"
 #include "debug.h"
 #include "dialogue.h"
 #include "enum_conversions.h"
@@ -466,6 +467,13 @@ mission_target_params mission_util::parse_mission_om_target( const JsonObject &j
     return p;
 }
 
+std::function<void( mission *miss )> mission_util::lua_phase( const std::string &lua_id )
+{
+    return [lua_id]( mission * miss ) {
+        cata::run_lua_mission_callback( lua_id, *miss );
+    };
+}
+
 void mission_util::set_reveal( const std::string &terrain,
                                std::vector<std::function<void( mission *miss )>> &funcs )
 {
@@ -531,6 +539,15 @@ bool mission_util::set_update_mapgen( const JsonObject &jo,
 bool mission_util::load_funcs( const JsonObject &jo,
                                std::vector<std::function<void( mission *miss )>> &funcs )
 {
+    // "lua": "<id>" runs the Lua callback game.mission_functions[<id>]
+    if( jo.has_string( "lua" ) ) {
+        const std::string lua_id = jo.get_string( "lua" );
+        if( lua_id.empty() ) {
+            jo.throw_error( "mission phase \"lua\" needs a callback id", "lua" );
+        }
+        funcs.emplace_back( lua_phase( lua_id ) );
+    }
+
     if( jo.has_string( "reveal_om_ter" ) ) {
         const std::string target_terrain = jo.get_string( "reveal_om_ter" );
         set_reveal( target_terrain, funcs );

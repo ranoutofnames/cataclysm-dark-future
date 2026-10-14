@@ -266,7 +266,17 @@ void mission_type::load( const JsonObject &jo, const std::string &src )
     const auto parse_phase = [&]( const std::string & phase,
     std::function<void( mission * )> &phase_func ) {
         if( jo.has_string( phase ) ) {
-            assign_function( jo, phase, phase_func, mission_function_map );
+            // "lua:<id>" runs the Lua callback game.mission_functions[<id>]
+            const std::string phase_id = jo.get_string( phase );
+            if( phase_id.rfind( "lua:", 0 ) == 0 ) {
+                const std::string lua_id = phase_id.substr( 4 );
+                if( lua_id.empty() ) {
+                    jo.throw_error( "mission phase \"lua:\" needs a callback id after the colon", phase );
+                }
+                phase_func = mission_util::lua_phase( lua_id );
+            } else {
+                assign_function( jo, phase, phase_func, mission_function_map );
+            }
         } else if( jo.has_member( phase ) ) {
             JsonObject j_start = jo.get_object( phase );
             if( !parse_funcs( j_start, phase_func ) ) {

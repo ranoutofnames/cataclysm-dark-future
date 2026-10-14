@@ -168,6 +168,8 @@ void set_reveal( const std::string &terrain,
                  std::vector<std::function<void( mission *miss )>> &funcs );
 void set_reveal_any( const JsonArray &ja,
                      std::vector<std::function<void( mission *miss )>> &funcs );
+/** Phase function that runs the Lua callback game.mission_functions[lua_id]. */
+std::function<void( mission *miss )> lua_phase( const std::string &lua_id );
 mission_target_params parse_mission_om_target( const JsonObject &jo );
 std::optional<tripoint_abs_omt> assign_mission_target( const mission_target_params &params );
 tripoint_abs_omt get_om_terrain_pos( const mission_target_params &params );
@@ -405,6 +407,9 @@ class mission
         bool has_failed() const;
         /** Checks if the mission is started, but not failed and not succeeded. */
         bool in_progress() const;
+        mission_status get_status() const {
+            return status;
+        }
         /** Processes this mission. */
         void process();
         /** Called when the player talks with an NPC. May resolve mission goals, e.g. MGOAL_TALK_TO_NPC. */

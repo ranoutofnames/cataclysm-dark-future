@@ -1,0 +1,39 @@
+[
+  {
+    "id": "TEST_LUA_MISSION",
+    "type": "mission_definition",
+    "name": "Test Lua mission",
+    "description": "Lua phase functions written as lua:<id>.",
+    "goal": "MGOAL_KILL_MONSTERS",
+    "difficulty": 1,
+    "value": 0,
+    "has_generic_rewards": false,
+    "start": "lua:test_mission_start",
+    "end": "lua:test_mission_end",
+    "fail": "lua:test_mission_fail"
+  },
+  {
+    "id": "TEST_LUA_MISSION_OBJ",
+    "type": "mission_definition",
+    "name": "Test Lua mission object form",
+    "description": "Lua phase functions written as an object with a lua member.",
+    "goal": "MGOAL_KILL_MONSTERS",
+    "difficulty": 1,
+    "value": 0,
+    "has_generic_rewards": false,
+    "start": { "lua": "test_mission_start" },
+    "end": { "lua": "test_mission_end" },
+    "fail": { "lua": "test_mission_fail" }
+  },
+  {
+    "id": "TEST_LUA_MISSION_MISSING",
+    "type": "mission_definition",
+    "name": "Test Lua mission missing callback",
+    "description": "Refers to a callback nobody registers.",
+    "goal": "MGOAL_KILL_MONSTERS",
+    "difficulty": 1,
+    "value": 0,
+    "has_generic_rewards": false,
+    "start": "lua:test_mission_missing_cb"
+  }
+]
