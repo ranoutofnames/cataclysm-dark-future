@@ -400,6 +400,8 @@ class Item_factory
 
         /** item_overlay `longest_side` entries; later entries replace earlier ones. */
         std::map<itype_id, units::length> overlay_lengths;
+        /** item_overlay `pocket_data` entries (worn storage layouts, all tagged carry). */
+        std::map<itype_id, std::vector<pocket_data>> overlay_pockets;
         /** Resolves itype::longest_side if not set explicitly (see finalize_post). */
         void finalize_length( itype &obj ) const;
 

@@ -216,6 +216,30 @@ void npc_mission_item_location::attach( detached_ptr<item> &&obj )
     as_npc->companion_mission_inv.add_item( std::move( obj ), false );
 }
 
+detached_ptr<item> body_storage_item_location::detach( item * )
+{
+    return holder->body_storage.release();
+}
+
+void body_storage_item_location::attach( detached_ptr<item> &&obj )
+{
+    holder->body_storage = std::move( obj );
+}
+
+npc_shop_item_location::npc_shop_item_location( npc *h ) : character_item_location( h ) {};
+
+detached_ptr<item> npc_shop_item_location::detach( item *it )
+{
+    npc *as_npc = static_cast<npc *>( holder );
+    return as_npc->shop_stock.remove_item( it );
+}
+
+void npc_shop_item_location::attach( detached_ptr<item> &&obj )
+{
+    npc *as_npc = static_cast<npc *>( holder );
+    as_npc->shop_stock.add_item( std::move( obj ), false );
+}
+
 detached_ptr<item> wield_item_location::detach( item *it )
 {
     for( std::pair<const bodypart_str_id, bodypart> &part : holder->get_body() ) {
@@ -690,6 +714,40 @@ std::string contents_item_location::describe( const Character *, const item * ) 
 item *contents_item_location::parent() const
 {
     return container;
+}
+
+item_location_type carry_pocket_item_location::where() const
+{
+    // the garment is worn, wielded or in body storage: its contents are on the character
+    if( container->has_position() && container->where() == item_location_type::character ) {
+        return item_location_type::character;
+    }
+    return item_location_type::container;
+}
+
+int carry_pocket_item_location::obtain_cost( const Character &ch, int qty, const item *it ) const
+{
+    if( where() == item_location_type::character ) {
+        const item *split_stack = cost_split_helper( it, qty );
+        int moves = INVENTORY_HANDLING_PENALTY;
+        if( const item_pocket *pocket = container->contents.pocket_of( it ) ) {
+            moves = pocket->moves();
+        }
+        return dynamic_cast<const player *>( &ch )->item_handling_cost( *split_stack, true, moves );
+    }
+    return contents_item_location::obtain_cost( ch, qty, it );
+}
+
+std::string carry_pocket_item_location::describe( const Character *ch, const item *it ) const
+{
+    if( where() == item_location_type::character ) {
+        const Character *holder = container->carrying_character();
+        if( ch == holder || holder == nullptr ) {
+            return string_format( _( "in your %s" ), container->type_name() );
+        }
+        return string_format( _( "in %1$s's %2$s" ), holder->name, container->type_name() );
+    }
+    return contents_item_location::describe( ch, it );
 }
 
 detached_ptr<item> component_item_location::detach( item *it )

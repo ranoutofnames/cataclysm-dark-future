@@ -760,6 +760,35 @@ void Item_factory::synthesize_pockets( itype &obj ) const
     if( obj.id == itype_id( "usb_drive" ) ) {
         obj.pockets.emplace_back( pocket_type::SOFTWARE );
     }
+
+    // Worn storage: the DDA layout from the garment overlay, else one derived from `storage`.
+    // These pockets are tagged `carry` and stay dormant (CDF P1c step 16).
+    if( obj.armor && obj.armor->storage > 0_ml ) {
+        const auto layout = overlay_pockets.find( obj.id );
+        if( layout != overlay_pockets.end() ) {
+            for( const pocket_data &pocket : layout->second ) {
+                obj.pockets.push_back( pocket );
+            }
+        } else {
+            pocket_data main( pocket_type::CONTAINER );
+            main.carry = true;
+            main.volume_capacity = obj.armor->storage;
+            main.rigid = obj.rigid;
+            main.moves = INVENTORY_HANDLING_PENALTY;
+            obj.pockets.push_back( main );
+            if( obj.armor->storage >= 10_liter ) {
+                // mirrors DDA's external strap pockets
+                pocket_data strap( pocket_type::CONTAINER );
+                strap.carry = true;
+                strap.holster = true;
+                strap.volume_capacity = 10_liter;
+                strap.max_item_volume = 10_liter;
+                strap.max_item_length = 150_cm;
+                strap.rigid = obj.rigid;
+                obj.pockets.push_back( strap );
+            }
+        }
+    }
 }
 
 void Item_factory::register_cached_uses( const itype &obj )
@@ -839,6 +868,17 @@ void Item_factory::load_item_overlay( const JsonObject &jo )
     // Fields other than these are rejected so that typos do not silently do nothing.
     const itype_id id( jo.get_string( "id" ) );
     jo.get_string( "type" );
+    if( jo.has_array( "pocket_data" ) ) {
+        // worn storage layout; replaces the one derived from `storage` (CDF P1c step 16)
+        std::vector<pocket_data> layout;
+        for( const JsonObject jo_pocket : jo.get_array( "pocket_data" ) ) {
+            pocket_data pocket;
+            pocket.load( jo_pocket );
+            pocket.carry = true;
+            layout.push_back( pocket );
+        }
+        overlay_pockets[id] = std::move( layout );
+    }
     if( jo.has_member( "longest_side" ) ) {
         units::length len = 0_mm;
         assign( jo, "longest_side", len );
@@ -846,7 +886,8 @@ void Item_factory::load_item_overlay( const JsonObject &jo )
     }
     for( const JsonMember member : jo ) {
         const std::string &name = member.name();
-        if( name != "type" && name != "id" && name != "longest_side" && name != "//" ) {
+        if( name != "type" && name != "id" && name != "longest_side" &&
+            name != "pocket_data" && name != "//" ) {
             jo.throw_error( "item_overlay does not support the field '" + name + "'", name );
         }
     }
@@ -1414,9 +1455,32 @@ void Item_factory::check_definitions() const
             debugmsg( "item_overlay: longest_side of '%s' must be positive", ov.first.str() );
         }
     }
+    for( const auto &ov : overlay_pockets ) {
+        const auto found = m_templates.find( ov.first );
+        if( found == m_templates.end() ) {
+            debugmsg( "item_overlay: id '%s' is not a known item", ov.first.str() );
+        } else if( !found->second.armor ) {
+            debugmsg( "item_overlay: pocket_data of '%s' needs a garment with storage", ov.first.str() );
+        }
+    }
     for( const auto &elem : m_templates ) {
         std::string msg;
         const itype *type = &elem.second;
+
+        if( type->explicit_pockets && type->armor && type->armor->storage > 0_ml ) {
+            // a garment with both `storage` and pocket_data should say the same thing
+            units::volume total = 0_ml;
+            for( const pocket_data &pd : type->pockets ) {
+                if( pd.type == pocket_type::CONTAINER && !pd.holster && !pd.ablative ) {
+                    total += pd.volume_capacity;
+                }
+            }
+            const units::volume storage = type->armor->storage;
+            if( total < storage * 9 / 10 || total > storage * 11 / 10 ) {
+                DebugLog( DL::Warn, DC::Game ) << "item " << type->id.str() <<
+                                               ": storage and pocket_data capacities differ by more than 10%";
+            }
+        }
 
         if( !type->category_force.is_valid() ) {
             msg += "undefined category " + type->category_force.str() + "\n";
@@ -3364,6 +3428,7 @@ void Item_factory::clear()
     migrated_magazines.clear();
     migrations.clear();
     overlay_lengths.clear();
+    overlay_pockets.clear();
 
     iwieldable_actors.clear();
     iwearable_actors.clear();

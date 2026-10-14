@@ -1593,7 +1593,7 @@ void Character::consume( item &target )
 
     // Restack and sort so that we don't lie about target's invlet
     if( inv_item ) {
-        inv.restack( *this->as_player() );
+        inv_restack();
 
         // in the case that the consumable was in a container, but the container is now empty (no more charges)
         // the invlet is lost
@@ -1603,7 +1603,7 @@ void Character::consume( item &target )
             auto &cont_type = target.typeId();
             auto &item_type = comest.typeId();
 
-            auto stacks = inv.const_slice();
+            auto stacks = inv_const_slice();
             // find a non-empty container of the same type, with the same content type
             for( auto &stack : stacks ) {
                 auto &c = stack->front();
@@ -1644,7 +1644,7 @@ void Character::consume( item &target )
                 add_msg( _( "You drop the empty %s." ), target.tname() );
                 put_into_vehicle_or_drop( *this, item_drop_reason::deliberate, target.detach() );
             } else {
-                int quantity = inv.const_stack( inv.position_by_item( &target ) ).size();
+                int quantity = inv_const_stack( inv_position_by_item( &target ) ).size();
                 char letter = target.invlet ? target.invlet : ' ';
                 add_msg( m_info, _( "%c - %d empty %s" ), letter, quantity, target.tname( quantity ) );
             }
@@ -1654,8 +1654,8 @@ void Character::consume( item &target )
             return pickup::handle_spillable_contents( who, std::move( it ), get_map() );
         } );
 
-        inv.restack( *this->as_player() );
-        inv.unsort();
+        inv_restack();
+        inv_unsort();
     }
 }
 

@@ -36,6 +36,7 @@
 #include "inventory.h"
 #include "item.h"
 #include "item_handling_util.h"
+#include "location_ptr.h"
 #include "memory_fast.h"
 #include "mtype.h"
 #include "pimpl.h"
@@ -1325,6 +1326,7 @@ class Character : public Creature, public location_visitable<Character>
         void dump_inv( std::vector<item *> &to );
 
         std::map<char, itype_id> &inv_assigned_invlet();
+        const std::map<char, itype_id> &inv_assigned_invlet() const;
 
         void inv_reassign_item( item &it, char invlet, bool remove_old = true );
 
@@ -1344,6 +1346,65 @@ class Character : public Creature, public location_visitable<Character>
         item &inv_find_item( int position );
 
         int inv_position_by_type( const itype_id &type ) const;
+
+        void inv_json_save_invcache( JsonOut &json ) const;
+        void inv_json_load_invcache( JsonIn &jsin );
+
+        /** Read-only view of the carried items (not the worn or wielded ones). */
+        const inventory &carried_view() const;
+
+        /*
+         * CDF P1c: carried items live in the `carry` pockets of the worn items and in the body
+         * storage. The inv_* methods work on carried_view(), a non-owning view that is rebuilt
+         * whenever those pockets change.
+         */
+        /** The body storage item, or nullptr while the character has no body storage. */
+        item *get_body_storage() const;
+        /** Body storage capacity: the CARRY_STORAGE enchantments (bionics, shells), or unlimited with DEBUG_STORAGE. */
+        units::volume body_storage_capacity() const;
+        /**
+         * Creates, resizes or removes the body storage to match body_storage_capacity().
+         * Whatever no longer fits (the compartment shrank or went) falls to the ground.
+         */
+        void update_body_storage();
+        /** Multiplier on the capacity of worn `carry` pockets (packmule_modifier). */
+        double carry_capacity_multiplier() const;
+        /** Whether @p it fits @p pocket, with the capacity multiplier applied. */
+        ret_val<bool> can_pocket_contain( const item_pocket &pocket, const item &it,
+                                          bool in_body_storage = false ) const;
+        /**
+         * The best worn `carry` pocket or body storage pocket for @p it. Wielded items are not
+         * searched. Pockets of @p avoid (and of items inside it) are skipped.
+         * @return the item owning the pocket and the pocket, or {nullptr, nullptr}
+         */
+        std::pair<item *, item_pocket *> best_pocket( const item &it, const item *avoid = nullptr );
+        std::pair<const item *, const item_pocket *> best_pocket( const item &it,
+                const item *avoid = nullptr ) const;
+        /**
+         * Puts @p it in the best pocket and sets its invlet as i_add does. On failure @p it is
+         * left untouched, so the caller can still drop it or keep it.
+         */
+        ret_val<item *> try_add( detached_ptr<item> &&it, const item *avoid = nullptr );
+        /** Whether @ref try_add would succeed; the failure message names the reason. */
+        ret_val<bool> can_stash( const item &it, const item *avoid = nullptr ) const;
+        /** Volume held by the worn `carry` pockets and the body storage. */
+        units::volume carried_volume() const;
+        /** Capacity of the worn `carry` pockets (times the multiplier) and the body storage. */
+        units::volume carried_capacity() const;
+        /** Room left in the single roomiest non-holster pocket: the largest thing that still fits. */
+        units::volume free_carry_volume() const;
+        /** Something in the worn or body storage pockets changed: rebuild the carried view. */
+        void on_carried_contents_changed();
+
+        /** Adds an item to the carried items without any pickup handling (see i_add). */
+        item &inv_add_item( detached_ptr<item> &&newit, bool keep_invlet, bool assign_invlet = true,
+                            bool should_stack = true );
+        void inv_add_items( std::vector<detached_ptr<item>> &newits, bool keep_invlet,
+                            bool assign_invlet = true, bool should_stack = true );
+        /** Value of the least valuable carried item, as an NPC @p p sees it. */
+        int inv_worst_item_value( npc *p ) const;
+        bool inv_has_enough_painkiller( int pain ) const;
+        item *inv_most_appropriate_painkiller( int pain );
 
         /**
          * Returns all equipped items that require a limb to be held.
@@ -1967,8 +2028,29 @@ class Character : public Creature, public location_visitable<Character>
 
     protected:
         void on_damage_of_type( int adjusted_damage, damage_type type, const bodypart_id &bp ) override;
-        location_inventory inv;
     private:
+        /**
+         * The carried items. Private since CDF P1c step 17: only Character code (and the
+         * visitable friends) touch it, everything else goes through the inv_* methods and
+         * carried_view(), so the storage can move into pockets later without touching callers.
+         */
+        /**
+         * Non-owning view of the items in the `carry` pockets of the worn items and the body
+         * storage. The items live in the pockets; rebuilt lazily by refresh_carried().
+         */
+        mutable inventory inv;
+        mutable bool carried_dirty = true;
+        mutable unsigned carried_worn_version = 0;
+        mutable const item *carried_body_storage = nullptr;
+        void refresh_carried() const;
+        /** Pocket choice, invlet and insertion shared by try_add and inv_add_item; no pickup handling. */
+        ret_val<item *> add_to_pocket( detached_ptr<item> &&it, const item *avoid, bool keep_invlet,
+                                       bool assign_invlet );
+        /** Drops an item no pocket could take at the character's feet; returns the item there. */
+        item &drop_for_lack_of_room( detached_ptr<item> &&it );
+        /** CDF P1c step 19: hidden item holding the bionic/mutation compartments, see update_body_storage(). */
+        location_ptr<item, false> body_storage;
+        friend class body_storage_item_location;
         units::mass worn_weight_cache;
         bool worn_weight_cache_dirty = true;
         units::mass wielded_weight_cache;

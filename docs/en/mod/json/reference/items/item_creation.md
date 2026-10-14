@@ -1326,10 +1326,27 @@ holster, magazine, magazine well, mod, corpse, software and migration pockets ha
 Spawning and loading never refuse an item.
 
 `item_overlay` objects set whitelisted fields on existing items without redefining them; later
-objects override earlier ones. Currently only `longest_side`:
+objects override earlier ones. Currently `longest_side` and `pocket_data`:
 
 ```json
 { "type": "item_overlay", "id": "2x4", "longest_side": "122 cm" }
 ```
 
 `data/json/items/cdf_overlay_lengths.json` is generated from DDA by `tools/cdf_port_dda_overlays.py`.
+
+A `pocket_data` overlay (an array, same schema as an item's `pocket_data`) gives a garment its worn
+storage layout. A garment's own `pocket_data` works too and wins over an overlay. `storage` now
+becomes pockets: the DDA layout from `item_overlay` where one exists, otherwise a main pocket of the
+`storage` volume (plus a one-item strap pocket at 10 L or more). Existing mods need no edits.
+
+The game tags these pockets `carry`: they are the character's carrying storage. Things the
+character picks up go into the best fitting `carry` pocket of a worn garment (or the hidden body
+storage that bionics, mutations and `CARRY_STORAGE` enchantments add to). You can write the key
+yourself on a pocket: `"carry": true` makes a pocket of any item (for example a backpack with
+several compartments) carrying storage, and `"carry": false` keeps a pocket for the item's own use
+(a holster, a magazine). Per-pocket keys such as `max_item_length` and `volume_encumber_modifier`
+apply as usual. `item::get_storage()` returns the volume of the non-holster `carry` pockets.
+Items that do not fit any pocket (too long, too big) are refused with a reason; overflow when
+picking up or starting the game is dropped at the character's feet.
+`data/json/items/cdf_overlay_garment_pockets.json` is generated from DDA by
+`tools/cdf_port_dda_overlays.py --pockets`.

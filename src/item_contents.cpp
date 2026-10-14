@@ -2,9 +2,11 @@
 
 #include "avatar.h"
 #include "character.h"
+#include "clothing_mod.h"
 #include "debug.h"
 #include "enums.h"
 #include "flag.h"
+#include "game_constants.h"
 #include "handle_liquid.h"
 #include "item.h"
 #include "itype.h"
@@ -13,6 +15,7 @@
 #include "messages.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -350,6 +353,20 @@ void item_contents::rebuild_pockets()
     // The layout is the type's, with the MAGAZINE_WELL replaced by an installed
     // magazine_adaptor mod (DDA #41917).
     std::vector<pocket_data> fresh = adapted_layout();
+    // the pocketed clothing mod adds a worn storage pocket (CDF P1c step 16)
+    const long storage_mod = owner->type != nullptr && owner->type->armor ?
+                             std::lround( owner->get_clothing_mod_val( clothing_mod_type_storage ) ) : 0;
+    if( storage_mod > 0 ) {
+        if( fresh.empty() ) {
+            fresh = owner->type->pockets;
+        }
+        pocket_data mod_pocket( pocket_type::CONTAINER );
+        mod_pocket.carry = true;
+        mod_pocket.volume_capacity = storage_mod * units::legacy_volume_factor;
+        mod_pocket.rigid = owner->type->rigid;
+        mod_pocket.moves = INVENTORY_HANDLING_PENALTY;
+        fresh.push_back( mod_pocket );
+    }
     const bool adapted = !fresh.empty();
     const std::vector<pocket_data> no_pockets;
     const std::vector<pocket_data> &type_data = owner->type != nullptr ? owner->type->pockets :

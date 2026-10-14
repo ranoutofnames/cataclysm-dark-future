@@ -1902,6 +1902,15 @@ class item : public location_visitable<item>, public game_object<item>
          */
         units::volume get_storage() const;
         /**
+         * Worn storage weighted by each pocket's volume_encumber_modifier, for the rule that
+         * non-rigid storage encumbers in proportion to what is carried (get_encumber).
+         */
+        units::volume get_encumber_storage() const;
+        /** Sum of the garment carry pockets' capacity (dormant overlay; not yet used by get_storage). */
+        units::volume get_pocket_storage_sum() const;
+        /** Pocket-weighted equivalent of get_encumber_storage() for the overlay (dormant). */
+        units::volume get_pocket_encumber_storage() const;
+        /**
          * Returns the weight capacity modifier (@ref islot_armor::weight_capacity_modifier) that this item provides when worn.
          * For non-armor it returns 1. The modifier is multiplied with the weight capacity of the character that wears the item.
          */
@@ -2462,6 +2471,8 @@ class item : public location_visitable<item>, public game_object<item>
 
         /** returns the parent item, or a null pointer if it has no parent */
         item *parent_item() const;
+        /** The character whose worn/body storage this item is in (at any depth), or nullptr. */
+        Character *carrying_character() const;
         auto get_relic_recharge_scheme() const -> std::vector<relic_recharge>;
 
     private:

@@ -4181,3 +4181,34 @@ TEST_CASE("lua_run_mapgen_update_no_floor_dirties_lower_caches", "[lua][mapgen]"
     // compute it is never cleared on the CPU side.
     CHECK(here.get_cache_ref(-1).absorption_cache_dirty.any());
 }
+
+TEST_CASE("lua_character_carried_pockets", "[lua][pocket][character]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() { clear_all_state(); });
+    avatar& u = get_avatar();
+    REQUIRE(!u.wear_item(item::spawn(itype_id("backpack")), false));
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    lua["u"] = &u;
+    lua.globals()["test_data"] = test_data;
+    const auto res = lua.safe_script(
+        R"(
+        local ok, why = u:can_stash(gapi.create_item(ItypeId.new("rock"), -1))
+        test_data["can"] = ok
+        local rock = gapi.create_item(ItypeId.new("rock"), -1)
+        local added, why2 = u:try_add_item(rock)
+        test_data["added"] = added
+        test_data["carried"] = #u:get_carried_items()
+        local first = u:get_carried_items()[1]
+        local detached = u:remove_item(first)
+        test_data["removed"] = detached ~= nil
+        test_data["carried_after"] = #u:get_carried_items()
+    )",
+        sol::script_pass_on_error);
+    REQUIRE(res.valid());
+    CHECK(test_data.get<bool>("can"));
+    CHECK(test_data.get<bool>("added"));
+    CHECK(test_data.get<int>("carried") == 1);
+    CHECK(test_data.get<bool>("removed"));
+    CHECK(test_data.get<int>("carried_after") == 0);
+}

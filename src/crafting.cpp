@@ -539,8 +539,8 @@ std::vector<const item *> Character::get_eligible_containers_for_crafting() cons
             conts.push_back( it );
         }
     }
-    for( size_t i = 0; i < inv.size(); i++ ) {
-        for( const auto &it : inv.const_stack( i ) ) {
+    for( size_t i = 0; i < inv_size(); i++ ) {
+        for( const auto &it : inv_const_stack( i ) ) {
             if( is_container_eligible_for_crafting( *it, false ) ) {
                 conts.push_back( it );
             }
@@ -616,9 +616,14 @@ const inventory &Character::crafting_inventory( const tripoint_bub_ms &src_pos, 
         return cached_crafting_inventory;
     }
     cached_crafting_inventory.form_from_map( inv_pos, radius, this, false, clear_path );
-    cached_crafting_inventory.add_items( inv, true );
     cached_crafting_inventory.add_item( primary_weapon(), true );
+    // the carried items are inside the worn ones (and the body storage)
     cached_crafting_inventory.add_items( worn, true );
+    if( item *storage = get_body_storage() ) {
+        for( item *stored : storage->contents.all_items_top() ) {
+            cached_crafting_inventory.add_item( *stored, true );
+        }
+    }
     for( const bionic &bio : get_bionic_collection() ) {
         const bionic_data &bio_data = bio.info();
         if( ( !bio_data.has_flag( flag_BIONIC_TOGGLED ) || bio.powered ) &&

@@ -1068,6 +1068,16 @@ bool game::start_game()
     m.build_map_cache( lev.z() );
     // Do this after the map cache has been built!
     start_loc.place_player( u, lev.z() );
+    if( !u.starting_overflow.empty() ) {
+        const size_t count = u.starting_overflow.size();
+        for( detached_ptr<item> &it : u.starting_overflow ) {
+            m.add_item_or_charges( u.bub_pos(), std::move( it ) );
+        }
+        u.starting_overflow.clear();
+        add_msg( m_info, vgettext( "%d starting item did not fit in your pockets and lies at your feet.",
+                                    "%d starting items did not fit in your pockets and lie at your feet.",
+                                    count ), static_cast<int>( count ) );
+    }
     // ...but then rebuild it, because we want visibility cache to avoid spawning monsters in sight
     m.invalidate_map_cache( lev.z() );
     m.build_map_cache( lev.z() );

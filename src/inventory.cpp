@@ -403,12 +403,9 @@ void inventory::restack( player &p )
     for( invstack::iterator iter = items.begin(); iter != items.end(); ++iter ) {
         for( invstack::iterator other = iter; other != items.end(); ++other ) {
             if( iter != other && iter->front()->stacks_with( *other->front() ) ) {
-                if( other->front()->count_by_charges() ) {
-                    iter->front()->charges += other->front()->charges;
-                } else {
-                    for( auto &elem : *other ) {
-                        iter->push_back( elem );
-                    }
+                // the items live elsewhere (pockets, map): stacks only group them
+                for( auto &elem : *other ) {
+                    iter->push_back( elem );
                 }
                 other = items.erase( other );
                 --other;

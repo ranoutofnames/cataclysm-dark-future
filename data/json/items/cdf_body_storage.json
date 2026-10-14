@@ -1,0 +1,23 @@
+[
+  {
+    "id": "cdf_body_storage",
+    "type": "GENERIC",
+    "name": { "str_sp": "body storage" },
+    "description": "Hidden item holding what a character carries in their own body, such as a bionic compartment.  Its capacity is set at runtime.  If you see this, something went wrong.",
+    "weight": "0 g",
+    "volume": "0 ml",
+    "symbol": ",",
+    "color": "light_gray",
+    "flags": [ "PSEUDO", "NO_DROP", "TRADER_AVOID" ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "100000 kg",
+        "max_item_length": "1000 cm",
+        "moves": 0
+      }
+    ]
+  }
+]

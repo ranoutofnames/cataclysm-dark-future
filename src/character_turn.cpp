@@ -981,9 +981,11 @@ void Character::process_items( int turns )
         primary_weapon().attempt_detach( process_item );
     }
 
-    std::vector<item *> inv_active = inv.active_items();
-    for( item *tmp_it : inv_active ) {
-        tmp_it->attempt_detach( process_item );
+    // the carried items are processed with the worn items they are in (and the body storage)
+    if( item *storage = get_body_storage() ) {
+        if( storage->needs_processing() ) {
+            storage->attempt_detach( process_item );
+        }
     }
 
     // worn items
@@ -1000,8 +1002,8 @@ void Character::process_items( int turns )
                          needs_elec_charges( &primary_weapon() );
     std::vector<size_t> active_held_items;
     int ch_UPS = 0;
-    for( size_t index = 0; index < inv.size(); index++ ) {
-        item &it = inv.find_item( index );
+    for( size_t index = 0; index < inv_size(); index++ ) {
+        item &it = inv_find_item( index );
         if( it.has_flag( flag_IS_UPS ) ) {
             ch_UPS += std::min( it.ammo_remaining() * it.type->tool->ups_eff_mult,
                                 it.type->tool->ups_recharge_rate * turns );
@@ -1053,7 +1055,7 @@ void Character::process_items( int turns )
         if( ch_UPS <= 0 ) {
             break;
         }
-        item &it = inv.find_item( index );
+        item &it = inv_find_item( index );
         int used = std::min( ch_UPS, it.ammo_capacity() - it.ammo_remaining() );
         ch_UPS -= used;
         ch_UPS_used += used;

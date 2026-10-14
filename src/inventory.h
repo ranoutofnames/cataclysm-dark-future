@@ -235,6 +235,9 @@ class inventory : public temp_visitable<inventory>
 
         void build_items_type_cache();
 
+        void json_load_invcache( JsonIn &jsin );
+        void json_save_invcache( JsonOut &json ) const;
+
     private:
         friend location_inventory;
         friend visitable<inventory>;
@@ -274,6 +277,10 @@ class location_inventory : public location_visitable<location_inventory>
         const_invslice const_slice() const;
         const std::vector<item *> &const_stack( int i ) const;
         size_t size() const;
+        /** The plain (non-owning) inventory behind this one. */
+        const inventory &view() const {
+            return inv;
+        }
 
         location_inventory( item_location *location );
         location_inventory( location_inventory && ) = delete;

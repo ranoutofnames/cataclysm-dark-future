@@ -175,8 +175,10 @@ TEST_CASE("check_npc_behavior_tree", "[npc][behavior]") {
     SECTION("Thirsty") {
         test_npc.set_thirst(700);
         CHECK(npc_needs.tick(&oracle) == "idle");
-        detached_ptr<item> det = item::spawn(itype_id("water"));
+        // loose liquids fit in no pocket (CDF P1c), so the water comes in a bottle
+        detached_ptr<item> det = item::in_its_container(item::spawn(itype_id("water")));
         item& water = *det;
+        water.contents.front().charges = 1;
         test_npc.i_add(std::move(det));
         CHECK(npc_needs.tick(&oracle) == "drink_water");
         test_npc.consume(water);

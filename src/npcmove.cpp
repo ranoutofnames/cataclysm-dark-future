@@ -2022,7 +2022,7 @@ bool npc::can_use_offensive_cbm() const
 
 bool npc::consume_cbm_items( const std::function<bool( const item & )> &filter )
 {
-    const_invslice slice = inv.const_slice();
+    const_invslice slice = inv_const_slice();
     int index = -1;
     for( size_t i = 0; i < slice.size(); i++ ) {
         item *const &it = slice[i]->front();
@@ -3264,8 +3264,10 @@ void npc::find_item()
         // TODO: Whitelist hierarchy?
         int itval = whitelisting ? 1000 : value( it );
 
+        // fits: some worn pocket (or the body storage) must take it, not just the total volume
         if( itval > best_value &&
-            ( it.volume() <= volume_allowed && it.weight() <= weight_allowed ) ) {
+            ( it.volume() <= volume_allowed && it.weight() <= weight_allowed ) &&
+            can_stash( it ).success() ) {
             wanted_item_pos = p;
             wanted = &( it );
             best_value = itval;
@@ -3510,6 +3512,11 @@ std::vector<item *> npc_pickup_from_stack( npc &who, T &items )
             continue;
         }
 
+        // a pocket must take it (length, single-pocket size), not just the summed volume
+        if( !who.can_stash( it ).success() ) {
+            continue;
+        }
+
         auto weight = it.weight();
         if( weight > weight_allowed ) {
             continue;
@@ -3555,7 +3562,7 @@ void npc::drop_items( units::mass drop_weight, units::volume drop_volume, int mi
 
     add_msg( m_debug, "%s is dropping items-%3.2f kg, %3.2f L (%d items, wgt %3.2f/%3.2f kg, "
              "vol %3.2f/%3.2f L)",
-             name, units::to_kilogram( drop_weight ), units::to_liter( drop_volume ), inv.size(),
+             name, units::to_kilogram( drop_weight ), units::to_liter( drop_volume ), inv_size(),
              units::to_kilogram( weight_carried() ), units::to_kilogram( weight_capacity() ),
              units::to_liter( volume_carried() ), units::to_liter( volume_capacity() ) );
 
@@ -3564,7 +3571,7 @@ void npc::drop_items( units::mass drop_weight, units::volume drop_volume, int mi
     std::vector<ratio_index> rWgt, rVol; // Weight/Volume to value ratios
 
     // First fill our ratio vectors, so we know which things to drop first
-    const_invslice slice = inv.const_slice();
+    const_invslice slice = inv_const_slice();
     for( size_t i = 0; i < slice.size(); i++ ) {
         item &it = *slice[i]->front();
         double wgt_ratio = 0.0;
@@ -4042,7 +4049,7 @@ bool npc::alt_attack()
     };
 
     check_alt_item( primary_weapon() );
-    for( auto &sl : inv.const_slice() ) {
+    for( auto &sl : inv_const_slice() ) {
         // TODO: Cached values - an itype slot maybe?
         check_alt_item( *sl->front() );
     }
@@ -4201,12 +4208,12 @@ void npc::heal_self()
         item *treatment = &null_item_reference();
         std::string iusage = "OXYGEN_BOTTLE";
         if( has_charges( itype_inhaler, 1 ) ) {
-            treatment = &inv.find_item( inv.position_by_type( itype_inhaler ) );
+            treatment = &inv_find_item( inv_position_by_type( itype_inhaler ) );
             iusage = "INHALER";
         } else if( has_charges( itype_oxygen_tank, 1 ) ) {
-            treatment = &inv.find_item( inv.position_by_type( itype_oxygen_tank ) );
+            treatment = &inv_find_item( inv_position_by_type( itype_oxygen_tank ) );
         } else if( has_charges( itype_smoxygen_tank, 1 ) ) {
-            treatment = &inv.find_item( inv.position_by_type( itype_smoxygen_tank ) );
+            treatment = &inv_find_item( inv_position_by_type( itype_smoxygen_tank ) );
         }
         if( !treatment->is_null() ) {
             treatment->type->invoke( *this, *treatment, bub_pos(), iusage );
@@ -4239,7 +4246,7 @@ void npc::use_painkiller()
         return;
     }
     // First, find the best painkiller for our pain level
-    item *it = inv.most_appropriate_painkiller( get_pain() );
+    item *it = inv_most_appropriate_painkiller( get_pain() );
 
     if( it->is_null() ) {
         debugmsg( "NPC tried to use painkillers, but has none!" );
@@ -4350,7 +4357,7 @@ bool npc::consume_food()
     int index = -1;
     int want_hunger = std::max<int>( 0, ( max_stored_kcal() - get_stored_kcal() ) / 10 );
     int want_quench = std::max( 0, get_thirst() );
-    const_invslice slice = inv.const_slice();
+    const_invslice slice = inv_const_slice();
     for( size_t i = 0; i < slice.size(); i++ ) {
         const item &it = *slice[i]->front();
         if( const item *food_item = it.get_food() ) {

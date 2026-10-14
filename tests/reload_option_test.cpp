@@ -76,6 +76,7 @@ TEST_CASE("belt_reload_option", "[reload],[reload_option],[gun]") {
     const time_point bday = calendar::start_of_cataclysm;
     avatar dummy;
     dummy.set_body();
+    dummy.set_mutation(trait_id("DEBUG_STORAGE")); // a bare avatar has no pockets
 
     detached_ptr<item> det = item::spawn("belt308", bday, 0);
     item& belt = *det;
@@ -147,6 +148,7 @@ TEST_CASE("reload_empty_option_value_initialization", "[reload][reload_option]")
 TEST_CASE("reload_quantity_respects_the_limiting_resource", "[reload][reload_option]") {
     avatar who;
     who.set_body();
+    who.set_mutation(trait_id("DEBUG_STORAGE")); // a bare avatar has no pockets
     const auto birthday = calendar::start_of_cataclysm;
 
     SECTION("source charges can limit a magazine reload before capacity does") {

@@ -39,6 +39,7 @@
 #include "game_constants.h"
 #include "int_id.h"
 #include "inventory.h"
+#include "clothing_mod.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_factory.h"
@@ -827,11 +828,13 @@ void Character::load( const JsonObject &data )
     }
 
 
-    inv.clear();
-    if( data.has_member( "inv" ) ) {
-        JsonIn *invin = data.get_raw( "inv" );
-        inv.json_load_items( *invin );
+    // carried items are saved inside the worn items and the body storage (save v31)
+    if( data.has_member( "body_storage" ) ) {
+        detached_ptr<item> stored;
+        data.read( "body_storage", stored );
+        body_storage = std::move( stored );
     }
+    carried_dirty = true;
 
     remove_primary_weapon( );
     detached_ptr<item> weap;
@@ -1076,8 +1079,9 @@ void player::store( JsonOut &json ) const
     json.member( "followers", follower_ids );
 
     json.member( "worn", worn ); // also saves contents
-    json.member( "inv" );
-    inv.json_save_items( json );
+    if( const item *storage = get_body_storage() ) {
+        json.member( "body_storage", *storage );
+    }
 
 
     if( const auto lt_ptr = last_target.lock() ) {
@@ -1227,7 +1231,7 @@ void avatar::store( JsonOut &json ) const
 
     json.member( "assigned_invlet" );
     json.start_array();
-    for( auto iter : inv.assigned_invlet ) {
+    for( auto iter : inv_assigned_invlet() ) {
         json.start_array();
         json.write( iter.first );
         json.write( iter.second );
@@ -1236,7 +1240,7 @@ void avatar::store( JsonOut &json ) const
     json.end_array();
 
     json.member( "invcache" );
-    inv.json_save_invcache( json );
+    inv_json_save_invcache( json );
 
     json.member( "preferred_aiming_mode", preferred_aiming_mode );
 
@@ -1400,13 +1404,13 @@ void avatar::load( const JsonObject &data )
     data.read( "show_map_memory", show_map_memory );
 
     for( JsonArray pair : data.get_array( "assigned_invlet" ) ) {
-        inv.assigned_invlet[static_cast<char>( pair.get_int( 0 ) )] =
+        inv_assigned_invlet()[static_cast<char>( pair.get_int( 0 ) )] =
             itype_id( pair.get_string( 1 ) );
     }
 
     if( data.has_member( "invcache" ) ) {
         JsonIn *jip = data.get_raw( "invcache" );
-        inv.json_load_invcache( *jip );
+        inv_json_load_invcache( *jip );
     }
 
     data.read( "preferred_aiming_mode", preferred_aiming_mode );
@@ -1866,6 +1870,18 @@ void npc::load( const JsonObject &data )
         companion_mission_inv.json_load_items( *invin_mission );
     }
 
+    shop_stock.clear();
+    if( data.has_member( "shop_stock" ) ) {
+        JsonIn *invin_shop = data.get_raw( "shop_stock" );
+        shop_stock.json_load_items( *invin_shop );
+    }
+
+    starting_overflow.clear();
+    if( data.has_member( "starting_overflow" ) ) {
+        JsonIn *invin_overflow = data.get_raw( "starting_overflow" );
+        starting_overflow.json_load_items( *invin_overflow );
+    }
+
     if( !data.read( "restock", restock ) ) {
         restock = calendar::before_time_starts;
     }
@@ -1971,6 +1987,10 @@ void npc::store( JsonOut &json ) const
     json.member( "companion_mission_time_ret", companion_mission_time_ret );
     json.member( "companion_mission_inv" );
     companion_mission_inv.json_save_items( json );
+    json.member( "shop_stock" );
+    shop_stock.json_save_items( json );
+    json.member( "starting_overflow" );
+    starting_overflow.json_save_items( json );
     json.member( "restock", restock );
 
     json.member( "last_updated", last_updated );
@@ -1987,8 +2007,13 @@ void npc::store( JsonOut &json ) const
  */
 void location_inventory::json_save_invcache( JsonOut &json ) const
 {
+    inv.json_save_invcache( json );
+}
+
+void inventory::json_save_invcache( JsonOut &json ) const
+{
     json.start_array();
-    for( const auto &elem : inv.invlet_cache.get_invlets_by_id() ) {
+    for( const auto &elem : invlet_cache.get_invlets_by_id() ) {
         json.start_object();
         json.member( elem.first.str() );
         json.start_array();
@@ -2006,6 +2031,11 @@ void location_inventory::json_save_invcache( JsonOut &json ) const
  */
 void location_inventory::json_load_invcache( JsonIn &jsin )
 {
+    inv.json_load_invcache( jsin );
+}
+
+void inventory::json_load_invcache( JsonIn &jsin )
+{
     try {
         std::unordered_map<itype_id, std::string> map;
         for( JsonObject jo : jsin.get_array() ) {
@@ -2018,7 +2048,7 @@ void location_inventory::json_load_invcache( JsonIn &jsin )
                 map[itype_id( member.name() )] = invlets;
             }
         }
-        inv.invlet_cache = { map };
+        invlet_cache = { map };
     } catch( const JsonError &jsonerr ) {
         debugmsg( "bad invcache json:\n%s", jsonerr.c_str() );
     }
@@ -2897,6 +2927,11 @@ void item::io( Archive &archive )
         return;
     }
     /* Loading has finished, following code is to ensure consistency and fixes bugs in saves. */
+
+    if( get_clothing_mod_val( clothing_mod_type_storage ) > 0.0f ) {
+        // the pocketed mod's storage pocket exists only once the item vars are loaded
+        contents.rebuild_pockets();
+    }
 
     load_legacy_craft_data( archive, craft_data_ );
 

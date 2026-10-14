@@ -842,3 +842,32 @@ gapi.clear_omt_weather_override(center_omt, 2)
 
 Use `"thunder"` instead of `"lightning"` if you want thunderstorm weather without the stronger
 lightning-storm variant.
+
+## Carried items and pockets
+
+Carried items live in pockets of worn garments, not in a separate inventory. `add_item` and
+`create_item` keep working (the item goes to a pocket, or is dropped at the feet if nothing fits).
+
+```lua
+local avatar = gapi.get_avatar()
+local rock = gapi.create_item(ItypeId.new("rock"), -1) -- spawned in a pocket or dropped
+
+-- Check and add without the drop fallback
+local probe = gapi.create_item(ItypeId.new("rock"), -1)
+local ok, why = avatar:can_stash(probe)
+local added, reason = avatar:try_add_item(probe) -- item is only consumed on success
+
+-- Walk the carried items (top level only), and detach one
+for _, it in ipairs(avatar:get_carried_items()) do
+  print(it:tname(1, false))
+end
+local detached = avatar:remove_item(avatar:get_carried_items()[1])
+
+-- The hidden body storage (from bionics/mutations), or nil
+local body = avatar:get_body_storage()
+```
+
+`remove_item` now works for any carried item, but not for wielded or worn ones. Scripts that
+relied on `remove_item` refusing items in pockets, or on the inventory being separate from worn
+contents, behave differently. `volume_carried`, `volume_capacity` and `can_pick_volume` keep their
+names and now use pocket totals.

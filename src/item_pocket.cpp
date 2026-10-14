@@ -149,6 +149,7 @@ void pocket_data::load( const JsonObject &jo )
     jo.read( "transparent", transparent );
     jo.read( "rigid", rigid );
     jo.read( "holster", holster );
+    jo.read( "carry", carry );
     jo.read( "ablative", ablative );
     // an ablative pocket holds exactly one plate (as in DDA)
     if( ablative ) {
@@ -263,7 +264,8 @@ std::string pocket_data::check_definition() const
 }
 
 item_pocket::item_pocket( item *owner, const pocket_data *data ) :
-    data( data ), contents( new contents_item_location( owner ) )
+    data( data ), contents( data->carry ? new carry_pocket_item_location( owner ) :
+                            new contents_item_location( owner ) )
 {
 }
 
@@ -296,6 +298,9 @@ void item_pocket::unseal()
 
 units::volume item_pocket::volume_capacity() const
 {
+    if( capacity_override ) {
+        return *capacity_override;
+    }
     if( !data->ammo_restriction.empty() ) {
         // capacity follows the largest accepted ammo, as in DDA
         units::volume best = 0_ml;
@@ -461,9 +466,12 @@ units::volume unit_volume( const item &it )
 
 } // namespace
 
-ret_val<item_pocket::contain_code> item_pocket::is_compatible( const item &it ) const
+ret_val<item_pocket::contain_code> item_pocket::is_compatible( const item &it,
+        bool allow_carry ) const
 {
     using code = contain_code;
+    // worn storage (carry) pockets are live since P1c step 20; allow_carry is kept for callers
+    static_cast<void>( allow_carry );
     switch( data->type ) {
         case pocket_type::MIGRATION:
         case pocket_type::CORPSE:
@@ -548,10 +556,10 @@ ret_val<item_pocket::contain_code> item_pocket::is_compatible( const item &it ) 
 }
 
 ret_val<item_pocket::contain_code> item_pocket::can_contain( const item &it,
-        bool ignore_contents, bool ignore_sealed ) const
+        bool ignore_contents, bool ignore_sealed, bool allow_carry ) const
 {
     using code = contain_code;
-    ret_val<code> compatible = is_compatible( it );
+    ret_val<code> compatible = is_compatible( it, allow_carry );
     if( !compatible.success() ) {
         return compatible;
     }

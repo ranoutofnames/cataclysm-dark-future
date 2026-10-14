@@ -621,70 +621,8 @@ std::list<act_item> reorder_for_dropping( Character &p, const drop_locations &dr
                     && !second.loc->is_worn_only_with( *first.loc ) );
     } );
 
-    // Avoid tumbling to the ground. Unload cleanly.
-    units::volume dropped_inv_contents = std::accumulate( inv.begin(), inv.end(), 0_ml,
-    []( units::volume acc, const act_item & ait ) {
-        return acc + ait.loc->volume();
-    } );
-    const units::volume dropped_worn_storage = std::accumulate( worn.begin(), worn.end(), 0_ml,
-    []( units::volume acc, const act_item & ait ) {
-        return acc + ait.loc->get_storage();
-    } );
-    std::set<int> inv_indices;
-    std::ranges::transform( inv, std::inserter( inv_indices, inv_indices.begin() ),
-    [&p]( const act_item & ait ) {
-        return p.get_item_position( &*ait.loc );
-    } );
-
-    units::volume excessive_volume = p.volume_carried() - dropped_inv_contents
-                                     - p.volume_capacity_reduced_by( dropped_worn_storage );
-    if( excessive_volume > 0_ml ) {
-        const_invslice old_inv = p.inv_const_slice();
-        std::vector<item *> non_favorite_candidates;
-        std::vector<item *> favorite_candidates;
-        for( size_t i = 0; i < old_inv.size(); i++ ) {
-            if( inv_indices.contains( i ) ) {
-                continue;
-            }
-            const std::vector<item *> &inv_stack = *old_inv[i];
-            std::ranges::copy_if( inv_stack, std::back_inserter( non_favorite_candidates ),
-            [&dropping_clothing_ids]( const auto * const it ) {
-                const auto target_id = it->get_var( "DROP_WITH_CLOTHING_TARGET", 0 );
-                return !it->is_favorite && it->volume() > 0_ml &&
-                       ( target_id <= 0 || dropping_clothing_ids.contains( target_id ) );
-            } );
-            std::ranges::copy_if( inv_stack, std::back_inserter( favorite_candidates ),
-            [&dropping_clothing_ids]( const auto * const it ) {
-                const auto target_id = it->get_var( "DROP_WITH_CLOTHING_TARGET", 0 );
-                return it->is_favorite && it->volume() > 0_ml &&
-                       ( target_id <= 0 || dropping_clothing_ids.contains( target_id ) );
-            } );
-        }
-
-        auto drop_from_pool_until_fits = [&]( std::vector<item *> &pool ) {
-            while( excessive_volume > 0_ml && !pool.empty() ) {
-                const size_t chosen_index = rng( 0, pool.size() - 1 );
-                item *const selected = pool[chosen_index];
-                pool[chosen_index] = pool.back();
-                pool.pop_back();
-
-                // Note: zero cost, but won't be contained on drop.
-                inv.emplace_back( *selected, selected->count(), 0 );
-                excessive_volume -= selected->volume();
-            }
-        };
-
-        drop_from_pool_until_fits( non_favorite_candidates );
-        drop_from_pool_until_fits( favorite_candidates );
-
-        // Need to re-sort
-        inv.sort( []( const act_item & first, const act_item & second ) {
-            return first.loc->volume() < second.loc->volume();
-        } );
-    }
-
-    // Cumulatively decreases
-    units::volume remaining_dropped_storage = dropped_worn_storage;
+    // Contents travel with the garment they are in (CDF P1c), so there is nothing to unload
+    // first: the carried items picked for dropping simply go before the garments.
 
     for( auto worn_iter = worn.begin(); worn_iter != worn.end(); ) {
         const auto clothing_id = worn_iter->loc->get_var( "DROP_WITH_CLOTHING_ID", 0 );
@@ -695,7 +633,6 @@ std::list<act_item> reorder_for_dropping( Character &p, const drop_locations &dr
             continue;
         }
 
-        const auto clothing_storage = worn_iter->loc->get_storage();
         res.push_back( *worn_iter );
         for( auto inv_iter = inv.begin(); inv_iter != inv.end(); ) {
             if( inv_iter->loc->get_var( "DROP_WITH_CLOTHING_TARGET", 0 ) == clothing_id ) {
@@ -707,34 +644,7 @@ std::list<act_item> reorder_for_dropping( Character &p, const drop_locations &dr
                 ++inv_iter;
             }
         }
-        remaining_dropped_storage -= clothing_storage;
         worn_iter = worn.erase( worn_iter );
-    }
-
-    while( !worn.empty() && !inv.empty() ) {
-        units::volume front_storage = worn.front().loc->get_storage();
-        // Does not fit
-        // TODO: but maybe an item further down the line does
-        if( remaining_dropped_storage < inv.front().loc->volume() ) {
-            break;
-        }
-
-        res.push_back( worn.front() );
-        worn.pop_front();
-        remaining_dropped_storage -= front_storage;
-        while( !inv.empty() ) {
-            units::volume inventory_item_volume = inv.front().loc->volume();
-            if( front_storage < inventory_item_volume ) {
-                break;
-            }
-            front_storage -= inventory_item_volume;
-
-            res.push_back( inv.front() );
-            // Free of charge
-            res.back().consumed_moves = 0;
-
-            inv.pop_front();
-        }
     }
 
     // Now insert everything that remains

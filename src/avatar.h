@@ -82,6 +82,8 @@ class avatar : public player
 
         // newcharacter.cpp
         bool create( character_type type, const std::string &tempname = "" );
+        /** Starting kit that fit in no pocket; game::start_game drops it at the starting position. */
+        std::vector<detached_ptr<item>> starting_overflow;
         void randomize( bool random_scenario, points_left &points, bool play_now = false );
         void randomize_cosmetics();
         bool load_template( const std::string &template_name, points_left &points );

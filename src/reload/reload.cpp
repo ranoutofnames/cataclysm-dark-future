@@ -117,7 +117,8 @@ auto discover_ammo(const Character& who, item& base, discovery_options options)
             const auto can_reload_with = target->can_reload_with(id);
             if (can_reload_with) {
                 // Skip if the magazine is inside a gun/mod that can't fire its ammunition.
-                if (target->is_magazine() && target->parent_item()) {
+                if (target->is_magazine() && target->parent_item()
+                && (target->parent_item()->is_gun() || target->parent_item()->is_gunmod())) {
                     const auto ammo_type =
                         (ammo->is_ammo_container() || ammo->is_container())
                             ? ammo->contents.front().ammo_type()

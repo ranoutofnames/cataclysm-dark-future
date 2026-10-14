@@ -149,6 +149,8 @@ npc::npc()
     , companion_mission_time( calendar::before_time_starts )
     , companion_mission_time_ret( calendar::before_time_starts )
     , companion_mission_inv( new npc_mission_item_location( this ) )
+    , shop_stock( new npc_shop_item_location( this ) )
+    , starting_overflow( new npc_shop_item_location( this ) )
     , last_updated( calendar::turn )
     , cbm_fake_active( new fake_item_location( ) )
     , cbm_fake_toggled( new fake_item_location( ) )
@@ -336,8 +338,10 @@ void npc::load_npc_template( const string_id<npc_template> &ident )
         const item_group_id &from = myclass->get_shopkeeper_items();
         if( from != item_group_id( "EMPTY_GROUP" ) ) {
             inv_clear();
+            shop_stock.clear();
+            // the wares live in the shop stock, outside the carried pockets
             for( detached_ptr<item> &it : item_group::items_from( from ) ) {
-                i_add( std::move( it ) );
+                shop_stock.add_item( std::move( it ), false );
             }
         }
     }
@@ -356,7 +360,7 @@ void npc::randomize( const npc_class_id &type )
     }
 
     remove_primary_weapon( );
-    inv.clear();
+    inv_clear();
     personality.aggression = rng( -10, 10 );
     personality.bravery    = rng( -3, 10 );
     personality.collector  = rng( -1, 10 );
@@ -521,6 +525,11 @@ void npc::apply_ownership_to_inv()
     for( auto &e : inv_dump() ) {
         e->set_owner( *this );
     }
+    std::vector<item *> wares;
+    shop_stock.dump( wares );
+    for( item *e : wares ) {
+        e->set_owner( *this );
+    }
 }
 
 faction_id npc::get_fac_id() const
@@ -630,7 +639,10 @@ void starting_inv( npc &who, const npc_class_id &type )
     who.inv_clear();
     if( item_group::group_is_defined( type->carry_override ) ) {
         for( detached_ptr<item> &it : item_group::items_from( type->carry_override ) ) {
-            who.i_add( std::move( it ) );
+            // what fits no pocket waits at the NPC's feet (DDA stashes it the same way)
+            if( !who.try_add( std::move( it ) ).success() && it ) {
+                who.starting_overflow.add_item( std::move( it ), false );
+            }
         }
         return;
     }
@@ -681,7 +693,9 @@ void starting_inv( npc &who, const npc_class_id &type )
     for( detached_ptr<item> &it : res ) {
         if( !it->has_flag( flag_TRADER_AVOID ) ) {
             it->set_owner( who );
-            who.i_add( std::move( it ) );
+            if( !who.try_add( std::move( it ) ).success() && it ) {
+                who.starting_overflow.add_item( std::move( it ), false );
+            }
         }
     }
 }
@@ -1339,7 +1353,7 @@ void npc::stow_weapon( )
             return;
         }
     }
-    if( volume_carried() + weapon.volume() <= volume_capacity() ) {
+    if( can_stash( weapon ).success() ) {
         if( g->u.sees( bub_pos() ) ) {
             add_msg_if_npc( m_info, _( "<npcname> puts away the %s." ), weapon.tname() );
         }
@@ -1399,8 +1413,8 @@ detached_ptr<item> npc::wield( detached_ptr<item> &&target )
     obj.on_wield( *this, mv );
 
 
-    inv.update_invlet( obj );
-    inv.update_invlet_cache_with_item( obj );
+    inv_update_invlet( obj );
+    inv_update_invlet_cache_with_item( obj );
     return detached_ptr<item>();
 }
 
@@ -1731,7 +1745,7 @@ void npc::decide_needs()
     needrank[need_weapon] = npc_ai::wielded_value( *this );
     needrank[need_food] = 15.0f - ( max_stored_kcal() - get_stored_kcal() ) / 10.0f;
     needrank[need_drink] = 15 - get_thirst();
-    const_invslice slice = inv.const_slice();
+    const_invslice slice = inv_const_slice();
     for( auto &i : slice ) {
         item &inventory_item = *i->front();
         if( const item *food = inventory_item.get_food() ) {
@@ -1966,7 +1980,7 @@ void npc::shop_restock()
         for( map_cursor &cursor : map_selector( bub_pos(), 0 ) ) {
             cursor.remove_top_items_with( [this]( detached_ptr<item> &&it ) {
                 if( it->is_owned_by( *this ) ) {
-                    inv.add_item( std::move( it ), false );
+                    shop_stock.add_item( std::move( it ), false );
                     return detached_ptr<item>();
                 } else {
                     return std::move( it );
@@ -1977,9 +1991,16 @@ void npc::shop_restock()
 
         // clear out inventory and add in restocked items
         has_new_items = true;
-        inv.clear();
-        inv.add_items( ret, false );
+        inv_clear();
+        shop_stock.clear();
+        shop_stock.add_items( ret, false );
     }
+}
+
+void npc::shop_stock_to_inventory()
+{
+    std::vector<detached_ptr<item>> wares = shop_stock.dump_remove();
+    inv_add_items( wares, false );
 }
 
 std::string npc::get_restock_interval() const
@@ -2007,7 +2028,7 @@ void npc::update_worst_item_value()
 {
     worst_item_value = 99999;
     // TODO: Cache this
-    int inv_val = inv.worst_item_value( this );
+    int inv_val = inv_worst_item_value( this );
     if( inv_val < worst_item_value ) {
         worst_item_value = inv_val;
     }
@@ -2204,7 +2225,7 @@ item &npc::get_healing_item( healing_options try_to_fix, bool first_best )
 
 bool npc::has_painkiller()
 {
-    return inv.has_enough_painkiller( get_pain() );
+    return inv_has_enough_painkiller( get_pain() );
 }
 
 bool npc::took_painkiller() const
@@ -2779,6 +2800,8 @@ void npc::die( Creature *nkiller )
     if( in_vehicle ) {
         g->m.unboard_vehicle( bub_pos(), true );
     }
+    // the wares drop with the corpse, as the carried stock used to
+    shop_stock_to_inventory();
     if( is_mounted() ) {
         monster *critter = mounted_creature.get();
         critter->remove_effect( effect_ridden );
@@ -3052,6 +3075,12 @@ void npc::npc_update_body()
 
 void npc::on_load()
 {
+    if( starting_overflow.size() > 0 ) {
+        map &here = get_map();
+        for( detached_ptr<item> &it : starting_overflow.dump_remove() ) {
+            here.add_item_or_charges( bub_pos(), std::move( it ) );
+        }
+    }
     batch_turns( to_turns<int>( calendar::turn - last_updated ) );
 
     last_updated = calendar::turn;
@@ -3155,13 +3184,13 @@ bool npc::dispose_item( item &obj, const std::string & )
         }
     }
 
-    if( volume_carried() + obj.volume() <= volume_capacity() ) {
+    if( can_stash( obj ).success() ) {
         opts.emplace_back( dispose_option {
             item_handling_cost( obj ),
             [this, &obj] {
                 moves -= item_handling_cost( obj );
-                inv.add_item( obj.detach(), true );
-                inv.unsort();
+                inv_add_item( obj.detach(), true );
+                inv_unsort();
             }
         } );
     }
@@ -3668,6 +3697,10 @@ void npc::set_mission( npc_mission new_mission )
     if( new_mission != mission ) {
         previous_mission = mission;
         mission = new_mission;
+        if( previous_mission == NPC_MISSION_SHOPKEEP ) {
+            // no longer a shopkeeper: the wares become ordinary carried stock
+            shop_stock_to_inventory();
+        }
     }
     if( mission == NPC_MISSION_ACTIVITY ) {
         current_activity_id = activity->id();
@@ -3690,6 +3723,10 @@ void npc::set_attitude( npc_attitude new_attitude )
         return;
     }
     previous_attitude = attitude;
+    if( new_attitude == NPCATT_FOLLOW ) {
+        // recruited: the shop stock goes with the new companion
+        shop_stock_to_inventory();
+    }
     if( new_attitude == NPCATT_FLEE ) {
         new_attitude = NPCATT_FLEE_TEMP;
     }

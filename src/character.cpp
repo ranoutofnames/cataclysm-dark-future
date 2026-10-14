@@ -42,6 +42,8 @@
 #include "game_constants.h"
 #include "int_id.h"
 #include "item_contents.h"
+#include "item_pocket.h"
+#include "pocket_data.h"
 #include "item_hauling.h"
 #include "itype.h"
 #include "iuse.h"
@@ -463,7 +465,7 @@ Character::Character() :
     location_visitable<Character>(),
     worn(new worn_item_location(this)),
     cached_time( calendar::before_time_starts ),
-    inv(new character_item_location(this)),
+    body_storage( new body_storage_item_location( this ) ),
     id( -1 ),
     next_climate_control_check( calendar::before_time_starts ),
     last_climate_control_ret( false )
@@ -595,6 +597,8 @@ void Character::move_operator_common( Character &&source ) noexcept
     mounted_creature_id = source.mounted_creature_id ;
     activity_vehicle_part_index = source.activity_vehicle_part_index ;
     inv = std::move( source.inv );
+    body_storage = std::move( source.body_storage );
+    carried_dirty = true;
     omt_path = std::move( source.omt_path );
 
     position = source.position ;
@@ -681,7 +685,7 @@ void Character::move_operator_common( Character &&source ) noexcept
 
 Character::Character( Character &&source )  noexcept : Creature( std::move( source ) ),
     worn( new worn_item_location( this ) ),
-    inv( new character_item_location( this ) )
+    body_storage( new body_storage_item_location( this ) )
 {
     move_operator_common( std::move( source ) );
 }
@@ -2763,7 +2767,10 @@ detached_ptr<item> Character::i_add_to_container( detached_ptr<item> &&it, const
 
 item &Character::i_add( detached_ptr<item> &&it, bool should_stack )
 {
-    itype_id item_type_id = it->typeId();
+    if( !it ) {
+        return null_item_reference();
+    }
+    const itype_id item_type_id = it->typeId();
     last_item = item_type_id;
 
     if( it->is_food() || it->is_ammo() || it->is_gun() || it->is_armor() ||
@@ -2771,23 +2778,26 @@ item &Character::i_add( detached_ptr<item> &&it, bool should_stack )
         inv.unsort();
     }
 
-    // if there's a desired invlet for this item type, try to use it
-    bool keep_invlet = false;
-    const invlets_bitset cur_inv = allocated_invlets();
-    for( auto iter : inv.assigned_invlet ) {
-        if( iter.second == item_type_id && !cur_inv[iter.first] ) {
-            it->invlet = iter.first;
-            keep_invlet = true;
-            break;
+    ret_val<item *> added = try_add( std::move( it ) );
+    if( added.success() ) {
+        return *added.value();
+    }
+    // no pocket takes it: it never gets lost, it lands at the character's feet
+    return drop_for_lack_of_room( std::move( it ) );
+}
+
+item &Character::drop_for_lack_of_room( detached_ptr<item> &&it )
+{
+    const itype_id type = it->typeId();
+    add_msg_if_player( m_bad, _( "You have no room for the %s, so you drop it." ), it->tname() );
+    map &here = get_map();
+    here.add_item_or_charges( bub_pos(), std::move( it ) );
+    for( item * const &on_ground : here.i_at( bub_pos() ) ) {
+        if( on_ground->typeId() == type ) {
+            return *on_ground;
         }
     }
-
-    item &item_in_inv = inv.add_item( std::move( it ), keep_invlet, true, should_stack );
-    item_in_inv.on_pickup( *this );
-
-    clear_npc_ai_info_cache( npc_ai_info::reloadables );
-    clear_npc_ai_info_cache( npc_ai_info::reloadable_cbms );
-    return item_in_inv;
+    return null_item_reference();
 }
 
 void Character::remove_worn_items_with( const std::function < detached_ptr<item>
@@ -2823,7 +2833,16 @@ item *Character::invlet_to_item( const int linvlet )
         // Also, inventory restack logic depends on this.
         return VisitResponse::SKIP;
     } );
-    return invlet_item;
+    if( invlet_item != nullptr ) {
+        return invlet_item;
+    }
+    // the carried items are nested in the worn ones: look at the view's top level
+    refresh_carried();
+    const int position = inv.invlet_to_position( invlet );
+    if( position != INT_MIN ) {
+        return &inv.find_item( position );
+    }
+    return nullptr;
 }
 
 // Negative positions indicate weapon/clothing, 0 & positive indicate inventory
@@ -2841,6 +2860,7 @@ const item &Character::i_at( int position ) const
         }
     }
 
+    refresh_carried();
     return inv.find_item( position );
 }
 
@@ -2856,6 +2876,13 @@ int Character::get_item_position( const item *it ) const
         return -1;
     }
 
+    // carried items are nested in the worn ones, so the carried stacks come first
+    refresh_carried();
+    const int carried_position = inv.position_by_item( it );
+    if( carried_position != INT_MIN ) {
+        return carried_position;
+    }
+
     int p = 0;
     for( const auto &e : worn ) {
         if( e->has_item( *it ) ) {
@@ -2864,61 +2891,136 @@ int Character::get_item_position( const item *it ) const
         p++;
     }
 
-    return inv.position_by_item( it );
+    return INT_MIN;
 }
 
 const std::vector<item *> &Character::inv_const_stack( int position ) const
 {
+    refresh_carried();
     return inv.const_stack( position );
 }
 
 const_invslice Character::inv_const_slice() const
 {
+    refresh_carried();
     return inv.const_slice();
 }
 
 size_t Character::inv_size() const
 {
+    refresh_carried();
     return inv.size();
 }
 
 void Character::inv_restack()
 {
+    refresh_carried();
     inv.restack( *dynamic_cast<player *>( this ) );
 }
 
 void Character::inv_assign_empty_invlet( item &it, bool force )
 {
+    refresh_carried();
     inv.assign_empty_invlet( it, *this, force );
 }
 
 void Character::inv_reassign_item( item &it, char invlet, bool remove_old )
 {
+    refresh_carried();
     inv.reassign_item( it, invlet, remove_old );
 }
 
 int Character::inv_invlet_to_position( char invlet ) const
 {
+    refresh_carried();
     return inv.invlet_to_position( invlet );
+}
+
+void Character::inv_json_save_invcache( JsonOut &json ) const
+{
+    inv.json_save_invcache( json );
+}
+
+void Character::inv_json_load_invcache( JsonIn &jsin )
+{
+    inv.json_load_invcache( jsin );
+}
+
+const inventory &Character::carried_view() const
+{
+    refresh_carried();
+    return inv;
+}
+
+item &Character::inv_add_item( detached_ptr<item> &&newit, bool keep_invlet, bool assign_invlet,
+                               bool /*should_stack*/ )
+{
+    if( !newit ) {
+        return null_item_reference();
+    }
+    ret_val<item *> added = add_to_pocket( std::move( newit ), nullptr, keep_invlet, assign_invlet );
+    if( added.success() && added.value() != nullptr ) {
+        return *added.value();
+    }
+    if( !newit ) {
+        return null_item_reference();
+    }
+    return drop_for_lack_of_room( std::move( newit ) );
+}
+
+void Character::inv_add_items( std::vector<detached_ptr<item>> &newits, bool keep_invlet,
+                               bool assign_invlet, bool should_stack )
+{
+    for( detached_ptr<item> &it : newits ) {
+        inv_add_item( std::move( it ), keep_invlet, assign_invlet, should_stack );
+    }
+}
+
+int Character::inv_worst_item_value( npc *p ) const
+{
+    refresh_carried();
+    return inv.worst_item_value( p );
+}
+
+bool Character::inv_has_enough_painkiller( int pain ) const
+{
+    refresh_carried();
+    return inv.has_enough_painkiller( pain );
+}
+
+item *Character::inv_most_appropriate_painkiller( int pain )
+{
+    refresh_carried();
+    return inv.most_appropriate_painkiller( pain );
 }
 
 void Character::rust_iron_items()
 {
+    refresh_carried();
     inv.rust_iron_items();
 }
 
 void Character::inv_clear()
 {
-    inv.clear();
+    refresh_carried();
+    std::vector<item *> carried;
+    inv.dump( carried );
+    for( item *it : carried ) {
+        // the detached pointer destroys the item
+        it->detach();
+    }
+    carried_dirty = true;
 }
 
 void Character::dump_inv( std::vector<item *> &to )
 {
+    refresh_carried();
     inv.dump( to );
 }
 
 int Character::inv_position_by_item( item *it ) const
 {
+    refresh_carried();
     return inv.position_by_item( it );
 }
 
@@ -2932,6 +3034,11 @@ void Character::inv_update_invlet_cache_with_item( item &it )
     inv.update_invlet_cache_with_item( it );
 }
 
+const std::map<char, itype_id> &Character::inv_assigned_invlet() const
+{
+    return inv.assigned_invlet;
+}
+
 std::map<char, itype_id> &Character::inv_assigned_invlet()
 {
     return inv.assigned_invlet;
@@ -2939,21 +3046,25 @@ std::map<char, itype_id> &Character::inv_assigned_invlet()
 
 int Character::inv_position_by_type( const itype_id &type ) const
 {
+    refresh_carried();
     return inv.position_by_type( type );
 }
 
 item &Character::inv_find_item( int position )
 {
+    refresh_carried();
     return inv.find_item( position );
 }
 
 const item &Character::inv_find_item( int position ) const
 {
+    refresh_carried();
     return inv.find_item( position );
 }
 
 void Character::inv_set_stack_favorite( int position, bool favorite )
 {
+    refresh_carried();
     inv.set_stack_favorite( position, favorite );
 }
 
@@ -2964,7 +3075,11 @@ void Character::inv_unsort()
 
 detached_ptr<item> Character::inv_remove_item( item *it )
 {
-    return inv.remove_item( it );
+    if( it == nullptr || it->is_null() ) {
+        return detached_ptr<item>();
+    }
+    carried_dirty = true;
+    return it->detach();
 }
 
 detached_ptr<item> Character::i_rem( int pos )
@@ -2980,7 +3095,12 @@ detached_ptr<item> Character::i_rem( int pos )
         worn.erase( iter, &ret );
         return ret ;
     }
-    return inv.remove_item( pos );
+    refresh_carried();
+    item &carried_item = inv.find_item( pos );
+    if( carried_item.is_null() ) {
+        return detached_ptr<item>();
+    }
+    return inv_remove_item( &carried_item );
 }
 
 detached_ptr<item> Character::i_rem_keep_contents( const int idx )
@@ -2996,7 +3116,6 @@ detached_ptr<item> Character::i_add_or_drop( detached_ptr<item> &&it )
         !can_pick_volume( *it ) ) {
         return get_map().add_item_or_charges( bub_pos(), std::move( it ) );
     } else {
-        inv.assign_empty_invlet( *it, *this );
         i_add( std::move( it ) );
         return detached_ptr<item>();
     }
@@ -3076,6 +3195,7 @@ void Character::drop( const drop_locations &what, const tripoint_bub_ms &target,
 
 invlets_bitset Character::allocated_invlets() const
 {
+    refresh_carried();
     invlets_bitset invlets = inv.allocated_invlets();
 
     const item &weapon = primary_weapon();
@@ -3139,8 +3259,11 @@ units::mass Character::cached_weight_carried()
         ret += worn_weight_cache;
     }
     {
-        ZoneScopedN( "inv_weight" );
-        ret += inv.weight_cached();
+        // worn weight includes the carried items; only the body storage holds some outside it
+        ZoneScopedN( "body_storage_weight" );
+        if( const item *storage = get_body_storage() ) {
+            ret += storage->weight();
+        }
     }
     {
         ZoneScopedN( "weapon_weight" );
@@ -3151,7 +3274,7 @@ units::mass Character::cached_weight_carried()
 
 units::volume Character::volume_carried() const
 {
-    return inv.volume();
+    return carried_volume();
 }
 
 int Character::best_nearby_lifting_assist() const
@@ -3175,6 +3298,82 @@ int Character::best_nearby_lifting_assist( const tripoint_bub_ms &world_pos ) co
                      } );
 }
 
+static units::volume scale_volume( units::volume v, double mult )
+{
+    return units::from_milliliter( static_cast<int>( v.value() * mult ) );
+}
+
+// the pockets that count as carried storage: worn `carry` pockets, then the body storage
+static bool is_carried_pocket( const item_pocket &pocket )
+{
+    return pocket.is_carry() && pocket.is_type( pocket_type::CONTAINER );
+}
+
+// calls fn( pocket, is_body_storage ) for the pockets that count as carried storage
+template<typename Fn>
+static void for_each_carry_pocket( const location_vector<item> &worn, const item *body, Fn fn )
+{
+    for( const item * const &worn_it : worn ) {
+        for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
+            if( is_carried_pocket( pocket ) ) {
+                fn( pocket, false );
+            }
+        }
+    }
+    if( body != nullptr ) {
+        for( const item_pocket &pocket : body->contents.get_pockets() ) {
+            if( pocket.is_type( pocket_type::CONTAINER ) ) {
+                fn( pocket, true );
+            }
+        }
+    }
+}
+
+// Calls f( item ) for the carried items named in @p without, as inventory::volume_without did,
+// except for those inside a worn item that is excluded itself (they go away with it).
+template<typename F>
+static void for_each_excluded_carried_impl( const inventory &view, const excluded_stacks &without,
+        const F &f )
+{
+    if( without.empty() ) {
+        return;
+    }
+    for( const std::vector<item *> *stack : view.const_slice() ) {
+        item &representative = *stack->front();
+        auto other_it = without.find( &representative );
+        if( other_it == without.end() ) {
+            continue;
+        }
+        const item *root = &representative;
+        while( const item *parent = root->parent_item() ) {
+            root = parent;
+        }
+        if( root != &representative && without.contains( const_cast<item *>( root ) ) ) {
+            continue;
+        }
+        int num_to_count = other_it->second;
+        if( representative.count_by_charges() ) {
+            item &copy = *item::spawn_temporary( representative );
+            copy.charges = std::min( copy.charges, num_to_count );
+            f( copy );
+        } else {
+            for( const item *stack_item : *stack ) {
+                f( *stack_item );
+                if( --num_to_count <= 0 ) {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+template<typename F>
+static void for_each_excluded_carried( const Character &who, const excluded_stacks &without,
+                                       const F &f )
+{
+    for_each_excluded_carried_impl( who.carried_view(), without, f );
+}
+
 units::mass Character::weight_carried_reduced_by( const excluded_stacks &without ) const
 {
     ZoneScoped;
@@ -3191,10 +3390,15 @@ units::mass Character::weight_carried_reduced_by( const excluded_stacks &without
         }
     }
 
-    // Items in inventory
+    // Carried items are part of the worn weight; take away the ones being removed on their own
     {
         ZoneScopedN( "inv_weight" );
-        ret += inv.weight_without( without );
+        if( const item *storage = get_body_storage() ) {
+            ret += storage->weight();
+        }
+        for_each_excluded_carried( *this, without, [&ret]( const item & excluded ) {
+            ret -= std::min( ret, excluded.weight() );
+        } );
     }
 
     // Wielded item
@@ -3243,11 +3447,24 @@ units::mass Character::weight_carried_reduced_by( const excluded_stacks &without
 
 units::volume Character::volume_carried_reduced_by( const excluded_stacks &without ) const
 {
+    units::volume ret = carried_volume();
     if( without.empty() ) {
-        return inv.volume();
-    } else {
-        return inv.volume_without( without );
+        return ret;
     }
+    // what is inside a worn item that goes away leaves with it
+    for( const item * const &worn_it : worn ) {
+        if( without.contains( const_cast<item *>( worn_it ) ) ) {
+            for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
+                if( is_carried_pocket( pocket ) ) {
+                    ret -= pocket.contains_volume();
+                }
+            }
+        }
+    }
+    for_each_excluded_carried( *this, without, [&ret]( const item & excluded ) {
+        ret -= std::min( ret, excluded.volume() );
+    } );
+    return std::max( ret, 0_ml );
 }
 
 units::mass Character::weight_capacity() const
@@ -3308,29 +3525,41 @@ units::volume Character::volume_capacity_reduced_by(
         return units::volume_max;
     }
 
-    units::volume ret = -mod;
-    for( const auto &i : worn ) {
-        if( !without.contains( i ) ) {
-            ret += i->get_storage();
+    // the sum of the effective capacities of the worn `carry` pockets and the body storage
+    const double mult = carry_capacity_multiplier();
+    units::volume ret = 0_ml;
+    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool in_body ) {
+        ret += in_body ? p.volume_capacity() : scale_volume( p.volume_capacity(), mult );
+    } );
+    if( !without.empty() ) {
+        for( const item * const &worn_it : worn ) {
+            if( !without.contains( const_cast<item *>( worn_it ) ) ) {
+                continue;
+            }
+            for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
+                if( is_carried_pocket( pocket ) ) {
+                    ret -= scale_volume( pocket.volume_capacity(), mult );
+                }
+            }
         }
     }
-
-    ret *= mutation_value( "packmule_modifier" );
-    ret += bonus_from_enchantments( ret / 1_ml, enchantment_value_id( "CARRY_STORAGE" ) ) * 1_ml;
+    ret -= mod;
 
     return std::max( ret, 0_ml );
 }
 
 bool Character::can_pick_volume( const item &it ) const
 {
-    return inv.volume() + it.volume() <= volume_capacity();
+    return can_stash( it ).success();
 }
 
 bool Character::can_pick_volume( units::volume volume ) const
 {
-    // Might not be 100% true because some items restack to a very tiny bit less
-    // but close enough not to matter
-    return inv.volume() + volume <= volume_capacity();
+    if( has_trait( trait_DEBUG_STORAGE ) ) {
+        return true;
+    }
+    // it has to fit in a single pocket
+    return volume <= free_carry_volume();
 }
 
 bool Character::can_pick_weight( const item &it, bool safe ) const
@@ -3639,8 +3868,8 @@ bool Character::wear_possessed( item &to_wear, bool interactive,
         det = remove_primary_weapon();
         was_weapon = true;
     } else {
-        det = inv.remove_item( &to_wear );
-        inv.restack( *this->as_player() );
+        det = inv_remove_item( &to_wear );
+        inv_restack();
         was_weapon = false;
     }
 
@@ -3649,7 +3878,7 @@ bool Character::wear_possessed( item &to_wear, bool interactive,
         if( was_weapon ) {
             set_primary_weapon( std::move( result ) );
         } else {
-            inv.add_item( std::move( result ), true );
+            inv_add_item( std::move( result ), true );
         }
         return false;
     }
@@ -3716,7 +3945,8 @@ bool Character::takeoff( item &it, std::vector<detached_ptr<item>> *res )
     } );
 
     if( res == nullptr ) {
-        if( volume_carried() + it.volume() > volume_capacity_reduced_by( it.get_storage() ) ) {
+        // the garment keeps its contents; it needs a pocket of something else to go to
+        if( !can_stash( it, &it ).success() ) {
             if( is_npc() || query_yn( _( "No room in inventory for your %s.  Drop it?" ),
                                       colorize( it.tname(), it.color_in_inventory() ) ) ) {
                 drop( it, bub_pos() );
@@ -3728,7 +3958,12 @@ bool Character::takeoff( item &it, std::vector<detached_ptr<item>> *res )
         ( *iter )->on_takeoff( *this );
         detached_ptr<item> det;
         worn.erase( iter, &det );
-        inv.add_item( std::move( det ), true );
+        carried_dirty = true;
+        ret_val<item *> stashed = add_to_pocket( std::move( det ), nullptr, true, true );
+        if( !stashed.success() ) {
+            // can_stash said it fits, so this cannot happen; never lose the garment anyway
+            drop_for_lack_of_room( std::move( det ) );
+        }
     } else {
         ( *iter )->on_takeoff( *this );
         detached_ptr<item> det;
@@ -3861,17 +4096,14 @@ ret_val<bool> Character::can_swap( const item &it ) const
     return ret_val<bool>::make_success();
 }
 
-// pretty much the same as inventory::remove_randomly_by_volume but I didn't see a point in
-// adding it to the inventory class when it's only called here in Character::drop_invalid_inventory
-std::vector<detached_ptr<item>> remove_randomly_by_weight( location_inventory &,
-                             const units::mass & );
-std::vector<detached_ptr<item>> remove_randomly_by_weight( location_inventory &inv,
+// pretty much the same as removing random carried items by volume, but by weight
+static std::vector<detached_ptr<item>> remove_randomly_by_weight( Character &who,
                              const units::mass &weight )
 {
     std::vector<item *> contents;
     std::vector<detached_ptr<item>> result;
 
-    inv.dump( contents );
+    who.dump_inv( contents );
 
     // shuffle the vector
     std::shuffle( contents.begin(), contents.end(), rng_get_engine() );
@@ -3883,7 +4115,7 @@ std::vector<detached_ptr<item>> remove_randomly_by_weight( location_inventory &i
             break;
         }
         dropped_weight += e->weight();
-        result.push_back( e->detach() );
+        result.push_back( who.inv_remove_item( e ) );
     }
 
     return result;
@@ -3896,20 +4128,36 @@ void Character::drop_invalid_inventory()
 
     const auto p = bub_pos();
 
-    inv.remove_items_with( [&dropped_liquid, &p]( detached_ptr<item> &&it ) {
-        if( it->made_of( LIQUID ) ) {
+    refresh_carried();
+    std::vector<item *> carried_items;
+    inv.dump( carried_items );
+    for( item *carried_it : carried_items ) {
+        if( carried_it->made_of( LIQUID ) ) {
             dropped_liquid = true;
-            get_map().add_item_or_charges( p, std::move( it ) );
+            get_map().add_item_or_charges( p, inv_remove_item( carried_it ) );
         }
-        return VisitResponse::SKIP;
-    } );
+    }
 
     if( dropped_liquid ) {
         add_msg_if_player( m_bad, _( "Liquid from your inventory has leaked onto the ground." ) );
     }
 
+    // a shrunken capacity (a mutation, a bionic) shakes carried items loose
     if( volume_carried() > volume_capacity() ) {
-        auto items_to_drop = inv.remove_randomly_by_volume( volume_carried() - volume_capacity() );
+        std::vector<detached_ptr<item>> items_to_drop;
+        units::volume dropped = 0_ml;
+        const units::volume excess = volume_carried() - volume_capacity();
+        refresh_carried();
+        carried_items.clear();
+        inv.dump( carried_items );
+        std::shuffle( carried_items.begin(), carried_items.end(), rng_get_engine() );
+        for( item *carried_it : carried_items ) {
+            if( dropped >= excess ) {
+                break;
+            }
+            dropped += carried_it->volume();
+            items_to_drop.push_back( inv_remove_item( carried_it ) );
+        }
         put_into_vehicle_or_drop( *this, item_drop_reason::tumbling, items_to_drop );
     }
     if( !is_npc() ) {
@@ -3919,7 +4167,7 @@ void Character::drop_invalid_inventory()
     auto wt_carried = cached_weight_carried();
     auto wt_capacity = weight_capacity();
     if( wt_carried > wt_capacity ) {
-        auto items_to_drop = remove_randomly_by_weight( inv, wt_carried - wt_capacity );
+        auto items_to_drop = remove_randomly_by_weight( *this, wt_carried - wt_capacity );
         put_into_vehicle_or_drop( *this, item_drop_reason::too_heavy, items_to_drop );
     }
 }
@@ -4441,15 +4689,15 @@ void Character::die( Creature *nkiller )
     set_killer( nkiller );
     set_time_died( calendar::turn );
     if( has_effect( effect_lightsnare ) ) {
-        inv.add_item( item::spawn( itype_string_36, calendar::start_of_cataclysm ), false );
-        inv.add_item( item::spawn( itype_snare_trigger, calendar::start_of_cataclysm ), false );
+        inv_add_item( item::spawn( itype_string_36, calendar::start_of_cataclysm ), false );
+        inv_add_item( item::spawn( itype_snare_trigger, calendar::start_of_cataclysm ), false );
     }
     if( has_effect( effect_heavysnare ) ) {
-        inv.add_item( item::spawn( itype_rope_6, calendar::start_of_cataclysm ), false );
-        inv.add_item( item::spawn( itype_snare_trigger, calendar::start_of_cataclysm ), false );
+        inv_add_item( item::spawn( itype_rope_6, calendar::start_of_cataclysm ), false );
+        inv_add_item( item::spawn( itype_snare_trigger, calendar::start_of_cataclysm ), false );
     }
     if( has_effect( effect_beartrap ) ) {
-        inv.add_item( item::spawn( itype_beartrap, calendar::start_of_cataclysm ), false );
+        inv_add_item( item::spawn( itype_beartrap, calendar::start_of_cataclysm ), false );
     }
     mission::on_creature_death( *this );
 
@@ -4643,15 +4891,22 @@ units::mass Character::get_weight() const
 {
     if( has_trait( trait_DEBUG_WEIGHTLESSNESS ) ) { return 0_gram; }
 
+    refresh_carried();
+    // the worn items weigh their carried contents too; those are counted as inventory below
+    const units::mass body_storage_weight = get_body_storage() != nullptr ? get_body_storage()->weight() :
+                                            0_gram;
+    const units::mass carried_weight = inv.weight();
     auto worn_weight = std::ranges::fold_left( worn, 0_gram,
     []( const auto sum, const auto * const itm ) { return sum + itm->weight(); } );
+    worn_weight -= std::min( worn_weight, carried_weight - std::min( carried_weight,
+                             body_storage_weight ) );
     worn_weight += bonus_from_enchantments( worn_weight / 1_gram,
                                             ench_val_WEIGHTMOD_WORN ) * 1_gram; // Weight of worn items
     worn_weight = std::max( 0_gram, worn_weight );
     auto weight = bodyweight();
     weight += bonus_from_enchantments( weight / 1_gram, ench_val_WEIGHTMOD_BODY ) * 1_gram;
     weight = std::max( 0_gram, weight );
-    auto invweight = inv.weight();  // Weight of the stored inventory
+    auto invweight = carried_weight;  // Weight of the stored inventory
     invweight += bonus_from_enchantments( invweight / 1_gram, ench_val_WEIGHTMOD_INVENTORY ) * 1_gram;
     invweight = std::max( 0_gram, invweight );
     auto weaponweight = primary_weapon().weight();
@@ -8752,7 +9007,7 @@ detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std:
 
     opts.emplace_back( dispose_option{
         bucket ? _( "Spill contents and store in inventory" ) : _( "Store in inventory" ),
-        volume_carried() + obj->volume() <= volume_capacity(), '1',
+        can_stash( *obj ).success(), '1',
         item_handling_cost( *obj ),
         [this, bucket, &obj] {
             if( bucket && !obj->spill_contents( *this ) )
@@ -8761,7 +9016,7 @@ detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std:
             }
 
             moves -= item_handling_cost( *obj );
-            inv.add_item( std::move( obj ), true );
+            inv_add_item( std::move( obj ), true );
             inv.unsort();
             return detached_ptr<item>();
         }
@@ -9441,6 +9696,9 @@ void Character::recalculate_enchantment_cache()
     enchantment_cache->deactivate_removed_effects( *this, old_ench_sources );
 
     rebuild_mutation_cache();
+
+    // bionics, mutations and shells set the size of the body storage (CARRY_STORAGE)
+    update_body_storage();
 
     // Enchantments can give HP now, so recalc it
     recalc_hp();
@@ -10607,7 +10865,7 @@ std::vector<item *> Character::inv_dump()
     for( auto &i : worn ) {
         ret.push_back( i );
     }
-    inv.dump( ret );
+    dump_inv( ret );
     return ret;
 }
 
@@ -10622,7 +10880,14 @@ std::vector<detached_ptr<item>> Character::inv_dump_remove()
         it = worn.erase( it, &t );
         ret.push_back( std::move( t ) );
     }
-    inv.dump_remove( ret );
+    // the carried items went with the worn ones; only the body storage keeps some of its own
+    if( item *storage = get_body_storage() ) {
+        std::vector<detached_ptr<item>> stored = storage->contents.clear_items();
+        for( detached_ptr<item> &it : stored ) {
+            ret.push_back( std::move( it ) );
+        }
+    }
+    carried_dirty = true;
     return ret;
 }
 
@@ -11281,6 +11546,7 @@ const item *Character::get_item_with_id( const itype_id &item_id, bool need_char
 {
     const item *ret = nullptr;
 
+    refresh_carried();
     inv.visit_items( [&ret, &item_id, &need_charges]( const item * it ) {
         if( it->typeId() == item_id ) {
             if( it->is_tool() && need_charges ) {
@@ -11973,15 +12239,15 @@ int Character::run_cost( int base_cost, bool diag ) const
 // count: number of items to drop < 0 means drop all
 void Character::drop_inv( const int count )
 {
-    if( count < 0 || static_cast<size_t>( count ) >= inv.size() ) {
+    if( count < 0 || static_cast<size_t>( count ) >= inv_size() ) {
         std::vector<detached_ptr<item>> tmp = inv_dump_remove();
         for( auto &itm : tmp ) {
             get_map().add_item_or_charges( bub_pos(), std::move( itm ) );
         }
     } else {
         for( int i = 0; i < count; i++ ) {
-            int randidx = rng( 0, inv.size() );
-            get_map().add_item_or_charges( bub_pos(), inv.remove_item( randidx ) );
+            int randidx = rng( 0, inv_size() );
+            get_map().add_item_or_charges( bub_pos(), i_rem( randidx ) );
         }
     }
 }
@@ -13069,7 +13335,7 @@ recipe_subset Character::get_available_recipes( const inventory &crafting_inv,
     if( helpers != nullptr ) {
         for( npc *np : *helpers ) {
             // Directly form the helper's inventory
-            res.include( get_recipes_from_books( np->inv.as_inventory(), filter ) );
+            res.include( get_recipes_from_books( np->carried_view(), filter ) );
             // Being told what to do
             res.include_if( np->get_learned_recipes(), [this, &filter]( const recipe & r ) {
                 if( filter && !filter( r ) ) {
@@ -13136,4 +13402,343 @@ detached_ptr<item> Character::reduce_charges( item *it, int quantity )
     auto taken = item::spawn( *it );
     taken->charges = quantity;
     return taken;
+}
+
+// ---- CDF P1c: the carried inventory lives in pockets ----
+
+static const itype_id itype_cdf_body_storage( "cdf_body_storage" );
+
+static const item_pocket *body_pocket_of( const item &storage )
+{
+    for( const item_pocket &pocket : storage.contents.get_pockets() ) {
+        if( pocket.is_type( pocket_type::CONTAINER ) ) {
+            return &pocket;
+        }
+    }
+    return nullptr;
+}
+
+static item_pocket *body_pocket_of( item &storage )
+{
+    return const_cast<item_pocket *>( body_pocket_of( static_cast<const item &>( storage ) ) );
+}
+
+void Character::refresh_carried() const
+{
+    // Cached: rebuilt only when the carried_dirty flag was set (pocket contents changed through
+    // invalidate_*_upwards), the worn list changed (its version counter) or the body storage
+    // item was replaced.
+    const item *body = get_body_storage();
+    if( !carried_dirty && worn.version() == carried_worn_version && body == carried_body_storage ) {
+        return;
+    }
+    std::vector<const item *> sources;
+    sources.reserve( worn.size() + 1 );
+    for( const item * const &worn_it : worn ) {
+        sources.push_back( worn_it );
+    }
+    sources.push_back( body );
+    inv.clear();
+    for( const item *source : sources ) {
+        if( source == nullptr ) {
+            continue;
+        }
+        for( const item_pocket &pocket : source->contents.get_pockets() ) {
+            if( !is_carried_pocket( pocket ) ) {
+                continue;
+            }
+            for( item * const &carried_it : pocket.items() ) {
+                inv.add_item( *carried_it, true, false, true );
+            }
+        }
+    }
+    carried_worn_version = worn.version();
+    carried_body_storage = body;
+    carried_dirty = false;
+}
+
+void Character::on_carried_contents_changed()
+{
+    carried_dirty = true;
+    worn_weight_cache_dirty = true;
+    // what an NPC can reload or use may have moved between pockets
+    clear_npc_ai_info_cache( npc_ai_info::reloadables );
+    clear_npc_ai_info_cache( npc_ai_info::reloadable_cbms );
+}
+
+item *Character::get_body_storage() const
+{
+    return body_storage ? body_storage.get() : nullptr;
+}
+
+units::volume Character::body_storage_capacity() const
+{
+    if( has_trait( trait_DEBUG_STORAGE ) ) {
+        return units::volume_max;
+    }
+    // base 0: only the additive part of the enchantments, as bio_storage and the shells are
+    const double bonus = bonus_from_enchantments( 0.0, enchantment_value_id( "CARRY_STORAGE" ) );
+    return units::from_milliliter( std::max( static_cast<int>( bonus ), 0 ) );
+}
+
+void Character::update_body_storage()
+{
+    const units::volume cap = body_storage_capacity();
+    const item *current = get_body_storage();
+    if( cap <= 0_ml && current == nullptr ) {
+        return;
+    }
+    map &here = get_map();
+    if( cap <= 0_ml ) {
+        detached_ptr<item> storage = body_storage.release();
+        carried_dirty = true;
+        std::vector<detached_ptr<item>> spilled = storage->contents.clear_items();
+        if( !spilled.empty() ) {
+            add_msg_if_player( m_bad, _( "You lose your body storage.  Its contents fall to the ground." ) );
+        }
+        for( detached_ptr<item> &it : spilled ) {
+            here.add_item_or_charges( bub_pos(), std::move( it ) );
+        }
+        return;
+    }
+    if( !body_storage ) {
+        body_storage = item::spawn( itype_cdf_body_storage );
+        carried_dirty = true;
+    }
+    item_pocket *pocket = body_pocket_of( *body_storage );
+    if( pocket == nullptr ) {
+        debugmsg( "cdf_body_storage has no container pocket" );
+        return;
+    }
+    if( pocket->volume_capacity() == cap ) {
+        return;
+    }
+    pocket->set_capacity_override( cap );
+    // the compartment shrank: what no longer fits is a physical loss, so it does spill
+    bool dropped = false;
+    while( !pocket->empty() && pocket->contains_volume() > pocket->volume_capacity() ) {
+        item *last = pocket->items().back();
+        detached_ptr<item> it = body_storage->contents.remove_top( last );
+        if( !it ) {
+            break;
+        }
+        here.add_item_or_charges( bub_pos(), std::move( it ) );
+        dropped = true;
+    }
+    carried_dirty = true;
+    if( dropped ) {
+        add_msg_if_player( m_bad, _( "Your body storage shrinks.  Some of its contents fall to the ground." ) );
+    }
+}
+
+double Character::carry_capacity_multiplier() const
+{
+    return mutation_value( "packmule_modifier" );
+}
+
+ret_val<bool> Character::can_pocket_contain( const item_pocket &pocket, const item &it,
+        bool in_body_storage ) const
+{
+    // type, size, length and phase rules; the capacity check below has the multiplier
+    auto fits = pocket.can_contain( it, true, false, true );
+    if( !fits.success() ) {
+        return ret_val<bool>::make_failure( false, fits.str() );
+    }
+    if( !pocket.is_standard_type() || pocket.is_holster() ||
+        !pocket.get_data().ammo_restriction.empty() ) {
+        // holster slots and ammo-restricted pockets have no scaled capacity
+        fits = pocket.can_contain( it, false, false, true );
+        if( !fits.success() ) {
+            return ret_val<bool>::make_failure( false, fits.str() );
+        }
+        return ret_val<bool>::make_success( true );
+    }
+    if( !pocket.empty() ) {
+        const item &front = *pocket.items().front();
+        if( it.made_of( LIQUID ) || it.made_of( GAS ) ) {
+            if( !front.stacks_with( it ) ) {
+                return ret_val<bool>::make_failure( false,
+                                                    _( "it can't mix that with what it already holds" ) );
+            }
+        } else if( front.made_of( LIQUID ) || front.made_of( GAS ) ) {
+            return ret_val<bool>::make_failure( false, _( "it already holds a liquid" ) );
+        }
+    }
+    const units::volume cap = in_body_storage || pocket.volume_capacity() == units::volume_max ?
+                              pocket.volume_capacity() :
+                              scale_volume( pocket.volume_capacity(), carry_capacity_multiplier() );
+    if( it.volume() > cap - pocket.contains_volume() ) {
+        return ret_val<bool>::make_failure( false, _( "it has no room left" ) );
+    }
+    if( it.weight() > pocket.weight_capacity() - pocket.contains_weight() ) {
+        return ret_val<bool>::make_failure( false, _( "it can't hold that much more weight" ) );
+    }
+    return ret_val<bool>::make_success( true );
+}
+
+std::pair<const item *, const item_pocket *> Character::best_pocket( const item &it,
+        const item *avoid ) const
+{
+    std::pair<const item *, const item_pocket *> best{ nullptr, nullptr };
+    const auto consider = [&]( const item & owner, const item_pocket & pocket, bool in_body ) {
+        if( !is_carried_pocket( pocket ) || pocket.sealed() ||
+            !can_pocket_contain( pocket, it, in_body ).success() ) {
+            return;
+        }
+        if( best.second == nullptr || best.second->better_pocket( pocket, it ) ) {
+            best = { &owner, &pocket };
+        }
+    };
+    const auto skipped = [&]( const item & owner ) {
+        return &owner == &it || ( avoid != nullptr && ( &owner == avoid ||
+                                  owner.has_item( *avoid ) || avoid->has_item( owner ) ) );
+    };
+    for( const item * const &worn_it : worn ) {
+        if( skipped( *worn_it ) ) {
+            continue;
+        }
+        for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
+            consider( *worn_it, pocket, false );
+        }
+    }
+    if( const item *storage = get_body_storage() ) {
+        if( !skipped( *storage ) ) {
+            if( const item_pocket *pocket = body_pocket_of( *storage ) ) {
+                consider( *storage, *pocket, true );
+            }
+        }
+    }
+    return best;
+}
+
+std::pair<item *, item_pocket *> Character::best_pocket( const item &it, const item *avoid )
+{
+    // the pockets belong to this character's own (non-const) items
+    const auto found = static_cast<const Character *>( this )->best_pocket( it, avoid );
+    return { const_cast<item *>( found.first ), const_cast<item_pocket *>( found.second ) };
+}
+
+ret_val<bool> Character::can_stash( const item &it, const item *avoid ) const
+{
+    if( has_trait( trait_DEBUG_STORAGE ) ) {
+        return ret_val<bool>::make_success( true );
+    }
+    if( best_pocket( it, avoid ).second != nullptr ) {
+        return ret_val<bool>::make_success( true );
+    }
+    return ret_val<bool>::make_failure( false, _( "You have no pocket that can hold the %s." ),
+                                        it.tname() );
+}
+
+ret_val<item *> Character::add_to_pocket( detached_ptr<item> &&it, const item *avoid,
+        bool keep_invlet, bool assign_invlet )
+{
+    if( !it ) {
+        return ret_val<item *>::make_failure( nullptr, "no item" );
+    }
+    std::pair<item *, item_pocket *> target = best_pocket( *it, avoid );
+    if( target.second == nullptr && has_trait( trait_DEBUG_STORAGE ) && !body_storage ) {
+        update_body_storage();
+        target = best_pocket( *it, avoid );
+    }
+    if( target.second == nullptr ) {
+        return ret_val<item *>::make_failure( nullptr, _( "You have no pocket that can hold the %s." ),
+                                              it->tname() );
+    }
+    refresh_carried();
+    if( !keep_invlet ) {
+        bool chosen = false;
+        // an item that stacks with a carried one shares its invlet
+        for( const std::vector<item *> *stack : inv.const_slice() ) {
+            if( !stack->empty() && stack->front()->stacks_with( *it ) ) {
+                it->invlet = stack->front()->invlet;
+                chosen = true;
+                break;
+            }
+        }
+        // if there's a desired invlet for this item type, try to use it
+        if( !chosen ) {
+            const invlets_bitset cur_inv = allocated_invlets();
+            for( const auto &assigned : inv.assigned_invlet ) {
+                if( assigned.second == it->typeId() && !cur_inv[assigned.first] ) {
+                    it->invlet = assigned.first;
+                    chosen = true;
+                    break;
+                }
+            }
+        }
+        if( !chosen ) {
+            inv.update_invlet( *it, assign_invlet );
+        }
+    }
+    const itype_id type = it->typeId();
+    const bool by_charges = it->count_by_charges();
+    item *placed = it.get();
+    const size_t before = target.second->items().size();
+    target.first->contents.insert_into( *target.second, std::move( it ) );
+    target.first->on_contents_changed();
+    carried_dirty = true;
+    if( by_charges && target.second->items().size() == before ) {
+        // merged into a stack of the pocket
+        placed = nullptr;
+        for( item * const &candidate : target.second->items() ) {
+            if( candidate->typeId() == type ) {
+                placed = candidate;
+                break;
+            }
+        }
+    }
+    return ret_val<item *>::make_success( placed );
+}
+
+ret_val<item *> Character::try_add( detached_ptr<item> &&it, const item *avoid )
+{
+    if( !it ) {
+        return ret_val<item *>::make_failure( nullptr, "no item" );
+    }
+    last_item = it->typeId();
+    ret_val<item *> res = add_to_pocket( std::move( it ), avoid, false, true );
+    if( res.success() && res.value() != nullptr ) {
+        res.value()->on_pickup( *this );
+        clear_npc_ai_info_cache( npc_ai_info::reloadables );
+        clear_npc_ai_info_cache( npc_ai_info::reloadable_cbms );
+    }
+    return res;
+}
+
+units::volume Character::carried_volume() const
+{
+    units::volume total = 0_ml;
+    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool ) {
+        total += p.contains_volume();
+    } );
+    return total;
+}
+
+units::volume Character::carried_capacity() const
+{
+    if( has_trait( trait_DEBUG_STORAGE ) ) {
+        return units::volume_max;
+    }
+    const double mult = carry_capacity_multiplier();
+    units::volume total = 0_ml;
+    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool in_body ) {
+        total += in_body ? p.volume_capacity() : scale_volume( p.volume_capacity(), mult );
+    } );
+    return total;
+}
+
+units::volume Character::free_carry_volume() const
+{
+    const double mult = carry_capacity_multiplier();
+    units::volume best = 0_ml;
+    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool in_body ) {
+        if( p.is_holster() ) {
+            return;
+        }
+        const units::volume cap = in_body || p.volume_capacity() == units::volume_max ?
+                                  p.volume_capacity() : scale_volume( p.volume_capacity(), mult );
+        best = std::max( best, cap - p.contains_volume() );
+    } );
+    return best;
 }

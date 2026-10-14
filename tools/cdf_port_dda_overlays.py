@@ -18,6 +18,15 @@ Currently generated:
           one unit of the item (round(cbrt(volume in ml)) cm).
       Items that CDF defines a `longest_side` for itself are skipped (explicit data wins anyway).
 
+  data/json/items/cdf_overlay_garment_pockets.json   (with --pockets)
+      The DDA pocket layout, verbatim, of every CDF garment (ARMOR/TOOL_ARMOR with `storage`)
+      whose id exists in DDA with at least one CONTAINER pocket in its `pocket_data`. Each pocket
+      is copied as DDA defines it (no scaling). `ripoff`, `extra_encumbrance` and `activity_noise`
+      are not loaded by CDF; each dropped value is kept in a "//" comment on the pocket so it can
+      be switched on later without regenerating. Ablative pockets are skipped (they belong to
+      the ablative armor work), as are non-CONTAINER pockets (magazine wells etc.: CDF builds
+      those from BN `magazines`). A per-garment report is printed.
+
 DDA now uses one "ITEM" type (with "subtypes"); BN keeps one type per kind of item. Both are read.
 
 Run from anywhere:
@@ -146,10 +155,90 @@ def generate(cdf_root, dda_root):
     return rows
 
 
+POCKET_KEYS = [
+    "pocket_type", "max_contains_volume", "max_contains_weight", "max_item_volume",
+    "min_item_volume", "max_item_length", "min_item_length", "holster", "flag_restriction",
+    "item_restriction", "rigid", "moves", "transparent", "magazine_well", "watertight",
+    "airtight", "open_container", "volume_encumber_modifier", "spoil_multiplier",
+    "weight_multiplier", "volume_multiplier",
+]
+DROPPED_KEYS = ["ripoff", "extra_encumbrance", "activity_noise"]
+GARMENT_TYPES = {"ARMOR", "TOOL_ARMOR"}
+
+
+def is_garment(obj, items, abstracts):
+    if obj.get("type") in GARMENT_TYPES:
+        return True
+    subtypes = resolve(obj, items, abstracts, "subtypes") or []
+    return obj.get("type") == "ITEM" and bool(set(subtypes) & GARMENT_TYPES)
+
+
+def pocket_volume_ml(pocket):
+    value = parse_volume_ml(pocket.get("max_contains_volume"))
+    return value if value is not None else 0
+
+
+def generate_pockets(cdf_root, dda_root):
+    """Returns (rows, report) for the garment pocket overlay."""
+    cdf, cdf_abs = load_items(cdf_root)
+    dda, dda_abs = load_items(dda_root)
+    rows = []
+    report = []
+    for item_id in sorted(cdf):
+        obj = cdf[item_id]
+        if item_id not in dda or obj.get("type") not in GARMENT_TYPES:
+            continue
+        storage = parse_volume_ml(resolve(obj, cdf, cdf_abs, "storage"))
+        if not storage:
+            continue
+        layout = resolve(dda[item_id], dda, dda_abs, "pocket_data")
+        if not isinstance(layout, list):
+            continue
+        pockets = []
+        for pocket in layout:
+            if pocket.get("pocket_type", "CONTAINER") != "CONTAINER" or pocket.get("ablative"):
+                continue
+            out = {k: pocket[k] for k in POCKET_KEYS if k in pocket}
+            dropped = {k: pocket[k] for k in DROPPED_KEYS if k in pocket}
+            if dropped:
+                out["//"] = "DDA values not loaded by CDF: " + json.dumps(dropped)
+            pockets.append(out)
+        if not pockets:
+            continue
+        rows.append({"type": "item_overlay", "id": item_id, "pocket_data": pockets})
+        main = sum(pocket_volume_ml(p) for p in pockets if not p.get("holster"))
+        total = sum(pocket_volume_ml(p) for p in pockets)
+        report.append((item_id, storage, main, total))
+    return rows, report
+
+
 def format_length(mm):
     if mm % 10 == 0:
         return "%d cm" % (mm // 10)
     return "%d mm" % mm
+
+
+def render_pockets(rows):
+    # One pocket per line keeps diffs reviewable.
+    lines = ["["]
+    for i, row in enumerate(rows):
+        lines.append('  {"type": "item_overlay", "id": %s, "pocket_data": [' % json.dumps(row["id"]))
+        for j, pocket in enumerate(row["pocket_data"]):
+            lines.append("    " + json.dumps(pocket) + ("," if j + 1 < len(row["pocket_data"]) else ""))
+        lines.append("  ]}" + ("," if i + 1 < len(rows) else ""))
+    lines.append("]")
+    return "\n".join(lines) + "\n"
+
+
+def print_report(report):
+    print("%-34s %9s %9s %9s %6s" % ("id", "BN L", "DDA L", "+straps", "ratio"))
+    for item_id, storage, main, total in report:
+        print("%-34s %9.2f %9.2f %9.2f %6.2f" % (item_id, storage / 1000, main / 1000, total / 1000,
+                                                total / storage))
+    print("\nGarments that lose capacity (DDA total below 0.9x BN storage):")
+    for item_id, storage, main, total in report:
+        if total < 0.9 * storage:
+            print("  %s: %.2f L -> %.2f L" % (item_id, storage / 1000, total / 1000))
 
 
 def render(rows):
@@ -167,17 +256,26 @@ def main():
     parser.add_argument("--cdf", type=Path, default=here, help="CDF source root (default: this repo)")
     parser.add_argument("--dda", type=Path, required=True, help="Cataclysm: DDA source root")
     parser.add_argument("--out", type=Path, help="output file (default: the committed overlay)")
+    parser.add_argument("--pockets", action="store_true",
+                        help="generate the garment pocket overlay instead of the length overlay")
     parser.add_argument("--check", action="store_true", help="compare with the output file only")
     args = parser.parse_args()
 
-    out = args.out or args.cdf / "data" / "json" / "items" / "cdf_overlay_lengths.json"
-    text = render(generate(args.cdf, args.dda))
+    if args.pockets:
+        out = args.out or args.cdf / "data" / "json" / "items" / "cdf_overlay_garment_pockets.json"
+        rows, report = generate_pockets(args.cdf, args.dda)
+        text = render_pockets(rows)
+        print_report(report)
+        print("%d garments, %d pockets" % (len(rows), sum(len(r["pocket_data"]) for r in rows)))
+    else:
+        out = args.out or args.cdf / "data" / "json" / "items" / "cdf_overlay_lengths.json"
+        text = render(generate(args.cdf, args.dda))
     if args.check:
         same = out.exists() and out.read_text(encoding="utf-8") == text
         print("up to date" if same else "OUT OF DATE: rerun without --check")
         return 0 if same else 1
     out.write_text(text, encoding="utf-8", newline="\n")
-    print("wrote %d overlays to %s" % (text.count("item_overlay"), out))
+    print("wrote %d overlays to %s" % (text.count('"item_overlay"'), out))
     return 0
 
 

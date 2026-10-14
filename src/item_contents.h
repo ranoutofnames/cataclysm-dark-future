@@ -127,7 +127,7 @@ class item_contents
          * NOTE: upon expansion, this may need to be filtered by type enum depending on accessibility
          */
         VisitResponse visit_contents( const std::function<VisitResponse( item *, item * )> &func,
-                                      item *parent = nullptr );
+                                      item *parent = nullptr, bool skip_carry = false );
         void remove_top_items_with( const std::function < detached_ptr<item>( detached_ptr<item> && ) >
                                     &filter );
 

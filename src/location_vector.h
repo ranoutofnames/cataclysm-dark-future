@@ -30,6 +30,8 @@ class location_vector
         std::unique_ptr<location<T>> loc;
         std::vector<T *> contents;
         bool destroyed = false;
+        // bumped on every structural change, so owners can cache views of the list cheaply
+        unsigned mod_count = 0;
 
         template<typename U>
         friend void std::swap( location_vector<U> &lhs, location_vector<U> &rhs ) noexcept ;
@@ -243,6 +245,9 @@ class location_vector
         location<T> *get_location() const;
 
         void push_back( detached_ptr<T> &&obj );
+        unsigned version() const {
+            return mod_count;
+        }
         size_t size() const;
         bool empty() const;
         T *back() const;

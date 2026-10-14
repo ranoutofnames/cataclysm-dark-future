@@ -53,16 +53,19 @@ void npc_trading::transfer_items( std::vector<item_pricing> &stuff, Character &,
 std::vector<item_pricing> npc_trading::init_selling( npc &np )
 {
     auto result = std::vector<item_pricing> {};
-    const auto slice = np.inv_const_slice();
-    std::ranges::for_each( slice, [&]( const auto & i ) {
-        auto &it = *i->front();
+    const auto add_stacks = [&]( const const_invslice & slice ) {
+        std::ranges::for_each( slice, [&]( const auto & i ) {
+            auto &it = *i->front();
 
-        const auto price = it.price( true );
-        auto val = np.value( it );
-        if( np.wants_to_sell( it, val, price ) ) {
-            result.emplace_back( *i, val, static_cast<int>( i->size() ) );
-        }
-    } );
+            const auto price = it.price( true );
+            auto val = np.value( it );
+            if( np.wants_to_sell( it, val, price ) ) {
+                result.emplace_back( *i, val, static_cast<int>( i->size() ) );
+            }
+        } );
+    };
+    add_stacks( np.inv_const_slice() );
+    add_stacks( np.shop_stock.const_slice() );
 
     if( np.will_exchange_items_freely() ) {
         std::ranges::for_each( np.wielded_items(), [&]( auto * weapon ) {
@@ -142,6 +145,13 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
     std::ranges::for_each( slice, [&]( const auto & i ) {
         check_item( *i, i->size() );
     } );
+
+    if( is_npc ) {
+        const_invslice stock = np.shop_stock.const_slice();
+        std::ranges::for_each( stock, [&]( const auto & i ) {
+            check_item( *i, i->size() );
+        } );
+    }
 
     if( !seller.primary_weapon().has_flag( json_flag_NO_UNWIELD ) ) {
         check_item( {&seller.primary_weapon()}, 1 );

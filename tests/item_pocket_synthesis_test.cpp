@@ -45,7 +45,9 @@ auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
 
 auto actual_pockets(const itype& t) -> std::map<pocket_type, int> {
     std::map<pocket_type, int> ret;
-    for (const pocket_data& p : t.pockets) { ret[p.type]++; }
+    for (const pocket_data& p : t.pockets) {
+        if (!p.carry) { ret[p.type]++; } // worn storage is checked in garment_pocket_test
+    }
     return ret;
 }
 

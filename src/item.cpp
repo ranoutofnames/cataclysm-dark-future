@@ -3394,6 +3394,13 @@ void item::book_info( std::vector<iteminfo> &info, const iteminfo_query *parts, 
     }
 }
 
+// Garment carry pockets (worn storage) are described and counted through get_storage() and
+// the armor "Storage" line, not as containers or holsters of their own.
+static bool is_live_pocket( const item_pocket &pocket )
+{
+    return !pocket.is_carry();
+}
+
 void item::container_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int /*batch*/,
                            bool /*debug*/ ) const
 {
@@ -3403,7 +3410,8 @@ void item::container_info( std::vector<iteminfo> &info, const iteminfo_query *pa
 
     std::vector<const item_pocket *> shown;
     for( const item_pocket &pocket : contents.get_pockets() ) {
-        if( pocket.is_type( pocket_type::CONTAINER ) ) {
+        // worn storage is described by the armor "Storage" line
+        if( pocket.is_type( pocket_type::CONTAINER ) && is_live_pocket( pocket ) ) {
             shown.push_back( &pocket );
         }
     }
@@ -6822,11 +6830,36 @@ units::volume item::get_storage() const
     if( armor == nullptr ) {
         return is_pet_armor() ? type->pet_armor->storage : 0_ml;
     }
-    units::volume storage = armor->storage;
-    float mod = get_clothing_mod_val( clothing_mod_type_storage );
-    storage += std::lround( mod ) * units::legacy_volume_factor;
+    // worn storage is the sum of the `carry` pockets (derived from `storage` or a DDA layout)
+    return get_pocket_storage_sum();
+}
 
-    return storage;
+units::volume item::get_pocket_storage_sum() const
+{
+    units::volume sum = 0_ml;
+    for( const item_pocket &pocket : contents.get_pockets() ) {
+        if( pocket.is_carry() && !pocket.is_holster() ) {
+            sum += pocket.volume_capacity();
+        }
+    }
+    return sum;
+}
+
+units::volume item::get_encumber_storage() const
+{
+    return get_pocket_encumber_storage();
+}
+
+units::volume item::get_pocket_encumber_storage() const
+{
+    double weighted_ml = 0.0;
+    for( const item_pocket &pocket : contents.get_pockets() ) {
+        if( pocket.is_carry() && !pocket.is_holster() ) {
+            weighted_ml += static_cast<double>( pocket.volume_capacity().value() ) *
+                           pocket.get_data().volume_encumber_modifier;
+        }
+    }
+    return units::from_milliliter( static_cast<int64_t>( std::llround( weighted_ml ) ) );
 }
 
 float item::get_weight_capacity_modifier() const
@@ -6905,39 +6938,20 @@ int item::get_avg_encumber( const Character &who ) const
 
 int item::get_encumber( const Character &who, const bodypart_id &bodypart ) const
 {
-
-    units::volume contents_volume( 0_ml );
-
-    contents_volume += contents.item_size_modifier();
-
-    if( who.is_worn( *this ) && this->is_non_rigid() ) {
-        const islot_armor *armor = find_armor_data();
-
-        if( armor != nullptr ) {
-            for( const armor_portion_data &entry : armor->data ) {
-                if( entry.max_encumber != 0 && entry.covers.test( bodypart.id() ) ) {
-                    units::volume rigid_storage( 0_ml );
-                    units::volume non_rigid_storage( 0_ml );
-                    const units::volume volume_carried = who.volume_carried();
-
-                    for( const item * const &e : who.worn ) {
-                        if( e->is_non_rigid() ) {
-                            non_rigid_storage += e->get_storage();
-                        } else {
-                            rigid_storage += e->get_storage();
-                        }
-                    }
-
-                    if( volume_carried > rigid_storage && non_rigid_storage > 0_ml ) {
-                        // Cast up to 64 to prevent overflow. Dividing before would prevent this but lose data.
-                        contents_volume += units::from_milliliter( static_cast<int64_t>( armor->storage.value() ) *
-                                           ( static_cast<int64_t>( volume_carried.value() ) - rigid_storage.value() ) /
-                                           non_rigid_storage.value() );
-                    }
-                }
+    // what the garment holds in its own pockets; carried items are inside it, so the
+    // encumbrance follows where they actually are. `volume_encumber_modifier` weights a pocket.
+    units::volume contents_volume = contents.item_size_modifier();
+    for( const item_pocket &pocket : contents.get_pockets() ) {
+        if( pocket.is_carry() && !pocket.is_holster() ) {
+            const double modifier = pocket.get_data().volume_encumber_modifier;
+            if( modifier != 1.0f ) {
+                contents_volume += units::from_milliliter( static_cast<int64_t>( std::llround(
+                                       static_cast<double>( pocket.contains_volume().value() ) *
+                                       ( modifier - 1.0 ) ) ) );
             }
         }
     }
+    contents_volume = std::max( contents_volume, 0_ml );
 
     return get_encumber_when_containing( who, contents_volume, bodypart );
 }
@@ -7949,8 +7963,18 @@ bool item::is_non_resealable_container() const
 bool item::is_in_container() const
 {
     auto location = static_cast<item_location *>( &*loc );
-    return location->where() == item_location_type::container || ( parent_item() &&
-            parent_item()->is_container() );
+    if( location->where() == item_location_type::container ) {
+        return true;
+    }
+    const item *parent = parent_item();
+    if( parent == nullptr || !parent->is_container() ) {
+        return false;
+    }
+    // CDF P1c: callers (find_ammo_for, liquid/ammo search) use this to mean "inside a real
+    // container, not just loose in the inventory".  Items carried in a garment's carry pocket
+    // are the old inventory, so they do not count.
+    const item_pocket *pocket = parent->contents.pocket_of( this );
+    return pocket == nullptr || !pocket->is_carry();
 }
 
 bool item::is_bucket() const
@@ -9765,7 +9789,8 @@ units::volume item::get_total_capacity() const
     }
 
     for( const item_pocket &pocket : contents.get_pockets() ) {
-        if( pocket.is_holster() ) {
+        // worn storage is already counted by get_storage()
+        if( pocket.is_holster() && is_live_pocket( pocket ) ) {
             result += pocket.volume_capacity();
         }
     }
@@ -10351,7 +10376,7 @@ bool item::has_free_holster_pocket() const
 {
     const std::list<item_pocket> &pockets = contents.get_pockets();
     return std::ranges::any_of( pockets, []( const item_pocket & pocket ) {
-        return pocket.is_holster() && !pocket.holster_full();
+        return pocket.is_holster() && is_live_pocket( pocket ) && !pocket.holster_full();
     } );
 }
 
@@ -10431,11 +10456,24 @@ auto item::size_is_stable() const -> bool
     } );
 }
 
+// The carried inventory of a character is a view of the pockets in its worn items, so anything
+// that changes those pockets has to tell the character (CDF P1c step 20).
+static void notify_carrier_of_contents_change( item &top )
+{
+    if( Character *ch = top.carrying_character() ) {
+        top.encumbrance_update_ = true;
+        ch->on_carried_contents_changed();
+    }
+}
+
 auto item::invalidate_pocket_caches_upwards() -> void
 {
+    item *top = this;
     for( auto *current = this; current != nullptr; current = current->parent_item() ) {
         current->contents.invalidate_pocket_caches();
+        top = current;
     }
+    notify_carrier_of_contents_change( *top );
 }
 
 auto item::invalidate_processing_cache_upwards() -> void
@@ -10445,6 +10483,7 @@ auto item::invalidate_processing_cache_upwards() -> void
         current->contents.invalidate_processing_cache();
         top = current;
     }
+    notify_carrier_of_contents_change( *top );
 
     if( !top->has_position() ) {
         return;
@@ -12062,6 +12101,8 @@ void item::update_clothing_mod_val()
         }
         set_var( get_clothing_mod_val_key( type ), tmp );
     }
+    // the pocketed mod adds a worn storage pocket
+    contents.rebuild_pockets();
 }
 
 item_location_type item::where() const
@@ -12106,6 +12147,19 @@ std::string item::describe_location( const Character *ch ) const
         return saved_loc->describe( ch, this );
     }
     return loc->describe( ch, this );
+}
+
+Character *item::carrying_character() const
+{
+    const item *top = this;
+    while( const item *parent = top->parent_item() ) {
+        top = parent;
+    }
+    const auto location = top->loc ? top->loc : top->saved_loc;
+    if( location == nullptr ) {
+        return nullptr;
+    }
+    return static_cast<item_location *>( location )->carrier();
 }
 
 item *item::parent_item() const

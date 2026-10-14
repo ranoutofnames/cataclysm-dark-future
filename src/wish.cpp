@@ -786,6 +786,10 @@ void debug_menu::wishitem( Character *who, const tripoint_bub_ms &pos )
     }
     std::vector<std::pair<std::string, const itype *>> opts;
     for( const itype *i : item_controller->all() ) {
+        // engine-internal item, see Character::update_body_storage()
+        if( i->get_id() == itype_id( "cdf_body_storage" ) ) {
+            continue;
+        }
         //TODO!: push up
         auto it = item::spawn_temporary( i, calendar::turn );
         if( it->has_flag( flag_VARSIZE ) ) {

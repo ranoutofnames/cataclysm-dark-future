@@ -499,9 +499,12 @@ static VisitResponse visit_internal( const std::function<VisitResponse( item *, 
 }
 
 VisitResponse item_contents::visit_contents( const std::function<VisitResponse( item *, item * )>
-        &func, item *parent )
+        &func, item *parent, bool skip_carry )
 {
     for( item_pocket &pocket : pockets ) {
+        if( skip_carry && pocket.is_carry() ) {
+            continue;
+        }
         for( item *&e : pocket.items() ) {
             switch( visit_internal( func, e, parent ) ) {
                 case VisitResponse::ABORT:
@@ -559,13 +562,49 @@ VisitResponse visitable<Character>::visit_items(
         return VisitResponse::ABORT;
     }
 
+    // Worn items first. What is carried in their `carry` pockets is visited afterwards as the
+    // top-level items it used to be, so callers that only look at the top level (returning SKIP)
+    // still see the carried items.
     for( auto &e : ch->worn ) {
-        if( visit_internal( func, e ) == VisitResponse::ABORT ) {
+        switch( func( e, nullptr ) ) {
+            case VisitResponse::ABORT:
+                return VisitResponse::ABORT;
+            case VisitResponse::NEXT:
+                if( !e->is_gun() && !e->is_magazine() &&
+                    e->contents.visit_contents( func, e, true ) == VisitResponse::ABORT ) {
+                    return VisitResponse::ABORT;
+                }
+                break;
+            case VisitResponse::SKIP:
+                break;
+        }
+    }
+
+    const auto visit_carried = [&func]( item & holder ) {
+        for( item_pocket &pocket : holder.contents.get_pockets() ) {
+            if( !pocket.is_carry() || !pocket.is_type( pocket_type::CONTAINER ) ) {
+                continue;
+            }
+            for( item *&carried_it : pocket.items() ) {
+                if( visit_internal( func, carried_it ) == VisitResponse::ABORT ) {
+                    return VisitResponse::ABORT;
+                }
+            }
+        }
+        return VisitResponse::NEXT;
+    };
+    for( auto &e : ch->worn ) {
+        if( visit_carried( *e ) == VisitResponse::ABORT ) {
+            return VisitResponse::ABORT;
+        }
+    }
+    if( item *storage = ch->get_body_storage() ) {
+        if( visit_carried( *storage ) == VisitResponse::ABORT ) {
             return VisitResponse::ABORT;
         }
     }
 
-    return ch->inv.visit_items( func );
+    return VisitResponse::NEXT;
 }
 
 /** @relates visitable */
@@ -845,8 +884,10 @@ void location_visitable<Character>::remove_items_with( const
         return last;
     };
 
-    // first try and remove items from the inventory
-    ch->inv.remove_items_with( filter_and_collect );
+    // the carried items are inside the worn ones and the body storage
+    if( item *storage = ch->get_body_storage() ) {
+        storage->contents.remove_items_with( filter_and_collect );
+    }
 
     if( last == VisitResponse::ABORT ) {
         return;

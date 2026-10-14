@@ -892,6 +892,8 @@ class npc : public player
         void talk_to_u( bool radio_contact = false, bool enforce_first_topic = false );
         // Re-roll the inventory of a shopkeeper
         void shop_restock();
+        /** Moves the wares into the carried inventory (so they can be looted from a corpse). */
+        void shop_stock_to_inventory();
         std::string get_restock_interval() const;
         bool is_shopkeeper() const;
         // Use and assessment of items
@@ -1315,6 +1317,14 @@ class npc : public player
         time_point
         companion_mission_time_ret; //When you are expected to return for calculated/variable mission returns
         location_inventory companion_mission_inv; //Inventory that is added and dropped on mission
+        /** A shopkeeper's wares. Not carried: invisible to weight, volume and capacity. */
+        location_inventory shop_stock;
+        /**
+         * Starting kit that fit no pocket at generation.  Like DDA's temporary_load_items it is
+         * dropped at the NPC's feet once the NPC is on the map (npc::on_load).  Its location is
+         * the shop one only to give the items an owner; nothing moves items out of it by location.
+         */
+        location_inventory starting_overflow;
         npc_mission mission;
         npc_mission previous_mission = NPC_MISSION_NULL;
         npc_personality personality;

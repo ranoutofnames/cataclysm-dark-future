@@ -1141,6 +1141,31 @@ void cata::detail::reg_character( sol::state &lua )
             c.i_add( std::move( i ) );
         } );
 
+        DOC( "Puts the item into the best carrying pocket (worn garment or body storage). Returns whether it did, and the reason if not. The item is only consumed on success. `add_item` instead falls back to dropping the item at the feet." );
+        luna::set_fx( ut, "try_add_item", []( UT_CLASS & c, detached_ptr<item> &i ) -> std::tuple<bool, std::string> {
+            const ret_val<item *> res = c.try_add( std::move( i ) );
+            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+        } );
+
+        DOC( "Whether the item would fit in a carrying pocket. Returns the answer, and the reason if not." );
+        luna::set_fx( ut, "can_stash", []( const UT_CLASS & c, const item & it ) -> std::tuple<bool, std::string> {
+            const ret_val<bool> res = c.can_stash( it );
+            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+        } );
+
+        DOC( "Gets the top-level carried items (those inside carrying pockets of worn garments and the body storage)." );
+        luna::set_fx( ut, "get_carried_items", []( const UT_CLASS & c ) -> std::vector<item *> {
+            std::vector<item *> res;
+            for( const std::vector<item *> *stack : c.carried_view().const_slice() )
+            {
+                res.insert( res.end(), stack->begin(), stack->end() );
+            }
+            return res;
+        } );
+
+        DOC( "Gets the hidden item holding the pockets from bionics and mutations, or nil if there is none." );
+        luna::set_fx( ut, "get_body_storage", &UT_CLASS::get_body_storage );
+
         DOC( "Creates an item with the given id and adds it to the player inventory." );
         DOC( "`count` sets the item's charges, not the number of items: exactly one item is created." );
         DOC( "For stackable (count-by-charges) items such as ammo, `count` is the stack size. For non-stackable items, pass a negative value (e.g. -1), since a positive one is still applied as charges. Tools spawned with a negative value get their default charges." );
@@ -1174,7 +1199,7 @@ void cata::detail::reg_character( sol::state &lua )
         DOC( "DEPRECATED: use remove_item instead" );
         luna::set_fx( ut, "inv_remove_item", &Character::inv_remove_item );
 
-        DOC( "Removes given `Item` from character's inventory. The `Item` must be in the inventory, neither wielded nor worn." );
+        DOC( "Removes given `Item` from the character's carried items (in a pocket), not wielded or worn." );
         luna::set_fx( ut, "remove_item", []( UT_CLASS & c, item & it ) -> detached_ptr<item> {
             return c.inv_remove_item( &it );
         } );

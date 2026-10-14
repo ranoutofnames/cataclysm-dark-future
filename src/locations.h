@@ -35,6 +35,10 @@ class item_location : public location<item>
     public:
         virtual item_location_type where() const = 0;
         virtual int obtain_cost( const Character &ch, int qty, const item *it ) const = 0;
+        /** The character whose carried storage this location belongs to, if any. */
+        virtual Character *carrier() const {
+            return nullptr;
+        }
 };
 
 class character_item_location : public item_location
@@ -52,12 +56,33 @@ class character_item_location : public item_location
         item_location_type where() const override;
         int obtain_cost( const Character &ch, int qty, const item *it ) const override;
         std::string describe( const Character *ch, const item *it ) const override;
+        Character *carrier() const override {
+            return holder;
+        }
 };
 
 class npc_mission_item_location : public character_item_location
 {
     public:
         npc_mission_item_location( npc *h );
+        detached_ptr<item> detach( item *it ) override;
+        void attach( detached_ptr<item> &&obj ) override;
+};
+
+/** The hidden body storage item of a Character (see Character::update_body_storage). */
+class body_storage_item_location : public character_item_location
+{
+    public:
+        body_storage_item_location( Character *h ) : character_item_location( h ) {}
+        detached_ptr<item> detach( item *it ) override;
+        void attach( detached_ptr<item> &&obj ) override;
+};
+
+/** Items in `npc::shop_stock`: a shopkeeper's wares, kept outside the carried inventory. */
+class npc_shop_item_location : public character_item_location
+{
+    public:
+        npc_shop_item_location( npc *h );
         detached_ptr<item> detach( item *it ) override;
         void attach( detached_ptr<item> &&obj ) override;
 };
@@ -232,6 +257,19 @@ class contents_item_location :  public item_location
         void on_changed( const item *it ) const;
 
         item *parent() const;
+};
+
+/**
+ * The location of items in a `carry` pocket (worn storage, CDF P1c step 20). Such an item is
+ * carried by whoever holds the garment, so it reports `character` while the garment is held.
+ */
+class carry_pocket_item_location : public contents_item_location
+{
+    public:
+        carry_pocket_item_location( item *cont ) : contents_item_location( cont ) {}
+        item_location_type where() const override;
+        int obtain_cost( const Character &ch, int qty, const item *it ) const override;
+        std::string describe( const Character *ch, const item *it ) const override;
 };
 
 class component_item_location : public contents_item_location

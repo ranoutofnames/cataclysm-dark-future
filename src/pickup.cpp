@@ -336,8 +336,11 @@ static auto pick_one_up( const pick_one_up_options &opts ) -> bool
             }
         } else if( !u.can_pick_volume( newloc->volume() + children_volume ) ) {
             if( !opts.autopickup ) {
-                const std::string &explain = string_format( _( "Not enough capacity to stash %s" ),
-                                             newloc->display_name() );
+                // CDF P1c step 22: say why (too long, no pocket big enough) instead of a generic message
+                const ret_val<bool> fit = u.can_stash( *newloc );
+                const std::string &explain = fit.str().empty() ?
+                                             string_format( _( "Not enough capacity to stash %s" ), newloc->display_name() ) :
+                                             fit.str();
                 option = handle_problematic_pickup( *newloc, offered_swap, !children.empty(), explain );
                 did_prompt = true;
             } else {

@@ -26,6 +26,17 @@ void check_sums(const item& container) {
     }
 }
 
+// the pocket that holds something, else the first one that is not worn storage
+auto live_pocket(const item& container) -> const item_pocket& {
+    for (const item_pocket& pocket : container.contents.get_pockets()) {
+        if (!pocket.empty()) { return pocket; }
+    }
+    for (const item_pocket& pocket : container.contents.get_pockets()) {
+        if (!pocket.is_carry()) { return pocket; }
+    }
+    return container.contents.get_pockets().front();
+}
+
 auto pocket_sizes(const item& container) -> std::vector<size_t> {
     std::vector<size_t> res;
     for (const item_pocket& pocket : container.contents.get_pockets()) {
@@ -59,7 +70,7 @@ TEST_CASE("pocket size cache follows every way of changing the contents", "[item
         std::vector<detached_ptr<item>> all = bag->contents.clear_items();
         CHECK(all.size() == 3);
         check_sums(*bag);
-        CHECK(bag->contents.get_pockets().front().contains_weight() == 0_gram);
+        CHECK(live_pocket(*bag).contains_weight() == 0_gram);
     }
 
     SECTION("a soft container grows with what it holds") {
@@ -83,13 +94,13 @@ TEST_CASE("pocket size cache follows every way of changing the contents", "[item
         item* cube_ptr = &*cube;
         bag->put_in(std::move(cube));
         check_sums(*bag);
-        const units::mass before = bag->contents.get_pockets().front().contains_weight();
+        const units::mass before = live_pocket(*bag).contains_weight();
         cube_ptr->set_flag(flag_REDUCED_WEIGHT);
         check_sums(*bag);
-        CHECK(bag->contents.get_pockets().front().contains_weight() < before);
+        CHECK(live_pocket(*bag).contains_weight() < before);
         cube_ptr->unset_flag(flag_REDUCED_WEIGHT);
         check_sums(*bag);
-        CHECK(bag->contents.get_pockets().front().contains_weight() == before);
+        CHECK(live_pocket(*bag).contains_weight() == before);
         cube_ptr->convert(itype_id("test_rock"));
         check_sums(*bag);
     }

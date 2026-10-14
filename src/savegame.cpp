@@ -64,7 +64,8 @@ static const oter_str_id oter_omt_obsolete( "omt_obsolete" );
  * load a legacy format loader.
  */
 // 30: item contents are saved per pocket (CDF P1a)
-const int savegame_version = 30;
+// 31: carried items are saved inside the worn items and the body storage, no "inv" (CDF P1c)
+const int savegame_version = 31;
 
 /*
  * This is a global set by detected version header in .sav, maps.txt, or overmap.

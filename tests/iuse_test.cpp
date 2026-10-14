@@ -909,8 +909,7 @@ TEST_CASE("caffeine and atomic caffeine", "[iuse][caff][atomic_caff]") {
 
         detached_ptr<item> det =
             item::spawn("coffee", calendar::start_of_cataclysm, item::default_charges_tag{});
-        item& coffee = *det;
-        dummy.i_add(std::move(det));
+        item& coffee = *det; // loose liquids fit in no pocket, so it is not carried
         dummy.consume_item(item::spawn(coffee));
         CHECK(dummy.get_fatigue() == fatigue_before - coffee.get_comestible()->fatigue_mod);
     }
@@ -919,8 +918,7 @@ TEST_CASE("caffeine and atomic caffeine", "[iuse][caff][atomic_caff]") {
 
         detached_ptr<item> det =
             item::spawn("atomic_coffee", calendar::start_of_cataclysm, item::default_charges_tag{});
-        item& atomic_coffee = *det;
-        dummy.i_add(std::move(det));
+        item& atomic_coffee = *det; // loose liquids fit in no pocket, so it is not carried
         dummy.consume_item(item::spawn(atomic_coffee));
         CHECK(dummy.get_fatigue() == fatigue_before - atomic_coffee.get_comestible()->fatigue_mod);
         CHECK(dummy.get_stim() == atomic_coffee.get_comestible()->stim);

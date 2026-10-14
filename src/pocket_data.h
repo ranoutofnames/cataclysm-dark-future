@@ -64,6 +64,13 @@ class pocket_data
         bool rigid = false;
         /** Holds one item (or one stack of a count-by-charges item). */
         bool holster = false;
+        /**
+         * CDF: personal storage of a worn garment (made from `storage`, a garment layout
+         * overlay or the pocketed clothing mod). Dormant until the carried inventory moves
+         * into pockets (P1c step 20): nothing can be put in, and item_pocket::is_compatible
+         * refuses everything. Never set by JSON `pocket_data`. Ablative pockets are never carry.
+         */
+        bool carry = false;
         /** Holds armor plates. Stored now, used by ablative armor (P1e). */
         bool ablative = false;
         /** Contents spill when the owning item is put in another container. */

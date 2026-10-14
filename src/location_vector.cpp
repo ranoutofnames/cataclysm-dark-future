@@ -29,6 +29,7 @@ noexcept
     }
 
     contents = std::move( source.contents );
+    mod_count++;
     return *this;
 };
 
@@ -164,6 +165,7 @@ void location_vector<T>::push_back( detached_ptr<T> &&obj )
     if( &*loc != raw->saved_loc ) {
         raw->resolve_saved_loc();
         contents.push_back( raw );
+        mod_count++;
         if( destroyed ) {
             raw->destroy_in_place();
         }
@@ -230,6 +232,7 @@ typename location_vector<T>::iterator location_vector<T>::erase( typename
         return location_vector<T>::iterator( contents.end(), *this );
     }
     T *subject = *it;
+    mod_count++;
     typename std::vector<T *>::iterator ret = contents.erase( it.it );
     subject->prepare_for_location_removal();
     subject->remove_location();
@@ -257,6 +260,7 @@ typename location_vector<T>::iterator location_vector<T>::insert( typename
         if( destroyed ) {
             raw->destroy_in_place();
         }
+        mod_count++;
         return location_vector<T>::iterator( contents.insert( it.it, raw ), *this );
     } else {
         raw->saved_loc = nullptr;
@@ -283,6 +287,7 @@ typename location_vector<T>::iterator location_vector<T>::insert( typename
             if( destroyed ) {
                 raw->destroy_in_place();
             }
+            mod_count++;
             it = location_vector<T>::iterator( contents.insert( it.it, raw ), *this );
         } else {
             raw->resolve_saved_loc();
@@ -400,6 +405,7 @@ typename std::vector<detached_ptr<T>> location_vector<T>::clear()
         ret.push_back( detached_ptr( i ) );
     }
     contents.clear();
+    mod_count++;
     return ret;
 }
 
@@ -410,6 +416,7 @@ void location_vector<T>::remove_with( std::function < detached_ptr<T>( detached_
         debugmsg( "Attempted to remove_with from a destroyed location." );
         return;
     }
+    mod_count++;
     size_t i = 0;
     for( auto it = contents.begin(); it != contents.end(); ) {
         item &as_item = **it;
@@ -506,6 +513,8 @@ noexcept
         it->set_location( &*lhs.loc );
     }
     std::swap( lhs.contents, rhs.contents );
+    lhs.mod_count++;
+    rhs.mod_count++;
 }
 
 template

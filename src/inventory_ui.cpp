@@ -1336,10 +1336,40 @@ void inventory_selector::add_character_items( Character &character )
         return VisitResponse::NEXT;
     } );
     // Visitable interface does not support stacks so it has to be here
+    // CDF P1c step 22: carried items are grouped under a header per garment (or the body storage)
     for( const auto &elem : character.inv_const_slice() ) {
-        add_items( own_inv_column, []( item * it ) {
-            return it;
-        }, restack_items( ( *elem ).begin(), ( *elem ).end(), preset.get_checking_components() ) );
+        const std::vector<std::list<item *>> stacks = restack_items( ( *elem ).begin(), ( *elem ).end(),
+                preset.get_checking_components() );
+        for( const std::list<item *> &stack : stacks ) {
+            const item *holder = stack.front()->parent_item();
+            const item_category *group = nullptr;
+            if( holder != nullptr ) {
+                units::volume used = 0_ml;
+                units::volume cap = 0_ml;
+                for( const item_pocket &pocket : holder->contents.get_pockets() ) {
+                    if( pocket.is_carry() && pocket.is_type( pocket_type::CONTAINER ) ) {
+                        cap += pocket.volume_capacity();
+                        used += pocket.volume_capacity() - pocket.remaining_volume();
+                    }
+                }
+                const std::string title = string_format( "%s (%s / %s)",
+                                          to_upper_case( holder->tname( 1, false ) ),
+                                          format_volume( used ), format_volume( cap ) );
+                const item_category_id gid( "CARRY_GROUP:" + title );
+                const auto found = std::find_if( categories.begin(), categories.end(),
+                [&gid]( const item_category & c ) {
+                    return c.get_id() == gid;
+                } );
+                if( found != categories.end() ) {
+                    group = &*found;
+                } else {
+                    categories.emplace_back( gid, no_translation( title ), 100 );
+                    group = &categories.back();
+                }
+            }
+            std::vector<item *> locations( stack.begin(), stack.end() );
+            add_entry( own_inv_column, std::move( locations ), group );
+        }
     }
 }
 

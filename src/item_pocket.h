@@ -84,6 +84,10 @@ class item_pocket
         bool is_type( pocket_type t ) const {
             return data->type == t;
         }
+        /** CDF: worn storage (see pocket_data::carry); dormant until P1c step 20. */
+        bool is_carry() const {
+            return data->carry;
+        }
         bool is_holster() const {
             return data->holster;
         }
@@ -136,13 +140,23 @@ class item_pocket
         bool is_overfull() const;
 
         /** Type checks: phase, restrictions. Ignores what the pocket already holds. */
-        ret_val<contain_code> is_compatible( const item &it ) const;
+        ret_val<contain_code> is_compatible( const item &it, bool allow_carry = false ) const;
         /**
          * Full check (#44356). If @p ignore_contents is set, only checks whether
          * the item could fit in the empty pocket.
          */
         ret_val<contain_code> can_contain( const item &it, bool ignore_contents = false,
-                                           bool ignore_sealed = false ) const;
+                                           bool ignore_sealed = false, bool allow_carry = false ) const;
+        /**
+         * CDF: per-instance capacity, for the body storage pocket whose size comes from
+         * the character's enchantments, not from type data. Unset: the type's capacity.
+         */
+        void set_capacity_override( const std::optional<units::volume> &cap ) {
+            capacity_override = cap;
+        }
+        const std::optional<units::volume> &get_capacity_override() const {
+            return capacity_override;
+        }
         /**
          * True if @p rhs is a better place for @p it than this pocket (DDA #40286).
          * @param nested true if both pockets are inside a contained item
@@ -180,6 +194,7 @@ class item_pocket
         const pocket_data *data;
         location_vector<item> contents;
         bool _sealed = false;
+        std::optional<units::volume> capacity_override;
 
         struct size_cache {
             enum class state_t : int {
