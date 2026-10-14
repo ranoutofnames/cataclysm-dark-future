@@ -97,3 +97,33 @@ TEST_CASE("copying an item keeps each item in its pocket", "[item][pocket][holst
     REQUIRE(other->contents.num_item_stacks() == 2);
     CHECK(other->contents.pocket_of(other->contents.all_items_top()[0]) != nullptr);
 }
+
+TEST_CASE("drawing from a holster through the real action wields the item",
+          "[item][pocket][holster]") {
+    clear_map();
+    clear_avatar();
+    avatar& you = get_avatar();
+
+    detached_ptr<item> holster_ptr = item::spawn(itype_id("test_holster_one"));
+    item& holster = *holster_ptr;
+    you.i_add(std::move(holster_ptr));
+    const auto* actor =
+        dynamic_cast<const holster_actor*>(holster.type->get_use("holster")->get_actor_ptr());
+    REQUIRE(actor != nullptr);
+
+    // a single slot, filled: holster_actor::use goes straight to drawing, with no menu
+    detached_ptr<item> pistol = item::spawn(itype_id("glock_19"));
+    CHECK_FALSE(actor->store(you, holster, std::move(pistol)));
+    REQUIRE(holster.contents.num_item_stacks() == 1);
+    REQUIRE_FALSE(holster.has_free_holster_pocket());
+    REQUIRE(you.primary_weapon().is_null());
+    const item* stored = holster.contents.all_items_top()[0];
+
+    CHECK(actor->use(you, holster, false, you.bub_pos()) == 0);
+
+    // the item left its pocket and is now wielded; the holster is empty and free again
+    CHECK(holster.contents.empty());
+    CHECK(holster.has_free_holster_pocket());
+    CHECK(&you.primary_weapon() == stored);
+    CHECK(you.primary_weapon().typeId() == itype_id("glock_19"));
+}

@@ -26,6 +26,7 @@
 #include "mtype.h"
 #include "recipe.h"
 #include "relic.h"
+#include "safe_reference.h"
 #include "skill.h"
 #include "translations.h"
 #include "vitamin.h"
@@ -36,24 +37,52 @@
 /**
  * Lua handle to one pocket of an item. Pockets are rebuilt (and their storage freed) when an
  * item converts or a magazine_adaptor mod changes, so a raw item_pocket pointer could dangle.
- * The handle names the owner and the pocket index and resolves it on every call; a handle whose
- * pocket no longer exists raises a Lua error.
+ * The handle names the owner and the pocket index and resolves it on every call. The owner is held
+ * as a safe_reference, so an owner that was destroyed (consumed, burned, despawned) while Lua still
+ * holds the handle is detected instead of dereferenced. A handle whose owner is gone or whose
+ * pocket no longer exists raises a Lua error; is_valid() reports this without raising.
  */
 class lua_item_pocket
 {
     public:
         lua_item_pocket( item *owner, size_t index ) : owner( owner ), index( index ) {}
+        /** Whether the owner still exists and still has a pocket at this index. Never throws. */
+        bool is_valid() const {
+            item *it = owner_item();
+            return it != nullptr && find_pocket( *it ) != nullptr;
+        }
         item_pocket &get() const {
-            size_t i = 0;
-            for( item_pocket &pocket : owner->contents.get_pockets() ) {
-                if( i++ == index ) {
-                    return pocket;
-                }
+            item *it = owner_item();
+            if( it == nullptr ) {
+                throw std::runtime_error( "ItemPocket is stale: its item no longer exists" );
             }
-            throw std::runtime_error( "ItemPocket is stale: the item's pockets changed" );
+            item_pocket *pocket = find_pocket( *it );
+            if( pocket == nullptr ) {
+                throw std::runtime_error( "ItemPocket is stale: the item's pockets changed" );
+            }
+            return *pocket;
         }
     private:
-        item *owner;
+        /** The owner, or nullptr when it was destroyed. Never goes through safe_reference::get(),
+         *  which complains about references to items that are merely detached (Lua-owned). */
+        item *owner_item() const {
+            // is_destroyed() also resolves merge redirects, so it has to come first
+            if( owner.is_destroyed() || !owner.is_accessible() ) {
+                return nullptr;
+            }
+            return const_cast<item *>( owner.get_const() );
+        }
+        item_pocket *find_pocket( item &it ) const {
+            size_t i = 0;
+            for( item_pocket &pocket : it.contents.get_pockets() ) {
+                if( i++ == index ) {
+                    return &pocket;
+                }
+            }
+            return nullptr;
+        }
+
+        safe_reference<item> owner;
         size_t index;
 };
 
@@ -855,9 +884,11 @@ void reg_islot( sol::state &lua )
 
 #define UT_CLASS lua_item_pocket
     {
-        DOC( "One pocket of an item: a slot with its own capacity and rules. Resolved by index on every call; using it after the item's pockets changed raises an error." );
+        DOC( "One pocket of an item: a slot with its own capacity and rules. Resolved by index on every call; using it after the item was destroyed or its pockets changed raises an error (check with `is_valid`)." );
         sol::usertype<UT_CLASS> ut = luna::new_usertype<UT_CLASS>( lua, luna::no_bases, luna::no_constructor );
 
+        DOC( "Whether the item this pocket belongs to still exists and still has this pocket. Does not raise." );
+        luna::set_fx( ut, "is_valid", []( const UT_CLASS & c ) { return c.is_valid(); } );
         luna::set_fx( ut, "type", []( const UT_CLASS & c ) { return c.get().get_type(); } );
         luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) { return c.get().volume_capacity(); } );
         luna::set_fx( ut, "remaining_volume", []( const UT_CLASS & c ) { return c.get().remaining_volume(); } );

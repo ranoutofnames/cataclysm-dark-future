@@ -1076,6 +1076,27 @@
     }
   },
   {
+    "id": "test_holster_one",
+    "type": "GENERIC",
+    "name": "TEST single holster",
+    "description": "A test holster with one slot for a pistol.",
+    "weight": "200 g",
+    "volume": "500 ml",
+    "price": "0 cent",
+    "material": "leather",
+    "symbol": "[",
+    "color": "light_gray",
+    "use_action": {
+      "type": "holster",
+      "max_volume": "1 L",
+      "min_volume": "100 ml",
+      "max_weight": "2 kg",
+      "multi": 1,
+      "draw_cost": 50,
+      "skills": [ "pistol" ]
+    }
+  },
+  {
     "id": "test_pocket_rig",
     "type": "GENERIC",
     "name": "TEST rig",

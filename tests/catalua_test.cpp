@@ -4,6 +4,7 @@
 #include "bionics.h"
 #include "bodypart.h"
 #include "calendar.h"
+#include "cata_arena.h"
 #include "cata_utility.h"
 #include "catacharset.h"
 #include "catalua.h"
@@ -31,6 +32,7 @@
 #include "game_constants.h"
 #include "iexamine.h"
 #include "init.h"
+#include "item.h"
 #include "json.h"
 #include "magic/magic_ter_furn_transform.h"
 #include "map/mapbuffer.h"
@@ -4475,4 +4477,34 @@ TEST_CASE("lua_hook_avatar_enters_omt_activity_skip", "[lua][hooks][activity]") 
     // No double fire when the poll runs again for the same OMT.
     g->track_avatar_omt();
     CHECK(fired == 1);
+}
+
+TEST_CASE("lua_item_pocket_handle_owner_destroyed", "[lua][pocket]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto pos = tripoint_bub_ms{60, 60, 0};
+
+    // One owner is detached (what gapi.create_item hands to Lua), one lies on the map.
+    detached_ptr<item> detached_owner = item::spawn(itype_id("test_pocket_rig"));
+    detached_ptr<item> map_owner = item::spawn(itype_id("test_pocket_rig"));
+    item* const map_owner_raw = &*map_owner;
+    REQUIRE(!here.add_item_or_charges(pos, std::move(map_owner), false));
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["detached_owner"] = &*detached_owner;
+    test_data["map_owner"] = map_owner_raw;
+    test_data["destroy_detached_owner"] = [&detached_owner]() {
+        detached_owner = detached_ptr<item>();
+    };
+    test_data["destroy_map_owner"] = [&here, pos, map_owner_raw]() {
+        const detached_ptr<item> removed = here.i_rem(pos, map_owner_raw);
+    };
+    test_data["reclaim"] = []() { cleanup_arenas(); };
+    lua.globals()["test_data"] = test_data;
+
+    run_lua_test_script(lua, "item_pocket_owner_destroyed_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+    CHECK(!detached_owner);
 }

@@ -51,6 +51,10 @@ list only one kind), `item:try_put_in(item)` puts an item into the best pocket i
 reason. `try_put_in` only consumes the item when it succeeds. The old `item:can_contain(item)`,
 `item:current_magazine()` and `itype:slot_container()` keep working.
 
+A pocket handle follows its item: if the item is destroyed or its pockets are rebuilt while you
+still hold the handle, using it raises a Lua error instead of touching freed memory. Call
+`pocket:is_valid()` to check first; it never raises.
+
 ```lua
 local you = gapi.get_avatar()
 
