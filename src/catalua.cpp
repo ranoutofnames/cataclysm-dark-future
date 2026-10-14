@@ -238,7 +238,7 @@ bool save_world_lua_state( const world *world, const std::string &path )
 
     const mod_management::t_mod_list &mods = world_generator->active_world->info->active_mod_order;
     sol::table t = get_mod_storage_table( state );
-    run_on_game_save_hooks( state );
+    // on_game_save fires once, from game::save(), before any state is written.
     const auto ret = world->write_to_file( path, [&]( std::ostream & stream ) {
         JsonOut jsout( stream );
         jsout.start_object();
@@ -280,7 +280,7 @@ bool load_world_lua_state( const world *world, const std::string &path )
         }
     }, true );
 
-    run_on_game_load_hooks( state );
+    // on_game_load fires once, from game::load(), after the whole game state is restored.
     return ret;
 }
 
