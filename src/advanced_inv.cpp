@@ -277,8 +277,12 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
     const size_t amt_startpos = lastcol - 15;
     const size_t weight_startpos = lastcol - 10;
     const size_t vol_startpos = lastcol - 4;
+    // CDF P1c: the inventory pane names the garment that carries each stack
+    const bool show_holder = pane.get_area() == AIM_INVENTORY && !compact;
+    const int holder_width = 10;
+    const size_t holder_startpos = amt_startpos - holder_width - 1;
     // Default name length
-    int max_name_length = amt_startpos - name_startpos - 1;
+    int max_name_length = ( show_holder ? holder_startpos : amt_startpos ) - name_startpos - 1;
 
     //~ Items list header (length type 1). Table fields length without spaces: amt - 4, weight - 5, vol - 4.
     const int table_hdr_len1 = utf8_width( _( "amt weight vol" ) );
@@ -293,6 +297,9 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         max_name_length = src_startpos - name_startpos - 1;
     } else {
         mvwprintz( window, point( lastcol - table_hdr_len1 + 1, 5 ), c_light_gray, _( "amt weight vol" ) );
+    }
+    if( show_holder ) {
+        mvwprintz( window, point( holder_startpos, 5 ), c_light_gray, _( "garment" ) );
     }
 
     for( int i = page * itemsPerPage, x = 0 ; i < static_cast<int>( items.size() ) &&
@@ -361,6 +368,11 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         // TODO: specify this is coming from a vehicle!
         if( pane.get_area() == AIM_ALL && !compact ) {
             mvwprintz( window, point( src_startpos, 6 + x ), thiscolor, squares[sitem.area].shortname );
+        }
+
+        //print garment column
+        if( show_holder && !sitem.holder.empty() ) {
+            trim_and_print( window, point( holder_startpos, 6 + x ), holder_width, thiscolor, sitem.holder );
         }
 
         //print "amount" column

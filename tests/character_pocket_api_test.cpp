@@ -19,6 +19,7 @@
 #include "units.h"
 
 #include <sstream>
+#include <string>
 #include <vector>
 
 // CDF P1c step 19: the character pocket API and the body storage are dead code (nothing in
@@ -284,5 +285,51 @@ TEST_CASE("npc pickups respect pocket fit", "[npc][pocket]") {
 
     for (item* it : guy.pick_up_item_map(where)) {
         CHECK(guy.can_stash(*it).success());
+    }
+}
+
+TEST_CASE("can_stash names why nothing fits", "[character][pocket][stash_reason]") {
+    clear_all_state();
+    avatar& u = get_avatar();
+    clear_character(u, false);
+    u.update_body_storage();
+    const auto says = [](const ret_val<bool>& r, const std::string& what) {
+        return !r.success() && r.str().find(what) != std::string::npos;
+    };
+
+    item& rock = *item::spawn_temporary(itype_id("rock"));
+    item& plank = *item::spawn_temporary(itype_id("2x4"));
+    item& bowl = *item::spawn_temporary(itype_id("fish_bowl"));
+    item& chess = *item::spawn_temporary(itype_id("chess"));
+
+    SECTION("no carrying pockets at all") {
+        CHECK(says(u.can_stash(rock), "There is no pocket to carry the"));
+        CHECK(says(u.stash_refusal(rock), "There is no pocket to carry the"));
+        auto r = u.try_add(item::spawn(itype_id("rock")));
+        CHECK(!r.success());
+        CHECK(r.str().find("There is no pocket to carry the") != std::string::npos);
+    }
+
+    SECTION("a garment with small pockets") {
+        u.wear_item(item::spawn(itype_id("jeans")));
+        REQUIRE(u.can_stash(rock).success());
+        CHECK(says(u.can_stash(plank), "too long"));
+        CHECK(says(u.can_stash(bowl), "too heavy"));
+        CHECK(says(u.can_stash(chess), "too big"));
+        // the same reason comes back from the failed try_add
+        auto r = u.try_add(item::spawn(itype_id("2x4")));
+        CHECK(!r.success());
+        CHECK(r.str().find("too long") != std::string::npos);
+
+        // fill every pocket: what would fit when empty now reports no room
+        bool refused = false;
+        for (int i = 0; i < 200 && !refused; i++) {
+            refused = !u.try_add(item::spawn(itype_id("rock"))).success();
+        }
+        REQUIRE(refused);
+        CHECK(says(u.can_stash(rock), "room left"));
+        // things that never fit keep their own reason
+        CHECK(says(u.can_stash(plank), "too long"));
+        CHECK(says(u.can_stash(chess), "too big"));
     }
 }

@@ -91,6 +91,7 @@ so keep your bags clear.
 What you carry now lives in the pockets of the clothes you wear, not in an invisible bag. A backpack,
 cargo pants or a vest each hold their own items, and the inventory screen groups your items under the
 garment that holds them, for example "BACKPACK (12.3 / 25 L)". Long items need a pocket long enough
-for them, and the game tells you why something does not fit. If you pick up something that fits no
-pocket, or take off a garment you cannot stash, it ends up at your feet. Old saves from before this
-change do not carry over their loose inventory.
+for them, and the game tells you why something does not fit (no room left, too heavy, too big, too
+long, or not allowed). The advanced inventory shows a "garment" column on wide terminals.
+If you pick up something that fits no pocket, or take off a garment you cannot stash, it ends
+up at your feet. Old saves from before this change do not carry over their loose inventory.

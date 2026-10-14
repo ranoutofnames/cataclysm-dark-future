@@ -1370,8 +1370,8 @@ class Character : public Creature, public location_visitable<Character>
         /** Multiplier on the capacity of worn `carry` pockets (packmule_modifier). */
         double carry_capacity_multiplier() const;
         /** Whether @p it fits @p pocket, with the capacity multiplier applied. */
-        ret_val<bool> can_pocket_contain( const item_pocket &pocket, const item &it,
-                                          bool in_body_storage = false ) const;
+        ret_val<item_pocket::contain_code> can_pocket_contain( const item_pocket &pocket, const item &it,
+                bool in_body_storage = false ) const;
         /**
          * The best worn `carry` pocket or body storage pocket for @p it. Wielded items are not
          * searched. Pockets of @p avoid (and of items inside it) are skipped.
@@ -1387,6 +1387,12 @@ class Character : public Creature, public location_visitable<Character>
         ret_val<item *> try_add( detached_ptr<item> &&it, const item *avoid = nullptr );
         /** Whether @ref try_add would succeed; the failure message names the reason. */
         ret_val<bool> can_stash( const item &it, const item *avoid = nullptr ) const;
+        /**
+         * Why no carried pocket takes @p it: no pockets at all, no room left, too heavy, too big,
+         * too long, or not allowed (item restrictions). Always a failure; DEBUG_STORAGE is not
+         * considered.
+         */
+        ret_val<bool> stash_refusal( const item &it, const item *avoid = nullptr ) const;
         /** Volume held by the worn `carry` pockets and the body storage. */
         units::volume carried_volume() const;
         /** Capacity of the worn `carry` pockets (times the multiplier) and the body storage. */

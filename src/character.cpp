@@ -13536,44 +13536,45 @@ double Character::carry_capacity_multiplier() const
     return mutation_value( "packmule_modifier" );
 }
 
-ret_val<bool> Character::can_pocket_contain( const item_pocket &pocket, const item &it,
-        bool in_body_storage ) const
+ret_val<item_pocket::contain_code> Character::can_pocket_contain( const item_pocket &pocket,
+        const item &it, bool in_body_storage ) const
 {
+    using code = item_pocket::contain_code;
     // type, size, length and phase rules; the capacity check below has the multiplier
     auto fits = pocket.can_contain( it, true, false, true );
     if( !fits.success() ) {
-        return ret_val<bool>::make_failure( false, fits.str() );
+        return fits;
     }
     if( !pocket.is_standard_type() || pocket.is_holster() ||
         !pocket.get_data().ammo_restriction.empty() ) {
         // holster slots and ammo-restricted pockets have no scaled capacity
-        fits = pocket.can_contain( it, false, false, true );
-        if( !fits.success() ) {
-            return ret_val<bool>::make_failure( false, fits.str() );
-        }
-        return ret_val<bool>::make_success( true );
+        return pocket.can_contain( it, false, false, true );
     }
     if( !pocket.empty() ) {
         const item &front = *pocket.items().front();
         if( it.made_of( LIQUID ) || it.made_of( GAS ) ) {
             if( !front.stacks_with( it ) ) {
-                return ret_val<bool>::make_failure( false,
+                return ret_val<code>::make_failure( code::ERR_LIQUID,
                                                     _( "it can't mix that with what it already holds" ) );
             }
         } else if( front.made_of( LIQUID ) || front.made_of( GAS ) ) {
-            return ret_val<bool>::make_failure( false, _( "it already holds a liquid" ) );
+            return ret_val<code>::make_failure( code::ERR_LIQUID, _( "it already holds a liquid" ) );
         }
     }
     const units::volume cap = in_body_storage || pocket.volume_capacity() == units::volume_max ?
                               pocket.volume_capacity() :
                               scale_volume( pocket.volume_capacity(), carry_capacity_multiplier() );
+    if( it.volume() > cap ) {
+        return ret_val<code>::make_failure( code::ERR_TOO_BIG, _( "it is too big" ) );
+    }
     if( it.volume() > cap - pocket.contains_volume() ) {
-        return ret_val<bool>::make_failure( false, _( "it has no room left" ) );
+        return ret_val<code>::make_failure( code::ERR_NO_SPACE, _( "it has no room left" ) );
     }
     if( it.weight() > pocket.weight_capacity() - pocket.contains_weight() ) {
-        return ret_val<bool>::make_failure( false, _( "it can't hold that much more weight" ) );
+        return ret_val<code>::make_failure( code::ERR_CANNOT_SUPPORT,
+                                            _( "it can't hold that much more weight" ) );
     }
-    return ret_val<bool>::make_success( true );
+    return ret_val<code>::make_success();
 }
 
 std::pair<const item *, const item_pocket *> Character::best_pocket( const item &it,
@@ -13626,8 +13627,116 @@ ret_val<bool> Character::can_stash( const item &it, const item *avoid ) const
     if( best_pocket( it, avoid ).second != nullptr ) {
         return ret_val<bool>::make_success( true );
     }
-    return ret_val<bool>::make_failure( false, _( "You have no pocket that can hold the %s." ),
-                                        it.tname() );
+    return stash_refusal( it, avoid );
+}
+
+ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) const
+{
+    using code = item_pocket::contain_code;
+    // The failure of the pocket that came closest: no room (it fits once something is taken
+    // out) before too heavy before too big before too long; pockets that only take certain
+    // kinds of items (holsters, bandoliers) only count when nothing else says why.
+    constexpr int rank_other = 5;
+    int best_rank = rank_other + 1;
+    code best_code = code::ERR_FLAG;
+    std::string best_reason;
+    size_t pockets_seen = 0;
+    size_t sealed_seen = 0;
+    const auto consider = [&]( const item_pocket & pocket, bool in_body ) {
+        if( !is_carried_pocket( pocket ) ) {
+            return;
+        }
+        if( pocket.sealed() ) {
+            sealed_seen++;
+            return;
+        }
+        pockets_seen++;
+        const ret_val<code> res = can_pocket_contain( pocket, it, in_body );
+        if( res.success() ) {
+            return;
+        }
+        int rank = rank_other;
+        const bool restricted = pocket.get_data().has_item_restrictions() ||
+                                !pocket.get_data().ammo_restriction.empty() || pocket.is_holster();
+        if( !restricted ) {
+            switch( res.value() ) {
+                case code::ERR_NO_SPACE:
+                    rank = 0;
+                    break;
+                case code::ERR_CANNOT_SUPPORT:
+                    rank = 1;
+                    break;
+                case code::ERR_TOO_HEAVY:
+                    rank = 2;
+                    break;
+                case code::ERR_TOO_BIG:
+                    rank = 3;
+                    break;
+                case code::ERR_TOO_LONG:
+                    rank = 4;
+                    break;
+                default:
+                    break;
+            }
+        }
+        if( rank < best_rank ) {
+            best_rank = rank;
+            best_code = restricted ? code::ERR_FLAG : res.value();
+            best_reason = res.str();
+        }
+    };
+    const auto skipped = [&]( const item & owner ) {
+        return &owner == &it || ( avoid != nullptr && ( &owner == avoid ||
+                                  owner.has_item( *avoid ) || avoid->has_item( owner ) ) );
+    };
+    for( const item * const &worn_it : worn ) {
+        if( skipped( *worn_it ) ) {
+            continue;
+        }
+        for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
+            consider( pocket, false );
+        }
+    }
+    if( const item *storage = get_body_storage() ) {
+        if( !skipped( *storage ) ) {
+            if( const item_pocket *pocket = body_pocket_of( *storage ) ) {
+                consider( *pocket, true );
+            }
+        }
+    }
+    const std::string name = it.tname();
+    if( pockets_seen == 0 ) {
+        if( sealed_seen > 0 ) {
+            return ret_val<bool>::make_failure( false, _( "Every pocket that could carry the %s is sealed." ),
+                                                name );
+        }
+        return ret_val<bool>::make_failure( false, _( "There is no pocket to carry the %s in." ), name );
+    }
+    switch( best_code ) {
+        case code::ERR_NO_SPACE:
+            return ret_val<bool>::make_failure( false, _( "No pocket has room left for the %s." ), name );
+        case code::ERR_CANNOT_SUPPORT:
+            return ret_val<bool>::make_failure( false,
+                                                _( "The pockets already carry too much weight to take the %s." ),
+                                                name );
+        case code::ERR_TOO_HEAVY:
+            return ret_val<bool>::make_failure( false, _( "The %s is too heavy for any pocket." ),
+                                                name );
+        case code::ERR_TOO_BIG:
+            return ret_val<bool>::make_failure( false, _( "The %s is too big for any pocket." ),
+                                                name );
+        case code::ERR_TOO_LONG:
+            return ret_val<bool>::make_failure( false, _( "The %s is too long for any pocket." ),
+                                                name );
+        default:
+            break;
+    }
+    // restricted pockets, liquids, active items: the pocket's own words
+    if( best_reason.empty() ) {
+        return ret_val<bool>::make_failure( false, _( "No pocket can hold the %s." ), name );
+    }
+    return ret_val<bool>::make_failure( false, _( "No pocket can hold the %1$s: %2$s." ),
+                                        name, best_reason );
 }
 
 ret_val<item *> Character::add_to_pocket( detached_ptr<item> &&it, const item *avoid,
@@ -13642,8 +13751,7 @@ ret_val<item *> Character::add_to_pocket( detached_ptr<item> &&it, const item *a
         target = best_pocket( *it, avoid );
     }
     if( target.second == nullptr ) {
-        return ret_val<item *>::make_failure( nullptr, _( "You have no pocket that can hold the %s." ),
-                                              it->tname() );
+        return ret_val<item *>::make_failure( nullptr, "%s", stash_refusal( *it, avoid ).str() );
     }
     refresh_carried();
     if( !keep_invlet ) {

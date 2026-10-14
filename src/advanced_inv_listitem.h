@@ -58,6 +58,12 @@ class advanced_inv_listitem
          */
         units::mass weight = 0_gram;
         /**
+         * CDF: for carried items, the name of the garment (or body storage) holding the first
+         * item of the stack, which is the one that moves first.  A trailing "+" means the
+         * stack spans more than one holder.  Empty for items that are not carried.
+         */
+        std::string holder;
+        /**
          * The item category, or the category header.
          */
         const item_category *cat;

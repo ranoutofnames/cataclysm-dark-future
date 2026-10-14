@@ -105,6 +105,16 @@ void advanced_inventory_pane::add_items_from_area( advanced_inv_area &square,
             if( is_filtered( *it.items.front() ) ) {
                 continue;
             }
+            // CDF P1c: carried items live in the pockets of garments, say which one
+            if( const item *holder = it.items.front()->parent_item() ) {
+                it.holder = holder->tname( 1, false );
+                for( const item *stacked : it.items ) {
+                    if( stacked->parent_item() != holder ) {
+                        it.holder += "+";
+                        break;
+                    }
+                }
+            }
             square.volume += it.volume;
             square.weight += it.weight;
             items.push_back( it );
