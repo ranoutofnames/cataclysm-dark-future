@@ -116,12 +116,12 @@ void clear_overmap() {
 void clear_map() {
     // Clearing all z-levels is rather slow, so just clear the ones I know the
     // tests use for now.
-    for (int z = -2; z <= 0; ++z) { clear_fields(z); }
+    for (int z = -2; z <= 2; ++z) { clear_fields(z); }
     wipe_map_terrain();
     clear_npcs();
     clear_creatures();
     g->m.clear_traps();
-    for (int z = -2; z <= 0; ++z) { clear_items(z); }
+    for (int z = -2; z <= 2; ++z) { clear_items(z); }
     // Reset the distribution grid tracker so that stale grids from a previous
     // test's Catch2 WHEN section do not bleed into the next run.  The tracker
     // is a global singleton; grid_at() rebuilds on demand, so clearing here is safe.

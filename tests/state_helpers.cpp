@@ -3,9 +3,11 @@
 #include "../src/map/map.h"
 #include "calendar.h"
 #include "cata_arena.h"
+#include "game.h"
 #include "map_helpers.h"
 #include "name.h"
 #include "player_helpers.h"
+#include "timed_event.h"
 #include "weather/weather.h"
 
 namespace {
@@ -50,6 +52,14 @@ auto clear_states(const enum_bitset<test_state>& states) -> void {
         if (normalized_states.test(state::vehicle)) { clear_vehicles(); }
     }
 
+    if (normalized_states.test(state::map) || normalized_states.test(state::time)) {
+        // Pending dim/artifact-light events would otherwise alter ambient light for later tests.
+        g->timed_events = timed_event_manager{};
+    }
+    if (normalized_states.test(state::time) || normalized_states.test(state::weather)) {
+        // Drop the cached natural light level so it cannot leak across tests.
+        g->reset_light_level();
+    }
     if (normalized_states.test(state::time)) { set_time(calendar::turn_zero); }
     if (normalized_states.test(state::name)) { Name::clear(); }
     if (normalized_states.test(state::arena)) { cleanup_arenas(); }
