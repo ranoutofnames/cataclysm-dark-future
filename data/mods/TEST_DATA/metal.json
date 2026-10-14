@@ -16,5 +16,17 @@
     "symbol": "/",
     "color": "light_gray",
     "ammo_type": "components"
+  },
+  {
+    "id": "test_heavy_bar",
+    "type": "GENERIC",
+    "name": { "str": "TEST heavy bar" },
+    "description": "A heavy bar used to burden test characters without filling their pockets.",
+    "weight": "50 kg",
+    "volume": "1 L",
+    "price": "1 USD",
+    "material": [ "iron" ],
+    "symbol": "/",
+    "color": "light_gray"
   }
 ]

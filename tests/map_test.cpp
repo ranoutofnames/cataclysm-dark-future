@@ -53,8 +53,10 @@ auto burden_jumping_player(avatar& you, const float burden_proportion) -> void {
     const auto current_weight_grams = static_cast<int>(you.weight_carried() / 1_gram);
     const auto weight_to_add = std::max(0, target_weight_grams - current_weight_grams);
     if (weight_to_add > 0) {
-        you.i_add(item::spawn("test_platinum_bit", calendar::turn, weight_to_add));
+        // Wielding bypasses pocket volume limits, so a single heavy item always fits.
+        you.wield(item::spawn("test_heavy_bar"));
     }
+    REQUIRE(units::to_gram(you.weight_carried()) >= target_weight_grams);
 }
 
 auto reset_jumping_player(player& you, const tripoint_bub_ms& origin, const int dexterity) -> void {
