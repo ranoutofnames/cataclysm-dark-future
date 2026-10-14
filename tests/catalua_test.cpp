@@ -3841,8 +3841,10 @@ TEST_CASE("lua_map_transform", "[lua][map]") {
     const auto single = tripoint_bub_ms{50, 40, 0};
     const auto line_a = tripoint_bub_ms{50, 60, 0};
     const auto line_b = tripoint_bub_ms{54, 60, 0};
+    const auto same = tripoint_bub_ms{58, 50, 0};
     l3_set_floor_dirt(here, center, 4, ter_id("t_dirt"));
     here.ter_set(single, ter_id("t_dirt"));
+    here.ter_set(same, ter_id("t_dirt"));
     here.ter_set(line_a, ter_id("t_dirt"));
     for (auto x = 50; x <= 54; ++x) { here.ter_set(tripoint_bub_ms{x, 60, 0}, ter_id("t_dirt")); }
     here.ter_set(tripoint_bub_ms{50, 50, 1}, ter_id("t_dirt"));
@@ -3855,6 +3857,7 @@ TEST_CASE("lua_map_transform", "[lua][map]") {
     test_data["center"] = center;
     test_data["line_a"] = line_a;
     test_data["line_b"] = line_b;
+    test_data["same"] = same;
     lua.globals()["test_data"] = test_data;
 
     run_lua_test_script(lua, "terrain_transform_test.lua");
@@ -3874,6 +3877,9 @@ TEST_CASE("lua_map_transform", "[lua][map]") {
     CHECK(test_data.get<int>("line_count") == 4);
     CHECK(here.ter(line_a) == ter_id("t_dirt"));
     for (auto x = 51; x <= 54; ++x) { CHECK(here.ter(tripoint_bub_ms{x, 60, 0}) == ter_id("t_lava")); }
+    // a == b: line_to returns {a}, so the single tile is transformed.
+    CHECK(test_data.get<int>("line_same") == 1);
+    CHECK(here.ter(same) == ter_id("t_lava"));
     CHECK(test_data.get<int>("line_unknown") == 0);
 }
 
@@ -3892,6 +3898,7 @@ TEST_CASE("lua_map_transform_valid_terrain_and_cache", "[lua][map]") {
     test_data["center"] = p;
     test_data["line_a"] = p;
     test_data["line_b"] = p;
+    test_data["same"] = p;
     lua.globals()["test_data"] = test_data;
     run_lua_test_script(lua, "terrain_transform_test.lua");
 
@@ -3908,6 +3915,32 @@ TEST_CASE("lua_map_transform_valid_terrain_and_cache", "[lua][map]") {
         CHECK(here.transform_radius(ter_furn_transform_id("lua_test_wall_to_floor"), 0, w) == 1);
         CHECK(here.ter(w) == ter_id("t_floor"));
         // No build_map_cache in between: the transform itself must invalidate.
+        CHECK(here.get_cache_ref(0).transparency_cache_dirty.any());
+        CHECK(here.passable(w));
+        CHECK(here.get_transparency(w) > LIGHT_TRANSPARENCY_SOLID);
+        here.build_map_cache(0);
+        CHECK(here.is_transparent(w));
+    }
+
+    SECTION("transform_at wall to floor is reflected immediately") {
+        const auto w = tripoint_bub_ms{60, 62, 0};
+        here.ter_set(w, ter_id("t_wall"));
+        here.build_map_cache(0);
+        REQUIRE_FALSE(here.passable(w));
+        REQUIRE_FALSE(here.is_transparent(w));
+        REQUIRE_FALSE(here.get_cache_ref(0).transparency_cache_dirty.any());
+
+        auto at_state = make_lua_state();
+        auto at_data = at_state.create_table();
+        at_data["map"] = &here;
+        at_data["transform_id"] = std::string("lua_test_wall_to_floor");
+        at_data["target"] = w;
+        at_state.globals()["test_data"] = at_data;
+        run_lua_test_script(at_state, "transform_at_wall_test.lua");
+
+        CHECK(at_data.get<bool>("ok"));
+        CHECK(here.ter(w) == ter_id("t_floor"));
+        // No build_map_cache in between: transform_at itself must invalidate.
         CHECK(here.get_cache_ref(0).transparency_cache_dirty.any());
         CHECK(here.passable(w));
         CHECK(here.get_transparency(w) > LIGHT_TRANSPARENCY_SOLID);
@@ -4097,4 +4130,54 @@ TEST_CASE("lua_item_pocket_api", "[lua][pocket]") {
     CHECK(test_data.get<int>("type_pockets") == 2);
     CHECK(test_data.get<int>("type_holsters") == 1);
     CHECK(test_data.get<bool>("old_slot_container_nil"));
+}
+
+TEST_CASE("lua_transform_radius_abs_no_floor_dirties_lower_caches", "[lua][map]") {
+    clear_all_state();
+    auto& here = get_map();
+    // Near the bubble edge, so the square is not fully inbounds and the constructor path is used.
+    const auto center = tripoint_bub_ms{1, 60, 0};
+    const auto f = tripoint_bub_ms{2, 60, 0};
+    REQUIRE_FALSE(here.inbounds(tripoint_bub_ms{-1, 58, 0}));
+    here.ter_set(f, ter_id("t_floor"));
+    here.build_map_cache(0);
+    REQUIRE_FALSE(here.get_cache_ref(-1).absorption_cache_dirty.any());
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["center"] = bub_to_abs(center);
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "transform_abs_open_air_test.lua");
+
+    CHECK(test_data.get<int>("count") > 0);
+    CHECK(here.ter(f) == ter_id("t_open_air"));
+    // Removing a floor opens the level below, as mapbuffer::set_ter would mark (absorption
+    // at z-1 depends on the floor above it). The seen cache flag is not observable here: with GPU
+    // compute it is never cleared on the CPU side.
+    CHECK(here.get_cache_ref(-1).absorption_cache_dirty.any());
+}
+
+TEST_CASE("lua_run_mapgen_update_no_floor_dirties_lower_caches", "[lua][mapgen]") {
+    clear_all_state();
+    auto& here = get_map();
+    const auto omt = project_to<coords::omt>(bub_to_abs(tripoint_bub_ms{60, 60, 0}));
+    const auto origin = project_to<coords::ms>(omt);
+    const auto target = abs_to_bub(origin + tripoint_rel_ms(7, 7, 0));
+    REQUIRE(here.inbounds(target));
+    here.ter_set(target, ter_id("t_floor"));
+    here.build_map_cache(0);
+    REQUIRE_FALSE(here.get_cache_ref(-1).absorption_cache_dirty.any());
+
+    auto lua = make_lua_state();
+    auto test_data = lua.create_table();
+    test_data["omt"] = omt;
+    lua.globals()["test_data"] = test_data;
+    run_lua_test_script(lua, "mapgen_update_open_air_test.lua");
+
+    CHECK(test_data.get<bool>("ok"));
+    CHECK(here.ter(target) == ter_id("t_open_air"));
+    // Removing a floor opens the level below, as mapbuffer::set_ter would mark (absorption
+    // at z-1 depends on the floor above it). The seen cache flag is not observable here: with GPU
+    // compute it is never cleared on the CPU side.
+    CHECK(here.get_cache_ref(-1).absorption_cache_dirty.any());
 }

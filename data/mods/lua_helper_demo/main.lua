@@ -54,9 +54,15 @@ end
 mod.update_mapgen_here = function()
   local me = gapi.get_avatar()
   local omt = coords.project_to_omt(me:global_square_location())
-  local ok = gapi.run_mapgen_update("release_the_bots", omt)
-  -- run_mapgen_update only reports that the update ran; it is written for lab tiles, so on
-  -- other terrain it may change nothing.
+  local id = "release_the_bots"
+  if not gapi.has_update_mapgen(id) then
+    gapi.add_msg("Helper demo: update mapgen not found")
+    return
+  end
+  -- run_mapgen_update returns false for an invalid location or a cancel_on_collision abort,
+  -- and true only if the update ran; it is written for lab tiles, so on other terrain it may
+  -- change nothing.
+  local ok = gapi.run_mapgen_update(id, omt)
   gapi.add_msg(ok and "Helper demo: update mapgen ran (it only changes lab tiles)"
-    or "Helper demo: update mapgen not found")
+    or "Helper demo: update mapgen did not run")
 end

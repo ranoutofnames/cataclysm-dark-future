@@ -1261,7 +1261,8 @@ public:
         const ter_furn_transform_id& transform, int radius, const tripoint_bub_ms& center) -> int;
     /**
      * Applies a ter_furn_transform along line_to(first, second): `first` is excluded, `second`
-     * included (as in DDA). The line may cross z-levels. Returns the number of in-bounds tiles visited.
+     * included (as in DDA). If `first == second`, the single tile is transformed. The line may cross
+     * z-levels. Returns the number of in-bounds tiles visited.
      */
     auto transform_line(
         const ter_furn_transform_id& transform, const tripoint_bub_ms& first,
@@ -1269,7 +1270,10 @@ public:
     /**
      * Marks the cached per-submap data (transparency, floor, outside, absorption, pathfinding) of
      * an overmap terrain's submaps dirty and invalidates the level caches. Needed after editing
-     * submaps directly (mapgen_constructor paths bypass mapbuffer::set_ter).
+     * submaps directly (mapgen_constructor paths bypass mapbuffer::set_ter). For the in-bubble
+     * tiles it also replays the cross-level marking of mapbuffer::set_ter: support at z and z+1,
+     * floor/outside/absorption/seen at z-1, the suspension cache and the lightmaps. Which flags
+     * changed is not known here, so this is done unconditionally.
      */
     auto mark_omt_caches_dirty(const tripoint_abs_omt& omt) -> void;
 

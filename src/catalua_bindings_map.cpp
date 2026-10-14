@@ -691,7 +691,7 @@ void cata::detail::reg_map( sol::state &lua )
         const tripoint_bub_ms & center ) -> int {
             return m.transform_radius( ter_furn_transform_id( id ), radius, center );
         } );
-        DOC( "Applies a ter_furn_transform along the line from a to b: a is excluded, b included (like DDA). The line may cross z-levels. Returns the number of in-bounds tiles visited; 0 for an unknown id." );
+        DOC( "Applies a ter_furn_transform along the line from a to b: a is excluded, b included (like DDA); if a == b, the single tile is transformed. The line may cross z-levels. Returns the number of in-bounds tiles visited; 0 for an unknown id." );
         luna::set_fx( ut, "transform_line", []( map & m, const std::string & id, const tripoint_bub_ms & a,
         const tripoint_bub_ms & b ) -> int {
             return m.transform_line( ter_furn_transform_id( id ), a, b );

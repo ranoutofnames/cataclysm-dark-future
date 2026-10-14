@@ -80,7 +80,8 @@ auto reg_game_api_world_helpers( luna::userlib &lib ) -> void
         const auto min_omt = project_to<coords::omt>( center + tripoint_rel_ms( -radius, -radius, 0 ) );
         const auto max_omt = project_to<coords::omt>( center + tripoint_rel_ms( radius, radius, 0 ) );
         auto count = 0;
-        auto ctor = mapgen_constructor( MAPBUFFER_REGISTRY.get( g_active_dimension_id ) );
+        // Same buffer that mark_omt_caches_dirty marks: the bubble map's bound dimension.
+        auto ctor = mapgen_constructor( MAPBUFFER_REGISTRY.get( here.get_bound_dimension() ) );
         for( auto ox = min_omt.x(); ox <= max_omt.x(); ++ox )
         {
             for( auto oy = min_omt.y(); oy <= max_omt.y(); ++oy )

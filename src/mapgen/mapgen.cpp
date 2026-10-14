@@ -6076,6 +6076,7 @@ auto update_mapgen_function_json::update_map(
         debugmsg("Mapgen update function called with overmap::invalid_tripoint");
         return false;
     }
+    // Matches the bubble map's bound dimension, which map::mark_omt_caches_dirty marks afterwards.
     auto update_tmap = mapgen_constructor(MAPBUFFER_REGISTRY.get(g_active_dimension_id));
     update_tmap.load(omt_pos);
 

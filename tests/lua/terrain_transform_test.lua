@@ -9,4 +9,5 @@ test_data.radius_count = m:transform_radius(id, 2, test_data.center)
 test_data.radius_unknown = m:transform_radius("no_such_transform", 2, test_data.center)
 
 test_data.line_count = m:transform_line(id, test_data.line_a, test_data.line_b)
+test_data.line_same = m:transform_line(id, test_data.same, test_data.same)
 test_data.line_unknown = m:transform_line("no_such_transform", test_data.line_a, test_data.line_b)

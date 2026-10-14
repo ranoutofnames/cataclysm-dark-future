@@ -17,8 +17,8 @@ map:transform_line("my_transform", here, TripointBubMs.new(here.x + 5, here.y, h
 - `transform_radius` affects a disc (`trig_dist <= radius`) on the centre's z-level. Tiles outside
   the loaded map are skipped silently.
 - `transform_line` follows the line from the first point to the second: the first tile is excluded
-  and the last one included (as in DDA). A line may cross z-levels; the caches of every touched
-  level are refreshed.
+  and the last one included (as in DDA). If both points are the same, that single tile is
+  transformed. A line may cross z-levels; the caches of every touched level are refreshed.
 - `transform_at` returns `true` only if the terrain or furniture actually changed.
 - `gapi.transform_radius_abs(id, radius, center_abs_ms)` does the same for an absolute position,
   including far away from the player. Outside the reality bubble each overlapped overmap terrain

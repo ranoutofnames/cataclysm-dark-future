@@ -12,8 +12,19 @@
     "object": { "place_terrain": [ { "ter": "t_floor", "x": 6, "y": 6 } ] }
   },
   {
+    "type": "mapgen",
+    "update_mapgen_id": "lua_test_open_air_update",
+    "method": "json",
+    "object": { "place_terrain": [ { "ter": "t_open_air", "x": 7, "y": 7 } ] }
+  },
+  {
     "type": "ter_furn_transform",
     "id": "lua_test_wall_to_floor",
     "terrain": [ { "result": "t_floor", "valid_terrain": [ "t_wall" ] } ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "lua_test_floor_to_open_air",
+    "terrain": [ { "result": "t_open_air", "valid_terrain": [ "t_floor" ] } ]
   }
 ]

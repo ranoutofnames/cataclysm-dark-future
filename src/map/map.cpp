@@ -2583,6 +2583,9 @@ auto map::transform_line(
     return count;
 }
 
+// The mapgen constructors used by gapi.transform_radius_abs and update_mapgen_function_json::update_map
+// write into the active dimension's mapbuffer. That is the bound dimension of the bubble map, which
+// is the buffer get_mapbuffer() returns, so marking through it here hits the buffer they wrote to.
 auto map::mark_omt_caches_dirty(const tripoint_abs_omt& omt) -> void {
     const auto begin = project_to<coords::sm>(omt);
     const auto end = project_to<coords::sm>(omt + point_rel_omt(1, 1));
@@ -2597,6 +2600,48 @@ auto map::mark_omt_caches_dirty(const tripoint_abs_omt& omt) -> void {
         .pathfinding = true,
     });
     invalidate_map_cache(omt.z());
+
+    // The mapgen constructor bypasses mapbuffer::set_ter, so replay the cross-level part of
+    // mapbuffer::invalidate_active_terrain_set_caches for the in-bubble tiles of this OMT.
+    // Flag changes are not known here, so this is done unconditionally: a NO_FLOOR or
+    // Z_TRANSPARENT change at z affects seen/absorption/outside at z-1 and support at z and z+1,
+    // and a SUSPENDED change must reach the incrementally maintained suspension cache.
+    const auto z = omt.z();
+    if (!inbounds_z(z)) { return; }
+    constexpr auto omt_size = SEEX * 2;
+    const auto origin = project_to<coords::ms>(omt);
+    auto& cache = get_cache(z);
+    auto& suspension_cache = cache.suspension_cache;
+    const auto track_suspension = cache.suspension_cache_initialized;
+    if (track_suspension) {
+        // Drop the in-bubble entries of this OMT and re-add them below. Entries for tiles outside
+        // the bubble are kept, as update_suspension_cache keeps them.
+        std::erase_if(suspension_cache, [&](const point_abs_ms& q) {
+            return q.x() >= origin.x() && q.x() < origin.x() + omt_size && q.y() >= origin.y()
+                   && q.y() < origin.y() + omt_size
+                   && inbounds(tripoint_bub_ms(abs_to_map_local(*this, q), z));
+        });
+    }
+    auto touched_bubble = false;
+    for (auto lx = 0; lx < omt_size; ++lx) {
+        for (auto ly = 0; ly < omt_size; ++ly) {
+            const auto abs = tripoint_abs_ms(origin.x() + lx, origin.y() + ly, z);
+            const auto local = abs_to_map_local(*this, abs);
+            if (!inbounds(local)) { continue; }
+            touched_bubble = true;
+            support_dirty(local);
+            support_dirty(local + tripoint_rel_ms::above());
+            if (track_suspension && ter(local).obj().has_flag(TFLAG_SUSPENDED)) {
+                suspension_cache.emplace_back(abs.xy());
+            }
+        }
+    }
+    if (!touched_bubble) { return; }
+    set_floor_cache_dirty(z); // also dirties outside and absorption at z-1
+    set_seen_cache_dirty(z - 1);
+    set_suspension_cache_dirty(z);
+    invalidate_max_populated_zlev(z);
+    invalidate_lightmap_caches();
 }
 
 auto map::tername(const tripoint_bub_ms& p) const -> std::string { return ter(p).obj().name(); }
