@@ -248,7 +248,7 @@ bool save_world_lua_state( const world *world, const std::string &path )
                 continue;
             }
             jsout.member( mod.str() );
-            serialize_lua_table( t[mod.str()], jsout );
+            serialize_lua_table( t[mod.str()], jsout, mod.str() );
         }
         jsout.end_object();
     }, "world_lua_state" );
@@ -276,7 +276,7 @@ bool load_world_lua_state( const world *world, const std::string &path )
                 continue;
             }
             JsonObject mod_obj = jsobj.get_object( mod.str() );
-            deserialize_lua_table( t[mod.str()], mod_obj );
+            deserialize_lua_table( t[mod.str()], mod_obj, mod.str() );
         }
     }, true );
 

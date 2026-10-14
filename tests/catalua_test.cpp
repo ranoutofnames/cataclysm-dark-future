@@ -2314,6 +2314,17 @@ TEST_CASE("lua_table_serde", "[lua]") {
     CHECK(inner_val.as<int>() == 4);
 }
 
+// Counts the non-overlapping occurrences of needle in haystack.
+static size_t count_occurrences(const std::string& haystack, const std::string& needle)
+{
+    auto count = size_t{0};
+    for (auto pos = haystack.find(needle); pos != std::string::npos;
+         pos = haystack.find(needle, pos + needle.size())) {
+        ++count;
+    }
+    return count;
+}
+
 TEST_CASE("lua_table_serde_error_no_reg", "[lua]") {
     sol::state lua = make_lua_state();
 
@@ -2326,7 +2337,9 @@ TEST_CASE("lua_table_serde_error_no_reg", "[lua]") {
         data = serialize_wrapper([&](JsonOut& jsout) { cata::serialize_lua_table(t, jsout); });
     });
 
-    CHECK(dmsg == "Tried to serialize usertype that was not registered with luna.");
+    CHECK_THAT(dmsg, Catch::Contains("Tried to serialize usertype that was not registered with luna."));
+    CHECK(count_occurrences(dmsg, "Tried to serialize usertype that was not registered with luna.") == 1);
+    CHECK_THAT(dmsg, Catch::Contains("'my_member'"));
 }
 
 TEST_CASE("lua_table_serde_error_no_luna", "[lua]") {
@@ -2343,7 +2356,9 @@ TEST_CASE("lua_table_serde_error_no_luna", "[lua]") {
         data = serialize_wrapper([&](JsonOut& jsout) { cata::serialize_lua_table(t, jsout); });
     });
 
-    CHECK(dmsg == "Tried to serialize usertype that was not registered with luna.");
+    CHECK_THAT(dmsg, Catch::Contains("Tried to serialize usertype that was not registered with luna."));
+    CHECK(count_occurrences(dmsg, "Tried to serialize usertype that was not registered with luna.") == 1);
+    CHECK_THAT(dmsg, Catch::Contains("'my_member'"));
 }
 
 TEST_CASE("lua_table_serde_error_no_ser", "[lua]") {
@@ -2359,7 +2374,9 @@ TEST_CASE("lua_table_serde_error_no_ser", "[lua]") {
         data = serialize_wrapper([&](JsonOut& jsout) { cata::serialize_lua_table(t, jsout); });
     });
 
-    CHECK(dmsg == "Tried to serialize usertype that does not allow serialization.");
+    CHECK_THAT(dmsg, Catch::Contains("Tried to serialize usertype that does not allow serialization."));
+    CHECK(count_occurrences(dmsg, "Tried to serialize usertype that does not allow serialization.") == 1);
+    CHECK_THAT(dmsg, Catch::Contains("'my_member'"));
 }
 
 TEST_CASE("lua_table_serde_error_rec_table", "[lua]") {
@@ -2390,7 +2407,9 @@ TEST_CASE("lua_table_serde_error_rec_table", "[lua]") {
         data = serialize_wrapper([&](JsonOut& jsout) { cata::serialize_lua_table(t1, jsout); });
     });
 
-    CHECK(dmsg == "Tried to serialize recursive table structure.");
+    CHECK_THAT(dmsg, Catch::Contains("Tried to serialize recursive table structure."));
+    CHECK(count_occurrences(dmsg, "Tried to serialize recursive table structure.") == 1);
+    CHECK_THAT(dmsg, Catch::Contains("'t2.t4.t1'"));
 }
 
 TEST_CASE("id_conversions", "[lua]") {
@@ -4211,4 +4230,154 @@ TEST_CASE("lua_character_carried_pockets", "[lua][pocket][character]") {
     CHECK(test_data.get<int>("carried") == 1);
     CHECK(test_data.get<bool>("removed"));
     CHECK(test_data.get<int>("carried_after") == 0);
+}
+
+// A missing table key reads as sol::type::none through a proxy, not sol::type::lua_nil.
+template<typename P>
+static bool lua_value_missing(P&& p)
+{
+    const auto t = p.get_type();
+    return t == sol::type::none || t == sol::type::lua_nil;
+}
+
+TEST_CASE("lua_serde_skips_unsupported_values_on_save", "[lua]") {
+    auto lua = make_lua_state();
+    // The sandboxed state has no coroutine library, so a thread value is created from C++.
+    lua.set_function("make_thread", [&lua]() { return sol::thread::create(lua.lua_state()); });
+    auto storage = lua.safe_script(R"(
+local looped = {}
+looped.self = looped
+return {
+    a_before = "first",
+    b_function = function() end,
+    c_thread = make_thread(),
+    d_after = 42,
+    e_looped = looped,
+    f_nested = { x = 1, y = function() end, z = "deep" },
+})").get<sol::table>();
+
+    auto out = std::ostringstream{};
+    auto jsout = JsonOut(out);
+    const auto dmsg = capture_debugmsg_during([&]() {
+        cata::serialize_lua_table(storage, jsout, "test_mod");
+    });
+    // Each unsupported entry is reported exactly once, naming the mod and the key.
+    CHECK(count_occurrences(dmsg, "test_mod.b_function") == 1);
+    CHECK(count_occurrences(dmsg, "test_mod.c_thread") == 1);
+    CHECK(count_occurrences(dmsg, "test_mod.e_looped.self") == 1);
+    CHECK(count_occurrences(dmsg, "test_mod.f_nested.y") == 1);
+    // Nothing unreadable is written, so the file loads without any message.
+    CHECK_THAT(out.str(), !Catch::Contains("{}"));
+
+    auto restored = lua.create_table();
+    auto in = std::istringstream(out.str());
+    auto jsin = JsonIn(in);
+    auto obj = jsin.get_object();
+    const auto load_dmsg = capture_debugmsg_during([&]() {
+        cata::deserialize_lua_table(restored, obj, "test_mod");
+    });
+    CHECK(load_dmsg.empty());
+    CHECK(restored["a_before"].get<std::string>() == "first");
+    CHECK(restored["d_after"].get<int>() == 42);
+    CHECK(lua_value_missing(restored["b_function"]));
+    CHECK(lua_value_missing(restored["c_thread"]));
+    CHECK(restored["e_looped"].get_type() == sol::type::table);
+    CHECK(restored["f_nested"]["x"].get<int>() == 1);
+    CHECK(restored["f_nested"]["z"].get<std::string>() == "deep");
+    CHECK(lua_value_missing(restored["f_nested"]["y"]));
+}
+
+TEST_CASE("lua_serde_skips_unreadable_entries_on_load", "[lua]") {
+    auto lua = make_lua_state();
+    // The shape older saves have: the unsupported value was written as an empty object, as null,
+    // or (for a recursive table) as {"type":"lua_table","data":null}, between entries that are fine.
+    const auto saved = std::string(R"({"entries":[
+        {"type":"string","data":"first"},{"type":"string","data":"one"},
+        {"type":"string","data":"bad_empty"},{},
+        {"type":"string","data":"bad_null"},null,
+        {},{"type":"string","data":"orphan_value"},
+        {"type":"string","data":"bad_rec_value"},{"type":"lua_table","data":null},
+        {"type":"lua_table","data":null},{"type":"string","data":"rec_key_value"},
+        {"type":"string","data":"last"},{"type":"int","data":7}
+    ]})");
+    auto in = std::istringstream(saved);
+    auto jsin = JsonIn(in);
+    auto obj = jsin.get_object();
+    auto restored = lua.create_table();
+    const auto dmsg = capture_debugmsg_during([&]() {
+        cata::deserialize_lua_table(restored, obj, "test_mod");
+    });
+    // Entries on both sides of the bad ones are restored.
+    CHECK(restored["first"].get<std::string>() == "one");
+    CHECK(restored["last"].get<int>() == 7);
+    CHECK(lua_value_missing(restored["bad_empty"]));
+    CHECK(lua_value_missing(restored["bad_null"]));
+    CHECK(lua_value_missing(restored["bad_rec_value"]));
+    // A value that follows a key that cannot be read is not restored under another key.
+    CHECK(lua_value_missing(restored["orphan_value"]));
+    CHECK(lua_value_missing(restored["rec_key_value"]));
+    // The mod and the key are named for each skipped entry.
+    CHECK_THAT(dmsg, Catch::Contains("test_mod"));
+    CHECK_THAT(dmsg, Catch::Contains("bad_empty"));
+    CHECK_THAT(dmsg, Catch::Contains("bad_null"));
+    CHECK_THAT(dmsg, Catch::Contains("bad_rec_value"));
+}
+
+TEST_CASE("lua_mod_storage_with_function_value_keeps_other_values", "[lua]") {
+    clear_all_state();
+    auto mod_storage = initialize_dimension_test_storage();
+    auto* const active_world = g->get_active_world();
+    REQUIRE(active_world != nullptr);
+    const auto test_mod =
+        std::ranges::find_if(active_world->info->active_mod_order, [](const auto& mod) {
+            return mod.is_valid();
+        });
+    REQUIRE(test_mod != active_world->info->active_mod_order.end());
+    auto& state = DynamicDataLoader::get_instance().lua->lua;
+    auto test_mod_storage = mod_storage[test_mod->str()].get<sol::table>();
+
+    const auto keys = std::vector<std::string>{
+        "serde_test_a_before", "serde_test_b_function", "serde_test_c_after"};
+    auto previous = std::vector<sol::object>{};
+    for (const auto& key : keys) { previous.push_back(test_mod_storage[key].get<sol::object>()); }
+    auto restore_mod_storage = on_out_of_scope([&]() {
+        for (auto i = size_t{0}; i < keys.size(); ++i) { test_mod_storage[keys[i]] = previous[i]; }
+        cata::save_world_lua_state(active_world, "lua_state.json");
+    });
+
+    test_mod_storage[keys[0]] = std::string("first");
+    test_mod_storage[keys[1]] = state.safe_script("return function() end").get<sol::function>();
+    test_mod_storage[keys[2]] = 42;
+
+    auto saved = false;
+    const auto save_dmsg = capture_debugmsg_during([&]() {
+        saved = cata::save_world_lua_state(active_world, "lua_state.json");
+    });
+    REQUIRE(saved);
+    CHECK_THAT(save_dmsg, Catch::Contains(test_mod->str() + "." + keys[1]));
+
+    auto loaded = state.create_table();
+    auto read_ok = false;
+    const auto load_dmsg = capture_debugmsg_during([&]() {
+        read_ok = active_world->read_from_file(
+            "lua_state.json",
+            [&](std::istream& input) {
+                auto jsin = JsonIn(input);
+                auto lua_state = jsin.get_object();
+                lua_state.allow_omitted_members();
+                // Every mod's storage must be readable, not only the one that was edited.
+                for (const auto& mod : active_world->info->active_mod_order) {
+                    if (!mod.is_valid() || !lua_state.has_object(mod.str())) { continue; }
+                    auto mod_data = lua_state.get_object(mod.str());
+                    auto target = mod == *test_mod ? loaded : state.create_table();
+                    cata::deserialize_lua_table(target, mod_data, mod.str());
+                }
+            },
+            false);
+    });
+    REQUIRE(read_ok);
+    CHECK_THAT(load_dmsg, !Catch::Contains("Skipping"));
+    CHECK(loaded[keys[0]].get<std::string>() == "first");
+    CHECK(lua_value_missing(loaded[keys[1]]));
+    CHECK(loaded[keys[2]].get<int>() == 42);
 }

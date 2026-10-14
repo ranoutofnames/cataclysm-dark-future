@@ -8,7 +8,9 @@
 #include "string_formatter.h"
 
 #include <algorithm>
+#include <functional>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <stdexcept>
@@ -17,8 +19,12 @@
 
 namespace cata
 {
+// Builds the path of a value in a saved table for messages. It is only called when something is
+// reported, so no work is spent on it for the entries that are saved without problems.
+using lua_path_fn = std::function<std::string()>;
+
 void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
-                                   std::vector<sol::table> &stack );
+                                   std::vector<sol::table> &stack, const lua_path_fn &path );
 
 namespace
 {
@@ -140,10 +146,13 @@ auto deserialize_lua_coord( sol::state_view lua, const JsonObject &jo,
 
 } // namespace
 
-static void serialize_lua_object( const sol::object &val, JsonOut &jsout,
-                                  std::vector<sol::table> &stack )
+// Serializes one Lua value as a JSON object. Returns false if the value could not be
+// serialized (after reporting it); the output is then incomplete and has to be discarded.
+static bool serialize_lua_object( const sol::object &val, JsonOut &jsout,
+                                  std::vector<sol::table> &stack, const lua_path_fn &path )
 {
     sol::state_view lua( val.lua_state() );
+    auto ok = true;
 
     jsout.start_object();
     switch( val.get_type() ) {
@@ -176,13 +185,15 @@ static void serialize_lua_object( const sol::object &val, JsonOut &jsout,
         case sol::type::table: {
             jsout.member_as_string( "type", "lua_table" );
             jsout.member( "data" );
-            serialize_lua_table_internal( val.as<sol::table>(), jsout, stack );
+            serialize_lua_table_internal( val.as<sol::table>(), jsout, stack, path );
             break;
         }
         case sol::type::userdata: {
             std::optional<std::string> luna_type = get_luna_type( val );
             if( !luna_type ) {
-                debugmsg( "Tried to serialize usertype that was not registered with luna." );
+                debugmsg( "Tried to serialize usertype that was not registered with luna. "
+                          "Not saving the entry at '%s'.", path() );
+                ok = false;
                 break;
             }
             if( try_serialize_lua_coord( val, jsout ) ) {
@@ -191,7 +202,9 @@ static void serialize_lua_object( const sol::object &val, JsonOut &jsout,
             sol::table table_val = val.as<sol::table>();
             sol::protected_function serialize_func = table_val["serialize"];
             if( !serialize_func ) {
-                debugmsg( "Tried to serialize usertype that does not allow serialization." );
+                debugmsg( "Tried to serialize usertype that does not allow serialization. "
+                          "Not saving the entry at '%s' (usertype '%s').", path(), *luna_type );
+                ok = false;
                 break;
             }
             jsout.member_as_string( "type", "userdata" );
@@ -200,33 +213,114 @@ static void serialize_lua_object( const sol::object &val, JsonOut &jsout,
             sol::protected_function_result res = serialize_func( val, jsout );
             if( res.status() != sol::call_status::ok ) {
                 sol::error err = res;
-                debugmsg( "Failed to serialize type '%s': %s", *luna_type, err.what() );
+                debugmsg( "Not saving Lua value at '%s': failed to serialize type '%s': %s", path(),
+                          *luna_type, err.what() );
+                ok = false;
             }
             break;
         }
         default: {
-            // TODO: throw error
-            debugmsg( "Unsupported type encountered when serializing Lua table." );
+            debugmsg( "Not saving Lua value at '%s': unsupported type '%s'.", path(),
+                      sol::type_name( lua.lua_state(), val.get_type() ) );
+            ok = false;
             break;
         }
     }
     jsout.end_object();
+    return ok;
 }
 
-void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
-                                   std::vector<sol::table> &stack )
+namespace
 {
-    for( const sol::table &it : stack ) {
-        if( it == t ) {
-            debugmsg( "Tried to serialize recursive table structure." );
-            jsout.write_null();
-            return;
+
+// A table key or value that has been checked for being saveable before anything is written, so
+// that an entry that cannot be saved is left out as a whole instead of leaving a broken one.
+struct prepared_lua_value {
+    bool ok = false;
+    // Userdata can only fail while it is being written, so it is written to a string first.
+    std::optional<std::string> raw;
+};
+
+// Only used for messages, so it is called when something is reported. Numbers are formatted
+// like Lua's tostring does, without calling into Lua (a mod could have replaced tostring).
+auto lua_key_name( const sol::object &key ) -> std::string
+{
+    sol::state_view lua( key.lua_state() );
+    switch( key.get_type() ) {
+        case sol::type::string:
+            return key.as<std::string>();
+        case sol::type::number: {
+            if( is_number_integer( lua, key ) ) {
+                return std::to_string( key.as<int64_t>() );
+            }
+            auto name = string_format( "%.14g", key.as<double>() );
+            if( name.find_first_not_of( "-0123456789" ) == std::string::npos ) {
+                name += ".0";
+            }
+            return name;
+        }
+        default:
+            return string_format( "<%s>", sol::type_name( lua.lua_state(), key.get_type() ) );
+    }
+}
+
+auto prepare_lua_value( const sol::object &val, std::vector<sol::table> &stack,
+                        const lua_path_fn &path ) -> prepared_lua_value
+{
+    switch( val.get_type() ) {
+        case sol::type::boolean:
+        case sol::type::number:
+        case sol::type::string:
+            return { true, std::nullopt };
+        case sol::type::table: {
+            const sol::table t = val.as<sol::table>();
+            const auto recursive = std::ranges::any_of( stack, [&t]( const sol::table & it ) {
+                return it == t;
+            } );
+            if( recursive ) {
+                debugmsg( "Tried to serialize recursive table structure. "
+                          "Not saving the entry at '%s'.", path() );
+                return {};
+            }
+            return { true, std::nullopt };
+        }
+        case sol::type::userdata: {
+            auto buffer = std::ostringstream{};
+            auto out = JsonOut( buffer );
+            if( !serialize_lua_object( val, out, stack, path ) ) {
+                return {};
+            }
+            return { true, buffer.str() };
+        }
+        default: {
+            sol::state_view lua( val.lua_state() );
+            debugmsg( "Not saving Lua value at '%s': unsupported type '%s'.", path(),
+                      sol::type_name( lua.lua_state(), val.get_type() ) );
+            return {};
         }
     }
+}
 
+void write_prepared_lua_value( const sol::object &val, const prepared_lua_value &prepared,
+                               JsonOut &jsout, std::vector<sol::table> &stack,
+                               const lua_path_fn &path )
+{
+    if( prepared.raw ) {
+        jsout.write_separator();
+        *jsout.get_stream() << *prepared.raw;
+        jsout.set_need_separator();
+    } else {
+        serialize_lua_object( val, jsout, stack, path );
+    }
+}
+
+} // namespace
+
+void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
+                                   std::vector<sol::table> &stack, const lua_path_fn &path )
+{
     stack.push_back( t );
 
-    sol::state_view lua( t.lua_state() );
     jsout.start_object();
 
     if( !t.empty() ) {
@@ -235,8 +329,23 @@ void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
 
         // TODO: persistent key order?
         t.for_each( [&]( const sol::object & key, const sol::object & val ) {
-            serialize_lua_object( key, jsout, stack );
-            serialize_lua_object( val, jsout, stack );
+            // An entry that cannot be saved is left out as a whole (reported once, with its path)
+            // so that the saved file stays loadable.
+            const lua_path_fn entry_path = [&path, &key]() {
+                const auto parent = path();
+                const auto key_name = lua_key_name( key );
+                return parent.empty() ? key_name : parent + "." + key_name;
+            };
+            const auto prepared_key = prepare_lua_value( key, stack, entry_path );
+            if( !prepared_key.ok ) {
+                return;
+            }
+            const auto prepared_val = prepare_lua_value( val, stack, entry_path );
+            if( !prepared_val.ok ) {
+                return;
+            }
+            write_prepared_lua_value( key, prepared_key, jsout, stack, entry_path );
+            write_prepared_lua_value( val, prepared_val, jsout, stack, entry_path );
         } );
 
         jsout.end_array();
@@ -246,10 +355,13 @@ void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
     stack.pop_back();
 }
 
-void serialize_lua_table( const sol::table &t, JsonOut &jsout )
+void serialize_lua_table( const sol::table &t, JsonOut &jsout, const std::string &context )
 {
     std::vector<sol::table> stack;
-    serialize_lua_table_internal( t, jsout, stack );
+    const lua_path_fn path = [&context]() {
+        return context;
+    };
+    serialize_lua_table_internal( t, jsout, stack, path );
 }
 
 static sol::object
@@ -310,7 +422,7 @@ deserialize_lua_object( sol::state_view lua, const JsonObject &jo )
     return sol::nil;
 }
 
-void deserialize_lua_table( sol::table t, JsonObject &obj )
+void deserialize_lua_table( sol::table t, JsonObject &obj, const std::string &context )
 {
     sol::state_view lua( t.lua_state() );
 
@@ -323,12 +435,47 @@ void deserialize_lua_table( sol::table t, JsonObject &obj )
         debugmsg( "invalid array size %d", arr.size() );
         return;
     }
+    // One entry that cannot be read must not prevent the rest of the table (and the tables
+    // after it) from being restored, so each key/value pair is read on its own.
     for( size_t idx = 0; idx < arr.size(); idx += 2 ) {
-        JsonObject jo_key = arr.get_object( idx );
-        JsonObject jo_val = arr.get_object( idx + 1 );
-        sol::object key = deserialize_lua_object( lua, jo_key );
-        sol::object val = deserialize_lua_object( lua, jo_val );
-        t.set( key, val );
+        std::string entry_name = string_format( "entry #%d", idx / 2 );
+        try {
+            JsonObject jo_key = arr.get_object( idx );
+            if( !jo_key.has_member( "type" ) ) {
+                jo_key.allow_omitted_members();
+                debugmsg( "Skipping unreadable Lua data %s in '%s': the key is empty or incomplete.",
+                          entry_name, context );
+                continue;
+            }
+            sol::object key = deserialize_lua_object( lua, jo_key );
+            if( key.get_type() == sol::type::string ) {
+                entry_name = string_format( "key '%s'", key.as<std::string>() );
+            }
+            if( key.get_type() == sol::type::lua_nil || key.get_type() == sol::type::none ) {
+                // The reason was already reported; don't report the unread members as well.
+                jo_key.allow_omitted_members();
+                debugmsg( "Skipping Lua data %s in '%s': the key could not be restored.", entry_name,
+                          context );
+                continue;
+            }
+            JsonObject jo_val = arr.get_object( idx + 1 );
+            if( !jo_val.has_member( "type" ) ) {
+                jo_val.allow_omitted_members();
+                debugmsg( "Skipping unreadable Lua data %s in '%s': the value is empty or incomplete.",
+                          entry_name, context );
+                continue;
+            }
+            sol::object val = deserialize_lua_object( lua, jo_val );
+            if( val.get_type() == sol::type::lua_nil || val.get_type() == sol::type::none ) {
+                jo_val.allow_omitted_members();
+                debugmsg( "Skipping Lua data %s in '%s': the value could not be restored.", entry_name,
+                          context );
+                continue;
+            }
+            t.set( key, val );
+        } catch( const std::exception &err ) {
+            debugmsg( "Skipping unreadable Lua data %s in '%s': %s", entry_name, context, err.what() );
+        }
     }
 }
 
