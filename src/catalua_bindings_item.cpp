@@ -406,7 +406,7 @@ void reg_item( sol::state &lua )
             c.clear_vars();
             c.invalidate_pocket_caches_upwards();
         } );
-        DOC( "Returns all stored item vars as a table" );
+        DOC( "Returns all stored item vars as a table mapping each var name (string) to its raw value (string)." );
         luna::set_fx( ut, "vars_table", []( const item & it, sol::this_state state )
         {
             sol::state_view lua( state );
@@ -823,6 +823,7 @@ void reg_itype( sol::state &lua )
             std::back_inserter( rv ) );
             return rv;
         } );
+        DOC( "Attacks this weapon can perform, keyed by attack id." );
         SET_MEMB_RO( attacks );
         SET_MEMB_RO( countdown_destroy );
         SET_MEMB_RO( countdown_interval );
@@ -840,12 +841,15 @@ void reg_itype( sol::state &lua )
         SET_MEMB_RO( min_dex );
         SET_MEMB_RO( min_int );
         SET_MEMB_RO( min_per );
+        DOC( "Minimum skill levels required to use this item, keyed by skill." );
         SET_MEMB_RO( min_skills );
         SET_MEMB_RO( min_str );
         SET_MEMB_RO( phase );
         luna::set_fx( ut, "price", []( const UT_CLASS & c ) { return c.price.value(); } );
         luna::set_fx( ut, "price_post", []( const UT_CLASS & c ) { return c.price.value(); } );
+        DOC( "Free-form string properties from the item's JSON `properties` field, keyed by property name." );
         SET_MEMB_RO( properties );
+        DOC( "Tool qualities this item provides, mapped to their level." );
         SET_MEMB_RO( qualities );
         SET_MEMB_RO( recipes );
         SET_MEMB_RO( repair );
@@ -1375,7 +1379,7 @@ void reg_islot( sol::state &lua )
         DOC( "Modifies base strength required" );
         SET_MEMB_RO( min_str_required_mod );
 
-        DOC( "Additional gunmod slots to add to the gun" );
+        DOC( "Additional gunmod slots to add to the gun. Key is the location (untranslated!), value is the number of extra mods that location can hold." );
         luna::set_fx( ut, "get_added_slots", []( const UT_CLASS & c )
         {
             std::map<std::string, int> ret;
