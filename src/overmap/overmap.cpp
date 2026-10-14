@@ -621,11 +621,14 @@ auto overmap_specials::get_all() -> const std::vector<overmap_special>& {
     return specials.get_all();
 }
 
-auto overmap_specials::get_default_batch(const point_abs_om& origin) -> overmap_special_batch {
+auto overmap_specials::get_default_batch(const point_abs_om& origin, const dimension_id& dim_id)
+    -> overmap_special_batch {
     std::vector<const overmap_special*> res;
 
     res.reserve(specials.size());
     for (const overmap_special& elem : specials.get_all()) {
+        // EXTRADIMENSIONAL specials by definition don't spawn in the main dimension.
+        if (elem.is_extradimensional() && dim_id.is_empty()) { continue; }
         if (elem.can_spawn()) { res.push_back(&elem); }
     }
 
@@ -1097,6 +1100,13 @@ struct overmap_special_data {
     virtual auto all_terrains() const -> std::vector<oter_str_id> = 0;
     virtual auto preview_terrains() const -> std::vector<overmap_special_terrain> = 0;
     virtual auto required_locations() const -> std::vector<overmap_special_locations> = 0;
+    /// Subtype-specific part of the rotation score; the special's own connections are scored
+    /// by overmap_special::score_rotation_at.  Added to that score, so 0 means "no preference".
+    virtual auto score_rotation_at(
+        const overmap& /*om*/, const tripoint_om_omt& /*p*/, om_direction::type /*r*/) const
+        -> int {
+        return 0;
+    }
     virtual auto place(
         overmap& om, const tripoint_om_omt& origin, om_direction::type dir,
         const overmap_special& special) const -> special_placement_result = 0;
@@ -1390,6 +1400,10 @@ struct mutable_overmap_terrain {
     cata::flat_set<overmap_location_id> locations;
     join_map joins;
     std::map<cube_direction, mutable_special_connection> connections;
+    // Faction camp ownership, as in DDA.  These are loaded and validated only: CDF has no
+    // basecamp system, so no camp is created when the terrain is placed.
+    std::optional<faction_id> camp_owner;
+    translation camp_name;
 
     void finalize(
         const std::string& context,
@@ -1419,6 +1433,18 @@ struct mutable_overmap_terrain {
             p.second.check(
                 string_format("connection %s in %s", io::enum_to_string(p.first), context));
         }
+
+        if (camp_owner.has_value()) {
+            if (!camp_owner.value().is_valid()) {
+                debugmsg("In %s, camp at %s has invalid owner %s", context, terrain.str(),
+                         camp_owner.value().str());
+            }
+            if (camp_name.empty()) {
+                debugmsg("In %s, camp was defined but missing a camp_name.", context);
+            }
+        } else if (!camp_name.empty()) {
+            debugmsg("In %s, camp_name defined but no owner.  Invalid name is discarded.", context);
+        }
     }
 
     void deserialize(JsonIn& jin) {
@@ -1431,6 +1457,8 @@ struct mutable_overmap_terrain {
             if (jo.has_member(dir_s)) { jo.read(dir_s, joins[dir], true); }
         }
         jo.read("connections", connections);
+        jo.read("camp", camp_owner);
+        jo.read("camp_name", camp_name);
     }
 };
 
@@ -2273,6 +2301,14 @@ struct mutable_overmap_special_data: overmap_special_data {
         return check_for_locations;
     }
 
+    auto score_rotation_at(
+        const overmap& /*om*/, const tripoint_om_omt& /*p*/, om_direction::type /*r*/) const
+        -> int override {
+        // TODO: worry about joins for mutable specials.  For now all rotations are allowed
+        // here and are restricted by can_place_special.
+        return 0;
+    }
+
     // Returns a list of the points placed and a list of the joins used
     auto place(
         overmap& om, const tripoint_om_omt& origin, om_direction::type dir,
@@ -2455,6 +2491,23 @@ auto overmap_special::preview_terrains() const -> std::vector<overmap_special_te
     return result;
 }
 
+auto overmap_special::score_rotation_at(
+    const overmap& om, const tripoint_om_omt& p, om_direction::type r) const -> int {
+    int score = 0; // Number of existing connections when rotated by 'r'.
+    for (const auto& con : connections) {
+        const tripoint_om_omt rp = p + om_direction::rotate(con.p, r);
+        if (!overmap::inbounds(rp)) { return -1; }
+        const oter_id& oter = om.ter(rp);
+
+        if (belongs_to_connection(con.connection, oter)) {
+            ++score; // Found another one satisfied connection.
+        } else if (!oter || con.existing || !con.connection->can_start_at(oter)) {
+            return -1;
+        }
+    }
+    return data_ ? score + data_->score_rotation_at(om, p, r) : score;
+}
+
 auto overmap_special::required_locations() const -> std::vector<overmap_special_locations> {
     // TODO: It's called a lot during mapgen, and should probably be cached
     // instead of making thousands of copies
@@ -2573,6 +2626,7 @@ void overmap_special::load(const JsonObject& jo, const std::string& src) {
     assign(jo, "spawns", monster_spawns_, strict);
 
     assign(jo, "rotate", rotatable_, strict);
+    optional(jo, was_loaded, "priority", priority_, 0);
     assign(jo, "flags", flags_, strict);
 
     if (jo.has_object("absolute_spawn_loc")) {
@@ -2727,7 +2781,7 @@ auto overmap::populate(const dimension_id& dim_id, overmap_special_batch& enable
 }
 
 auto overmap::populate(const dimension_id& dim_id) -> void {
-    overmap_special_batch enabled_specials = overmap_specials::get_default_batch(loc);
+    overmap_special_batch enabled_specials = overmap_specials::get_default_batch(loc, dim_id);
     const overmap_feature_flag_settings& overmap_feature_flag = settings->overmap_feature_flag;
 
     const bool should_blacklist = !overmap_feature_flag.blacklist.empty();
@@ -5807,26 +5861,9 @@ auto overmap::random_special_rotation(
     // Try to find the most suitable rotation: satisfy as many connections as possible with the
     // existing terrain.
     for (om_direction::type r : om_direction::all) {
-        int score = 0; // Number of existing connections when rotated by 'r'.
-        bool valid = true;
+        const int score = special.score_rotation_at(*this, p, r); // -1 if invalid.
 
-        for (const auto& con : special.connections) {
-            const tripoint_om_omt rp = p + om_direction::rotate(con.p, r);
-            if (!inbounds(rp)) {
-                valid = false;
-                break;
-            }
-            const oter_id& oter = ter(rp);
-
-            if (belongs_to_connection(con.connection, oter)) {
-                ++score; // Found another one satisfied connection.
-            } else if (!oter || con.existing || !con.connection->can_start_at(oter)) {
-                valid = false;
-                break;
-            }
-        }
-
-        if (valid && score >= top_score) {
+        if (score >= top_score) {
             if (score > top_score) {
                 top_score = score;
                 last = first; // New top score. Forget previous rotations.
@@ -6324,9 +6361,13 @@ void overmap::place_specials(overmap_special_batch& enabled_specials) {
         }
         return weight;
     };
+    // Higher "priority" specials are placed first; size/weight orders specials of equal priority.
     std::sort(
         enabled_specials.begin(), enabled_specials.end(),
         [&special_weight](const overmap_special_placement& a, const overmap_special_placement& b) {
+            const int pri_a = a.special_details->get_priority();
+            const int pri_b = b.special_details->get_priority();
+            if (pri_a != pri_b) { return pri_a > pri_b; }
             return special_weight(a.special_details) > special_weight(b.special_details);
         });
 

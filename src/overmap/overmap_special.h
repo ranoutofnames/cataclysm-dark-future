@@ -109,6 +109,8 @@ public:
         return constraints_;
     }
     auto is_rotatable() const -> bool { return rotatable_; }
+    /** Placement ordering across specials: higher priority specials are placed first. */
+    auto get_priority() const -> int { return priority_; }
     auto can_spawn() const -> bool;
     /** Returns terrain at the given point. */
     auto get_terrain_at(const tripoint_rel_omt& p) const -> const oter_str_id&;
@@ -123,6 +125,8 @@ public:
     auto get_flags() const -> const cata::flat_set<std::string>& { return flags_; }
     auto has_flag(const std::string& flag) const -> bool { return flags_.count(flag); }
     void set_flag(const std::string& flag) { flags_.insert(flag); }
+    /** @returns true if flagged EXTRADIMENSIONAL (never spawns in the main dimension). */
+    auto is_extradimensional() const -> bool { return has_flag("EXTRADIMENSIONAL"); }
     auto use_absolute_spawn_loc() const -> bool { return use_absolute_spawn_loc_; }
     auto at_absolute_spawn_loc(point_abs_om point) const -> bool {
         return point == absolute_spawn_loc_;
@@ -132,6 +136,13 @@ public:
     auto all_terrains() const -> std::vector<oter_str_id>;
     auto preview_terrains() const -> std::vector<overmap_special_terrain>;
     auto required_locations() const -> std::vector<overmap_special_locations>;
+    /**
+     * Scores how well rotation @p r fits at @p p: the number of this special's connections
+     * already satisfied by existing terrain, or -1 if the rotation is invalid because a
+     * connection cannot be satisfied (or is out of bounds).  Higher is better.
+     */
+    auto score_rotation_at(const overmap& om, const tripoint_om_omt& p, om_direction::type r) const
+        -> int;
 
     auto place(overmap& om, const tripoint_om_omt& origin, om_direction::type dir) const
         -> special_placement_result;
@@ -167,6 +178,7 @@ private:
     shared_ptr_fast<const overmap_special_data> data_;
 
     bool rotatable_ = true;
+    int priority_ = 0;
     overmap_special_spawns monster_spawns_;
     cata::flat_set<std::string> flags_;
 
@@ -188,7 +200,12 @@ void reset();
 
 auto get_all() -> const std::vector<overmap_special>&;
 
-auto get_default_batch(const point_abs_om& origin) -> overmap_special_batch;
+/**
+ * Builds the batch of all specials that may spawn at @p origin.  Specials flagged
+ * EXTRADIMENSIONAL never spawn in the primary dimension (@p dim_id empty).
+ */
+auto get_default_batch(const point_abs_om& origin, const dimension_id& dim_id = dimension_id())
+    -> overmap_special_batch;
 /**
  * Generates a simple special from a building id.
  */

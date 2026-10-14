@@ -106,5 +106,69 @@
     },
     "root": "crater_all",
     "phases": [ [ { "overmap": "crater_all", "max": { "poisson": 5 } } ], [ { "overmap": "crater_edge", "weight": 1 } ] ]
+  },
+  {
+    "type": "overmap_special",
+    "id": "test_special_priority_high",
+    "overmaps": [ { "point": [ 0, 0, 0 ], "overmap": "field" } ],
+    "locations": [ "land" ],
+    "occurrences": [ 0, 0 ],
+    "priority": 5
+  },
+  {
+    "type": "overmap_special",
+    "id": "test_special_priority_low",
+    "overmaps": [ { "point": [ 0, 0, 0 ], "overmap": "field" } ],
+    "locations": [ "land" ],
+    "occurrences": [ 0, 0 ],
+    "priority": -1
+  },
+  {
+    "type": "overmap_special",
+    "id": "test_special_priority_default",
+    "overmaps": [ { "point": [ 0, 0, 0 ], "overmap": "field" } ],
+    "locations": [ "land" ],
+    "occurrences": [ 0, 0 ]
+  },
+  {
+    "type": "overmap_special",
+    "id": "test_special_extradimensional",
+    "overmaps": [ { "point": [ 0, 0, 0 ], "overmap": "field" } ],
+    "locations": [ "land" ],
+    "occurrences": [ 1, 1 ],
+    "flags": [ "EXTRADIMENSIONAL" ]
+  },
+  {
+    "type": "overmap_special",
+    "id": "test_camp_special",
+    "subtype": "mutable",
+    "locations": [ "land" ],
+    "city_distance": [ 0, -1 ],
+    "occurrences": [ 0, 0 ],
+    "flags": [ "CLASSIC", "WILDERNESS" ],
+    "check_for_locations": [ [ [ 0, 0, 0 ], [ "land" ] ] ],
+    "joins": [ "camp_to_camp" ],
+    "overmaps": {
+      "camp_site": { "overmap": "crater", "camp": "your_followers", "camp_name": "Test Camp", "north": "camp_to_camp" },
+      "camp_edge": { "overmap": "crater", "south": "camp_to_camp" }
+    },
+    "root": "camp_site",
+    "phases": [ [ { "overmap": "camp_edge", "weight": 1 } ] ]
+  },
+  {
+    "type": "overmap_special",
+    "id": "test_special_road_connection",
+    "overmaps": [ { "point": [ 0, 0, 0 ], "overmap": "field" } ],
+    "locations": [ "land" ],
+    "connections": [ { "point": [ 0, -1, 0 ], "connection": "local_road" } ],
+    "occurrences": [ 0, 0 ]
+  },
+  {
+    "type": "overmap_special",
+    "id": "test_special_existing_road_connection",
+    "overmaps": [ { "point": [ 0, 0, 0 ], "overmap": "field" } ],
+    "locations": [ "land" ],
+    "connections": [ { "point": [ 0, -1, 0 ], "connection": "local_road", "existing": true } ],
+    "occurrences": [ 0, 0 ]
   }
 ]

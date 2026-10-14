@@ -4,6 +4,7 @@
 #include "catch/catch.hpp"
 #include "coordinates.h"
 #include "debug.h"
+#include "debug_log_capture.h"
 #include "enums.h"
 #include "fluid_grid.h"
 #include "game.h"
@@ -592,3 +593,80 @@ TEST_CASE("separate_overmap_tile_context_keeps_independent_scale", "[overmap][zo
 }
 
 #endif // TILES
+
+TEST_CASE("overmap_special_priority_loads", "[overmap][mapgen]") {
+    CHECK(overmap_special_id("test_special_priority_high")->get_priority() == 5);
+    CHECK(overmap_special_id("test_special_priority_low")->get_priority() == -1);
+    CHECK(overmap_special_id("test_special_priority_default")->get_priority() == 0);
+}
+
+TEST_CASE("extradimensional_specials_skip_primary_dimension", "[overmap][mapgen]") {
+    const overmap_special_id extra("test_special_extradimensional");
+    REQUIRE(extra->is_extradimensional());
+    REQUIRE(extra->can_spawn());
+
+    const auto in_batch = [&extra](const dimension_id& dim_id) {
+        overmap_special_batch batch = overmap_specials::get_default_batch(point_abs_om(), dim_id);
+        return std::any_of(batch.begin(), batch.end(), [&extra](const overmap_special_placement& p) {
+            return p.special_details->id == extra;
+        });
+    };
+
+    CHECK_FALSE(in_batch(dimension_id()));
+    CHECK(in_batch(dimension_id("test_other_dimension")));
+}
+
+TEST_CASE("mutable_overmap_terrain_accepts_camp_fields", "[overmap][mapgen]") {
+    // The fixture carries "camp" and "camp_name" on a mutable overmap terrain.  Loading
+    // and checking it must not raise a debugmsg, and the special must still place.
+    const overmap_special& special = *overmap_special_id("test_camp_special");
+    REQUIRE(special.get_subtype() == overmap_special_subtype::mutable_);
+
+    std::unique_ptr<overmap> om = std::make_unique<overmap>(point_abs_om(point_zero));
+    const city cit;
+    const tripoint_om_omt pos(OMAPX / 2, OMAPY / 2, 0);
+    REQUIRE(om->can_place_special(special, pos, om_direction::type::north, false));
+    // Scoped capture: debug_has_error_been_observed() is process-wide and sticks once any earlier
+    // test logged an error. Load-time validation of the fixture is covered by the init check.
+    std::vector<tripoint_om_omt> placed;
+    const std::string errors = capture_debug_errors_during([&]() {
+        placed = om->place_special(special, pos, om_direction::type::north, cit, false, false);
+    });
+    CHECK(!placed.empty());
+    CHECK(errors.empty());
+}
+
+TEST_CASE("overmap_special_score_rotation_at", "[overmap][mapgen]") {
+    std::unique_ptr<overmap> om = std::make_unique<overmap>(point_abs_om(point_zero));
+    const tripoint_om_omt p(OMAPX / 2, OMAPY / 2, 0);
+    // A road one tile north of the special's origin.
+    om->ter_set(tripoint_om_omt(p.x(), p.y() - 1, 0), oter_id("road_ns"));
+
+    SECTION("a connection that can start on open land is valid and a satisfied one scores higher") {
+        const overmap_special& special = *overmap_special_id("test_special_road_connection");
+        // Rotated north the connection point lands on the existing road.
+        CHECK(special.score_rotation_at(*om, p, om_direction::type::north) == 1);
+        // Rotated east it lands on plain field, where a road can start.
+        CHECK(special.score_rotation_at(*om, p, om_direction::type::east) == 0);
+        // Out of bounds connection points make the rotation invalid.
+        const tripoint_om_omt edge(0, 0, 0);
+        CHECK(special.score_rotation_at(*om, edge, om_direction::type::north) == -1);
+    }
+
+    SECTION("an existing connection requires a road at the connection point") {
+        const overmap_special& special = *overmap_special_id("test_special_existing_road_connection");
+        CHECK(special.score_rotation_at(*om, p, om_direction::type::north) == 1);
+        CHECK(special.score_rotation_at(*om, p, om_direction::type::east) == -1);
+        // The only valid rotation is the one that reaches the road.
+        for (int i = 0; i < 10; ++i) {
+            CHECK(om->random_special_rotation(special, p, false) == om_direction::type::north);
+        }
+    }
+
+    SECTION("mutable specials without connections score zero for every rotation") {
+        const overmap_special& special = *overmap_special_id("test_crater");
+        for (const om_direction::type r : om_direction::all) {
+            CHECK(special.score_rotation_at(*om, p, r) == 0);
+        }
+    }
+}
