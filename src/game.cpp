@@ -2855,6 +2855,9 @@ auto game::execute_activity_fixed_window_skip( const time_duration &duration ) -
             }
             break;
         }
+        // Skipped turns bypass the end-of-turn poll in do_turn, so poll here: an activity
+        // that relocates the avatar must not lose on_avatar_enters_omt.
+        track_avatar_omt();
         if( npcs_dirty || critter_tracker->size() != monster_count ) {
             activity_fixed_window_force_normal_turn_ = true;
             if( log_activity_skip_state ) {
@@ -2945,6 +2948,9 @@ auto game::execute_activity_fixed_window_skip( const time_duration &duration ) -
         }
         explosion_handler::get_explosion_queue().execute();
         cleanup_dead();
+        // Same poll as the end of do_turn: catches relocations from Lua every_x hooks, monster
+        // or NPC actions and explosions on this skipped turn.
+        track_avatar_omt();
 
         if( get_levz() >= 0 && !u.is_underwater() ) {
             handle_weather_effects( weather.weather_id, false );

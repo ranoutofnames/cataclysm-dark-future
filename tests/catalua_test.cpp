@@ -41,6 +41,7 @@
 #include "monster.h"
 #include "npc.h"
 #include "options.h"
+#include "options_helpers.h"
 #include "overmap/overmap_special.h"
 #include "overmap/overmapbuffer.h"
 #include "overmap/overmapbuffer_registry.h"
@@ -51,6 +52,7 @@
 #include "string_formatter.h"
 #include "stringmaker.h"
 #include "thread_pool.h"
+#include "timed_event.h"
 #include "type_id.h"
 #include "units_angle.h"
 #include "units_energy.h"
@@ -4380,4 +4382,97 @@ TEST_CASE("lua_mod_storage_with_function_value_keeps_other_values", "[lua]") {
     CHECK(loaded[keys[0]].get<std::string>() == "first");
     CHECK(lua_value_missing(loaded[keys[1]]));
     CHECK(loaded[keys[2]].get<int>() == 42);
+}
+
+// Fixed-window activity skips run their own per-turn loop and return from do_turn before its
+// end-of-turn OMT poll, so a relocation during a skipped turn must be polled inside the loop.
+TEST_CASE("lua_hook_avatar_enters_omt_activity_skip", "[lua][hooks][activity]") {
+    const auto no_autosave = override_option("AUTOSAVE", "false");
+    const auto normal_bubble_size =
+        override_option("REALITY_BUBBLE_SIZE", std::to_string(g_reality_bubble_size));
+    const auto no_mobile_bubble = override_option("ACTIVITY_MOBILE_BUBBLE_SIZE", "0");
+    const auto no_idle_bubble = override_option("ACTIVITY_IDLE_BUBBLE_SIZE", "0");
+    const auto no_underground_bubble = override_option("UNDERGROUND_BUBBLE_SIZE", "0");
+    const auto no_vehicle_bubble = override_option("VEHICLE_BUBBLE_SIZE", "0");
+    const auto no_combat_bubble = override_option("COMBAT_BUBBLE_SIZE", "0");
+
+    clear_all_state();
+    build_test_map(ter_id("t_pavement"));
+    const auto duration = 30_seconds;
+    g->timed_events = timed_event_manager{};
+    // Well past the turns tests/activity_fixed_window_test.cpp uses, so the fixed-window check
+    // cadence (not reset by clear_all_state) cannot fall into the previous skip's window.
+    calendar::turn = calendar::turn_zero + 30_days + 12_hours;
+    auto& weather = get_weather();
+    weather.weather_id = weather_type_id("clear");
+    weather.nextweather = calendar::turn + 10_minutes;
+    weather.temperature = 18_c;
+    weather.clear_temp_cache();
+    g->reset_light_level();
+    g->m.invalidate_map_cache(g->get_levz());
+    g->m.build_map_cache(g->get_levz(), true);
+    g->new_game = false;
+
+    auto& lua = DynamicDataLoader::get_instance().lua->lua;
+    std::vector<cata::on_every_x_hooks>& every_x = lua["game"]["cata_internal"]["on_every_x_hooks"];
+    const auto every_x_size = every_x.size();
+    const auto cleanup = on_out_of_scope([&]() {
+        every_x.resize(every_x_size);
+        g->lua_state_hooks_ready = false;
+        g->last_avatar_omt_.reset();
+        clear_all_state();
+    });
+
+    avatar& u = get_avatar();
+    // Stand on the east edge of an overmap tile (abs x % 24 == 23): one step east crosses it.
+    tripoint_bub_ms edge(60, 60, 0);
+    while (project_remain<coords::omt>(bub_to_abs(edge)).remainder_tripoint.x() != 23) {
+        edge += tripoint_west;
+    }
+    u.setpos(edge);
+    REQUIRE(project_remain<coords::omt>(u.abs_pos()).remainder_tripoint.x() == 23);
+    u.set_moves(100);
+    u.assign_activity(activity_id("ACT_WAIT"), to_moves<int>(duration), 0);
+    REQUIRE(u.activity);
+    REQUIRE(*u.activity);
+
+    g->lua_state_hooks_ready = true;
+    g->last_avatar_omt_.reset();
+    g->track_avatar_omt(); // baseline
+    const tripoint_abs_omt start = u.abs_omt_pos();
+
+    int fired = 0;
+    tripoint_abs_omt last_from;
+    tripoint_abs_omt last_to;
+    const auto restore = l2_install_hook("on_avatar_enters_omt", [&](sol::table p) {
+        ++fired;
+        last_from = p.get<tripoint_abs_omt>("from");
+        last_to = p.get<tripoint_abs_omt>("to");
+    });
+
+    // A per-turn Lua hook (runs inside the skip loop, not through place_player) moves the avatar
+    // one step east, across the overmap tile edge, exactly once.
+    auto moved = false;
+    auto mover_table = lua.create_table();
+    mover_table.set_function("l2b_mover", [&]() {
+        if (!moved) {
+            moved = true;
+            get_avatar().setpos(get_avatar().bub_pos() + tripoint_rel_ms(1, 0, 0));
+        }
+    });
+    sol::protected_function mover = mover_table["l2b_mover"];
+    every_x.push_back(cata::on_every_x_hooks{1_turns, {mover}});
+
+    const auto start_turn = calendar::turn;
+    CHECK_FALSE(g->do_turn());
+    // The turn must have gone through the skip path, not a normal turn.
+    REQUIRE(calendar::turn == start_turn + duration);
+    REQUIRE(moved);
+    REQUIRE(u.abs_omt_pos() != start);
+    CHECK(fired == 1);
+    CHECK(last_from == start);
+    CHECK(last_to == u.abs_omt_pos());
+    // No double fire when the poll runs again for the same OMT.
+    g->track_avatar_omt();
+    CHECK(fired == 1);
 }
