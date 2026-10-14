@@ -716,3 +716,17 @@ TEST_CASE("spawned items too long for a container appear next to it", "[item][po
         }
     }
 }
+
+TEST_CASE("single-item spawns do not lose items too long for a container", "[item][pocket]") {
+    const itype_id rod("test_long_rod");
+    SECTION("container-item") {
+        detached_ptr<item> spawned = item_group::item_from(item_group_id("test_long_rod_in_pouch"));
+        REQUIRE(spawned);
+        CHECK(spawned->has_item_with_id(rod));
+    }
+    SECTION("contents-item") {
+        detached_ptr<item> spawned = item_group::item_from(item_group_id("test_pouch_with_long_rod"));
+        REQUIRE(spawned);
+        CHECK(spawned->has_item_with_id(rod));
+    }
+}

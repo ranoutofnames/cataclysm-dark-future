@@ -53,6 +53,9 @@ namespace
 // Items that did not fit a spawned container by length; they are spawned next to it instead.
 // Collected during Item_modifier::modify and handed out by the create() functions.
 thread_local std::vector<detached_ptr<item>> spawn_extras;
+// True while a single item is created (Item_spawn_data::create_single). That API has no way
+// to hand out extras, so there too-long items are kept inside the container instead.
+thread_local bool spawning_single = false;
 
 // True when every pocket that would otherwise take the item refuses it for its length.
 auto too_long_for( const item &container, const item &it ) -> bool
@@ -88,7 +91,10 @@ detached_ptr<item> Item_spawn_data::create_single( const time_point &birthday ) 
 {
     RecursionList rec;
     spawn_extras.clear();
+    const bool was_single = spawning_single;
+    spawning_single = true;
     detached_ptr<item> ret = create_single( birthday, rec );
+    spawning_single = was_single;
     spawn_extras.clear();
     return ret;
 }
@@ -655,8 +661,9 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
     }
 
     if( cont != nullptr && !cont->is_null() ) {
-        if( too_long_for( *cont, *new_item ) ) {
+        if( !spawning_single && too_long_for( *cont, *new_item ) ) {
             // too long for its container: spawn it next to the container, not in it
+            // (single item: it is put in anyway, into the migration pocket)
             spawn_extras.push_back( std::move( cont ) );
         } else {
             cont->put_in( std::move( new_item ) );
@@ -665,7 +672,11 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
     }
 
     if( contents != nullptr ) {
+        // a list of contents is created, whatever the caller asked for
+        const bool was_single = spawning_single;
+        spawning_single = false;
         std::vector<detached_ptr<item>> contentitems = contents->create( new_item->birthday() );
+        spawning_single = was_single;
         // Runs of identical items are put in together (DDA #87184). Only items that are the
         // same in every respect that matters qualify: non-liquid, not counted by charges,
         // stackable with the run's first item, equally old and equally rotten.
@@ -682,7 +693,7 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
                     run++;
                 }
             }
-            if( too_long_for( *new_item, first ) ) {
+            if( !spawning_single && too_long_for( *new_item, first ) ) {
                 for( size_t j = 0; j < run; j++ ) {
                     spawn_extras.push_back( std::move( contentitems[i + j] ) );
                 }
