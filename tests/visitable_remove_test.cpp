@@ -249,12 +249,14 @@ TEST_CASE("visitable_remove", "[visitable]") {
             }
         }
 
-        WHEN("a hip flask containing water is worn") {
+        WHEN("a hip flask containing water is wielded") {
             detached_ptr<item> flask = item::spawn(worn_id);
             flask->put_in(item::spawn(
                 liquid_id, calendar::turn,
                 temp_liquid.charges_per_volume(obj.get_container_capacity())));
-            p.wear_item(std::move(flask));
+            // per DDA tests/visitable_remove_test.cpp:237 the flask is wielded: what a worn flask loses
+            // first depends on the worn order, which the pocket model does not promise
+            p.wield(std::move(flask));
 
             REQUIRE(count_items(p, container_id) == count);
             REQUIRE(count_items(p, liquid_id) == count + 1);
@@ -286,8 +288,8 @@ TEST_CASE("visitable_remove", "[visitable]") {
                         return e.typeId() == worn_id;
                     });
                     REQUIRE(found.size() == 1);
-                    AND_THEN("the hip flask is still worn") {
-                        REQUIRE(p.is_worn(*found[0]));
+                    AND_THEN("the hip flask is still wielded") {
+                        REQUIRE(p.is_wielding(*found[0]));
 
                         AND_THEN("the hip flask contains water") {
                             REQUIRE(found[0]->contents.num_item_stacks() == 1);
@@ -328,8 +330,8 @@ TEST_CASE("visitable_remove", "[visitable]") {
                             return e.typeId() == worn_id;
                         });
                         REQUIRE(found.size() == 1);
-                        AND_THEN("the hip flask is worn") {
-                            REQUIRE(p.is_worn(*found[0]));
+                        AND_THEN("the hip flask is wielded") {
+                            REQUIRE(p.is_wielding(*found[0]));
 
                             AND_THEN("the hip flask is empty") {
                                 REQUIRE(found[0]->contents.empty());

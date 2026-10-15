@@ -3218,7 +3218,7 @@ void npc::find_item()
     fetching_item = false;
     int best_value = minimum_item_value();
     // Not perfect, but has to mirror pickup code
-    units::volume volume_allowed = volume_capacity() - volume_carried();
+    units::volume volume_allowed = free_space();
     units::mass   weight_allowed = weight_capacity() - weight_carried();
     const int range = npc_pickup_range;
 
@@ -3500,7 +3500,7 @@ template <typename T>
 std::vector<item *> npc_pickup_from_stack( npc &who, T &items )
 {
     const bool whitelisting = who.has_item_whitelist();
-    auto volume_allowed = who.volume_capacity() - who.volume_carried();
+    auto volume_allowed = who.free_space();
     auto weight_allowed = who.weight_capacity() - who.weight_carried();
     auto min_value = whitelisting ? 0 : who.minimum_item_value();
     std::vector<item *> picked_up;
@@ -3572,7 +3572,7 @@ void npc::drop_items( units::mass drop_weight, units::volume drop_volume, int mi
              "vol %3.2f/%3.2f L)",
              name, units::to_kilogram( drop_weight ), units::to_liter( drop_volume ), inv_size(),
              units::to_kilogram( weight_carried() ), units::to_kilogram( weight_capacity() ),
-             units::to_liter( volume_carried() ), units::to_liter( volume_capacity() ) );
+             units::to_liter( carried_volume() ), units::to_liter( volume_capacity() ) );
 
     units::mass weight_dropped = units::from_gram( 0 );
     units::volume volume_dropped = units::from_liter( 0 );

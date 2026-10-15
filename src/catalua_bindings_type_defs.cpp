@@ -8,6 +8,7 @@
 #include "map/mapdata.h"
 #include "material.h"
 #include "mtype.h"
+#include "subbodypart.h"
 #include "type_id.h"
 #include "units_volume.h"
 #include "vitamin.h"
@@ -34,6 +35,27 @@ auto cata::detail::reg_types( sol::state &lua ) -> void
 
         luna::set_fx( ut, "str_id", &material_type::ident );
         SET_FX( name );
+    }
+#undef UT_CLASS
+
+#define UT_CLASS sub_body_part_type
+    {
+        DOC( "A sub-location of a body part: upper torso, left shoulder, throat and so on (see `BodyPartTypeId:sub_parts()`)." );
+        auto ut = luna::new_usertype<UT_CLASS>( lua, luna::no_bases, luna::no_constructor );
+
+        luna::set_fx( ut, "str_id", []( const UT_CLASS & c ) -> sub_bodypart_str_id { return c.id; } );
+        luna::set_fx( ut, "name", []( const UT_CLASS & c ) -> std::string { return c.name.translated(); } );
+        luna::set_fx( ut, "name_multiple", []( const UT_CLASS & c ) -> std::string {
+            return c.name_multiple.translated();
+        } );
+        DOC( "The body part this location belongs to." );
+        luna::set_fx( ut, "parent", []( const UT_CLASS & c ) -> bodypart_str_id { return c.parent; } );
+        DOC( "The location on the other side of the body (itself when there is none)." );
+        luna::set_fx( ut, "opposite", []( const UT_CLASS & c ) -> sub_bodypart_str_id {
+            return c.opposite;
+        } );
+        DOC( "Share (0-100) of the parent body part this location makes up; hits choose a location with this weight." );
+        SET_MEMB_RO( max_coverage );
     }
 #undef UT_CLASS
 

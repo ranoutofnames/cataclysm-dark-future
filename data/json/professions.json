@@ -3666,8 +3666,7 @@
             "item": "usp_9mm",
             "ammo-item": "9mmfmj",
             "charges": 15,
-            "container-item": "holster",
-            "contents-item": "pistol_lanyard"
+            "container-item": "holster"
           },
           { "item": "baton-extended", "container-item": "police_belt" },
           { "item": "ksg", "ammo-item": "shot_00", "charges": 7, "contents-item": "shoulder_strap" }
@@ -3715,8 +3714,7 @@
             "item": "usp_45",
             "ammo-item": "45_acp",
             "charges": 12,
-            "container-item": "holster",
-            "contents-item": "pistol_lanyard"
+            "container-item": "holster"
           },
           { "item": "legpouch_large", "contents-group": "army_mags_usp45" },
           { "item": "762_51", "charges": 20 },
@@ -3768,8 +3766,7 @@
             "item": "usp_45",
             "ammo-item": "45_acp",
             "charges": 12,
-            "container-item": "holster",
-            "contents-item": "pistol_lanyard"
+            "container-item": "holster"
           },
           { "item": "legpouch_large", "contents-group": "army_mags_usp45" },
           { "item": "tonfa", "container-item": "police_belt" },
@@ -4133,7 +4130,7 @@
     "items": {
       "both": {
         "items": [ "pants", "tshirt", "socks", "sneakers", "backpack", "wristwatch", "smart_phone", "pen" ],
-        "entries": [ { "contents-group": [ "manuals_school", "textbooks_school", "light_reading" ], "item": "box_medium" } ]
+        "entries": [ { "contents-group": [ "manuals_school", "textbooks_school", "light_reading" ], "item": "box_large" } ]
       },
       "male": [ "boxer_shorts" ],
       "female": [ "bra", "boy_shorts" ]
@@ -4629,7 +4626,7 @@
           "rollmat"
         ],
         "entries": [
-          { "item": "medium_plus_battery_cell", "ammo-item": "battery", "charges": 750, "container-item": "mil_mess_kit" },
+          { "item": "mil_mess_kit", "ammo-item": "battery", "charges": 750 },
           { "group": "charged_two_way_radio" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "knife_hunting", "container-item": "sheath" },
@@ -5986,7 +5983,7 @@
           { "item": "kukri", "container-item": "sheath" },
           { "item": "survivor_vest", "contents-group": "crossbow_hardened_survivor" },
           { "item": "quiver_large", "contents-group": "quiver_hardened_survivor" },
-          { "item": "light_battery_cell", "charges": 100, "container-item": "wearable_light" }
+          { "item": "wearable_light", "ammo-item": "battery", "charges": 100 }
         ]
       },
       "male": [ "boxer_shorts" ],
@@ -6127,7 +6124,7 @@
           { "item": "sw_619", "ammo-item": "357mag_jhp", "charges": 7, "container-item": "holster" },
           { "item": "legpouch_large", "contents-group": "speedloaders_waste_ranger" },
           { "item": "357mag_jhp", "charges": 29 },
-          { "item": "light_battery_cell", "charges": 100, "container-item": "wearable_light" },
+          { "item": "wearable_light", "ammo-item": "battery", "charges": 100 },
           { "item": "survivor_mess_kit", "charges": [ 20, 30 ] }
         ]
       },
@@ -6240,10 +6237,9 @@
             "contents-item": [ "shoulder_strap", "holo_sight" ]
           },
           {
-            "item": "medium_plus_battery_cell",
+            "item": "mil_mess_kit",
             "ammo-item": "battery",
-            "charges": 750,
-            "container-item": "mil_mess_kit"
+            "charges": 750
           },
           { "group": "charged_two_way_radio" },
           { "item": "modularvestceramic", "contents-group": "army_mags_m4" }
@@ -7035,7 +7031,7 @@
     "items": {
       "both": {
         "items": [ "pants", "dress_shirt", "smart_phone", "blazer", "socks", "dress_shoes", "wristwatch", "pen", "mbag" ],
-        "entries": [ { "item": "light_disposable_cell", "ammo-item": "battery", "charges": 300, "container-item": "camera_pro" } ]
+        "entries": [ { "item": "camera_pro", "ammo-item": "battery", "charges": 300 } ]
       },
       "male": [ "boxer_shorts" ],
       "female": [ "boy_shorts", "bra" ]
@@ -8141,7 +8137,7 @@
           { "group": "charged_flashlight" },
           { "item": "lighter", "charges": 25 },
           { "item": "knife_rambo", "container-item": "scabbard" },
-          { "item": "light_battery_cell", "charges": [ 1, 100 ], "container-item": "wearable_light" },
+          { "item": "wearable_light", "ammo-item": "battery", "charges": [ 1, 100 ] },
           { "item": "legpouch_large", "contents-group": "mags_mini_14" },
           {
             "item": "ruger_mini",
@@ -8400,12 +8396,11 @@
         ],
         "entries": [
           { "item": "smart_phone" },
-          { "item": "light_disposable_cell", "ammo-item": "battery", "charges": 300, "container-item": "camera_pro" },
+          { "item": "camera_pro", "ammo-item": "battery", "charges": 300 },
           {
-            "item": "light_disposable_cell",
+            "item": "wearable_light",
             "ammo-item": "battery",
-            "charges": 300,
-            "container-item": "wearable_light"
+            "charges": 300
           }
         ]
       },
@@ -8577,9 +8572,8 @@
           { "item": "gloves_work" },
           { "item": "wristwatch" },
           {
-            "item": "light_battery_cell",
+            "item": "wearable_light", "ammo-item": "battery",
             "charges": 100,
-            "container-item": "wearable_light",
             "custom-flags": [ "no_auto_equip" ]
           },
           { "item": "hat_ball" },
@@ -8592,7 +8586,8 @@
           { "item": "gas_insecticidal" },
           { "item": "mask_gas", "custom-flags": [ "no_auto_equip" ] },
           { "item": "lighter" },
-          { "item": "legrig", "contents-group": "pest_control_mags" },
+          { "item": "legrig" },
+          { "group": "pest_control_mags" },
           { "item": "cig" },
           { "item": "material_sand", "charges": 10 },
           { "item": "pockknife" },

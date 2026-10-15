@@ -15,8 +15,8 @@ TEST_CASE("nested_recipe_known_check", "[crafting][nested][recipe]") {
     avatar& dummy = get_avatar();
     clear_character(dummy);
 
-    // backpack_hiking has difficulty 4 and autolearn: true
-    // This means it requires tailor skill 4 to be "known" via autolearn
+    // backpack_hiking has difficulty 5 and autolearn: true
+    // This means it requires tailor skill 5 to be "known" via autolearn
     const recipe* hiking_backpack = &recipe_id("backpack_hiking").obj();
 
     GIVEN("character with no skills") {
@@ -32,9 +32,9 @@ TEST_CASE("nested_recipe_known_check", "[crafting][nested][recipe]") {
         }
     }
 
-    GIVEN("character with tailor skill 4") {
-        // Set tailor skill to 4 (meets difficulty requirement for autolearn)
-        dummy.set_skill_level(skill_id("tailor"), 4);
+    GIVEN("character with tailor skill 5") {
+        // Set tailor skill to 5 (meets difficulty requirement for autolearn)
+        dummy.set_skill_level(skill_id("tailor"), 5);
 
         inventory crafting_inv = dummy.crafting_inventory();
         const recipe_subset& available = dummy.get_available_recipes(crafting_inv);

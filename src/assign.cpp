@@ -106,10 +106,10 @@ bool assign( const JsonObject &jo, const std::string &name, units::volume &val,
     return true;
 }
 
-bool assign( const JsonObject &jo, const std::string &name, units::length &val,
+auto assign( const JsonObject &jo, const std::string &name, units::length &val,
              bool,
              const units::length lo,
-             const units::length hi )
+             const units::length hi ) -> bool
 {
     const auto parse = [&name]( const JsonObject & obj, units::length & out ) {
         if( obj.has_string( name ) ) {

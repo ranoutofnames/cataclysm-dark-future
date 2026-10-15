@@ -476,6 +476,16 @@
   },
   {
     "type": "item_action",
+    "id": "attach_molle",
+    "name": { "str": "Attach pouch" }
+  },
+  {
+    "type": "item_action",
+    "id": "detach_molle",
+    "name": { "str": "Remove pouch" }
+  },
+  {
+    "type": "item_action",
     "id": "detach_gunmods",
     "name": { "str": "Detach gunmods" }
   },

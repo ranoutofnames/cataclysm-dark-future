@@ -1,5 +1,25 @@
 [
   {
+    "id": "ABLATIVE_LARGE",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "restriction": "large armor plates",
+    "info": "This is a <info>large armor plate</info>.  It fits a large plate slot of a plate carrier."
+  },
+  {
+    "id": "ABLATIVE_MEDIUM",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "restriction": "medium armor plates",
+    "info": "This is a <info>medium armor plate</info>.  It fits a medium plate slot of a plate carrier."
+  },
+  {
+    "id": "CANT_WEAR",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "info": "This item <bad>can't be worn</bad> on its own.  It has to be inserted into a carrier."
+  },
+  {
     "id": "GRAB",
     "type": "json_flag",
     "context": [  ]
@@ -127,6 +147,7 @@
     "id": "BELT_CLIP",
     "type": "json_flag",
     "context": [ "GENERIC", "TOOL" ],
+    "restriction": "Item must clip onto a belt loop",
     "info": "This item can be clipped on to a <info>belt loop</info> of the appropriate size."
   },
   {
@@ -923,7 +944,7 @@
     "id": "SHEATH_KNIFE",
     "type": "json_flag",
     "context": [ "GENERIC", "TOOL" ],
-    "restriction": "knives",
+    "restriction": "Item must fit in a sheath",
     "//": "This item can be stored in a sheath of the appropriate size."
   },
   {
@@ -1592,6 +1613,27 @@
     "context": [  ]
   },
   {
+    "id": "REMOVED_STOCK",
+    "//": "for weapons whose stock has been cut off.",
+    "type": "json_flag",
+    "info": "This item has had its stock removed, it will be hard to shoot with.",
+    "context": [  ]
+  },
+  {
+    "id": "FOLDED_STOCK",
+    "//": "for weapons that stock folds to one side, no change in volume.",
+    "type": "json_flag",
+    "info": "This items stock is folded it will be hard to shoot with.",
+    "context": [  ]
+  },
+  {
+    "id": "COLLAPSED_STOCK",
+    "//": "for weapons that stock collapses into the body reducing volume as well.",
+    "type": "json_flag",
+    "info": "This items stock is collapsed it will be hard to shoot with.",
+    "context": [  ]
+  },
+  {
     "id": "CONDUCTIVE",
     "type": "json_flag",
     "context": [  ]
@@ -2049,6 +2091,46 @@
     "context": [  ]
   },
   {
+    "id": "PALS_SMALL",
+    "type": "json_flag",
+    "context": [  ],
+    "info": "This item will <good>attach directly</good> to <info>load bearing vests</info>, taking a <good>small amount of space</good>."
+  },
+  {
+    "id": "PALS_MEDIUM",
+    "type": "json_flag",
+    "context": [  ],
+    "info": "This item will <good>attach directly</good> to <info>load bearing vests</info>, taking an average amount of space."
+  },
+  {
+    "id": "PALS_LARGE",
+    "type": "json_flag",
+    "context": [  ],
+    "info": "This item will <good>attach directly</good> to <info>load bearing vests</info>, taking a <bad>large amount of space</bad>."
+  },
+  {
+    "id": "PADDED",
+    "type": "json_flag",
+    "context": [ "ARMOR", "TOOL_ARMOR" ],
+    "info": "This item has notable padding and will be comfortable worn without clothing under it."
+  },
+  {
+    "id": "SOFT",
+    "type": "json_flag",
+    "context": [ "ARMOR", "TOOL_ARMOR" ]
+  },
+  {
+    "id": "HARD",
+    "type": "json_flag",
+    "context": [ "ARMOR", "TOOL_ARMOR" ]
+  },
+  {
+    "id": "NO_WEAR_EFFECT",
+    "type": "json_flag",
+    "context": [ "ARMOR", "TOOL_ARMOR" ],
+    "info": "This item can be worn, but it <neutral>won't provide any effects</neutral>."
+  },
+  {
     "id": "PERPETUAL",
     "type": "json_flag",
     "context": [  ]
@@ -2217,6 +2299,11 @@
   },
   {
     "id": "SOLARPACK",
+    "type": "json_flag",
+    "context": [  ]
+  },
+  {
+    "id": "FROM_FROZEN_LIQUID",
     "type": "json_flag",
     "context": [  ]
   },

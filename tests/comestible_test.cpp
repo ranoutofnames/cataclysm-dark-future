@@ -92,7 +92,9 @@ static auto byproduct_calories(const recipe& recipe_obj) -> int {
 }
 
 static auto food_or_food_container(item& it) -> item& { // *NOPAD*
-    return it.is_food_container() ? it.contents.front() : it;
+    // worn gear with a container pocket (the DDA style test_backpack) is not a food container;
+    // DDA checks the bare recipe result (tests/comestible_test.cpp:222-225)
+    return it.is_food_container() && !it.is_armor() ? it.contents.front() : it;
 }
 
 TEST_CASE("recipe_permutations", "[recipe]") {

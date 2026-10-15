@@ -14,8 +14,12 @@ auto reg_game_ids_traits( sol::state &lua ) -> void;
 auto reg_game_ids_world( sol::state &lua ) -> void;
 auto reg_game_ids_misc( sol::state &lua ) -> void;
 
-template<typename T, bool do_int_id>
-auto reg_id( sol::state &lua ) -> void
+/**
+ * Registers the string and int id types of @p T. @p extend is called with the string id's
+ * usertype after the common functions are set, so a type can add its own (CDF P1e step 31).
+ */
+template<typename T, bool do_int_id, typename Extend>
+auto reg_id( sol::state &lua, Extend &&extend ) -> void
 {
     using SID = string_id<T>;
     using IID = int_id<T>;
@@ -62,6 +66,7 @@ auto reg_id( sol::state &lua ) -> void
         luna::set_fx( ut, "deserialize", []( SID & id, JsonIn & jsin ) -> void {
             id = SID( jsin.get_string() );
         } );
+        extend( ut );
     }
 #undef UT_CLASS
 
@@ -82,6 +87,12 @@ auto reg_id( sol::state &lua ) -> void
         } );
     }
 #undef UT_CLASS
+}
+
+template<typename T, bool do_int_id>
+auto reg_id( sol::state &lua ) -> void
+{
+    reg_id<T, do_int_id>( lua, []( auto & ) {} );
 }
 
 } // namespace cata::detail

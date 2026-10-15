@@ -310,5 +310,44 @@
       [ "underbarrel", 1 ]
     ],
     "ammo_effects": [ "TRAIL" ]
+  },
+  {
+    "id": "xlballistic_vest_empty",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "Based on US Army SPCS",
+    "name": { "str": "empty XL  ballistic vest" },
+    "description": "Oversized ballistic armor without any armor inserts.  The soft armor plate carrier is still protective but it won't stop high energy projectiles.",
+    "weight": "4 kg",
+    "volume": "7 L",
+    "price": "1600 USD",
+    "material": [ "nylon" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 85,
+    "encumbrance": 6,
+    "warmth": 15,
+    "material_thickness": 8,
+    "flags": [ "OVERSIZE", "STURDY", "OUTER", "WATER_FRIENDLY" ]
+  },
+  {
+    "id": "xlballistic_vest_esapi",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": { "str": "XL ESAPI ballistic vest" },
+    "description": "Oversized ballistic armor with ESAPI ceramic armor plates.",
+    "weight": "12 kg",
+    "volume": "9 L",
+    "price": "2800 USD",
+    "material": [ "nylon", "ceramic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 85,
+    "encumbrance": 10,
+    "warmth": 15,
+    "material_thickness": 26,
+    "flags": [ "OVERSIZE", "STURDY", "OUTER", "WATER_FRIENDLY", "NO_REPAIR" ]
   }
 ]

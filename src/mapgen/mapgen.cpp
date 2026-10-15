@@ -1812,7 +1812,7 @@ public:
             // Itemgroups apply migrations when being loaded, but we need to migrate
             // individual items here.
             const auto migrated = item_controller->migrate_id(chosen_id);
-            auto newliquid = item::spawn(migrated, calendar::start_of_cataclysm);
+            auto newliquid = item_controller->spawn_migrated(chosen_id, calendar::start_of_cataclysm);
             if (amount.valmax > 0) {
                 auto base_charges = amount.get();
                 const auto global_rate = get_option<float>("ITEM_SPAWNRATE");
@@ -1896,7 +1896,10 @@ public:
         if (!group) {
             // Migrations are applied to item *groups* on load, but single item spawns must be
             // migrated individually
-            result_group.add_item_entry(item_controller->migrate_id(ity), 100);
+            // The spawn also applies the migration's flags and contents (P1e step 28).
+            const itype_id migrated = item_controller->migrate_id(ity);
+            result_group.add_item_entry(migrated, 100,
+                                        migrated == ity ? itype_id::NULL_ID() : ity);
         } else {
             result_group.add_group_entry(group, 100);
         }
@@ -2126,7 +2129,9 @@ public:
         itype_id chosen_id = type.get(dat);
         if (chosen_id.is_null()) { return; }
         // Itemgroups apply migrations when being loaded, but we need to migrate
-        // individual items here.
+        // individual items here. The spawn goes through the original id, so the migration's
+        // flags and contents (a plate carrier's plates) are applied too.
+        const itype_id original_id = chosen_id;
         chosen_id = item_controller->migrate_id(chosen_id);
 
         if (item_is_blacklisted(chosen_id)) { return; }
@@ -2141,7 +2146,7 @@ public:
         const point_omt_ms p = {x.get(), y.get()};
 
         detached_ptr<item> itm = item::in_its_container(
-            item::spawn(chosen_id, calendar::start_of_cataclysm));
+            item_controller->spawn_migrated(original_id, calendar::start_of_cataclysm));
 
         const int spawns = dat.m.edit_item_for_spawn_rate(*itm);
         const int total_spawns = spawn_count * spawns;

@@ -6529,7 +6529,8 @@ static std::string colorized_item_description( const item &item )
     std::vector<iteminfo_parts> {
         iteminfo_parts::DESCRIPTION,
         iteminfo_parts::DESCRIPTION_NOTES,
-        iteminfo_parts::DESCRIPTION_CONTENTS
+        iteminfo_parts::DESCRIPTION_CONTENTS,
+        iteminfo_parts::DESCRIPTION_POCKETS
     } );
     return item.info_string( query, 1 );
 }

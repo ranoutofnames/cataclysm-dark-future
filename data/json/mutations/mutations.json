@@ -328,12 +328,12 @@
     "id": "PACKMULE",
     "name": { "str": "Packmule" },
     "points": 2,
-    "description": "You can manage to find space for anything!  You can carry 40% more volume.",
+    "description": "You pack things very efficiently!  You can retrieve things from containers 10% faster.",
     "starting_trait": true,
     "valid": false,
     "purifiable": false,
     "cancels": [ "DISORGANIZED" ],
-    "packmule_modifier": 1.4
+    "enchantments": [ "ENCH_PACKMULE" ]
   },
   {
     "type": "mutation",
@@ -847,12 +847,12 @@
     "id": "DISORGANIZED",
     "name": { "str": "Disorganized" },
     "points": -3,
-    "description": "You are terrible at organizing and storing your possessions.  You can carry 40% less volume.",
+    "description": "You are terrible at organizing and storing your possessions.  You retrieve things from containers 10% slower.",
     "starting_trait": true,
     "valid": false,
     "purifiable": false,
     "cancels": [ "PACKMULE" ],
-    "packmule_modifier": 0.6
+    "enchantments": [ "ENCH_DISORGANIZED" ]
   },
   {
     "type": "mutation",

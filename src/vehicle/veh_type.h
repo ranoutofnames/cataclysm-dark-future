@@ -442,6 +442,12 @@ struct vehicle_item_spawn {
     /** Chance [0-100%] for items to spawn with their default magazine (if any) */
     int with_magazine = 0;
     std::vector<itype_id> item_ids;
+    /**
+     * Parallel to item_ids, filled by Item_factory::finalize: the id an entry had before its
+     * MIGRATION replaced it, or the null id (CDF P1e step 28). The spawn applies the
+     * migration's flags and contents through it. May be empty (not finalized yet).
+     */
+    std::vector<itype_id> migrated_from;
     std::vector<item_group_id> item_groups;
 };
 

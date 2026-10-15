@@ -28,7 +28,8 @@
     "stylish_bonus": 6,
     "hot_morale_mod": 2,
     "cold_morale_mod": 2,
-    "bionic_slots": 80
+    "bionic_slots": 80,
+    "sub_parts": [ "torso_upper", "torso_lower" ]
   },
   {
     "id": "head",
@@ -47,7 +48,8 @@
     "stylish_bonus": 3,
     "hot_morale_mod": 2,
     "cold_morale_mod": 2,
-    "bionic_slots": 18
+    "bionic_slots": 18,
+    "sub_parts": [ "head_forehead", "head_crown", "head_nape", "head_throat", "head_ear_l", "head_ear_r" ]
   },
   {
     "id": "eyes",
@@ -106,7 +108,8 @@
     "drench_capacity": 10,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 20
+    "bionic_slots": 20,
+    "sub_parts": [ "arm_shoulder_l", "arm_upper_l", "arm_elbow_l", "arm_lower_l" ]
   },
   {
     "id": "arm_r",
@@ -129,7 +132,8 @@
     "drench_capacity": 10,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 20
+    "bionic_slots": 20,
+    "sub_parts": [ "arm_shoulder_r", "arm_upper_r", "arm_elbow_r", "arm_lower_r" ]
   },
   {
     "id": "hand_l",
@@ -199,7 +203,8 @@
     "stylish_bonus": 1,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 30
+    "bionic_slots": 30,
+    "sub_parts": [ "leg_hip_l", "leg_upper_l", "leg_knee_l", "leg_lower_l" ]
   },
   {
     "id": "leg_r",
@@ -223,7 +228,8 @@
     "stylish_bonus": 1,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 30
+    "bionic_slots": 30,
+    "sub_parts": [ "leg_hip_r", "leg_upper_r", "leg_knee_r", "leg_lower_r" ]
   },
   {
     "id": "foot_l",

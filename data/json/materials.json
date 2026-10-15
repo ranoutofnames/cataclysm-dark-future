@@ -403,6 +403,7 @@
   {
     "type": "material",
     "id": "flesh",
+    "soft": true,
     "name": "Flesh",
     "density": 5,
     "specific_heat_liquid": 3.7,
@@ -636,6 +637,7 @@
   {
     "type": "material",
     "id": "hflesh",
+    "soft": true,
     "name": "Human Flesh",
     "density": 5,
     "specific_heat_liquid": 3.7,
@@ -1014,6 +1016,7 @@
   {
     "type": "material",
     "id": "paper",
+    "soft": true,
     "name": "Paper",
     "density": 4,
     "specific_heat_liquid": 1.34,
@@ -1038,6 +1041,7 @@
   {
     "type": "material",
     "id": "dry_plant",
+    "soft": true,
     "name": "Dry Plant",
     "density": 4,
     "specific_heat_liquid": 1.34,
@@ -1090,6 +1094,7 @@
   {
     "type": "material",
     "id": "powder",
+    "soft": true,
     "name": "Powder",
     "density": 1,
     "specific_heat_liquid": 1.5,
@@ -1114,6 +1119,7 @@
   {
     "type": "material",
     "id": "powder_nonflam",
+    "soft": true,
     "name": "Powder",
     "density": 1,
     "specific_heat_liquid": 1.5,

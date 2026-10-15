@@ -125,7 +125,7 @@ TEST_CASE("full backpack pickup", "[drop_token]") {
                 CHECK(dummy.get_moves() == moves_before - 100);
                 bool no_items_left = mc.items_with([](const item&) { return true; }).empty();
                 CHECK(no_items_left);
-                CHECK(dummy.volume_carried() == volume_sum);
+                CHECK(dummy.carried_volume() == volume_sum);
             }
         }
     }

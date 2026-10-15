@@ -465,6 +465,15 @@
     "verbose_tooltip": false
   },
   {
+    "id": "ACT_INSERT_ITEM",
+    "type": "activity_type",
+    "verb": "inserting",
+    "suspendable": false,
+    "special": true,
+    "no_resume": true,
+    "verbose_tooltip": false
+  },
+  {
     "id": "ACT_STASH",
     "type": "activity_type",
     "verb": "stashing",

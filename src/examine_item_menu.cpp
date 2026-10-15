@@ -6,6 +6,7 @@
 #include "avatar_functions.h"
 #include "clothing_link.h"
 #include "crafting.h"
+#include "flag.h"
 #include "game_inventory.h"
 #include "input.h"
 #include "item.h"
@@ -192,6 +193,13 @@ bool run(
         avatar_funcs::unload_item( you, itm );
         return true;
     } );
+
+    if( itm.is_container() && !itm.is_corpse() ) {
+        add_entry( "INSERT", rate_action_insert( you, itm ), [&]() {
+            game_menus::inv::insert_items( itm );
+            return true;
+        } );
+    }
 
     add_entry( "RELOAD", rate_action_reload( you, itm ), [&]() {
         avatar_action::reload( itm );
@@ -505,6 +513,20 @@ hint_rating rate_action_reload( const avatar &you, const item &it )
     }
 
     return you.can_reload( it ) ? hint_rating::good : hint_rating::iffy;
+}
+
+// Per DDA game.cpp:2093 (rate_action_insert)
+hint_rating rate_action_insert( const avatar &you, const item &it )
+{
+    if( it.will_spill_if_unsealed()
+        && it.where() != item_location_type::map
+        && !you.is_wielding( it ) ) {
+        return hint_rating::cant;
+    }
+    if( it.has_flag( flag_NO_RELOAD ) ) {
+        return hint_rating::cant;
+    }
+    return hint_rating::good;
 }
 
 hint_rating rate_action_unload( const avatar &/*you*/, const item &it )

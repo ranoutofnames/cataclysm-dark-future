@@ -229,6 +229,8 @@ Fields for each entry in `armor_portion_data`:
 - `encumbrance`: How much the item encumbers the body part. Default is 0.
 - `max_encumbrance`: Encumbrance when the character is at full storage volume. Default equals `encumbrance`.
 
+- `specifically_covers`: (Optional) Array of sub body part IDs (e.g. `torso_upper`, `arm_shoulder_l`, `head_throat`) this entry covers; see [sub body parts](../creatures/sub_body_parts.md). `coverage` then applies to each of those sub-locations. The coverage of the whole body part is derived from the entries: each one's coverage, weighted by the share of the body part its sub-locations make up. Encumbrance of such entries is summed. Entries that list sub-locations must name them in `covers` too (or leave `covers` out and the sub-locations' body parts are used).
+
 When `armor_portion_data` is used, the top-level `covers`, `coverage`, `encumbrance`, and `max_encumbrance` fields should not be used as they are replaced by the portion data.
 
 ### Pet Armor
@@ -496,15 +498,53 @@ fields, `pocket_data` wins and `--check-mods` warns.
 
 `ammo_restriction` replaces the volume and weight limits. `max_item_length` and `min_item_length`
 are lengths such as `"30 cm"` (units `mm`, `cm`, `m`, `km`); see "Item length" below.
-`volume_encumber_modifier` and `ablative` are read and stored; they take effect with worn storage
-and plate armor. `extra_encumbrance`, `ripoff`, `activity_noise`, `inherits_flags`,
-`material_restriction`, `allowed_speedloaders` and `forbidden` are DDA keys that are accepted and
-ignored. `MIGRATION` pockets can't be defined in JSON: every item creates one when something
+`volume_encumber_modifier` takes effect with worn storage. `extra_encumbrance`, `ripoff`, `activity_noise`, `inherits_flags`,
+`material_restriction`, `allowed_speedloaders` and `forbidden` are DDA keys that are loaded into
+`pocket_data`; some of them have no consumer yet. `MIGRATION` pockets can't be defined in JSON: every item creates one when something
 doesn't fit in its other pockets, and the game moves such items out (to the parent container, the
 carrier, or the ground) the next time the pocket layout changes.
 
 When a flag has a `restriction` string in `flags.json`, item info uses it to say what the pocket
 accepts (for example "knives" for `SHEATH_KNIFE`).
+
+#### Plate slots (ablative pockets)
+
+`"ablative": true` makes the pocket a plate slot, as in DDA:
+
+```json
+{ "pocket_type": "CONTAINER", "ablative": true, "flag_restriction": [ "ABLATIVE_LARGE" ],
+  "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "max_item_length": "33 cm",
+  "moves": 800 }
+```
+
+- It holds exactly one item and takes only items matching its `flag_restriction` or
+  `item_restriction` (an ablative pocket without either is an error).
+- It is never worn storage. Automatic placement (picking up, `best_pocket`, overflow) skips it;
+  a plate is inserted on purpose with the normal "insert into container" action, or placed by item
+  spawning and migration. `moves` is the time that costs.
+- `volume_encumber_modifier` defaults to 0 (plates are armor, not stored volume).
+- `sector` (`"any"` (default), `"front"`, `"back"`, `"left"`, `"right"`) names the side of the
+  wearer the plate covers. It is read and stored for a future directional coverage model and has no
+  effect yet.
+
+An armor item can be a plate: give it `CANT_WEAR` and the size flag, and, with `non_functional` (an
+item id) and `damage_verb` (default "is shattered"), say what it leaves behind when it is destroyed:
+
+```json
+"flags": [ "CANT_WEAR", "ABLATIVE_LARGE" ],
+"non_functional": "destroyed_large_ceramic_plate",
+"damage_verb": "makes a crunch, something has shifted"
+```
+
+The `non_functional` item takes the plate's place in the same slot, so it must carry the same size
+flag (`ABLATIVE_LARGE` / `ABLATIVE_MEDIUM`) as the plate and be an armor item; the game reports a
+leftover that doesn't. The leftover always goes back into the slot the plate was in. Without
+`non_functional` a destroyed plate is simply removed, with the same "completely destroyed" message
+as any armor.
+
+Plates in a worn carrier mitigate damage before the carrier does, through the plate coverage
+seam (`select_ablative_pocket`, `src/ablative_coverage.h`), which decides per hit which plate, if
+any, takes it. Their coverage and encumbrance count for the carrier.
 
 #### Pockets built from legacy fields
 
@@ -1322,9 +1362,12 @@ It is resolved per item type in this order, first match wins:
 4. derived: the side of a cube of the volume of one unit, `round(cbrt(volume in ml))` cm.
 
 Pockets refuse items longer than `max_item_length` or shorter than `min_item_length`. When
-`max_item_length` is not given, container pockets default to `cbrt(capacity) cm * sqrt(2) * 1.5`;
-holster, magazine, magazine well, mod, corpse, software and migration pockets have no limit.
-Spawning and loading never refuse an item.
+`max_item_length` is not given, container pockets default to `cbrt(capacity) cm * sqrt(2)` (per
+DDA, no extra factor); magazine well pockets and the pockets BN synthesizes for holster actions
+have an explicit limit of 2 km. Soft items (made of a soft material) have a length of 0 mm while
+they are empty, and an item that is not soft is as long as its longest side or its longest
+content. A gun is as long as `longest_side` plus the longest of its mods; set
+`integral_longest_side` on a gun mod to say how far it sticks out of the gun.
 
 `item_overlay` objects set whitelisted fields on existing items without redefining them; later
 objects override earlier ones. Currently `longest_side` and `pocket_data`:

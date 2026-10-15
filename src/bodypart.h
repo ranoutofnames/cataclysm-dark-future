@@ -5,12 +5,14 @@
 #include <cstddef>
 #include <initializer_list>
 #include <string>
+#include <vector>
 
 #include "flat_set.h"
 #include "int_id.h"
 #include "catalua_type_operators.h"
 #include "string_id.h"
 #include "translations.h"
+#include "type_id.h"
 #include "location_ptr.h"
 #include "units/body_temperature.h"
 
@@ -139,6 +141,18 @@ struct body_part_type {
         float stylish_bonus = 0;
 
         int base_hp = 60;
+
+        /**
+         * Sub-locations of this part (DDA `sub_parts`), e.g. upper and lower torso.
+         * Empty for parts without any: hits then have no sub-location.
+         */
+        std::vector<sub_bodypart_str_id> sub_parts;
+
+        /**
+         * A sub-location chosen at random, weighted by each one's `max_coverage` (as in DDA).
+         * Returns the null id if this part has no sub-parts.
+         */
+        sub_bodypart_str_id random_sub_part() const;
 
         LUA_TYPE_OPS( body_part_type, id );
 

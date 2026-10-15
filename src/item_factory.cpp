@@ -54,6 +54,7 @@ class player;
 #include "skill.h"
 #include "string_formatter.h"
 #include "string_id.h"
+#include "subbodypart.h"
 #include "string_utils.h"
 #include "text_snippets.h"
 #include "translations.h"
@@ -193,6 +194,209 @@ auto defmode_name( itype &obj )
 };
 
 } //namespace
+
+// Builds the per-body-part portions of `obj` from its per-sub-location ones (DDA #52826):
+// coverage is the coverage of each sub-location weighted by the share of the body part it
+// makes up (upper torso 100 + lower torso 80 -> 0.6 * 100 + 0.4 * 80 = 92), encumbrance is the
+// sum of the portions. A sub-location named by several portions takes the highest coverage,
+// the same value item::get_coverage( bp, sbp ) returns for it, so the two always agree.
+static void derive_armor_portions_from_sub_data( itype &obj )
+{
+    islot_armor &armor = *obj.armor;
+    armor.sub_data_derived = true;
+
+    std::map<bodypart_str_id, armor_portion_data> derived;
+    // the coverage of each sub-location, the highest of the portions that name it
+    std::map<bodypart_str_id, std::map<sub_bodypart_str_id, int>> sub_best;
+    // the same for the melee and ranged coverage (DDA item_factory.cpp:1204)
+    std::map<bodypart_str_id, std::map<sub_bodypart_str_id, int>> sub_best_melee;
+    std::map<bodypart_str_id, std::map<sub_bodypart_str_id, int>> sub_best_ranged;
+    for( armor_portion_data &sub : armor.sub_data ) {
+        if( sub.cover_melee < 0 ) {
+            sub.cover_melee = sub.coverage;
+        }
+        if( sub.cover_ranged < 0 ) {
+            sub.cover_ranged = sub.coverage;
+        }
+        // without `covers`, the parents of the sub-locations are covered
+        if( sub.covers.none() ) {
+            for( const sub_bodypart_str_id &sbp : sub.sub_coverage ) {
+                if( sbp.is_valid() ) {
+                    sub.covers.set( sbp->parent );
+                }
+            }
+        }
+        for( const bodypart_str_id &bp : sub.covers ) {
+            int part_total = 0;
+            for( const sub_bodypart_str_id &sbp : bp->sub_parts ) {
+                part_total += sbp->max_coverage;
+            }
+            bool any_covered = false;
+            for( const sub_bodypart_str_id &sbp : sub.sub_coverage ) {
+                if( sbp.is_valid() && sbp->parent == bp && sbp->max_coverage > 0 ) {
+                    any_covered = true;
+                    int &best = sub_best[bp][sbp];
+                    best = std::max( best, sub.coverage );
+                    int &best_melee = sub_best_melee[bp][sbp];
+                    best_melee = std::max( best_melee, sub.cover_melee );
+                    int &best_ranged = sub_best_ranged[bp][sbp];
+                    best_ranged = std::max( best_ranged, sub.cover_ranged );
+                }
+            }
+            if( part_total <= 0 || !any_covered ) {
+                debugmsg( "item %s: armor portion covers %s but none of its sub-locations",
+                          obj.get_id().str(), bp.str() );
+                continue;
+            }
+            armor_portion_data &entry = derived[bp];
+            entry.covers.set( bp );
+            entry.encumber += sub.encumber;
+            entry.cover_vitals += sub.cover_vitals;
+            // the full-storage encumbrance is worked out when the pockets are final, from
+            // the sub portions (finalize_armor_portions)
+            entry.max_encumber = -1;
+            entry.volume_encumber_modifier = sub.volume_encumber_modifier;
+        }
+    }
+    for( auto &[bp, entry] : derived ) {
+        const bool plain_portion = std::ranges::any_of( armor.data, [&bp = bp]( const armor_portion_data &
+        d ) {
+            return d.covers.test( bp );
+        } );
+        if( plain_portion ) {
+            debugmsg( "item %s: %s is covered both with and without \"specifically_covers\"",
+                      obj.get_id().str(), bp.str() );
+            continue;
+        }
+        int part_total = 0;
+        for( const sub_bodypart_str_id &sbp : bp->sub_parts ) {
+            part_total += sbp->max_coverage;
+        }
+        float weighted = 0.0f;
+        for( const auto &[sbp, sub_coverage] : sub_best[bp] ) {
+            weighted += static_cast<float>( sub_coverage ) * sbp->max_coverage / part_total;
+        }
+        entry.coverage = std::min( 100, static_cast<int>( std::lround( weighted ) ) );
+        float weighted_melee = 0.0f;
+        for( const auto &[sbp, sub_coverage] : sub_best_melee[bp] ) {
+            weighted_melee += static_cast<float>( sub_coverage ) * sbp->max_coverage / part_total;
+        }
+        entry.cover_melee = std::min( 100, static_cast<int>( std::lround( weighted_melee ) ) );
+        float weighted_ranged = 0.0f;
+        for( const auto &[sbp, sub_coverage] : sub_best_ranged[bp] ) {
+            weighted_ranged += static_cast<float>( sub_coverage ) * sbp->max_coverage / part_total;
+        }
+        entry.cover_ranged = std::min( 100, static_cast<int>( std::lround( weighted_ranged ) ) );
+        armor.data.push_back( entry );
+    }
+}
+
+// Armor flags and values that depend on the final pockets and materials (DDA item_factory.cpp:
+// 1111-1148 max_encumber and rigid / comfortable, 1509-1560 armor flags). CDF: portions have no
+// materials of their own, so `rigid` and `comfortable` come from the item-wide materials
+// (DEVIATION 4 of the J5 plan).
+static void finalize_armor_portions( itype &obj )
+{
+    if( !obj.armor ) {
+        return;
+    }
+    islot_armor &armor = *obj.armor;
+
+    // the volume of non-rigid pockets decides the encumbrance of a full container
+    units::volume total_nonrigid_volume = 0_ml;
+    for( const pocket_data &pocket : obj.pockets ) {
+        // Reimplementation of item_pocket::is_standard_type()
+        const bool pocket_is_standard = pocket.type == pocket_type::CONTAINER ||
+                                        pocket.type == pocket_type::MAGAZINE ||
+                                        pocket.type == pocket_type::MAGAZINE_WELL;
+        if( !pocket.rigid && pocket_is_standard ) {
+            // include the modifier for each individual pocket
+            total_nonrigid_volume += pocket.volume_capacity() * pocket.volume_encumber_modifier;
+        }
+    }
+    const auto full_encumbrance = [&total_nonrigid_volume]( const armor_portion_data & portion ) {
+        return portion.encumber + static_cast<int>( total_nonrigid_volume *
+                portion.volume_encumber_modifier / armor_portion_data::volume_per_encumbrance );
+    };
+    for( armor_portion_data &sub : armor.sub_data ) {
+        if( sub.max_encumber < 0 ) {
+            sub.max_encumber = full_encumbrance( sub );
+        }
+    }
+    for( armor_portion_data &portion : armor.data ) {
+        if( portion.max_encumber >= 0 ) {
+            continue;
+        }
+        // portions derived from sub portions add up theirs, like DDA's consolidation
+        int summed = 0;
+        bool from_sub_data = false;
+        for( const armor_portion_data &sub : armor.sub_data ) {
+            bool shares_part = false;
+            for( const bodypart_str_id &bp : portion.covers ) {
+                shares_part = shares_part || sub.covers.test( bp );
+            }
+            if( shares_part ) {
+                from_sub_data = true;
+                summed += sub.max_encumber;
+            }
+        }
+        portion.max_encumber = from_sub_data ? summed : full_encumbrance( portion );
+    }
+
+    // Precalc hardness and comfort. Uncomfortable material supersedes softness (all rigid
+    // materials are assumed to be uncomfy).
+    bool rigid = false;
+    bool comfortable = false;
+    for( const material_id &mat : obj.materials ) {
+        if( !mat.is_valid() ) {
+            continue;
+        }
+        if( mat->soft() ) {
+            comfortable = true;
+        } else {
+            rigid = true;
+        }
+        if( mat->uncomfortable() ) {
+            comfortable = false;
+        }
+    }
+    // anything on a non traditional clothing layer can't be "rigid" as well since it's storage
+    // pouches and stuff
+    if( obj.layer != UNDERWEAR_LAYER && obj.layer != REGULAR_LAYER && obj.layer != OUTER_LAYER ) {
+        rigid = false;
+    }
+    bool all_rigid = !armor.data.empty();
+    bool all_comfortable = !armor.data.empty();
+    for( armor_portion_data &portion : armor.data ) {
+        portion.rigid = rigid;
+        portion.comfortable = comfortable;
+        all_rigid = all_rigid && portion.rigid;
+        all_comfortable = all_comfortable && portion.comfortable;
+    }
+    for( armor_portion_data &sub : armor.sub_data ) {
+        sub.rigid = rigid;
+        sub.comfortable = comfortable;
+    }
+    armor.rigid = all_rigid;
+    armor.comfortable = all_comfortable;
+
+    // go through the pockets and apply some characteristics
+    for( const pocket_data &pocket : obj.pockets ) {
+        if( pocket.ablative ) {
+            armor.ablative = true;
+            break;
+        }
+        if( pocket.extra_encumbrance > 0 ) {
+            armor.additional_pocket_enc = true;
+        }
+        if( pocket.ripoff > 0 ) {
+            armor.ripoff_chance = true;
+        }
+        if( pocket.activity_noise.chance > 0 ) {
+            armor.noisy = true;
+        }
+    }
+}
 
 void Item_factory::finalize_pre( itype &obj )
 {
@@ -615,6 +819,18 @@ void Item_factory::finalize_pre( itype &obj )
     }
 
     if( obj.armor ) {
+        // DDA loads cover_melee and cover_ranged as the plain coverage when they are not given
+        for( armor_portion_data &portion : obj.armor->data ) {
+            if( portion.cover_melee < 0 ) {
+                portion.cover_melee = portion.coverage;
+            }
+            if( portion.cover_ranged < 0 ) {
+                portion.cover_ranged = portion.coverage;
+            }
+        }
+        if( !obj.armor->sub_data.empty() && !obj.armor->sub_data_derived ) {
+            derive_armor_portions_from_sub_data( obj );
+        }
 
         auto set_resist = [&obj]( damage_type dt,
         std::function<int( const material_type & )> resist_getter ) {
@@ -642,8 +858,41 @@ void Item_factory::finalize_pre( itype &obj )
 
 void Item_factory::synthesize_pockets( itype &obj ) const
 {
+    // per DDA item_factory.cpp:940-956 (finalize_post): NO_UNLOAD / NO_RELOAD items mark their
+    // pockets and each pocket falls back to the item's name. Runs on every exit path.
+    struct finish_pockets {
+        itype &obj;
+        ~finish_pockets() {
+            for( pocket_data &pocket : obj.pockets ) {
+                pocket._no_unload = obj.has_flag( flag_NO_UNLOAD );
+                pocket._no_reload = obj.has_flag( flag_NO_RELOAD );
+                pocket.name = obj.name;
+            }
+            finalize_armor_portions( obj );
+        }
+    } finish{ obj };
+
+    // MOLLE data (item_overlay `pals` / `molle_capacity` -> flags and use actions); also for items
+    // with explicit pocket_data. J5: the attached pouches are the item's additional_pockets, so
+    // there is no webbing pocket any more
+    const auto add_molle = [this]( itype & obj ) {
+        // item_overlay `pals` / `molle_capacity`: MOLLE data for items whose file is not edited
+        if( const auto pals = overlay_pals.find( obj.id ); pals != overlay_pals.end() ) {
+            obj.item_tags.insert( flag_id( pals->second == 1 ? "PALS_SMALL" :
+                                           pals->second == 2 ? "PALS_MEDIUM" : "PALS_LARGE" ) );
+        }
+        if( const auto molle = overlay_molle.find( obj.id ); molle != overlay_molle.end() &&
+            obj.get_use( "attach_molle" ) == nullptr ) {
+            auto attach = std::make_unique<molle_attach_actor>();
+            attach->size = molle->second;
+            obj.use_methods.emplace( "attach_molle", use_function( std::move( attach ) ) );
+            obj.use_methods.emplace( "detach_molle", use_function( std::make_unique<molle_detach_actor>() ) );
+        }
+    };
+
     // Explicit "pocket_data" always wins (CDF P1a step 2).
     if( obj.explicit_pockets ) {
+        add_molle( obj );
         return;
     }
     obj.pockets.clear();
@@ -652,7 +901,8 @@ void Item_factory::synthesize_pockets( itype &obj ) const
     if( obj.container ) {
         pocket_data pocket( pocket_type::CONTAINER );
         pocket.rigid = obj.rigid;
-        pocket.volume_capacity = obj.container->contains;
+        pocket.raw_volume_capacity = obj.container->contains;
+        pocket.apply_default_length();
         pocket.watertight = obj.container->watertight;
         if( obj.container->preserves ) {
             pocket.spoil_multiplier = 0.0f;
@@ -667,6 +917,8 @@ void Item_factory::synthesize_pockets( itype &obj ) const
         obj.pockets.push_back( pocket );
     }
 
+    add_molle( obj );
+
     // BN holster use_action: one holster pocket per `multi`.
     if( const use_function *use = obj.get_use( "holster" ) ) {
         const auto *actor = dynamic_cast<const holster_actor *>( use->get_actor_ptr() );
@@ -674,21 +926,23 @@ void Item_factory::synthesize_pockets( itype &obj ) const
             pocket_data pocket( pocket_type::CONTAINER );
             pocket.rigid = obj.rigid;
             pocket.holster = true;
-            pocket.volume_capacity = actor->max_volume;
+            pocket.raw_volume_capacity = actor->max_volume;
+            // CDF: BN holsters have no length limit (D3: keep today's behaviour)
+            pocket.max_item_length = 2_km;
             pocket.max_item_volume = actor->max_volume;
             pocket.min_item_volume = actor->min_volume;
             if( actor->max_weight > 0_gram ) {
                 pocket.max_contains_weight = actor->max_weight;
             }
             for( const std::string &f : actor->flags ) {
-                pocket.flag_restriction.insert( flag_id( f ) );
+                pocket.add_flag_restriction( flag_id( f ) );
             }
             for( const skill_id &sk : actor->skills ) {
                 pocket.skill_restriction.insert( sk );
             }
             if( actor->flags.empty() && actor->skills.empty() ) {
                 // BN: a holster with neither flags nor skills accepts nothing
-                pocket.item_restriction.insert( itype_id::NULL_ID() );
+                pocket.item_id_restriction.insert( itype_id::NULL_ID() );
             }
             pocket.no_active_items = true;
             pocket.moves = actor->draw_cost;
@@ -728,17 +982,19 @@ void Item_factory::synthesize_pockets( itype &obj ) const
         units::volume biggest = 0_ml;
         for( const auto &mags : obj.magazines ) {
             for( const itype_id &mag : mags.second ) {
-                pocket.item_restriction.insert( mag );
+                pocket.item_id_restriction.insert( mag );
                 const auto found = m_templates.find( mag );
                 if( found != m_templates.end() ) {
                     biggest = std::max( biggest, found->second.volume );
                 }
             }
         }
-        pocket.volume_capacity = std::max( biggest, 1_ml );
+        pocket.raw_volume_capacity = std::max( biggest, 1_ml );
+        // per DDA item_factory.cpp:4086: magazine wells take any length
+        pocket.max_item_length = 2_km;
         // BN: a magazine adds max( magazine volume - magazine_well, 0 ) to the item.
         // A well at least as big as every magazine is the same as a rigid pocket.
-        if( obj.magazine_well > 0_ml && obj.magazine_well < pocket.volume_capacity ) {
+        if( obj.magazine_well > 0_ml && obj.magazine_well < pocket.raw_volume_capacity ) {
             pocket.magazine_well = obj.magazine_well;
             pocket.rigid = false;
         } else {
@@ -758,7 +1014,10 @@ void Item_factory::synthesize_pockets( itype &obj ) const
 
     // Storage devices for software (src/computer_session.cpp).
     if( obj.id == itype_id( "usb_drive" ) ) {
-        obj.pockets.emplace_back( pocket_type::SOFTWARE );
+        pocket_data software_pocket( pocket_type::SOFTWARE );
+        // CDF: BN items always have a volume, and so a length; DDA's software has none
+        software_pocket.max_item_length = 2_km;
+        obj.pockets.push_back( software_pocket );
     }
 
     // Worn storage: the DDA layout from the garment overlay, else one derived from `storage`.
@@ -772,7 +1031,8 @@ void Item_factory::synthesize_pockets( itype &obj ) const
         } else {
             pocket_data main( pocket_type::CONTAINER );
             main.carry = true;
-            main.volume_capacity = obj.armor->storage;
+            main.raw_volume_capacity = obj.armor->storage;
+            main.apply_default_length();
             main.rigid = obj.rigid;
             main.moves = INVENTORY_HANDLING_PENALTY;
             obj.pockets.push_back( main );
@@ -781,7 +1041,7 @@ void Item_factory::synthesize_pockets( itype &obj ) const
                 pocket_data strap( pocket_type::CONTAINER );
                 strap.carry = true;
                 strap.holster = true;
-                strap.volume_capacity = 10_liter;
+                strap.raw_volume_capacity = 10_liter;
                 strap.max_item_volume = 10_liter;
                 strap.max_item_length = 150_cm;
                 strap.rigid = obj.rigid;
@@ -884,10 +1144,25 @@ void Item_factory::load_item_overlay( const JsonObject &jo )
         assign( jo, "longest_side", len );
         overlay_lengths[id] = len;
     }
+    if( jo.has_string( "pals" ) ) {
+        const std::string size = jo.get_string( "pals" );
+        if( size == "small" ) {
+            overlay_pals[id] = 1;
+        } else if( size == "medium" ) {
+            overlay_pals[id] = 2;
+        } else if( size == "large" ) {
+            overlay_pals[id] = 3;
+        } else {
+            jo.throw_error( "pals must be small, medium or large", "pals" );
+        }
+    }
+    if( jo.has_int( "molle_capacity" ) ) {
+        overlay_molle[id] = jo.get_int( "molle_capacity" );
+    }
     for( const JsonMember member : jo ) {
         const std::string &name = member.name();
         if( name != "type" && name != "id" && name != "longest_side" &&
-            name != "pocket_data" && name != "//" ) {
+            name != "pocket_data" && name != "pals" && name != "molle_capacity" && name != "//" ) {
             jo.throw_error( "item_overlay does not support the field '" + name + "'", name );
         }
     }
@@ -1093,10 +1368,19 @@ void Item_factory::finalize_item_blacklist()
     for( vproto_id &vid : vehicle_prototype::get_all() ) {
         vehicle_prototype &prototype = const_cast<vehicle_prototype &>( vid.obj() );
         for( vehicle_item_spawn &vis : prototype.item_spawns ) {
-            for( itype_id &type_to_spawn : vis.item_ids ) {
+            // the original id of each migrated entry, so the spawn can apply the migration's
+            // flags and contents (CDF P1e step 28); null where nothing was migrated
+            if( vis.migrated_from.size() != vis.item_ids.size() ) {
+                vis.migrated_from.assign( vis.item_ids.size(), itype_id::NULL_ID() );
+            }
+            for( size_t i = 0; i < vis.item_ids.size(); i++ ) {
+                itype_id &type_to_spawn = vis.item_ids[i];
                 std::map<itype_id, migration>::iterator replacement =
                     migrations.find( type_to_spawn );
                 if( replacement != migrations.end() ) {
+                    if( vis.migrated_from[i].is_null() ) {
+                        vis.migrated_from[i] = type_to_spawn;
+                    }
                     type_to_spawn = replacement->second.replace;
                 }
             }
@@ -1392,6 +1676,8 @@ void Item_factory::init()
     add_actor( std::make_unique<emit_actor>() );
     add_actor( std::make_unique<saw_barrel_actor>() );
     add_actor( std::make_unique<saw_stock_actor>() );
+    add_actor( std::make_unique<molle_attach_actor>() );
+    add_actor( std::make_unique<molle_detach_actor>() );
     add_actor( std::make_unique<install_bionic_actor>() );
     add_actor( std::make_unique<detach_gunmods_actor>() );
     add_actor( std::make_unique<mutagen_actor>() );
@@ -1455,6 +1741,18 @@ void Item_factory::check_definitions() const
             debugmsg( "item_overlay: longest_side of '%s' must be positive", ov.first.str() );
         }
     }
+    for( const auto &ov : overlay_pals ) {
+        if( !m_templates.contains( ov.first ) ) {
+            debugmsg( "item_overlay: id '%s' is not a known item", ov.first.str() );
+        }
+    }
+    for( const auto &ov : overlay_molle ) {
+        if( !m_templates.contains( ov.first ) ) {
+            debugmsg( "item_overlay: id '%s' is not a known item", ov.first.str() );
+        } else if( ov.second <= 0 ) {
+            debugmsg( "item_overlay: molle_capacity of '%s' must be positive", ov.first.str() );
+        }
+    }
     for( const auto &ov : overlay_pockets ) {
         const auto found = m_templates.find( ov.first );
         if( found == m_templates.end() ) {
@@ -1472,7 +1770,7 @@ void Item_factory::check_definitions() const
             units::volume total = 0_ml;
             for( const pocket_data &pd : type->pockets ) {
                 if( pd.type == pocket_type::CONTAINER && !pd.holster && !pd.ablative ) {
-                    total += pd.volume_capacity;
+                    total += pd.raw_volume_capacity;
                 }
             }
             const units::volume storage = type->armor->storage;
@@ -1501,6 +1799,40 @@ void Item_factory::check_definitions() const
                     }
                 }
             }
+            if( !type->armor->non_functional.is_null() && !type->armor->non_functional.is_valid() ) {
+                msg += string_format( "non_functional has invalid item id \"%s\"\n",
+                                      type->armor->non_functional.str() );
+            } else if( !type->armor->non_functional.is_null() ) {
+                // the leftover replaces the plate in its slot, so it must fit every kind of
+                // plate slot the plate fits (item_restriction slots can't be checked here: the
+                // carrier is not known; the leftover always goes back into the plate's slot)
+                const itype &leftover = type->armor->non_functional.obj();
+                for( const flag_id &slot_flag : { flag_ABLATIVE_LARGE, flag_ABLATIVE_MEDIUM } ) {
+                    if( type->has_flag( slot_flag ) && !leftover.has_flag( slot_flag ) ) {
+                        msg += string_format( "non_functional \"%s\" lacks the flag %s of the plate, "
+                                              "so it does not fit the plate's slot\n",
+                                              leftover.get_id().str(), slot_flag.str() );
+                    }
+                }
+                if( !leftover.armor ) {
+                    msg += string_format( "non_functional \"%s\" is not an armor item\n",
+                                          leftover.get_id().str() );
+                }
+            }
+            for( const armor_portion_data &sub : type->armor->sub_data ) {
+                for( const sub_bodypart_str_id &sbp : sub.sub_coverage ) {
+                    if( !sbp.is_valid() ) {
+                        msg += string_format( "specifically_covers has invalid sub body part \"%s\"\n",
+                                              sbp.str() );
+                    } else if( !sub.covers.test( sbp->parent ) ) {
+                        msg += string_format( "specifically_covers \"%s\" is not part of any body part in covers\n",
+                                              sbp.str() );
+                    }
+                }
+                if( sub.coverage < 0 || sub.coverage > 100 ) {
+                    msg += "armor portion with specifically_covers has coverage outside 0-100\n";
+                }
+            }
         }
 
         if( type->explicit_pockets && ( type->container || type->can_use( "holster" ) ||
@@ -1517,12 +1849,12 @@ void Item_factory::check_definitions() const
             }
             // DDA #40591 style: a pocket whose length limit refuses every item it is restricted to
             const pocket_data &pd = type->pockets[i];
-            const std::optional<units::length> max_len = pd.effective_max_item_length();
-            if( max_len && !pd.item_restriction.empty() ) {
+            const units::length max_len = pd.max_item_length;
+            if( max_len > 0_mm && !pd.item_id_restriction.empty() ) {
                 bool any_fits = false;
-                for( const itype_id &allowed : pd.item_restriction ) {
+                for( const itype_id &allowed : pd.item_id_restriction ) {
                     const auto found = m_templates.find( allowed );
-                    if( found == m_templates.end() || found->second.longest_side <= *max_len ) {
+                    if( found == m_templates.end() || found->second.longest_side <= max_len ) {
                         any_fits = true;
                         break;
                     }
@@ -1967,20 +2299,19 @@ void Item_factory::check_definitions() const
         if( !m_templates.contains( e.second.replace ) ) {
             debugmsg( "Invalid migration target: %s", e.second.replace.c_str() );
         }
-        for( const auto &c : e.second.contents ) {
-            if( !m_templates.contains( c ) ) {
-                debugmsg( "Invalid migration contents: %s", c.c_str() );
+        for( const migration_content &c : e.second.contents ) {
+            if( !m_templates.contains( c.id ) ) {
+                debugmsg( "Invalid migration contents: %s", c.id.c_str() );
+            }
+            if( c.count <= 0 ) {
+                debugmsg( "Migration %s has contents %s with count %d, which must be positive",
+                          e.first.c_str(), c.id.c_str(), c.count );
             }
         }
     }
     for( const auto &elem : m_template_groups ) {
         elem.second->check_consistency( elem.first.str() );
         inp_mngr.pump_events();
-    }
-    if( !pocket_data::ignored_keys_seen().empty() ) {
-        // A warning, not an error: DDA-format item JSON is allowed to carry these keys.
-        DebugLog( DL::Warn, DC::Game ) << "pocket_data keys accepted but ignored by CDF: "
-                                     << enumerate_as_string( pocket_data::ignored_keys_seen() );
     }
 }
 
@@ -2385,26 +2716,49 @@ void Item_factory::load( islot_armor &slot, const JsonObject &jo, const std::str
     assign( jo, "adv_hearing_protection", slot.adv_hearing_protection, strict, 0,
             191 );  // Limited from 0 to 191 dB spl
     assign( jo, "valid_mods", slot.valid_mods, strict );
+    // armor plates: what a destroyed plate leaves behind, and how that is announced
+    optional( jo, slot.was_loaded, "non_functional", slot.non_functional, itype_id::NULL_ID() );
+    optional( jo, slot.was_loaded, "damage_verb", slot.damage_verb );
 
     if( jo.has_array( "armor_portion_data" ) ) {
         slot.data.clear();
+        slot.sub_data.clear();
+        slot.sub_data_derived = false;
         for( const JsonObject &obj : jo.get_array( "armor_portion_data" ) ) {
             armor_portion_data tempData;
             body_part_set temp_cover_data;
             assign_coverage_from_json( obj, "covers", temp_cover_data, slot.sided );
             tempData.covers = temp_cover_data;
+            // DDA `specifically_covers`: the sub-locations this portion covers
+            if( obj.has_array( "specifically_covers" ) ) {
+                for( const std::string sbp : obj.get_array( "specifically_covers" ) ) {
+                    tempData.sub_coverage.insert( sub_bodypart_str_id( sbp ) );
+                }
+            }
 
             if( obj.has_array( "encumbrance" ) ) {
                 tempData.encumber = obj.get_array( "encumbrance" ).get_int( 0 );
                 tempData.max_encumber = obj.get_array( "encumbrance" ).get_int( 1 );
             } else if( obj.has_int( "encumbrance" ) ) {
+                // DDA: without a maximum it is worked out from the pockets when finalized
                 tempData.encumber = obj.get_int( "encumbrance" );
-                tempData.max_encumber = tempData.encumber;
             }
             if( obj.has_int( "coverage" ) ) {
                 tempData.coverage = obj.get_int( "coverage" );
             }
-            slot.data.push_back( tempData );
+            // DDA armor_portion_data::deserialize; -1: the coverage, resolved when finalized
+            tempData.cover_melee = obj.get_int( "cover_melee", -1 );
+            tempData.cover_ranged = obj.get_int( "cover_ranged", -1 );
+            tempData.cover_vitals = obj.get_int( "cover_vitals", 0 );
+            tempData.rigid_layer_only = obj.get_bool( "rigid_layer_only", false );
+            tempData.volume_encumber_modifier = static_cast<float>( obj.get_float( "volume_encumber_modifier",
+                                                1.0 ) );
+            if( tempData.sub_coverage.empty() ) {
+                slot.data.push_back( tempData );
+            } else {
+                // `data` gets the per-body-part values derived from these in finalize_pre
+                slot.sub_data.push_back( tempData );
+            }
 
             // TODO: Not currently supported, we still use flags for this
             //if( obj.has_string( "layer" ) ) {
@@ -2418,13 +2772,25 @@ void Item_factory::load( islot_armor &slot, const JsonObject &jo, const std::str
             //    }
             //}
         }
+    } else if( !slot.sub_data.empty() ) {
+        // copied from an item with per-sub-location portions: the flat keys can't say which
+        if( jo.has_int( "encumbrance" ) || jo.has_int( "max_encumbrance" ) ||
+            jo.has_int( "coverage" ) || jo.has_member( "covers" ) ) {
+            jo.throw_error( "Legacy armor format can't modify an item with \"specifically_covers\".  Use \"armor_portion_data\" instead." );
+        }
     } else {
         if( slot.data.empty() ) { // Loading item does not have copy-from
             slot.data.emplace_back();
             optional( jo, slot.was_loaded, "encumbrance", slot.data[0].encumber, 0 );
-            optional( jo, slot.was_loaded, "max_encumbrance", slot.data[0].max_encumber,
-                      slot.data[0].encumber );
+            // DDA: without a maximum it is worked out from the pockets when finalized
+            optional( jo, slot.was_loaded, "max_encumbrance", slot.data[0].max_encumber, -1 );
             optional( jo, slot.was_loaded, "coverage", slot.data[0].coverage, 0 );
+            optional( jo, slot.was_loaded, "cover_melee", slot.data[0].cover_melee, -1 );
+            optional( jo, slot.was_loaded, "cover_ranged", slot.data[0].cover_ranged, -1 );
+            optional( jo, slot.was_loaded, "cover_vitals", slot.data[0].cover_vitals, 0 );
+            optional( jo, slot.was_loaded, "rigid_layer_only", slot.data[0].rigid_layer_only, false );
+            optional( jo, slot.was_loaded, "volume_encumber_modifier",
+                      slot.data[0].volume_encumber_modifier, 1.0f );
             body_part_set temp_cover_data;
             assign_coverage_from_json( jo, "covers", temp_cover_data, slot.sided );
             slot.data[0].covers = temp_cover_data;
@@ -2438,9 +2804,13 @@ void Item_factory::load( islot_armor &slot, const JsonObject &jo, const std::str
             int old_encumbrance = slot.data[0].encumber;
             assign( jo, "encumbrance", slot.data[0].encumber, strict );
             if( old_encumbrance != slot.data[0].encumber ) {
-                slot.data[0].max_encumber = slot.data[0].encumber;
+                slot.data[0].max_encumber = -1;
             }
             assign( jo, "max_encumbrance", slot.data[0].max_encumber, strict );
+            assign( jo, "cover_melee", slot.data[0].cover_melee, strict );
+            assign( jo, "cover_ranged", slot.data[0].cover_ranged, strict );
+            assign( jo, "cover_vitals", slot.data[0].cover_vitals, strict );
+            assign( jo, "volume_encumber_modifier", slot.data[0].volume_encumber_modifier, strict );
 
             assign( jo, "coverage", slot.data[0].coverage, strict );
             body_part_set temp_cover_data;
@@ -3012,6 +3382,8 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
     assign( jo, "volume", def.volume );
     assign( jo, "integral_volume", def.integral_volume );
     assign( jo, "longest_side", def.longest_side );
+    // Per DDA item_factory.cpp:4486: length of a mod that sticks out of its gun.
+    assign( jo, "integral_longest_side", def.integral_longest_side );
     assign( jo, "price", def.price, false, 0_cent );
     assign( jo, "price_postapoc", def.price_post, false, 0_cent );
     assign( jo, "stackable", def.stackable_, strict );
@@ -3019,6 +3391,10 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
     assign( jo, "cutting", def.melee[DT_CUT], strict, 0 );
     assign( jo, "to_hit", def.m_to_hit, strict );
     assign( jo, "container", def.default_container );
+    if( jo.has_string( "container_variant" ) ) {
+        def.default_container_variant = jo.get_string( "container_variant" );
+    }
+    assign( jo, "sealed", def.default_container_sealed );
     assign( jo, "rigid", def.rigid );
     assign( jo, "min_strength", def.min_str );
     assign( jo, "min_dexterity", def.min_dex );
@@ -3312,7 +3688,38 @@ void Item_factory::load_migration( const JsonObject &jo )
     assign( jo, "replace", m.replace );
     assign( jo, "flags", m.flags );
     assign( jo, "charges", m.charges );
-    assign( jo, "contents", m.contents );
+    // `contents`: item ids and { "id": ..., "count": n } objects; repeats of an id add up
+    const auto add_content = [&m]( const itype_id & id, int count ) {
+        const auto found = std::ranges::find_if( m.contents, [&id]( const migration_content & c ) {
+            return c.id == id;
+        } );
+        if( found != m.contents.end() ) {
+            found->count += count;
+        } else {
+            m.contents.push_back( migration_content{ id, count } );
+        }
+    };
+    if( jo.has_array( "contents" ) ) {
+        JsonArray contents = jo.get_array( "contents" );
+        for( size_t i = 0; i < contents.size(); i++ ) {
+            if( contents.has_string( i ) ) {
+                add_content( itype_id( contents.get_string( i ) ), 1 );
+            } else if( contents.has_object( i ) ) {
+                JsonObject entry = contents.get_object( i );
+                const itype_id id( entry.get_string( "id" ) );
+                const int count = entry.get_int( "count", 1 );
+                if( count <= 0 ) {
+                    entry.throw_error( "`count` of a MIGRATION content must be positive", "count" );
+                }
+                add_content( id, count );
+            } else {
+                contents.throw_error( "`contents` of `MIGRATION` takes item ids and { \"id\", \"count\" } objects",
+                                      static_cast<int>( i ) );
+            }
+        }
+    } else if( jo.has_member( "contents" ) ) {
+        jo.throw_error( "`contents` of `MIGRATION` must be an array", "contents" );
+    }
 
     if( jo.has_string( "id" ) ) {
         jo.read( "id", m.id, true );
@@ -3348,13 +3755,25 @@ void Item_factory::migrate_item( const itype_id &id, item &obj )
 
         obj.contents.migrate_item( obj, iter->second.contents );
 
-        // check contents of migrated containers do not exceed capacity
+        // check contents of migrated containers do not exceed capacity (a plate or any other
+        // item that isn't count_by_charges has no stack to clamp)
         if( obj.is_container() && !obj.contents.empty() ) {
             item &child = obj.contents.back();
-            const int capacity = child.charges_per_volume( obj.get_container_capacity() );
-            child.charges = std::min( child.charges, capacity );
+            if( child.count_by_charges() ) {
+                const int capacity = child.charges_per_volume( obj.get_container_capacity() );
+                child.charges = std::min( child.charges, capacity );
+            }
         }
     }
+}
+
+detached_ptr<item> Item_factory::spawn_migrated( const itype_id &id, time_point birthday, int qty )
+{
+    detached_ptr<item> ret = item::spawn( migrate_id( id ), birthday, qty );
+    if( ret ) {
+        migrate_item( id, *ret );
+    }
+    return ret;
 }
 
 void Item_factory::set_qualities_from_json( const JsonObject &jo, const std::string &member,
@@ -3710,8 +4129,23 @@ void Item_factory::add_entry( Item_group &ig, const JsonObject &obj )
     use_modifier |= load_min_max( modifier.charges, obj, "charges" );
     use_modifier |= load_min_max( modifier.count, obj, "count" );
     use_modifier |= load_sub_ref( modifier.ammo, obj, "ammo", ig );
-    use_modifier |= load_sub_ref( modifier.container, obj, "container", ig );
+    // Per DDA item_factory.cpp:5029-5037: "entry-wrapper" and the object form of "container-item"
+    // wrap the entry itself; the string form stays the BN entry-level container (a sub-ref).
+    if( obj.has_string( "entry-wrapper" ) ) {
+        sptr->container_item = itype_id( obj.get_string( "entry-wrapper" ) );
+    }
+    if( obj.has_object( "container-item" ) ) {
+        JsonObject jo = obj.get_object( "container-item" );
+        sptr->container_item = itype_id( jo.get_string( "item" ) );
+        sptr->container_item_variant = jo.get_string( "variant", "" );
+    } else {
+        use_modifier |= load_sub_ref( modifier.container, obj, "container", ig );
+    }
     use_modifier |= load_sub_ref( modifier.contents, obj, "contents", ig );
+    if( obj.has_bool( "sealed" ) ) {
+        modifier.sealed = obj.get_bool( "sealed" );
+        use_modifier = true;
+    }
     use_modifier |= load_active( modifier.postprocess_fns, obj );
 
     std::vector<std::string> custom_flags;
@@ -3766,6 +4200,30 @@ void Item_factory::load_item_group( const JsonObject &jsobj, const item_group_id
 
     Item_group *ig = make_group_or_throw( group_id, isd, type, jsobj.get_int( "ammo", 0 ),
                                           jsobj.get_int( "magazine", 0 ) );
+    // Per DDA item_factory.cpp:5166-5177: group-level container-item (string or object),
+    // on_overflow (none, spill, discard) and sealed.
+    if( jsobj.has_string( "container-item" ) ) {
+        ig->container_item = itype_id( jsobj.get_string( "container-item" ) );
+    } else if( jsobj.has_object( "container-item" ) ) {
+        JsonObject jo = jsobj.get_object( "container-item" );
+        ig->container_item = itype_id( jo.get_string( "item" ) );
+        ig->container_item_variant = jo.get_string( "variant", "" );
+    }
+    if( jsobj.has_string( "on_overflow" ) ) {
+        const std::string overflow = jsobj.get_string( "on_overflow" );
+        if( overflow == "none" ) {
+            ig->on_overflow = Item_spawn_data::overflow_behaviour::none;
+        } else if( overflow == "spill" ) {
+            ig->on_overflow = Item_spawn_data::overflow_behaviour::spill;
+        } else if( overflow == "discard" ) {
+            ig->on_overflow = Item_spawn_data::overflow_behaviour::discard;
+        } else {
+            jsobj.throw_error( "on_overflow must be one of none, spill, discard", "on_overflow" );
+        }
+    }
+    if( jsobj.has_bool( "sealed" ) ) {
+        ig->sealed = jsobj.get_bool( "sealed" );
+    }
     if( subtype == "old" ) {
         for( const JsonValue entry : jsobj.get_array( "items" ) ) {
             if( entry.test_object() ) {

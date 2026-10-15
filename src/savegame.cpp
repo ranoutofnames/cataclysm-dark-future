@@ -65,7 +65,8 @@ static const oter_str_id oter_omt_obsolete( "omt_obsolete" );
  */
 // 30: item contents are saved per pocket (CDF P1a)
 // 31: carried items are saved inside the worn items and the body storage, no "inv" (CDF P1c)
-const int savegame_version = 31;
+// 32: item contents are saved in the DDA format: "contents": [pockets] (P1-transplant J3)
+const int savegame_version = 32;
 
 /*
  * This is a global set by detected version header in .sav, maps.txt, or overmap.

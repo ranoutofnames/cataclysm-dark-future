@@ -63,6 +63,7 @@
 #include "fluid_grid.h"
 #include "fstream_utils.h"
 #include "game_constants.h"
+#include "examine_item_menu.h"
 #include "game_inventory.h"
 #include "game_ui.h"
 #include "gamemode.h"
@@ -3660,6 +3661,8 @@ input_context get_default_mode_input_context()
     ctxt.register_action( "reload_wielded" );
     ctxt.register_action( "unload" );
     ctxt.register_action( "unload_all" );
+    ctxt.register_action( "insert" );
+    ctxt.register_action( "unload_container" );
     ctxt.register_action( "throw" );
     ctxt.register_action( "fire" );
     ctxt.register_action( "cast_spell" );
@@ -11959,6 +11962,33 @@ void game::drop()
     u.drop( game_menus::inv::multidrop( u ), u.bub_pos() );
 }
 
+// Per DDA game.cpp:6612
+void game::insert_item()
+{
+    item *container = inv_map_splice( [this]( const item & it ) {
+        return it.is_container() && !it.is_corpse() && examine_item_menu::rate_action_insert( u, it ) == examine_item_menu::hint_rating::good;
+    }, _( "Insert item" ), 1, _( "You have no container to insert items." ) );
+
+    if( container == nullptr ) {
+        add_msg( _( "Never mind." ) );
+        return;
+    }
+
+    game_menus::inv::insert_items( *container );
+}
+
+// Per DDA game.cpp:6626
+void game::unload_container( const std::optional<tripoint_bub_ms> &p )
+{
+    std::optional<tripoint_bub_ms> pnt = p;
+    if( !pnt ) {
+        pnt = choose_adjacent( _( "Unload where?" ) );
+    }
+    if( pnt ) {
+        u.drop( game_menus::inv::unload_container(), *pnt );
+    }
+}
+
 void game::drop_in_direction()
 {
     if( const auto pnt = choose_adjacent( _( "Drop where?" ) ) ) {
@@ -13102,6 +13132,18 @@ bool game::walk_move( const tripoint_bub_ms &dest_loc, const bool via_ramp )
 
             sounds::sound( se );
         }
+    }
+
+    // only clatter items every so often based on activity level (DDA game.cpp:7892)
+    // CDF: the avatar has no `last_pocket_noise` member, so this is kept here; and BN has no
+    // activity_level(), so how much the character moves stands in for it: running clatters
+    // every 5 turns, walking every 8, creeping every 10
+    static time_point last_pocket_noise = calendar::turn_zero;
+    const int clatter_interval = u.movement_mode_is( CMM_RUN ) ? 5 :
+                                 ( u.movement_mode_is( CMM_WALK ) ? 8 : 10 );
+    if( to_turns<int>( calendar::turn - last_pocket_noise ) > clatter_interval ) {
+        u.make_clatter_sound();
+        last_pocket_noise = calendar::turn;
     }
 
     if( m.has_flag_ter_or_furn( TFLAG_HIDE_PLACE, dest_loc ) &&

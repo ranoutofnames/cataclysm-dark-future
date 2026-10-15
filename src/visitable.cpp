@@ -893,7 +893,26 @@ void location_visitable<Character>::remove_items_with( const
         return;
     }
 
-    visit_internal( filter_and_collect, ch->worn );
+    // J3: the carried items sit in the carry pockets of the worn items (the best pocket is the DDA
+    // one, so it can be a worn item's), and they are the top items of the character: when the
+    // filter doesn't descend into a worn item, its carry pockets are still visited
+    visit_internal( [&last, &filter_and_collect]( detached_ptr<item> &&worn_it ) {
+        const VisitResponse response = filter_and_collect( std::move( worn_it ) );
+        // NOLINTNEXTLINE(bugprone-use-after-move)
+        if( response == VisitResponse::SKIP && worn_it ) {
+            // NOLINTNEXTLINE(bugprone-use-after-move)
+            for( item_pocket &pocket : worn_it->contents.get_pockets() ) {
+                if( pocket.is_carry() ) {
+                    visit_internal( filter_and_collect, pocket.items(), last );
+                }
+            }
+            worn_it->invalidate_processing_cache_upwards();
+            if( last == VisitResponse::ABORT ) {
+                return last;
+            }
+        }
+        return response;
+    }, ch->worn );
 
     if( last == VisitResponse::ABORT ) {
         return;

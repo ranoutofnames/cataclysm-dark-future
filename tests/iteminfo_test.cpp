@@ -90,7 +90,7 @@ TEST_CASE("item description and physical attributes", "[item][iteminfo][primary]
         test_info_equals(
             "test_jug_plastic", q,
             "Material: <color_c_light_blue>Plastic</color>\n"
-            "Volume: <color_c_yellow>3.750</color> L  Weight: <color_c_yellow>0.42</color> lbs\n"
+            "Volume: <color_c_yellow>3.938</color> L  Weight: <color_c_yellow>0.42</color> lbs\n"
             "Category: <color_c_magenta>CONTAINERS</color>\n"
             "--\n"
             "A standard plastic jug used for milk and household cleaning chemicals.\n");
@@ -135,10 +135,11 @@ TEST_CASE("item rigidity", "[item][iteminfo][rigidity]") {
     iteminfo_query q = q_vec({iteminfo_parts::BASE_RIGIDITY, iteminfo_parts::ARMOR_ENCUMBRANCE});
 
     SECTION("non-rigid items indicate their flexible volume/encumbrance") {
+        // J5: volume_per_encumbrance is DDA's 250 ml (itype.h), so 1500 ml of waterskin is 0-6
         test_info_equals("test_waterskin", q,
                          R"(--
 <color_c_white>Coverage</color>: <color_c_yellow>5</color>% <color_c_cyan>(for all parts)</color>
-<color_c_white>Encumbrance</color>: <color_c_yellow>0-3</color> (When Full) <color_c_cyan>(for all parts)</color>
+<color_c_white>Encumbrance</color>: <color_c_yellow>0-6</color> (When Full) <color_c_cyan>(for all parts)</color>
 --
 * This item is <color_c_cyan>not rigid</color>.  Its volume and encumbrance increase with contents.
 )");

@@ -1138,7 +1138,15 @@ void Creature::deal_projectile_attack( Creature *source, item *source_weapon,
         proj.remove_effect( ammo_effect_BLINDS_EYES );
     }
     // If the projectile survives, both it and the launcher get credit for the kill.
-    dealt_dam = deal_damage( source, bp_hit, impact, source_weapon, attack.proj.get_drop() );
+    attack_context hit_context;
+    hit_context.source = source;
+    // the shot's own origin when known, else where the shooter stands
+    hit_context.origin = attack.origin;
+    if( !hit_context.origin && source != nullptr ) {
+        hit_context.origin = source->bub_pos();
+    }
+    dealt_dam = deal_damage( source, bp_hit, impact, source_weapon, attack.proj.get_drop(),
+                             hit_context );
     dealt_dam.bp_hit = bp_hit.id();
 
     float dmg_after_armor = dealt_dam.total_damage();
@@ -1264,8 +1272,25 @@ void Creature::deal_projectile_attack( Creature *source, dealt_projectile_attack
     deal_projectile_attack( source, nullptr, attack );
 }
 
+void Creature::absorb_hit( const bodypart_id &bp, damage_instance &dam, const attack_context & )
+{
+    absorb_hit( bp, dam );
+}
+
 dealt_damage_instance Creature::deal_damage( Creature *source, bodypart_id bp,
         const damage_instance &dam, item *source_weapon, item *source_projectile )
+{
+    attack_context ctx;
+    ctx.source = source;
+    if( source != nullptr ) {
+        ctx.origin = source->bub_pos();
+    }
+    return deal_damage( source, bp, dam, source_weapon, source_projectile, ctx );
+}
+
+dealt_damage_instance Creature::deal_damage( Creature *source, bodypart_id bp,
+        const damage_instance &dam, item *source_weapon, item *source_projectile,
+        const attack_context &ctx )
 {
     if( is_dead_state() ) {
         return dealt_damage_instance();
@@ -1275,7 +1300,7 @@ dealt_damage_instance Creature::deal_damage( Creature *source, bodypart_id bp,
     damage_instance d = dam; // copy, since we will mutate in absorb_hit
 
     dealt_damage_instance dealt_dams;
-    absorb_hit( bp, d );
+    absorb_hit( bp, d, ctx );
 
     // Add up all the damage units dealt
     for( const auto &it : d.damage_units ) {

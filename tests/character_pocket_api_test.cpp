@@ -44,6 +44,7 @@ TEST_CASE("body storage follows the CARRY_STORAGE enchantment", "[character][poc
     REQUIRE(u.get_body_storage() != nullptr);
     CHECK(u.carried_capacity() == 2000_ml);
     CHECK(u.carried_volume() == 0_ml);
+    // J4 (A22): volume_carried is DDA's now, the volume of the wielded and worn items themselves
     CHECK(u.volume_carried() == 0_ml);
     CHECK(u.volume_capacity() == 2000_ml);
 
@@ -52,7 +53,8 @@ TEST_CASE("body storage follows the CARRY_STORAGE enchantment", "[character][poc
         REQUIRE(r.success());
         CHECK(u.get_body_storage()->contents.num_item_stacks() == 1);
         CHECK(u.carried_view().size() == 1);
-        CHECK(u.volume_carried() == u.carried_volume());
+        // J4 (A22): volume_carried no longer aliases carried_volume (the contents); nothing is worn
+        CHECK(u.volume_carried() == 0_ml);
         CHECK(u.carried_volume() > 0_ml);
         CHECK(u.free_carry_volume() < 2000_ml);
     }
@@ -89,7 +91,7 @@ TEST_CASE("best_pocket and try_add use worn carry pockets", "[character][pocket]
 
     item& rock = *item::spawn_temporary(itype_id("rock"));
     CHECK(!u.can_stash(rock).success());
-    CHECK(u.best_pocket(rock).second == nullptr);
+    CHECK(u.best_pocket(rock).pocket == nullptr);
     {
         auto r = u.try_add(item::spawn(itype_id("rock")));
         CHECK(!r.success());
@@ -97,11 +99,11 @@ TEST_CASE("best_pocket and try_add use worn carry pockets", "[character][pocket]
 
     u.wear_item(item::spawn(itype_id("jeans")));
     const units::volume legacy_capacity = u.volume_capacity();
-    const units::volume legacy_carried = u.volume_carried();
+    const units::volume legacy_carried = u.carried_volume();
 
     auto best = u.best_pocket(rock);
-    REQUIRE(best.second != nullptr);
-    CHECK(best.second->is_carry());
+    REQUIRE(best.pocket != nullptr);
+    CHECK(best.pocket->is_carry());
     CHECK(u.can_stash(rock).success());
 
     auto r = u.try_add(item::spawn(itype_id("rock")));
@@ -112,7 +114,7 @@ TEST_CASE("best_pocket and try_add use worn carry pockets", "[character][pocket]
     // the capacity and volume numbers are the pocket sums now
     CHECK(u.volume_capacity() == u.carried_capacity());
     CHECK(u.volume_capacity() == legacy_capacity);
-    CHECK(u.volume_carried() == legacy_carried + r.value()->volume());
+    CHECK(u.carried_volume() == legacy_carried + r.value()->volume());
     CHECK(u.carried_view().size() == 1);
 }
 
@@ -131,13 +133,13 @@ TEST_CASE("a refused try_add leaves the item with the caller", "[character][pock
 TEST_CASE("shop stock is not carried", "[npc][shop]") {
     clear_all_state();
     npc& shopkeeper = spawn_npc(get_avatar().bub_pos() + point(5, 0), "test_talker");
-    const units::volume carried_before = shopkeeper.volume_carried();
+    const units::volume carried_before = shopkeeper.carried_volume();
     const size_t slices_before = shopkeeper.inv_const_slice().size();
     shopkeeper.shop_stock.add_item(item::spawn(itype_id("rock")), false);
     shopkeeper.shop_stock.add_item(item::spawn(itype_id("rock")), false);
     CHECK(shopkeeper.shop_stock.size() > 0);
     // the stock does not count as carried (the NPC's own starting kit does)
-    CHECK(shopkeeper.volume_carried() == carried_before);
+    CHECK(shopkeeper.carried_volume() == carried_before);
     CHECK(shopkeeper.inv_const_slice().size() == slices_before);
 
     SECTION("an item leaves the stock through its location") {
@@ -223,7 +225,7 @@ TEST_CASE("a liquid in a bottle in a backpack behaves", "[character][pocket][liq
     CHECK(!carried.is_in_container());
     CHECK(water.is_in_container());
     CHECK(u.carried_view().size() == 1);
-    CHECK(u.volume_carried() >= carried.volume());
+    CHECK(u.carried_volume() >= carried.volume());
 
     SECTION("taking the backpack off keeps the bottle and its water inside") {
         u.set_mutation(trait_id("DEBUG_STORAGE")); // somewhere for the pack to go

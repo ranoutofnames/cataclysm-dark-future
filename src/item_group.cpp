@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <iterator>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -22,6 +25,8 @@
 #include "rng.h"
 #include "type_id.h"
 #include "options.h"
+#include "pocket_type.h"
+#include "ret_val.h"
 
 namespace
 {
@@ -50,34 +55,90 @@ bool string_id<Item_group>::is_valid() const
 
 namespace
 {
-// Items that did not fit a spawned container by length; they are spawned next to it instead.
-// Collected during Item_modifier::modify and handed out by the create() functions.
-thread_local std::vector<detached_ptr<item>> spawn_extras;
-// True while a single item is created (Item_spawn_data::create_single). That API has no way
-// to hand out extras, so there too-long items are kept inside the container instead.
-thread_local bool spawning_single = false;
-
-// True when every pocket that would otherwise take the item refuses it for its length.
-auto too_long_for( const item &container, const item &it ) -> bool
+// Per DDA item_group.cpp:101 (guess_pocket_for); the E_FILE_STORAGE case is cut (E1).
+auto guess_pocket_for( const item &container, const item &payload ) -> pocket_type
 {
-    bool any_long = false;
-    for( const item_pocket *pocket : container.contents.get_pockets( pocket_type::CONTAINER ) ) {
-        const auto ret = pocket->is_compatible( it );
-        if( ret.success() ) {
-            return false;
-        }
-        if( ret.value() == item_pocket::contain_code::ERR_TOO_LONG ) {
-            any_long = true;
-        }
+    if( ( container.is_gun() && payload.is_gunmod() ) || ( container.is_tool() &&
+            payload.is_toolmod() ) ) {
+        return pocket_type::MOD;
     }
-    return any_long;
+    if( ( container.is_gun() || container.is_tool() ) && payload.is_magazine() ) {
+        return pocket_type::MAGAZINE_WELL;
+    } else if( container.is_magazine() && payload.is_ammo() ) {
+        return pocket_type::MAGAZINE;
+    }
+    if( !container.has_pocket_type( pocket_type::CONTAINER ) &&
+        container.has_pocket_type( pocket_type::SOFTWARE ) ) {
+        // CDF: the software pocket of a usb drive stands in for DDA's e-file storage (E1)
+        return pocket_type::SOFTWARE;
+    }
+    return pocket_type::CONTAINER;
 }
 
-void drain_extras( std::vector<detached_ptr<item>> &out )
+// Per DDA item_group.cpp:118 (put_into_container), over detached items (T2/T4): an item is
+// only consumed by put_in when it fits, so the excess is still in `items` afterwards.
+void put_into_container( std::vector<detached_ptr<item>> &items, std::size_t num_items,
+                         const std::optional<itype_id> &container_type,
+                         const std::optional<std::string> &/*container_variant*/, const bool sealed,
+                         const time_point &birthday, Item_spawn_data::overflow_behaviour on_overflow,
+                         const std::string &context )
 {
-    out.insert( out.end(), std::make_move_iterator( spawn_extras.begin() ),
-                std::make_move_iterator( spawn_extras.end() ) );
-    spawn_extras.clear();
+    if( !container_type ) {
+        return;
+    }
+
+    // Randomly permute the list of items so that when some don't fit it's
+    // not always the ones at the end which are rejected.
+    assert( items.size() >= num_items );
+    std::shuffle( items.end() - static_cast<std::ptrdiff_t>( num_items ), items.end(),
+                  rng_get_engine() );
+
+    // CDF: BN items have no variants, so the container variant is not applied
+    detached_ptr<item> ctr_det = item::spawn( *container_type, birthday );
+    item &ctr = *ctr_det;
+    std::vector<detached_ptr<item>> excess;
+    ctr.begin_bulk_fill();
+    for( auto it = items.end() - static_cast<std::ptrdiff_t>( num_items ); it != items.end(); ++it ) {
+        const pocket_type pk_type = guess_pocket_for( ctr, **it );
+        const std::string payload_type = ( *it )->typeId().str();
+        // quiet=true: the overflow path below handles failure.
+        const ret_val<void> ret = ctr.put_in( std::move( *it ), pk_type, false, nullptr, true );
+        if( ret.success() ) {
+            continue;
+        }
+        if( ctr.is_corpse() ) {
+            ctr.force_insert_item( std::move( *it ), pk_type );
+            continue;
+        }
+        switch( on_overflow ) {
+            case Item_spawn_data::overflow_behaviour::none:
+                debugmsg( "item %s could not be put in container %s when spawning item group %s: %s.  "
+                          "This can be resolved either by changing the container or contents "
+                          "to ensure that they fit, or by specifying an overflow behaviour via "
+                          "\"on_overflow\" on the item group.",
+                          payload_type, container_type->str(), context, ret.str() );
+                break;
+            case Item_spawn_data::overflow_behaviour::spill:
+                excess.push_back( std::move( *it ) );
+                break;
+            case Item_spawn_data::overflow_behaviour::discard:
+                break;
+            case Item_spawn_data::overflow_behaviour::last:
+                debugmsg( "Invalid overflow_behaviour" );
+                break;
+        }
+    }
+    ctr.end_bulk_fill();
+    ctr.add_automatic_whitelist();
+    if( sealed ) {
+        ctr.seal();
+    }
+
+    items.erase( items.end() - static_cast<std::ptrdiff_t>( num_items ), items.end() );
+    items.reserve( items.size() + excess.size() + 1 );
+    items.insert( items.end(), std::make_move_iterator( excess.begin() ),
+                  std::make_move_iterator( excess.end() ) );
+    items.push_back( std::move( ctr_det ) );
 }
 } // namespace
 
@@ -90,13 +151,7 @@ std::vector<detached_ptr<item>> Item_spawn_data::create( const time_point &birth
 detached_ptr<item> Item_spawn_data::create_single( const time_point &birthday ) const
 {
     RecursionList rec;
-    spawn_extras.clear();
-    const bool was_single = spawning_single;
-    spawning_single = true;
-    detached_ptr<item> ret = create_single( birthday, rec );
-    spawning_single = was_single;
-    spawn_extras.clear();
-    return ret;
+    return create_single( birthday, rec );
 }
 
 Single_item_creator::Single_item_creator( const std::string &_id, Type _type, int _probability )
@@ -115,6 +170,11 @@ detached_ptr<item> Single_item_creator::create_single( const time_point &birthda
             tmp = item::make_corpse( mtype_id::NULL_ID(), birthday );
         } else {
             tmp = item::spawn( id, birthday );
+            if( tmp && !migrated_from.is_null() ) {
+                // what the old id would have come out as, e.g. a plate carrier with its
+                // plates; before the modifier below adds its own contents
+                item_controller->migrate_item( migrated_from, *tmp );
+            }
         }
     } else if( type == S_ITEM_GROUP ) {
         if( std::ranges::contains( rec, id ) ) {
@@ -144,6 +204,12 @@ detached_ptr<item> Single_item_creator::create_single( const time_point &birthda
         // TODO: change the spawn lists to contain proper references to containers
         tmp = item::in_its_container( std::move( tmp ) );
     }
+    if( container_item ) {
+        // per DDA item_group.cpp:196: the entry-wrapper / object form of container-item
+        const int qty = tmp->count();
+        tmp = item::in_container( *container_item, std::move( tmp ), qty, sealed,
+                                  container_item_variant.value_or( "" ) );
+    }
     return tmp;
 }
 
@@ -163,7 +229,6 @@ std::vector<detached_ptr<item>> Single_item_creator::create( const time_point &b
             if( itm && !itm->is_null() ) {
                 result.push_back( std::move( itm ) );
             }
-            drain_extras( result );
         } else {
             if( std::ranges::contains( rec, id ) ) {
                 debugmsg( "recursion in item spawn list %s", id.c_str() );
@@ -188,14 +253,18 @@ std::vector<detached_ptr<item>> Single_item_creator::create( const time_point &b
             }
             result.insert( result.end(), std::make_move_iterator( tmplist.begin() ),
                            std::make_move_iterator( tmplist.end() ) );
-            drain_extras( result );
         }
     }
+    put_into_container( result, result.size(), container_item, container_item_variant, sealed,
+                        birthday, on_overflow, id );
     return result;
 }
 
 void Single_item_creator::check_consistency( const std::string &context ) const
 {
+    if( on_overflow != overflow_behaviour::none && !container_item ) {
+        debugmsg( "item group %s specifies overflow behaviour but not container", context );
+    }
     if( type == S_ITEM ) {
         if( !itype_id( id ).is_valid() ) {
             debugmsg( "item id %s is unknown (in %s)", id, context );
@@ -271,7 +340,8 @@ void Single_item_creator::check_consistency( const std::string &context ) const
             if( modifier && modifier->container != nullptr ) {
                 for( auto &container : modifier->container->every_item_modified() ) {
                     if( container->is_container() ) {
-                        if( container->is_container() && !container->type->container->watertight &&
+                        if( container->is_container() && container->type->container &&
+                            !container->type->container->watertight &&
                             item->type->phase == LIQUID ) {
                             debugmsg( "Liquid %s in solid container ( %s %s )", item->type->get_id().str(),
                                       container->type->get_id().str(), context );
@@ -424,6 +494,9 @@ bool Single_item_creator::replace_item( const itype_id &itemid, const itype_id &
             if( get_option<bool>( "MIGRATION_CHECKS" ) ) {
                 debugmsg( "Migrated item: %s in ( %s ), should be migrated to %s", itemid,
                           context, replacementid );
+            }
+            if( migrated_from.is_null() ) {
+                migrated_from = itemid;
             }
             id = replacementid.str();
             return true;
@@ -661,26 +734,40 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
     }
 
     if( cont != nullptr && !cont->is_null() ) {
-        if( !spawning_single && too_long_for( *cont, *new_item ) ) {
-            // too long for its container: spawn it next to the container, not in it
-            // (single item: it is put in anyway, into the migration pocket)
-            spawn_extras.push_back( std::move( cont ) );
-        } else {
-            cont->put_in( std::move( new_item ) );
-            new_item = std::move( cont );
+        // per DDA item_group.cpp:716: an item that does not fit is lost (put_in reports it with
+        // debugmsg); only group-level on_overflow can spill (D13)
+        const pocket_type pk_type = guess_pocket_for( *cont, *new_item );
+        cont->put_in( std::move( new_item ), pk_type );
+        cont->add_automatic_whitelist();
+        new_item = std::move( cont );
+        if( sealed ) {
+            new_item->seal();
         }
     }
 
     if( contents != nullptr ) {
-        // a list of contents is created, whatever the caller asked for
-        const bool was_single = spawning_single;
-        spawning_single = false;
         std::vector<detached_ptr<item>> contentitems = contents->create( new_item->birthday() );
-        spawning_single = was_single;
         // Runs of identical items are put in together (DDA #87184). Only items that are the
         // same in every respect that matters qualify: non-liquid, not counted by charges,
         // stackable with the run's first item, equally old and equally rotten.
         for( size_t i = 0; i < contentitems.size(); ) {
+            // custom code for directly attaching pockets to MOLLE vests (DDA item_group.cpp:730-748)
+            if( const use_function *action = new_item->get_use( "attach_molle" );
+                action != nullptr && contentitems[i]->can_attach_as_pocket() ) {
+                const molle_attach_actor *actor = dynamic_cast<const molle_attach_actor *>
+                                                  ( action->get_actor_ptr() );
+                const int vacancies = actor != nullptr ?
+                                      actor->size - new_item->contents.get_additional_space_used() : 0;
+                // intentionally might lose items here if they don't fit this is because it's
+                // impossible to know in a spawn group how much stuff could end up in it
+                // if you roll 3, 3 size items in a 3 slot vest you shouldn't get an error
+                // but you should get a vest with at least the first one
+                if( contentitems[i]->get_pocket_size() <= vacancies ) {
+                    new_item->contents.add_pocket( std::move( contentitems[i] ) );
+                }
+                i++;
+                continue;
+            }
             const item &first = *contentitems[i];
             size_t run = 1;
             if( !first.count_by_charges() && !first.made_of( LIQUID ) ) {
@@ -693,17 +780,15 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
                     run++;
                 }
             }
-            if( !spawning_single && too_long_for( *new_item, first ) ) {
-                for( size_t j = 0; j < run; j++ ) {
-                    spawn_extras.push_back( std::move( contentitems[i + j] ) );
-                }
-            } else if( run > 1 ) {
+            if( run > 1 ) {
                 new_item->put_in_copies( first, static_cast<int>( run ) );
                 for( size_t j = 0; j < run; j++ ) {
                     contentitems[i + j] = detached_ptr<item>();
                 }
             } else {
-                new_item->put_in( std::move( contentitems[i] ) );
+                // per DDA item_group.cpp:746: checked insert, an item that does not fit is lost
+                const pocket_type pk_type = guess_pocket_for( *new_item, first );
+                new_item->put_in( std::move( contentitems[i] ), pk_type );
             }
             i += run;
         }
@@ -786,10 +871,13 @@ Item_group::Item_group( Type t, int probability, int ammo_chance, int magazine_c
     }
 }
 
-void Item_group::add_item_entry( const itype_id &itemid, int probability )
+void Item_group::add_item_entry( const itype_id &itemid, int probability,
+                                 const itype_id &migrated_from )
 {
-    add_entry( std::make_unique<Single_item_creator>(
-                   itemid.str(), Single_item_creator::S_ITEM, probability ) );
+    std::unique_ptr<Single_item_creator> entry = std::make_unique<Single_item_creator>(
+                itemid.str(), Single_item_creator::S_ITEM, probability );
+    entry->migrated_from = migrated_from;
+    add_entry( std::move( entry ) );
 }
 
 void Item_group::add_group_entry( const item_group_id &groupid, int probability )
@@ -844,6 +932,8 @@ std::vector<detached_ptr<item>> Item_group::create( const time_point &birthday,
             break;
         }
     }
+    put_into_container( result, result.size(), container_item, container_item_variant, sealed,
+                        birthday, on_overflow, "item group" );
 
     return result;
 }
@@ -872,6 +962,9 @@ detached_ptr<item> Item_group::create_single( const time_point &birthday, Recurs
 
 void Item_group::check_consistency( const std::string &context ) const
 {
+    if( on_overflow != overflow_behaviour::none && !container_item ) {
+        debugmsg( "item group %s specifies overflow behaviour but not container", context );
+    }
     for( const auto &elem : items ) {
         ( elem )->check_consistency( context );
     }
@@ -886,6 +979,10 @@ bool Item_group::remove_item( const itype_id &itemid )
         } else {
             ++a;
         }
+    }
+    if( container_item && *container_item == itemid ) {
+        container_item = std::nullopt;
+        on_overflow = overflow_behaviour::none;
     }
     return items.empty();
 }

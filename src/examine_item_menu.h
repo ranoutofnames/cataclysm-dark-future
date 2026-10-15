@@ -39,6 +39,7 @@ hint_rating rate_action_wear( const avatar &you, const item &it );
 hint_rating rate_action_change_side( const avatar &you, const item &it );
 hint_rating rate_action_takeoff( const avatar &you, const item &it );
 hint_rating rate_action_unload( const avatar &you, const item &it );
+hint_rating rate_action_insert( const avatar &you, const item &it );
 hint_rating rate_action_reload( const avatar &you, const item &it );
 hint_rating rate_action_mend( const avatar &you, const item &it );
 // Needs non-const reference to validate crafting inventory

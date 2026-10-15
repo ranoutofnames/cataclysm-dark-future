@@ -156,6 +156,8 @@ struct pick_one_up_options {
     bool &got_water;
     bool &offered_swap;
     pickup_map &map_pickup;
+    // D5 (DDA pick_one_up): false once an item was left because it is too heavy or does not fit
+    bool &stash_successful;
     bool autopickup = false;
     std::optional<pickup_answer> preferred_option;
 };
@@ -316,15 +318,12 @@ static auto pick_one_up( const pick_one_up_options &opts ) -> bool
             got_water = true;
         } else if( opts.preferred_option ) {
             option = *opts.preferred_option;
-        } else if( !u.can_pick_weight( newloc->weight() + children_weight, false ) ) {
-            if( !opts.autopickup ) {
-                const std::string &explain = string_format( _( "The %s is too heavy!" ),
-                                             newloc->display_name() );
-                option = handle_problematic_pickup( *newloc, offered_swap, !children.empty(), explain );
-                did_prompt = true;
-            } else {
-                option = CANCEL;
-            }
+        } else if( newloc->count_by_charges() ?
+                   !u.can_pickWeight_partial( *newloc, false ) :
+                   !u.can_pick_weight( newloc->weight() + children_weight, false ) ) {
+            // D5 (DDA): too heavy is a silent cancel; for charges one charge has to be carriable
+            option = CANCEL;
+            opts.stash_successful = false;
         } else if( newloc->is_bucket() && !newloc->is_container_empty() ) {
             if( !opts.autopickup ) {
                 const std::string &explain = string_format( _( "Can't stash %s while it's not empty" ),
@@ -334,18 +333,11 @@ static auto pick_one_up( const pick_one_up_options &opts ) -> bool
             } else {
                 option = CANCEL;
             }
-        } else if( !u.can_pick_volume( newloc->volume() + children_volume ) ) {
-            if( !opts.autopickup ) {
-                // CDF P1c step 22: say why (too long, no pocket big enough) instead of a generic message
-                const ret_val<bool> fit = u.can_stash( *newloc );
-                const std::string &explain = fit.str().empty() ?
-                                             string_format( _( "Not enough capacity to stash %s" ), newloc->display_name() ) :
-                                             fit.str();
-                option = handle_problematic_pickup( *newloc, offered_swap, !children.empty(), explain );
-                did_prompt = true;
-            } else {
-                option = CANCEL;
-            }
+        } else if( !u.can_stash_partial( *newloc, false ) ||
+                   ( children_volume > 0_ml && !u.can_pick_volume( newloc->volume() + children_volume ) ) ) {
+            // D5 (DDA): does not fit is a silent cancel; for charges one charge has to fit
+            option = CANCEL;
+            opts.stash_successful = false;
         } else {
             option = STASH;
         }
@@ -395,11 +387,33 @@ static auto pick_one_up( const pick_one_up_options &opts ) -> bool
             case EMPTY:
             // Handled later
             case STASH: {
-                auto &entry = map_pickup[newloc->tname()];
-                entry.second += newloc->count();
-                entry.first = &*newloc;
-                u.i_add( std::move( newloc ) );
-                picked_up = true;
+                // DDA pick_one_up: i_add_or_fill stashes count-by-charges items across the pockets
+                // by their settings and priorities; what does not fit stays where it was
+                const itype_id stashed_type = newloc->typeId();
+                const std::string stashed_name = newloc->tname();
+                const int count_before = newloc->count();
+                const ret_val<item *> stashed = u.i_add_or_fill( std::move( newloc ), true, nullptr,
+                                                nullptr, /*allow_drop=*/false, /*allow_wield=*/false );
+                const int count_after = newloc ? newloc->count() : 0;
+                const int moved = count_before - count_after;
+                if( moved > 0 ) {
+                    item *shown = stashed.value();
+                    if( shown == nullptr ) {
+                        // every charge went into pockets: show one of the stacks it merged into
+                        const std::vector<item *> same_type = u.all_items_with_id( stashed_type );
+                        if( !same_type.empty() ) {
+                            shown = same_type.front();
+                        }
+                    }
+                    if( shown != nullptr ) {
+                        auto &entry = map_pickup[stashed_name];
+                        entry.second += moved;
+                        entry.first = shown;
+                    }
+                    picked_up = true;
+                } else {
+                    opts.stash_successful = false;
+                }
                 break;
             }
         }
@@ -451,9 +465,10 @@ namespace pickup
 bool do_pickup( std::vector<pick_drop_selection> &targets, bool autopickup )
 {
     bool got_water = false;
+    bool stash_successful = true;
     Character &u = get_avatar();
     bool weight_was_okay = ( u.weight_carried() <= u.weight_capacity() );
-    bool volume_was_okay = ( u.volume_carried() <= u.volume_capacity() );
+    bool volume_was_okay = ( u.carried_volume() <= u.volume_capacity() );
     bool offered_swap = false;
 
     // Map of items picked up so we can output them all at the end and
@@ -475,6 +490,7 @@ bool do_pickup( std::vector<pick_drop_selection> &targets, bool autopickup )
                                 .got_water = got_water,
                                 .offered_swap = offered_swap,
                                 .map_pickup = map_pickup,
+                                .stash_successful = stash_successful,
                                 .autopickup = autopickup,
                                 .preferred_option = std::nullopt } );
     }
@@ -486,10 +502,14 @@ bool do_pickup( std::vector<pick_drop_selection> &targets, bool autopickup )
     if( got_water ) {
         add_msg( m_info, _( "You can't pick up a liquid!" ) );
     }
+    if( !stash_successful && !autopickup ) {
+        // per DDA pickup_activity_actor::do_turn
+        add_msg( m_bad, _( "Some items were not picked up!" ) );
+    }
     if( weight_was_okay && u.weight_carried() > u.weight_capacity() ) {
         add_msg( m_bad, _( "You're overburdened!" ) );
     }
-    if( volume_was_okay && u.volume_carried() > u.volume_capacity() ) {
+    if( volume_was_okay && u.carried_volume() > u.volume_capacity() ) {
         add_msg( m_bad, _( "You struggle to carry such a large volume!" ) );
     }
 
@@ -1008,11 +1028,13 @@ auto pick_up_from_items( const std::vector<item_stack::iterator> &here, const in
                         auto direct_got_water = false;
                         auto direct_offered_swap = false;
                         auto direct_map_pickup = pickup_map{};
+                        auto direct_stash_successful = true;
                         auto direct_target = direct_targets.front();
                         const auto handled = pick_one_up( pick_one_up_options{ .selection = direct_target,
                                                           .got_water = direct_got_water,
                                                           .offered_swap = direct_offered_swap,
                                                           .map_pickup = direct_map_pickup,
+                                                          .stash_successful = direct_stash_successful,
                                                           .autopickup = false,
                                                           .preferred_option = preferred_option } );
                         if( !direct_map_pickup.empty() ) {
@@ -1162,7 +1184,7 @@ auto pick_up_from_items( const std::vector<item_stack::iterator> &here, const in
                 }
 
                 weight_predict = g->u.weight_carried() + weight_picked_up;
-                volume_predict = g->u.volume_carried() + volume_picked_up;
+                volume_predict = g->u.carried_volume() + volume_picked_up;
             }
 
             ui_manager::redraw();

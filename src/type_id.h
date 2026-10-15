@@ -174,6 +174,10 @@ using skill_id = string_id<Skill>;
 class SkillDisplayType;
 using skill_displayType_id = string_id<SkillDisplayType>;
 
+struct sub_body_part_type;
+using sub_bodypart_id = int_id<sub_body_part_type>;
+using sub_bodypart_str_id = string_id<sub_body_part_type>;
+
 struct species_type;
 using species_id = string_id<species_type>;
 

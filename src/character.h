@@ -223,6 +223,14 @@ struct needs_rates {
     float recovery = 0.0f;
 };
 
+/** DDA pocket_data_with_parent (T5): @p parent is the item owning the pocket when it is nested. */
+struct pocket_data_with_parent {
+    const item_pocket *pocket_ptr = nullptr;
+    /** The item holding the pocket if that item is itself inside another item, else nullptr. */
+    item *parent = nullptr;
+    int nested_level = 0;
+};
+
 struct char_trait_data {
     /** Whether the mutation is activated. */
     bool powered = false;
@@ -772,6 +780,9 @@ class Character : public Creature, public location_visitable<Character>
         dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,
                                            const damage_instance &d, item *source_weapon, item *source_projectile ) override;
         dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,
+                                           const damage_instance &d, item *source_weapon, item *source_projectile,
+                                           const attack_context &ctx ) override;
+        dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,
                                            const damage_instance &d, item *source_weapon ) override;
         dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,
                                            const damage_instance &d ) override;
@@ -788,11 +799,47 @@ class Character : public Creature, public location_visitable<Character>
         void passive_absorb_hit( const bodypart_id &bp, damage_unit &du ) const;
         /** Runs through all bionics and armor on a part and reduces damage through their armor_absorb */
         void absorb_hit( const bodypart_id &bp, damage_instance &dam ) override;
+        void absorb_hit( const bodypart_id &bp, damage_instance &dam,
+                         const attack_context &ctx ) override;
         /**
          * Reduces and mutates du, prints messages about armor taking damage.
+         * @param roll The coverage roll (1..100) to test against the coverage of @p armor.
+         * 0 (the default) draws a fresh rng( 1, 100 ); absorb_hit passes the one roll it drew
+         * per damage element so every layer and plate tests the same value.
          * @return true if the armor was completely destroyed (and the item must be deleted).
          */
-        bool armor_absorb( damage_unit &du, item &armor, const bodypart_id &bp );
+        bool armor_absorb( damage_unit &du, item &armor, const bodypart_id &bp,
+                           const sub_bodypart_str_id &sbp = sub_bodypart_str_id::NULL_ID(),
+                           int roll = 0 );
+        /**
+         * What armor_absorb does once the coverage roll says @p armor was hit: mitigates @p du
+         * and may damage the armor. Used directly for armor plates, whose coverage the plate
+         * coverage model has already decided.
+         * @return true if the armor was completely destroyed.
+         */
+        bool armor_take_hit( damage_unit &du, item &armor );
+        /**
+         * Lets the plate of @p carrier that the plate coverage model selects (select_ablative_pocket)
+         * take @p du first. A plate that is destroyed is replaced by its `non_functional` item in
+         * the same slot, or removed.
+         */
+        void ablative_armor_absorb( damage_unit &du, item &carrier, const bodypart_id &bp,
+                                    const sub_bodypart_str_id &sbp, const attack_context &ctx );
+        /**
+         * D7: hard armor worn over a sub body part stops plates going into the plate slots of
+         * worn armor there. Tells every plate slot which sub body parts are blocked (DDA
+         * outfit::recalc_ablative_blocking).
+         */
+        void recalc_ablative_blocking( const item *removing = nullptr );
+        /** Whether rigid @p clothing may be worn on side @p s with the rigid armor already worn. */
+        ret_val<void> check_rigid_conflicts( const item &clothing, side s ) const;
+        /** Same for the side(s) the item can be worn on: fails if none is free. */
+        ret_val<void> check_rigid_conflicts( const item &clothing ) const;
+        /** Sets the side a sided item is worn on from where rigid armor is already worn. */
+        void check_rigid_sidedness( item &clothing ) const;
+        /** The noise of items clattering about on this character (DDA activity_noise). */
+        int clatter_sound() const;
+        void make_clatter_sound() const;
         /**
          * Check for passive bionics that provide armor, and returns the armor bonus
          * This is called from player::passive_absorb_hit
@@ -1260,7 +1307,8 @@ class Character : public Creature, public location_visitable<Character>
          * @return cost in moves ranging from 0 to MAX_HANDLING_COST
          */
         int item_handling_cost( const item &it, bool penalties = true,
-                                int base_cost = INVENTORY_HANDLING_PENALTY ) const;
+                                int base_cost = INVENTORY_HANDLING_PENALTY, int charges_in_it = -1,
+                                bool bulk_cost = false ) const;
 
         /**
          * Calculate (but do not deduct) the number of moves required when storing an item in a container
@@ -1272,6 +1320,9 @@ class Character : public Creature, public location_visitable<Character>
          */
         int item_store_cost( const item &it, const item &container, bool penalties = true,
                              int base_cost = INVENTORY_HANDLING_PENALTY ) const;
+        /** Moves to draw @p it out of @p container (DDA item_retrieve_cost); same formula as storing. */
+        int item_retrieve_cost( const item &it, const item &container, bool penalties = true,
+                                int base_cost = INVENTORY_HANDLING_PENALTY ) const;
 
         /** Calculate (but do not deduct) the number of moves required to wear an item */
         int item_wear_cost( const item &it ) const;
@@ -1367,26 +1418,49 @@ class Character : public Creature, public location_visitable<Character>
          * Whatever no longer fits (the compartment shrank or went) falls to the ground.
          */
         void update_body_storage();
-        /** Multiplier on the capacity of worn `carry` pockets (packmule_modifier). */
-        double carry_capacity_multiplier() const;
         /** Whether @p it fits @p pocket, with the capacity multiplier applied. */
         ret_val<item_pocket::contain_code> can_pocket_contain( const item_pocket &pocket, const item &it,
                 bool in_body_storage = false ) const;
         /**
-         * The best worn `carry` pocket or body storage pocket for @p it. Wielded items are not
-         * searched. Pockets of @p avoid (and of items inside it) are skipped.
-         * @return the item owning the pocket and the pocket, or {nullptr, nullptr}
+         * What is the best pocket to put @p it into? (DDA character_inventory.cpp:291, T5.)
+         * Searched in DDA's order: the wielded item first, then the worn items, nested pockets
+         * included; CDF adds the body storage. Pockets of @p avoid (and of items inside it) and
+         * @p it itself are skipped.
+         * @param ignore_settings whether to ignore pocket autoinsert settings
+         * @return the item owning the pocket and the pocket; pocket is nullptr if nothing fits.
+         * The pockets belong to this character's own items, so they are returned mutable.
          */
-        std::pair<item *, item_pocket *> best_pocket( const item &it, const item *avoid = nullptr );
-        std::pair<const item *, const item_pocket *> best_pocket( const item &it,
-                const item *avoid = nullptr ) const;
+        pocket_choice best_pocket( const item &it, const item *avoid = nullptr,
+                                   bool ignore_settings = false ) const;
         /**
          * Puts @p it in the best pocket and sets its invlet as i_add does. On failure @p it is
          * left untouched, so the caller can still drop it or keep it.
+         * DDA character_inventory.cpp:303. CDF: @p allow_wield defaults to false (a plain refusal),
+         * DDA's default is true; i_add passes its own value.
          */
-        ret_val<item *> try_add( detached_ptr<item> &&it, const item *avoid = nullptr );
+        ret_val<item *> try_add( detached_ptr<item> &&it, const item *avoid = nullptr,
+                                 const item *original_inventory_item = nullptr, bool allow_wield = false,
+                                 bool ignore_pkt_settings = false );
+        /**
+         * Places up to @p copies_remaining copies of @p it (DDA character_inventory.cpp:352).
+         * @p it is consumed once at least one copy was placed; the copies are clones of it.
+         */
+        ret_val<item *> try_add( detached_ptr<item> &&it, int &copies_remaining,
+                                 const item *avoid = nullptr, const item *original_inventory_item = nullptr,
+                                 bool allow_wield = false, bool ignore_pkt_settings = false );
+        /** Whether @ref try_add would succeed (DDA character_inventory.cpp:431). */
+        bool can_add( const item &it, const item *avoid = nullptr, bool allow_wield = true,
+                      bool ignore_pkt_settings = false ) const;
         /** Whether @ref try_add would succeed; the failure message names the reason. */
-        ret_val<bool> can_stash( const item &it, const item *avoid = nullptr ) const;
+        ret_val<bool> can_stash( const item &it, const item *avoid = nullptr,
+                                 bool ignore_pkt_settings = false ) const;
+        /** Like @ref can_stash for @p copies_remaining copies; true if any pocket takes one. */
+        ret_val<bool> can_stash( const item &it, int &copies_remaining,
+                                 bool ignore_pkt_settings = false ) const;
+        /** Like @ref can_stash, for a single charge of a count-by-charges @p it (DDA). */
+        bool can_stash_partial( const item &it, bool ignore_pkt_settings = false ) const;
+        bool can_stash_partial( const item &it, int &copies_remaining,
+                                bool ignore_pkt_settings = false ) const;
         /**
          * Why no carried pocket takes @p it: no pockets at all, no room left, too heavy, too big,
          * too long, or not allowed (item restrictions). Always a failure; DEBUG_STORAGE is not
@@ -1401,6 +1475,38 @@ class Character : public Creature, public location_visitable<Character>
         units::volume free_carry_volume() const;
         /** Something in the worn or body storage pockets changed: rebuild the carried view. */
         void on_carried_contents_changed();
+        /** The worn items (DDA top_items_loc, TT8); the wielded item is not included. */
+        std::vector<item *> top_items() const;
+        /**
+         * All pockets of the wielded item, the worn items and what they hold that pass @p filter,
+         * optionally sorted (DDA character_attire.cpp:2431; CDF puts it in character_inventory.cpp).
+         */
+        std::vector<pocket_data_with_parent> get_all_pocket_with_parent(
+            const std::function<bool( const item_pocket * )> &filter,
+            const std::function<bool( const pocket_data_with_parent &a, const pocket_data_with_parent &b )>
+            *sort_func = nullptr ) const;
+        /**
+         * Puts up to @p remaining_charges charges of @p newit into the pockets, by priority and
+         * respecting parents' limits (DDA outfit::add_stash). @p remaining_charges is reduced by
+         * what went in. The charges go in as copies of @p newit.
+         */
+        void add_stash( const item &newit, int &remaining_charges, bool ignore_pkt_settings = false );
+        /** Marks the inventory as changed so drop_invalid_inventory runs the overflow again. */
+        void invalidate_inventory_validity_cache();
+        /**
+         * Checks pockets that were unsealed and propagates the change up the container tree, then
+         * refreshes the carried view (DDA character_inventory.cpp:112). Called by
+         * contents_change_handler::handle_by.
+         */
+        void handle_contents_changed( const std::vector<safe_reference<item>> &containers );
+        /**
+         * Moves @p put into @p container, charging the store cost (DDA character_inventory.cpp:3164).
+         * With @p check_best_pkt a multi-pocket container fills its best pocket, ignoring settings.
+         */
+        void store( item &container, item &put, bool penalties, int base_cost, pocket_type pk_type,
+                    bool check_best_pkt = false );
+        /** Moves @p put into @p pocket (or a better pocket inside it) (DDA :3183). */
+        void store( item_pocket *pocket, item &put, bool penalties, int base_cost );
 
         /** Adds an item to the carried items without any pickup handling (see i_add). */
         item &inv_add_item( detached_ptr<item> &&newit, bool keep_invlet, bool assign_invlet = true,
@@ -1450,7 +1556,26 @@ class Character : public Creature, public location_visitable<Character>
          * @return Remaining charges which could not be stored in a container.
          */
         detached_ptr<item> i_add_to_container( detached_ptr<item> &&it, bool unloading );
-        item &i_add( detached_ptr<item> &&it, bool should_stack = true );
+        /**
+         * Adds the item to the character's pockets, then hands (if @p allow_wield), then the floor
+         * (if @p allow_drop). DDA character_inventory.cpp:450. Returns the item where it ended, or
+         * the null item when nothing was placed and @p allow_drop is false.
+         * @param original_inventory_item set if the item was already in the inventory and is moved
+         */
+        item &i_add( detached_ptr<item> &&it, bool should_stack = true, const item *avoid = nullptr,
+                     const item *original_inventory_item = nullptr, bool allow_drop = true,
+                     bool allow_wield = true, bool ignore_pkt_settings = false );
+        /**
+         * DDA character_inventory.cpp:502: fills pockets with count-by-charges @p it (settings and
+         * priorities respected), the rest goes to hands or floor when allowed. @p it is consumed
+         * only when everything went in; otherwise it stays with the remaining charges.
+         * The value is the item the remainder ended in (nullptr: all charges went to pockets, or
+         * nothing was placed and dropping is not allowed). A failure means no charge was stashed.
+         */
+        ret_val<item *> i_add_or_fill( detached_ptr<item> &&it, bool should_stack = true,
+                                       const item *avoid = nullptr, const item *original_inventory_item = nullptr,
+                                       bool allow_drop = true, bool allow_wield = true,
+                                       bool ignore_pkt_settings = false );
 
         /**
          * Try to pour the given liquid into the given container/vehicle. The transferred charges are
@@ -1481,6 +1606,9 @@ class Character : public Creature, public location_visitable<Character>
         detached_ptr<item> i_rem_keep_contents( int idx );
         /** Sets invlet and adds to inventory if possible, drops otherwise.*/
         detached_ptr<item> i_add_or_drop( detached_ptr<item> &&it );
+        /** DDA character_inventory.cpp:577 (T2: adds @p qty clones of @p it). */
+        bool i_add_or_drop( const item &it, int qty, const item *avoid = nullptr,
+                            const item *original_inventory_item = nullptr );
 
         /** Only use for UI things. Returns all invlets that are currently used in
          * the player inventory, the weapon slot and the worn items. */
@@ -1516,16 +1644,44 @@ class Character : public Creature, public location_visitable<Character>
         // TODO: See if we can move all weight_carried instances to this
         // Recalculating the cache requires this to be non-constant
         units::mass cached_weight_carried();
+        /** DDA: volume of the wielded item and the worn items, contents included. */
         units::volume volume_carried() const;
+        units::length max_single_item_length() const;
+        units::volume max_single_item_volume() const;
 
         units::mass weight_carried_reduced_by( const excluded_stacks &without ) const;
         units::volume volume_carried_reduced_by( const excluded_stacks &without ) const;
         units::mass weight_capacity() const override;
-        units::volume volume_capacity() const;
+        /** DDA character_inventory.cpp:1860; CDF adds body storage and DEBUG_STORAGE. */
+        units::volume volume_capacity( const std::function<bool( const item_pocket & )> &include_pocket =
+                                           item_pocket::ok_default_containers ) const;
+        /** Capacity of nested pockets even if their parents are not included (DDA). */
+        units::volume volume_capacity_recursive(
+            const std::function<bool( const item_pocket & )> &include_pocket,
+            const std::function<bool( const item_pocket & )> &check_pocket_tree ) const;
+        /**
+         * Remaining, unfilled volume in the character's pockets that satisfy the conditions
+         * (DDA character_inventory.cpp:1842). The default gives a rough upper bound on what dry
+         * goods can still be put in.
+         */
+        units::volume free_space( const std::function<bool( const item_pocket & )> &include_pocket = [](
+        const item_pocket & pocket ) {
+            return !pocket.is_restricted() && item_pocket::ok_for_solids( pocket );
+        },
+        const std::function<bool( const item_pocket & )> &check_pocket_tree =
+            item_pocket::ok_default_containers ) const;
+        units::mass free_weight_capacity() const;
         units::volume volume_capacity_reduced_by(
             const units::volume &mod,
             const excluded_stacks &without = {} ) const;
 
+        bool can_pickVolume( const item &it, bool safe = false, const item *avoid = nullptr,
+                             bool ignore_pkt_settings = true ) const;
+        bool can_pickVolume_partial( const item &it, bool safe = false, const item *avoid = nullptr,
+                                     bool ignore_pkt_settings = true,
+                                     bool ignore_non_container_pocket = false ) const;
+        bool can_pickWeight( const item &it, bool safe = true ) const;
+        bool can_pickWeight_partial( const item &it, bool safe = true ) const;
         bool can_pick_volume( const item &it ) const;
         bool can_pick_volume( units::volume volume ) const;
         bool can_pick_weight( const item &it, bool safe = true ) const;
@@ -1593,6 +1749,15 @@ class Character : public Creature, public location_visitable<Character>
          * @return if the item was wielded or not
          */
         virtual bool wield( item &target ) = 0;
+        /**
+         * DDA Character::wield (character_inventory.cpp:2985), the shared core: unwields what
+         * conflicts with @p it, refuses an item inside the wielded bag, combines stacks, charges
+         * @p obtain_cost (the cost of fetching it from where it is, item::obtain_cost) or the
+         * handling cost, and moves @p it into the hands.
+         */
+        bool wield( item &it, std::optional<int> obtain_cost, bool combat = true );
+        /** Whether wielding @p it means unwielding something first (DDA has_wield_conflicts). */
+        bool has_wield_conflicts( const item &it ) const;
 
         /**
          * Removes currently wielded item (if any) and replaces it with the target item.
@@ -2046,12 +2211,14 @@ class Character : public Creature, public location_visitable<Character>
          */
         mutable inventory inv;
         mutable bool carried_dirty = true;
+        /** DDA cache_inventory_is_valid: false once pockets changed, until the overflow check ran. */
+        bool cache_inventory_is_valid = false;
         mutable unsigned carried_worn_version = 0;
         mutable const item *carried_body_storage = nullptr;
         void refresh_carried() const;
         /** Pocket choice, invlet and insertion shared by try_add and inv_add_item; no pickup handling. */
         ret_val<item *> add_to_pocket( detached_ptr<item> &&it, const item *avoid, bool keep_invlet,
-                                       bool assign_invlet );
+                                       bool assign_invlet, bool ignore_pkt_settings = false );
         /** Drops an item no pocket could take at the character's feet; returns the item there. */
         item &drop_for_lack_of_room( detached_ptr<item> &&it );
         /** CDF P1c step 19: hidden item holding the bionic/mutation compartments, see update_body_storage(). */

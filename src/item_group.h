@@ -107,6 +107,14 @@ class Item_spawn_data
         using ItemList = std::vector<item *>;
         using RecursionList = std::vector<std::string>;
 
+        /** Per DDA item_group.h:137: what happens to items that do not fit the container-item. */
+        enum class overflow_behaviour {
+            none,    // report with debugmsg (default)
+            spill,   // keep the excess next to the container
+            discard, // drop the excess silently
+            last
+        };
+
         Item_spawn_data( int _probability ) : probability( _probability ) { }
         virtual ~Item_spawn_data() = default;
         /**
@@ -145,6 +153,16 @@ class Item_spawn_data
 
         /** probability, used by the parent object. */
         int probability;
+
+        /**
+         * Per DDA item_group.h:197: everything this group (or entry) creates is put into a new
+         * container of this type. Beside the entry-level BN "container" (Item_modifier::container).
+         */
+        std::optional<itype_id> container_item;
+        std::optional<std::string> container_item_variant;
+        overflow_behaviour on_overflow = overflow_behaviour::none;
+        /** Whether the container is sealed after it has been filled. */
+        bool sealed = true;
 
         // Weather it was checked already
         bool checked;
@@ -214,6 +232,8 @@ class Item_modifier
         int with_ammo;
         /** Chance [0-100%] for items to spawn with their default magazine (if any) */
         int with_magazine;
+        /** Per DDA item_group.h:262: seal the container this modifier puts the item in. */
+        bool sealed = true;
 };
 /**
  * Basic item creator. It contains either the item id directly,
@@ -247,6 +267,12 @@ class Single_item_creator : public Item_spawn_data
         std::string id;
         Type type;
         std::optional<Item_modifier> modifier;
+        /**
+         * For an S_ITEM entry whose id a MIGRATION replaced (Item_factory::finalize through
+         * replace_item): the id the data named. The spawn applies that migration's flags and
+         * contents, before the entry's modifier runs (CDF P1e step 28). Null if not migrated.
+         */
+        itype_id migrated_from = itype_id::NULL_ID();
 
         void inherit_ammo_mag_chances( int ammo, int mag );
 
@@ -290,7 +316,12 @@ class Item_group : public Item_spawn_data
          */
         using prop_list = std::vector<std::unique_ptr<Item_spawn_data> >;
 
-        void add_item_entry( const itype_id &itemid, int probability );
+        /**
+         * @param migrated_from the id the data named, if @p itemid is its migrated replacement
+         * (see Single_item_creator::migrated_from)
+         */
+        void add_item_entry( const itype_id &itemid, int probability,
+                             const itype_id &migrated_from = itype_id::NULL_ID() );
         void add_group_entry( const item_group_id &groupid, int probability );
         /**
          * Once the relevant data has been read from JSON, this function is always called (either from

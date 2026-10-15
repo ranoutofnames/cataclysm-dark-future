@@ -1141,7 +1141,7 @@
       [ [ "fabric_standard", 4, "LIST" ] ],
       [ [ "jacket_army", 1 ], [ "army_top", 3 ] ],
       [ [ "pants_army", 1 ], [ "army_top", 3 ] ],
-      [ [ "tacvest", 2 ], [ "webbing_belt", 3 ], [ "molle_pack", 1 ], [ "modularvest", 2 ] ],
+      [ [ "tacvest", 2 ], [ "webbing_belt", 3 ], [ "molle_pack", 1 ], [ "ballistic_vest_esapi", 2 ] ],
       [ [ "duct_tape", 200 ] ],
       [ [ "stick", 12 ] ],
       [ [ "plant_fibre", 24 ] ]
@@ -1163,13 +1163,13 @@
       [ [ "fabric_standard", 4, "LIST" ] ],
       [ [ "winter_jacket_army", 1 ] ],
       [ [ "winter_pants_army", 1 ] ],
-      [ [ "tacvest", 2 ], [ "webbing_belt", 3 ], [ "molle_pack", 1 ], [ "modularvest", 2 ] ],
+      [ [ "tacvest", 2 ], [ "webbing_belt", 3 ], [ "molle_pack", 1 ], [ "ballistic_vest_esapi", 2 ] ],
       [ [ "duct_tape", 200 ] ],
       [ [ "bag_plastic", 24 ], [ "bag_zipper", 24 ], [ "bag_zipper_small", 96 ], [ "plastic_shopping_bag", 12 ] ]
     ]
   },
   {
-    "result": "oldguard_armor",
+    "result": "ballistic_vest_heavy",
     "type": "recipe",
     "category": "CC_ARMOR",
     "subcategory": "CSC_ARMOR_SUIT",
@@ -1182,62 +1182,10 @@
     "components": [
       [ [ "fabric_standard", 20, "LIST" ] ],
       [ [ "duct_tape", 300 ] ],
-      [ [ "modularvest", 1 ] ],
+      [ [ "ballistic_vest_esapi", 1 ] ],
       [ [ "kevlar_plate", 20 ] ]
     ],
     "flags": [ "SECRET" ]
-  },
-  {
-    "result": "oldguard_armor_ceramic",
-    "type": "recipe",
-    "category": "CC_ARMOR",
-    "subcategory": "CSC_ARMOR_SUIT",
-    "skill_used": "tailor",
-    "time": "5 m",
-    "reversible": true,
-    "decomp_learn": 0,
-    "book_learn": [ [ "recipe_oldguard", 3 ] ],
-    "components": [ [ [ "oldguard_armor", 1 ] ], [ [ "ceramic_armor", 12 ] ] ],
-    "flags": [ "BLIND_EASY" ]
-  },
-  {
-    "result": "oldguard_armor_hardsteel",
-    "type": "recipe",
-    "category": "CC_ARMOR",
-    "subcategory": "CSC_ARMOR_SUIT",
-    "skill_used": "tailor",
-    "time": "5 m",
-    "reversible": true,
-    "decomp_learn": 0,
-    "book_learn": [ [ "recipe_oldguard", 3 ] ],
-    "components": [ [ [ "oldguard_armor", 1 ] ], [ [ "hard_steel_armor", 12 ] ] ],
-    "flags": [ "BLIND_EASY" ]
-  },
-  {
-    "result": "oldguard_armor_steel",
-    "type": "recipe",
-    "category": "CC_ARMOR",
-    "subcategory": "CSC_ARMOR_SUIT",
-    "skill_used": "tailor",
-    "time": "5 m",
-    "reversible": true,
-    "decomp_learn": 0,
-    "book_learn": [ [ "recipe_oldguard", 3 ] ],
-    "components": [ [ [ "oldguard_armor", 1 ] ], [ [ "steel_armor", 12 ] ] ],
-    "flags": [ "BLIND_EASY" ]
-  },
-  {
-    "result": "oldguard_armor_superalloy",
-    "type": "recipe",
-    "category": "CC_ARMOR",
-    "subcategory": "CSC_ARMOR_SUIT",
-    "skill_used": "tailor",
-    "time": "5 m",
-    "reversible": true,
-    "decomp_learn": 0,
-    "book_learn": [ [ "recipe_oldguard", 3 ] ],
-    "components": [ [ [ "oldguard_armor", 1 ] ], [ [ "alloy_sheet", 12 ] ] ],
-    "flags": [ "BLIND_EASY" ]
   },
   {
     "result": "depowered_armor",

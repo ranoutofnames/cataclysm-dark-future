@@ -1,5 +1,10 @@
 [
   {
+    "type": "enchantment",
+    "id": "ENCH_RPG_PACK_RAT",
+    "values": [ { "value": "OBTAIN_COST_MULTIPLIER", "multiply": -0.25 } ]
+  },
+  {
     "type": "mutation",
     "id": "RPG_WARRIOR",
     "name": "[Warrior]",
@@ -432,11 +437,11 @@
     "id": "RPG_TRAIT_PACK_RAT",
     "name": "[Pack Rat]",
     "points": 0,
-    "description": "You know how to pack efficiently. Your worn containers hold 50% more items.",
+    "description": "You know how to pack efficiently. You retrieve things from containers 25% faster.",
     "valid": false,
     "purifiable": false,
     "player_display": true,
-    "packmule_modifier": 1.5
+    "enchantments": [ "ENCH_RPG_PACK_RAT" ]
   },
   {
     "type": "mutation",

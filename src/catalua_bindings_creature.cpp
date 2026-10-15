@@ -5,6 +5,7 @@
 #include "calendar.h"
 #include "catalua.h"
 #include "catalua_bindings.h"
+#include "catalua_bool_reason.h"
 #include "catalua_bindings_utils.h"
 #include "catalua_coord.h"
 #include "catalua_impl.h"
@@ -1053,9 +1054,15 @@ void cata::detail::reg_character( sol::state &lua )
         SET_FX_T( is_worn, bool( const item & ) const );
 
         SET_FX_T( weight_carried, units::mass() const );
-        SET_FX_T( volume_carried, units::volume() const );
+        DOC( "Volume of what is carried in the carrying pockets (the contents, not the worn items themselves)." );
+        luna::set_fx( ut, "volume_carried", []( const UT_CLASS & c ) -> units::volume {
+            return c.carried_volume();
+        } );
 
-        SET_FX_T( volume_capacity, units::volume() const );
+        DOC( "Total volume capacity of the carrying pockets" );
+        luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) -> units::volume {
+            return c.volume_capacity();
+        } );
 
         SET_FX_T( can_pick_volume, bool( units::volume ) const );
         SET_FX_T( can_pick_weight, bool( units::mass, bool ) const );
@@ -1137,22 +1144,22 @@ void cata::detail::reg_character( sol::state &lua )
 
         SET_FX_T( is_hauling, bool() const );
 
-        DOC( "Adds a detached item to the player inventory" );
+        DOC( "Adds a detached item to the player inventory. If no pocket takes it, it is wielded when the hands are free, else dropped at the feet." );
         luna::set_fx( ut, "add_item", []( UT_CLASS & c, detached_ptr<item> &i )
         {
             c.i_add( std::move( i ) );
         } );
 
         DOC( "Puts the item into the best carrying pocket (worn garment or body storage). Returns whether it did, and the reason if not. The item is only consumed on success. `add_item` instead falls back to dropping the item at the feet." );
-        luna::set_fx( ut, "try_add_item", []( UT_CLASS & c, detached_ptr<item> &i ) -> std::tuple<bool, std::string> {
+        luna::set_fx( ut, "try_add_item", []( UT_CLASS & c, detached_ptr<item> &i ) -> lua_bool_reason {
             const ret_val<item *> res = c.try_add( std::move( i ) );
-            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+            return lua_bool_reason{ res.success(), res.success() ? std::string() : res.str() };
         } );
 
         DOC( "Whether the item would fit in a carrying pocket. Returns the answer, and the reason if not." );
-        luna::set_fx( ut, "can_stash", []( const UT_CLASS & c, const item & it ) -> std::tuple<bool, std::string> {
+        luna::set_fx( ut, "can_stash", []( const UT_CLASS & c, const item & it ) -> lua_bool_reason {
             const ret_val<bool> res = c.can_stash( it );
-            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+            return lua_bool_reason{ res.success(), res.success() ? std::string() : res.str() };
         } );
 
         DOC( "Gets the top-level carried items (those inside carrying pockets of worn garments and the body storage)." );

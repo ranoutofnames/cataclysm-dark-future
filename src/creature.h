@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "ablative_coverage.h"
 #include "anatomy.h"
 #include "bodypart.h"
 #include "coordinates.h"
@@ -390,6 +391,12 @@ class Creature
         // handles armor absorption (including clothing damage etc)
         // of damage instance. mutates &dam
         virtual void absorb_hit( const bodypart_id &bp, damage_instance &dam ) = 0;
+        /**
+         * As above, with what is known about the attack (P1e). The default ignores the
+         * context. Callers that have no context use the two-argument version.
+         */
+        virtual void absorb_hit( const bodypart_id &bp, damage_instance &dam,
+                                 const attack_context &ctx );
 
         // TODO: this is just a shim so knockbacks work
         void knock_back_from( const tripoint_bub_ms &p );
@@ -431,6 +438,10 @@ class Creature
          */
         virtual dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,
                 const damage_instance &dam, item *source_weapon, item *source_projectile );
+        /** As above, with the context of the attack, which is handed to absorb_hit (P1e). */
+        virtual dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,
+                const damage_instance &dam, item *source_weapon, item *source_projectile,
+                const attack_context &ctx );
         virtual dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,
                 const damage_instance &dam, item *source_weapon );
         virtual dealt_damage_instance deal_damage( Creature *source, bodypart_id bp,

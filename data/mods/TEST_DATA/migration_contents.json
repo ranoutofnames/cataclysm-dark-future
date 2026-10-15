@@ -1,0 +1,36 @@
+[
+  {
+    "type": "MIGRATION",
+    "id": "test_old_plate_carrier",
+    "replace": "test_plate_carrier",
+    "//": "counted contents: a plain id, an object with the default count and an object with count 2; repeats of an id add up",
+    "contents": [ "test_slice_plate_large", { "id": "test_slice_plate_large" }, { "id": "test_slice_plate_medium", "count": 2 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_old_carrier_group",
+    "subtype": "collection",
+    "entries": [ { "item": "test_old_plate_carrier" } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_old_carrier_with_protector_group",
+    "subtype": "collection",
+    "entries": [ { "item": "test_old_plate_carrier", "contents-item": "test_plate_protector" } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_p1e_obsolete_vest_group",
+    "subtype": "collection",
+    "//": "P1e spawn test: an obsolete vest id in an itemgroup, as mapgen, vehicle cargo and NPC class groups hold it",
+    "entries": [ { "item": "ballistic_vest" } ]
+  },
+  {
+    "type": "profession",
+    "id": "test_p1e_vest_profession",
+    "name": "P1e vest test",
+    "description": "Test-only profession that starts with an obsolete vest id.",
+    "points": 1,
+    "items": { "both": [ "ballistic_vest" ] }
+  }
+]

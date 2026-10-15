@@ -85,6 +85,7 @@ class uilist;
 class relic;
 struct bionic;
 struct body_part_type;
+struct sub_body_part_type;
 struct damage_instance;
 struct damage_unit;
 struct dealt_damage_instance;
@@ -258,6 +259,7 @@ LUNA_ID( ammo_effect, "AmmunitionEffect" )
 LUNA_ID( activity_type, "ActivityType" )
 LUNA_ID( bionic_data, "BionicData" )
 LUNA_ID( body_part_type, "BodyPartType" )
+LUNA_ID( sub_body_part_type, "SubBodyPart" )
 LUNA_ID( disease_type, "DiseaseType" )
 LUNA_VAL_WITH_ID( enchantment, "Enchantment" )
 LUNA_ID( enchantment_value, "EnchantmentValue" )

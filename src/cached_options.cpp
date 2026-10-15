@@ -3,6 +3,7 @@
 #include "options.h"
 
 bool test_mode = false;
+test_mode_spilling_action_t test_mode_spilling_action = test_mode_spilling_action_t::spill_all;
 bool debug_mode = false;
 bool json_report_strict = true;
 bool log_activity_skip_state = false;

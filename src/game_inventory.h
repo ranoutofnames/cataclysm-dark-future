@@ -85,10 +85,20 @@ item *use( avatar &you );
 item *wield( avatar &you );
 /** Item wielding/unwielding menu. */
 item *holster( player &p, item &holster );
+/** Choose items to insert into @p holster and start the insert activity (DDA game_inventory.cpp:2088). */
+void insert_items( item &holster );
+/** Choose another container for items that could not be inserted (DDA game.cpp:6590). */
+void insert_items_again( const drop_locations &targets );
+/** Choose containers to unload; returns their contents (DDA game_inventory.cpp:2119). */
+drop_locations unload_container();
+/** The "Select pocket" menu: stores @p source in a pocket of @p dest (DDA inventory_ui.cpp:2050). */
+bool select_pocket_and_store( Character &you, item &source, item &dest );
 /** Choosing a gun to saw down it's barrel. */
 item *saw_barrel( player &p, item &tool );
 /** Choosing a gun to saw down its stock. */
 item *saw_stock( player &p, item &tool );
+// item selector for the PALS pouches that still fit on the MOLLE webbing of @tool
+item *molle_attach( player &p, item &tool );
 /** Choose item to wear. */
 item *wear( player &p );
 /** Choose item to take off. */

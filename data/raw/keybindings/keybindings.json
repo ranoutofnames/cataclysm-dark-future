@@ -2094,6 +2094,20 @@
   },
   {
     "type": "keybinding",
+    "name": "Insert item",
+    "category": "DEFAULTMODE",
+    "id": "insert",
+    "bindings": [ { "input_method": "keyboard", "key": "v" } ]
+  },
+  {
+    "type": "keybinding",
+    "name": "Unload container onto ground (drop items)",
+    "category": "DEFAULTMODE",
+    "id": "unload_container",
+    "bindings": [ { "input_method": "keyboard", "key": "BACKSPACE" } ]
+  },
+  {
+    "type": "keybinding",
     "name": "Throw Item",
     "category": "DEFAULTMODE",
     "id": "throw",
@@ -2312,7 +2326,14 @@
     "name": "View Morale",
     "category": "DEFAULTMODE",
     "id": "morale",
-    "bindings": [ { "input_method": "keyboard", "key": "v" } ]
+    "bindings": [  ]
+  },
+  {
+    "type": "keybinding",
+    "name": "View character's morale",
+    "category": "PLAYER_INFO",
+    "id": "morale",
+    "bindings": [ { "input_method": "keyboard", "key": "m" } ]
   },
   {
     "type": "keybinding",
@@ -3648,6 +3669,13 @@
     "category": "INVENTORY_ITEM",
     "name": "Unload",
     "bindings": [ { "input_method": "keyboard", "key": "u" } ]
+  },
+  {
+    "id": "INSERT",
+    "type": "keybinding",
+    "category": "INVENTORY_ITEM",
+    "name": "Insert",
+    "bindings": [ { "input_method": "keyboard", "key": "i" } ]
   },
   {
     "id": "RELOAD",

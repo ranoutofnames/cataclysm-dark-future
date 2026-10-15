@@ -1,9 +1,38 @@
 #pragma once
+// Transplanted from DDA src/ret_val.h b4b62254ae2
 
 #include <string>
 #include <type_traits>
 
 #include "string_formatter.h"
+
+class ret_val_common
+{
+    public:
+        bool success() const {
+            return succ;
+        }
+
+        const std::string &str() const {
+            return msg;
+        }
+
+        const char *c_str() const {
+            return msg.c_str();
+        }
+    protected:
+        template<typename S>
+        using is_convertible_to_string = std::enable_if_t <
+                                         !std::is_same_v<S, std::nullptr_t>
+                                         &&std::is_convertible_v<S, std::string> >;
+
+        ret_val_common( const std::string &msg, bool succ )
+            : msg( msg ), succ( succ )
+        {}
+    private:
+        std::string msg;
+        bool succ;
+};
 
 /**
  * The class represents a composite return value of an arbitrary function (result).
@@ -15,44 +44,37 @@
  */
 
 template<typename T>
-class ret_val
+class ret_val : public ret_val_common
 {
         static_assert( !std::is_convertible_v<T, std::string>, "string values aren't allowed" );
-
-        template<typename S>
-        using is_convertible_to_string =
-            std::enable_if_t< std::is_convertible_v<S, std::string>>;
 
     public:
         /**
          * These structures are mandatory only if you want to omit the explicit return
          * values of type T when creating instances of @ref ret_val with make_ functions.
          * Each of these structures must contain a static constexpr member named 'value'.
-         * The recommended way of achieving this is inheriting the specializations from
-         * @ref std::integral_constant. See the specialization for 'bool' (below) as an example.
          */
         struct default_success;
         struct default_failure;
 
-    public:
         ret_val() = delete;
 
         static ret_val make_success( T val = default_success::value ) {
-            return make_success( val, std::string() );
+            return make_success( std::move( val ), std::string() );
         }
 
         static ret_val make_failure( T val = default_failure::value ) {
-            return make_failure( val, std::string() );
+            return make_failure( std::move( val ), std::string() );
         }
 
         template<class... A, typename S = std::string, typename = is_convertible_to_string<S>>
         static ret_val make_success( T val, const S &msg, A && ... args ) {
-            return ret_val( string_format( msg, std::forward<A>( args )... ), val, true );
+            return ret_val( string_format( msg, std::forward<A>( args )... ), std::move( val ), true );
         }
 
         template<class... A, typename S = std::string, typename = is_convertible_to_string<S>>
         static ret_val make_failure( T val, const S &msg, A && ... args ) {
-            return ret_val( string_format( msg, std::forward<A>( args )... ), val, false );
+            return ret_val( string_format( msg, std::forward<A>( args )... ), std::move( val ), false );
         }
 
         template<class... A, typename S = std::string, typename = is_convertible_to_string<S>>
@@ -65,35 +87,46 @@ class ret_val
             return make_failure( default_failure::value, msg, std::forward<A>( args )... );
         }
 
-        bool success() const {
-            return succ;
-        }
-
         T value() const {
             return val;
         }
 
-        const std::string &str() const {
-            return msg;
-        }
-
-        const char *c_str() const {
-            return msg.c_str();
-        }
-
-    protected:
-        ret_val( const std::string &msg, T val, bool succ ) : msg( msg ), val( val ), succ( succ ) {}
-
     private:
-        std::string msg;
+        ret_val( const std::string &msg, T val, bool succ )
+            : ret_val_common( msg, succ ), val( std::move( val ) ) {}
+
         T val;
-        bool succ;
 };
 
+template<>
+class ret_val<void> : public ret_val_common
+{
+    public:
+        static ret_val make_success() {
+            return make_success( std::string() );
+        }
+
+        static ret_val make_failure() {
+            return make_failure( std::string() );
+        }
+
+        template<class... A, typename S = std::string, typename = is_convertible_to_string<S>>
+        static ret_val make_success( const S &msg, A && ... args ) {
+            return ret_val( string_format( msg, std::forward<A>( args )... ), true );
+        }
+
+        template<class... A, typename S = std::string, typename = is_convertible_to_string<S>>
+        static ret_val make_failure( const S &msg, A && ... args ) {
+            return ret_val( string_format( msg, std::forward<A>( args )... ), false );
+        }
+    private:
+        using ret_val_common::ret_val_common;
+};
+
+
+// CDF: bool defaults kept from the pre-transplant header; CDF callers use ret_val<bool>::make_success() without a value.
 template<>
 struct ret_val<bool>::default_success : public std::integral_constant<bool, true> {};
 
 template<>
 struct ret_val<bool>::default_failure : public std::integral_constant<bool, false> {};
-
-

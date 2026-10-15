@@ -12,6 +12,7 @@
 #include "distribution_grid.h"
 #include "game.h"
 #include "iexamine.h"
+#include "item_factory.h"
 #include "init.h"
 #include "line.h"
 #include "lua_action_menu.h"
@@ -733,7 +734,7 @@ void cata::detail::reg_game_api( sol::state &lua )
     DOC( "`count` sets the item's charges, not the number of items: exactly one item is created." );
     DOC( "For stackable (count-by-charges) items such as ammo, `count` is the stack size. For non-stackable items, pass a negative value (e.g. -1), since a positive one is still applied as charges. Tools spawned with a negative value get their default charges." );
     luna::set_fx( lib, "create_item", []( const itype_id & itype, int count ) -> detached_ptr<item> {
-        return item::spawn( itype, calendar::turn, count );
+        return item_controller->spawn_migrated( itype, calendar::turn, count );
     } );
 
     luna::set_fx( lib, "get_creature_at", sol::overload(

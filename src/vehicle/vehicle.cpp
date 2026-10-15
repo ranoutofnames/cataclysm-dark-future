@@ -25,6 +25,7 @@
 #include "item.h"
 #include "item_category.h"
 #include "item_contents.h"
+#include "item_factory.h"
 #include "item_group.h"
 #include "itype.h"
 #include "json.h"
@@ -5952,9 +5953,13 @@ void vehicle::place_spawn_items() {
 
         std::vector<detached_ptr<item>> created;
         created.reserve(spawn.item_ids.size());
-        std::ranges::transform(spawn.item_ids, std::back_inserter(created), [](const itype_id& e) {
-            return item::in_its_container(item::spawn(e));
-        });
+        for (size_t i = 0; i < spawn.item_ids.size(); i++) {
+            // an id that was migrated at load spawns from its original id, so the migration's
+            // flags and contents (a plate carrier's plates) are applied
+            const itype_id& from = i < spawn.migrated_from.size() && !spawn.migrated_from[i].is_null()
+                                       ? spawn.migrated_from[i] : spawn.item_ids[i];
+            created.push_back(item::in_its_container(item_controller->spawn_migrated(from, calendar::turn)));
+        }
 
         std::ranges::for_each(spawn.item_groups, [&created](const item_group_id& e) {
             auto group_items = item_group::items_from(e, calendar::start_of_cataclysm);

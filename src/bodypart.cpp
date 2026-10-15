@@ -13,6 +13,8 @@
 #include "generic_factory.h"
 #include "json.h"
 #include "pldata.h"
+#include "rng.h"
+#include "subbodypart.h"
 #include "type_id.h"
 #include "type_id_implement.h"
 #include "locations.h"
@@ -260,8 +262,30 @@ void body_part_type::load( const JsonObject &jo, const std::string & )
 
     optional( jo, was_loaded, "bionic_slots", bionic_slots_, 0 );
 
+    optional( jo, was_loaded, "sub_parts", sub_parts );
+
     const auto side_reader = enum_flags_reader<side> { "side" };
     optional( jo, was_loaded, "side", part_side, side_reader, side::BOTH );
+}
+
+sub_bodypart_str_id body_part_type::random_sub_part() const
+{
+    int total_weight = 0;
+    for( const sub_bodypart_str_id &sbp : sub_parts ) {
+        total_weight += sbp->max_coverage;
+    }
+    if( total_weight <= 0 ) {
+        return sub_bodypart_str_id::NULL_ID();
+    }
+    int roll = rng( 1, total_weight );
+    for( const sub_bodypart_str_id &sbp : sub_parts ) {
+        if( roll <= sbp->max_coverage ) {
+            return sbp;
+        }
+        roll -= sbp->max_coverage;
+    }
+    // can't happen: roll is at most total_weight
+    return sub_bodypart_str_id::NULL_ID();
 }
 
 void body_part_type::reset()
@@ -312,6 +336,15 @@ void body_part_type::check() const
 
     if( !opposite_part.is_valid() ) {
         debugmsg( "Body part %s has invalid opposite part %s.", id.c_str(), opposite_part.c_str() );
+    }
+
+    for( const sub_bodypart_str_id &sbp : sub_parts ) {
+        if( !sbp.is_valid() ) {
+            debugmsg( "Body part %s lists invalid sub part %s.", id.c_str(), sbp.c_str() );
+        } else if( sbp->parent != id ) {
+            debugmsg( "Body part %s lists sub part %s, whose parent is %s.", id.c_str(), sbp.c_str(),
+                      sbp->parent.c_str() );
+        }
     }
 }
 

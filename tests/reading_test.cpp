@@ -174,6 +174,8 @@ TEST_CASE("character reading speed", "[reading][character][speed]") {
 TEST_CASE("estimated reading time for a book", "[reading][book][time]") {
     clear_all_state();
     avatar dummy;
+    // the items need a pocket to be carried in (per DDA tests/reading_test.cpp:181,231)
+    dummy.wear_item(item::spawn("backpack"), false);
 
     // Easy, medium, and hard books
     detached_ptr<item> det = item::spawn("child_book");
@@ -255,6 +257,8 @@ TEST_CASE("estimated reading time for a book", "[reading][book][time]") {
 TEST_CASE("reasons for not being able to read", "[reading][reasons]") {
     clear_all_state();
     avatar dummy;
+    // the items need a pocket to be carried in (per DDA tests/reading_test.cpp:181,231)
+    dummy.wear_item(item::spawn("backpack"), false);
     std::vector<std::string> reasons;
     std::vector<std::string> expect_reasons;
 

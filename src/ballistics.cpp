@@ -331,6 +331,7 @@ auto projectile_attack( const projectile &proj_arg, const tripoint_bub_ms &sourc
         .missed_by = aim.missed_by,
         .trajectory = {},
         .suppress_damage_message = suppress_damage_messages,
+        .origin = source,
     };
 
     // No suicidal shots

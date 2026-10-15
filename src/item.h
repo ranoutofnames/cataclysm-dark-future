@@ -535,8 +535,6 @@ class item : public location_visitable<item>, public game_object<item>
                         bool debug ) const;
         void battery_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int batch,
                            bool debug ) const;
-        void container_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int batch,
-                             bool debug ) const;
         void tool_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int batch,
                         bool debug ) const;
         void component_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int batch,
@@ -576,6 +574,11 @@ class item : public location_visitable<item>, public game_object<item>
 
         // Returns the category of this item.
         const item_category &get_category() const;
+
+        // J2 (DDA item.cpp:4097, :4103): the item's own category, and the category of what
+        // a container holds (DDA aggregates the contents; CDF reuses get_category())
+        const item_category &get_category_shallow() const;
+        const item_category &get_category_of_contents( int depth = 0, int maxdepth = 2 ) const;
 
         /**
          * Reload item using ammo from location returning true if successful
@@ -831,6 +834,10 @@ class item : public location_visitable<item>, public game_object<item>
          * @param allow_bucket Allow filling non-sealable containers
          */
         bool is_container_full( bool allow_bucket = false ) const;
+        /** MOLLE webbing a pouch takes up: PALS_SMALL 1, PALS_MEDIUM 2, else 3 (DDA). */
+        int get_pocket_size() const;
+        /** Whether this item has a PALS flag, so it can be attached to MOLLE webbing. */
+        bool can_attach_as_pocket() const;
         /**
          * Fill item with liquid up to its capacity. This works for guns and tools that accept
          * liquid ammo.
@@ -871,6 +878,19 @@ class item : public location_visitable<item>, public game_object<item>
          * save loading and other non-player paths.
          */
         void put_in( detached_ptr<item> &&payload );
+        /**
+         * J2 (DDA item.h:1055): the checked insert. Puts @p payload into a pocket of type
+         * @p pk_type if one can contain it. A copy goes in (T2: the DDA spelling), so use the
+         * detached_ptr overload below for an item that must keep its identity. Without
+         * @p quiet a failure is also reported with debugmsg.
+         */
+        ret_val<void> put_in( const item &payload, pocket_type pk_type, bool unseal_pockets = false,
+                              Character *carrier = nullptr, bool quiet = false );
+        /** Like the const item & overload, but @p payload is only consumed on success (T2). */
+        ret_val<void> put_in( detached_ptr<item> &&payload, pocket_type pk_type,
+                              bool unseal_pockets = false, Character *carrier = nullptr, bool quiet = false );
+        /** J2 (DDA item.h:1051): inserts @p it with no checks, into the first pocket of @p pk_type. */
+        void force_insert_item( detached_ptr<item> &&it, pocket_type pk_type );
         /** Like @p n calls of @ref put_in with copies of @p proto, but cheaper (DDA #67349). */
         void put_in_copies( const item &proto, int n );
         /**
@@ -887,8 +907,18 @@ class item : public location_visitable<item>, public game_object<item>
          * returns this. It's intended to be used like \code newitem = newitem.in_its_container();\endcode
          * You must pass the detached_ptr representing the current object, so that it can be placed inside its container.
          */
-        static detached_ptr<item> in_its_container( detached_ptr<item> &&self );
-        static detached_ptr<item> in_container( const itype_id &container_type, detached_ptr<item> &&self );
+        static detached_ptr<item> in_its_container( detached_ptr<item> &&self, int qty = 0 );
+        /**
+         * Puts @p self into a new @p container_type (DDA item_container.cpp:59). With @p qty > 0
+         * that many charges go in; @p sealed seals the container, and the single contained type
+         * becomes the pocket's automatic whitelist. Returns @p self if it cannot be contained.
+         */
+        static detached_ptr<item> in_container( const itype_id &container_type, detached_ptr<item> &&self,
+                                                int qty = 0, bool sealed = true,
+                                                const std::string &variant = "" );
+        /** DDA item_container.cpp:91: whitelist the one contained type, with priority and collapse. */
+        void add_automatic_whitelist();
+        void clear_automatic_whitelist();
         /*@}*/
 
         bool item_has_uses_recursive() const;
@@ -1411,8 +1441,29 @@ class item : public location_visitable<item>, public game_object<item>
          * restrictions, sealing). The itype overload only checks the kind of item.
          */
         /*@{*/
-        bool can_contain( const item &it ) const;
-        bool can_contain( const itype &tp ) const;
+        /**
+         * DDA item_container.cpp:522. @p parent_it is the item that already holds @p it (T5:
+         * DDA passes its item_location), so a container never "contains" what it holds.
+         */
+        ret_val<void> can_contain( const item &it, bool nested = false, bool ignore_rigidity = false,
+                                   bool ignore_pkt_settings = true, bool ignore_non_container_pocket = false,
+                                   const item *parent_it = nullptr,
+                                   units::volume remaining_parent_volume = 10000000_ml,
+                                   bool allow_nested = true ) const;
+        ret_val<void> can_contain( const item &it, int &copies_remaining, bool nested = false,
+                                   bool ignore_rigidity = false, bool ignore_pkt_settings = true,
+                                   bool ignore_non_container_pocket = false, const item *parent_it = nullptr,
+                                   units::volume remaining_parent_volume = 10000000_ml,
+                                   bool allow_nested = true ) const;
+        ret_val<void> can_contain( const itype &tp ) const;
+        ret_val<void> can_contain_directly( const item &it ) const;
+        /** Like can_contain, for one charge of a count-by-charges @p it. */
+        ret_val<void> can_contain_partial( const item &it ) const;
+        ret_val<void> can_contain_partial( const item &it, int &copies_remaining,
+                                           bool nested = false ) const;
+        ret_val<void> can_contain_partial_directly( const item &it ) const;
+        /** Whether any pocket is compatible with @p it (no volume or weight check). */
+        ret_val<void> is_compatible( const item &it ) const;
         /*@}*/
 
         /**
@@ -1584,7 +1635,162 @@ class item : public location_visitable<item>, public game_object<item>
          *
          * For items not counted by charges, this returns vol / this->volume().
          */
-        int charges_per_volume( const units::volume &vol ) const;
+        int charges_per_volume( const units::volume &vol, bool suppress_warning = false ) const;
+        /** J2 (DDA item.cpp:544): like charges_per_volume, for a mass. */
+        int charges_per_weight( const units::mass &m, bool suppress_warning = false ) const;
+
+        /** J2 (DDA item.cpp:564): both are charge stacks without contents that stack with each other. */
+        bool can_combine( const item &rhs ) const;
+        /** J2 (DDA item.cpp:513): a liquid that is currently solid. BN has no phase changes, so never. */
+        bool is_frozen_liquid() const;
+        /** J2 (DDA item.cpp:3014): the phase the item type is defined with. */
+        bool made_of_from_type( phase_id phase ) const;
+        /**
+         * J2 (DDA item_contents.cpp:925 as an item function): the pocket that @p it would go into,
+         * looking through this item and its contents. See item_contents::best_pocket.
+         */
+        pocket_choice best_pocket( const item &it, const item *avoid = nullptr, bool allow_sealed = false,
+                                   bool ignore_settings = false, bool nested = false,
+                                   bool ignore_rigidity = false, bool allow_nested = true );
+
+        /**
+         * @name Pockets and contents (J3: DDA item_container.cpp, b4b62254ae2)
+         * Many of these forward to the identically-named item_contents or item_pocket functions.
+         */
+        /*@{*/
+        item_contents &get_contents() {
+            return contents;
+        }
+        const item_contents &get_contents() const {
+            return contents;
+        }
+        bool same_contents( const item &rhs ) const;
+        /** DDA item.h:1051: inserts a copy of @p it with no checks, into the first pocket of @p pk_type. */
+        void force_insert_item( const item &it, pocket_type pk_type );
+        int obtain_cost( const item &it ) const;
+        int insert_cost( const item &it ) const;
+        bool is_collapsed() const;
+        /** Seals all pockets if the item is a full container. */
+        bool seal();
+        bool all_pockets_sealed() const;
+        bool any_pockets_sealed() const;
+        bool is_container_with_restriction() const;
+        bool is_single_container_with_restriction() const;
+        bool has_pocket_type( pocket_type pk_type ) const;
+        bool has_any_with( const std::function<bool( const item & )> &filter, pocket_type pk_type ) const;
+        bool all_pockets_rigid() const;
+        bool container_type_pockets_empty() const;
+        bool has_unrestricted_pockets() const;
+        bool contains_no_solids() const;
+        std::vector<item_pocket *> get_pockets( const std::function<bool( const item_pocket & )> &filter );
+        std::vector<const item_pocket *> get_pockets( const std::function<bool( const item_pocket & )>
+                &filter ) const;
+        std::vector<const item_pocket *> get_container_pockets() const;
+        std::vector<item_pocket *> get_container_pockets();
+        std::vector<const item_pocket *> get_standard_pockets() const;
+        std::vector<item_pocket *> get_standard_pockets();
+        std::vector<item_pocket *> get_ablative_pockets();
+        std::vector<const item_pocket *> get_ablative_pockets() const;
+        std::vector<const item_pocket *> get_container_and_mod_pockets() const;
+        std::vector<item_pocket *> get_container_and_mod_pockets();
+        void begin_bulk_fill();
+        void end_bulk_fill();
+        item_pocket *contained_where( const item &contained );
+        const item_pocket *contained_where( const item &contained ) const;
+        units::length max_containable_length( bool unrestricted_pockets_only = false ) const;
+        units::length min_containable_length() const;
+        units::volume max_containable_volume() const;
+
+        /** Spills what does not fit (DDA overflow( map &, pos, loc ); T5, T7). */
+        void overflow( const tripoint_bub_ms &pos, Character *carrier = nullptr );
+        bool spill_open_pockets( Character &guy, const item *avoid = nullptr );
+        void handle_liquid_or_spill( Character &guy, const item *avoid = nullptr );
+        bool will_spill() const;
+        bool will_spill_if_unsealed() const;
+
+        /** DDA names; the CDF spellings are get_container_capacity() and get_total_capacity(). */
+        units::volume get_volume_capacity( const std::function<bool( const item_pocket & )> &include_pocket
+                                           =
+                                               item_pocket::ok_default_containers ) const;
+        units::volume get_volume_capacity_recursive( const std::function<bool( const item_pocket & )>
+                &include_pocket, const std::function<bool( const item_pocket & )> &check_pocket_tree,
+                units::volume &out_volume_expansion ) const;
+        units::mass get_total_weight_capacity( bool unrestricted_pockets_only = false ) const;
+        units::volume get_remaining_volume( const std::function<bool( const item_pocket & )> &include_pocket
+                                            =
+                                                item_pocket::ok_default_containers ) const;
+        units::volume get_remaining_volume_recursive( const std::function<bool( const item_pocket & )>
+                &include_pocket, const std::function<bool( const item_pocket & )> &check_pocket_tree,
+                units::volume &out_volume_expansion ) const;
+        units::mass get_remaining_weight_capacity( bool unrestricted_pockets_only = false ) const;
+        units::volume get_contents_volume( const std::function<bool( const item_pocket & )> &include_pocket
+                                           =
+                                               item_pocket::ok_default_containers ) const;
+        units::mass get_total_contained_weight( bool unrestricted_pockets_only = false ) const;
+        units::volume get_biggest_pocket_capacity() const;
+
+        /**
+         * DDA item_container.cpp:793. Fills this item with copies of @p contained across its pockets
+         * (best_pocket for each); a copy goes in (T2). Returns how many items (or charges) went in.
+         * The liquid form above keeps BN's single-content semantics.
+         */
+        int fill_with( const item &contained, int amount = INFINITE_CHARGES, bool unseal_pockets = false,
+                       bool allow_sealed = false, bool ignore_settings = false, bool into_bottom = false,
+                       bool allow_nested = true, Character *carrier = nullptr );
+
+        /** All top-level items in standard pockets (DDA, T6: vectors). */
+        std::vector<item *> all_items_top();
+        std::vector<const item *> all_items_top() const;
+        std::vector<item *> all_items_container_top();
+        std::vector<const item *> all_items_container_top() const;
+        std::vector<item *> all_items_top( pocket_type pk_type, bool unloading = false );
+        std::vector<const item *> all_items_top( pocket_type pk_type ) const;
+        std::vector<item *> all_items_top_recursive( pocket_type pk_type );
+        std::vector<const item *> all_items_top_recursive( pocket_type pk_type ) const;
+        /** All items in all pockets, recursively, in pocket type order (includes mods). */
+        std::vector<item *> all_items_ptr();
+        std::vector<const item *> all_items_ptr() const;
+        std::vector<item *> all_items_ptr( pocket_type pk_type );
+        std::vector<const item *> all_items_ptr( pocket_type pk_type ) const;
+        std::vector<item *> all_known_contents();
+        std::vector<const item *> all_known_contents() const;
+        std::vector<item *> all_holstered_items();
+        std::vector<const item *> all_holstered_items() const;
+        void clear_items();
+        size_t num_item_stacks() const;
+        bool empty() const;
+        bool empty_container() const;
+        item &only_item();
+        const item &only_item() const;
+        item *get_item_with( const std::function<bool( const item & )> &filter );
+        const item *get_item_with( const std::function<bool( const item & )> &filter ) const;
+        item &legacy_front();
+        const item &legacy_front() const;
+        const item *this_or_single_content() const;
+        bool contents_only_one_type() const;
+        /** Moves the items of @p read_input into the pockets of this item (DDA item_container.cpp:1193). */
+        void combine( const item_contents &read_input, bool convert = false );
+        /*@}*/
+
+        /** @name Rigid armor and plates (DDA item_armor.cpp, J5) */
+        /*@{*/
+        bool is_rigid() const;
+        bool is_comfortable() const;
+        bool is_bp_rigid( const sub_bodypart_id &bp ) const;
+        bool is_bp_rigid( const bodypart_id &bp ) const;
+        bool is_bp_rigid_selective( const sub_bodypart_id &bp ) const;
+        bool is_bp_rigid_selective( const bodypart_id &bp ) const;
+        std::vector<sub_bodypart_id> get_covered_sub_body_parts() const;
+        std::vector<sub_bodypart_id> get_covered_sub_body_parts( side s ) const;
+        /** Whether this armor has pockets for armor plates. */
+        bool is_ablative() const;
+        /** Whether a pocket of this armor adds encumbrance while in use (DDA extra_encumbrance). */
+        bool has_additional_encumbrance() const;
+        /** Whether a pocket of this armor makes noise while its wearer moves. */
+        bool has_noisy_pockets() const;
+        /** The plates in the plate slots of this armor. */
+        std::vector<const item *> all_ablative_armor() const;
+        /*@}*/
 
         /**
          * @name Item variables
@@ -1813,6 +2019,11 @@ class item : public location_visitable<item>, public game_object<item>
          */
         bool covers( const bodypart_id &bp ) const;
         /**
+         * True if the item covers this sub-location. Items without sub-location data cover
+         * every sub-location of the body parts they cover.
+         */
+        bool covers( const sub_bodypart_str_id &sbp ) const;
+        /**
          * Bitset of all covered body parts.
          *
          * If the bit is set, the body part is covered by this
@@ -1866,16 +2077,59 @@ class item : public location_visitable<item>, public game_object<item>
          * Returns clothing layer for item.
          */
         layer_level get_layer() const;
+        /** What kind of attack a coverage value is for (DDA `cover_melee`, `cover_ranged`, `cover_vitals`). */
+        enum class cover_type : int {
+            COVER_DEFAULT,
+            COVER_MELEE,
+            COVER_RANGED,
+            COVER_VITALS
+        };
+        /** The cover type that protects against damage of @p type. */
+        static cover_type get_cover_type( damage_type type );
+        /** What happened to a piece of armor that took a hit (DDA). */
+        enum class armor_status : int {
+            UNDAMAGED,
+            DAMAGED,
+            DESTROYED,
+            TRANSFORMED
+        };
+        /**
+         * Rolls whether a plate (armor with `non_functional`) breaks from the hit @p du: plates
+         * are rated to survive three hits at the damage they are made for (DDA item_degrade.cpp).
+         */
+        armor_status damage_armor_transforms( damage_unit &du, double enchant_multiplier = 1.0 ) const;
+        /** Encumbrance is worked out for a full or an empty container instead of the actual contents. */
+        enum class encumber_flags : int {
+            none = 0,
+            assume_full = 1,
+            assume_empty = 2
+        };
+        friend constexpr bool operator&( encumber_flags a, encumber_flags b ) {
+            return ( static_cast<int>( a ) & static_cast<int>( b ) ) != 0;
+        }
         /*
          * Returns the average coverage of each piece of data this item
          */
         int get_avg_coverage() const;
+        int get_avg_coverage( cover_type type ) const;
+        /** Coverage of @p bodypart against attacks of @p type; the plates in this armor count too. */
+        int get_coverage( const bodypart_id &bodypart, cover_type type ) const;
+        int get_coverage( const bodypart_id &bodypart, const sub_bodypart_str_id &sbp,
+                          cover_type type ) const;
         /**
          * Returns the highest coverage that any piece of data that this item has that covers the bodypart.
          * Values range from 0 (not covering anything) to 100 (covering the whole body part).
          * Items that cover more are more likely to absorb damage from attacks.
          */
         int get_coverage( const bodypart_id &bodypart ) const;
+        /**
+         * Coverage of one sub-location of @p bodypart (DDA `specifically_covers`). Items
+         * without sub-location data return the body part's coverage for every sub-location
+         * of it, so they keep rolling against the whole part.
+         */
+        int get_coverage( const bodypart_id &bodypart, const sub_bodypart_str_id &sbp ) const;
+        /** True if the item has per-sub-location coverage data. */
+        bool has_sub_coverage() const;
         /**
          * Returns the encumbrance value that this item has when worn by given
          * player, when containing a particular volume of contents.
@@ -1893,8 +2147,9 @@ class item : public location_visitable<item>, public game_object<item>
          * Returns the average encumbrance value that this item across all portions
          * Returns 0 if this is can not be worn at all.
          */
-        int get_avg_encumber( const Character & ) const;
-        int get_encumber( const Character &, const bodypart_id &bodypart ) const;
+        int get_avg_encumber( const Character &, encumber_flags flags = encumber_flags::none ) const;
+        int get_encumber( const Character &, const bodypart_id &bodypart,
+                          encumber_flags flags = encumber_flags::none ) const;
         /**
          * Returns the storage amount (@ref islot_armor::storage) that this item provides when worn.
          * For non-armor it returns 0. The storage amount increases the volume capacity of the

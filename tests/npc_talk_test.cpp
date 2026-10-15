@@ -608,6 +608,14 @@ static auto has_beer_bottle(Character& p, int count) -> bool {
 }
 
 static void give_item(Character& p, const std::string& id, int count) {
+    if (item::spawn_temporary(id)->made_of(LIQUID)) {
+        // a liquid cannot be carried loose in the pocket model (it needs a watertight pocket),
+        // so it goes in a jar that no other test item uses
+        detached_ptr<item> jar = item::spawn("jar_3l_glass");
+        for (int i = 0; i < count; i++) { jar->fill_with(item::spawn(id)); }
+        p.i_add(std::move(jar));
+        return;
+    }
     for (int i = 0; i < count; i++) { p.i_add(item::spawn(id)); }
 }
 
@@ -627,6 +635,8 @@ TEST_CASE("npc_talk_effects_advanced", "[npc_talk]") {
                  ? detached_ptr<item>()
                  : std::move(it);
     });
+    // the given items need a pocket to be carried in (per DDA tests/npc_talk_test.cpp:679)
+    player_character.wear_item(item::spawn("backpack"), false);
 
     SECTION("basic_has_item") {
         d.add_topic("TALK_TEST_HAS_ITEM");

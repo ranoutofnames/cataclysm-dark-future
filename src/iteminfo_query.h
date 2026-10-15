@@ -132,6 +132,8 @@ enum class iteminfo_parts : size_t {
     ARMOR_BODYPARTS,
     ARMOR_LAYER,
     ARMOR_COVERAGE,
+    ARMOR_SUB_COVERAGE,
+    ARMOR_PLATES,
     ARMOR_WARMTH,
     ARMOR_ENCUMBRANCE,
     ARMOR_STORAGE,
@@ -216,6 +218,8 @@ enum class iteminfo_parts : size_t {
     DESCRIPTION_NOTES,
 
     DESCRIPTION_CONTENTS,
+
+    DESCRIPTION_POCKETS,
 
     DESCRIPTION_APPLICABLE_RECIPES,
 

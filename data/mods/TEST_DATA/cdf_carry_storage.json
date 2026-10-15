@@ -1,0 +1,25 @@
+[
+  {
+    "id": "test_backpack_carry",
+    "type": "ARMOR",
+    "name": "TEST carry backpack",
+    "description": "A small backpack whose only pocket is worn storage (a carry pocket) with no strap pocket.  The DDA style test_backpack has a plain container pocket instead.",
+    "weight": "633 g",
+    "volume": "2 L",
+    "price": "39 USD",
+    "price_postapoc": "160 USD",
+    "rigid": false,
+    "material": [ "cotton" ],
+    "symbol": "[",
+    "looks_like": "ragpouch",
+    "color": "green",
+    "covers": [ "torso" ],
+    "coverage": 30,
+    "encumbrance": 2,
+    "max_encumbrance": 15,
+    "pocket_data": [ { "pocket_type": "CONTAINER", "carry": true, "max_contains_volume": "15 L", "max_contains_weight": "300 kg", "moves": 300 } ],
+    "warmth": 6,
+    "material_thickness": 2,
+    "flags": [ "BELTED" ]
+  }
+]

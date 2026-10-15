@@ -1,0 +1,613 @@
+[
+  {
+    "result": "esapi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "tailor",
+    "time": "5 m",
+    "reversible": true,
+    "decomp_learn": 0,
+    "autolearn": true,
+    "components": [
+      [
+        [
+          "ceramic_armor",
+          3
+        ]
+      ]
+    ],
+    "flags": [
+      "BLIND_EASY"
+    ]
+  },
+  {
+    "result": "esbi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "tailor",
+    "time": "5 m",
+    "reversible": true,
+    "decomp_learn": 0,
+    "autolearn": true,
+    "components": [
+      [
+        [
+          "ceramic_armor",
+          1
+        ]
+      ]
+    ],
+    "flags": [
+      "BLIND_EASY"
+    ]
+  },
+  {
+    "result": "scrap_esapi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 2,
+    "time": "30 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        1
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 1
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "steel_armor",
+          3
+        ]
+      ],
+      [
+        [
+          "rag",
+          3
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "scrap_esbi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 2,
+    "time": "10 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        1
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 1
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "steel_armor",
+          1
+        ]
+      ],
+      [
+        [
+          "rag",
+          1
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "lc_esapi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 4,
+    "time": "60 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        3
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "steel_armor",
+          3
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "lc_esbi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 4,
+    "time": "20 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        3
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "steel_armor",
+          1
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "mc_esapi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 5,
+    "time": "60 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        4
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "steel_armor",
+          3
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "mc_esbi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 5,
+    "time": "20 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        4
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "steel_armor",
+          1
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "hc_esapi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 6,
+    "time": "90 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        5
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "hard_steel_armor",
+          3
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "hc_esbi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 6,
+    "time": "30 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        5
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "hard_steel_armor",
+          1
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "ch_esapi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 7,
+    "time": "90 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        6
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "hard_steel_armor",
+          3
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "ch_esbi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 7,
+    "time": "30 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        6
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "hard_steel_armor",
+          1
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "qt_esapi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 8,
+    "time": "120 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        7
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "alloy_sheet",
+          3
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "qt_esbi_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "fabrication",
+    "difficulty": 8,
+    "time": "40 m",
+    "autolearn": true,
+    "book_learn": [
+      [
+        "recipe_melee",
+        7
+      ]
+    ],
+    "qualities": [
+      {
+        "id": "HAMMER",
+        "level": 2
+      },
+      {
+        "id": "SAW_M",
+        "level": 1
+      }
+    ],
+    "components": [
+      [
+        [
+          "alloy_sheet",
+          1
+        ]
+      ]
+    ]
+  },
+  {
+    "result": "iotv_shoulder_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "tailor",
+    "difficulty": 2,
+    "time": "1 h",
+    "skills_required": [
+      "fabrication",
+      3
+    ],
+    "book_learn": [
+      [
+        "recipe_oldguard",
+        3
+      ]
+    ],
+    "using": [
+      [
+        "sewing_standard",
+        75
+      ]
+    ],
+    "components": [
+      [
+        [
+          "fabric_standard",
+          10,
+          "LIST"
+        ]
+      ],
+      [
+        [
+          "duct_tape",
+          150
+        ]
+      ],
+      [
+        [
+          "kevlar_plate",
+          10
+        ]
+      ]
+    ],
+    "flags": [
+      "SECRET"
+    ]
+  },
+  {
+    "result": "iotv_groin_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "tailor",
+    "difficulty": 2,
+    "time": "1 h",
+    "skills_required": [
+      "fabrication",
+      3
+    ],
+    "book_learn": [
+      [
+        "recipe_oldguard",
+        3
+      ]
+    ],
+    "using": [
+      [
+        "sewing_standard",
+        40
+      ]
+    ],
+    "components": [
+      [
+        [
+          "fabric_standard",
+          5,
+          "LIST"
+        ]
+      ],
+      [
+        [
+          "duct_tape",
+          75
+        ]
+      ],
+      [
+        [
+          "kevlar_plate",
+          5
+        ]
+      ]
+    ],
+    "flags": [
+      "SECRET"
+    ]
+  },
+  {
+    "result": "iotv_neck_plate",
+    "type": "recipe",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_TORSO",
+    "skill_used": "tailor",
+    "difficulty": 2,
+    "time": "1 h",
+    "skills_required": [
+      "fabrication",
+      3
+    ],
+    "book_learn": [
+      [
+        "recipe_oldguard",
+        3
+      ]
+    ],
+    "using": [
+      [
+        "sewing_standard",
+        35
+      ]
+    ],
+    "components": [
+      [
+        [
+          "fabric_standard",
+          5,
+          "LIST"
+        ]
+      ],
+      [
+        [
+          "duct_tape",
+          75
+        ]
+      ],
+      [
+        [
+          "kevlar_plate",
+          5
+        ]
+      ]
+    ],
+    "flags": [
+      "SECRET"
+    ]
+  }
+]

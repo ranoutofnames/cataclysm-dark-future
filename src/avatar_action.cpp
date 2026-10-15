@@ -1474,7 +1474,7 @@ void avatar_action::wield( item &loc )
                     std::advance( it, worn_index );
                     u.worn.insert( it, to_wield->detach() );
                 } else {
-                    u.i_add( to_wield->detach() );
+                    u.i_add( to_wield->detach(), true, nullptr, nullptr, true, false );
                 }
                 break;
             case item_location_type::map:
@@ -1586,9 +1586,11 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
     }
 
     if( it->is_holster() ) {
-        auto ptr = dynamic_cast<const holster_actor *>
-                   ( it->type->get_use( "holster" )->get_actor_ptr() );
-        if( it->has_free_holster_pocket() ) {
+        // F9 (P1f): a holster that holds through pockets only has no holster use action
+        const use_function *holster_use = it->type->get_use( "holster" );
+        const auto ptr = holster_use == nullptr ? nullptr :
+                         dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
+        if( ptr != nullptr && it->has_free_holster_pocket() ) {
             item *loc = game_menus::inv::holster( u, *it );
 
             if( !loc ) {
@@ -1602,10 +1604,13 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
 
     // for bandoliers we currently defer to iuse_actor methods
     if( it->is_bandolier() ) {
-        auto ptr = dynamic_cast<const bandolier_actor *>
-                   ( it->type->get_use( "bandolier" )->get_actor_ptr() );
-        ptr->reload( u, *it );
-        return;
+        const use_function *bandolier_use = it->type->get_use( "bandolier" );
+        const auto ptr = bandolier_use == nullptr ? nullptr :
+                         dynamic_cast<const bandolier_actor *>( bandolier_use->get_actor_ptr() );
+        if( ptr != nullptr ) {
+            ptr->reload( u, *it );
+            return;
+        }
     }
 
     item_reload_option opt = favorite_ammo_or_select( u, *it, empty, prompt );

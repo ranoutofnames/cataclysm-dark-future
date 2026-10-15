@@ -13,6 +13,7 @@
 #include "enum_conversions.h"
 #include "enums.h"
 #include "game.h"
+#include "item_factory.h"
 #include "magic/magic_ter_furn_transform.h"
 #include "map/field.h"
 #include "map/map.h"
@@ -392,7 +393,7 @@ void cata::detail::reg_map( sol::state &lua )
         DOC( "Returns nil. Use gapi.create_item and Map:add_item to modify before placement." );
         luna::set_fx( ut, "create_item_at", []( map & m, const tripoint_bub_ms & p, const itype_id & itype,
         int count ) -> void {
-            auto new_item = item::spawn( itype, calendar::turn, count );
+            auto new_item = item_controller->spawn_migrated( itype, calendar::turn, count );
             m.add_item_or_charges( p, std::move( new_item ) );
         } );
 
@@ -720,7 +721,7 @@ void cata::detail::reg_map( sol::state &lua )
         DOC( "For stackable (count-by-charges) items such as ammo, `count` is the stack size. For non-stackable items, pass a negative value (e.g. -1), since a positive one is still applied as charges. Tools spawned with a negative value get their default charges." );
         luna::set_fx( ut, "create_item_at", []( mapgen_constructor & m, const point_omt_ms & p,
         const itype_id & itype, int count ) -> void {
-            auto new_item = item::spawn( itype, calendar::turn, count );
+            auto new_item = item_controller->spawn_migrated( itype, calendar::turn, count );
             m.add_item_or_charges( p, std::move( new_item ) );
         } );
 

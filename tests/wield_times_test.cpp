@@ -82,8 +82,10 @@ static void do_test(const bool generating_cases) {
     dummy.worn.clear();
     dummy.worn.push_back(item::spawn("boxing_gloves"));
     dummy.reset_encumbrance();
+    // J4: handling cost is no longer capped at MAX_HANDLING_COST (per DDA
+    // character_inventory.cpp:1500), so a two-handed halberd pays both glove encumbrances
     wield_check_inv("Wielding halberd from inventory while wearing boxing gloves", dummy,
-                    item::spawn("halberd"), 365);
+                    item::spawn("halberd"), 427);
     wield_check_inv("Wielding 1 aspirin from inventory while wearing boxing gloves", dummy,
                     item::spawn("aspirin", calendar::start_of_cataclysm, 1), 170);
     wield_check_inv("Wielding combat knife from inventory while wearing boxing gloves", dummy,

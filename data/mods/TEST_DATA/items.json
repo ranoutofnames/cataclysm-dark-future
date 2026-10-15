@@ -513,7 +513,7 @@
     "name": "TEST gallon jug",
     "description": "A standard plastic jug used for milk and household cleaning chemicals.",
     "weight": "190 g",
-    "volume": "3750 ml",
+    "volume": "3938 ml",
     "price": "0 cent",
     "to_hit": 1,
     "material": "plastic",
@@ -562,7 +562,7 @@
     "coverage": 30,
     "encumbrance": 2,
     "max_encumbrance": 15,
-    "storage": "15 L",
+    "pocket_data": [ { "pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_contains_weight": "30 kg", "moves": 300 } ],
     "warmth": 6,
     "material_thickness": 2,
     "flags": [ "BELTED" ]
@@ -993,7 +993,7 @@
     "symbol": "[",
     "color": "light_gray",
     "pocket_data": [
-      { "pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "moves": 120 },
+      { "pocket_type": "CONTAINER", "max_item_length": "1 m", "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "moves": 120 },
       {
         "pocket_type": "CONTAINER",
         "max_contains_volume": "500 ml",
@@ -1109,7 +1109,7 @@
     "color": "light_gray",
     "pocket_data": [
       { "pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "10 kg" },
-      { "pocket_type": "CONTAINER", "holster": true, "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 }
+      { "pocket_type": "CONTAINER", "holster": true, "max_item_length": "1 m", "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 }
     ]
   },
   {
@@ -1124,8 +1124,8 @@
     "symbol": "[",
     "color": "light_gray",
     "pocket_data": [
-      { "pocket_type": "CONTAINER", "holster": true, "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 },
-      { "pocket_type": "CONTAINER", "holster": true, "max_contains_volume": "1 L", "flag_restriction": [ "SHEATH_KNIFE" ], "moves": 50 }
+      { "pocket_type": "CONTAINER", "holster": true, "max_item_length": "1 m", "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 },
+      { "pocket_type": "CONTAINER", "holster": true, "max_item_length": "1 m", "max_contains_volume": "1 L", "flag_restriction": [ "SHEATH_KNIFE" ], "moves": 50 }
     ]
   },
   {
@@ -1153,5 +1153,230 @@
     "symbol": "]",
     "color": "light_gray",
     "pocket_data": [ { "pocket_type": "CONTAINER", "max_contains_volume": "500 ml", "rigid": true } ]
+  },
+  {
+    "id": "test_sub_vest",
+    "type": "ARMOR",
+    "name": "TEST sub-location vest",
+    "description": "A test vest that covers the upper torso fully and the lower torso at 80%.",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_upper" ], "coverage": 100, "encumbrance": 6 },
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_lower" ], "coverage": 80, "encumbrance": 0 }
+    ]
+  },
+  {
+    "id": "test_sub_upper_vest",
+    "type": "ARMOR",
+    "name": "TEST upper-torso vest",
+    "description": "A test vest that covers only the upper torso, fully.",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_upper" ], "coverage": 100 }
+    ]
+  },
+  {
+    "id": "test_sub_overlap_vest",
+    "type": "ARMOR",
+    "name": "TEST overlapping sub-location vest",
+    "description": "A test vest whose two entries both name the upper torso (100 and 50), the second also naming the lower torso.",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_upper" ], "coverage": 100 },
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_upper", "torso_lower" ], "coverage": 50 }
+    ]
+  },
+  {
+    "id": "test_plain_vest",
+    "type": "ARMOR",
+    "name": "TEST plain vest",
+    "description": "A test vest with no sub-location data, covering the torso at 50%.",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 50,
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ]
+  },
+  {
+    "id": "test_plate_broken",
+    "type": "ARMOR",
+    "name": "TEST compromised plate",
+    "description": "What is left of a test plate.",
+    "weight": "1 kg",
+    "volume": "900 ml",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 100,
+    "material_thickness": 1,
+    "flags": [ "CANT_WEAR", "ABLATIVE_LARGE" ]
+  },
+  {
+    "id": "test_plate_large",
+    "type": "ARMOR",
+    "name": "TEST large plate",
+    "description": "A large test plate that shatters into a compromised plate.",
+    "weight": "2 kg",
+    "volume": "1900 ml",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 100,
+    "encumbrance": 3,
+    "material_thickness": 3,
+    "non_functional": "test_plate_broken",
+    "damage_verb": "makes a crunch",
+    "flags": [ "CANT_WEAR", "ABLATIVE_LARGE" ]
+  },
+  {
+    "id": "test_plate_light",
+    "type": "ARMOR",
+    "name": "TEST light plate",
+    "description": "A large test plate that covers less of the torso than a half-covering carrier does.",
+    "weight": "1 kg",
+    "volume": "1 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 30,
+    "encumbrance": 1,
+    "material_thickness": 2,
+    "flags": [ "CANT_WEAR", "ABLATIVE_LARGE" ]
+  },
+  {
+    "id": "test_plate_medium",
+    "type": "ARMOR",
+    "name": "TEST medium plate",
+    "description": "A medium test plate with no compromised form.",
+    "weight": "1 kg",
+    "volume": "770 ml",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 100,
+    "encumbrance": 2,
+    "material_thickness": 3,
+    "flags": [ "CANT_WEAR", "ABLATIVE_MEDIUM" ]
+  },
+  {
+    "id": "test_plate_protector",
+    "type": "ARMOR",
+    "name": "TEST shoulder protector",
+    "description": "A protector that fits only its own slot and covers the shoulders.",
+    "weight": "500 g",
+    "volume": "800 ml",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 3,
+    "flags": [ "CANT_WEAR" ],
+    "armor_portion_data": [
+      { "covers": [ "arm_l", "arm_r" ], "specifically_covers": [ "arm_shoulder_l", "arm_shoulder_r" ], "coverage": 80 }
+    ]
+  },
+  {
+    "id": "test_plate_carrier",
+    "type": "ARMOR",
+    "name": "TEST plate carrier",
+    "description": "A soft carrier with two large slots, two medium slots and a protector slot.",
+    "weight": "2 kg",
+    "volume": "3 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "torso" ],
+    "coverage": 100,
+    "encumbrance": 4,
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_LARGE" ], "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "max_item_length": "33 cm", "moves": 800 },
+      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_LARGE" ], "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "max_item_length": "33 cm", "moves": 800 },
+      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_MEDIUM" ], "max_contains_volume": "800 ml", "max_contains_weight": "2 kg", "max_item_length": "21 cm", "moves": 800 },
+      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_MEDIUM" ], "max_contains_volume": "800 ml", "max_contains_weight": "2 kg", "max_item_length": "21 cm", "moves": 800 },
+      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "item_restriction": [ "test_plate_protector" ], "max_contains_volume": "1 L", "max_contains_weight": "2 kg", "moves": 800 }
+    ]
+  },
+  {
+    "id": "test_plate_carrier_soft",
+    "type": "ARMOR",
+    "name": "TEST breakable plate carrier",
+    "description": "Like the test plate carrier, but it can be destroyed.",
+    "copy-from": "test_plate_carrier",
+    "delete": { "flags": [ "UNBREAKABLE" ] }
+  },
+  {
+    "id": "test_plate_carrier_half",
+    "type": "ARMOR",
+    "name": "TEST half-covering plate carrier",
+    "description": "Like the test plate carrier, but it covers the torso at 50%.",
+    "copy-from": "test_plate_carrier",
+    "coverage": 50
+  },
+  {
+    "id": "test_slice_plate_large",
+    "type": "ARMOR",
+    "name": "TEST large slice plate",
+    "description": "A large test plate that covers 45 of the upper torso and never breaks.",
+    "weight": "2 kg",
+    "volume": "1900 ml",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 3,
+    "flags": [ "CANT_WEAR", "ABLATIVE_LARGE", "UNBREAKABLE" ],
+    "armor_portion_data": [ { "covers": [ "torso" ], "specifically_covers": [ "torso_upper" ], "coverage": 45 } ]
+  },
+  {
+    "id": "test_slice_plate_medium",
+    "type": "ARMOR",
+    "name": "TEST medium slice plate",
+    "description": "A medium test plate that covers 35 of the lower torso and never breaks.",
+    "weight": "1 kg",
+    "volume": "770 ml",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 3,
+    "flags": [ "CANT_WEAR", "ABLATIVE_MEDIUM", "UNBREAKABLE" ],
+    "armor_portion_data": [ { "covers": [ "torso" ], "specifically_covers": [ "torso_lower" ], "coverage": 35 } ]
   }
 ]

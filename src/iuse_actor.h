@@ -1167,6 +1167,41 @@ class saw_stock_actor : public iuse_actor
         ret_val<bool> can_use_on( const player &p, const item &it, const item &target ) const;
 };
 
+/**
+ * MOLLE webbing (DDA #53114): attaches a PALS pouch, with its contents, to this item. The
+ * pouch's pockets are added to the item's (item_contents::add_pocket, the DDA
+ * `additional_pockets`), and nothing but this action and its detach counterpart adds or removes
+ * a pouch.
+ */
+class molle_attach_actor : public iuse_actor
+{
+    public:
+        molle_attach_actor( const std::string &type = "attach_molle" ) : iuse_actor( type ) {}
+
+        /** Total size of the pouches the webbing takes (PALS small 1, medium 2, large 3). */
+        int size = 0;
+        /** Move cost of attaching a pouch. */
+        int moves = 100;
+
+        void load( const JsonObject &jo ) override;
+        int use( player &p, item &it, bool t, const tripoint_bub_ms &pnt ) const override;
+        std::unique_ptr<iuse_actor> clone() const override;
+        void info( const item &it, std::vector<iteminfo> &dump ) const override;
+};
+
+/** Takes an attached pouch, with its contents, off MOLLE webbing. */
+class molle_detach_actor : public iuse_actor
+{
+    public:
+        molle_detach_actor( const std::string &type = "detach_molle" ) : iuse_actor( type ) {}
+
+        int moves = 50;
+
+        void load( const JsonObject &jo ) override;
+        int use( player &p, item &it, bool t, const tripoint_bub_ms &pnt ) const override;
+        std::unique_ptr<iuse_actor> clone() const override;
+};
+
 class install_bionic_actor : public iuse_actor
 {
     public:

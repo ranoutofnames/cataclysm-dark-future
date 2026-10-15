@@ -51,6 +51,7 @@ class material_type
         bool _edible = false;
         bool _rotting = false;
         bool _soft = false;
+        bool _uncomfortable = false;
         bool _reinforces = false;
 
         translation _bash_dmg_verb;
@@ -106,6 +107,8 @@ class material_type
         bool edible() const;
         bool rotting() const;
         bool soft() const;
+        /** Armor made of it is uncomfortable to wear even if it is soft (DDA). */
+        bool uncomfortable() const;
         bool reinforces() const;
 
         double vitamin( const vitamin_id &id ) const {

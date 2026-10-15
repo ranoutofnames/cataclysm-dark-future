@@ -910,6 +910,7 @@ class npc : public player
         int time_to_read( const item &book, const Character &reader ) const;
         void do_npc_read();
         void stow_weapon( );
+        using Character::wield;
         bool wield( item &it ) override;
         detached_ptr<item> wield( detached_ptr<item> &&target ) override;
         void drop( const drop_locations &what, const tripoint_bub_ms &target,

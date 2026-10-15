@@ -137,6 +137,10 @@ with "MGOAL_COMPUTER_TOGGLE".
 
 Alternately, if present, it can be an object as described below.
 
+CDF: the string may also be `"lua:<id>"` (the same applies to `end` and `fail`). The phase then runs
+the Lua callback `game.mission_functions[<id>]` with `{ mission, mission_type }`, registered with
+`gapi.register_mission_phase`. See the Lua helper library guide.
+
 ### start / end / fail effects
 
 If any of these optional fields are present they can be objects with the following fields contained:

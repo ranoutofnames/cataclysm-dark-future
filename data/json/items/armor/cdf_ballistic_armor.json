@@ -1,0 +1,856 @@
+[
+  {
+    "id": "esapi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "ESAPI ballistic plate"
+    },
+    "description": "A polygonal ballistic plate with a slightly concave profile, made of ceramic.  Its inner surface is coated with UHMW polyethylene and is labeled \"TOP\", while the outer surface is labeled \"STRIKE FACE\".  This is intended to be worn in a ballistic vest, and can withstand several high-energy rifle rounds before breaking.",
+    "weight": "2500 g",
+    "volume": "1915 ml",
+    "longest_side": "32 cm",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 12,
+    "non_functional": "destroyed_large_ceramic_plate",
+    "damage_verb": "makes a crunch, something has shifted",
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 2,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ],
+    "//": "CDF-only (P1e step 29): DDA's armor plates and IOTV protectors in BN armor format. Material mapping: ceramic -> ceramic; scrap/lc/mc steel -> steel; hc/ch steel -> hardsteel; qt steel -> superalloy; kevlar_layered -> kevlar; thermo_resin -> plastic; damaged_ceramic -> ceramic at reduced thickness. BN armor has one material list and an integer material_thickness for the whole item, and its resistance is the average resistance of the materials times the thickness. DDA's thicknesses are millimetres of a per-portion material (25 for ceramic) and cannot be copied: the values here keep DDA's tier ordering scrap < lc < mc < hc < ch < qt in bullet resistance and put the ceramic plates and the top tiers at about the level of BN's old MBR plate vests (bullet 90). Sizes, weights, volumes, prices, coverage, encumbrance and flags are DDA's."
+  },
+  {
+    "id": "esbi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "ESBI ballistic plate"
+    },
+    "description": "A polygonal ballistic plate with a slightly concave profile, made of ceramic.  \"STRIKE FACE\" is printed on its outer surface.  This is designed to be worn in the sides of a plate carrier, and can withstand several high-energy rifle rounds before breaking.",
+    "weight": "993 g",
+    "volume": "774 ml",
+    "longest_side": "20 cm",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 12,
+    "non_functional": "destroyed_medium_ceramic_plate",
+    "damage_verb": "makes a crunch, something has shifted",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "destroyed_large_ceramic_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "compromised ceramic front plate"
+    },
+    "description": "A large ballistic plate that has been cracked by damage.  It no longer provides reliable protection, but it's still just as heavy.",
+    "weight": "2500 g",
+    "volume": "1915 ml",
+    "longest_side": "32 cm",
+    "price": "0 cent",
+    "price_postapoc": "1 cent",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 3,
+    "looks_like": "esapi_plate",
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 2,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "destroyed_medium_ceramic_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "compromised ceramic side plate"
+    },
+    "description": "A medium-sized ballistic plate that has been cracked by damage.  It no longer provides reliable protection, but it's still just as heavy.",
+    "weight": "993 g",
+    "volume": "774 ml",
+    "longest_side": "20 cm",
+    "price": "0 cent",
+    "price_postapoc": "1 cent",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 3,
+    "looks_like": "esbi_plate",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "scrap_esapi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "scrap ESAPI plate"
+    },
+    "description": "A flat piece of salvaged steel, crudely cut and bent into the shape of an ESAPI ballistic plate.  It's wrapped in rags to cover the sharp edges.  Better than nothing, but it's heavier than the real thing, and not very strong.  This is intended to be inserted into a ballistic vest, and can't be worn on its own.",
+    "weight": "1181 g",
+    "volume": "150 ml",
+    "longest_side": "30 cm",
+    "price": "50 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 6,
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 3,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "scrap_esbi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "scrap ESBI plate"
+    },
+    "description": "A flat piece of salvaged steel, crudely cut and bent into the shape of an ESBI ballistic plate.  It's wrapped in rags to cover the sharp edges.  Better than nothing, but it's heavy, and not very strong.  This is intended to be inserted into a ballistic vest, and can't be worn on its own.",
+    "weight": "488 g",
+    "volume": "62 ml",
+    "longest_side": "20 cm",
+    "price": "30 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 6,
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lc_esapi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "mild ESAPI plate"
+    },
+    "description": "Mild steel forged into a ballistic plate.  While it is more professionally done than scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "30 cm",
+    "price": "50 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 9,
+    "looks_like": "scrap_esapi_plate",
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lc_esbi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "mild ESBI plate"
+    },
+    "description": "A hexagonal piece of mild steel forged into a side plate and padded with synthetic fabric.  While it is more professionally done than scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "20 cm",
+    "price": "30 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 9,
+    "looks_like": "scrap_esbi_plate",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mc_esapi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "medium ESAPI plate"
+    },
+    "description": "Medium steel forged into a ballistic plate.  While it is more professionally done than scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "30 cm",
+    "price": "50 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 12,
+    "looks_like": "scrap_esapi_plate",
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mc_esbi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "medium ESBI plate"
+    },
+    "description": "A hexagonal piece of medium steel forged into a side plate and padded with synthetic fabric.  While it is more professionally done than scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "20 cm",
+    "price": "30 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 12,
+    "looks_like": "scrap_esbi_plate",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hc_esapi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "high ESAPI plate"
+    },
+    "description": "High steel forged into a ballistic plate.  While it is more professionally done than most scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "30 cm",
+    "price": "50 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "hardsteel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 10,
+    "looks_like": "scrap_esapi_plate",
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hc_esbi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "high ESBI plate"
+    },
+    "description": "A hexagonal piece of high steel forged into a side plate and padded with synthetic fabric.  While it is more professionally done than scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "20 cm",
+    "price": "30 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "hardsteel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 10,
+    "looks_like": "scrap_esbi_plate",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ch_esapi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "hard ESAPI plate"
+    },
+    "description": "Hardened steel forged into a ballistic plate.  While it is more professionally done than most scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "30 cm",
+    "price": "50 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "hardsteel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 13,
+    "looks_like": "scrap_esapi_plate",
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ch_esbi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "hard ESBI plate"
+    },
+    "description": "A hexagonal piece of hardened steel forged into a side plate and padded with synthetic fabric.  While it is more professionally done than scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "20 cm",
+    "price": "30 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "hardsteel"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 13,
+    "looks_like": "scrap_esbi_plate",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "qt_esapi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "tempered ESAPI plate"
+    },
+    "description": "Tempered steel forged into a ballistic plate.  While it is more professionally done than most scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "30 cm",
+    "price": "50 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "superalloy"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 20,
+    "looks_like": "scrap_esapi_plate",
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "qt_esbi_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "tempered ESBI plate"
+    },
+    "description": "A hexagonal piece of tempered steel forged into a side plate and padded with synthetic fabric.  While it is more professionally done than scrap plates, it still has a fair amount of jerry-rigging.",
+    "weight": "1300 g",
+    "volume": "262 ml",
+    "longest_side": "20 cm",
+    "price": "30 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "superalloy"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 20,
+    "looks_like": "scrap_esbi_plate",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 35,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "steel_ballistic_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "steel ballistic plate"
+    },
+    "description": "A concave ballistic plate made of hard steel, designed to stop small-caliber rounds.  \"NIJ III A PROTECTION\" is etched into the back of the plate.  This is intended to be inserted into a ballistic vest, and can't be worn on its own.",
+    "weight": "1400 g",
+    "volume": "262 ml",
+    "longest_side": "30 cm",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "superalloy"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 14,
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "heavy_steel_ballistic_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "heavy steel ballistic plate"
+    },
+    "description": "A heavy concave ballistic plate made of tempered steel, designed to stop small-caliber rounds.  \"NIJ III PROTECTION\" is etched into the back of the plate.  This is intended to be inserted into a ballistic vest, and can't be worn on its own.",
+    "weight": "3912 g",
+    "volume": "194 ml",
+    "longest_side": "30 cm",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "superalloy"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 18,
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 3,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "deltoid_plates",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str_sp": "deltoid ballistic plates"
+    },
+    "description": "A pair of NIJ Level III ballistic plates with a concave profile, made of UHMW polyethylene.  \"STRIKE FACE\" is printed on its outer surface.  These plates are designed to be worn in the shoulder pockets of suitable plate carriers or combat shirts, and can resist several high-energy rifle rounds before breaking.  Deltoid plates such as these are very infrequently worn due to their marginal utility in improving survivability.",
+    "weight": "1551 g",
+    "volume": "1599 ml",
+    "longest_side": "21 cm",
+    "price": "944 USD",
+    "price_postapoc": "8 USD",
+    "material": [
+      "plastic"
+    ],
+    "symbol": ",",
+    "color": "light_gray",
+    "material_thickness": 14,
+    "damage_verb": "makes a crunch, something has shifted",
+    "flags": [
+      "ABLATIVE_MEDIUM",
+      "CANT_WEAR",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 8,
+        "coverage": 35,
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_shoulder_l",
+          "arm_shoulder_r"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "iotv_shoulder_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str_sp": "ballistic shoulder protectors (pair)"
+    },
+    "description": "Nylon armor with soft armor inserts protecting the deltoid and upper arm.  Designed to be attached to heavy military body armor.",
+    "weight": "1034 g",
+    "volume": "812 ml",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "kevlar",
+      "nylon"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 5,
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "CANT_WEAR"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 3,
+        "coverage": 80,
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_shoulder_l",
+          "arm_shoulder_r",
+          "arm_upper_l",
+          "arm_upper_r"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "iotv_groin_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "ballistic groin protector"
+    },
+    "description": "Front and back nylon armor with soft armor inserts for groin and butt protection.  Designed to be attached to heavy military body armor.",
+    "weight": "417 g",
+    "volume": "392 ml",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "kevlar",
+      "nylon"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 5,
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "CANT_WEAR"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 2,
+        "coverage": 75,
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_hip_l",
+          "leg_hip_r"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "iotv_neck_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "ballistic collar"
+    },
+    "description": "Front and back nylon collar assemblies with soft armor inserts for neck protection.  Designed to be attached to heavy military body armor.",
+    "weight": "621 g",
+    "volume": "488 ml",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "kevlar",
+      "nylon"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 5,
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "CANT_WEAR"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 0,
+        "coverage": 90,
+        "covers": [
+          "head"
+        ],
+        "specifically_covers": [
+          "head_throat",
+          "head_nape"
+        ]
+      }
+    ]
+  }
+]

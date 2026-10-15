@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ablative_coverage.h"
 #include "avatar.h"
 #include "cata_utility.h"
 #include "catacharset.h" // used for utf8_width()
@@ -292,6 +293,17 @@ std::vector<std::string> clothing_properties(
     props.push_back( string_format( "<color_c_green>[%s]</color>", _( "Properties" ) ) );
     props.push_back( name_and_value( space + _( "Coverage:" ),
                                      string_format( "%3d", coverage ), width ) );
+    if( !bp.id().is_null() ) {
+        // DDA cover_melee / cover_ranged: shown when they are not the plain coverage
+        const int melee = worn_item.get_coverage( bp, item::cover_type::COVER_MELEE );
+        const int ranged = worn_item.get_coverage( bp, item::cover_type::COVER_RANGED );
+        if( melee != coverage || ranged != coverage ) {
+            //~ (M)elee coverage
+            props.push_back( name_and_value( space + _( "(M):" ), string_format( "%3d", melee ), width ) );
+            //~ (R)anged coverage
+            props.push_back( name_and_value( space + _( "(R):" ), string_format( "%3d", ranged ), width ) );
+        }
+    }
     props.push_back( name_and_value( space + _( "Encumbrance:" ),
                                      string_format( "%3d", encumbrance ),
                                      width ) );
@@ -299,6 +311,17 @@ std::vector<std::string> clothing_properties(
                                      string_format( "%3d", worn_item.get_warmth() ), width ) );
     props.push_back( name_and_value( space + string_format( _( "Storage (%s):" ), volume_units_abbr() ),
                                      format_volume( worn_item.get_storage() ), width ) );
+    // armor plates in the item's plate slots, with the coverage each gives this body part
+    const std::vector<const item *> plates = ablative::plates( worn_item );
+    if( !plates.empty() ) {
+        props.push_back( string_format( "<color_c_green>[%s]</color>", _( "Plates" ) ) );
+        for( const item *plate : plates ) {
+            const int plate_coverage = bp.id().is_null() ? plate->get_avg_coverage() :
+                                       plate->get_coverage( bp );
+            props.push_back( name_and_value( space + plate->tname(),
+                                             string_format( "%3d", plate_coverage ), width ) );
+        }
+    }
     return props;
 }
 

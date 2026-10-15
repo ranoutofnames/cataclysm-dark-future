@@ -151,6 +151,8 @@ The following ammo types are (or will soon be) available in in-repo mods
 Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other item types. Experiment
 to find which flags work elsewhere.
 
+- `ABLATIVE_LARGE`, `ABLATIVE_MEDIUM` An armor plate size. A plate with the flag fits a plate slot
+  (an `ablative` pocket) whose `flag_restriction` names it.
 - `ACTIVE_CLOAKING` While active, drains UPS to provide invisibility.
 - `ALARMCLOCK` Has an alarm-clock feature.
 - `ALLOWS_NATURAL_ATTACKS` Doesn't prevent any natural attacks or similar benefits from mutations,
@@ -158,6 +160,7 @@ to find which flags work elsewhere.
 - `AURA` This item goes in the outer aura layer, intended for metaphysical effects.
 - `BAROMETER` This gear is equipped with an accurate barometer (which is used to measure atmospheric
   pressure).
+- `CANT_WEAR` Can't be worn on its own. Used by armor plates, which are inserted into a carrier.
 - `BELTED` Layer for backpacks and things worn over outerwear.
 - `BLIND` Blinds the wearer while worn, and provides nominal protection v. flashbang flashes.
 - `BLOCK_WHILE_WORN` Allows worn armor or shields to be used for blocking attacks. See also the

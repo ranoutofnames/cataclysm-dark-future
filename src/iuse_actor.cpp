@@ -2922,16 +2922,30 @@ detached_ptr<item> holster_actor::store( player &p, item &holster, detached_ptr<
     if( !has_room ) {
         using code = item_pocket::contain_code;
         // the reason the item doesn't fit an empty holster pocket, if there is one
-        code why = code::ERR_HOLSTER_FULL;
+        // J2: D10 has no holster-full or active code: a holster that cannot take the item with
+        // room to spare is full (ERR_NO_SPACE, DDA item_pocket.cpp:1581), and an active item is
+        // refused by the no_active_items pockets (DDA holster_actor::store tests obj.active)
+        code why = code::ERR_NO_SPACE;
+        bool active_refused = false;
         for( const item_pocket &pocket : pockets ) {
             if( !pocket.is_holster() ) {
                 continue;
+            }
+            if( pocket.get_data().no_active_items && obj->is_active() ) {
+                active_refused = true;
+                break;
             }
             const ret_val<code> res = pocket.can_contain( *obj, true );
             if( !res.success() ) {
                 why = res.value();
                 break;
             }
+        }
+        if( active_refused ) {
+            p.add_msg_if_player( m_info,
+                                 _( "You don't think putting your %1$s in your %2$s is a good idea" ),
+                                 obj->tname(), holster.tname() );
+            return std::move( obj );
         }
         switch( why ) {
             case code::ERR_TOO_BIG:
@@ -2946,12 +2960,7 @@ detached_ptr<item> holster_actor::store( player &p, item &holster, detached_ptr<
                 p.add_msg_if_player( m_info, _( "Your %1$s is too heavy to fit in your %2$s" ),
                                      obj->tname(), holster.tname() );
                 break;
-            case code::ERR_ACTIVE:
-                p.add_msg_if_player( m_info,
-                                     _( "You don't think putting your %1$s in your %2$s is a good idea" ),
-                                     obj->tname(), holster.tname() );
-                break;
-            case code::ERR_HOLSTER_FULL:
+            case code::ERR_NO_SPACE:
                 p.add_msg_if_player( m_info, _( "Your %2$s is already full, so the %1$s won't fit." ),
                                      obj->tname(), holster.tname() );
                 break;
@@ -4656,6 +4665,89 @@ ret_val<bool> saw_stock_actor::can_use_on( const player &, const item &, const i
 std::unique_ptr<iuse_actor> saw_stock_actor::clone() const
 {
     return std::make_unique<saw_stock_actor>( *this );
+}
+
+void molle_attach_actor::load( const JsonObject &jo )
+{
+    assign( jo, "size", size );
+    assign( jo, "moves", moves );
+}
+
+int molle_attach_actor::use( player &p, item &it, bool t, const tripoint_bub_ms & ) const
+{
+    if( t ) {
+        return 0;
+    }
+    if( p.is_wielding( it ) ) {
+        p.add_msg_if_player( _( "You need to unwield your %s before using it." ), it.tname() );
+        return 0;
+    }
+    item *pouch = game_menus::inv::molle_attach( p, it );
+    if( pouch == nullptr || pouch->is_null() || pouch == &it ) {
+        p.add_msg_if_player( _( "Never mind." ) );
+        return 0;
+    }
+    const int vacancies = size - it.contents.get_additional_space_used();
+    if( !pouch->can_attach_as_pocket() || pouch->get_pocket_size() > vacancies ) {
+        p.add_msg_if_player( m_info, _( "You can't attach the %1$s to your %2$s." ), pouch->tname(),
+                             it.tname() );
+        return 0;
+    }
+    p.add_msg_if_player( _( "You attach %s to your MOLLE webbing." ), pouch->tname() );
+    // the pouch keeps its items: its pockets are added to the vest with them (DDA #66026)
+    it.contents.add_pocket( pouch->detach() );
+    p.moves -= moves;
+    return 0;
+}
+
+std::unique_ptr<iuse_actor> molle_attach_actor::clone() const
+{
+    return std::make_unique<molle_attach_actor>( *this );
+}
+
+void molle_attach_actor::info( const item &it, std::vector<iteminfo> &dump ) const
+{
+    dump.emplace_back( "DESCRIPTION", _( "Can be activated to attach PALS pouches to its MOLLE webbing." ) );
+    const int free_space = size - it.contents.get_additional_space_used();
+    dump.emplace_back( "TOOL", _( "MOLLE webbing: " ), string_format( _( "%1$d of %2$d free" ),
+                       free_space, size ), iteminfo::no_flags );
+}
+
+void molle_detach_actor::load( const JsonObject &jo )
+{
+    assign( jo, "moves", moves );
+}
+
+int molle_detach_actor::use( player &p, item &it, bool t, const tripoint_bub_ms & ) const
+{
+    if( t ) {
+        return 0;
+    }
+    const std::vector<const item *> items_attached = it.contents.get_added_pockets();
+    if( items_attached.empty() ) {
+        p.add_msg_if_player( m_info, _( "Nothing is attached to your %s." ), it.tname() );
+        return 0;
+    }
+    uilist prompt;
+    prompt.text = _( "Remove which accessory?" );
+    for( size_t i = 0; i != items_attached.size(); ++i ) {
+        prompt.addentry( static_cast<int>( i ), true, -1, items_attached[i]->tname() );
+    }
+    prompt.query();
+    if( prompt.ret < 0 ) {
+        p.add_msg_if_player( _( "Never mind." ) );
+        return 0;
+    }
+    // the pouch comes off with its items
+    p.i_add_or_drop( it.contents.remove_pocket( prompt.ret ) );
+    p.add_msg_if_player( _( "You remove the item from your %s." ), it.tname() );
+    p.moves -= moves;
+    return 0;
+}
+
+std::unique_ptr<iuse_actor> molle_detach_actor::clone() const
+{
+    return std::make_unique<molle_detach_actor>( *this );
 }
 
 int install_bionic_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) const

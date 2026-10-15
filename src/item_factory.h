@@ -49,7 +49,8 @@ class migration
         itype_id replace;
         std::set<std::string> flags;
         int charges = 0;
-        std::set<itype_id> contents;
+        /** Counted contents (CDF P1e step 28); JSON entries are ids or { "id", "count" }. */
+        std::vector<migration_content> contents;
 };
 
 /**
@@ -193,6 +194,17 @@ class Item_factory
          * @see Item_factory::migrate_id
          */
         void migrate_item( const itype_id &id, item &obj );
+
+        /**
+         * Spawns an item the way a loaded one of the same id comes out: the id is replaced by
+         * its migration and the migration's flags, charges and contents are applied
+         * (CDF P1e step 28). An id without a migration spawns as item::spawn( id ) does.
+         * Use it wherever data names an item id that may be obsolete (itemgroups, mapgen,
+         * vehicles, professions, dialogue, Lua). item::spawn itself never migrates, because
+         * migration contents and deserialization use it for the real, obsolete type.
+         * @param qty as in the item constructor (-1: default)
+         */
+        detached_ptr<item> spawn_migrated( const itype_id &id, time_point birthday, int qty = -1 );
 
     private:
         /**
@@ -402,6 +414,10 @@ class Item_factory
         std::map<itype_id, units::length> overlay_lengths;
         /** item_overlay `pocket_data` entries (worn storage layouts, all tagged carry). */
         std::map<itype_id, std::vector<pocket_data>> overlay_pockets;
+        /** item_overlay `pals`: the PALS size flag (1 small, 2 medium, 3 large) to add. */
+        std::map<itype_id, int> overlay_pals;
+        /** item_overlay `molle_capacity`: gives the item attach_molle / detach_molle. */
+        std::map<itype_id, int> overlay_molle;
         /** Resolves itype::longest_side if not set explicitly (see finalize_post). */
         void finalize_length( itype &obj ) const;
 

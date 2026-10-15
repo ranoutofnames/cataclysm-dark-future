@@ -700,9 +700,7 @@ bool try_wield_contents( Character &who, item &container, item *internal_item, b
      * @EFFECT_CUTTING decreases time taken to draw cutting weapons from scabbards
      * @EFFECT_BASHING decreases time taken to draw bashing weapons from holsters
      */
-    int lvl = who.get_skill_level( internal_item->is_gun() ? internal_item->gun_skill() :
-                                   internal_item->melee_skill() );
-    mv += who.item_handling_cost( *internal_item, penalties, base_cost ) / ( ( lvl + 10.0f ) / 10.0f );
+    mv += who.item_retrieve_cost( *internal_item, container, penalties, base_cost );
 
     who.moves -= mv;
 

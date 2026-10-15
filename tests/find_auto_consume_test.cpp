@@ -126,14 +126,20 @@ TEST_CASE("auto_consume_priority", "[auto_consume][food][zone]") {
         create_zone("AUTO_DRINK");
 
         auto jar = itype_id{"jar_3l_glass"};
+        // DDA's in_container puts the given charges in, so the jar is filled explicitly
+        const auto fill_jar = [&jar](detached_ptr<item>&& liquid) -> detached_ptr<item> {
+            const int qty = liquid->charges_per_volume(
+                item::spawn_temporary(jar)->get_container_capacity());
+            return item::in_container(jar, std::move(liquid), qty);
+        };
         auto water = item::spawn("water_clean");
-        auto water_bottle = item::in_container(jar, std::move(water));
+        auto water_bottle = fill_jar(std::move(water));
         auto water_pos = zone_origin;
         auto orange = item::spawn("oj"); // 5 days
-        auto orange_bottle = item::in_container(jar, std::move(orange));
+        auto orange_bottle = fill_jar(std::move(orange));
         auto orange_pos = zone_origin + tripoint_east;
         auto cocoa = item::spawn("hot_chocolate"); // 1 day
-        auto cocoa_bottle = item::in_container(jar, std::move(cocoa));
+        auto cocoa_bottle = fill_jar(std::move(cocoa));
         auto cocoa_pos = zone_origin + tripoint_east * 2;
 
         place_items(

@@ -2,6 +2,7 @@
 
 #include "action.h"
 #include "avatar.h"
+#include "cached_options.h"
 #include "cata_utility.h"
 #include "debug.h"
 #include "enums.h"
@@ -125,6 +126,11 @@ static auto perform_liquid_transfer( const tripoint_bub_ms &pos,
 static auto perform_liquid_transfer( vehicle *veh, int part_id,
                                      liquid_dest_opt &target ) -> liquid_transfer_result;
 
+bool transfer_liquid( item &liquid, liquid_dest_opt &target )
+{
+    return perform_liquid_transfer( liquid, target ).handled;
+}
+
 void handle_all_liquid( detached_ptr<item> &&liquid, const int radius )
 {
     // NOLINTNEXTLINE(bugprone-use-after-move)
@@ -177,6 +183,18 @@ auto get_liquid_target( item &liquid, const int radius, liquid_dest_opt &target 
         debugmsg( "Tried to handle_liquid a non-liquid!" );
         // "canceled by the user" because we *can* not handle it.
         return false;
+    }
+
+    if( test_mode ) {
+        // per DDA handle_liquid.cpp:277: nobody picks from the menu in tests
+        switch( test_mode_spilling_action ) {
+            case test_mode_spilling_action_t::spill_all:
+                target.pos = get_player_character().bub_pos();
+                target.dest_opt = LD_GROUND;
+                return true;
+            case test_mode_spilling_action_t::cancel_spill:
+                return false;
+        }
     }
 
     uilist menu;

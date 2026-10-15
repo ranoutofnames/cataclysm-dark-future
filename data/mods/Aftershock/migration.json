@@ -66,5 +66,16 @@
     "id": "afs_atomic_wraitheon_flashlight",
     "type": "MIGRATION",
     "replace": "afs_wraitheon_smartphone_flashlight"
+  },
+  {
+    "type": "MIGRATION",
+    "id": [ "xlballistic_vest_empty", "xlballistic_vest_esapi" ],
+    "replace": "xl_ballistic_vest"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "afs_mbr_titanium",
+    "replace": "ballistic_vest_esapi",
+    "contents": [ { "id": "chestpouch", "count": 2 }, { "id": "qt_esapi_plate", "count": 2 }, { "id": "qt_esbi_plate", "count": 2 } ]
   }
 ]

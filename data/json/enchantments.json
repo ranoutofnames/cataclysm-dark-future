@@ -1,6 +1,16 @@
 [
   {
     "type": "enchantment",
+    "id": "ENCH_PACKMULE",
+    "values": [ { "value": "OBTAIN_COST_MULTIPLIER", "multiply": -0.1 } ]
+  },
+  {
+    "type": "enchantment",
+    "id": "ENCH_DISORGANIZED",
+    "values": [ { "value": "OBTAIN_COST_MULTIPLIER", "multiply": 0.1 } ]
+  },
+  {
+    "type": "enchantment",
     "id": "ENCH_INVISIBILITY",
     "conditions": [ "ACTIVE" ],
     "ench_effects": [ { "effect": "invisibility", "intensity": 1 } ]

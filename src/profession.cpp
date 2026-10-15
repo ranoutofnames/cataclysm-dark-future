@@ -16,6 +16,7 @@
 #include "generic_readers.h"
 #include "item.h"
 #include "item_contents.h"
+#include "item_factory.h"
 #include "item_group.h"
 #include "itype.h"
 #include "json.h"
@@ -298,7 +299,8 @@ void profession::check_definitions()
 void profession::check_item_definitions( const itypedecvec &items ) const
 {
     for( auto &itd : items ) {
-        if( !itd.type_id.is_valid() ) {
+        // CDF: a migrated id is spawned as its replacement (see profession::items), so it is fine
+        if( !item_controller->migrate_id( itd.type_id ).is_valid() ) {
             debugmsg( "profession %s: item %s does not exist", id.str(), itd.type_id.str() );
         } else if( !itd.snip_id.is_null() ) {
             const itype *type = &*itd.type_id;
@@ -467,7 +469,10 @@ std::vector<detached_ptr<item>> profession::items( bool male,
     std::vector<detached_ptr<item>> result;
     auto add_legacy_items = [&result]( const itypedecvec & vec ) {
         for( const itypedec &elem : vec ) {
-            detached_ptr<item> it = item::spawn( elem.type_id, advanced_spawn_time(), item::default_charges_tag {} );
+            // an obsolete id comes out as its migration, contents included (P1e step 28)
+            detached_ptr<item> it = item::spawn( item_controller->migrate_id( elem.type_id ),
+                                                 advanced_spawn_time(), item::default_charges_tag {} );
+            item_controller->migrate_item( elem.type_id, *it );
             if( !elem.snip_id.is_null() ) {
                 it->set_snippet( elem.snip_id );
             }

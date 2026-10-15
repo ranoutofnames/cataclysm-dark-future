@@ -1,10 +1,13 @@
 #include <algorithm>
 #include <numeric>
 #include <string>
+#include "ablative_coverage.h"
 #include "avatar.h"
 #include "catacharset.h"
 #include "utils/algo.h"
 #include "item.h"
+#include "item_contents.h"
+#include "item_pocket.h"
 #include "flag.h"
 #include "iteminfo_query.h"
 #include "iteminfo_format_utils.h"
@@ -12,6 +15,7 @@
 #include "output.h"
 #include "string_id.h"
 #include "string_id_utils.h"
+#include "subbodypart.h"
 #include "units_utility.h"
 
 namespace
@@ -341,7 +345,7 @@ void item::armor_info( std::vector<iteminfo> &info, const iteminfo_query *parts,
                 for( const bodypart_str_id &covering_id : piece.covers ) {
                     if( covering_id ) {
                         const int encumbrance_when_full =
-                            get_encumber_when_containing( you, get_total_capacity(), covering_id.id() );
+                            get_encumber( you, covering_id.id(), encumber_flags::assume_full );
                         to_display_data[covering_id] = { covering_id.obj().name_as_heading, {
                                 get_encumber( you, covering_id ),
                                 encumbrance_when_full,
@@ -372,6 +376,39 @@ void item::armor_info( std::vector<iteminfo> &info, const iteminfo_query *parts,
             const auto &coverages = item_coverages( to_display );
 
             info.insert( info.end(), coverages.begin(), coverages.end() );
+            // DDA cover_melee / cover_ranged / cover_vitals: shown when an item sets them
+            const bool has_cover_types = std::ranges::any_of( armor->data,
+            []( const armor_portion_data & piece ) {
+                return piece.cover_melee != piece.coverage || piece.cover_ranged != piece.coverage ||
+                       piece.cover_vitals > 0;
+            } );
+            if( has_cover_types ) {
+                info.emplace_back( "ARMOR", string_format(
+                                       //~ (M)elee, (R)anged and (V)itals coverage
+                                       _( "<bold>Coverage by attack</bold>: melee <neutral>%d</neutral>%%, ranged <neutral>%d</neutral>%%, vitals <neutral>%d</neutral>%%" ),
+                                       get_avg_coverage( cover_type::COVER_MELEE ),
+                                       get_avg_coverage( cover_type::COVER_RANGED ),
+                                       get_avg_coverage( cover_type::COVER_VITALS ) ) );
+            }
+            if( parts->test( iteminfo_parts::ARMOR_SUB_COVERAGE ) && !armor->sub_data.empty() ) {
+                // per-sub-location coverage ("upper torso: 100%"), DDA #53932
+                info.emplace_back( "ARMOR", string_format( "%s:", _( "<bold>Coverage by location</bold>" ) ) );
+                for( const armor_portion_data &sub : armor->sub_data ) {
+                    std::vector<std::string> names;
+                    for( const bodypart_str_id &bp : sub.covers ) {
+                        for( const sub_bodypart_str_id &sbp : bp->sub_parts ) {
+                            if( sub.sub_coverage.contains( sbp ) ) {
+                                names.push_back( sbp->name.translated() );
+                            }
+                        }
+                    }
+                    if( names.empty() ) {
+                        continue;
+                    }
+                    info.emplace_back( "ARMOR", string_format( "%s%s: <neutral>%d</neutral>%%", space,
+                                       enumerate_as_string( names, enumeration_conjunction::none ), sub.coverage ) );
+                }
+            }
             info.insert( info.end(), encumbrances.begin(), encumbrances.end() );
         }
     }
@@ -382,6 +419,20 @@ void item::armor_info( std::vector<iteminfo> &info, const iteminfo_query *parts,
 
     if( covers_anything ) {
         armor_protection_info( info, parts, batch, debug );
+    }
+
+    if( parts->test( iteminfo_parts::ARMOR_PLATES ) && ablative::has_plate_slots( *this ) ) {
+        // each plate slot and the plate in it (DDA #78590)
+        info.emplace_back( "ARMOR", string_format( "%s:", _( "<bold>Plate slots</bold>" ) ) );
+        for( const item_pocket &pocket : contents.get_pockets() ) {
+            if( !pocket.get_data().ablative ) {
+                continue;
+            }
+            const std::string plate = pocket.empty() ? _( "<neutral>empty</neutral>" ) :
+                                      pocket.items().front()->tname();
+            info.emplace_back( "ARMOR", string_format( "%s%s: %s", space,
+                               ablative::slot_name( pocket.get_data() ), plate ) );
+        }
     }
 
     const units::mass weight_bonus = get_weight_capacity_bonus();

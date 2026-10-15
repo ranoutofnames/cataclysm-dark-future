@@ -585,14 +585,12 @@ static void merge_invlet_test(player& dummy, inventory_location from) {
         invlet_state first_invlet_state = invlet_state(id % INVLET_STATE_NUM);
         // how to assign invlet to the second item
         invlet_state second_invlet_state = invlet_state(id / INVLET_STATE_NUM);
-        // what the invlet should be for the merged stack
-        invlet_state expected_merged_invlet_state =
-            first_invlet_state != NONE ? first_invlet_state : second_invlet_state;
-        char expected_merged_invlet =
-            first_invlet_state != NONE ? invlet_1
-            : second_invlet_state != NONE
-                ? invlet_2
-                : 0;
+        // what the invlet should be for the item that was in the inventory. In DDA's pocket model
+        // (the whole DDA test is hidden, [.invlet] at tests/invlet_test.cpp:753) the stackable
+        // items stay distinct items in their pockets, so nothing is merged and the item keeps its
+        // own invlet.
+        invlet_state expected_merged_invlet_state = first_invlet_state;
+        char expected_merged_invlet = first_invlet_state != NONE ? invlet_1 : 0;
 
         // remove all items
         dummy.inv_clear();

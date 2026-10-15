@@ -32,6 +32,7 @@ auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
     if (const use_function* use = t.get_use("bandolier")) {
         if (dynamic_cast<const bandolier_actor*>(use->get_actor_ptr()) != nullptr) { containers++; }
     }
+    // attach_molle is no longer a pocket: MOLLE is DDA additional_pockets (J5, owner decision)
     if (containers > 0) { ret[pocket_type::CONTAINER] = containers; }
     if (t.magazine) { ret[pocket_type::MAGAZINE] = 1; }
     if ((t.gun || t.tool) && !t.magazines.empty()) { ret[pocket_type::MAGAZINE_WELL] = 1; }
@@ -75,7 +76,7 @@ TEST_CASE("synthesised pockets spot checks", "[item][pocket][synthesis]") {
         const pocket_data& p = t.pockets.front();
         CHECK(p.type == pocket_type::CONTAINER);
         CHECK(p.watertight);
-        CHECK(p.volume_capacity == t.container->contains);
+        CHECK(p.raw_volume_capacity == t.container->contains);
         CHECK_FALSE(p.holster);
     }
     SECTION("holster: one holster pocket from the actor") {
@@ -90,7 +91,7 @@ TEST_CASE("synthesised pockets spot checks", "[item][pocket][synthesis]") {
         CHECK(p.min_item_volume == actor->min_volume);
         CHECK(p.moves == actor->draw_cost);
         CHECK(p.skill_restriction.size() == actor->skills.size());
-        CHECK(p.flag_restriction.size() == actor->flags.size());
+        CHECK(p.get_flag_restrictions().size() == actor->flags.size());
     }
     SECTION("multi: 2 holster gets two holster pockets") {
         const itype& t = *itype_id("test_holster_two");
@@ -102,7 +103,7 @@ TEST_CASE("synthesised pockets spot checks", "[item][pocket][synthesis]") {
             CHECK(p.max_contains_weight == 2_kilogram);
             CHECK(p.moves == 50);
             CHECK(p.skill_restriction.contains(skill_id("pistol")));
-            CHECK(p.flag_restriction.contains(flag_id("SHEATH_KNIFE")));
+            CHECK(p.get_flag_restrictions().contains(flag_id("SHEATH_KNIFE")));
         }
     }
     SECTION("bandolier: one ammo-restricted container") {
@@ -127,7 +128,7 @@ TEST_CASE("synthesised pockets spot checks", "[item][pocket][synthesis]") {
         const auto well = std::ranges::find_if(t.pockets, [](const pocket_data& p) {
             return p.type == pocket_type::MAGAZINE_WELL;
         });
-        CHECK(well->item_restriction.contains(itype_id("stanag30")));
+        CHECK(well->item_id_restriction.contains(itype_id("stanag30")));
     }
     SECTION("flashlight: battery well and mod pocket") {
         const itype& t = *itype_id("flashlight");
@@ -150,15 +151,15 @@ TEST_CASE("explicit pocket_data overrides synthesis", "[item][pocket][synthesis]
     const itype& t = *itype_id("test_pocket_two");
     CHECK(t.explicit_pockets);
     REQUIRE(t.pockets.size() == 2);
-    CHECK(t.pockets[0].volume_capacity == 2_liter);
+    CHECK(t.pockets[0].raw_volume_capacity == 2_liter);
     CHECK(t.pockets[0].max_contains_weight == 5_kilogram);
     CHECK(t.pockets[0].moves == 120);
-    CHECK(t.pockets[1].volume_capacity == 500_ml);
+    CHECK(t.pockets[1].raw_volume_capacity == 500_ml);
     CHECK(t.pockets[1].watertight);
     CHECK(t.pockets[1].rigid);
 
     const itype& dda = *itype_id("test_pocket_dda");
     REQUIRE(dda.pockets.size() == 1);
-    CHECK(dda.pockets[0].volume_capacity == 1_liter);
+    CHECK(dda.pockets[0].raw_volume_capacity == 1_liter);
     CHECK(dda.pockets[0].max_item_length == 20_cm);
 }

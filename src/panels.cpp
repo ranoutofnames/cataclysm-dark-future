@@ -1305,7 +1305,7 @@ static std::string carry_weight_string( const avatar &u )
 
 static std::string carry_volume_string( const avatar &u )
 {
-    double volume_carried = round_up( convert_volume( to_milliliter( u.volume_carried() ) ),
+    double volume_carried = round_up( convert_volume( to_milliliter( u.carried_volume() ) ),
                                       2 );
     double volume_capacity = round_up( convert_volume( to_milliliter( u.volume_capacity() ) ),
                                        2 ); // In liters/cups/wolf paws or whatever burger units
@@ -1326,9 +1326,9 @@ static auto get_weight_color( const avatar &u ) -> nc_color
 
 static auto get_volume_color( const avatar &u ) -> nc_color
 {
-    if( u.volume_carried() > u.volume_capacity() * 0.85 ) {
+    if( u.carried_volume() > u.volume_capacity() * 0.85 ) {
         return c_red;
-    } else if( u.volume_carried() > u.volume_capacity() * 0.65 ) {
+    } else if( u.carried_volume() > u.volume_capacity() * 0.65 ) {
         return c_yellow;
     } else {
         return c_light_gray;
@@ -1686,9 +1686,9 @@ static void draw_weightvolume_labels( const avatar &u, const catacurses::window 
     // NOLINTNEXTLINE(cata-use-named-point-constants)
     mvwprintz( w, point( 23, 0 ), c_light_gray, _( "Volume:" ) );
     std::string volume_string = carry_volume_string( u );
-    if( u.volume_carried() > u.volume_capacity() * 0.85 ) {
+    if( u.carried_volume() > u.volume_capacity() * 0.85 ) {
         mvwprintz( w, point( 30, 0 ), c_red, volume_string );
-    } else if( u.volume_carried() > u.volume_capacity() * 0.65 ) {
+    } else if( u.carried_volume() > u.volume_capacity() * 0.65 ) {
         mvwprintz( w, point( 30, 0 ), c_yellow, volume_string );
     } else {
         mvwprintz( w, point( 30, 0 ), c_light_gray, volume_string );

@@ -1,6 +1,7 @@
 #include "player_helpers.h"
 
 #include "../src/map/map.h"
+#include "activity_actor_definitions.h"
 #include "avatar.h"
 #include "bionics.h"
 #include "catch/catch.hpp"
@@ -19,7 +20,9 @@
 #include "npc.h"
 #include "pimpl.h"
 #include "player.h"
+#include "pickup_token.h"
 #include "player_activity.h"
+#include "rng.h"
 #include "stomach.h"
 #include "string_id.h"
 #include "type_id.h"
@@ -48,7 +51,7 @@ auto player_has_item_of_type(const std::string& type) -> bool {
     });
 }
 
-void clear_character(player& dummy, bool debug_storage) {
+static void clear_character_impl(player& dummy, bool debug_storage, bool skip_nutrition) {
     character_funcs::normalize(dummy);
 
     // Remove first worn item until there are none left.
@@ -73,8 +76,10 @@ void clear_character(player& dummy, bool debug_storage) {
     // contents (needs to happen before clear_morale).
     dummy.stomach.empty();
     dummy.consumption_history->elems.clear();
-    item& food = *item::spawn_temporary("debug_nutrition");
-    dummy.eat(food);
+    if (!skip_nutrition) {
+        item& food = *item::spawn_temporary("debug_nutrition");
+        dummy.eat(food);
+    }
 
     // This sets HP to max, clears addictions and morale,
     // and sets hunger, thirst, fatigue and such to zero
@@ -125,7 +130,48 @@ void clear_character(player& dummy, bool debug_storage) {
     dummy.invalidate_crafting_inventory();
 }
 
+void clear_character(player& dummy, bool debug_storage) {
+    clear_character_impl(dummy, debug_storage, false);
+}
+
+void clear_character(Character& dummy, bool skip_nutrition) {
+    // CDF: the Character overload delegates to the player cleanup (DDA clears through
+    // Character; CDF's cleanup is player-level).
+    clear_character_impl(dynamic_cast<player&>(dummy), false, skip_nutrition);
+}
+
+std::string random_string(size_t length) {
+    static constexpr char charset[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    static constexpr size_t num_chars = sizeof(charset) - 1;
+    std::string ret;
+    ret.reserve(length);
+    for (size_t i = 0; i < length; ++i) { ret += charset[rng(0, num_chars - 1)]; }
+    return ret;
+}
+
 void clear_avatar() { clear_character(g->u); }
+
+// Transplanted from DDA Character::clear_worn (b4b62254ae2), test-side only.
+void clear_worn(Character& dummy) {
+    std::vector<detached_ptr<item>> temp;
+    while (dummy.takeoff(dummy.i_at(-2), &temp));
+}
+
+bool character_has_item_with_var_val(const Character& they, const std::string& var,
+                                     const std::string& val) {
+    return they.has_item_with(
+        [&var, &val](const item& cand) { return cand.get_var(var) == val; });
+}
+
+void assign_pickup_activity(player& they, const std::vector<item*>& items,
+                            const std::vector<int>& quantities, bool autopickup) {
+    std::vector<pickup::pick_drop_selection> targets = pickup::optimize_pickup(items, quantities);
+    they.assign_activity(std::make_unique<player_activity>(
+        std::make_unique<pickup_activity_actor>(targets, they.bub_pos())));
+    if (autopickup) { they.activity->auto_resume = true; }
+}
 
 void process_activity(player& dummy) {
     do {

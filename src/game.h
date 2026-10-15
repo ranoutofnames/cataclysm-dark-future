@@ -972,6 +972,8 @@ class game : public submap_load_listener
 
         void drop(); // Drop an item  'd'
         void drop_in_direction(); // Drop w/ direction  'D'
+        void insert_item(); // Insert items into a container
+        void unload_container( const std::optional<tripoint_bub_ms> &p ); // Unload containers onto a tile
 
         void butcher(); // Butcher a corpse  'B'
         void dissect(); // dissect a corpse

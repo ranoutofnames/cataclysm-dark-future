@@ -1,0 +1,289 @@
+[
+  {
+    "id": "ballistic_vest_esapi",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (P1e step 30): DDA's US ballistic vest (DDA data/json/items/armor/ballistic_armor.json:3) in BN armor format. It replaces BN's MBR vests: the retired ids migrate to it with their plates inside (data/json/obsoletion/migration.json). BN armor has one material list and one integer material_thickness for the whole item: DDA's nylon 1.0 + kevlar_layered 4.4 is expressed as kevlar at thickness 7, the soft protection of BN's empty MBR vest (bullet 42), so the carrier alone protects exactly as the empty MBR vest did. Weight, volume, price, coverage, encumbrance, plate pockets and flags are DDA's; DDA's us/swat variants are dropped (BN has no item variants); ALLOWS_WINGS is kept from the MBR vest; looks_like the MBR sprites. The MOLLE actions (attach_molle) come with step 32.",
+    "name": {
+      "str": "US ballistic vest"
+    },
+    "description": "A ballistic vest with specialized pockets on the front, back, and sides to hold armor plates.  While this plate carrier is still protective even without inserts, it's too soft to effectively stop high-energy projectiles on its own.",
+    "weight": "3533 g",
+    "volume": "6 L",
+    "price": "1600 USD",
+    "price_postapoc": "10 USD",
+    "material": [
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "modularvestceramic",
+    "warmth": 15,
+    "material_thickness": 7,
+    "use_action": [ { "type": "attach_molle", "size": 10 }, { "type": "detach_molle" } ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "ALLOWS_WINGS"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "coverage": 100,
+        "encumbrance": 6
+      },
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ],
+        "coverage": 80,
+        "encumbrance": 0
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Pocket for a medium armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_MEDIUM"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Pocket for a medium armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_MEDIUM"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ballistic_vest_heavy",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (P1e step 30): DDA's US heavy ballistic vest, 'known as the IOTV' (DDA data/json/items/armor/ballistic_armor.json:655). It replaces BN's Old Guard IOTV suits. Same material mapping as ballistic_vest_esapi; the three protector pockets take only the IOTV protectors (DDA item_restriction). DDA's PADDED flag and variants are dropped (BN has no such flag or item variants). The Old Guard suit's arm and leg coverage now comes from the protectors, as in DDA.",
+    "name": {
+      "str": "US heavy ballistic vest"
+    },
+    "description": "Heavier ballistic armor used by the US Army, known as the IOTV.  It has pockets on the front, back, and sides for armor plates; additional protection for the lower back; and attachment points for optional shoulder, groin, and neck protection.",
+    "weight": "4976 g",
+    "volume": "6 L",
+    "price": "1600 USD",
+    "price_postapoc": "10 USD",
+    "material": [
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "oldguard_armor",
+    "warmth": 15,
+    "material_thickness": 7,
+    "use_action": [ { "type": "attach_molle", "size": 10 }, { "type": "detach_molle" } ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "ALLOWS_WINGS"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "coverage": 100,
+        "encumbrance": 6
+      },
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ],
+        "coverage": 90,
+        "encumbrance": 0
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Pocket for a medium armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_MEDIUM"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Pocket for a medium armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_MEDIUM"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "1200 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Attachment for shoulder protectors.",
+        "item_restriction": [
+          "iotv_shoulder_plate"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "800 g",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Attachment for a groin protector.",
+        "item_restriction": [
+          "iotv_groin_plate"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "800 g",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Attachment for a collar.",
+        "item_restriction": [
+          "iotv_neck_plate"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "xl_ballistic_vest",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (P1e step 30): DDA's XL ballistic vest (DDA data/json/items/armor/ballistic_armor.json:1359), an OVERSIZE soft vest with no plate pockets (owner Q5, option b: the XL vest stays soft). Aftershock's XL vests migrate to it. DDA's PREFIX_XL flag is replaced by the name; the fixed-plate xl_ballistic_vest_lc/_qt variants are not ported. Same material mapping as ballistic_vest_esapi. The MOLLE actions (attach_molle size 12) come with step 32.",
+    "name": {
+      "str": "XL ballistic vest"
+    },
+    "description": "An enormous handmade ballistic vest built with of lots of salvaged ballistic Kevlar panels.  It's bulkier than a factory made US Army vest, but it is customized for the benefit of an abnormally large mutant who couldn't wear such armors otherwise.  Coated in MOLLE webbing to support modular loadouts for the tacticool mutant.",
+    "weight": "4500 g",
+    "volume": "9 L",
+    "price": "1600 USD",
+    "price_postapoc": "10 USD",
+    "material": [
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "ballistic_vest_esapi",
+    "warmth": 15,
+    "material_thickness": 7,
+    "use_action": [ { "type": "attach_molle", "size": 12 }, { "type": "detach_molle" } ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "OVERSIZE"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "coverage": 100,
+        "encumbrance": 8
+      }
+    ]
+  }
+]

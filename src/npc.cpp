@@ -1342,13 +1342,19 @@ void npc::stow_weapon( )
 
     for( auto &e : worn ) {
         if( e->can_holster( weapon ) ) {
+            // F9 (P1f): a holster that holds through pockets only has no holster use action
+            const use_function *holster_use = e->type->get_use( "holster" );
+            const auto ptr = holster_use == nullptr ? nullptr :
+                             dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
+            if( ptr == nullptr ) {
+                continue;
+            }
             if( g->u.sees( bub_pos() ) ) {
                 //~ %1$s: weapon name, %2$s: holster name
                 add_msg_if_npc( m_info, _( "<npcname> puts away the %1$s in the %2$s." ),
                                 weapon.tname(), e->tname() );
             }
 
-            auto ptr = dynamic_cast<const holster_actor *>( e->type->get_use( "holster" )->get_actor_ptr() );
             ptr->store( *this, *e, std::move( detached ) );
             return;
         }
@@ -1357,7 +1363,7 @@ void npc::stow_weapon( )
         if( g->u.sees( bub_pos() ) ) {
             add_msg_if_npc( m_info, _( "<npcname> puts away the %s." ), weapon.tname() );
         }
-        i_add( std::move( detached ) );
+        i_add( std::move( detached ), true, nullptr, nullptr, true, false );
         moves -= 15;
     } else { // No room for weapon, so we drop it
         if( g->u.sees( bub_pos() ) ) {
@@ -3173,7 +3179,13 @@ bool npc::dispose_item( item &obj, const std::string & )
 
     for( auto &e : worn ) {
         if( e->can_holster( obj ) ) {
-            auto ptr = dynamic_cast<const holster_actor *>( e->type->get_use( "holster" )->get_actor_ptr() );
+            // A15: a holster that holds through pockets only has no holster use action
+            const use_function *holster_use = e->type->get_use( "holster" );
+            const auto ptr = holster_use == nullptr ? nullptr :
+                             dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
+            if( ptr == nullptr ) {
+                continue;
+            }
             opts.emplace_back( dispose_option {
                 item_store_cost( obj, *e, false, ptr->draw_cost ),
                 [this, ptr, &e, &obj]{

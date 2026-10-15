@@ -1476,62 +1476,35 @@ void avatar::cycle_move_mode()
 
 bool avatar::wield( item &target )
 {
-    if( is_wielding( target ) ) {
-        return true;
-    }
-
-    if( !can_wield( target ).success() ) {
-        return false;
-    }
-
-    // Lua iwieldable can_wield callback
-    if( const auto *iwield_cb = target.type->iwieldable_callbacks ) {
-        if( !iwield_cb->call_can_wield( *this, target ) ) {
+    if( !target.is_null() && !is_wielding( target ) ) {
+        if( !can_wield( target ).success() ) {
             return false;
         }
-    }
 
-    if( !unwield() ) {
-        return false;
+        // Lua iwieldable can_wield callback
+        if( const auto *iwield_cb = target.type->iwieldable_callbacks ) {
+            if( !iwield_cb->call_can_wield( *this, target ) ) {
+                return false;
+            }
+        }
+
+        // Query whether to draw an item from a holster when attempting to wield the holster
+        if( target.get_use( "holster" ) && !target.contents.empty() ) {
+            //~ %1$s: weapon name, %2$s: holster name
+            if( query_yn( pgettext( "holster", "Draw %1$s from %2$s?" ), target.get_contained().tname(),
+                          target.tname() ) ) {
+                invoke_item( &target );
+                return false;
+            }
+        }
     }
     clear_npc_ai_info_cache( npc_ai_info::ideal_weapon_value );
     if( target.is_null() ) {
-        return true;
+        return unwield();
     }
 
-    // Query whether to draw an item from a holster when attempting to wield the holster
-    if( target.get_use( "holster" ) && !target.contents.empty() ) {
-        //~ %1$s: weapon name, %2$s: holster name
-        if( query_yn( pgettext( "holster", "Draw %1$s from %2$s?" ), target.get_contained().tname(),
-                      target.tname() ) ) {
-            invoke_item( &target );
-            return false;
-        }
-    }
-
-    // Wielding from inventory is relatively slow and does not improve with increasing weapon skill.
-    // Worn items (including guns with shoulder straps) are faster but still slower
-    // than a skilled player with a holster.
-    // There is an additional penalty when wielding items from the inventory whilst currently grabbed.
-
-    bool worn = is_worn( target );
-    int mv = item_handling_cost( target, true,
-                                 worn ? INVENTORY_HANDLING_PENALTY / 2 : INVENTORY_HANDLING_PENALTY );
-
-    add_msg( m_debug, "wielding took %d moves", mv );
-    moves -= mv;
-
-    set_primary_weapon( target.detach() );
-
-    last_item = target.typeId();
-    recoil = MAX_RECOIL;
-
-    target.on_wield( *this, mv );
-
-    inv_update_invlet( target );
-    inv_update_invlet_cache_with_item( target );
-
-    return true;
+    // The DDA core: conflicts, the bag-away rule, stack combining, the cost and the move
+    return Character::wield( target, std::nullopt );
 }
 
 

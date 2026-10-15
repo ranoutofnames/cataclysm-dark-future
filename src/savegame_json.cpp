@@ -177,90 +177,139 @@ static void deserialize( weak_ptr_fast<monster> &obj, JsonIn &jsin )
     //    }
 }
 
+namespace
+{
+
+// DDA saves pocket types as integers (DDA pocket_type.h: ... SOFTWARE 5, E_FILE_STORAGE 6, CABLE 7,
+// MIGRATION 8, EBOOK 9). CDF's enum has a different order and no e-file types, so map by name.
+auto pocket_type_to_dda( pocket_type type ) -> int
+{
+    switch( type ) {
+        case pocket_type::CONTAINER:
+            return 0;
+        case pocket_type::MAGAZINE:
+            return 1;
+        case pocket_type::MAGAZINE_WELL:
+            return 2;
+        case pocket_type::MOD:
+            return 3;
+        case pocket_type::CORPSE:
+            return 4;
+        case pocket_type::SOFTWARE:
+            return 5;
+        case pocket_type::MIGRATION:
+        case pocket_type::LAST:
+            return 8;
+    }
+    return 8;
+}
+
+auto pocket_type_from_dda( int value ) -> pocket_type
+{
+    switch( value ) {
+        case 0:
+            return pocket_type::CONTAINER;
+        case 1:
+            return pocket_type::MAGAZINE;
+        case 2:
+            return pocket_type::MAGAZINE_WELL;
+        case 3:
+            return pocket_type::MOD;
+        case 4:
+            return pocket_type::CORPSE;
+        case 5:
+            return pocket_type::SOFTWARE;
+        default:
+            // MIGRATION, and the pocket types CDF doesn't have (e-files, cables, e-books)
+            return pocket_type::MIGRATION;
+    }
+}
+
+} // namespace
+
+// DDA savegame_json.cpp:259
 void item_contents::serialize( JsonOut &json ) const
 {
-    // v30 (CDF P1a): {"pockets":[{"type":"CONTAINER","index":1,"items":[...]}, ...]}
-    // Pockets are matched on load by type and their ordinal among pockets of that type.
-    // Empty pockets and default values are not written (DDA #46763, #44019).
-    if( empty() ) {
-        return;
-    }
-    json.start_object();
-    json.member( "pockets" );
-    json.start_array();
-    std::map<pocket_type, int> ordinals;
-    for( const item_pocket &pocket : pockets ) {
-        const int index = ordinals[pocket.get_type()]++;
-        if( pocket.empty() ) {
-            continue;
-        }
+    ensure_pockets();
+    if( !pockets.empty() ) {
         json.start_object();
-        json.member( "type", io::enum_to_string( pocket.get_type() ) );
-        if( index > 0 ) {
-            json.member( "index", index );
+
+        json.member( "contents" );
+        json.start_array();
+        for( const item_pocket &pocket : pockets ) {
+            pocket.serialize( json );
         }
-        if( pocket.saved_sealed() ) {
-            json.member( "sealed", true );
+        json.end_array();
+        // the attached MOLLE pouches (emptied; their items are in the pockets above)
+        if( !additional_pockets.empty() ) {
+            json.member( "additional_pockets", additional_pockets );
         }
-        json.member( "items", pocket.items() );
         json.end_object();
     }
-    json.end_array();
-    json.end_object();
 }
 
 void item_contents::deserialize( JsonIn &jsin )
 {
-    JsonObject data = jsin.get_object();
+    const JsonObject data = jsin.get_object();
+    deserialize( data );
+}
+
+// DDA savegame_json.cpp:271 and item_container.cpp:1193 (combine), without the copies: the loaded
+// items keep their identity (T2) and go straight into the pocket at the saved position.
+void item_contents::deserialize( const JsonObject &data )
+{
     data.allow_omitted_members();
     // reading replaces whatever was there, as it did before pockets
+    ensure_pockets();
     clear_items();
+    clear_added_pockets();
 
-    // Items whose saved pocket doesn't exist any more, and all pre-v30 contents,
-    // go through the router, so every item lands somewhere.
+    // the attached pouches come first: their pockets follow the type's own in the saved order
+    if( data.has_array( "additional_pockets" ) ) {
+        std::vector<detached_ptr<item>> pouches;
+        data.read( "additional_pockets", pouches );
+        for( detached_ptr<item> &pouch : pouches ) {
+            add_pocket( std::move( pouch ) );
+        }
+    }
+
+    // items whose saved pocket doesn't exist any more go through the router, so every item
+    // lands somewhere
     std::vector<detached_ptr<item>> unplaced;
-    // pre-v30 contents, or a saved pocket that no longer exists, make this a migration
-    bool migrated = false;
-    if( data.has_array( "pockets" ) ) {
-        ensure_pockets();
-        for( JsonObject jp : data.get_array( "pockets" ) ) {
+    if( data.has_array( "contents" ) ) {
+        auto current = pockets.begin();
+        for( JsonObject jp : data.get_array( "contents" ) ) {
             jp.allow_omitted_members();
-            const pocket_type type = io::string_to_enum_fallback<pocket_type>(
-                                         jp.get_string( "type", "MIGRATION" ), pocket_type::MIGRATION );
-            const int index = jp.get_int( "index", 0 );
-            std::vector<detached_ptr<item>> loaded;
-            jp.read( "items", loaded );
-
+            const pocket_type saved_type = pocket_type_from_dda( jp.get_int( "pocket_type", 8 ) );
+            // pockets are saved in order; the MIGRATION pocket is last and not built on load
             item_pocket *dest = nullptr;
-            if( type != pocket_type::MIGRATION ) {
-                int seen = 0;
-                for( item_pocket &pocket : pockets ) {
-                    if( pocket.is_type( type ) && seen++ == index ) {
-                        dest = &pocket;
-                        break;
-                    }
+            if( saved_type != pocket_type::MIGRATION && current != pockets.end() &&
+                current->is_type( saved_type ) ) {
+                dest = &*current;
+                ++current;
+            } else if( saved_type != pocket_type::MIGRATION ) {
+                // the layout changed since the save: advance to a pocket of that type, if any
+                auto probe = current;
+                while( probe != pockets.end() && !probe->is_type( saved_type ) ) {
+                    ++probe;
+                }
+                if( probe != pockets.end() ) {
+                    dest = &*probe;
+                    current = std::next( probe );
                 }
             }
             if( dest == nullptr ) {
                 // saved MIGRATION items are re-placed too: they may now fit a real pocket
-                migrated |= type != pocket_type::MIGRATION || !loaded.empty();
+                std::vector<detached_ptr<item>> loaded;
+                jp.read( "contents", loaded );
                 for( detached_ptr<item> &it : loaded ) {
                     unplaced.push_back( std::move( it ) );
                 }
                 continue;
             }
-            if( jp.get_bool( "sealed", false ) ) {
-                dest->seal();
-            }
             // no rule checks and no restacking on load (DDA #68051)
-            for( detached_ptr<item> &it : loaded ) {
-                dest->items().push_back( std::move( it ) );
-            }
+            dest->deserialize( jp );
         }
-    } else {
-        // BN savegame v29 and earlier: {"items":[...]}
-        data.read( "items", unplaced );
-        migrated = true;
     }
     for( detached_ptr<item> &it : unplaced ) {
         if( it ) {
@@ -272,9 +321,113 @@ void item_contents::deserialize( JsonIn &jsin )
         // an installed magazine_adaptor changes the pocket layout
         rebuild_pockets();
     }
-    if( migrated ) {
-        // items that don't fit any more overflow when the item is next processed
-        check_overflow();
+    // a layout change, or a container that holds more than it may, is an overflow event: the
+    // items that don't fit any more are moved when the item is next processed
+    check_overflow();
+}
+
+// DDA savegame_json.cpp:279
+void item_pocket::serialize( JsonOut &json ) const
+{
+    json.start_object();
+    json.member( "pocket_type", pocket_type_to_dda( data->type ) );
+    json.member( "contents", contents );
+    json.member( "_sealed", _sealed );
+    json.member( "no_rigid", no_rigid );
+    if( !this->settings.is_null() ) {
+        json.member( "favorite_settings", this->settings );
+    }
+    json.end_object();
+}
+
+// DDA savegame_json.cpp:292. CDF: reads into a pocket that already exists (the layout comes from
+// the item type) and keeps the loaded items as they are.
+void item_pocket::deserialize( const JsonObject &data_obj )
+{
+    data_obj.allow_omitted_members();
+    std::vector<detached_ptr<item>> loaded;
+    data_obj.read( "contents", loaded );
+    for( detached_ptr<item> &it : loaded ) {
+        contents.push_back( std::move( it ) );
+    }
+    int saved_type_int = 8;
+    data_obj.read( "pocket_type", saved_type_int );
+    _saved_type = pocket_type_from_dda( saved_type_int );
+    data_obj.read( "_sealed", _sealed );
+    _saved_sealed = _sealed;
+    data_obj.read( "no_rigid", no_rigid );
+    if( data_obj.has_member( "favorite_settings" ) ) {
+        data_obj.read( "favorite_settings", this->settings );
+    } else {
+        this->settings.clear();
+    }
+    invalidate_cache();
+}
+
+// DDA savegame_json.cpp:309
+void item_pocket::favorite_settings::serialize( JsonOut &json ) const
+{
+    json.start_object();
+    json.member( "name", preset_name );
+    json.member( "priority", priority_rating );
+    json.member( "item_whitelist", item_whitelist );
+    json.member( "item_blacklist", item_blacklist );
+    json.member( "category_whitelist", category_whitelist );
+    json.member( "category_blacklist", category_blacklist );
+    json.member( "collapsed", collapsed );
+    json.member( "disabled", disabled );
+    json.member( "unload", unload );
+    json.member( "player_edited", player_edited );
+    json.end_object();
+}
+
+namespace
+{
+
+auto migrate_ids( const cata::flat_set<itype_id> &list ) -> cata::flat_set<itype_id>
+{
+    cata::flat_set<itype_id> new_list;
+    for( const itype_id &it : list ) {
+        new_list.insert( item_controller->migrate_id( it ) );
+    }
+    return new_list;
+}
+
+} // namespace
+
+void item_pocket::favorite_settings::deserialize( JsonIn &jsin )
+{
+    const JsonObject data = jsin.get_object();
+    deserialize( data );
+}
+
+// DDA savegame_json.cpp:334
+void item_pocket::favorite_settings::deserialize( const JsonObject &data )
+{
+    data.allow_omitted_members();
+    if( data.has_member( "name" ) ) {
+        data.read( "name", preset_name );
+    }
+    data.read( "priority", priority_rating );
+    data.read( "item_whitelist", item_whitelist );
+    data.read( "item_blacklist", item_blacklist );
+    item_whitelist = migrate_ids( item_whitelist );
+    item_blacklist = migrate_ids( item_blacklist );
+    data.read( "category_whitelist", category_whitelist );
+    data.read( "category_blacklist", category_blacklist );
+    if( data.has_member( "collapsed" ) ) {
+        data.read( "collapsed", collapsed );
+    }
+    if( data.has_member( "disabled" ) ) {
+        data.read( "disabled", disabled );
+    }
+    if( data.has_member( "unload" ) ) {
+        data.read( "unload", unload );
+    }
+    if( data.has_member( "player_edited" ) ) {
+        data.read( "player_edited", player_edited );
+    } else {
+        player_edited = true;
     }
 }
 
@@ -3053,15 +3206,7 @@ void item::deserialize( JsonIn &jsin )
     if( savegame_loading_version < 27 ) {
         legacy_fast_forward_time();
     }
-    if( data.has_array( "contents" ) ) {
-        std::vector<detached_ptr<item>> items;
-        data.read( "contents", items );
-        for( detached_ptr<item> &obj : items ) {
-            contents.insert_item( std::move( obj ) );
-        }
-        // save migration is an overflow event (CDF P1a)
-        contents.check_overflow();
-    } else {
+    if( data.has_object( "contents" ) ) {
         data.read( "contents", contents );
     }
     if( data.has_member( "item_kill_tracker" ) ) {
@@ -3096,7 +3241,9 @@ void item::serialize( JsonOut &json ) const
                      damage_instance_serialization::serialize_damage_instance( ranged_damage_bonus ) );
     }
 
-    if( !contents.empty() ) {
+    // DDA writes the pockets of every item; CDF builds them from the type, so only the ones that
+    // differ from a fresh item are saved (mods, sealed pockets and favorite settings count)
+    if( !contents.empty_with_no_mods() ) {
         json.member( "contents", contents );
     }
     if( kills ) {

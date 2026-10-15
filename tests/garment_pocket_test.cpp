@@ -24,7 +24,7 @@ auto carry_pockets(const itype& t) -> std::vector<const pocket_data*> {
 auto container_volume(const std::vector<const pocket_data*>& pockets) -> units::volume {
     units::volume total = 0_ml;
     for (const pocket_data* pd : pockets) {
-        if (!pd->holster) { total += pd->volume_capacity; }
+        if (!pd->holster) { total += pd->raw_volume_capacity; }
     }
     return total;
 }
@@ -63,7 +63,7 @@ TEST_CASE("garments without a layout get pockets derived from storage", "[item][
     const itype& t = *itype_id("rm13_armor");
     const auto pockets = carry_pockets(t);
     REQUIRE(pockets.size() == 1);
-    CHECK(pockets.front()->volume_capacity == t.armor->storage);
+    CHECK(pockets.front()->raw_volume_capacity == t.armor->storage);
     CHECK(pockets.front()->max_contains_weight == pocket_data::max_weight_for_container);
     CHECK(pockets.front()->moves == 100);
     CHECK(pockets.front()->rigid == t.rigid);
@@ -86,7 +86,7 @@ TEST_CASE("worn storage pockets are live", "[item][pocket][garment]") {
     detached_ptr<item> jeans = item::spawn(itype_id("jeans"));
     detached_ptr<item> bolt = item::spawn(itype_id("pebble"), calendar::turn, 1);
     CHECK(jeans->contents.can_contain(*bolt).success());
-    CHECK(jeans->contents.best_pocket(*bolt, nullptr).second != nullptr);
+    CHECK(jeans->contents.best_pocket(*bolt, nullptr).pocket != nullptr);
     jeans->put_in(std::move(bolt));
     bool held = false;
     for (const item_pocket& pocket : jeans->contents.get_pockets()) {

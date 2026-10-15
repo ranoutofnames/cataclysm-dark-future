@@ -1332,6 +1332,13 @@ void inventory_selector::add_character_items( Character &character )
         } else if( character.is_worn( *it ) ) {
             add_item( own_gear_column, it,
                       &item_category_id( "ITEMS_WORN" ).obj() );
+        } else if( const item *carrier = it->parent_item() ) {
+            // armor plates in a worn carrier are listed with the worn armor (DDA #55978)
+            const item_pocket *slot = carrier->contents.pocket_of( it );
+            if( slot != nullptr && slot->get_data().ablative && character.is_worn( *carrier ) ) {
+                add_item( own_gear_column, it,
+                          &item_category_id( "ITEMS_WORN" ).obj() );
+            }
         }
         return VisitResponse::NEXT;
     } );
@@ -1738,7 +1745,7 @@ inventory_selector::stats inventory_selector::get_weight_and_volume_stats(
 inventory_selector::stats inventory_selector::get_raw_stats() const
 {
     return get_weight_and_volume_stats( u.weight_carried(), u.weight_capacity(),
-                                        u.volume_carried(), u.volume_capacity() );
+                                        u.carried_volume(), u.volume_capacity() );
 }
 
 std::vector<std::string> inventory_selector::get_stats() const
@@ -2837,7 +2844,7 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 inventory_selector::stats inventory_pickup_selector::get_raw_stats() const
 {
     units::mass weight_carried = u.weight_carried();
-    units::volume volume_carried = u.volume_carried();
+    units::volume volume_carried = u.carried_volume();
     auto func = []( const inventory_entry & entry ) {
         return entry.is_item() && entry.chosen_count > 0;
     };

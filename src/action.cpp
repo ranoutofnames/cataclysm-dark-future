@@ -130,6 +130,8 @@ std::string io::enum_to_string<action_id>( action_id data )
             PAIR( ACTION_RELOAD_WIELDED )
             PAIR( ACTION_UNLOAD )
             PAIR( ACTION_UNLOAD_ALL )
+            PAIR( ACTION_INSERT_ITEM )
+            PAIR( ACTION_UNLOAD_CONTAINER )
             PAIR( ACTION_MEND )
             PAIR( ACTION_THROW )
             PAIR( ACTION_FIRE )
@@ -378,6 +380,10 @@ std::string action_ident( action_id act )
             return "unload";
         case ACTION_UNLOAD_ALL:
             return "unload_all";
+        case ACTION_INSERT_ITEM:
+            return "insert";
+        case ACTION_UNLOAD_CONTAINER:
+            return "unload_container";
         case ACTION_MEND:
             return "mend";
         case ACTION_THROW:
@@ -1127,6 +1133,7 @@ action_id handle_action_menu()
             // the inventory screen, so it's sorted to the
             // end of the list.
             register_actions( {
+                ACTION_INSERT_ITEM, ACTION_UNLOAD_CONTAINER,
                 ACTION_DROP, ACTION_COMPARE, ACTION_ORGANIZE, ACTION_USE,
                 ACTION_WEAR, ACTION_TAKE_OFF, ACTION_EAT, ACTION_OPEN_CONSUME,
                 ACTION_READ, ACTION_WIELD, ACTION_UNLOAD, ACTION_UNLOAD_ALL

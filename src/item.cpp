@@ -6,7 +6,9 @@
 #include "ascii_art.h"
 #include "avatar.h"
 #include "bionics.h"
+#include "ablative_coverage.h"
 #include "bodypart.h"
+#include "subbodypart.h"
 #include "cached_item_options.h"
 #include "calendar.h"
 #include "cata_utility.h"
@@ -806,7 +808,8 @@ auto item::prepare_for_location_removal() -> void
         mark_rot_checked_now();
         return;
     }
-    const auto contents_need_location = !contents.empty() && contents.has_processing_items() &&
+    // CDF: empty() ignores mods (DDA), and a mod can need processing too
+    const auto contents_need_location = contents.has_processing_items() &&
                                         !( type->container && type->container->preserves );
     if( !goes_bad() && !contents_need_location ) {
         return;
@@ -999,6 +1002,20 @@ body_part_set item::get_covered_body_parts( const side s ) const
     for( const armor_portion_data &data : armor->data ) {
         res.unify_set( data.covers );
     }
+    // plates in plate slots protect what they cover, even if the carrier doesn't (DDA #58331):
+    // a heavy vest with shoulder protectors covers the arms
+    for( const item_pocket &pocket : contents.get_pockets() ) {
+        if( !pocket.get_data().ablative ) {
+            continue;
+        }
+        for( const item *plate : pocket.items() ) {
+            if( const islot_armor *plate_armor = plate->find_armor_data() ) {
+                for( const armor_portion_data &data : plate_armor->data ) {
+                    res.unify_set( data.covers );
+                }
+            }
+        }
+    }
 
     if( !armor->sided ) {
         return res; // Just ignore the side.
@@ -1066,36 +1083,13 @@ bool item::is_worn_only_with( const item &it ) const
             it.has_flag( flag_POWERARMOR_EXO ) );
 }
 
-detached_ptr<item> item::in_its_container( detached_ptr<item> &&self )
-{
-    return item::in_container( self->type->default_container.value_or( itype_id::NULL_ID() ),
-                               std::move( self ) );
-}
-
-detached_ptr<item> item::in_container( const itype_id &cont, detached_ptr<item> &&self )
-{
-    if( !cont.is_null() ) {
-        detached_ptr<item> ret = item::spawn( cont, self->birthday() );
-        ret->invlet = self->invlet;
-        item &obj = *self;
-        ret->put_in( std::move( self ) );
-
-        if( obj.made_of( LIQUID ) && ret->is_container() ) {
-            // Note: we can't use any of the normal container functions as they check the
-            // container being suitable (seals, watertight etc.)
-            ret->contents.back().charges = obj.charges_per_volume( ret->get_container_capacity() );
-        }
-        return ret;
-    } else {
-        return std::move( self );
-    }
-}
-
-int item::charges_per_volume( const units::volume &vol ) const
+int item::charges_per_volume( const units::volume &vol, bool suppress_warning ) const
 {
     if( count_by_charges() ) {
         if( type->volume == 0_ml ) {
-            debugmsg( "Item '%s' with zero volume", tname() );
+            if( !suppress_warning ) {
+                debugmsg( "Item '%s' with zero volume", tname() );
+            }
             return INFINITE_CHARGES;
         }
         if( type->stack_size > 0 && vol > units::volume_max / type->stack_size ) {
@@ -1107,12 +1101,69 @@ int item::charges_per_volume( const units::volume &vol ) const
     } else {
         units::volume my_volume = volume();
         if( my_volume == 0_ml ) {
-            debugmsg( "Item '%s' with zero volume", tname() );
+            if( !suppress_warning ) {
+                debugmsg( "Item '%s' with zero volume", tname() );
+            }
             return INFINITE_CHARGES;
         }
         const auto result = vol / my_volume;
         return static_cast<int>( std::min( result, static_cast<decltype( result )>( INFINITE_CHARGES ) ) );
     }
+}
+
+// J2: DDA item.cpp:544
+int item::charges_per_weight( const units::mass &m, bool suppress_warning ) const
+{
+    int64_t ret;
+    const units::mass my_weight = count_by_charges() ? type->weight : weight();
+    if( my_weight == 0_gram ) {
+        if( !suppress_warning ) {
+            debugmsg( "Item '%s' with zero weight", tname() );
+        }
+        ret = INFINITE_CHARGES;
+    } else {
+        ret = m / my_weight;
+    }
+    return std::min( ret, static_cast<int64_t>( INFINITE_CHARGES ) );
+}
+
+// J2: DDA item.cpp:564
+bool item::can_combine( const item &rhs ) const
+{
+    if( !contents.empty_with_no_mods() || !rhs.contents.empty_with_no_mods() ) {
+        return false;
+    }
+    if( !count_by_charges() ) {
+        return false;
+    }
+    // CDF: stacks_with( rhs, check_components, skip_type_check ), DDA's third argument is
+    // combine_liquid; the types must match
+    if( !stacks_with( rhs, true, false ) ) {
+        return false;
+    }
+    return true;
+}
+
+// J2: DDA item.cpp:513. BN items keep one phase, so a liquid is never frozen.
+bool item::is_frozen_liquid() const
+{
+    return made_of( phase_id::SOLID ) && made_of_from_type( phase_id::LIQUID );
+}
+
+// J2: DDA item.cpp:3014
+bool item::made_of_from_type( phase_id phase ) const
+{
+    if( is_null() ) {
+        return false;
+    }
+    return type->phase == phase;
+}
+
+// J2: DDA item.cpp:4097; get_category_of_contents is in item_container.cpp (J3)
+const item_category &item::get_category_shallow() const
+{
+    static item_category null_category;
+    return type->category_force.is_valid() ? type->category_force.obj() : null_category;
 }
 
 namespace
@@ -1249,7 +1300,8 @@ bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_c
         }
     }
 
-    return contents.stacks_with( rhs.contents, depth + 1 );
+    // CDF: the depth limit is max_stack_depth (checked on entry), not DDA's 2
+    return contents.stacks_with( rhs.contents, depth + 1, max_stack_depth + 1 );
 }
 
 namespace
@@ -1312,6 +1364,44 @@ void item::put_in( detached_ptr<item> &&payload )
     contents.insert_item( std::move( payload ) );
 }
 
+ret_val<void> item::put_in( const item &payload, pocket_type pk_type, const bool unseal_pockets,
+                            Character *carrier, const bool quiet )
+{
+    // DDA item_container.cpp:267, T2: a copy goes in
+    return put_in( item::spawn( payload ), pk_type, unseal_pockets, carrier, quiet );
+}
+
+ret_val<void> item::put_in( detached_ptr<item> &&payload, pocket_type pk_type,
+                            const bool unseal_pockets, Character *carrier, const bool quiet )
+{
+    if( !payload || payload->is_null() ) {
+        return ret_val<void>::make_failure( _( "There is nothing to put in." ) );
+    }
+    // keep what the messages need: the payload is gone after a successful insert
+    const std::string payload_type = payload->typeId().str();
+    const int payload_count = payload->count();
+    ret_val<item *> result = contents.insert_item( std::move( payload ), pk_type, false,
+                             unseal_pockets );
+    if( !result.success() ) {
+        if( !quiet ) {
+            debugmsg( "tried to put an item (%s) count (%d) in a container (%s) that cannot contain it: %s",
+                      payload_type, payload_count, typeId().str(), result.str() );
+        }
+        return ret_val<void>::make_failure( result.str() );
+    }
+    if( carrier ) {
+        result.value()->on_pickup( *carrier );
+    }
+    on_contents_changed();
+    return ret_val<void>::make_success( result.str() );
+}
+
+void item::force_insert_item( detached_ptr<item> &&it, pocket_type pk_type )
+{
+    contents.force_insert_item( std::move( it ), pk_type );
+    on_contents_changed();
+}
+
 void item::put_in_copies( const item &proto, int n )
 {
     if( proto.typeId() == itype_id::NULL_ID() || &proto == this ) {
@@ -1333,10 +1423,17 @@ ret_val<bool> item::try_put_in( detached_ptr<item> &&payload, pocket_type type )
     item_pocket *dest = nullptr;
     if( type == pocket_type::CONTAINER ) {
         // may be a pocket of a contained item, if none of ours fits (DDA #79913)
-        std::tie( holder, dest ) = contents.best_pocket( *payload );
+        // an armor plate goes into a free plate slot of this item first; best_pocket skips them
+        dest = ablative::free_slot_for( *this, *payload );
+        if( dest == nullptr ) {
+            const pocket_choice found = contents.best_pocket( *payload );
+            holder = found.container;
+            dest = found.pocket;
+        }
     } else {
         for( item_pocket *pocket : contents.get_pockets( type ) ) {
-            if( pocket->can_contain( *payload ).success() ) {
+            // J2: DDA's can_contain has no sealed test, so sealed pockets are skipped here (D23)
+            if( !pocket->sealed() && pocket->can_contain( *payload ).success() ) {
                 dest = pocket;
                 break;
             }
@@ -1351,13 +1448,17 @@ ret_val<bool> item::try_put_in( detached_ptr<item> &&payload, pocket_type type )
         return ret_val<bool>::make_success();
     }
     const ret_val<item_pocket::contain_code> why = contents.can_contain( *payload, type );
+    // a plate that doesn't fit says which slot it needs
+    const std::string plate_reason = type == pocket_type::CONTAINER ?
+                                     ablative::refusal_reason( *this, *payload ) : std::string();
     return ret_val<bool>::make_failure( _( "The %1$s won't fit in the %2$s: %3$s." ),
-                                        payload->tname(), tname(), why.str() );
+                                        payload->tname(), tname(),
+                                        plate_reason.empty() ? why.str() : plate_reason );
 }
 
 void item::add_item_with_id( const itype_id &itype, int count )
 {
-    detached_ptr<item> new_item = item::spawn( itype, calendar::turn, count );
+    detached_ptr<item> new_item = item_controller->spawn_migrated( itype, calendar::turn, count );
     contents.insert_item( std::move( new_item ) );
 }
 
@@ -3398,111 +3499,8 @@ void item::book_info( std::vector<iteminfo> &info, const iteminfo_query *parts, 
 // the armor "Storage" line, not as containers or holsters of their own.
 static bool is_live_pocket( const item_pocket &pocket )
 {
-    return !pocket.is_carry();
-}
-
-void item::container_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int /*batch*/,
-                           bool /*debug*/ ) const
-{
-    if( !parts->test( iteminfo_parts::CONTAINER_DETAILS ) ) {
-        return;
-    }
-
-    std::vector<const item_pocket *> shown;
-    for( const item_pocket &pocket : contents.get_pockets() ) {
-        // worn storage is described by the armor "Storage" line
-        if( pocket.is_type( pocket_type::CONTAINER ) && is_live_pocket( pocket ) ) {
-            shown.push_back( &pocket );
-        }
-    }
-    if( shown.empty() ) {
-        return;
-    }
-
-    insert_separation_line( info );
-    const bool numbered = shown.size() > 1;
-    int number = 0;
-    for( const item_pocket *pocket : shown ) {
-        ++number;
-        const pocket_data &pd = pocket->get_data();
-        std::string str = numbered ? string_format( _( "<bold>Pocket %d</bold>: " ), number ) :
-                          _( "This container " );
-
-        if( pd.sealed_by_type || pd.sealed_data ) {
-            str += pocket->sealed() ? _( "is <info>sealed</info>, " ) :
-                   _( "can be <info>resealed</info>, " );
-        }
-        if( pd.watertight ) {
-            str += _( "is <info>watertight</info>, " );
-        }
-        if( pd.airtight ) {
-            str += _( "is <info>airtight</info>, " );
-        }
-        if( pd.rigid ) {
-            str += _( "is <info>rigid</info>, " );
-        }
-        if( pd.open_container ) {
-            str += _( "is <info>open</info> (spills when put in another container), " );
-        }
-        if( pd.spoil_multiplier <= 0.0f ) {
-            str += _( "<good>prevents spoiling</good>, " );
-        }
-        if( pd.holster ) {
-            str += string_format( _( "is a <info>holster</info> (draw cost %d moves), " ), pd.moves );
-        }
-
-        if( pd.ammo_restriction.empty() ) {
-            str += string_format( _( "can store <info>%s %s</info>" ),
-                                  format_volume( pocket->volume_capacity() ), volume_units_long() );
-            if( pd.max_contains_weight < pocket_data::max_weight_for_container ) {
-                str += string_format( _( " and <info>%.2f %s</info>" ),
-                                      convert_weight( pocket->weight_capacity() ), weight_units() );
-            }
-        } else {
-            std::vector<std::string> ammo;
-            for( const auto &res : pd.ammo_restriction ) {
-                ammo.push_back( string_format( _( "%d rounds of %s" ), res.second, res.first->name() ) );
-            }
-            str += string_format( _( "can store <info>%s</info>" ), enumerate_as_string( ammo ) );
-        }
-        str += ".";
-        info.emplace_back( "CONTAINER", str );
-
-        if( pd.max_item_volume || pd.min_item_volume > 0_ml ) {
-            std::string limits = _( "Accepts single items" );
-            if( pd.min_item_volume > 0_ml ) {
-                limits += string_format( _( " of at least <info>%s %s</info>" ),
-                                         format_volume( pd.min_item_volume ), volume_units_long() );
-            }
-            if( pd.max_item_volume ) {
-                limits += string_format( pd.min_item_volume > 0_ml ? _( " and at most <info>%s %s</info>" ) :
-                                         _( " of at most <info>%s %s</info>" ),
-                                         format_volume( *pd.max_item_volume ), volume_units_long() );
-            }
-            info.emplace_back( "CONTAINER", limits + "." );
-        }
-
-        // what the pocket restricts, in the words the flags use (DDA #43085)
-        std::vector<std::string> restrictions;
-        for( const flag_id &f : pd.flag_restriction ) {
-            const std::string text = f.is_valid() ? f->restriction() : std::string();
-            restrictions.push_back( text.empty() ? string_format( _( "items marked %s" ), f.str() ) : text );
-        }
-        for( const itype_id &it : pd.item_restriction ) {
-            restrictions.push_back( it.is_valid() ? it->nname( 1 ) : it.str() );
-        }
-        if( !restrictions.empty() ) {
-            info.emplace_back( "CONTAINER", string_format( _( "Only holds %s." ),
-                               enumerate_as_string( restrictions, enumeration_conjunction::or_ ) ) );
-        }
-        if( !pd.skill_restriction.empty() ) {
-            info.emplace_back( "CONTAINER", string_format( _( "Only for guns using the skill: %s." ),
-                               enumerate_as_string( pd.skill_restriction.begin(), pd.skill_restriction.end(),
-            []( const skill_id & sk ) {
-                return sk->name();
-            } ) ) );
-        }
-    }
+    // plate slots are listed as plate slots, not as containers or holsters
+    return !pocket.is_carry() && !pocket.get_data().ablative;
 }
 
 void item::battery_info( std::vector<iteminfo> &info, const iteminfo_query * /*parts*/,
@@ -4207,101 +4205,119 @@ void item::throw_info( std::vector < iteminfo > &info, const iteminfo_query *par
     insert_separation_line( info );
 }
 
+// DDA item_info.cpp:3752
+namespace
+{
+struct counted_item {
+    const item *content = nullptr;
+    int count = 0;
+};
+
+std::vector<counted_item> get_item_duplicate_counts( const std::vector<item *> &items )
+{
+    std::vector<counted_item> counted_items;
+    for( const item *contents_item : items ) {
+        bool found = false;
+        for( counted_item &content : counted_items ) {
+            if( content.content->display_stacked_with( *contents_item ) ) {
+                content.count += 1;
+                found = true;
+            }
+        }
+        if( !found ) {
+            counted_items.push_back( { contents_item, 1 } );
+        }
+    }
+    return counted_items;
+}
+} // namespace
+
+// Per DDA item_info.cpp:3773 (item::contents_info): mods, then the contents grouped by stack.
 void item::contents_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int batch,
                           bool debug ) const
 {
-    if( contents.empty() || !parts->test( iteminfo_parts::DESCRIPTION_CONTENTS ) ) {
+    if( ( toolmods().empty() && gunmods().empty() && contents.empty() ) ||
+        !parts->test( iteminfo_parts::DESCRIPTION_CONTENTS ) ) {
         return;
     }
     const std::string space = "  ";
 
     for( const item *mod : is_gun() ? gunmods() : toolmods() ) {
+        // mod_str = "(Integrated) Mod: %mod_name% (%mod_location%) "
         std::string mod_str;
+        if( mod->is_irremovable() ) {
+            mod_str = _( "Integrated mod: " );
+        } else {
+            mod_str = _( "Mod: " );
+        }
+        mod_str += string_format( "<bold>%s</bold>", mod->tname() );
         if( mod->type->gunmod ) {
-            if( mod->is_irremovable() ) {
-                mod_str = _( "Integrated mod: " );
-            } else {
-                mod_str = _( "Mod: " );
-            }
-            mod_str += string_format( "<bold>%s</bold> (%s) ", mod->tname(),
-                                      mod->type->gunmod->location.name() );
+            mod_str += string_format( " (%s) ", mod->type->gunmod->location.name() );
         }
         insert_separation_line( info );
         info.emplace_back( "DESCRIPTION", mod_str );
         info.emplace_back( "DESCRIPTION", mod->type->description.translated() );
     }
+
+    const auto all_contents = contents.all_items_top();
+    const std::vector<counted_item> counted_contents = get_item_duplicate_counts( all_contents );
     bool contents_header = false;
-    for( const item *contents_item : contents.all_items_top() ) {
-        if( !contents_item->type->mod ) {
-            if( !contents_header ) {
-                insert_separation_line( info );
-                info.emplace_back( "DESCRIPTION", _( "<bold>Contents of this item</bold>:" ) );
-                contents_header = true;
-            } else {
-                // Separate items with a blank line
-                info.emplace_back( "DESCRIPTION", space );
-            }
+    for( const counted_item &content_w_count : counted_contents ) {
+        const item *contents_item = content_w_count.content;
+        const int count = content_w_count.count;
+        if( !contents_header ) {
+            insert_separation_line( info );
+            info.emplace_back( "DESCRIPTION", _( "<bold>Contents of this item</bold>:" ) );
+            contents_header = true;
+        } else {
+            // Separate items with a blank line
+            info.emplace_back( "DESCRIPTION", space );
+        }
 
-            const translation &description = contents_item->type->description;
+        const translation &description = contents_item->type->description;
 
-            if( contents_item->made_of( LIQUID ) ) {
-                units::volume contents_volume = contents_item->volume() * batch;
-                int converted_volume_scale = 0;
-                const double converted_volume =
-                    round_up( convert_volume( contents_volume.value(),
-                                              &converted_volume_scale ), 2 );
-                info.emplace_back( "DESCRIPTION", contents_item->display_name() );
-                iteminfo::flags f = iteminfo::no_newline;
-                if( display_mod_source ) {
-                    info.emplace_back( "DESCRIPTION", string_format( _( "<stat>Origin: %s</stat>" ),
-                                       enumerate_as_string( contents_item->type->src.begin(),
-                    contents_item->type->src.end(), []( const std::pair<itype_id, mod_id> &content_source ) {
-                        return string_format( "'%s'", content_source.second->name() );
-                    }, enumeration_conjunction::arrow ) ) );
-                }
-                if( display_object_ids ) {
-                    info.emplace_back( "DESCRIPTION", colorize(
-                                           string_format( "[%s]", contents_item->type->get_id() ),
-                                           c_light_blue ) );
-                }
-                if( converted_volume_scale != 0 ) {
-                    f |= iteminfo::is_decimal;
-                }
-                info.emplace_back( "CONTAINER", description + space,
-                                   string_format( "<num> %s", volume_units_abbr() ), f,
-                                   converted_volume );
-            } else {
-                info.emplace_back( "DESCRIPTION", contents_item->display_name() );
-                if( display_mod_source ) {
-                    info.emplace_back( "DESCRIPTION", string_format( _( "<stat>Origin: %s</stat>" ),
-                                       enumerate_as_string( contents_item->type->src.begin(),
-                    contents_item->type->src.end(), []( const std::pair<itype_id, mod_id> &content_source ) {
-                        return string_format( "'%s'", content_source.second->name() );
-                    }, enumeration_conjunction::arrow ) ) );
-                }
-                if( display_object_ids ) {
-                    info.emplace_back( "DESCRIPTION", colorize(
-                                           string_format( "[%s]", contents_item->type->get_id() ),
-                                           c_light_blue ) );
-                }
-                info.emplace_back( "DESCRIPTION", description.translated() );
+        if( contents_item->made_of( LIQUID ) ) {
+            const units::volume contents_volume = contents_item->volume() * batch;
+            info.emplace_back( "DESCRIPTION",
+                               colorize( contents_item->display_name(), contents_item->color_in_inventory() ) );
+            info.emplace_back( vol_to_info( "CONTAINER", description + space, contents_volume ) );
+        } else {
+            std::string name;
+            if( count > 1 ) {
+                name += std::to_string( count ) + " ";
             }
+            name += colorize( contents_item->display_name( count ), contents_item->color_in_inventory() );
+            info.emplace_back( "DESCRIPTION", name );
+            info.emplace_back( "DESCRIPTION", description.translated() );
+        }
 
-            if( debug && contents_item && contents_item->goes_bad() ) {
-                info.emplace_back( "CONTAINER", space );
-                info.emplace_back( "CONTAINER", _( "age (turns): " ),
-                                   "", iteminfo::lower_is_better,
-                                   to_turns<int>( contents_item->age() ) );
-                info.emplace_back( "CONTAINER", _( "rot (turns): " ),
-                                   "", iteminfo::lower_is_better,
-                                   to_turns<int>( contents_item->rot ) );
-                info.emplace_back( "CONTAINER", space + _( "shelf life (turns): " ),
-                                   "", iteminfo::lower_is_better,
-                                   to_turns<int>( contents_item->get_shelf_life() ) );
-                info.emplace_back( "CONTAINER", _( "last rot: " ),
-                                   "", iteminfo::lower_is_better,
-                                   to_turn<int>( contents_item->last_rot_check ) );
-            }
+        // CDF: the origin and id lines of the debug display options, and the rot debug block
+        if( display_mod_source ) {
+            info.emplace_back( "DESCRIPTION", string_format( _( "<stat>Origin: %s</stat>" ),
+                               enumerate_as_string( contents_item->type->src.begin(),
+            contents_item->type->src.end(), []( const std::pair<itype_id, mod_id> &content_source ) {
+                return string_format( "'%s'", content_source.second->name() );
+            }, enumeration_conjunction::arrow ) ) );
+        }
+        if( display_object_ids ) {
+            info.emplace_back( "DESCRIPTION", colorize(
+                                   string_format( "[%s]", contents_item->type->get_id() ),
+                                   c_light_blue ) );
+        }
+        if( debug && contents_item && contents_item->goes_bad() ) {
+            info.emplace_back( "CONTAINER", space );
+            info.emplace_back( "CONTAINER", _( "age (turns): " ),
+                               "", iteminfo::lower_is_better,
+                               to_turns<int>( contents_item->age() ) );
+            info.emplace_back( "CONTAINER", _( "rot (turns): " ),
+                               "", iteminfo::lower_is_better,
+                               to_turns<int>( contents_item->rot ) );
+            info.emplace_back( "CONTAINER", space + _( "shelf life (turns): " ),
+                               "", iteminfo::lower_is_better,
+                               to_turns<int>( contents_item->get_shelf_life() ) );
+            info.emplace_back( "CONTAINER", _( "last rot: " ),
+                               "", iteminfo::lower_is_better,
+                               to_turn<int>( contents_item->last_rot_check ) );
         }
     }
 }
@@ -4689,7 +4705,8 @@ std::vector<iteminfo> item::info( const iteminfo_query &parts_ref, int batch,
         food_info( food_item, info, parts, batch, debug, temperature );
     }
 
-    container_info( info, parts, batch, debug );
+    // per DDA item_info.cpp:4479: the pocket text first, then the contents of the item
+    contents.info( info, parts );
     contents_info( info, parts, batch, debug );
     combat_info( info, parts, batch, debug );
     throw_info( info, parts, batch, debug );
@@ -5252,9 +5269,14 @@ void item::on_contents_changed()
         convert( type->container->unseals_into );
     }
 
+    // DDA item_container.cpp:294
+    contents.update_open_pockets();
     encumbrance_update_ = true;
     invalidate_processing_cache_upwards();
     invalidate_pocket_caches_upwards();
+    if( empty_container() ) {
+        clear_automatic_whitelist();
+    }
 
     if( !has_position() || where() != item_location_type::vehicle ) {
         return;
@@ -5392,6 +5414,10 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
         }
         if( is_armor() && has_clothing_mod() ) {
             modamt++;
+        }
+        // attached MOLLE pouches count like mods (DDA item_tname.cpp:200)
+        if( contents.has_additional_pockets() ) {
+            modamt += static_cast<int>( contents.get_added_pockets().size() );
         }
         if( modamt ) {
             labeltext += string_format( "+%d", modamt );
@@ -5835,6 +5861,11 @@ units::mass item::weight( bool include_contents, bool integral ) const
         }
     }
 
+    // if it has additional pockets include the mass of those
+    if( contents.has_additional_pockets() ) {
+        ret += contents.get_additional_weight();
+    }
+
     // if this is an ammo belt add the weight of any implicitly contained linkages
     if( is_magazine() ) {
         const auto &linkage = type->magazine->linkage;
@@ -5921,16 +5952,81 @@ units::volume item::base_volume() const
     return type->volume;
 }
 
+// CDF: DDA item_gun_tool_ammo.cpp:713 (item::sawn_off_reduction), file-local so item.h is not touched.
+static auto sawn_off_reduction_of( const item &gun ) -> units::length
+{
+    const int barrel_percentage = gun.type->gun->barrel_volume / ( gun.type->volume / 100 );
+    return gun.type->longest_side * barrel_percentage / 100;
+}
+
+// Per DDA item.cpp:2107 (item::length).
 units::length item::length() const
 {
-    if( is_null() || made_of( LIQUID ) ) {
+    static const flag_id flag_REMOVED_STOCK( "REMOVED_STOCK" );
+    static const flag_id flag_COLLAPSED_STOCK( "COLLAPSED_STOCK" );
+    static const flag_id flag_FOLDED_STOCK( "FOLDED_STOCK" );
+    if( is_null() || made_of( LIQUID ) || ( is_soft() && is_container_empty() ) ) {
         return 0_mm;
     }
+
+    // CDF: BN gives every item type at least 1 ml, but a disintegrating belt has no volume of its
+    // own (item::volume); DDA says a volume-less item has a length of -1 mm
+    if( !type->rigid && type->has_flag( flag_MAG_BELT ) &&
+        type->has_flag( flag_MAG_DESTROY ) ) {
+        return -1_mm;
+    }
+
     if( is_corpse() ) {
+        // CDF: corpse_volume( corpse ) replaces DDA's corpse->volume
         return units::default_length_from_volume( corpse_volume( corpse ) );
     }
-    // TODO: gunmod protrusion and sawn-off adjustments, once CDF has per-mod lengths.
-    return type->longest_side;
+
+    if( is_gun() ) {
+        units::length length_adjusted = type->longest_side;
+
+        //TODO: Unhardcode this now that integral_longest_side can be used
+        if( gunmod_find( itype_barrel_small ) ) {
+            length_adjusted = type->longest_side - sawn_off_reduction_of( *this );
+        }
+
+        std::vector<const item *> mods = gunmods();
+        // only the longest thing sticking off the gun matters for length adjustment
+        // TODO: Differentiate from back end mods like stocks vs front end like bayonets and muzzle devices
+        units::length max_length = 0_mm;
+        units::length stock_length = 0_mm;
+        units::length stock_accessory_length = 0_mm;
+        for( const item *mod : mods ) {
+            // stocks and accessories for stocks are added with whatever the longest thing on the front is
+            // stock mount is added here for support for sawing off stocks
+            if( mod->type->gunmod->location.str() == "stock mount" ) {
+                if( has_flag( flag_REMOVED_STOCK ) ) {
+                    // stock has been removed so slightly more length removed about 26cm
+                    stock_length -= 26_cm;
+                }
+            } else if( mod->type->gunmod->location.str() == "stock" ) {
+                stock_length = mod->type->integral_longest_side;
+                if( has_flag( flag_COLLAPSED_STOCK ) || has_flag( flag_FOLDED_STOCK ) ) {
+                    // stock is folded so need to reduce length
+
+                    // folded stock length is estimated at about 20 cm, LOP for guns should be about
+                    // 13.5 inches and a folding stock folds past the trigger and isn't perfectly efficient
+                    stock_length -= 20_cm;
+                }
+            } else if( mod->type->gunmod->location.str() == "stock accessory" ) {
+                stock_accessory_length = mod->type->integral_longest_side;
+            } else {
+                units::length l = mod->type->integral_longest_side;
+                if( l > max_length ) {
+                    max_length = l;
+                }
+            }
+        }
+        return length_adjusted + max_length + stock_length + stock_accessory_length;
+    }
+
+    units::length max = is_soft() ? 0_mm : type->longest_side;
+    max = std::max( contents.item_length_modifier(), max );
+    return max;
 }
 
 units::volume item::volume( bool integral ) const
@@ -5975,13 +6071,17 @@ units::volume item::volume( bool integral ) const
         }
     }
 
-    // Non-rigid items add the volume of the content
-    if( !type->rigid ) {
-        // Disintegrating belts should exactly match contents volume, don't enforce the 1_ml minimum
-        if( type->has_flag( flag_MAG_BELT ) && type->has_flag( flag_MAG_DESTROY ) ) {
-            ret = 0_ml;
-        }
-        ret += contents.item_size_modifier();
+    // The pockets decide whether the content adds to the volume (DDA item.cpp volume(): rigid
+    // pockets add nothing); the pockets of BN containers copy the rigid flag of the type.
+    // Disintegrating belts should exactly match contents volume, don't enforce the 1_ml minimum
+    if( !type->rigid && type->has_flag( flag_MAG_BELT ) && type->has_flag( flag_MAG_DESTROY ) ) {
+        ret = 0_ml;
+    }
+    ret += contents.item_size_modifier();
+
+    // if it has additional pockets include the volume of those
+    if( contents.has_additional_pockets() ) {
+        ret += contents.get_additional_volume();
     }
 
     // Some magazines sit (partly) flush with the item so add less extra volume
@@ -6909,7 +7009,7 @@ bool item::is_power_armor() const
              has_flag( flag_POWERARMOR_MOD ) );
 }
 
-int item::get_avg_encumber( const Character &who ) const
+int item::get_avg_encumber( const Character &who, encumber_flags flags ) const
 {
     const islot_armor *armor = find_armor_data();
     if( !armor ) {
@@ -6922,7 +7022,7 @@ int item::get_avg_encumber( const Character &who ) const
 
     for( const armor_portion_data &entry : armor->data ) {
         for( const bodypart_str_id &limb : entry.covers ) {
-            int encumber = get_encumber( who, limb.id() );
+            int encumber = get_encumber( who, limb.id(), flags );
             if( encumber ) {
                 avg_encumber += encumber;
                 ++avg_ctr;
@@ -6936,28 +7036,10 @@ int item::get_avg_encumber( const Character &who ) const
     }
 }
 
-int item::get_encumber( const Character &who, const bodypart_id &bodypart ) const
-{
-    // what the garment holds in its own pockets; carried items are inside it, so the
-    // encumbrance follows where they actually are. `volume_encumber_modifier` weights a pocket.
-    units::volume contents_volume = contents.item_size_modifier();
-    for( const item_pocket &pocket : contents.get_pockets() ) {
-        if( pocket.is_carry() && !pocket.is_holster() ) {
-            const double modifier = pocket.get_data().volume_encumber_modifier;
-            if( modifier != 1.0f ) {
-                contents_volume += units::from_milliliter( static_cast<int64_t>( std::llround(
-                                       static_cast<double>( pocket.contains_volume().value() ) *
-                                       ( modifier - 1.0 ) ) ) );
-            }
-        }
-    }
-    contents_volume = std::max( contents_volume, 0_ml );
-
-    return get_encumber_when_containing( who, contents_volume, bodypart );
-}
-
-int item::get_encumber_when_containing(
-    const Character &who, const units::volume &contents_volume, const bodypart_id &bodypart ) const
+// DDA item_armor.cpp:524-613. CDF: wearable guns without armor data keep BN's volume rule, the
+// fault modifiers are not ported (CDF has no armor faults).
+int item::get_encumber( const Character &who, const bodypart_id &bodypart,
+                        encumber_flags flags ) const
 {
     const islot_armor *armor = find_armor_data();
     if( armor == nullptr ) {
@@ -6965,26 +7047,45 @@ int item::get_encumber_when_containing(
         return is_gun() ? volume() / 750_ml : 0;
     }
 
-    int encumber = 0;
+    float relative_encumbrance;
+    if( flags & encumber_flags::assume_full ) {
+        relative_encumbrance = 1.0f;
+    } else if( flags & encumber_flags::assume_empty ) {
+        relative_encumbrance = 0.0f;
+    } else {
+        // Additional encumbrance from non-rigid pockets
+        relative_encumbrance = contents.relative_encumbrance();
+    }
 
-    for( const armor_portion_data &entry : armor->data ) {
-        if( entry.covers.test( bodypart.id() ) ) {
-            encumber = entry.encumber;
-            // Non-rigid items add additional encumbrance proportional to their volume
-            if( this->is_non_rigid() ) {
-                const int capacity = get_total_capacity().value();
-                if( entry.max_encumber == 0 ) {
-                    encumber += contents_volume / 500_ml;
-                } else {
-                    if( capacity <= 0 ) {
-                        debugmsg( "Non-rigid item (%s) without storage capacity.", tname() );
-                    } else {
-                        // Cast up to 64 to prevent overflow. Dividing before would prevent this but lose data.
-                        encumber += static_cast<int64_t>( entry.max_encumber - entry.encumber ) * contents_volume.value() /
-                                    capacity;
-                    }
+    int encumber = 0;
+    if( const std::optional<armor_portion_data> portion_data = portion_for_bodypart( bodypart ) ) {
+        encumber = portion_data->encumber;
+        if( is_gun() ) {
+            encumber += volume() * portion_data->volume_encumber_modifier /
+                        armor_portion_data::volume_per_encumbrance;
+        }
+
+        // encumbrance from added or modified pockets
+        const int additional_encumbrance = contents.get_additional_pocket_encumbrance(
+                                               portion_data->volume_encumber_modifier );
+        encumber += static_cast<int>( std::ceil( relative_encumbrance *
+                                      ( portion_data->max_encumber + additional_encumbrance -
+                                        portion_data->encumber ) ) );
+
+        // add the encumbrance values of any ablative plates and additional encumbrance pockets
+        if( has_additional_encumbrance() ) {
+            for( const item_pocket *pocket : contents.get_container_pockets() ) {
+                if( pocket->get_pocket_data()->extra_encumbrance > 0 && !pocket->empty() ) {
+                    encumber += pocket->get_pocket_data()->extra_encumbrance;
                 }
             }
+        }
+    }
+
+    // even if we don't have data we might have ablative armor draped over it
+    if( is_ablative() ) {
+        for( const item *plate : all_ablative_armor() ) {
+            encumber += plate->get_encumber( who, bodypart, flags );
         }
     }
 
@@ -7012,6 +7113,15 @@ int item::get_encumber_when_containing(
     encumber += std::lround( get_clothing_mod_val( clothing_mod_type_encumbrance ) );
 
     return encumber;
+}
+
+// CDF: BN spelling, kept for its callers and tests. DDA asks for an assumed full or empty
+// container (encumber_flags), so any contents mean "full".
+int item::get_encumber_when_containing(
+    const Character &who, const units::volume &contents_volume, const bodypart_id &bodypart ) const
+{
+    return get_encumber( who, bodypart, contents_volume > 0_ml ? encumber_flags::assume_full :
+                         encumber_flags::assume_empty );
 }
 
 layer_level item::get_layer() const
@@ -7048,31 +7158,39 @@ int item::get_avg_coverage() const
         const auto max_coverage = decltype( volume_coverage ) { 100 };
         return is_gun() ? static_cast<int>( std::min( volume_coverage, max_coverage ) ) : 0;
     }
-    int avg_coverage = 0;
-    int avg_ctr = 0;
-    for( const armor_portion_data &entry : armor->data ) {
-        for( const bodypart_str_id &limb : entry.covers ) {
-            int coverage = get_coverage( limb );
-            if( coverage ) {
-                avg_coverage += coverage;
-                ++avg_ctr;
-            }
-        }
-    }
-    if( avg_coverage == 0 ) {
-        return 0;
-    } else {
-        avg_coverage /= avg_ctr;
-        return avg_coverage;
-    }
+    return get_avg_coverage( cover_type::COVER_DEFAULT );
 }
 
 int item::get_coverage( const bodypart_id &bodypart ) const
 {
-    if( std::optional<armor_portion_data> portion_data = portion_for_bodypart( bodypart ) ) {
-        return portion_data->coverage;
+    return get_coverage( bodypart, cover_type::COVER_DEFAULT );
+}
+
+bool item::has_sub_coverage() const
+{
+    const islot_armor *armor = find_armor_data();
+    return armor != nullptr && !armor->sub_data.empty();
+}
+
+int item::get_coverage( const bodypart_id &bodypart, const sub_bodypart_str_id &sbp ) const
+{
+    return get_coverage( bodypart, sbp, cover_type::COVER_DEFAULT );
+}
+
+bool item::covers( const sub_bodypart_str_id &sbp ) const
+{
+    if( sbp.is_null() || !sbp.is_valid() ) {
+        return false;
     }
-    return 0;
+    const bodypart_id bp = sbp->parent.id();
+    if( !covers( bp ) ) {
+        return false;
+    }
+    const islot_armor *armor = find_armor_data();
+    if( armor == nullptr || armor->sub_data.empty() ) {
+        return true;
+    }
+    return get_coverage( bp, sbp ) > 0;
 }
 
 std::optional<armor_portion_data> item::portion_for_bodypart( const bodypart_id &bodypart ) const
@@ -7945,11 +8063,6 @@ bool item::is_map() const
     return get_category().get_id() == itemcat_maps;
 }
 
-bool item::is_container() const
-{
-    return !!type->container;
-}
-
 bool item::is_watertight_container() const
 {
     return type->container && type->container->watertight && type->container->seals;
@@ -8093,20 +8206,21 @@ bool item::is_container_empty() const
     return contents.empty();
 }
 
-bool item::is_container_full( bool allow_bucket ) const
+int item::get_pocket_size() const
 {
-    if( is_container_empty() ) {
-        return false;
-    }
-    if( is_watertight_container() ) {
-        return get_remaining_capacity_for_liquid( contents.front(), allow_bucket ) == 0;
-    } else if( !is_reloadable_with( contents.front().typeId() ) ) {
-        return true;
+    // set the amount of space that will be used on the vest based on the size of the item
+    if( has_flag( flag_PALS_SMALL ) ) {
+        return 1;
+    } else if( has_flag( flag_PALS_MEDIUM ) ) {
+        return 2;
     } else {
-        int ammo = contents.front().charges_per_volume( get_container_capacity() ) -
-                   contents.front().charges;
-        return ammo <= 0;
+        return 3;
     }
+}
+
+bool item::can_attach_as_pocket() const
+{
+    return has_flag( flag_PALS_SMALL ) || has_flag( flag_PALS_MEDIUM ) || has_flag( flag_PALS_LARGE );
 }
 
 bool item::can_unload_liquid() const
@@ -8327,64 +8441,12 @@ auto item::get_relic_recharge_scheme() const -> std::vector<relic_recharge>
     return recharge_schemes;
 }
 
-bool item::can_contain( const item &it ) const
-{
-    if( &it == this ) {
-        return false;
-    }
-    return contents.can_contain( it ).success();
-}
-
-bool item::can_contain( const itype &tp ) const
-{
-    if( !type->container ) {
-        // TODO: Tools etc.
-        return false;
-    }
-
-    if( tp.phase == LIQUID && !type->container->watertight ) {
-        return false;
-    }
-
-    // TODO: Acid in waterskins
-    return true;
-}
-
 const item &item::get_contained() const
 {
     if( contents.empty() ) {
         return null_item_reference();
     }
     return contents.front();
-}
-
-bool item::spill_contents( Character &c )
-{
-    if( !is_container() || is_container_empty() ) {
-        return true;
-    }
-
-    if( c.is_npc() ) {
-        return spill_contents( c.bub_pos() );
-    }
-
-    contents.handle_liquid_or_spill( c );
-    on_contents_changed();
-
-    return true;
-}
-
-bool item::spill_contents( const tripoint_bub_ms &pos )
-{
-    if( !is_container() || is_container_empty() ) {
-        return true;
-    }
-
-    for( detached_ptr<item> &it : contents.clear_items() ) {
-        get_map().add_item_or_charges( pos, std::move( it ) );
-    }
-
-    return true;
 }
 
 int item::get_chapters() const
@@ -9767,14 +9829,6 @@ int item::getlight_emit() const
     return lumint;
 }
 
-units::volume item::get_container_capacity() const
-{
-    if( !is_container() ) {
-        return 0_ml;
-    }
-    return type->container->contains;
-}
-
 units::volume item::get_total_capacity() const
 {
     units::volume result = get_storage() + get_container_capacity();
@@ -9796,97 +9850,6 @@ units::volume item::get_total_capacity() const
     }
 
     return result;
-}
-
-int item::get_remaining_capacity_for_liquid( const item &liquid, bool allow_bucket,
-        std::string *err ) const
-{
-    const auto error = [ &err ]( const std::string & message ) {
-        if( err != nullptr ) {
-            *err = message;
-        }
-        return 0;
-    };
-
-    int remaining_capacity = 0;
-
-    // TODO: (sm) is_reloadable_with and this function call each other and can recurse for
-    // watertight containers.
-    if( !is_container() && is_reloadable_with( liquid.typeId() ) ) {
-        if( ammo_remaining() != 0 && ammo_current() != liquid.typeId() ) {
-            return error( string_format( _( "You can't mix loads in your %s." ), tname() ) );
-        }
-        remaining_capacity = ammo_capacity() - ammo_remaining();
-    } else if( is_container() ) {
-        if( !type->container->watertight && liquid.made_of( LIQUID ) ) {
-            return error( string_format( _( "That %s isn't water-tight." ), tname() ) );
-        } else if( !type->container->seals && ( !allow_bucket || !is_bucket() ) ) {
-            return error( string_format( is_bucket() ?
-                                         _( "That %s must be on the ground or held to hold contents!" )
-                                         : _( "You can't seal that %s!" ), tname() ) );
-        } else if( !contents.empty() && contents.front().typeId() != liquid.typeId() ) {
-            return error( string_format( _( "You can't mix loads in your %s." ), tname() ) );
-        }
-        remaining_capacity = liquid.charges_per_volume( get_container_capacity() );
-        if( !contents.empty() ) {
-            remaining_capacity -= contents.front().charges;
-        }
-    } else {
-        return error( string_format( _( "That %1$s won't hold %2$s." ), tname(),
-                                     liquid.tname() ) );
-    }
-
-    if( remaining_capacity <= 0 ) {
-        return error( string_format( _( "Your %1$s can't hold any more %2$s." ), tname(),
-                                     liquid.tname() ) );
-    }
-
-    return remaining_capacity;
-}
-
-int item::get_remaining_capacity_for_liquid( const item &liquid, const Character &who,
-        std::string *err ) const
-{
-    const bool allow_bucket = who.is_wielding( *this ) || !who.has_item( *this );
-    int res = get_remaining_capacity_for_liquid( liquid, allow_bucket, err );
-
-    if( res > 0 && !type->rigid && who.has_item( *this ) ) {
-        const units::volume volume_to_expand = std::max( who.volume_capacity() - who.volume_carried(),
-                                               0_ml );
-
-        res = std::min( liquid.charges_per_volume( volume_to_expand ), res );
-
-        if( res == 0 && err != nullptr ) {
-            *err = string_format( _( "That %s doesn't have room to expand." ), tname() );
-        }
-    }
-
-    return res;
-}
-
-int item::get_remaining_capacity_for_id( const itype_id &liquid, bool allow_buckets ) const
-{
-    int rem_cap = 0;
-    itype obj = liquid.obj();
-    if( !is_container() && is_reloadable_with( liquid ) ) {
-        if( ammo_remaining() != 0 && ammo_current() != liquid ) {
-            return 0;
-        }
-        rem_cap = ammo_capacity() - ammo_remaining();
-    } else if( is_container() ) {
-        if( !type->container->watertight ) {
-            return 0;
-        } else if( !type->container->seals && ( !allow_buckets || !is_bucket() ) ) {
-            return 0;
-        } else if( !contents.empty() && contents.front().typeId() != liquid ) {
-            return 0;
-        }
-        rem_cap = obj.charges_per_volume( get_container_capacity() );
-        if( !contents.empty() ) {
-            rem_cap -= contents.front().charges;
-        }
-    }
-    return rem_cap;
 }
 
 detached_ptr<item> item::use_amount( detached_ptr<item> &&self, const itype_id &it, int &quantity,
@@ -9946,50 +9909,6 @@ bool item::allow_crafting_component() const
     }
 
     return contents.empty();
-}
-
-detached_ptr<item> item::fill_with( detached_ptr<item> &&liquid, int amount )
-{
-    if( amount == -1 ) {
-        amount = INT_MAX;
-    }
-    amount = std::min( get_remaining_capacity_for_liquid( *liquid, true ),
-                       std::min( amount, liquid->charges ) );
-    if( amount <= 0 ) {
-        return std::move( liquid );
-    }
-
-    if( !is_container() ) {
-        if( !is_reloadable_with( liquid->typeId() ) ) {
-            debugmsg( "Tried to fill %s which is not a container and can't be reloaded with %s.",
-                      tname(), liquid->tname() );
-            return std::move( liquid );
-        }
-        ammo_set( liquid->typeId(), ammo_remaining() + amount );
-    } else if( is_food_container() ) {
-        item &cts = contents.front();
-
-        cts.set_rot( weighted_averaged_rot( &cts, &*liquid ) );
-        cts.mod_charges( amount );
-    } else if( !is_container_empty() ) {
-        // if container already has liquid we need to set the amount
-        item &cts = contents.front();
-        cts.mod_charges( amount );
-    } else {
-        detached_ptr<item> liquid_copy = item::spawn( *liquid );
-        liquid_copy->charges = amount;
-        // a player-driven fill: refused (and nothing moves) if the pocket says no
-        if( !try_put_in( std::move( liquid_copy ) ).success() ) {
-            return std::move( liquid );
-        }
-    }
-
-    liquid->mod_charges( -amount );
-    on_contents_changed();
-    if( liquid->charges > 0 ) {
-        return std::move( liquid );
-    }
-    return detached_ptr<item>();
 }
 
 void item::set_counter( const int value )
@@ -10368,7 +10287,8 @@ bool item::can_holster( const item &obj, bool ignore ) const
     // a holster pocket accepts obj (when ignore is set, even if it is already full)
     const std::list<item_pocket> &pockets = contents.get_pockets();
     return std::ranges::any_of( pockets, [&]( const item_pocket & pocket ) {
-        return pocket.is_holster() && pocket.can_contain( obj, ignore ).success();
+        return pocket.is_holster() && !pocket.get_data().ablative &&
+               pocket.can_contain( obj, ignore ).success();
     } );
 }
 
@@ -10431,7 +10351,7 @@ bool item::needs_processing() const
 {
     return is_active() || has_flag( flag_RADIO_ACTIVATION ) || has_flag( flag_ETHEREAL_ITEM ) ||
            contents.overflow_pending() ||
-           ( !contents.empty() && contents.has_processing_items() ) ||
+           contents.has_processing_items() ||
            ( magazine_current() && magazine_current()->needs_processing() ) ||
            is_artifact() || is_relic() || goes_bad();
 }
@@ -11739,7 +11659,7 @@ bool item::is_reloadable() const
     } else if( is_container() ) {
         // TODO: Make buckets actually reloadable using reload menu
         // This would be done via locking this off by weather or not it was wielded or on dirt most likely
-        return type->container->seals;
+        return type->container ? type->container->seals : true;
 
     } else if( !is_gun() && !is_tool() && !is_magazine() ) {
         return false;
@@ -12125,7 +12045,8 @@ item &item::obtain( Character &ch, int qty, bool costs_moves )
     if( ch.is_worn( *this ) || ch.is_wielding( *this ) ) {
         return *this;
     }
-    return ch.i_add( split( qty ) );
+    // J4-2: the item is fetched, not wielded (DDA i_add would wield it when the hands are free)
+    return ch.i_add( split( qty ), true, nullptr, nullptr, true, false );
 }
 
 int item::obtain_cost( const Character &ch, int qty ) const

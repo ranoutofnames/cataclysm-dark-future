@@ -85,7 +85,7 @@ void cata::detail::mod_mutation_branch( sol::state &lua )
         SET_MEMB_RO( mending_modifier );
         DOC( "Bonus HP multiplier. 1.0 doubles HP; -0.5 halves it." );
         SET_MEMB_RO( hp_modifier );
-        DOC( "Packmule multiplier. 2.0 doubles backpack/container volume; 0.5 halves it." );
+        DOC( "Packmule multiplier. Still read from mutation data but no longer scales storage (D8): worn containers hold what their pockets say; use an OBTAIN_COST_MULTIPLIER enchantment instead." );
         SET_MEMB_RO( packmule_modifier );
         DOC( "Crafting speed multiplier. 2.0 doubles crafting speed; 0.5 halves it." );
         SET_MEMB_RO( crafting_speed_modifier );

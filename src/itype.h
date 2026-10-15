@@ -253,9 +253,10 @@ struct armor_portion_data {
      */
     int encumber = 0;
     /**
-    * When storage is full, how much it encumbers the player.
+    * When storage is full, how much it encumbers the player. -1 (not given): DDA works it out
+    * from the non-rigid pocket volume of the item when the item type is finalized.
     */
-    int max_encumber = 0;
+    int max_encumber = -1;
     /**
      * Percentage of the body part area that this item covers.
      * This determines how likely it is to hit the item instead of the player.
@@ -264,6 +265,27 @@ struct armor_portion_data {
 
     // Where does this cover if any
     body_part_set covers;
+
+    /**
+     * Sub-locations this portion covers (JSON `specifically_covers`, DDA #52468). Only
+     * set on the portions in islot_armor::sub_data; `coverage` is then the coverage of each
+     * of these sub-locations. Empty on the per-body-part portions in islot_armor::data.
+     */
+    std::set<sub_bodypart_str_id> sub_coverage;
+
+    // DDA armor portion fields (J5)
+    /** -1 (not given) until finalized: then the plain coverage, as DDA's loader defaults them. */
+    int cover_melee = -1;
+    int cover_ranged = -1;
+    int cover_vitals = 0;
+    bool rigid = false;
+    bool rigid_layer_only = false;
+    bool comfortable = false;
+
+    /** DDA: how much the volume of the pockets of this item adds to its encumbrance. */
+    float volume_encumber_modifier = 1;
+    /** DDA: volume of non-rigid pocket capacity that adds one point of encumbrance. */
+    static constexpr units::volume volume_per_encumbrance = 250_ml;
 
     // What layer does it cover if any
     // TODO: Not currently supported, we still use flags for this
@@ -324,12 +346,37 @@ struct islot_armor {
 
     bool was_loaded;
     /**
+     * What this armor turns into when it is destroyed while worn inside a carrier (an armor
+     * plate that shatters leaves a "compromised" plate). Null: it is simply destroyed.
+     */
+    itype_id non_functional = itype_id::NULL_ID();
+    /** The verb in "Your %1$s %2$s!" when the plate turns into @ref non_functional. */
+    translation damage_verb;
+    /**
      * Whitelisted clothing mods.
      * Restricted clothing mods must be listed here by id to be compatible.
      */
     std::vector<std::string> valid_mods;
     // Layer, encumbrance and coverage information.
     std::vector<armor_portion_data> data;
+    /**
+     * Portions given per sub-location (`specifically_covers`). Each has `sub_coverage` set.
+     * `data` holds the per-body-part values derived from these, plus any portions that
+     * name no sub-locations, so every reader of `data` keeps working. Empty for items
+     * without sub-location data.
+     */
+    std::vector<armor_portion_data> sub_data;
+    /** Set once `data` has been derived from `sub_data` (Item_factory::finalize_pre). */
+    bool sub_data_derived = false;
+
+    // DDA islot_armor fields (J1 declarations only; loaded and used by J3-J5)
+    bool ablative = false;
+    bool additional_pocket_enc = false;
+    /** Some pocket of this item makes noise while its wearer moves (DDA `activity_noise`). */
+    bool noisy = false;
+    bool ripoff_chance = false;
+    bool rigid = false;
+    bool comfortable = true;
 };
 
 struct islot_pet_armor {
@@ -999,6 +1046,10 @@ struct itype {
 
         // The container it comes in
         std::optional<itype_id> default_container;
+        // DDA itype.h:1469, :1672: variant of the default container, and whether it is sealed
+        // when the item spawns in it. BN items have no variants, so the variant is only loaded.
+        std::optional<std::string> default_container_variant;
+        bool default_container_sealed = true;
 
         std::map<quality_id, int> qualities; //Tool quality indicators
         std::map<std::string, std::string> properties;
@@ -1088,6 +1139,8 @@ struct itype {
          * Item_factory::finalize_post (explicit JSON, item_overlay, category floor, volume-derived).
          */
         units::length longest_side = -1_mm;
+        /** DDA `integral_longest_side`: how far a gun mod sticks out of its gun (item::length). */
+        units::length integral_longest_side = -1_mm;
 
         /** Value before cataclysm. Price given is for a default-sized stack. */
         units::money price = 0_cent;

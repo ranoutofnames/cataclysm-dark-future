@@ -225,7 +225,7 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
     if( pane.get_area() == AIM_INVENTORY || pane.get_area() == AIM_WORN ) {
         const double weight_carried = convert_weight( g->u.weight_carried() );
         const double weight_capacity = convert_weight( g->u.weight_capacity() );
-        std::string volume_carried = format_volume( g->u.volume_carried() );
+        std::string volume_carried = format_volume( g->u.carried_volume() );
         std::string volume_capacity = format_volume( g->u.volume_capacity() );
         // align right, so calculate formatted head length
         const std::string formatted_head = string_format( "%.1f/%.1f %s  %s/%s %s",
@@ -237,7 +237,7 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         nc_color color = weight_carried > weight_capacity ? c_red : c_light_green;
         mvwprintz( window, point( hrightcol, 4 ), color, "%.1f", weight_carried );
         wprintz( window, c_light_gray, "/%.1f %s  ", weight_capacity, weight_units() );
-        color = g->u.volume_carried().value() > g->u.volume_capacity().value() ? c_red : c_light_green;
+        color = g->u.carried_volume().value() > g->u.volume_capacity().value() ? c_red : c_light_green;
         wprintz( window, color, volume_carried );
         wprintz( window, c_light_gray, "/%s %s", volume_capacity, volume_units_abbr() );
     } else {
@@ -279,10 +279,10 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
     const size_t vol_startpos = lastcol - 4;
     // CDF P1c: the inventory pane names the garment that carries each stack
     const bool show_holder = pane.get_area() == AIM_INVENTORY && !compact;
-    const int holder_width = 10;
-    const size_t holder_startpos = amt_startpos - holder_width - 1;
+    const auto holder_width = 10;
+    const auto holder_startpos = amt_startpos - holder_width - 1;
     // Default name length
-    int max_name_length = ( show_holder ? holder_startpos : amt_startpos ) - name_startpos - 1;
+    auto max_name_length = static_cast<int>( ( show_holder ? holder_startpos : amt_startpos ) - name_startpos - 1 );
 
     //~ Items list header (length type 1). Table fields length without spaces: amt - 4, weight - 5, vol - 4.
     const int table_hdr_len1 = utf8_width( _( "amt weight vol" ) );
@@ -294,7 +294,7 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         mvwprintz( window, point( lastcol - table_hdr_len2 + 1, 5 ), c_light_gray,
                    _( "src amt weight vol" ) );
         // 1 for space
-        max_name_length = src_startpos - name_startpos - 1;
+        max_name_length = static_cast<int>( src_startpos - name_startpos - 1 );
     } else {
         mvwprintz( window, point( lastcol - table_hdr_len1 + 1, 5 ), c_light_gray, _( "amt weight vol" ) );
     }

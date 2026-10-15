@@ -638,7 +638,7 @@ doc_gen_func.impl = function()
 ---@field activity_functions table<string, LuaActivityFinishFunction>
 ---@field computer_functions table<string, fun(params: { user: Character, pos: TripointBubMs, option_name: string, computer_name: string }): boolean?>
 ---@field weather_condition_functions table<string, fun(params: { weather_id: string, previous_weather_id: string, temperature: number, temperature_f: number, humidity: number, pressure: number, windpower: number, winddirection: integer, acidic: boolean }): boolean?>
----@field mission_functions table<string, fun(params: { mission: Mission, mission_type: MissionType })>  @phase functions for JSON mission "start"/"end"/"fail" written as "lua:<id>"
+---@field mission_functions table<string, fun(params: { mission: Mission, mission_type: MissionType })>  functions for JSON mission "start"/"end"/"fail" written as "lua:<id>"
 ---@field hooks hooks
 ---@field current_mod string
 ---@field current_mod_path string

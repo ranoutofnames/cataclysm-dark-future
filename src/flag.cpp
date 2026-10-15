@@ -10,6 +10,8 @@
 
 const flag_id flag_NULL = flag_id( "null" ); // intentionally invalid flag
 
+const flag_id flag_ABLATIVE_LARGE( "ABLATIVE_LARGE" );
+const flag_id flag_ABLATIVE_MEDIUM( "ABLATIVE_MEDIUM" );
 const flag_id flag_ACID( "ACID" );
 const flag_id flag_ACID_IMMUNE( "ACID_IMMUNE" );
 const flag_id flag_ACTIVE_CLOAKING( "ACTIVE_CLOAKING" );
@@ -51,6 +53,7 @@ const flag_id flag_BULLET_IMMUNE( "BULLET_IMMUNE" );
 const flag_id flag_BUTCHER_RACK( "BUTCHER_RACK" );
 const flag_id flag_BYPRODUCT( "BYPRODUCT" );
 const flag_id flag_CABLE_SPOOL( "CABLE_SPOOL" );
+const flag_id flag_CANT_WEAR( "CANT_WEAR" );
 const flag_id flag_CAMERA_PRO( "CAMERA_PRO" );
 const flag_id flag_CAN_PLANT_UNDERGROUND( "CAN_PLANT_UNDERGROUND" );
 const flag_id flag_CANNIBAL( "CANNIBAL" );
@@ -148,6 +151,7 @@ const flag_id flag_FORAGE_HALLU( "FORAGE_HALLU" );
 const flag_id flag_FORAGE_POISON( "FORAGE_POISON" );
 const flag_id flag_FRAGILE( "FRAGILE" );
 const flag_id flag_FRAGILE_MELEE( "FRAGILE_MELEE" );
+const flag_id flag_FROM_FROZEN_LIQUID( "FROM_FROZEN_LIQUID" );
 const flag_id flag_FROZEN( "FROZEN" );
 const flag_id flag_FUNGAL_VECTOR( "FUNGAL_VECTOR" );
 const flag_id flag_GAS_DISCOUNT( "GAS_DISCOUNT" );
@@ -248,6 +252,13 @@ const flag_id flag_PARTIAL_DEAF( "PARTIAL_DEAF" );
 const flag_id flag_PERFECT_LOCKPICK( "PERFECT_LOCKPICK" );
 const flag_id flag_DURABLE_LOCKPICK( "DURABLE_LOCKPICK" );
 const flag_id flag_PERPETUAL( "PERPETUAL" );
+const flag_id flag_PALS_SMALL( "PALS_SMALL" );
+const flag_id flag_PALS_MEDIUM( "PALS_MEDIUM" );
+const flag_id flag_PALS_LARGE( "PALS_LARGE" );
+const flag_id flag_PADDED( "PADDED" );
+const flag_id flag_SOFT( "SOFT" );
+const flag_id flag_HARD( "HARD" );
+const flag_id flag_NO_WEAR_EFFECT( "NO_WEAR_EFFECT" );
 const flag_id flag_PERSONAL( "PERSONAL" );
 const flag_id flag_PLACE_RANDOMLY( "PLACE_RANDOMLY" );
 const flag_id flag_POCKETS( "POCKETS" );

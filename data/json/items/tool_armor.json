@@ -1491,11 +1491,12 @@
       "need_charges": 1,
       "need_charges_msg": "The %s's batteries are dead."
     },
-    "covers": [ "head" ],
+    "covers": [ "eyes" ],
     "warmth": 10,
     "environmental_protection": 6,
     "encumbrance": 5,
     "coverage": 10,
+    "rigid_layer_only": true,
     "material_thickness": 2,
     "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
     "magazine_well": "250 ml"
@@ -1547,11 +1548,12 @@
       "need_charges": 1,
       "need_charges_msg": "The %s's batteries are dead."
     },
-    "covers": [ "head" ],
+    "covers": [ "eyes" ],
     "warmth": 10,
     "environmental_protection": 6,
     "encumbrance": 5,
     "coverage": 15,
+    "rigid_layer_only": true,
     "material_thickness": 2,
     "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
     "magazine_well": "250 ml"
@@ -2757,6 +2759,7 @@
     "warmth": 5,
     "encumbrance": 5,
     "coverage": 10,
+    "rigid_layer_only": true,
     "material_thickness": 2,
     "hearing_protection": 40,
     "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],

@@ -172,13 +172,46 @@ length_choice choose_length( const units::length &length )
 }
 } // namespace
 
+// Per DDA units_utility.cpp:194 (convert_length): imperial truncates to whole inches
+static auto dda_imperial_inches( const units::length &length ) -> int
+{
+    int in = units::to_millimeter( length );
+    in /= 25.4;
+    return in;
+}
+
 int convert_length( const units::length &length )
 {
+    if( get_option<std::string>( "DISTANCE_UNITS" ) != "metric" ) {
+        int in = dda_imperial_inches( length );
+        if( in % 63360 == 0 ) {
+            in /= 63360;
+        } else if( in % 36 == 0 ) {
+            in /= 36;
+        } else if( in % 12 == 0 ) {
+            in /= 12;
+        }
+        return in;
+    }
     return choose_length( length ).value;
 }
 
 std::string length_units( const units::length &length )
 {
+    if( get_option<std::string>( "DISTANCE_UNITS" ) != "metric" ) {
+        // Per DDA units_utility.cpp:224 (length_units)
+        const int in = dda_imperial_inches( length );
+        if( in == 0 ) {
+            return _( "in." );
+        } else if( in % 63360 == 0 ) {
+            return _( "mi" );
+        } else if( in % 36 == 0 ) {
+            return _( "yd" );
+        } else if( in % 12 == 0 ) {
+            return _( "ft" );
+        }
+        return _( "in." );
+    }
     return choose_length( length ).unit;
 }
 

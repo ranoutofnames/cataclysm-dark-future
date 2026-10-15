@@ -299,7 +299,7 @@
     "encumbrance": 10,
     "warmth": 10,
     "material_thickness": 6,
-    "flags": [ "STURDY", "OUTER" ]
+    "flags": [ "STURDY", "OUTER", "SOFT" ]
   },
   {
     "id": "armor_samurai",

@@ -5,8 +5,8 @@
 #include "item_pocket.h"
 #include "itype.h"
 #include "json.h"
-#include "pocket_data.h"
 #include "options_helpers.h"
+#include "pocket_data.h"
 #include "string_formatter.h"
 #include "units.h"
 #include "units_serde.h"
@@ -77,7 +77,7 @@ TEST_CASE("units::length parsing from JSON", "[item][length][units]") {
 }
 
 TEST_CASE("units::length JSON round trip", "[item][length][units]") {
-    for (const units::length l : { 0_mm, 5_mm, 40_cm, 2_m, 3_km }) {
+    for (const units::length l : {0_mm, 5_mm, 40_cm, 2_m, 3_km}) {
         std::ostringstream out;
         JsonOut jsout(out);
         jsout.write(l);
@@ -102,7 +102,7 @@ TEST_CASE("units::length display", "[item][length][units]") {
         CHECK(string_format_length(254_mm) == "10 in");
         CHECK(string_format_length(914_mm) == "1 yd");
         CHECK(convert_length_cm_in(254_mm) == Approx(10.0));
-        CHECK(length_units(254_mm) == "in");
+        CHECK(length_units(254_mm) == "in.");
     }
 }
 
@@ -112,28 +112,30 @@ TEST_CASE("item length resolution", "[item][length]") {
     // overlay table
     CHECK(itype_id("2x4")->longest_side == 122_cm);
     // derived from volume
-    const itype &jar = *itype_id("jar_glass");
+    const itype& jar = *itype_id("jar_glass");
     CHECK(jar.longest_side == units::default_length_from_volume(jar.volume));
     CHECK(item::spawn_temporary(itype_id("2x4"))->length() == 122_cm);
 }
 
 TEST_CASE("derived item length never exceeds the default pocket limit", "[item][length]") {
     int checked = 0;
-    for (const itype *t : item_controller->all()) {
-        const units::volume eff = t->count_by_charges() && t->stack_size > 0 ?
-                                  t->volume / t->stack_size : t->volume;
+    for (const itype* t : item_controller->all()) {
+        const units::volume eff =
+            t->count_by_charges() && t->stack_size > 0 ? t->volume / t->stack_size : t->volume;
         if (t->longest_side != units::default_length_from_volume(eff)) {
             continue; // overlay or floor: allowed to be refused
         }
-        for (const itype *c : item_controller->all()) {
-            for (const pocket_data &pd : c->pockets) {
-                if (pd.type != pocket_type::CONTAINER || pd.max_item_length || pd.holster) {
+        for (const itype* c : item_controller->all()) {
+            for (const pocket_data& pd : c->pockets) {
+                if (pd.type != pocket_type::CONTAINER || pd.holster) {
                     continue;
                 }
-                if (t->volume <= pd.volume_capacity) {
-                    const auto max_len = pd.effective_max_item_length();
-                    REQUIRE(max_len);
-                    REQUIRE(t->longest_side <= *max_len);
+                if (t->volume <= pd.raw_volume_capacity) {
+                    // DDA: the loader default is cbrt( capacity ) * sqrt( 2 ), or the explicit value
+                    if (pd.max_item_length <= 0_mm) {
+                        continue;
+                    }
+                    REQUIRE(t->longest_side <= pd.max_item_length);
                     ++checked;
                 }
             }
@@ -143,27 +145,24 @@ TEST_CASE("derived item length never exceeds the default pocket limit", "[item][
 }
 
 TEST_CASE("long items are refused by short containers", "[item][length][pocket]") {
-    item &jar = *item::spawn_temporary(itype_id("jar_3l_glass"));
-    item &plank = *item::spawn_temporary(itype_id("2x4"));
-    const auto res = jar.contents.can_contain(plank);
+    item& jar = *item::spawn_temporary(itype_id("jar_3l_glass"));
+    item& plank = *item::spawn_temporary(itype_id("2x4"));
+    const auto res = jar.contents.can_contain(plank, pocket_type::CONTAINER);
     REQUIRE_FALSE(res.success());
-    CHECK(res.value() == item_pocket::contain_code::ERR_TOO_LONG);
+    CHECK(res.value() == item_pocket::contain_code::ERR_TOO_BIG);
     CHECK(res.str().find("too long") != std::string::npos);
 }
 
-TEST_CASE("holsters and magazines have no length limit", "[item][length][pocket]") {
-    bool saw_holster = false;
-    for (const itype *t : item_controller->all()) {
-        for (const pocket_data &pd : t->pockets) {
-            if (pd.max_item_length) {
-                continue;
-            }
-            if (pd.holster || pd.type == pocket_type::MAGAZINE ||
-                pd.type == pocket_type::MAGAZINE_WELL) {
-                CHECK_FALSE(pd.effective_max_item_length());
-                saw_holster = saw_holster || pd.holster;
+TEST_CASE("magazine wells have an explicit length limit", "[item][length][pocket]") {
+    // DDA item_factory.cpp:4086: magazine wells get 2 km, so no item is too long for them
+    bool saw_well = false;
+    for (const itype* t : item_controller->all()) {
+        for (const pocket_data& pd : t->pockets) {
+            if (pd.type == pocket_type::MAGAZINE_WELL) {
+                CHECK(pd.max_item_length >= 2_km);
+                saw_well = true;
             }
         }
     }
-    CHECK(saw_holster);
+    CHECK(saw_well);
 }

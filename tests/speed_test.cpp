@@ -390,7 +390,7 @@ static void carry_weight_test(Character& guy, int load_kg, int speed_exp) {
 }
 
 static auto equip_carried_weight(Character& guy) -> units::mass {
-    auto backpack = item::spawn("test_backpack");
+    auto backpack = item::spawn("test_backpack_carry");
     auto inventory_item = item::spawn("test_1kg_cube");
     auto wielded_item = item::spawn("test_1kg_cube");
 
@@ -408,7 +408,7 @@ TEST_CASE("Character is slowed down while overburdened", "[speed]") {
     clear_all_state();
     player& guy = prepare_player();
 
-    detached_ptr<item> backpack = item::spawn("test_backpack");
+    detached_ptr<item> backpack = item::spawn("test_backpack_carry");
     REQUIRE(backpack->get_storage() == 15_liter);
     REQUIRE(backpack->weight() == 633_gram);
 

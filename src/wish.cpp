@@ -670,7 +670,7 @@ class wish_item_callback: public uilist_callback
             | filter( []( const auto * type ) { return type->container != nullptr; } )
             | filter( [&]( const auto * type ) {
                 const auto candidate = item::spawn_temporary( type, calendar::turn );
-                return candidate->can_contain( *selected_item ) && selected_item->volume() > 0_ml &&
+                return candidate->can_contain( *selected_item ).success() && selected_item->volume() > 0_ml &&
                        selected_item->charges_per_volume( candidate->get_container_capacity() ) > 0;
             } )
             | ranges::to<std::vector>();
@@ -834,7 +834,8 @@ void debug_menu::wishitem( Character *who, const tripoint_bub_ms &pos )
         }
         bool did_amount_prompt = false;
         while( wmenu.ret >= 0 ) {
-            detached_ptr<item> granted = item::spawn( opts[wmenu.ret].second );
+            detached_ptr<item> granted = item_controller->spawn_migrated( opts[wmenu.ret].second->get_id(),
+                                         calendar::turn );
             if( granted->has_flag( flag_VARSIZE ) ) {
                 granted->set_flag( flag_FIT );
             }

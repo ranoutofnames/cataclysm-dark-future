@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -91,6 +92,7 @@ struct dealt_projectile_attack {
     double missed_by; // Accuracy of dealt attack
     std::vector<tripoint_bub_ms> trajectory; // Actual simulated path, including source tile
     bool suppress_damage_message = false;
+    std::optional<tripoint_bub_ms> origin; // Where the shot came from, if known
 };
 
 auto apply_ammo_trail_effects( const tripoint_bub_ms &p,

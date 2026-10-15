@@ -36,10 +36,20 @@ The format is this:
     "ammo": <some number>,
     "magazine": <some number>,
     "purge": <true/false>,
+    "container-item": "<container-item-id>",
+    "on_overflow": "none" | "spill" | "discard",
+    "sealed": <true/false>,
     "delete": [ ... ],
     "entries": [ ... ]
 }
 ```
+
+`container-item` is optional. Everything the group creates is put into one new container of that
+type (per DDA). It is either a string, or an object `{ "item": "<id>", "variant": "<variant>" }`.
+`on_overflow` says what happens to created items that do not fit the container: `none` (default)
+reports each of them as an error, `spill` leaves them next to the container, `discard` drops them
+silently. `on_overflow` needs `container-item`. `sealed` (default true) seals the container
+after it was filled.
 
 `purge` is optional. It is a bool for weather or not all previous things defined in the item group should be purged.
 `subtype` is optional. It can be `collection` or `distribution`. If unspecified, it defaults to
@@ -104,8 +114,14 @@ item(s):
 "container-group": "<group-id>",
 ```
 
-`contents` is added as contents of the created item. It is not checked if they can be put into the
-item. This allows water, that contains a book, that contains a steel frame, that contains a corpse.
+`contents` is added as contents of the created item. Items that do not fit the container or the
+item they are put into are lost and reported as an error (per DDA); only the group level
+`on_overflow` can keep them. Use a larger container, or fewer or smaller items, in the data.
+
+`container-item` as an object (`{ "item": ..., "variant": ... }`) and `entry-wrapper` wrap the
+entry itself in a container of that type, like the group level `container-item`. The string form
+of `container-item` and `container-group` is the BN entry container (`container` of the entry):
+the item is put into a container created from it, and `sealed` (default true) seals it.
 
 `count` makes the item spawn repeat to create more items, each time creating a new item.
 

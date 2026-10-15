@@ -1,0 +1,317 @@
+[
+  {
+    "//": "DDA TEST_DATA/items.json test_liquid_1ml (unseal_and_spill_test)",
+    "id": "test_liquid_1ml",
+    "type": "AMMO",
+    "category": "fuel",
+    "ammo_type": "gasoline",
+    "phase": "liquid",
+    "name": {
+      "str_sp": "test liquid"
+    },
+    "description": "One milliliter liquid.",
+    "material": [
+      "plastic"
+    ],
+    "weight": "1 g",
+    "volume": "1 ml",
+    "symbol": "?",
+    "color": "light_gray"
+  },
+  {
+    "type": "ammunition_type",
+    "id": "test_solid_1ml",
+    "name": "",
+    "default": "test_solid_1ml"
+  },
+  {
+    "id": "test_solid_1ml",
+    "type": "AMMO",
+    "category": "spare_parts",
+    "ammo_type": "test_solid_1ml",
+    "name": {
+      "str": "test solid"
+    },
+    "description": "One milliliter solid.",
+    "material": [
+      "plastic"
+    ],
+    "volume": "1 ml",
+    "weight": "1 g",
+    "symbol": "?",
+    "color": "light_gray"
+  },
+  {
+    "id": "test_watertight_open_sealed_container_250ml",
+    "type": "ARMOR",
+    "category": "container",
+    "name": {
+      "str": "test can"
+    },
+    "description": "Some strange can from another dimension.",
+    "weight": "13 g",
+    "volume": "253 ml",
+    "material": [
+      "aluminum"
+    ],
+    "symbol": "?",
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "watertight": true,
+        "open_container": true,
+        "max_contains_volume": "250 ml",
+        "max_item_volume": "250 ml",
+        "max_contains_weight": "1 kg",
+        "sealed_data": {
+          "spoil_multiplier": 0.0
+        }
+      }
+    ],
+    "flags": [
+      "BELTED",
+      "OVERSIZE",
+      "WATER_FRIENDLY"
+    ],
+    "material_thickness": 2,
+    "encumbrance": 4,
+    "coverage": 10,
+    "covers": [
+      "torso"
+    ]
+  },
+  {
+    "id": "test_watertight_open_sealed_multipocket_container_2x250ml",
+    "type": "ARMOR",
+    "category": "container",
+    "name": {
+      "str": "test can"
+    },
+    "description": "Some strange can from another dimension.",
+    "weight": "26 g",
+    "volume": "506 ml",
+    "material": [
+      "plastic"
+    ],
+    "symbol": "?",
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "watertight": true,
+        "open_container": true,
+        "max_contains_volume": "250 ml",
+        "max_item_volume": "250 ml",
+        "max_contains_weight": "1 kg",
+        "sealed_data": {
+          "spoil_multiplier": 0.0
+        }
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "watertight": true,
+        "open_container": true,
+        "max_contains_volume": "250 ml",
+        "max_item_volume": "250 ml",
+        "max_contains_weight": "1 kg",
+        "sealed_data": {
+          "spoil_multiplier": 0.0
+        }
+      }
+    ],
+    "flags": [],
+    "material_thickness": 2,
+    "encumbrance": 4,
+    "coverage": 10,
+    "covers": [
+      "torso"
+    ]
+  },
+  {
+    "id": "test_watertight_open_sealed_multipocket_container_2x1L",
+    "type": "ARMOR",
+    "category": "container",
+    "name": {
+      "str": "test jug with strap",
+      "str_pl": "test jugs with strap"
+    },
+    "description": "Some strange can from another dimension.",
+    "weight": "104 g",
+    "volume": "2024 ml",
+    "material": [
+      "plastic"
+    ],
+    "symbol": "?",
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "watertight": true,
+        "open_container": true,
+        "max_contains_volume": "1 L",
+        "max_item_volume": "1 L",
+        "max_contains_weight": "4 kg",
+        "sealed_data": {
+          "spoil_multiplier": 0.0
+        },
+        "item_restriction": [
+          "test_watertight_open_sealed_multipocket_container_2x250ml",
+          "test_solid_1ml"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "watertight": true,
+        "open_container": true,
+        "max_contains_volume": "1 L",
+        "max_item_volume": "1 L",
+        "max_contains_weight": "4 kg",
+        "sealed_data": {
+          "spoil_multiplier": 0.0
+        },
+        "item_restriction": [
+          "test_watertight_open_sealed_multipocket_container_2x250ml",
+          "test_solid_1ml"
+        ]
+      }
+    ],
+    "flags": [
+      "BELTED",
+      "OVERSIZE",
+      "WATER_FRIENDLY"
+    ],
+    "material_thickness": 2,
+    "encumbrance": 4,
+    "coverage": 10,
+    "covers": [
+      "torso"
+    ]
+  },
+  {
+    "id": "test_restricted_container_holder",
+    "type": "ARMOR",
+    "name": {
+      "str": "test restricted container holder"
+    },
+    "description": "A backpack that somehow only holds specific containers.",
+    "weight": "208 g",
+    "volume": "4048 ml",
+    "symbol": "?",
+    "material": [
+      "cotton"
+    ],
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "16 kg",
+        "item_restriction": [
+          "test_watertight_open_sealed_multipocket_container_2x1L",
+          "test_watertight_open_sealed_container_1L",
+          "test_watertight_open_sealed_container_250ml"
+        ]
+      }
+    ],
+    "flags": [
+      "BELTED"
+    ],
+    "material_thickness": 2,
+    "encumbrance": 4,
+    "coverage": 10,
+    "covers": [
+      "torso"
+    ]
+  },
+  {
+    "id": "test_cargo_space",
+    "type": "vehicle",
+    "name": "TEST cargo space",
+    "blueprint": [
+      "o"
+    ],
+    "parts": [
+      {
+        "x": 0,
+        "y": 0,
+        "parts": [
+          "folding_frame",
+          "trunk"
+        ]
+      }
+    ]
+  },
+  {
+    "//": "DDA TEST_DATA/items.json test_nuclear_carafe (item_group_test)",
+    "id": "test_nuclear_carafe",
+    "type": "GENERIC",
+    "category": "tools",
+    "name": {
+      "str": "test nuclear carafe"
+    },
+    "description": "This is a test coffee carafe designed to keep atomic beverages extra radioactive.  It leaks radiation all the time.",
+    "weight": "5 kg",
+    "volume": "4 L",
+    "price": "1000 USD",
+    "price_postapoc": "30 USD",
+    "material": [
+      "plastic",
+      "aluminum"
+    ],
+    "qualities": [
+      [
+        "BOIL",
+        1
+      ]
+    ],
+    "symbol": "&",
+    "color": "light_green",
+    "flags": [
+      "LEAK_ALWAYS",
+      "RADIOACTIVE"
+    ]
+  },
+  {
+    "//": "DDA TEST_DATA/items.json test_waterskin: DDA pocket values on a twin of the CDF fixture (iteminfo pocket cases)",
+    "id": "test_dda_waterskin",
+    "copy-from": "test_waterskin",
+    "type": "CONTAINER",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_volume": "15 ml",
+        "max_item_length": "12 cm",
+        "max_contains_volume": "1500 ml",
+        "max_contains_weight": "3 kg",
+        "watertight": true,
+        "rigid": false,
+        "moves": 220
+      }
+    ],
+    "name": "TEST DDA waterskin"
+  },
+  {
+    "//": "DDA TEST_DATA/items.json test_jug_plastic: DDA pocket values on a twin of the CDF fixture (iteminfo pocket cases)",
+    "id": "test_dda_jug_plastic",
+    "copy-from": "test_jug_plastic",
+    "type": "CONTAINER",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "watertight": true,
+        "rigid": true,
+        "max_contains_volume": "3750 ml",
+        "max_item_volume": "15 ml",
+        "max_contains_weight": "5 kg",
+        "moves": 100
+      }
+    ],
+    "name": "TEST DDA plastic jug"
+  }
+]

@@ -2,6 +2,7 @@
 
 #include "activity_actor.h"
 #include "coordinates.h"
+#include "contents_change_handler.h"
 #include "craft_command.h"
 #include "crafting.h"
 #include "item_handling_util.h"
@@ -609,6 +610,45 @@ class stash_activity_actor : public activity_actor
         void start( player_activity &, Character & ) override;
         void do_turn( player_activity &, Character &who ) override;
         void finish( player_activity &, Character & ) override {};
+
+        void serialize( JsonOut &jsout ) const override;
+        static std::unique_ptr<activity_actor> deserialize( JsonIn &jsin );
+};
+
+/**
+ * Puts items into a container, one by one, paying the obtain and handling cost of each.
+ * Transplanted from DDA activity_actor_definitions.h:2539 (insert_item_activity_actor); CDF:
+ * items are safe_references, and like drop/stash the activity pays its moves per item in do_turn.
+ */
+class insert_item_activity_actor : public activity_actor
+{
+    private:
+        safe_reference<item> holster;
+        drop_locations items;
+        contents_change_handler handler;
+        bool all_pockets_rigid = false;
+        bool reopen_menu = false;
+        // allow put charge items into holster's nested pocket
+        bool allow_fill_count_by_charge_item_nested = true;
+        // the next item stacks with the one being moved, so it costs only its handling
+        bool bulk_next = false;
+
+    public:
+        insert_item_activity_actor() = default;
+        insert_item_activity_actor( item &holster, const drop_locations &holstered_list,
+                                    bool reopen_menu = false,
+                                    bool allow_fill_count_by_charge_item_nested = true )
+            : holster( &holster ), items( holstered_list ), reopen_menu( reopen_menu ),
+              allow_fill_count_by_charge_item_nested( allow_fill_count_by_charge_item_nested ) {}
+
+        activity_id get_type() const override {
+            return activity_id( "ACT_INSERT_ITEM" );
+        }
+
+        void start( player_activity &act, Character &who ) override;
+        void do_turn( player_activity &act, Character &who ) override;
+        void finish( player_activity &, Character & ) override {};
+        void canceled( player_activity &act, Character &who ) override;
 
         void serialize( JsonOut &jsout ) const override;
         static std::unique_ptr<activity_actor> deserialize( JsonIn &jsin );

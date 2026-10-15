@@ -148,7 +148,7 @@ detached_ptr<item> character_item_location::detach( item *it )
 
 void character_item_location::attach( detached_ptr<item> &&obj )
 {
-    holder->i_add( std::move( obj ) );
+    holder->i_add( std::move( obj ), true, nullptr, nullptr, true, false );
 }
 
 bool character_item_location::is_loaded( const item * ) const
@@ -320,8 +320,10 @@ void worn_item_location::attach( detached_ptr<item> &&obj )
 int worn_item_location::obtain_cost( const Character &ch, int qty, const item *it ) const
 {
     const item *split_stack = cost_split_helper( it, qty );
-    return dynamic_cast<const player *>( &ch )->item_handling_cost( *split_stack, false,
-            INVENTORY_HANDLING_PENALTY / 2 );
+    // DDA item_location.cpp:516: then we are wearing it
+    int mv = ch.item_handling_cost( *split_stack, true, INVENTORY_HANDLING_PENALTY / 2 );
+    mv += 250;
+    return mv;
 }
 
 std::string worn_item_location::describe( const Character *ch, const item * ) const
@@ -680,15 +682,31 @@ item_location_type contents_item_location::where() const
 
 int contents_item_location::obtain_cost( const Character &ch, int qty, const item *it ) const
 {
-    // holster and bandolier pockets carry their own draw cost (CDF P1a)
-    if( const item_pocket *pocket = container->contents.pocket_of( it ) ) {
-        if( pocket->get_type() == pocket_type::CONTAINER &&
-            ( pocket->is_holster() || !pocket->get_data().ammo_restriction.empty() ) ) {
-            return dynamic_cast<const player *>( &ch )->item_handling_cost( *it, false, pocket->moves() );
-        }
-    }
+    // DDA item_location.cpp:877: the pocket's own moves are the base, the container's obtain cost
+    // comes on top unless the container is worn or held (it need not be fetched)
+    const item_pocket *pocket = container->contents.pocket_of( it );
+    const int container_mv = pocket != nullptr ? pocket->moves() : INVENTORY_HANDLING_PENALTY;
+    const item *split_stack = cost_split_helper( it, qty );
 
-    return INVENTORY_HANDLING_PENALTY + container->obtain_cost( ch, qty );
+    int primary_cost = ch.item_handling_cost( *split_stack, true, container_mv );
+    // bonus_from_enchantments returns the delta in BN
+    primary_cost += ch.bonus_from_enchantments( primary_cost,
+                    enchantment_value_id( "OBTAIN_COST_MULTIPLIER" ), true );
+    int parent_obtain_cost = container->obtain_cost( ch, qty );
+    if( container->get_use( "holster" ) ) {
+        // D21: holsters are told by their use action
+        if( ch.is_worn( *container ) ) {
+            primary_cost = ch.item_retrieve_cost( *split_stack, *container, false, container_mv );
+        } else {
+            primary_cost = ch.item_retrieve_cost( *split_stack, *container );
+        }
+        // for holsters, we should not include the cost of wielding the holster itself
+        parent_obtain_cost = 0;
+    } else if( container->where() != item_location_type::container ) {
+        // Worn items don't need to be retrieved, just accessed.
+        parent_obtain_cost = 0;
+    }
+    return primary_cost + parent_obtain_cost;
 }
 
 tripoint_bub_ms contents_item_location::bub_pos( const item * ) const
@@ -727,14 +745,7 @@ item_location_type carry_pocket_item_location::where() const
 
 int carry_pocket_item_location::obtain_cost( const Character &ch, int qty, const item *it ) const
 {
-    if( where() == item_location_type::character ) {
-        const item *split_stack = cost_split_helper( it, qty );
-        int moves = INVENTORY_HANDLING_PENALTY;
-        if( const item_pocket *pocket = container->contents.pocket_of( it ) ) {
-            moves = pocket->moves();
-        }
-        return dynamic_cast<const player *>( &ch )->item_handling_cost( *split_stack, true, moves );
-    }
+    // CDF: the container is worn, held or in body storage; contents_item_location knows that
     return contents_item_location::obtain_cost( ch, qty, it );
 }
 

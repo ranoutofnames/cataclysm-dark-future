@@ -1,0 +1,234 @@
+[
+  {
+    "id": "torso_upper",
+    "type": "sub_body_part",
+    "parent": "torso",
+    "max_coverage": 60,
+    "side": "both",
+    "opposite": "torso_lower",
+    "name": "upper torso",
+    "name_multiple": "torso"
+  },
+  {
+    "id": "torso_lower",
+    "type": "sub_body_part",
+    "parent": "torso",
+    "max_coverage": 40,
+    "side": "both",
+    "opposite": "torso_upper",
+    "name": "lower torso",
+    "name_multiple": "torso"
+  },
+  {
+    "id": "arm_shoulder_l",
+    "type": "sub_body_part",
+    "parent": "arm_l",
+    "max_coverage": 20,
+    "side": "left",
+    "opposite": "arm_shoulder_r",
+    "name": "left shoulder",
+    "name_multiple": "shoulders"
+  },
+  {
+    "id": "arm_upper_l",
+    "type": "sub_body_part",
+    "parent": "arm_l",
+    "max_coverage": 40,
+    "side": "left",
+    "opposite": "arm_upper_r",
+    "name": "left upper arm",
+    "name_multiple": "upper arms"
+  },
+  {
+    "id": "arm_elbow_l",
+    "type": "sub_body_part",
+    "parent": "arm_l",
+    "max_coverage": 5,
+    "side": "left",
+    "opposite": "arm_elbow_r",
+    "name": "left elbow",
+    "name_multiple": "elbows"
+  },
+  {
+    "id": "arm_lower_l",
+    "type": "sub_body_part",
+    "parent": "arm_l",
+    "max_coverage": 35,
+    "side": "left",
+    "opposite": "arm_lower_r",
+    "name": "left forearm",
+    "name_multiple": "lower arms"
+  },
+  {
+    "id": "arm_shoulder_r",
+    "type": "sub_body_part",
+    "parent": "arm_r",
+    "max_coverage": 20,
+    "side": "right",
+    "opposite": "arm_shoulder_l",
+    "name": "right shoulder",
+    "name_multiple": "shoulders"
+  },
+  {
+    "id": "arm_upper_r",
+    "type": "sub_body_part",
+    "parent": "arm_r",
+    "max_coverage": 40,
+    "side": "right",
+    "opposite": "arm_upper_l",
+    "name": "right upper arm",
+    "name_multiple": "upper arms"
+  },
+  {
+    "id": "arm_elbow_r",
+    "type": "sub_body_part",
+    "parent": "arm_r",
+    "max_coverage": 5,
+    "side": "right",
+    "opposite": "arm_elbow_l",
+    "name": "right elbow",
+    "name_multiple": "elbows"
+  },
+  {
+    "id": "arm_lower_r",
+    "type": "sub_body_part",
+    "parent": "arm_r",
+    "max_coverage": 35,
+    "side": "right",
+    "opposite": "arm_lower_l",
+    "name": "right forearm",
+    "name_multiple": "lower arms"
+  },
+  {
+    "id": "leg_hip_l",
+    "type": "sub_body_part",
+    "parent": "leg_l",
+    "max_coverage": 20,
+    "side": "left",
+    "opposite": "leg_hip_r",
+    "name": "left hip",
+    "name_multiple": "hips"
+  },
+  {
+    "id": "leg_upper_l",
+    "type": "sub_body_part",
+    "parent": "leg_l",
+    "max_coverage": 40,
+    "side": "left",
+    "opposite": "leg_upper_r",
+    "name": "left thigh",
+    "name_multiple": "thighs"
+  },
+  {
+    "id": "leg_knee_l",
+    "type": "sub_body_part",
+    "parent": "leg_l",
+    "max_coverage": 5,
+    "side": "left",
+    "opposite": "leg_knee_r",
+    "name": "left knee",
+    "name_multiple": "knees"
+  },
+  {
+    "id": "leg_lower_l",
+    "type": "sub_body_part",
+    "parent": "leg_l",
+    "max_coverage": 35,
+    "side": "left",
+    "opposite": "leg_lower_r",
+    "name": "left lower leg",
+    "name_multiple": "lower legs"
+  },
+  {
+    "id": "leg_hip_r",
+    "type": "sub_body_part",
+    "parent": "leg_r",
+    "max_coverage": 20,
+    "side": "right",
+    "opposite": "leg_hip_l",
+    "name": "right hip",
+    "name_multiple": "hips"
+  },
+  {
+    "id": "leg_upper_r",
+    "type": "sub_body_part",
+    "parent": "leg_r",
+    "max_coverage": 40,
+    "side": "right",
+    "opposite": "leg_upper_l",
+    "name": "right thigh",
+    "name_multiple": "thighs"
+  },
+  {
+    "id": "leg_knee_r",
+    "type": "sub_body_part",
+    "parent": "leg_r",
+    "max_coverage": 5,
+    "side": "right",
+    "opposite": "leg_knee_l",
+    "name": "right knee",
+    "name_multiple": "knees"
+  },
+  {
+    "id": "leg_lower_r",
+    "type": "sub_body_part",
+    "parent": "leg_r",
+    "max_coverage": 35,
+    "side": "right",
+    "opposite": "leg_lower_l",
+    "name": "right lower leg",
+    "name_multiple": "lower legs"
+  },
+  {
+    "id": "head_forehead",
+    "type": "sub_body_part",
+    "parent": "head",
+    "max_coverage": 15,
+    "side": "both",
+    "name": "forehead"
+  },
+  {
+    "id": "head_crown",
+    "type": "sub_body_part",
+    "parent": "head",
+    "max_coverage": 25,
+    "side": "both",
+    "name": "crown"
+  },
+  {
+    "id": "head_nape",
+    "type": "sub_body_part",
+    "parent": "head",
+    "max_coverage": 20,
+    "side": "both",
+    "name": "nape"
+  },
+  {
+    "id": "head_throat",
+    "type": "sub_body_part",
+    "parent": "head",
+    "max_coverage": 20,
+    "side": "both",
+    "name": "throat"
+  },
+  {
+    "id": "head_ear_l",
+    "type": "sub_body_part",
+    "parent": "head",
+    "max_coverage": 10,
+    "side": "left",
+    "opposite": "head_ear_r",
+    "name": "left ear",
+    "name_multiple": "ears"
+  },
+  {
+    "id": "head_ear_r",
+    "type": "sub_body_part",
+    "parent": "head",
+    "max_coverage": 10,
+    "side": "right",
+    "opposite": "head_ear_l",
+    "name": "right ear",
+    "name_multiple": "ears"
+  }
+]

@@ -853,7 +853,7 @@ static int move_cost_inv( const item &it, const tripoint_bub_ms &src, const trip
     const int mc_per_tile = 100;
 
     // only free inventory capacity
-    const auto inventory_capacity = g->u.volume_capacity() - g->u.volume_carried();
+    const auto inventory_capacity = g->u.free_space();
 
     const double fr = get_capacity_fraction( inventory_capacity, it.volume() );
 
@@ -1244,7 +1244,7 @@ static bool are_requirements_nearby( const std::vector<tripoint_bub_ms> &loot_sp
 {
     zone_manager &mgr = zone_manager::get_manager();
     inventory temp_inv;
-    units::volume volume_allowed = p.volume_capacity() - p.volume_carried();
+    units::volume volume_allowed = p.free_space();
     units::mass weight_allowed = p.weight_capacity() - p.weight_carried();
     static const auto check_weight_if = []( const activity_id & id ) {
         return id == ACT_MULTIPLE_FARM ||
@@ -2224,7 +2224,7 @@ static bool fetch_activity( player &p, const tripoint_bub_ms &src_loc,
         src_veh = &vp->vehicle();
         src_part = vp->part_index();
     }
-    const units::volume volume_allowed = p.volume_capacity() - p.volume_carried();
+    const units::volume volume_allowed = p.free_space();
     const units::mass weight_allowed = p.weight_capacity() - p.weight_carried();
     // TODO: vehicle_stack and map_stack into one loop.
     if( src_veh ) {

@@ -145,6 +145,14 @@ class flat_set : private Compare, Data
             auto at = lower_bound( k );
             return at != end() && *at == k;
         }
+        // CDF: DDA-style membership test (owner decision: add contains, not count at call sites).
+        bool contains( const T &t ) const {
+            return count( t ) != 0;
+        }
+        template<typename K, typename = typename has_is_transparent<Compare, K>::type>
+        bool contains( const K &k ) const {
+            return count( k ) != 0;
+        }
 
         iterator insert( iterator, const value_type &value ) {
             /// TODO: Use insertion hint

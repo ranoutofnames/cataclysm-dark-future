@@ -76,6 +76,26 @@ if not ok then
 end
 ```
 
+### Listing the armor plates a carrier holds
+
+Plate slots are pockets for which `ItemPocket:is_ablative()` is true. `item:get_ablative_items()` returns the
+plates inserted into them, and `item:get_coverage( bp, sbp )` says how much of one sub-location a plate (or any
+armor) covers. `BodyPartTypeId:sub_parts()` lists the sub-locations of a body part.
+
+```lua
+local torso = BodyPartTypeId.new("torso")
+
+for _, worn in ipairs(gapi.get_avatar():all_items(false)) do
+  for _, plate in ipairs(worn:get_ablative_items()) do
+    local parts = {}
+    for _, sub in ipairs(torso:sub_parts()) do
+      table.insert(parts, string.format("%s %d%%", sub:str(), plate:get_coverage(torso, sub)))
+    end
+    print(worn:tname(1, false, 0) .. ": " .. plate:tname(1, false, 0) .. " (" .. table.concat(parts, ", ") .. ")")
+  end
+end
+```
+
 ## Monsters
 
 ### Spawning a dog near the player
@@ -942,8 +962,10 @@ local body = avatar:get_body_storage()
 
 `remove_item` now works for any carried item, but not for wielded or worn ones. Scripts that
 relied on `remove_item` refusing items in pockets, or on the inventory being separate from worn
-contents, behave differently. `volume_carried`, `volume_capacity` and `can_pick_volume` keep their
-names and now use pocket totals.
+contents, behave differently. `volume_carried` and `volume_capacity` keep their names: `volume_carried`
+is the volume of what is carried in pockets (not of the worn items themselves) and `volume_capacity`
+is the sum of the pocket capacities of the wielded and worn items and the body storage, without any
+packmule scaling. `can_pick_volume` keeps its name and uses pocket totals.
 
 ## Map hooks: computers, activities and furniture
 

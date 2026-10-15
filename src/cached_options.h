@@ -11,6 +11,15 @@
  * caching due to heavy usage.
  */
 extern bool test_mode;
+/**
+ * Per DDA cached_options.h:46: what handling a liquid does in test mode, where there is
+ * nobody to pick from the menu. Used by the unseal_and_spill test.
+ */
+enum class test_mode_spilling_action_t {
+    spill_all,
+    cancel_spill,
+};
+extern test_mode_spilling_action_t test_mode_spilling_action;
 
 /**
  * Extended debugging mode, can be toggled during game.

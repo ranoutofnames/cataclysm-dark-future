@@ -73,5 +73,12 @@ bool handle_liquid( item &liquid, int radius = 0 );
  */
 bool handle_liquid( const tripoint_bub_ms &pos, int radius = 0 );
 bool handle_liquid( vehicle *veh, int part_id, int radius = 0 );
+
+/**
+ * Moves the liquid item @p liquid to @p target as the liquid menu does after the player chose the
+ * destination (DDA liquid_handler::perform_liquid_transfer, exported for tests).
+ * @return whether the destination handled the liquid
+ */
+bool transfer_liquid( item &liquid, liquid_dest_opt &target );
 } // namespace liquid_handler
 

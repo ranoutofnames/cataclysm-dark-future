@@ -170,6 +170,10 @@ enum action_id : int {
     ACTION_UNLOAD,
     /** Unload every carried item that can be unloaded */
     ACTION_UNLOAD_ALL,
+    /** Insert items into a container (DDA action.h:194) */
+    ACTION_INSERT_ITEM,
+    /** Unload the contents of containers onto an adjacent tile (DDA action.h:196) */
+    ACTION_UNLOAD_CONTAINER,
     /** Open the mending menu (e.g. when using a sewing kit) */
     ACTION_MEND,
     /** Open the throw menu */

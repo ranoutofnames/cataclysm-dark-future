@@ -82,7 +82,7 @@
 "weight_capacity_modifier" : 0.5, // Multiplies how much weight you can carry before being penalized.
 "hearing_modifier" : 0.5, // Multiplier for how good your hearing is, higher values mean detecting sounds from farther away. A value of zero renders you completely deaf.
 "noise_modifier" : 0.5, // Multiplier for how much noise you make while moving, with zero making your footsteps silent.
-"packmule_modifier" : 1.0, // Multiplies the storage space granted by backpacks and similar worn containers.
+"packmule_modifier" : 1.0, // Parsed but no longer scales storage (the pockets of worn containers decide); use an `OBTAIN_COST_MULTIPLIER` enchantment value to change how fast items are retrieved from containers.
 "crafting_speed_modifier" : 1.0, // Multiplies the crafting speed of the player.
 "construction_speed_modifier" : 1.0, // Multiplies the construction speed of the player.
 "stealth_modifier" : 0, // Percentage to be subtracted from player's visibility range, capped to 60. Negative values work, but are not very effective due to the way vision ranges are capped

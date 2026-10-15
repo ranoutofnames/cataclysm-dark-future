@@ -1,8 +1,10 @@
 #include "ammo.h"
+#include "ablative_coverage.h"
 #include "ammo_effect.h"
 #include "artifact.h"
 #include "avatar.h"
 #include "catalua_bindings.h"
+#include "catalua_bool_reason.h"
 #include "catalua_bindings_utils.h"
 #include "catalua_luna.h"
 #include "catalua_luna_doc.h"
@@ -16,6 +18,7 @@
 #include "gun_mode.h"
 #include "hsv_color.h"
 #include "item_contents.h"
+#include "item_factory.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "map/emit.h"
@@ -32,7 +35,6 @@
 #include "vitamin.h"
 
 #include <ranges>
-#include <tuple>
 
 /**
  * Lua handle to one pocket of an item. Pockets are rebuilt (and their storage freed) when an
@@ -422,7 +424,7 @@ void reg_item( sol::state &lua )
         DOC( "For stackable (count-by-charges) items such as ammo, `count` is the stack size. For non-stackable items, pass a negative value (e.g. -1), since a positive one is still applied as charges. Tools spawned with a negative value get their default charges." );
         luna::set_fx( ut, "spawn", []( const itype_id & itype, int count )
         {
-            return item::spawn( itype, calendar::turn, count );
+            return item_controller->spawn_migrated( itype, calendar::turn, count );
         } );
 
         SET_FX( is_null );
@@ -565,17 +567,19 @@ void reg_item( sol::state &lua )
                       ) );
 
         DOC( "Checks if this item can contain another" );
-        luna::set_fx( ut, "can_contain",
-                      sol::resolve<bool( const item & ) const>
-                      ( &item::can_contain ) );
+        luna::set_fx( ut, "can_contain", []( const item & it, const item & other ) -> bool
+        {
+            // J3: item::can_contain returns ret_val<void> (DDA); Lua still sees a bool
+            return it.can_contain( other ).success();
+        } );
 
         DOC( "Checks if this item could take another item into one of its pockets right now (of the given `PocketType`, default CONTAINER). Returns whether it can, and the reason if not." );
         luna::set_fx( ut, "can_contain_item", []( const item & it, const item & other,
-                      sol::optional<pocket_type> type ) -> std::tuple<bool, std::string>
+                      sol::optional<pocket_type> type ) -> lua_bool_reason
         {
             const ret_val<item_pocket::contain_code> res =
-                it.contents.can_contain( other, type.value_or( pocket_type::CONTAINER ) );
-            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+            it.contents.can_contain( other, type.value_or( pocket_type::CONTAINER ) );
+            return lua_bool_reason{ res.success(), res.success() ? std::string() : res.str() };
         } );
 
         DOC( "The pockets of this item, optionally only those of the given `PocketType`." );
@@ -594,11 +598,11 @@ void reg_item( sol::state &lua )
 
         DOC( "Puts `item` into the best pocket of the given `PocketType` (default CONTAINER) if it fits. Returns whether it did, and the reason if not. The item is only consumed on success." );
         luna::set_fx( ut, "try_put_in", []( item & it, detached_ptr<item> &payload,
-                      sol::optional<pocket_type> type ) -> std::tuple<bool, std::string>
+                                            sol::optional<pocket_type> type ) -> lua_bool_reason
         {
             const ret_val<bool> res = it.try_put_in( std::move( payload ),
-                                      type.value_or( pocket_type::CONTAINER ) );
-            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+                    type.value_or( pocket_type::CONTAINER ) );
+            return lua_bool_reason{ res.success(), res.success() ? std::string() : res.str() };
         } );
 
         DOC( "Gets the remaining space available for a type of liquid" );
@@ -638,7 +642,29 @@ void reg_item( sol::state &lua )
         SET_FX( has_item_with_id );
 
         DOC( "Checks if the item covers a bodypart" );
-        SET_FX( covers );
+        luna::set_fx( ut, "covers", static_cast<bool( item::* )( const bodypart_id & ) const>(
+                          &item::covers ) );
+
+        DOC( "How much of a body part the item covers, 0-100. With a `SubBodyPartId` as second argument, the coverage of that sub-location; for items that don't list sub-locations this is the body part's coverage. The body part is a `BodyPartTypeIntId` or a `BodyPartTypeId`." );
+        luna::set_fx( ut, "get_coverage", sol::overload(
+        []( const item & it, const bodypart_id & bp ) -> int {
+            return it.get_coverage( bp );
+        },
+        []( const item & it, const bodypart_str_id & bp ) -> int {
+            return it.get_coverage( bodypart_id( bp ) );
+        },
+        []( const item & it, const bodypart_id & bp, const sub_bodypart_str_id & sbp ) -> int {
+            return it.get_coverage( bp, sbp );
+        },
+        []( const item & it, const bodypart_str_id & bp, const sub_bodypart_str_id & sbp ) -> int {
+            return it.get_coverage( bodypart_id( bp ), sbp );
+        }
+                      ) );
+
+        DOC( "The armor plates currently inserted into this item's plate slots (ablative pockets), in slot order" );
+        luna::set_fx( ut, "get_ablative_items", []( item & it ) -> std::vector<item *> {
+            return ablative::plates( it );
+        } );
 
         SET_FX( set_flag );
         SET_FX( unset_flag );
@@ -877,11 +903,19 @@ void reg_islot( sol::state &lua )
         DOC( "Static definition of one pocket of an item type" );
         sol::usertype<UT_CLASS> ut = luna::new_usertype<UT_CLASS>( lua, luna::no_bases, luna::no_constructor );
 
+        DOC( "The pocket type of this container slot" );
         luna::set_fx( ut, "type", []( const UT_CLASS & c ) { return c.type; } );
-        luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) { return c.volume_capacity; } );
+        DOC( "Volume this container holds" );
+        luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) { return c.raw_volume_capacity; } );
+        DOC( "Maximum weight this container holds" );
         luna::set_fx( ut, "weight_capacity", []( const UT_CLASS & c ) { return c.max_contains_weight; } );
+        DOC( "Whether this container is a holster" );
         luna::set_fx( ut, "is_holster", []( const UT_CLASS & c ) { return c.holster; } );
+        DOC( "Whether this is a plate slot (an armor plate goes here)" );
+        luna::set_fx( ut, "is_ablative", []( const UT_CLASS & c ) { return c.ablative; } );
+        DOC( "Whether this container can hold liquids" );
         luna::set_fx( ut, "watertight", []( const UT_CLASS & c ) { return c.watertight; } );
+        DOC( "Whether this container keeps its size when empty" );
         luna::set_fx( ut, "rigid", []( const UT_CLASS & c ) { return c.rigid; } );
     }
 #undef UT_CLASS
@@ -893,13 +927,26 @@ void reg_islot( sol::state &lua )
 
         DOC( "Whether the item this pocket belongs to still exists and still has this pocket. Does not raise." );
         luna::set_fx( ut, "is_valid", []( const UT_CLASS & c ) { return c.is_valid(); } );
+        DOC( "The `PocketType` of this pocket" );
         luna::set_fx( ut, "type", []( const UT_CLASS & c ) { return c.get().get_type(); } );
+        DOC( "The volume this pocket can hold" );
         luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) { return c.get().volume_capacity(); } );
+        DOC( "The volume still free in this pocket" );
         luna::set_fx( ut, "remaining_volume", []( const UT_CLASS & c ) { return c.get().remaining_volume(); } );
+        DOC( "The weight this pocket can hold" );
         luna::set_fx( ut, "weight_capacity", []( const UT_CLASS & c ) { return c.get().weight_capacity(); } );
+        DOC( "The weight still free in this pocket" );
         luna::set_fx( ut, "remaining_weight", []( const UT_CLASS & c ) { return c.get().remaining_weight(); } );
+        DOC( "Whether this pocket is a holster" );
         luna::set_fx( ut, "is_holster", []( const UT_CLASS & c ) { return c.get().is_holster(); } );
+        DOC( "Whether this is a plate slot (an armor plate goes here)" );
+        luna::set_fx( ut, "is_ablative", []( const UT_CLASS & c )
+        {
+            return c.get().get_data().ablative;
+        } );
+        DOC( "Whether this pocket can hold liquids" );
         luna::set_fx( ut, "watertight", []( const UT_CLASS & c ) { return c.get().watertight(); } );
+        DOC( "Whether this pocket is sealed" );
         luna::set_fx( ut, "sealed", []( const UT_CLASS & c ) { return c.get().sealed(); } );
         DOC( "The items in this pocket" );
         luna::set_fx( ut, "items", []( const UT_CLASS & c )
@@ -912,10 +959,15 @@ void reg_islot( sol::state &lua )
         } );
         DOC( "Whether this pocket could take the item, and the reason if not" );
         luna::set_fx( ut, "can_contain", []( const UT_CLASS & c, const item & it )
-                      -> std::tuple<bool, std::string>
+                      -> lua_bool_reason
         {
+            // J2: DDA's can_contain has no sealed test; a sealed pocket still refuses (D23)
+            if( c.get().sealed() )
+            {
+                return lua_bool_reason{ false, "it is sealed" };
+            }
             const ret_val<item_pocket::contain_code> res = c.get().can_contain( it );
-            return std::make_tuple( res.success(), res.success() ? std::string() : res.str() );
+            return lua_bool_reason{ res.success(), res.success() ? std::string() : res.str() };
         } );
     }
 #undef UT_CLASS

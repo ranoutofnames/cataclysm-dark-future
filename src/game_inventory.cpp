@@ -17,15 +17,20 @@
 #include "enums.h"
 #include "examine_item_menu.h"
 #include "flag.h"
+#include "activity_actor_definitions.h"
 #include "game.h"
 #include "input.h"
 #include "inventory.h"
 #include "inventory_ui.h"
 #include "item.h"
+#include "messages.h"
+#include "item_parent_checks.h"
+#include "iteminfo_format_utils.h"
 #include "item_category.h"
 #include "itype.h"
 #include "iuse.h"
 #include "iuse_actor.h"
+#include "pocket_type.h"
 #include "map/map.h"
 #include "material.h"
 #include "npc.h"
@@ -1378,11 +1383,257 @@ class holster_inventory_preset: public weapon_inventory_preset
         const item &holster;
 };
 
+namespace
+{
+/**
+ * Preset for putting items inside a container (DDA inventory_ui.cpp:907 inventory_holster_preset).
+ * CDF: items are plain pointers, so "is in the holster" tests walk item::parent_item().
+ */
+class insert_inventory_preset : public inventory_selector_preset
+{
+    public:
+        insert_inventory_preset( item &holster, const Character &who ) : holster( holster ),
+            who( who ) {
+        }
+
+        bool is_shown( const item *contained ) const override {
+            if( contained == &holster ) {
+                return false;
+            }
+            if( is_ancestor( contained, holster ) || is_ancestor( &holster, *contained ) ) {
+                return false;
+            }
+            if( !contained->is_container() && contained->made_of( phase_id::LIQUID ) &&
+                !contained->is_frozen_liquid() ) {
+                // spilt liquid cannot be picked up
+                return false;
+            }
+            // only hide if it is in the toplevel of holster (to allow shuffling of items inside a bag)
+            return contained->parent_item() != &holster;
+        }
+
+        std::string get_denial( const item *it ) const override {
+            if( who.is_worn( *it ) ) {
+                const ret_val<bool> ret = who.can_takeoff( *it );
+                if( !ret.success() ) {
+                    return ret.str();
+                }
+            }
+
+            if( it->is_bucket_nonempty() ) {
+                return "item would spill";
+            }
+
+            detached_ptr<item> item_copy = item::spawn( *it );
+            item_copy->charges = 1;
+            ret_val<void> ret = holster.can_contain( *item_copy, false, false, true, false,
+                                it->parent_item() );
+            if( !ret.success() ) {
+                return !ret.str().empty() ? ret.str() : "item can't be stored there";
+            }
+
+            ret = parents_can_contain_recursive( holster, *item_copy );
+            if( !ret.success() ) {
+                return !ret.str().empty() ? ret.str() : "item can't be stored there";
+            }
+
+            return {};
+        }
+
+    private:
+        static bool is_ancestor( const item *maybe_ancestor, const item &it ) {
+            for( const item *parent = it.parent_item(); parent != nullptr;
+                 parent = parent->parent_item() ) {
+                if( parent == maybe_ancestor ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// The item that we are putting something into.
+        item &holster;
+        const Character &who;
+};
+
+bool valid_unload_container( const item &container )
+{
+    return
+        // Item must be a container.
+        container.is_container()
+        // Item must be able to be unloaded
+        && !container.has_flag( flag_NO_UNLOAD )
+        // Container must contain at least one item
+        && !container.empty_container()
+        // Not all contents should not be liquid, gas or plasma
+        && !container.contains_no_solids();
+}
+} // namespace
+
+// Per DDA game_inventory.cpp:2064 (game_menus::inv::holster, multi-select insert menu).
+// CDF: the selector is the drop selector with the insert preset, the stats header of DDA's
+// inventory_insert_selector is not rebuilt.
+static drop_locations choose_items_to_insert( item &holster )
+{
+    avatar &you = get_avatar();
+    const std::string holster_name = holster.tname( 1, false );
+    const use_function *use = holster.type->get_use( "holster" );
+    const holster_actor *actor = use == nullptr ? nullptr : dynamic_cast<const holster_actor *>
+                                 ( use->get_actor_ptr() );
+
+    const std::string title = ( actor ? actor->holster_prompt.empty() : true )
+                              ? string_format( _( "Put item into %s" ), holster.tname() )
+                              : _( actor->holster_prompt );
+    const std::string hint = string_format( _( "Choose an item to put into your %s" ),
+                                            holster_name );
+
+    const insert_inventory_preset holster_preset( holster, you );
+
+    inventory_drop_selector insert_menu( you, holster_preset );
+    insert_menu.add_character_items( you );
+    insert_menu.add_nearby_items( 1 );
+    insert_menu.set_display_stats( true );
+
+    insert_menu.set_title( title );
+    insert_menu.set_hint( hint );
+
+    return insert_menu.execute();
+}
+
+void game_menus::inv::insert_items( item &holster )
+{
+    avatar &you = get_avatar();
+    if( holster.will_spill_if_unsealed()
+        && holster.where() != item_location_type::map
+        && !you.is_wielding( holster ) ) {
+
+        you.add_msg_if_player( m_info, _( "The %s would spill unless it's on the ground or wielded." ),
+                               holster.type_name() );
+        return;
+    }
+    const drop_locations holstered_list = choose_items_to_insert( holster );
+
+    if( !holstered_list.empty() ) {
+        you.assign_activity( std::make_unique<player_activity>(
+                                 std::make_unique<insert_item_activity_actor>( holster, holstered_list ) ) );
+    }
+}
+
+// Per DDA game.cpp:6590 (game::insert_item( drop_locations & )): choose another container for
+// the items that could not be inserted.
+void game_menus::inv::insert_items_again( const drop_locations &targets )
+{
+    if( targets.empty() || !targets.front().loc ) {
+        return;
+    }
+    avatar &you = get_avatar();
+    const item *source_parent = targets.front().loc->parent_item();
+    const std::string title = string_format( _( "%s: %s and %d items" ), _( "Insert item" ),
+                              targets.front().loc->tname(), targets.size() - 1 );
+    item *container = g->inv_map_splice( [&you, source_parent]( const item & it ) {
+        if( source_parent == &it ) {
+            return false;
+        }
+        return it.is_container() && !it.is_corpse() && examine_item_menu::rate_action_insert( you, it ) == examine_item_menu::hint_rating::good;
+    }, title, 1, _( "You have no container to insert items." ) );
+
+    if( container == nullptr ) {
+        add_msg( _( "Never mind." ) );
+        return;
+    }
+
+    you.assign_activity( std::make_unique<player_activity>(
+                             std::make_unique<insert_item_activity_actor>( *container, targets, true ) ) );
+}
+
+// Per DDA game_inventory.cpp:2119 (game_menus::inv::unload_container).
+drop_locations game_menus::inv::unload_container()
+{
+    avatar &you = get_avatar();
+    const inventory_filter_preset unload_preset( valid_unload_container );
+
+    inventory_drop_selector insert_menu( you, unload_preset );
+    insert_menu.add_character_items( you );
+    insert_menu.add_nearby_items( 1 );
+    insert_menu.set_display_stats( false );
+
+    insert_menu.set_title( _( "Select containers to unload" ) );
+
+    drop_locations dropped;
+    for( const drop_location &droplc : insert_menu.execute() ) {
+        for( item *it : droplc.loc->all_items_top( pocket_type::CONTAINER, true ) ) {
+            // no liquids and no items marked as favorite
+            if( ( !it->made_of( phase_id::LIQUID ) || it->is_frozen_liquid() ) && !it->is_favorite ) {
+                dropped.emplace_back( *it, it->count() );
+            }
+        }
+    }
+    return dropped;
+}
+
+// Per DDA inventory_ui.cpp:2050 (inventory_selector::drag_drop_item): the "Select pocket" menu.
+bool game_menus::inv::select_pocket_and_store( Character &you, item &source, item &dest )
+{
+    if( &source == &dest ) {
+        return false;
+    }
+    std::vector<item_pocket *> pockets = dest.get_container_pockets();
+    if( pockets.empty() ) {
+        popup( _( "Destination has no pockets." ) );
+        return false;
+    }
+    int base_move_cost = 0;
+    for( const item *parent = source.parent_item(); parent != nullptr;
+         parent = parent->parent_item() ) {
+        base_move_cost += parent->obtain_cost( source );
+    }
+    uilist action_menu;
+    action_menu.text = _( "Select pocket" );
+    int index = 0;
+    bool any_containable = false;
+    for( item_pocket *pocket : pockets ) {
+        const std::string pocket_text = string_format( _( "%s - %s/%s | %d moves" ),
+                                        pocket->get_description().translated(),
+                                        vol_to_info( "", "", pocket->contents_volume() ).sValue,
+                                        vol_to_info( "", "", pocket->volume_capacity() ).sValue,
+                                        pocket->moves() + base_move_cost );
+        action_menu.addentry( index++, true, 0, pocket_text );
+        const ret_val<item_pocket::contain_code> contain = pocket->can_contain( source );
+        if( contain.success() ) {
+            any_containable = true;
+        } else {
+            action_menu.entries.back().enabled = false;
+        }
+    }
+    if( !any_containable ) {
+        popup( string_format( _( "%s contains no pockets that can contain item." ),
+                              dest.tname( 1, false ) ) );
+        return false;
+    }
+    action_menu.query();
+    if( action_menu.ret >= 0 && static_cast<size_t>( action_menu.ret ) < pockets.size() ) {
+        const ret_val<item_pocket::contain_code> contain =
+            pockets[action_menu.ret]->can_contain( source );
+        if( contain.success() ) {
+            // storage should mimick character inserting
+            you.store( pockets[action_menu.ret], source, true, base_move_cost );
+            return true;
+        } else {
+            popup( _( "Cannot put item in pocket: %s" ), contain.str() );
+            return false;
+        }
+    }
+
+    return false;
+}
+
 item *game_menus::inv::holster( player &p, item &holster )
 {
     const std::string holster_name = holster.tname( 1, false );
-    const auto actor = dynamic_cast<const holster_actor *>
-                       ( holster.type->get_use( "holster" )->get_actor_ptr() );
+    // F9 (P1f): a holster that holds through pockets only has no holster use action
+    const use_function *holster_use = holster.type->get_use( "holster" );
+    const auto actor = holster_use == nullptr ? nullptr :
+                       dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
 
     if( !actor ) {
         const std::string msg = string_format( _( "You can't put anything into your %s." ),
@@ -1455,6 +1706,29 @@ class saw_stock_inventory_preset : public weapon_inventory_preset
         const player &p;
         const item &tool;
         const saw_stock_actor &actor;
+};
+
+class attach_molle_inventory_preset : public inventory_selector_preset
+{
+    public:
+        attach_molle_inventory_preset( const molle_attach_actor *actor, const item *vest ) :
+            actor( actor ), vest( vest ) {
+        }
+
+        bool is_shown( const item *loc ) const override {
+            return loc != vest && loc->can_attach_as_pocket();
+        }
+
+        std::string get_denial( const item *loc ) const override {
+            if( actor->size - vest->contents.get_additional_space_used() < loc->get_pocket_size() ) {
+                return "not enough space left on the vest.";
+            }
+            return std::string();
+        }
+
+    private:
+        const molle_attach_actor *actor;
+        const item *vest;
 };
 
 class salvage_inventory_preset : public pickup_inventory_preset
@@ -1640,6 +1914,28 @@ item *game_menus::inv::saw_barrel( player &p, item &tool )
                                         tool.tname( 1, false )
                                       )
                        );
+}
+
+item *game_menus::inv::molle_attach( player &p, item &tool )
+{
+    const molle_attach_actor *actor = dynamic_cast<const molle_attach_actor *>
+                                      ( tool.type->get_use( "attach_molle" )->get_actor_ptr() );
+
+    if( !actor ) {
+        debugmsg( "Tried to use a wrong item." );
+        return nullptr;
+    }
+
+    const int vacancies = actor->size - tool.contents.get_additional_space_used();
+
+    return inv_internal( p, attach_molle_inventory_preset( actor, &tool ),
+                         _( "Attach pouch" ), 1,
+                         _( "You have no pouches that attach to MOLLE webbing." ),
+                         string_format( "%s\n%s",
+                                        string_format( _( "Choose a pouch to attach to your %s" ),
+                                                tool.tname( 1, false ) ),
+                                        string_format( vgettext( "There is space for %d small pouch",
+                                                "There is space for %d small pouches", vacancies ), vacancies ) ) );
 }
 
 item *game_menus::inv::saw_stock( player &p, item &tool )

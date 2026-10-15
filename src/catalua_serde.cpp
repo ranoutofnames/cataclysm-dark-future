@@ -23,8 +23,8 @@ namespace cata
 // reported, so no work is spent on it for the entries that are saved without problems.
 using lua_path_fn = std::function<std::string()>;
 
-void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
-                                   std::vector<sol::table> &stack, const lua_path_fn &path );
+auto serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
+                                   std::vector<sol::table> &stack, const lua_path_fn &path ) -> void;
 
 namespace
 {
@@ -148,8 +148,8 @@ auto deserialize_lua_coord( sol::state_view lua, const JsonObject &jo,
 
 // Serializes one Lua value as a JSON object. Returns false if the value could not be
 // serialized (after reporting it); the output is then incomplete and has to be discarded.
-static bool serialize_lua_object( const sol::object &val, JsonOut &jsout,
-                                  std::vector<sol::table> &stack, const lua_path_fn &path )
+static auto serialize_lua_object( const sol::object &val, JsonOut &jsout,
+                                  std::vector<sol::table> &stack, const lua_path_fn &path ) -> bool
 {
     sol::state_view lua( val.lua_state() );
     auto ok = true;
@@ -301,9 +301,9 @@ auto prepare_lua_value( const sol::object &val, std::vector<sol::table> &stack,
     }
 }
 
-void write_prepared_lua_value( const sol::object &val, const prepared_lua_value &prepared,
+auto write_prepared_lua_value( const sol::object &val, const prepared_lua_value &prepared,
                                JsonOut &jsout, std::vector<sol::table> &stack,
-                               const lua_path_fn &path )
+                               const lua_path_fn &path ) -> void
 {
     if( prepared.raw ) {
         jsout.write_separator();
@@ -316,8 +316,8 @@ void write_prepared_lua_value( const sol::object &val, const prepared_lua_value 
 
 } // namespace
 
-void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
-                                   std::vector<sol::table> &stack, const lua_path_fn &path )
+auto serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
+                                   std::vector<sol::table> &stack, const lua_path_fn &path ) -> void
 {
     stack.push_back( t );
 
@@ -355,7 +355,7 @@ void serialize_lua_table_internal( const sol::table &t, JsonOut &jsout,
     stack.pop_back();
 }
 
-void serialize_lua_table( const sol::table &t, JsonOut &jsout, const std::string &context )
+auto serialize_lua_table( const sol::table &t, JsonOut &jsout, const std::string &context ) -> void
 {
     std::vector<sol::table> stack;
     const lua_path_fn path = [&context]() {
@@ -422,7 +422,7 @@ deserialize_lua_object( sol::state_view lua, const JsonObject &jo )
     return sol::nil;
 }
 
-void deserialize_lua_table( sol::table t, JsonObject &obj, const std::string &context )
+auto deserialize_lua_table( sol::table t, JsonObject &obj, const std::string &context ) -> void
 {
     sol::state_view lua( t.lua_state() );
 

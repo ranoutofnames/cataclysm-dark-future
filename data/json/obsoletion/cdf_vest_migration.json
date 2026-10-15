@@ -1,0 +1,202 @@
+[
+  {
+    "type": "MIGRATION",
+    "id": "modularvest",
+    "replace": "ballistic_vest_esapi",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "modularvestkevlar",
+    "replace": "ballistic_vest_esapi",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "modularvestceramic",
+    "replace": "ballistic_vest_esapi",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      {
+        "id": "esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "esbi_plate",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "modularvesthard",
+    "replace": "ballistic_vest_esapi",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      {
+        "id": "hc_esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "hc_esbi_plate",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "modularveststeel",
+    "replace": "ballistic_vest_esapi",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      {
+        "id": "mc_esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "mc_esbi_plate",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "modularvestsuper",
+    "replace": "ballistic_vest_esapi",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      {
+        "id": "qt_esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "qt_esbi_plate",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "oldguard_armor",
+    "replace": "ballistic_vest_heavy",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      "iotv_shoulder_plate",
+      "iotv_groin_plate",
+      "iotv_neck_plate"
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "oldguard_armor_ceramic",
+    "replace": "ballistic_vest_heavy",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      "iotv_shoulder_plate",
+      "iotv_groin_plate",
+      "iotv_neck_plate",
+      {
+        "id": "esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "esbi_plate",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "oldguard_armor_hardsteel",
+    "replace": "ballistic_vest_heavy",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      "iotv_shoulder_plate",
+      "iotv_groin_plate",
+      "iotv_neck_plate",
+      {
+        "id": "hc_esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "hc_esbi_plate",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "oldguard_armor_steel",
+    "replace": "ballistic_vest_heavy",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      "iotv_shoulder_plate",
+      "iotv_groin_plate",
+      "iotv_neck_plate",
+      {
+        "id": "mc_esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "mc_esbi_plate",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "oldguard_armor_superalloy",
+    "replace": "ballistic_vest_heavy",
+    "contents": [
+      {
+        "id": "chestpouch",
+        "count": 2
+      },
+      "iotv_shoulder_plate",
+      "iotv_groin_plate",
+      "iotv_neck_plate",
+      {
+        "id": "qt_esapi_plate",
+        "count": 2
+      },
+      {
+        "id": "qt_esbi_plate",
+        "count": 2
+      }
+    ]
+  }
+]

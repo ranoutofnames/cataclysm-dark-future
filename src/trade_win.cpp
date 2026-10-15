@@ -346,7 +346,7 @@ auto trading_window::update_win( npc &np, const std::string &deal ) -> void
     };
     const auto your_selected = sum_selected( state.yours, false );
     const auto their_selected = sum_selected( state.theirs, true );
-    const auto player_free_volume = g->u.volume_capacity() - g->u.volume_carried() +
+    const auto player_free_volume = g->u.free_space() +
                                     your_selected.volume - their_selected.volume;
     const auto player_free_weight = g->u.weight_capacity() - g->u.weight_carried() +
                                     your_selected.weight - their_selected.weight;
@@ -794,7 +794,7 @@ auto trading_window::get_var_trade( const item &it, int total_count, int amount_
 
 auto trading_window::perform_trade( npc &np, const std::string &deal ) -> bool
 {
-    state.volume_left = np.volume_capacity() - np.volume_carried();
+    state.volume_left = np.free_space();
     state.weight_left = np.weight_capacity() - np.weight_carried();
 
     // Shopkeeps are happy to have large inventories.

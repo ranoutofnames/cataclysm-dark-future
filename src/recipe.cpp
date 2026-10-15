@@ -405,7 +405,14 @@ detached_ptr<item> recipe::create_result() const
     }
 
     if( contained ) {
+        const bool is_liquid = newit->made_of( LIQUID );
         newit = item::in_container( container, std::move( newit ) );
+        // CDF: a liquid recipe result fills its container, whatever the recipe's `charges` say
+        // (BN recipe data relies on it; DDA's recipe data states the charges to fill instead)
+        if( is_liquid && newit->is_container() && !newit->contents.empty() ) {
+            item &liquid = newit->contents.front();
+            liquid.charges = liquid.charges_per_volume( newit->get_container_capacity() );
+        }
     }
 
     return newit;

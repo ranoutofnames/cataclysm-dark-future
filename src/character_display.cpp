@@ -1109,6 +1109,10 @@ static void draw_tip( const catacurses::window &w_tip, const Character &you,
                    you.name,  gender, you.custom_profession );
     }
 
+    right_print( w_tip, 0, 6, c_white, string_format(
+                     _( "[<color_yellow>%s</color>] Morale" ),
+                     ctxt.get_desc( "morale" ) ) );
+
     right_print( w_tip, 0, 1, c_white, string_format(
                      _( "[<color_yellow>%s</color>]" ),
                      ctxt.get_desc( "HELP_KEYBINDINGS" ) ) );
@@ -1269,6 +1273,11 @@ static bool handle_player_display_action( Character &you, unsigned int &line,
         you.name = popup.text();
         add_msg( "From now on, you will refer to yourself as '%s.'", popup.text() );
         ui_tip.invalidate_ui();
+    } else if( action == "morale" ) {
+        // per DDA player_display.cpp:1426
+        if( avatar *you_avatar = you.as_avatar() ) {
+            you_avatar->disp_morale();
+        }
     }
     return done;
 }
@@ -1462,6 +1471,8 @@ void character_display::disp_info( Character &ch )
     ctxt.register_action( "CONFIRM", to_translation( "Toggle skill training / Upgrade stat" ) );
     ctxt.register_action( "CHANGE_PROFESSION_NAME", to_translation( "Change profession name" ) );
     ctxt.register_action( "CHANGE_NAME", to_translation( "Change name" ) );
+    // per DDA player_display.cpp:1691: the morale screen is opened from the character screen
+    ctxt.register_action( "morale" );
     ctxt.register_action( "HELP_KEYBINDINGS" );
 
     std::map<std::string, int> speed_effects;

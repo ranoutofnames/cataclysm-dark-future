@@ -253,6 +253,7 @@ class avatar : public player
         // Toggles prone on/off.
         void toggle_prone_mode();
 
+        using Character::wield;
         bool wield( item &target ) override;
         detached_ptr<item> wield( detached_ptr<item> &&target ) override;
 

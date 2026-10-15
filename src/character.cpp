@@ -42,6 +42,7 @@
 #include "game_constants.h"
 #include "int_id.h"
 #include "item_contents.h"
+#include "item_factory.h"
 #include "item_pocket.h"
 #include "pocket_data.h"
 #include "item_hauling.h"
@@ -673,7 +674,6 @@ void Character::move_operator_common( Character &&source ) noexcept
 
     npc_ai_info_cache = source.npc_ai_info_cache ;
 
-
     enchantment_cache = std::move( source.enchantment_cache );
 
     overmap_time = std::move( source.overmap_time );
@@ -1292,7 +1292,6 @@ void Character::assign_stashed_activity()
     backlog.push_front( std::move( stashed_outbounds_backlog ) );
     cancel_stashed_activity();
 }
-
 
 bool Character::check_outbounds_activity( player_activity &act )
 {
@@ -2602,8 +2601,16 @@ detached_ptr<item> Character::wear_item( detached_ptr<item> &&wear,
         return std::move( wear );
     }
     item &to_wear = *wear;
+    // D7: a sided item goes on the side that has no rigid armor yet (DDA Character::wear);
+    // CDF: only one that has no side yet, so a side that was set on purpose stays
+    const side original_side = to_wear.get_side();
+    if( to_wear.is_sided() && original_side == side::BOTH ) {
+        check_rigid_sidedness( to_wear );
+    }
     const auto ret = can_wear( to_wear );
     if( !ret.success() ) {
+        // set it to no longer be sided
+        to_wear.set_side( original_side );
         if( interactive ) {
             add_msg_if_player( m_info, "%s", ret.c_str() );
         }
@@ -2613,6 +2620,7 @@ detached_ptr<item> Character::wear_item( detached_ptr<item> &&wear,
     // Lua iwearable can_wear callback
     if( const auto *iwear_cb = to_wear.type->iwearable_callbacks ) {
         if( !iwear_cb->call_can_wear( *this, to_wear ) ) {
+            to_wear.set_side( original_side );
             return std::move( wear );
         }
     }
@@ -2621,7 +2629,6 @@ detached_ptr<item> Character::wear_item( detached_ptr<item> &&wear,
     const bool supertinymouse = get_size() == creature_size::tiny;
     const bool size_matters = to_wear.get_sizing( *this ) != item::sizing::ignore;
     last_item = to_wear.typeId();
-
 
     location_vector<item>::iterator pos = position.value_or( position_to_wear_new_item( to_wear ) );
     worn.insert( std::move( pos ), std::move( wear ) );
@@ -2763,27 +2770,6 @@ detached_ptr<item> Character::i_add_to_container( detached_ptr<item> &&it, const
     } );
 
     return std::move( it );
-}
-
-item &Character::i_add( detached_ptr<item> &&it, bool should_stack )
-{
-    if( !it ) {
-        return null_item_reference();
-    }
-    const itype_id item_type_id = it->typeId();
-    last_item = item_type_id;
-
-    if( it->is_food() || it->is_ammo() || it->is_gun() || it->is_armor() ||
-        it->is_book() || it->is_tool() || it->is_melee() || it->is_food_container() ) {
-        inv.unsort();
-    }
-
-    ret_val<item *> added = try_add( std::move( it ) );
-    if( added.success() ) {
-        return *added.value();
-    }
-    // no pocket takes it: it never gets lost, it lands at the character's feet
-    return drop_for_lack_of_room( std::move( it ) );
 }
 
 item &Character::drop_for_lack_of_room( detached_ptr<item> &&it )
@@ -3222,7 +3208,6 @@ bool Character::has_active_item( const itype_id &id ) const
     } );
 }
 
-
 bool Character::has_mission_item( int mission_id ) const
 {
     return mission_id != -1 && has_item_with( [&mission_id]( const item & it ) {
@@ -3272,11 +3257,6 @@ units::mass Character::cached_weight_carried()
     return ret;
 }
 
-units::volume Character::volume_carried() const
-{
-    return carried_volume();
-}
-
 int Character::best_nearby_lifting_assist() const
 {
     return best_nearby_lifting_assist( bub_pos() );
@@ -3298,21 +3278,32 @@ int Character::best_nearby_lifting_assist( const tripoint_bub_ms &world_pos ) co
                      } );
 }
 
-static units::volume scale_volume( units::volume v, double mult )
-{
-    return units::from_milliliter( static_cast<int>( v.value() * mult ) );
-}
-
 // the pockets that count as carried storage: worn `carry` pockets, then the body storage
-static bool is_carried_pocket( const item_pocket &pocket )
+static auto is_carried_pocket( const item_pocket &pocket ) -> bool
 {
     return pocket.is_carry() && pocket.is_type( pocket_type::CONTAINER );
 }
 
+// the wielded item, if there is one: a wielded bag is part of the carried view (J4-1, DDA
+// best_pocket searches the wielded item first)
+static const item *wielded_for_carry( const Character &who )
+{
+    const item &weapon = who.primary_weapon();
+    return weapon.is_null() ? nullptr : &weapon;
+}
+
 // calls fn( pocket, is_body_storage ) for the pockets that count as carried storage
 template<typename Fn>
-static void for_each_carry_pocket( const location_vector<item> &worn, const item *body, Fn fn )
+static auto for_each_carry_pocket( const location_vector<item> &worn, const item *body, Fn fn,
+                                   const item *wielded = nullptr ) -> void
 {
+    if( wielded != nullptr ) {
+        for( const item_pocket &pocket : wielded->contents.get_pockets() ) {
+            if( is_carried_pocket( pocket ) ) {
+                fn( pocket, false );
+            }
+        }
+    }
     for( const item * const &worn_it : worn ) {
         for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
             if( is_carried_pocket( pocket ) ) {
@@ -3332,8 +3323,8 @@ static void for_each_carry_pocket( const location_vector<item> &worn, const item
 // Calls f( item ) for the carried items named in @p without, as inventory::volume_without did,
 // except for those inside a worn item that is excluded itself (they go away with it).
 template<typename F>
-static void for_each_excluded_carried_impl( const inventory &view, const excluded_stacks &without,
-        const F &f )
+static auto for_each_excluded_carried_impl( const inventory &view, const excluded_stacks &without,
+        const F &f ) -> void
 {
     if( without.empty() ) {
         return;
@@ -3368,8 +3359,8 @@ static void for_each_excluded_carried_impl( const inventory &view, const exclude
 }
 
 template<typename F>
-static void for_each_excluded_carried( const Character &who, const excluded_stacks &without,
-                                       const F &f )
+static auto for_each_excluded_carried( const Character &who, const excluded_stacks &without,
+                                       const F &f ) -> void
 {
     for_each_excluded_carried_impl( who.carried_view(), without, f );
 }
@@ -3513,11 +3504,6 @@ units::mass Character::weight_capacity() const
     return ret;
 }
 
-units::volume Character::volume_capacity() const
-{
-    return volume_capacity_reduced_by( 0_ml );
-}
-
 units::volume Character::volume_capacity_reduced_by(
     const units::volume &mod, const excluded_stacks &without ) const
 {
@@ -3525,12 +3511,8 @@ units::volume Character::volume_capacity_reduced_by(
         return units::volume_max;
     }
 
-    // the sum of the effective capacities of the worn `carry` pockets and the body storage
-    const double mult = carry_capacity_multiplier();
-    units::volume ret = 0_ml;
-    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool in_body ) {
-        ret += in_body ? p.volume_capacity() : scale_volume( p.volume_capacity(), mult );
-    } );
+    // DDA volume_capacity (D8: no packmule multiplier), less what leaves with excluded items
+    units::volume ret = volume_capacity();
     if( !without.empty() ) {
         for( const item * const &worn_it : worn ) {
             if( !without.contains( const_cast<item *>( worn_it ) ) ) {
@@ -3538,7 +3520,7 @@ units::volume Character::volume_capacity_reduced_by(
             }
             for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
                 if( is_carried_pocket( pocket ) ) {
-                    ret -= scale_volume( pocket.volume_capacity(), mult );
+                    ret -= pocket.volume_capacity();
                 }
             }
         }
@@ -3550,7 +3532,7 @@ units::volume Character::volume_capacity_reduced_by(
 
 bool Character::can_pick_volume( const item &it ) const
 {
-    return can_stash( it ).success();
+    return can_pickVolume( it, false, nullptr, false );
 }
 
 bool Character::can_pick_volume( units::volume volume ) const
@@ -3607,6 +3589,11 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
 {
     if( !it.is_armor() ) {
         return ret_val<bool>::make_failure( _( "Putting on a %s would be tricky." ), it.tname() );
+    }
+
+    // armor plates are inserted into a carrier, not worn
+    if( it.has_flag( flag_CANT_WEAR ) ) {
+        return ret_val<bool>::make_failure( _( "%s must be inserted into a carrier." ), it.tname() );
     }
 
     // During multithreaded mapgen this can be called on NPC gen
@@ -3797,6 +3784,14 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
     for( auto &i : worn ) {
         if( i->has_flag( flag_ONLY_ONE ) && i->typeId() == it.typeId() ) {
             return ret_val<bool>::make_failure( _( "Can't wear more than one %s!" ), it.tname() );
+        }
+    }
+
+    // if the item is rigid make sure other rigid items aren't already equipped (D7, per DDA)
+    if( it.is_rigid() ) {
+        const ret_val<void> conflict = check_rigid_conflicts( it );
+        if( !conflict.success() ) {
+            return ret_val<bool>::make_failure( "%s", conflict.str() );
         }
     }
 
@@ -4096,82 +4091,6 @@ ret_val<bool> Character::can_swap( const item &it ) const
     return ret_val<bool>::make_success();
 }
 
-// pretty much the same as removing random carried items by volume, but by weight
-static std::vector<detached_ptr<item>> remove_randomly_by_weight( Character &who,
-                             const units::mass &weight )
-{
-    std::vector<item *> contents;
-    std::vector<detached_ptr<item>> result;
-
-    who.dump_inv( contents );
-
-    // shuffle the vector
-    std::shuffle( contents.begin(), contents.end(), rng_get_engine() );
-
-    // iterate through until we have dropped enough items
-    auto dropped_weight = 0_gram;
-    for( auto &e : contents ) {
-        if( dropped_weight >= weight ) {
-            break;
-        }
-        dropped_weight += e->weight();
-        result.push_back( who.inv_remove_item( e ) );
-    }
-
-    return result;
-}
-
-void Character::drop_invalid_inventory()
-{
-    ZoneScoped;
-    bool dropped_liquid = false;
-
-    const auto p = bub_pos();
-
-    refresh_carried();
-    std::vector<item *> carried_items;
-    inv.dump( carried_items );
-    for( item *carried_it : carried_items ) {
-        if( carried_it->made_of( LIQUID ) ) {
-            dropped_liquid = true;
-            get_map().add_item_or_charges( p, inv_remove_item( carried_it ) );
-        }
-    }
-
-    if( dropped_liquid ) {
-        add_msg_if_player( m_bad, _( "Liquid from your inventory has leaked onto the ground." ) );
-    }
-
-    // a shrunken capacity (a mutation, a bionic) shakes carried items loose
-    if( volume_carried() > volume_capacity() ) {
-        std::vector<detached_ptr<item>> items_to_drop;
-        units::volume dropped = 0_ml;
-        const units::volume excess = volume_carried() - volume_capacity();
-        refresh_carried();
-        carried_items.clear();
-        inv.dump( carried_items );
-        std::shuffle( carried_items.begin(), carried_items.end(), rng_get_engine() );
-        for( item *carried_it : carried_items ) {
-            if( dropped >= excess ) {
-                break;
-            }
-            dropped += carried_it->volume();
-            items_to_drop.push_back( inv_remove_item( carried_it ) );
-        }
-        put_into_vehicle_or_drop( *this, item_drop_reason::tumbling, items_to_drop );
-    }
-    if( !is_npc() ) {
-        return;
-    }
-    // Also drop excess weight IF an NPC
-    auto wt_carried = cached_weight_carried();
-    auto wt_capacity = weight_capacity();
-    if( wt_carried > wt_capacity ) {
-        auto items_to_drop = remove_randomly_by_weight( *this, wt_carried - wt_capacity );
-        put_into_vehicle_or_drop( *this, item_drop_reason::too_heavy, items_to_drop );
-    }
-}
-
 bool Character::has_artifact_with( const art_effect_passive effect ) const
 {
     for( const item *weapon : wielded_items() ) {
@@ -4407,6 +4326,10 @@ std::vector<Character::overlay_entry> Character::get_overlay_ids() const
             worn_item
         };
         rval.push_back( ent );
+        // the plates in a carrier show too (DDA character_attire.cpp:1794)
+        for( const item *plate : worn_item->all_ablative_armor() ) {
+            rval.push_back( overlay_entry{ "worn_" + plate->typeId().str(), plate } );
+        }
     }
 
     // last weapon
@@ -4946,6 +4869,17 @@ bool Character::change_side( item &it, bool interactive )
     if( !ret.success() ) {
         if( interactive ) {
             add_msg_if_player( m_info, "%s", ret.c_str() );
+        }
+        return false;
+    }
+
+    // D7: it can't go over hard armor on the other side (DDA outfit::check_rigid_change_side)
+    if( !check_rigid_conflicts( it, it.get_side() == side::LEFT ? side::RIGHT : side::LEFT ).success() ) {
+        if( interactive ) {
+            add_msg_player_or_npc( m_info,
+                                   _( "Your %s conflicts with hard armor on your other side so you can't swap it." ),
+                                   _( "<npcname>'s %s conflicts with hard armor on your other side so they can't swap it." ),
+                                   it.tname() );
         }
         return false;
     }
@@ -6444,7 +6378,6 @@ void Character::check_needs_extremes()
             fall_asleep( 30_seconds );
         }
 
-
         if( sleep_deprivation >= sleep_deprivation_levels::massive ||
             ( ( action_time_scale::once_every_this_tick( 10_minutes ) &&
                 sleep_deprivation >= sleep_deprivation_levels::major &&
@@ -6565,7 +6498,6 @@ std::map<bodypart_id, int> get_wind_resistance( const Character &chr,
     return wind_res_per_bp;
 }
 
-
 void warn_temp_change( Character &chr, const bodypart_id &bp, units::temperature temp_before,
                        units::temperature temp_after )
 {
@@ -6674,7 +6606,6 @@ void apply_comfort_morale( Character &chr, const bodypart_id &bp, const bodypart
         chr.add_morale( MORALE_COMFY, 1, 10, 2_minutes, 1_minutes, true );
     }
 }
-
 
 void set_clothing_map(
     const Character &chr,
@@ -7086,7 +7017,6 @@ void update_bodytemp_bps( Character &chr, BodyTemperatureModifiers &body_mods )
     }
 }
 
-
 void Character::update_bodytemp( const map &m, const weather_manager &weather )
 {
     if( has_trait( trait_DEBUG_NOTEMP ) ) {
@@ -7185,7 +7115,6 @@ auto Character::set_temp_cur( units::temperature temp ) -> void
     }
 }
 
-
 int Character::blood_loss( const bodypart_id &bp ) const
 {
     int hp_cur_sum = get_part_hp_cur( bp );
@@ -7217,7 +7146,6 @@ float Character::get_hit_base() const
     /** @EFFECT_DEX increases hit base, slightly */
     return get_dex() / 4.0f;
 }
-
 
 namespace
 {
@@ -8063,7 +7991,6 @@ detached_ptr<item> Character::pour_into( vehicle &veh, detached_ptr<item> &&liqu
 
     liquid = tank.fill_with( std::move( liquid ), limit );
 
-
     if( liquid ) {
         add_msg_if_player( _( "There's some left over!" ) );
     }
@@ -8197,7 +8124,6 @@ std::string Character::extended_description() const
 
     return replace_colors( ss );
 }
-
 
 std::vector<std::string> Character::get_apperance_description() const
 {
@@ -8990,6 +8916,11 @@ bool Character::invoke_item( item *used, const std::string &method, const tripoi
 
 detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std::string &prompt )
 {
+    if( test_mode ) {
+        // per DDA: the menu cannot be answered in tests, nothing is disposed of
+        return std::move( obj );
+    }
+
     uilist menu;
     menu.text = prompt.empty() ? string_format( _( "Dispose of %s" ), obj->tname() ) : prompt;
 
@@ -9016,7 +8947,8 @@ detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std:
             }
 
             moves -= item_handling_cost( *obj );
-            inv_add_item( std::move( obj ), true );
+            // per DDA: through i_add (never wielded again), keeping the item's invlet
+            i_add( std::move( obj ), true, nullptr, nullptr, true, false );
             inv.unsort();
             return detached_ptr<item>();
         }
@@ -9044,7 +8976,13 @@ detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std:
 
     for( auto &e : worn ) {
         if( e->can_holster( *obj ) ) {
-            auto ptr = dynamic_cast<const holster_actor *>( e->type->get_use( "holster" )->get_actor_ptr() );
+            // A15: a holster that holds through pockets only has no holster use action
+            const use_function *holster_use = e->type->get_use( "holster" );
+            const auto ptr = holster_use == nullptr ? nullptr :
+                             dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
+            if( ptr == nullptr ) {
+                continue;
+            }
             opts.emplace_back( dispose_option{
                 string_format( _( "Store in %s" ), e->tname() ), true, e->invlet,
                 item_store_cost( *obj, *e, false, ptr->draw_cost ),
@@ -9199,46 +9137,6 @@ bool Character::consume_charges( item &used, int qty )
         used.ammo_consume( std::min( qty, used.ammo_remaining() ), bub_pos() );
     }
     return false;
-}
-
-int Character::item_handling_cost( const item &it, bool penalties, int base_cost ) const
-{
-    int mv = base_cost;
-    if( penalties ) {
-        // 40 moves per liter, up to 200 at 5 liters
-        const auto volume_moves = it.volume() / 20_ml;
-        mv += static_cast<int>( std::min( volume_moves, decltype( volume_moves ) { 200 } ) );
-    }
-
-    if( primary_weapon().typeId() == itype_e_handcuffs ) {
-        mv *= 4;
-    } else if( penalties && has_effect( effect_grabbed ) ) {
-        mv *= 2;
-    }
-
-    // For single handed items use the least encumbered hand
-    if( it.is_two_handed( *this ) ) {
-        mv += encumb( body_part_hand_l ) + encumb( body_part_hand_r );
-    } else {
-        mv += std::min( encumb( body_part_hand_l ), encumb( body_part_hand_r ) );
-    }
-
-    return std::min( std::max( mv, 0 ), MAX_HANDLING_COST );
-}
-
-int Character::item_store_cost( const item &it, const item & /* container */, bool penalties,
-                                int base_cost ) const
-{
-    /** @EFFECT_PISTOL decreases time taken to store a pistol */
-    /** @EFFECT_SMG decreases time taken to store an SMG */
-    /** @EFFECT_RIFLE decreases time taken to store a rifle */
-    /** @EFFECT_SHOTGUN decreases time taken to store a shotgun */
-    /** @EFFECT_LAUNCHER decreases time taken to store a launcher */
-    /** @EFFECT_STABBING decreases time taken to store a stabbing weapon */
-    /** @EFFECT_CUTTING decreases time taken to store a cutting weapon */
-    /** @EFFECT_BASHING decreases time taken to store a bashing weapon */
-    int lvl = get_skill_level( it.is_gun() ? it.gun_skill() : it.melee_skill() );
-    return item_handling_cost( it, penalties, base_cost ) / ( ( lvl + 10.0f ) / 10.0f );
 }
 
 int Character::item_wear_cost( const item &it ) const
@@ -9412,7 +9310,6 @@ void Character::shout( std::string msg, bool order )
         msg = is_player() ? _( string_format( "yourself yell \"%s\"",
                                               msg ) ) : _( string_format( "yell \"%s\"", msg ) );
     }
-
 
     int noise = get_shout_volume();
 
@@ -9806,6 +9703,12 @@ static void armor_enchantment_adjust( const Character &guy, damage_unit &du )
 
 void Character::absorb_hit( const bodypart_id &bp, damage_instance &dam )
 {
+    absorb_hit( bp, dam, attack_context() );
+}
+
+void Character::absorb_hit( const bodypart_id &bp, damage_instance &dam,
+                            const attack_context &ctx )
+{
     std::vector<detached_ptr<item>> worn_remains;
     bool armor_destroyed = false;
 
@@ -9876,6 +9779,33 @@ void Character::absorb_hit( const bodypart_id &bp, damage_instance &dam )
 
         armor_enchantment_adjust( *this, elem );
 
+        // The sub-location this damage unit lands on, shared by every layer. Rolled on first
+        // use, so a body part nothing sub-covered protects costs no roll and legacy armor
+        // keeps its independent coverage rolls exactly as before.
+        sub_bodypart_str_id hit_sub_part = sub_bodypart_str_id::NULL_ID();
+        bool sub_part_rolled = false;
+        const auto roll_sub_part = [&]() -> const sub_bodypart_str_id & {
+            if( !sub_part_rolled )
+            {
+                hit_sub_part = bp->random_sub_part();
+                sub_part_rolled = true;
+            }
+            return hit_sub_part;
+        };
+
+        // One coverage roll per damage element, shared by every worn layer, the ablative
+        // pass and each carrier's armor_absorb (DDA Character::absorb_hit_internal).
+        // Drawn lazily, on the first layer that tests it, so an element nothing covers costs
+        // no RNG draw and a single legacy armor piece keeps its one draw exactly as before.
+        int coverage_roll = 0;
+        const auto get_coverage_roll = [&]() -> int {
+            if( coverage_roll == 0 )
+            {
+                coverage_roll = rng( 1, 100 );
+            }
+            return coverage_roll;
+        };
+
         // Only the outermost armor can be set on fire
         bool outermost = true;
         // The worn vector has the innermost item first, so
@@ -9904,8 +9834,24 @@ void Character::absorb_hit( const bodypart_id &bp, damage_instance &dam )
                 }
             }
 
+            // The plates in a carrier's slots take the hit before the carrier does. They test
+            // the same per-element coverage roll as every layer (DDA's single roll).
+            if( !destroy && elem.amount > 0 && get_plate_coverage_model() &&
+                ablative::has_plate_slots( armor ) ) {
+                attack_context unit_ctx = ctx;
+                unit_ctx.coverage_roll = get_coverage_roll();
+                // melee, ranged or plain coverage, by the type of the damage (DDA)
+                unit_ctx.cover = static_cast<int>( item::get_cover_type( elem.type ) );
+                ablative_armor_absorb( elem, armor, bp, roll_sub_part(), unit_ctx );
+            }
+
             if( !destroy ) {
-                destroy = armor_absorb( elem, armor, bp );
+                // a plate carrier is tested at the sub-location the plates cover (DDA tests every
+                // armor at the sub-location, CDF only for armor that names sub-locations)
+                destroy = armor_absorb( elem, armor, bp,
+                                        armor.has_sub_coverage() || armor.is_ablative() ? roll_sub_part() :
+                                        sub_bodypart_str_id::NULL_ID(),
+                                        get_coverage_roll() );
             }
 
             if( destroy ) {
@@ -9957,11 +9903,79 @@ void Character::absorb_hit( const bodypart_id &bp, damage_instance &dam )
     }
 }
 
-bool Character::armor_absorb( damage_unit &du, item &armor, const bodypart_id &bp )
+bool Character::armor_absorb( damage_unit &du, item &armor, const bodypart_id &bp,
+                              const sub_bodypart_str_id &sbp, int roll )
 {
-    if( rng( 1, 100 ) > armor.get_coverage( bp ) ) {
+    // melee, ranged or plain coverage, by the type of the damage (DDA Character::armor_absorb)
+    const item::cover_type ctype = item::get_cover_type( du.type );
+    const int coverage = sbp.is_null() ? armor.get_coverage( bp, ctype ) :
+                         armor.get_coverage( bp, sbp, ctype );
+    if( roll <= 0 ) {
+        roll = rng( 1, 100 );
+    }
+    if( roll > coverage ) {
         return false;
     }
+    return armor_take_hit( du, armor );
+}
+
+void Character::ablative_armor_absorb( damage_unit &du, item &carrier, const bodypart_id &bp,
+                                       const sub_bodypart_str_id &sbp, const attack_context &ctx )
+{
+    if( du.amount <= 0 ) {
+        return;
+    }
+    item_pocket *slot = select_ablative_pocket( carrier, *this, bp, sbp, ctx );
+    if( slot == nullptr || slot->empty() ) {
+        return;
+    }
+    item &plate = *slot->items().front();
+    const std::string pre_damage_name = plate.tname();
+    const islot_armor *plate_armor = plate.find_armor_data();
+    const itype_id leftover_type = plate_armor != nullptr ? plate_armor->non_functional :
+                                   itype_id::NULL_ID();
+    const std::string verb = plate_armor != nullptr && !plate_armor->damage_verb.empty() ?
+                             plate_armor->damage_verb.translated() : _( "is shattered" );
+
+    bool broken;
+    if( !leftover_type.is_null() ) {
+        // DDA: a plate that leaves a replacement behind does not wear down like armor. It breaks
+        // with a chance that scales with the damage it was rated for, about one in three for a
+        // hit of that size (item::damage_armor_transforms)
+        damage_unit pre_mitigation = du;
+        plate.mitigate_damage( du );
+        broken = plate.damage_armor_transforms( pre_mitigation ) == item::armor_status::TRANSFORMED;
+    } else {
+        broken = armor_take_hit( du, plate );
+    }
+    if( !broken ) {
+        return;
+    }
+
+    // the plate is gone: it leaves its `non_functional` item in the same slot, or nothing
+    const units::mass plate_weight = plate.weight();
+    const units::volume plate_volume = plate.volume();
+    detached_ptr<item> destroyed = carrier.contents.remove_top( &plate );
+    if( leftover_type.is_valid() && !leftover_type.is_null() ) {
+        // always the same slot, as in DDA (character_armor.cpp, `pocket->add( item( replacement ) )`);
+        // check_definitions makes sure the leftover is armor carrying the plate's size flags
+        carrier.contents.insert_into( *slot, item::spawn( leftover_type, calendar::turn ) );
+        add_msg_player_or_npc( m_bad, _( "Your %1$s %2$s!" ), _( "<npcname>'s %1$s %2$s!" ),
+                               pre_damage_name, verb );
+        if( is_player() ) {
+            SCT.add( point( bub_pos().x(), bub_pos().y() ), direction::NORTH,
+                     remove_color_tags( pre_damage_name ), m_neutral, verb, m_info );
+        }
+    } else {
+        // same message, memorial entry and popup rules as a destroyed carrier
+        destroyed_armor_msg( *this, pre_damage_name, false, plate_weight, plate_volume );
+    }
+    carrier.on_contents_changed();
+    reset_encumbrance();
+}
+
+bool Character::armor_take_hit( damage_unit &du, item &armor )
+{
     // If the attack has already been negated by other armor, don't bother.
     if( du.amount <= 0 ) {
         return false;
@@ -10347,6 +10361,18 @@ void Character::apply_damage( Creature *source, bodypart_id hurt,
 dealt_damage_instance Character::deal_damage( Creature *source, bodypart_id bp,
         const damage_instance &d, item *source_weapon, item *source_projectile )
 {
+    attack_context ctx;
+    ctx.source = source;
+    if( source != nullptr ) {
+        ctx.origin = source->bub_pos();
+    }
+    return deal_damage( source, bp, d, source_weapon, source_projectile, ctx );
+}
+
+dealt_damage_instance Character::deal_damage( Creature *source, bodypart_id bp,
+        const damage_instance &d, item *source_weapon, item *source_projectile,
+        const attack_context &ctx )
+{
     if( has_trait( trait_DEBUG_NODMG ) ) {
         return dealt_damage_instance();
     }
@@ -10358,7 +10384,7 @@ dealt_damage_instance Character::deal_damage( Creature *source, bodypart_id bp,
 
     //damage applied here
     dealt_damage_instance dealt_dams = Creature::deal_damage( source, bp, d, source_weapon,
-                                       source_projectile );
+                                       source_projectile, ctx );
     //block reduction should be by applied this point
     int dam = dealt_dams.total_damage();
 
@@ -10438,8 +10464,6 @@ dealt_damage_instance Character::deal_damage( Creature *source, bodypart_id bp,
         debugmsg( "Wacky body part hit!" );
     }
 
-
-
     // TODO: Scale with damage in a way that makes sense for power armors, plate armor and naked skin.
     recoil += recoil_mul * primary_weapon().volume() / 250_ml;
     recoil = std::min( MAX_RECOIL, recoil );
@@ -10468,7 +10492,6 @@ dealt_damage_instance Character::deal_damage( Creature *source, bodypart_id bp,
             }
         }
     }
-
 
     on_hurt( source );
     return dealt_dams;
@@ -10929,7 +10952,7 @@ void Character::apply_persistent_morale()
 {
     // Hoarders get a morale penalty if they're not carrying a full inventory.
     if( has_trait( trait_HOARDER ) ) {
-        int pen = ( volume_capacity() - volume_carried() ) / 125_ml;
+        int pen = ( volume_capacity() - carried_volume() ) / 125_ml;
         if( pen > 70 ) {
             pen = 70;
         }
@@ -11565,7 +11588,8 @@ const item *Character::get_item_with_id( const itype_id &item_id, bool need_char
 
 item &Character::add_item_with_id( const itype_id &item_id, int count )
 {
-    detached_ptr<item> new_item = item::spawn( item_id, calendar::turn, count );
+    // an obsolete id comes out as its migration, contents included (P1e step 28)
+    detached_ptr<item> new_item = item_controller->spawn_migrated( item_id, calendar::turn, count );
     return i_add( std::move( new_item ), true );
 }
 
@@ -11743,7 +11767,6 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
 
     }
 
-
     bool has_tool_with_UPS = false;
     const auto p = bub_pos();
     remove_items_with( [&qty, filter, &has_tool_with_UPS, &what, &res, &p]( detached_ptr<item> &&e ) {
@@ -11906,7 +11929,6 @@ void Character::use_fire( const int quantity )
     }
 }
 
-
 void Character::on_item_wear( item &it )
 {
     worn_weight_cache_dirty = true;
@@ -11922,6 +11944,10 @@ void Character::on_item_wear( item &it )
         }
     }
     morale->on_item_wear( it );
+    // D7: rigid armor blocks plates in the plate slots of the other armor
+    if( it.is_rigid() || it.is_ablative() ) {
+        recalc_ablative_blocking();
+    }
     if( !is_pool_worker_thread() ) {
         if( it.type->iwearable_callbacks ) {
             it.type->iwearable_callbacks->call_on_wear( *this, it );
@@ -11946,6 +11972,10 @@ void Character::on_item_takeoff( item &it )
         }
     }
     morale->on_item_takeoff( it );
+    // D7: the rigid armor taken off no longer blocks plates
+    if( it.is_rigid() || it.is_ablative() ) {
+        recalc_ablative_blocking( &it );
+    }
     if( !is_pool_worker_thread() ) {
         if( it.type->iwearable_callbacks ) {
             it.type->iwearable_callbacks->call_on_takeoff( *this, it );
@@ -13370,7 +13400,6 @@ int Character::has_recipe( const recipe *r, const inventory &crafting_inv,
     return available.contains( *r ) ? available.get_custom_difficulty( r ) : -1;
 }
 
-
 detached_ptr<item> Character::reduce_charges( int position, int quantity )
 {
     item &it = i_at( position );
@@ -13433,7 +13462,9 @@ void Character::refresh_carried() const
         return;
     }
     std::vector<const item *> sources;
-    sources.reserve( worn.size() + 1 );
+    sources.reserve( worn.size() + 2 );
+    // J4-1: the wielded item comes first, as in DDA's best_pocket
+    sources.push_back( wielded_for_carry( *this ) );
     for( const item * const &worn_it : worn ) {
         sources.push_back( worn_it );
     }
@@ -13531,103 +13562,16 @@ void Character::update_body_storage()
     }
 }
 
-double Character::carry_capacity_multiplier() const
-{
-    return mutation_value( "packmule_modifier" );
-}
-
 ret_val<item_pocket::contain_code> Character::can_pocket_contain( const item_pocket &pocket,
-        const item &it, bool in_body_storage ) const
+        const item &it, bool /* in_body_storage */ ) const
 {
     using code = item_pocket::contain_code;
-    // type, size, length and phase rules; the capacity check below has the multiplier
-    auto fits = pocket.can_contain( it, true, false, true );
-    if( !fits.success() ) {
-        return fits;
+    // J2: DDA's can_contain has no sealed test, so a sealed pocket is refused here (D23)
+    if( pocket.sealed() ) {
+        return ret_val<code>::make_failure( code::ERR_NO_SPACE, _( "it is sealed" ) );
     }
-    if( !pocket.is_standard_type() || pocket.is_holster() ||
-        !pocket.get_data().ammo_restriction.empty() ) {
-        // holster slots and ammo-restricted pockets have no scaled capacity
-        return pocket.can_contain( it, false, false, true );
-    }
-    if( !pocket.empty() ) {
-        const item &front = *pocket.items().front();
-        if( it.made_of( LIQUID ) || it.made_of( GAS ) ) {
-            if( !front.stacks_with( it ) ) {
-                return ret_val<code>::make_failure( code::ERR_LIQUID,
-                                                    _( "it can't mix that with what it already holds" ) );
-            }
-        } else if( front.made_of( LIQUID ) || front.made_of( GAS ) ) {
-            return ret_val<code>::make_failure( code::ERR_LIQUID, _( "it already holds a liquid" ) );
-        }
-    }
-    const units::volume cap = in_body_storage || pocket.volume_capacity() == units::volume_max ?
-                              pocket.volume_capacity() :
-                              scale_volume( pocket.volume_capacity(), carry_capacity_multiplier() );
-    if( it.volume() > cap ) {
-        return ret_val<code>::make_failure( code::ERR_TOO_BIG, _( "it is too big" ) );
-    }
-    if( it.volume() > cap - pocket.contains_volume() ) {
-        return ret_val<code>::make_failure( code::ERR_NO_SPACE, _( "it has no room left" ) );
-    }
-    if( it.weight() > pocket.weight_capacity() - pocket.contains_weight() ) {
-        return ret_val<code>::make_failure( code::ERR_CANNOT_SUPPORT,
-                                            _( "it can't hold that much more weight" ) );
-    }
-    return ret_val<code>::make_success();
-}
-
-std::pair<const item *, const item_pocket *> Character::best_pocket( const item &it,
-        const item *avoid ) const
-{
-    std::pair<const item *, const item_pocket *> best{ nullptr, nullptr };
-    const auto consider = [&]( const item & owner, const item_pocket & pocket, bool in_body ) {
-        if( !is_carried_pocket( pocket ) || pocket.sealed() ||
-            !can_pocket_contain( pocket, it, in_body ).success() ) {
-            return;
-        }
-        if( best.second == nullptr || best.second->better_pocket( pocket, it ) ) {
-            best = { &owner, &pocket };
-        }
-    };
-    const auto skipped = [&]( const item & owner ) {
-        return &owner == &it || ( avoid != nullptr && ( &owner == avoid ||
-                                  owner.has_item( *avoid ) || avoid->has_item( owner ) ) );
-    };
-    for( const item * const &worn_it : worn ) {
-        if( skipped( *worn_it ) ) {
-            continue;
-        }
-        for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
-            consider( *worn_it, pocket, false );
-        }
-    }
-    if( const item *storage = get_body_storage() ) {
-        if( !skipped( *storage ) ) {
-            if( const item_pocket *pocket = body_pocket_of( *storage ) ) {
-                consider( *storage, *pocket, true );
-            }
-        }
-    }
-    return best;
-}
-
-std::pair<item *, item_pocket *> Character::best_pocket( const item &it, const item *avoid )
-{
-    // the pockets belong to this character's own (non-const) items
-    const auto found = static_cast<const Character *>( this )->best_pocket( it, avoid );
-    return { const_cast<item *>( found.first ), const_cast<item_pocket *>( found.second ) };
-}
-
-ret_val<bool> Character::can_stash( const item &it, const item *avoid ) const
-{
-    if( has_trait( trait_DEBUG_STORAGE ) ) {
-        return ret_val<bool>::make_success( true );
-    }
-    if( best_pocket( it, avoid ).second != nullptr ) {
-        return ret_val<bool>::make_success( true );
-    }
-    return stash_refusal( it, avoid );
+    // D8: no capacity multiplier (packmule), the pocket decides on type, size, length and phase
+    return pocket.can_contain( it );
 }
 
 ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) const
@@ -13639,6 +13583,8 @@ ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) cons
     constexpr int rank_other = 5;
     int best_rank = rank_other + 1;
     code best_code = code::ERR_FLAG;
+    // J2: D10 folds ERR_TOO_LONG into ERR_TOO_BIG, so "too long" is told from the item's length
+    bool best_too_long = false;
     std::string best_reason;
     size_t pockets_seen = 0;
     size_t sealed_seen = 0;
@@ -13656,6 +13602,8 @@ ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) cons
             return;
         }
         int rank = rank_other;
+        const bool too_long = res.value() == code::ERR_TOO_BIG &&
+                              it.length() > pocket.get_data().max_item_length;
         const bool restricted = pocket.get_data().has_item_restrictions() ||
                                 !pocket.get_data().ammo_restriction.empty() || pocket.is_holster();
         if( !restricted ) {
@@ -13670,10 +13618,7 @@ ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) cons
                     rank = 2;
                     break;
                 case code::ERR_TOO_BIG:
-                    rank = 3;
-                    break;
-                case code::ERR_TOO_LONG:
-                    rank = 4;
+                    rank = too_long ? 4 : 3;
                     break;
                 default:
                     break;
@@ -13682,6 +13627,7 @@ ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) cons
         if( rank < best_rank ) {
             best_rank = rank;
             best_code = restricted ? code::ERR_FLAG : res.value();
+            best_too_long = !restricted && too_long;
             best_reason = res.str();
         }
     };
@@ -13723,10 +13669,11 @@ ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) cons
             return ret_val<bool>::make_failure( false, _( "The %s is too heavy for any pocket." ),
                                                 name );
         case code::ERR_TOO_BIG:
+            if( best_too_long ) {
+                return ret_val<bool>::make_failure( false, _( "The %s is too long for any pocket." ),
+                                                    name );
+            }
             return ret_val<bool>::make_failure( false, _( "The %s is too big for any pocket." ),
-                                                name );
-        case code::ERR_TOO_LONG:
-            return ret_val<bool>::make_failure( false, _( "The %s is too long for any pocket." ),
                                                 name );
         default:
             break;
@@ -13740,17 +13687,17 @@ ret_val<bool> Character::stash_refusal( const item &it, const item *avoid ) cons
 }
 
 ret_val<item *> Character::add_to_pocket( detached_ptr<item> &&it, const item *avoid,
-        bool keep_invlet, bool assign_invlet )
+        bool keep_invlet, bool assign_invlet, bool ignore_pkt_settings )
 {
     if( !it ) {
         return ret_val<item *>::make_failure( nullptr, "no item" );
     }
-    std::pair<item *, item_pocket *> target = best_pocket( *it, avoid );
-    if( target.second == nullptr && has_trait( trait_DEBUG_STORAGE ) && !body_storage ) {
+    pocket_choice target = best_pocket( *it, avoid, ignore_pkt_settings );
+    if( target.pocket == nullptr && has_trait( trait_DEBUG_STORAGE ) && !body_storage ) {
         update_body_storage();
-        target = best_pocket( *it, avoid );
+        target = best_pocket( *it, avoid, ignore_pkt_settings );
     }
-    if( target.second == nullptr ) {
+    if( target.pocket == nullptr ) {
         return ret_val<item *>::make_failure( nullptr, "%s", stash_refusal( *it, avoid ).str() );
     }
     refresh_carried();
@@ -13782,14 +13729,14 @@ ret_val<item *> Character::add_to_pocket( detached_ptr<item> &&it, const item *a
     const itype_id type = it->typeId();
     const bool by_charges = it->count_by_charges();
     item *placed = it.get();
-    const size_t before = target.second->items().size();
-    target.first->contents.insert_into( *target.second, std::move( it ) );
-    target.first->on_contents_changed();
+    const size_t before = target.pocket->items().size();
+    target.container->contents.insert_into( *target.pocket, std::move( it ) );
+    target.container->on_contents_changed();
     carried_dirty = true;
-    if( by_charges && target.second->items().size() == before ) {
+    if( by_charges && target.pocket->items().size() == before ) {
         // merged into a stack of the pocket
         placed = nullptr;
-        for( item * const &candidate : target.second->items() ) {
+        for( item * const &candidate : target.pocket->items() ) {
             if( candidate->typeId() == type ) {
                 placed = candidate;
                 break;
@@ -13799,54 +13746,28 @@ ret_val<item *> Character::add_to_pocket( detached_ptr<item> &&it, const item *a
     return ret_val<item *>::make_success( placed );
 }
 
-ret_val<item *> Character::try_add( detached_ptr<item> &&it, const item *avoid )
-{
-    if( !it ) {
-        return ret_val<item *>::make_failure( nullptr, "no item" );
-    }
-    last_item = it->typeId();
-    ret_val<item *> res = add_to_pocket( std::move( it ), avoid, false, true );
-    if( res.success() && res.value() != nullptr ) {
-        res.value()->on_pickup( *this );
-        clear_npc_ai_info_cache( npc_ai_info::reloadables );
-        clear_npc_ai_info_cache( npc_ai_info::reloadable_cbms );
-    }
-    return res;
-}
-
 units::volume Character::carried_volume() const
 {
     units::volume total = 0_ml;
     for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool ) {
         total += p.contains_volume();
-    } );
+    }, wielded_for_carry( *this ) );
     return total;
 }
 
 units::volume Character::carried_capacity() const
 {
-    if( has_trait( trait_DEBUG_STORAGE ) ) {
-        return units::volume_max;
-    }
-    const double mult = carry_capacity_multiplier();
-    units::volume total = 0_ml;
-    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool in_body ) {
-        total += in_body ? p.volume_capacity() : scale_volume( p.volume_capacity(), mult );
-    } );
-    return total;
+    return volume_capacity();
 }
 
 units::volume Character::free_carry_volume() const
 {
-    const double mult = carry_capacity_multiplier();
     units::volume best = 0_ml;
-    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool in_body ) {
+    for_each_carry_pocket( worn, get_body_storage(), [&]( const item_pocket & p, bool ) {
         if( p.is_holster() ) {
             return;
         }
-        const units::volume cap = in_body || p.volume_capacity() == units::volume_max ?
-                                  p.volume_capacity() : scale_volume( p.volume_capacity(), mult );
-        best = std::max( best, cap - p.contains_volume() );
-    } );
+        best = std::max( best, p.volume_capacity() - p.contains_volume() );
+    }, wielded_for_carry( *this ) );
     return best;
 }
