@@ -211,7 +211,7 @@
     "id": "grenade_pouch",
     "type": "ARMOR",
     "name": { "str": "grenade ammo pouch", "str_pl": "grenade ammo pouches" },
-    "description": "A small pouch for storing cartridge grenades with straps for attaching it to your belt or other webbing.",
+    "description": "A small pouch for storing cartridge grenades and light autocannon rounds with straps for attaching it to your belt or other webbing.",
     "weight": "90 g",
     "volume": "250 ml",
     "price": "59 USD",
@@ -225,7 +225,7 @@
     "encumbrance": 4,
     "material_thickness": 1,
     "flags": [ "WATER_FRIENDLY", "BELTED", "COMPACT", "OVERSIZE", "ALLOWS_TAIL_SNAKE" ],
-    "pocket_data": [ { "ammo_restriction": { "40x46mm": 4, "40x53mm": 4 }, "moves": 20, "volume_encumber_modifier": 0.3 } ]
+    "pocket_data": [ { "ammo_restriction": { "40x46mm": 6, "40x53mm": 6, "25mm": 6 }, "moves": 20, "volume_encumber_modifier": 0.3 } ]
   },
   {
     "id": "stone_pouch",
@@ -311,7 +311,7 @@
     "id": "bandolier_grenade",
     "type": "ARMOR",
     "name": { "str": "grenade ammo bandolier" },
-    "description": "A leather bandolier for keeping cartridge grenades close to hand.",
+    "description": "A leather bandolier for keeping cartridge grenades and light autocannon rounds close to hand.",
     "weight": "140 g",
     "volume": "250 ml",
     "price": "19 USD",
@@ -325,7 +325,7 @@
     "encumbrance": 1,
     "material_thickness": 1,
     "flags": [ "WATER_FRIENDLY", "WAIST", "COMPACT", "OVERSIZE" ],
-    "pocket_data": [ { "ammo_restriction": { "40x46mm": 12, "40x53mm": 12 }, "moves": 20 } ]
+    "pocket_data": [ { "ammo_restriction": { "40x46mm": 12, "40x53mm": 12, "25mm": 12 }, "moves": 20 } ]
   },
   {
     "id": "bandolier_knife",
