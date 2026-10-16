@@ -7,6 +7,16 @@ BN stores ammo and magazine data in item keys (`ammo_type` + `capacity`, `clip_s
 item should get and which BN keys go away, with the DDA twin (same id in the DDA tree) as the
 model. Deviations from DDA are marked `// CDF:` below and in the notes of each record.
 
+OWNER RULE (functionality port, not balance port; orchestrator 2026-10-15 22:55): the pocket
+takes DDA's STRUCTURE, but CDF's item data/stats stay. So: (1) `ammo`-kind R1/R2 (and R4)
+rows copy the twin's pocket but `ammo_restriction` is the CDF item's own ammo set with the CDF
+capacity / clip_size / max_charges (action COPY-TWIN-KEEP-CDF-AMMO, the ammo difference is
+noted per record); (2) `cap`-kind rows keep CDF's number in the pocket and on the item, no
+`set_keys` from the twin (the differences stay listed per id); (3) a differing twin
+`magazine_well` volume is replaced by CDF's; (4) twin tools without a magazine pocket keep the
+CDF well / pocket authored from the item (action AUTHOR-KEEP-CDF-WELL); (5) R5 charge counts
+stay CDF's. Where the rules below say "DDA's number", this paragraph overrides them.
+
 Status of this tool: chunk 1e. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
 R3 (WELL), R4 (TOOL-INT), R5 (CHARGES), R6 (ADAPTOR), R8 (DDA-POCKET), the R9 STORAGE/EXPLICIT
 handling and the HAND-FALLBACK defaults for NEEDS-HAND rows in `--report` mode, and `--apply`
@@ -695,6 +705,38 @@ def ammo_kinds(want, got, out):
             out["cap"] = rows
 
 
+def keep_cdf_numbers(pockets, want, out):
+    """Owner rule (functionality port, not balance port): the pocket keeps the twin's STRUCTURE
+    (pocket_type, rigid, allowed_speedloaders, ...) but its `ammo_restriction` carries the CDF
+    item's own ammo set and numbers (`want`: ammo -> capacity / clip_size / max_charges). Ammo
+    the twin lists and CDF lacks go, CDF-only ammo is added after the twin's ones; numbers on
+    shared ammo are CDF's. Several MAGAZINE pockets: only the numbers of shared ammo change."""
+    mags = [p for p in pockets if p.get("pocket_type") == "MAGAZINE"
+            and isinstance(p.get("ammo_restriction"), dict)]
+    if not mags or not want:
+        return
+    if len(mags) == 1:
+        ar = mags[0]["ammo_restriction"]
+        new = collections.OrderedDict()
+        for a, n in ar.items():
+            if a in want:
+                new[a] = want[a] if want[a] > 0 else n
+        for a, n in want.items():
+            if a not in new and n > 0:
+                new[a] = n
+        if new and list(new.items()) != list(ar.items()):
+            mags[0]["ammo_restriction"] = new
+            out["notes"].append("CDF numbers/ammo kept (owner rule): ammo_restriction %s instead "
+                                "of the twin's %s" % (json.dumps(new), json.dumps(ar)))
+        return
+    for p in mags:
+        for a in list(p["ammo_restriction"]):
+            if a in want and want[a] > 0:
+                p["ammo_restriction"][a] = want[a]
+    out["notes"].append("CDF numbers kept on shared ammo of %d MAGAZINE pockets (owner rule)"
+                        % len(mags))
+
+
 # ---------------------------------------------------------------------------------------------
 # Planners, one per rule group. Signature: plan_x(ctx, rec, cls, exp, twin) -> record dict.
 # ---------------------------------------------------------------------------------------------
@@ -727,15 +769,16 @@ def plan_mag(ctx, rec, cls, exp, twin):
         new = copy.deepcopy(tmag)
         out["action"] = "COPY-TWIN"
         ammo_kinds(want, pocket_ammo(tmag), out)
-        # R1: remove capacity/count where the twin has no such key
+        keep_cdf_numbers(new, want, out)   # owner rule: CDF ammo set and capacity
+        # R1: remove capacity/count where the twin has no such key; where it has one the CDF
+        # item keeps its own number (owner rule: no set_keys from the twin)
         teff = twin["eff"]
         for key in ("capacity", "count"):
             site = key_site(raw, eff, key)
             if site is None:
                 continue
             if key in teff:
-                if to_int(teff[key]) != to_int(eff.get(key)):
-                    out["set_keys"][key] = teff[key]  # CDF: follow the twin's own key
+                continue
             elif site == "inherited":
                 out["inherited_keys"].append({"key": key, "value": eff.get(key),
                                               "from": inherited_from(ctx, raw, key)})
@@ -811,6 +854,7 @@ def plan_gun_int(ctx, rec, cls, exp, twin):
         new = copy.deepcopy(tmag)
         out["action"] = "COPY-TWIN"
         ammo_kinds(want, pocket_ammo(tmag), out)
+        keep_cdf_numbers(new, want, out)   # owner rule: CDF ammo set and clip_size
         dsl = pocket_loaders(tmag)
         if loaders and not dsl:
             out["diff"].append("speedloaders-unrestricted")
@@ -822,12 +866,7 @@ def plan_gun_int(ctx, rec, cls, exp, twin):
             out["diff"].append("speedloaders+dda")
             out["notes"].append("DDA twin allows speedloaders {%s} that CDF `magazines` lacks"
                                 % ",".join(dsl))
-        # CDF: clip_size stays, but follows the twin's key when pocket and key would disagree
-        tclip = twin["eff"].get("clip_size")
-        if tclip is None and isinstance(twin["eff"].get("gun_data"), dict):
-            tclip = twin["eff"]["gun_data"].get("clip_size")
-        if "cap" in out["diff"] and tclip is not None and to_int(tclip) != to_int(gun.get("clip_size")):
-            out["set_keys"]["clip_size"] = tclip
+        # owner rule: clip_size stays CDF's and so does the pocket number (no set_keys)
     elif twin_wells:
         out["action"] = "NEEDS-HAND"
         out["diff"].append("shape(dda=WELL)")
@@ -1118,8 +1157,9 @@ def plan_well(ctx, rec, cls, exp, twin):
                                     "into the pocket" % well_key)
         elif well_key is not None and to_ml(tv) != to_ml(well_key):
             out["diff"].append("well-volume")
-            out["notes"].append("magazine_well CDF %s vs DDA %s (DDA's pocket value is used)"
-                                % (well_key, tv))
+            out["notes"].append("magazine_well CDF %s vs DDA %s (CDF's value is kept, owner "
+                                "rule)" % (well_key, tv))
+            first["magazine_well"] = well_key
         # the loader sets default_magazine = item_restriction.front() (pocket_data.cpp)
         fronts = [(a, listify(p.get("item_restriction"))[0] if p.get("item_restriction") else None)
                   for a, p in zip(twin_fronts, new)]
@@ -1213,7 +1253,10 @@ def plan_tool_int(ctx, rec, cls, exp, twin):
                                                        p.get("item_restriction"))
                                             for p in tshape),
                                    ",".join(str(v) for v in want.values())))
-        for p in copy.deepcopy(tshape):
+        tshape_c = copy.deepcopy(tshape)
+        if len([p for p in tshape_c if p.get("pocket_type") == "MAGAZINE"]) == 1:
+            keep_cdf_numbers(tshape_c, want, out)   # owner rule: CDF ammo set and max_charges
+        for p in tshape_c:
             if p.get("pocket_type") == "MAGAZINE":
                 got = sanitize([p], ctx, out)
                 if not got:
@@ -1403,6 +1446,14 @@ def plan_copy_pocket(ctx, rec, cls, twin, rule, missing_action):
             if to_int(n) != charges:
                 out["diff"].append("cap")
                 out["cap"] = [{"ammo": at, "cdf": charges, "dda": to_int(n)}]
+                if charges and charges > 0:
+                    # owner rule: the CDF charge count stays in the copied pocket
+                    new = [copy.deepcopy(p) for p in tshape]
+                    for p in new:
+                        if p.get("pocket_type") == "MAGAZINE":
+                            p["ammo_restriction"][at] = charges
+                    out["notes"].append("CDF max_charges %d kept in the pocket (DDA %s)"
+                                        % (charges, n))
         move_item_key(ctx, rec, out, "max_charges", "DDA twin carries the charge count in its "
                       "magazine pocket (R5)")
         move_item_key(ctx, rec, out, "initial_charges", "DDA twin has no initial_charges (R5)")
@@ -1504,6 +1555,10 @@ HAND_FALLBACK_CLASSES = ("MAG", "GUN-INT", "TOOL-INT", "WELL")
 ALL_CLASSES = ["MAG", "GUN-INT", "TOOL-INT", "WELL", "ADAPTOR", "CHARGES", "DDA-POCKET"]
 
 
+ACT_KEEP_AMMO = "COPY-TWIN-KEEP-CDF-AMMO"   # twin structure, CDF ammo set and numbers
+ACT_KEEP_WELL = "AUTHOR-KEEP-CDF-WELL"      # DDA twin has no magazine pocket: CDF's well/pocket kept
+
+
 def build_records(ctx, classes, ids):
     records = []
     for iid, rec in ctx.cdf.items.items():
@@ -1532,6 +1587,11 @@ def build_records(ctx, classes, ids):
             out = planner(ctx, rec, cls, exp, twin)
             if out["action"] == "NEEDS-HAND" and cls in HAND_FALLBACK_CLASSES:
                 out = hand_fallback(ctx, rec, cls, exp, twin, planner, out)
+        # owner rule labels (functionality port): visible in the action column
+        if out["action"] == "COPY-TWIN" and out["ammo_diff"] and out["rule"] in ("R1", "R2", "R4"):
+            out["action"] = ACT_KEEP_AMMO
+        elif out["action"] == "AUTHOR" and "nopocket" in out["diff"] and cls in ("WELL", "TOOL-INT"):
+            out["action"] = ACT_KEEP_WELL
         for p in out["pocket_data"]:
             out["violations"] += check_pocket(p, ctx)
         records.append(out)
@@ -1578,19 +1638,19 @@ def write_markdown(path, records, args, ctx):
     hand = [r for r in records if r["action"] in ("NEEDS-HAND", "HAND-FALLBACK")]
     twin_rows = sum(1 for r in records if r["has_twin"])
     hand_twin = [r for r in hand if r["has_twin"]]
-    # the plan's 18 `ammo`-kind rows are the R1 + R2 (MAG, GUN-INT) rows; R4 TOOL-INT rows with
-    # an ammo difference are reported in the "Ammo differences" section, not counted here
+    # owner rule (functionality port): the R1/R2 `ammo`-kind rows keep the CDF ammo set
+    # (action COPY-TWIN-KEEP-CDF-AMMO) and are no longer hand rules; the stop rule counts the
+    # HAND-FALLBACK twin rows only
     r1_ammo = [r for r in records if r["class"] in ("MAG", "GUN-INT") and r["has_twin"]
                and "ammo" in r["diff"]]
-    need = len(hand_twin) + len(r1_ammo)
+    need = len(hand_twin)
     L.append("## Stop rule\n")
     L.append("Twin rows that need a hand rule over the %d twin rows of this report: %d "
-             "HAND-FALLBACK twin rows (of %d HAND-FALLBACK rows in all) + %d R1/R2 `ammo`-kind "
-             "MAG/GUN-INT rows (CDF-only ammotype lost in the pocket, owner decision, listed "
-             "below) = %d, "
-             "%.1f%%. Limit 5%% of 725 = 36: **%s**.\n"
-             % (twin_rows, len(hand_twin), len(hand), len(r1_ammo), need,
-                100.0 * need / max(1, twin_rows),
+             "HAND-FALLBACK twin rows (of %d HAND-FALLBACK rows in all) = %d, %.1f%%. The %d "
+             "R1/R2 `ammo`-kind MAG/GUN-INT rows keep the CDF ammo set (owner rule, action "
+             "%s) and are not hand rules. Limit 5%% of 725 = 36: **%s**.\n"
+             % (twin_rows, len(hand_twin), len(hand), need,
+                100.0 * need / max(1, twin_rows), len(r1_ammo), ACT_KEEP_AMMO,
                 "under the limit" if need < 36 else "OVER the limit"))
     if hand:
         L.append("### HAND-FALLBACK rows (default applied, still flagged: hand review wanted)\n")
@@ -1602,8 +1662,8 @@ def write_markdown(path, records, args, ctx):
                 r.get("hand_reason", "; ".join(r["notes"])).replace("|", "/")))
         L.append("")
     if r1_ammo:
-        L.append("### R1/R2 `ammo`-kind MAG/GUN-INT rows (owner decision: DDA's pocket drops the CDF-only "
-                 "ammotype)\n")
+        L.append("### R1/R2 `ammo`-kind MAG/GUN-INT rows (COPY-TWIN-KEEP-CDF-AMMO: twin structure, "
+                 "the pocket carries the CDF ammo set and capacity)\n")
         L.append("| id | CDF-only ammo | DDA-only ammo |\n|---|---|---|")
         for r in r1_ammo:
             L.append("| `%s` | %s | %s |" % (r["id"],
@@ -1673,7 +1733,7 @@ def write_markdown(path, records, args, ctx):
              "emit `{ \"pocket_type\": \"MOD\" }` (owner decision).\n"
              % (", ".join("%s=%d" % kv for kv in sorted(sl.items())) or "none"))
     caps = [r for r in records if r["cap"]]
-    L.append("## Capacity differences (CDF number replaced by DDA's)\n")
+    L.append("## Capacity differences (CDF number KEPT in the pocket and on the item; DDA's listed for information)\n")
     if caps:
         L.append("| id | class | ammo | CDF | DDA |\n|---|---|---|---|---|")
         for r in caps:
@@ -1684,8 +1744,8 @@ def write_markdown(path, records, args, ctx):
         L.append("none")
     L.append("")
     amm = [r for r in records if r["ammo_diff"]]
-    L.append("## Ammo differences (the pocket takes DDA's ammotypes; `ammo_type`/`ammo` stay "
-             "CDF's, so rows with CDF-only ammo lose it in the pocket: owner decision)\n")
+    L.append("## Ammo differences (owner rule: the pocket keeps the twin's structure but carries "
+             "the CDF item's own ammo set and numbers; DDA-only ammo is not added)\n")
     if amm:
         L.append("| id | class | CDF-only ammo | DDA-only ammo |\n|---|---|---|---|")
         for r in amm:
@@ -1805,7 +1865,8 @@ def write_markdown(path, records, args, ctx):
 # Run it with --dry-run first; the P3-2 lane rule is to apply on a scratch copy of `data/`
 # (`--cdf <scratch root>`), never on a worktree's data/json or data/mods directly.
 
-EDIT_ACTIONS = ("COPY-TWIN", "AUTHOR", "DROP-KEY", "HAND-FALLBACK")
+EDIT_ACTIONS = ("COPY-TWIN", "COPY-TWIN-KEEP-CDF-AMMO", "AUTHOR", "AUTHOR-KEEP-CDF-WELL",
+                "DROP-KEY", "HAND-FALLBACK")
 WS = " \t\r\n"
 
 
@@ -2310,6 +2371,21 @@ def allowed_twin_view(rec, twin_pockets, tree_pockets):
     if any(str(k).startswith("well-volume") for k in rec["diff"]):
         for p in want + got:
             p.pop("magazine_well", None)
+    ad = rec.get("ammo_diff") or {}
+    if ad:
+        # owner rule: the CDF pocket carries the CDF ammo set; compare only the shared ammo
+        # and ignore the numbers (CDF's, listed in the record notes)
+        for pk, drop in ((want, ad.get("dda_only") or []), (got, ad.get("cdf_only") or [])):
+            for p in pk:
+                ar = p.get("ammo_restriction")
+                if isinstance(ar, dict):
+                    for a in drop:
+                        ar.pop(a, None)
+        for p in want + got:
+            ar = p.get("ammo_restriction")
+            if isinstance(ar, dict):
+                for a in ar:
+                    ar[a] = 0
     for row in rec.get("cap") or []:
         for p in want + got:
             ar = p.get("ammo_restriction")
@@ -2366,7 +2442,7 @@ def check_record(rec, ctx_chk):
                                                       if len(viol) > 3 else "")
     # (b) COPY-TWIN records equal the DDA twin modulo the documented differences
     twin = ctx_chk.dda.items.get(iid)
-    if rec["action"] == "COPY-TWIN" and rec["has_twin"] and twin is not None \
+    if rec["action"] in ("COPY-TWIN", ACT_KEEP_AMMO) and rec["has_twin"] and twin is not None \
             and usable_twin(twin) is not None:
         want, got = allowed_twin_view(rec, mag_pockets(pocket_list(twin["eff"]), rec["class"]),
                                       mag_pockets(pockets, rec["class"]))
