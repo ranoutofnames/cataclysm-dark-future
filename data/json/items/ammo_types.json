@@ -692,6 +692,104 @@
   },
   {
     "type": "ammunition_type",
+    "id": "butane",
+    "name": "butane",
+    "//": "CDF: DDA default is the item \"butane\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "candle_wax",
+    "name": "wax",
+    "//": "CDF: DDA default is the item \"candle_wax\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "extinguishing_agent",
+    "name": "extinguishing agent",
+    "//": "CDF: DDA default is the item \"extinguishing_agent\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "glowstick_juice",
+    "name": "glowstick juice",
+    "//": "CDF: DDA default is the item \"glowstick_juice\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "flare_nitrate",
+    "name": "flare pyrotechnic",
+    "//": "CDF: DDA default is the item \"flare_nitrate\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "hydrogen",
+    "name": "hydrogen",
+    "//": "CDF: DDA default is the item \"hydrogen\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "albuterol",
+    "name": "albuterol",
+    "//": "CDF: DDA default is the item \"albuterol\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "match",
+    "name": "match",
+    "//": "CDF: DDA default is the item \"match\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "nitrogen",
+    "name": "nitrogen",
+    "//": "CDF: DDA default is the item \"nitrogen\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "black_pen_ink",
+    "name": "black pen ink",
+    "//": "CDF: DDA default is the item \"black_pen_ink\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "blue_pen_ink",
+    "name": "blue pen ink",
+    "//": "CDF: DDA default is the item \"blue_pen_ink\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "green_pen_ink",
+    "name": "green pen ink",
+    "//": "CDF: DDA default is the item \"green_pen_ink\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "red_pen_ink",
+    "name": "red pen ink",
+    "//": "CDF: DDA default is the item \"red_pen_ink\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
+    "id": "permanent_ink",
+    "name": "ink",
+    "//": "CDF: DDA default is the item \"permanent_ink\", which CDF does not define yet; default left empty until that content exists.",
+    "default": ""
+  },
+  {
+    "type": "ammunition_type",
     "id": "spray_paint",
     "name": "Spray Paint",
     "default": "spray_paint"
