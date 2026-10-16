@@ -7,9 +7,9 @@ BN stores ammo and magazine data in item keys (`ammo_type` + `capacity`, `clip_s
 item should get and which BN keys go away, with the DDA twin (same id in the DDA tree) as the
 model. Deviations from DDA are marked `// CDF:` below and in the notes of each record.
 
-Status of this tool: chunk 1a. Implemented: loader, classification, R1 (MAG) and R2 (GUN-INT) in
-`--report` mode. Rules R3-R9 (one planner function each, registered in PLANNERS), `--apply` and
-`--check` come in later chunks.
+Status of this tool: chunk 1b. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
+R3 (WELL) and R4 (TOOL-INT) in `--report` mode. Rules R5-R9 (one planner function each,
+registered in PLANNERS), `--apply` and `--check` come in later chunks.
 
 Rules (PLAN-P3 section 4.3; the numbers are the plan's)
   R1  MAG with twin. Copy DDA's `pocket_data` (MAGAZINE, rigid, ammo_restriction,
@@ -23,8 +23,24 @@ Rules (PLAN-P3 section 4.3; the numbers are the plan's)
       ammo_restriction: { <each ammo>: clip_size }, allowed_speedloaders: [...] } ]`; speedloader
       ids come from the BN `magazines` entries flagged SPEEDLOADER; `clip_size` stays; `magazines`
       removed. Where a DDA twin exists, its pocket is copied instead and differences reported.
-  R3  WELL        (later chunk)  MAGAZINE_WELL, item_restriction = DDA list + CDF ids - missing ids
-  R4  TOOL-INT    (later chunk)  `ammo` -> `tool_ammo`, MAGAZINE pocket, drop max_charges
+  R3  WELL        MAGAZINE_WELL, item_restriction = DDA twin list + CDF `magazines` ids the twin
+                  lacks (kept, `// CDF:`) - ids CDF lacks (`dropped_ids`). `magazine_well` moves
+                  from the item key into the pocket; BN `magazines` / `magazine_well` are dropped
+                  keys. Flag-restricted DDA wells (BATTERY_*, GASFILTER_*) are copied as is. The
+                  loader sets default_magazine = item_restriction.front(), so list order is the
+                  default. A twin well emptied by the id drop, or a twin with an integral
+                  MAGAZINE where CDF has a well, is NEEDS-HAND. CDF-only: item_restriction = the
+                  listed mags that exist in CDF, magazine_well from the item (tools without one
+                  get rigid true, the DDA tool convention).
+  R4  TOOL-INT    `ammo` -> `tool_ammo` (renamed_keys; the CDF loader keeps `ammo` as alias,
+                  `// CDF:`), pocket MAGAZINE { ammo_restriction: { <ammo>: max_charges } } (the
+                  twin's MAGAZINE / MAGAZINE_WELL pockets are copied where a twin exists),
+                  `max_charges` / `initial_charges` dropped (DDA "Redundant max charge value").
+                  Battery tools without a twin pocket take the nearest DDA twin tool's shape
+                  (copy-from chain, id stem, same parent, same max_charges + volume): flag well
+                  copied from a BATTERY_* twin, or integral MAGAZINE {battery: max_charges}; no
+                  evidence -> NEEDS-HAND (size flag unknown). Ammotypes whose default ammo item
+                  is empty in CDF are dropped from pockets (check_definition would reject them).
   R5  CHARGES     (later chunk)  DDA pocket when every ammotype exists, else stays on charges
   R6  ADAPTOR     (later chunk)  no edit; goes through the golden matrix
   R7  CDF-only    authored by R1-R4 (action AUTHOR); also the `dda-obsolete` twins
@@ -43,6 +59,9 @@ CDF deviations (all marked `// CDF:`)
   //      must agree), listed in `set_keys`.
   // CDF: a twin whose pocket shape differs (DDA well where CDF has an integral magazine) is
   //      NEEDS-HAND, not guessed; the stop rule counts these.
+  // CDF: R3 keeps CDF-only magazine ids in DDA wells (listed per record, `well_diff.cdf_added`),
+  //      owner decision Q3; ids CDF lacks are dropped and listed in `dropped_ids`.
+  // CDF: R4 `tool_ammo` is DDA's key; `ammo` stays accepted by the CDF loader as an alias.
   // CDF: pockets are validated here against pocket_data::load / check_definition
   //      (src/pocket_data.cpp); violations are reported per record, never fixed silently.
 
@@ -388,6 +407,13 @@ def sanitize(pockets, ctx, out):
                     del ar[at]
                     out["dropped_ids"].append({"where": "ammo_restriction", "id": at,
                                                "why": "ammotype undefined in CDF"})
+                elif ctx.cdf.ammotypes[at] not in ctx.cdf.items:
+                    # pocket_data::check_definition: the default ammo item must exist
+                    del ar[at]
+                    out["dropped_ids"].append({"where": "ammo_restriction", "id": at,
+                                               "why": "ammotype has no default ammo item in "
+                                                      "CDF yet (default %r)"
+                                                      % ctx.cdf.ammotypes[at]})
         for key in ("allowed_speedloaders", "item_restriction"):
             if key in p:
                 keep = [i for i in listify(p[key]) if i in ctx.cdf.items]
@@ -423,14 +449,15 @@ def new_record(rec, cls, twin, ctx):
     }
 
 
-def finish(out, rec, existing_pockets, new_pockets):
-    """Merge with an existing explicit pocket_data (R9 EXPLICIT) and settle the action."""
-    keep = [p for p in existing_pockets if p.get("pocket_type") != "MAGAZINE"]
+def finish(out, rec, existing_pockets, new_pockets, mag_types=("MAGAZINE",)):
+    """Merge with an existing explicit pocket_data (R9 EXPLICIT) and settle the action.
+    `mag_types` are the pocket types the planner replaces (R3 adds MAGAZINE_WELL)."""
+    keep = [p for p in existing_pockets if p.get("pocket_type") not in mag_types]
     out["pocket_data"] = keep + new_pockets
     if keep:
         out["notes"].append("EXPLICIT: %d existing non-magazine pocket(s) kept in front "
                             "(R9, merge by hand)" % len(keep))
-    same = [p for p in existing_pockets if p.get("pocket_type") == "MAGAZINE"] == new_pockets
+    same = [p for p in existing_pockets if p.get("pocket_type") in mag_types] == new_pockets
     if same and new_pockets:
         out["action"] = "DROP-KEY" if out["dropped_keys"] or out["set_keys"] else "KEEP"
         out["notes"].append("the effective item already has this pocket")
@@ -690,12 +717,450 @@ def plan_gun_int(ctx, rec, cls, exp, twin):
     return out
 
 
-# class -> planner. Later chunks add WELL (R3), TOOL-INT (R4), CHARGES (R5), ADAPTOR (R6),
+# ---------------------------------------------------------------------------------------------
+# R3 / R4 helpers (chunk 1b)
+# ---------------------------------------------------------------------------------------------
+
+def to_ml(v):
+    """'250 ml' / '0.5 L' -> float ml, None when it is not a plain volume string."""
+    s = str(v).strip().lower().replace(" ", "")
+    for unit, mul in (("ml", 1.0), ("l", 1000.0)):
+        if s.endswith(unit):
+            try:
+                return float(s[:-len(unit)]) * mul
+            except ValueError:
+                return None
+    return None
+
+
+def accepts(p, mid, ctx):
+    """True when the well pocket p takes magazine mid (item_restriction or a shared flag)."""
+    if mid in listify(p.get("item_restriction")):
+        return True
+    fr = set(f for f in listify(p.get("flag_restriction")) if isinstance(f, str))
+    return bool(fr & ctx.flags_of.get(mid, set()))
+
+
+def move_item_key(ctx, rec, out, key, reason):
+    """Record the removal of an item-level BN key (own, gun_data) or its inheritance."""
+    raw, eff = rec["raw"], rec["eff"]
+    site = key_site(raw, eff, key)
+    if site is None:
+        return
+    value = merged_gun_view(rec).get(key)
+    if site == "inherited":
+        src = inherited_from(ctx, raw, key)
+        out["inherited_keys"].append({"key": key, "value": value, "from": src})
+        out["notes"].append("`%s` is inherited from `%s` (copy-from): not dropped here; goes "
+                            "when that object is ported, else the loader still reads it"
+                            % (key, src))
+    else:
+        out["dropped_keys"].append({"key": key, "value": value, "site": site, "reason": reason})
+
+
+def fix_well_ids(p, ctx, out):
+    """Drop item ids CDF lacks from a copied well pocket (listed in dropped_ids)."""
+    if "item_restriction" in p:
+        keep = []
+        for i in listify(p["item_restriction"]):
+            if i in ctx.cdf.items:
+                keep.append(i)
+            else:
+                out["dropped_ids"].append({"where": "item_restriction", "id": i,
+                                           "why": "item absent in CDF"})
+        p["item_restriction"] = keep
+    dm = p.get("default_magazine")
+    if dm and dm not in ctx.cdf.items:
+        out["dropped_ids"].append({"where": "default_magazine", "id": dm,
+                                   "why": "item absent in CDF"})
+        del p["default_magazine"]
+
+
+def battery_shapes(ctx):
+    """CDF item id -> (kind, DDA pocket) for items whose usable DDA twin shows a battery
+    pocket: a MAGAZINE_WELL with a BATTERY_* flag restriction, or a MAGAZINE with battery."""
+    if getattr(ctx, "_bshapes", None) is None:
+        res = {}
+        for iid in ctx.cdf.items:
+            tw = usable_twin(ctx.dda.items.get(iid))
+            if tw is None:
+                continue
+            for p in pocket_list(tw["eff"]):
+                pt = p.get("pocket_type")
+                if pt == "MAGAZINE_WELL" and any(str(f).startswith("BATTERY_")
+                                                 for f in listify(p.get("flag_restriction"))):
+                    res[iid] = ("WELL", p)
+                    break
+                if pt == "MAGAZINE" and isinstance(p.get("ammo_restriction"), dict) \
+                        and "battery" in p["ammo_restriction"]:
+                    res[iid] = ("MAG", p)
+                    break
+        ctx._bshapes = res
+    return ctx._bshapes
+
+
+STEM_SUFFIXES = ("_on", "_off", "_music", "_screen_lit", "_flashlight", "_nv", "_lit", "_filled",
+                 "_active", "_inactive", "_charging")
+
+
+def battery_sibling(ctx, rec):
+    """Nearest CDF item with a DDA twin that shows a battery pocket, with the evidence used:
+    copy-from chain, id stem (`_on`, `_music`, ...), same copy-from parent, same max_charges
+    and volume. Returns (id, kind, pocket, evidence) or None."""
+    shapes = battery_shapes(ctx)
+    iid, raw, eff = rec["id"], rec["raw"], rec["eff"]
+    if getattr(ctx, "_by_parent", None) is None:
+        bp = collections.defaultdict(list)
+        for oid, r in ctx.cdf.items.items():
+            cf = r["raw"].get("copy-from")
+            if isinstance(cf, str):
+                bp[cf].append(oid)
+        ctx._by_parent = bp
+
+    def hit(cid, why):
+        if cid != iid and cid in shapes:
+            return (cid,) + shapes[cid] + (why,)
+        return None
+
+    seen, o = set(), raw
+    while isinstance(o.get("copy-from"), str):
+        cf = o["copy-from"]
+        if cf in seen or cf not in ctx.cdf.idx:
+            break
+        seen.add(cf)
+        h = hit(cf, "copy-from chain")
+        if h:
+            return h
+        cands = ctx.cdf.idx[cf]
+        o = next((p for p in cands if p.get("type") == o.get("type")), cands[0])
+    stems, cur = [], iid
+    changed = True
+    while changed:
+        changed = False
+        for suf in STEM_SUFFIXES:
+            if cur.endswith(suf) and len(cur) > len(suf):
+                cur = cur[:-len(suf)]
+                stems.append(cur)
+                changed = True
+    for stem in stems + [iid]:
+        for cid in (stem, stem + "_on", stem + "_off"):
+            h = hit(cid, "id stem")
+            if h:
+                return h
+    for cf in seen | ({raw["copy-from"]} if isinstance(raw.get("copy-from"), str) else set()):
+        for cid in ctx._by_parent.get(cf, []):
+            h = hit(cid, "same copy-from parent `%s`" % cf)
+            if h:
+                return h
+    mc, vol = to_int(eff.get("max_charges")), eff.get("volume")
+    if mc > 0 and vol is not None:
+        same = [c for c in shapes if c != iid and c in ctx.cdf.items
+                and to_int(ctx.cdf.items[c]["eff"].get("max_charges")) == mc
+                and ctx.cdf.items[c]["eff"].get("volume") == vol]
+        flags = set(json.dumps(shapes[c][1].get("flag_restriction"), sort_keys=True) +
+                    shapes[c][0] for c in same)
+        if same and len(flags) == 1:
+            return (same[0],) + shapes[same[0]] + (
+                "same max_charges %d and volume %s as %d twin tool(s)" % (mc, vol, len(same)),)
+    return None
+
+
+# ---------------------------------------------------------------------------------------------
+# R3 WELL
+# ---------------------------------------------------------------------------------------------
+
+def plan_well(ctx, rec, cls, exp, twin):
+    """R3 WELL: MAGAZINE_WELL, item_restriction = twin list + CDF ids it lacks - ids CDF lacks."""
+    out = new_record(rec, cls, twin, ctx)
+    out["rule"] = "R3"
+    out["well_diff"] = {"cdf_added": [], "dda_only_kept": [], "unfit": []}
+    raw, eff = rec["raw"], rec["eff"]
+    gun = merged_gun_view(rec)
+    for k in ("relative", "proportional"):
+        if isinstance(raw.get(k), dict) and any(
+                x in raw[k] for x in ("magazines", "magazine_well", "ammo")):
+            out["action"] = "NEEDS-HAND"
+            out["notes"].append("%s modifies magazines/magazine_well/ammo, not resolved by this "
+                                "tool" % k)
+            return out
+    mags, loaders = exp["mags"], exp.get("speedloaders", [])
+    present = [x for x in mags if x in ctx.cdf.items]
+    for x in mags:
+        if x not in ctx.cdf.items:
+            out["dropped_ids"].append({"where": "magazines", "id": x,
+                                       "why": "item absent in CDF (CDF's own list)"})
+    if loaders:
+        out["notes"].append("`magazines` also lists speedloader(s) {%s}: wells take magazines "
+                            "only, not carried into the pocket (hand look)" % ",".join(loaders))
+    shell = twin is not None and usable_twin(twin) is None
+    if shell:
+        out["notes"].append("DDA twin is an obsoletion shell (%s): authored from the CDF fields "
+                            "(R7)" % twin["file"])
+    twin = usable_twin(twin)
+    pk = pocket_list(twin["eff"]) if twin else []
+    twells = [p for p in pk if p.get("pocket_type") == "MAGAZINE_WELL"]
+    tmag = [p for p in pk if p.get("pocket_type") == "MAGAZINE"]
+    tother = [p for p in pk if p.get("pocket_type") not in ("MAGAZINE", "MAGAZINE_WELL")]
+    existing = pocket_list(eff)
+    if tother:
+        out["notes"].append("DDA twin also has non-magazine pockets (%s), not copied"
+                            % ",".join(sorted(set(p.get("pocket_type", "CONTAINER")
+                                                  for p in tother))))
+    well_key = gun.get("magazine_well")
+    new = []
+    if twells:
+        new = copy.deepcopy(twells)
+        out["action"] = "COPY-TWIN"
+        twin_fronts = [listify(p.get("item_restriction"))[0] if p.get("item_restriction")
+                       else None for p in new]
+        for p in new:
+            fix_well_ids(p, ctx, out)
+        if any(d["where"] == "item_restriction" for d in out["dropped_ids"]):
+            out["diff"].append("mags-absent")
+        target = next((p for p in new if "item_restriction" in p), None)
+        for x in present:
+            if any(accepts(p, x, ctx) for p in new):
+                continue
+            if target is not None:
+                target["item_restriction"].append(x)
+                out["well_diff"]["cdf_added"].append(x)
+            else:
+                out["well_diff"]["unfit"].append(x)
+        out["well_diff"]["dda_only_kept"] = [
+            x for p in new for x in listify(p.get("item_restriction"))
+            if x not in mags and x not in out["well_diff"]["cdf_added"]]
+        if out["well_diff"]["cdf_added"]:
+            out["diff"].append("mags+cdf")
+            out["notes"].append("// CDF: kept CDF-only magazine id(s) in the well: %s"
+                                % ",".join(out["well_diff"]["cdf_added"]))
+        if out["well_diff"]["dda_only_kept"]:
+            out["diff"].append("mags+dda")
+        if out["well_diff"]["unfit"]:
+            out["diff"].append("mags-unfit")
+            out["notes"].append("CDF magazines {%s} are not accepted by the DDA flag well "
+                                "(no item_restriction to extend)"
+                                % ",".join(out["well_diff"]["unfit"]))
+        for p in new:
+            if "item_restriction" in p and not p["item_restriction"]:
+                if p.get("flag_restriction"):
+                    del p["item_restriction"]
+                else:
+                    out["action"] = "NEEDS-HAND"
+                    out["notes"].insert(0, "twin well item_restriction is empty after dropping "
+                                        "ids CDF lacks and no CDF magazine fits")
+                    return out
+        first = new[0]
+        tv = first.get("magazine_well")
+        if well_key is not None and tv is None:
+            if first.get("rigid"):
+                out["notes"].append("CDF `magazine_well` %s not carried: the twin pocket is "
+                                    "rigid (rigid overrides magazine_well)" % well_key)
+            else:
+                first["magazine_well"] = well_key
+                out["diff"].append("well-volume+cdf")
+                out["notes"].append("// CDF: twin pocket has no magazine_well; CDF's %s moved "
+                                    "into the pocket" % well_key)
+        elif well_key is not None and to_ml(tv) != to_ml(well_key):
+            out["diff"].append("well-volume")
+            out["notes"].append("magazine_well CDF %s vs DDA %s (DDA's pocket value is used)"
+                                % (well_key, tv))
+        # the loader sets default_magazine = item_restriction.front() (pocket_data.cpp)
+        fronts = [(a, listify(p.get("item_restriction"))[0] if p.get("item_restriction") else None)
+                  for a, p in zip(twin_fronts, new)]
+        for was, now in fronts:
+            if was is not None and now is not None and was != now:
+                out["diff"].append("default-shift")
+                out["notes"].append("default magazine (first item_restriction id) changes from "
+                                    "%s to %s: the DDA default id is absent in CDF" % (was, now))
+    elif tmag:
+        out["action"] = "NEEDS-HAND"
+        out["diff"].append("shape(dda=MAGAZINE)")
+        out["notes"].insert(0, "DDA twin has an integral magazine (%s) where CDF has a magazine "
+                            "well (%s): shape decision, not covered by R1-R9"
+                            % (compact(tmag), ",".join(mags) or "-"))
+        return out
+    else:
+        if twin is not None:
+            out["diff"].append("nopocket")
+            out["notes"].append("DDA twin has no magazine pocket: authored like a CDF-only item")
+        if not present:
+            out["action"] = "NEEDS-HAND"
+            out["notes"].insert(0, "none of the listed magazines exists in CDF (%s)"
+                                % (",".join(mags) or "-"))
+            return out
+        p = collections.OrderedDict()
+        p["pocket_type"] = "MAGAZINE_WELL"
+        if well_key is not None:
+            p["magazine_well"] = well_key
+        elif rec["type"] != "GUN":
+            p["rigid"] = True   # DDA convention for tool wells without a volume
+        p["item_restriction"] = list(present)
+        dm = exp.get("default")
+        if dm in ctx.cdf.items:
+            p["default_magazine"] = dm
+        elif dm:
+            out["notes"].append("default magazine %s is absent in CDF: no default_magazine" % dm)
+        if dm and mags and dm != mags[0]:
+            out["notes"].append("default_magazine %s (first non-speedloader) instead of the "
+                                "first listed id %s" % (dm, mags[0]))
+        new = [p]
+        out["action"] = "AUTHOR"
+    move_item_key(ctx, rec, out, "magazines", "pocket item_restriction replaces the BN list")
+    move_item_key(ctx, rec, out, "magazine_well", "moves to the pocket's magazine_well")
+    finish(out, rec, existing, new, ("MAGAZINE", "MAGAZINE_WELL"))
+    return out
+
+
+# ---------------------------------------------------------------------------------------------
+# R4 TOOL-INT
+# ---------------------------------------------------------------------------------------------
+
+def plan_tool_int(ctx, rec, cls, exp, twin):
+    """R4 TOOL-INT: `ammo` -> `tool_ammo`, MAGAZINE {ammo: max_charges}, drop max/initial."""
+    out = new_record(rec, cls, twin, ctx)
+    out["rule"] = "R4"
+    out["renamed_keys"] = []
+    raw, eff = rec["raw"], rec["eff"]
+    for k in ("relative", "proportional"):
+        if isinstance(raw.get(k), dict) and any(
+                x in raw[k] for x in ("ammo", "max_charges", "initial_charges", "magazines")):
+            out["action"] = "NEEDS-HAND"
+            out["notes"].append("%s modifies ammo/max_charges/initial_charges, not resolved by "
+                                "this tool" % k)
+            return out
+    want = exp["ammo"]
+    shell = twin is not None and usable_twin(twin) is None
+    if shell:
+        out["notes"].append("DDA twin is an obsoletion shell (%s, pocket %s): authored from the "
+                            "CDF fields (R7)" % (twin["file"], compact(pocket_list(twin["eff"]))))
+    twin = usable_twin(twin)
+    pk = pocket_list(twin["eff"]) if twin else []
+    tshape = [p for p in pk if p.get("pocket_type") in ("MAGAZINE", "MAGAZINE_WELL")]
+    tother = [p for p in pk if p.get("pocket_type") not in ("MAGAZINE", "MAGAZINE_WELL")]
+    existing = pocket_list(eff)
+    if tother:
+        out["notes"].append("DDA twin also has non-magazine pockets (%s), not copied"
+                            % ",".join(sorted(set(p.get("pocket_type", "CONTAINER")
+                                                  for p in tother))))
+    battery = "battery" in want
+    new = []
+    if tshape:
+        out["action"] = "COPY-TWIN"
+        tmag = [p for p in tshape if p.get("pocket_type") == "MAGAZINE"]
+        if tmag:
+            ammo_kinds(want, pocket_ammo(tmag), out)
+        else:
+            out["diff"].append("well(dda)")
+            out["notes"].append("DDA twin carries a magazine well (%s) where CDF has integral "
+                                "charges (max_charges %s)"
+                                % (",".join(json.dumps(p.get("flag_restriction") or
+                                                       p.get("item_restriction"))
+                                            for p in tshape),
+                                   ",".join(str(v) for v in want.values())))
+        for p in copy.deepcopy(tshape):
+            if p.get("pocket_type") == "MAGAZINE":
+                got = sanitize([p], ctx, out)
+                if not got:
+                    out["action"] = "NEEDS-HAND"
+                    out["notes"].insert(0, "no usable ammotype in the twin pocket (%s)" % "; ".join(
+                        "%s: %s" % (d["id"], d["why"]) for d in out["dropped_ids"]
+                        if d["where"] == "ammo_restriction"))
+                    return out
+                new += got
+            else:
+                fix_well_ids(p, ctx, out)
+                if "item_restriction" in p and not p["item_restriction"]:
+                    if p.get("flag_restriction"):
+                        del p["item_restriction"]
+                    else:
+                        out["action"] = "NEEDS-HAND"
+                        out["notes"].insert(0, "twin well item_restriction is empty after "
+                                            "dropping ids CDF lacks")
+                        return out
+                new.append(p)
+        if any(d["where"] == "item_restriction" for d in out["dropped_ids"]):
+            out["diff"].append("mags-absent")
+    else:
+        if twin is not None:
+            out["diff"].append("nopocket")
+            out["notes"].append("DDA twin has no magazine pocket (tool_ammo %s, max_charges %s): "
+                                "authored like a CDF-only item"
+                                % (twin["eff"].get("tool_ammo"), twin["eff"].get("max_charges")))
+        if battery:
+            sib = battery_sibling(ctx, rec)
+            if sib is None:
+                out["action"] = "NEEDS-HAND"
+                out["notes"].insert(0, "battery tool (max_charges %s): no DDA twin tool of the "
+                                    "same size class found (copy-from, id stem, parent, "
+                                    "max_charges+volume), size flag unknown; fallback would be "
+                                    "integral MAGAZINE {battery: %s}"
+                                    % (eff.get("max_charges"), eff.get("max_charges")))
+                return out
+            sid, kind, sp, why = sib
+            if kind == "WELL":
+                p = copy.deepcopy(sp)
+                fix_well_ids(p, ctx, out)
+                new = [p]
+                out["diff"].append("sibling-well")
+                out["notes"].append("battery well authored from the DDA twin of `%s` (%s): "
+                                    "flag_restriction %s, default_magazine %s; CDF has no "
+                                    "magazine id of its own for this tool"
+                                    % (sid, why, json.dumps(sp.get("flag_restriction")),
+                                       sp.get("default_magazine")))
+            else:
+                new = [collections.OrderedDict([
+                    ("pocket_type", "MAGAZINE"), ("rigid", True),
+                    ("ammo_restriction", collections.OrderedDict(want))])]
+                out["diff"].append("sibling-integral")
+                out["notes"].append("twin of `%s` (%s) is an integral battery MAGAZINE (DDA %s): "
+                                    "authored from CDF ammo and max_charges"
+                                    % (sid, why, compact([sp])))
+            out["action"] = "AUTHOR"
+        else:
+            if not want or any(n <= 0 for n in want.values()):
+                out["action"] = "NEEDS-HAND"
+                out["notes"].append("no usable ammo/max_charges to author a pocket")
+                return out
+            new = [collections.OrderedDict([
+                ("pocket_type", "MAGAZINE"), ("rigid", True),
+                ("ammo_restriction", collections.OrderedDict(want))])]
+            out["action"] = "AUTHOR"
+            new = sanitize(new, ctx, out)
+            if not new:
+                out["action"] = "NEEDS-HAND"
+                out["notes"].insert(0, "no usable ammotype for the pocket (%s)" % "; ".join(
+                    "%s: %s" % (d["id"], d["why"]) for d in out["dropped_ids"]
+                    if d["where"] == "ammo_restriction"))
+                return out
+    # keys: ammo -> tool_ammo (alias kept by the CDF loader, // CDF:), max/initial charges go
+    site = key_site(raw, eff, "ammo")
+    if site == "inherited":
+        src = inherited_from(ctx, raw, "ammo")
+        out["inherited_keys"].append({"key": "ammo", "value": eff.get("ammo"), "from": src})
+        out["notes"].append("`ammo` is inherited from `%s` (copy-from): renamed when that "
+                            "object is ported" % src)
+    elif site is not None:
+        out["renamed_keys"].append({"from": "ammo", "to": "tool_ammo", "value": eff.get("ammo"),
+                                    "site": site})
+    move_item_key(ctx, rec, out, "max_charges",
+                  "DDA: the magazine pocket carries the capacity (\"Redundant max charge value\")")
+    move_item_key(ctx, rec, out, "initial_charges", "DDA: not kept on tools with a magazine "
+                  "pocket (R4)")
+    if rec["type"] == "ARMOR":
+        out["notes"].append("type ARMOR (not TOOL_ARMOR) with ammo/max_charges: check the DDA "
+                            "loader accepts tool_ammo here")
+    finish(out, rec, existing, new, ("MAGAZINE", "MAGAZINE_WELL"))
+    return out
+
+
+# class -> planner. Later chunks add CHARGES (R5), ADAPTOR (R6),
 # DDA-POCKET (R8); R7 is "author when there is no twin" inside each planner, R9 is the
 # STORAGE/EXPLICIT tagging above.
 PLANNERS = collections.OrderedDict([
     ("MAG", plan_mag),
     ("GUN-INT", plan_gun_int),
+    ("TOOL-INT", plan_tool_int),
+    ("WELL", plan_well),
 ])
 ALL_CLASSES = ["MAG", "GUN-INT", "TOOL-INT", "WELL", "ADAPTOR", "CHARGES", "DDA-POCKET"]
 
@@ -751,7 +1216,7 @@ def write_markdown(path, records, args, ctx):
     by_cls = summary_counts(records)
     actions = sorted(set(r["action"] for r in records))
     L = []
-    L.append("# P3-2 magazine port plan (R1 MAG, R2 GUN-INT)\n")
+    L.append("# P3-2 magazine port plan (%s)\n" % ",".join(sorted(by_cls)))
     L.append("CDF `%s`, DDA `%s`. Classes: %s. Generated by `tools/cdf_port_dda_mags.py --report`; "
              "read-only.\n" % (args.cdf, args.dda, ",".join(sorted(by_cls)) or "-"))
     L.append("## Counts\n")
@@ -836,6 +1301,61 @@ def write_markdown(path, records, args, ctx):
     else:
         L.append("none")
     L.append("")
+    L.append("## R3 CDF-only magazine ids kept in DDA wells (id, item)\n")
+    kept = [(x, r["id"]) for r in records for x in r.get("well_diff", {}).get("cdf_added", [])]
+    if kept:
+        by_id = collections.OrderedDict()
+        for x, i in kept:
+            by_id.setdefault(x, []).append(i)
+        L.append("%d (item, id) pairs, %d distinct ids, %d items.\n"
+                 % (len(kept), len(by_id), len(set(i for _x, i in kept))))
+        L.append("| magazine id | items |\n|---|---|")
+        for x, items in by_id.items():
+            L.append("| `%s` | %s |" % (x, ", ".join("`%s`" % i for i in items)))
+    else:
+        L.append("none")
+    L.append("")
+    gone = collections.OrderedDict()
+    for r in records:
+        for d in r["dropped_ids"]:
+            if d["where"] in ("item_restriction", "default_magazine"):
+                gone.setdefault(d["id"], []).append(r["id"])
+    if gone or any(r["rule"] in ("R3", "R4") for r in records):
+        L.append("## R3/R4 item ids dropped from copied wells (absent in CDF, distinct)\n")
+        if gone:
+            L.append("%d distinct ids.\n" % len(gone))
+            L.append("| dropped id | items |\n|---|---|")
+            for x, items in sorted(gone.items()):
+                L.append("| `%s` | %s |" % (x, ", ".join("`%s`" % i for i in items)))
+        else:
+            L.append("none")
+        L.append("")
+    own = [r for r in records if any(d["where"] == "magazines" for d in r["dropped_ids"])]
+    if own:
+        L.append("CDF `magazines` ids that do not exist in CDF (left out of the pocket): %s\n"
+                 % "; ".join("`%s`: %s" % (r["id"], ",".join(
+                     d["id"] for d in r["dropped_ids"] if d["where"] == "magazines"))
+                             for r in own))
+    ren = [r for r in records if r.get("renamed_keys")]
+    if any(r["rule"] == "R4" for r in records):
+        L.append("## R4 key moves\n")
+        L.append("`ammo` renamed to `tool_ammo` on %d items; `max_charges` dropped on %d, "
+                 "`initial_charges` on %d (inherited ones are in the inherited-keys section).\n"
+                 % (len(ren),
+                    sum(1 for r in records if r["rule"] == "R4" and any(
+                        d["key"] == "max_charges" for d in r["dropped_keys"])),
+                    sum(1 for r in records if r["rule"] == "R4" and any(
+                        d["key"] == "initial_charges" for d in r["dropped_keys"]))))
+        sib = [r for r in records if any(d.startswith("sibling") for d in r["diff"])]
+        if sib:
+            L.append("Battery tools authored from the nearest DDA twin tool:\n")
+            L.append("| id | pocket | evidence |\n|---|---|---|")
+            for r in sib:
+                L.append("| `%s` | %s | %s |" % (
+                    r["id"], compact(r["pocket_data"]).replace("|", "/"),
+                    next((n for n in r["notes"] if n.startswith(("twin of", "battery well"))),
+                         "-").replace("|", "/")))
+            L.append("")
     L.append("## Records\n")
     L.append("| id | class | twin | file | action | pocket | dropped | set | diff | tags | notes |")
     L.append("|---|---|---|---|---|---|---|---|---|---|---|")
