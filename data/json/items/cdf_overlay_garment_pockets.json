@@ -90,6 +90,9 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "700 ml", "max_contains_weight": "3 kg", "max_item_length": "16 cm", "moves": 80},
     {"pocket_type": "CONTAINER", "max_contains_volume": "700 ml", "max_contains_weight": "3 kg", "max_item_length": "16 cm", "moves": 80}
   ]},
+  {"type": "item_overlay", "id": "coat_fur_sf", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "1250 ml", "max_item_length": "16 cm", "moves": 100}
+  ]},
   {"type": "item_overlay", "id": "coat_lab", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "1600 ml", "max_contains_weight": "3 kg", "max_item_length": "21 cm", "moves": 80},
     {"pocket_type": "CONTAINER", "max_contains_volume": "1600 ml", "max_contains_weight": "3 kg", "max_item_length": "21 cm", "moves": 80},
@@ -238,9 +241,15 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "500 ml", "max_contains_weight": "2 kg", "max_item_length": "10 cm", "moves": 80},
     {"pocket_type": "CONTAINER", "max_contains_volume": "500 ml", "max_contains_weight": "2 kg", "max_item_length": "10 cm", "moves": 80}
   ]},
+  {"type": "item_overlay", "id": "jacket_leather_red", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "1 L", "max_item_length": "10 cm", "moves": 100}
+  ]},
   {"type": "item_overlay", "id": "jacket_light", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "700 ml", "max_contains_weight": "3 kg", "max_item_length": "14 cm", "moves": 80},
     {"pocket_type": "CONTAINER", "max_contains_volume": "700 ml", "max_contains_weight": "3 kg", "max_item_length": "14 cm", "moves": 80}
+  ]},
+  {"type": "item_overlay", "id": "jacket_tacticool", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "3500 ml", "max_item_length": "18 cm", "moves": 100}
   ]},
   {"type": "item_overlay", "id": "jacket_windbreaker", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "1300 ml", "max_contains_weight": "3 kg", "max_item_length": "21 cm", "moves": 80},
@@ -279,6 +288,9 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "250 ml", "max_contains_weight": "500 g", "max_item_length": "13 cm", "moves": 150},
     {"pocket_type": "CONTAINER", "max_contains_volume": "1000 ml", "max_contains_weight": "2500 g", "max_item_length": "18 cm", "moves": 250}
   ]},
+  {"type": "item_overlay", "id": "lsurvivor_pants", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "2500 ml", "max_item_length": "19 cm", "moves": 100}
+  ]},
   {"type": "item_overlay", "id": "lsurvivor_suit", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "6 kg", "moves": 80},
     {"pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "6 kg", "moves": 80},
@@ -298,6 +310,9 @@
   ]},
   {"type": "item_overlay", "id": "mbag", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_contains_weight": "18 kg", "max_item_length": "50 cm", "moves": 150, "magazine_well": "2500 ml"}
+  ]},
+  {"type": "item_overlay", "id": "pack_basket", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_item_length": "35 cm", "moves": 100}
   ]},
   {"type": "item_overlay", "id": "pants", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "1250 ml", "max_contains_weight": "4 kg", "max_item_length": "19 cm", "moves": 80},
@@ -348,6 +363,12 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "1250 ml", "max_contains_weight": "4 kg", "max_item_length": "19 cm", "moves": 80},
     {"pocket_type": "CONTAINER", "max_contains_volume": "1080 ml", "max_contains_weight": "4 kg", "max_item_length": "165 mm", "moves": 100},
     {"pocket_type": "CONTAINER", "max_contains_volume": "1080 ml", "max_contains_weight": "4 kg", "max_item_length": "165 mm", "moves": 100}
+  ]},
+  {"type": "item_overlay", "id": "pants_survivor", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "3500 ml", "max_item_length": "19 cm", "moves": 100}
+  ]},
+  {"type": "item_overlay", "id": "pants_tacticool", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "2500 ml", "max_item_length": "19 cm", "moves": 100}
   ]},
   {"type": "item_overlay", "id": "peacoat", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "1500 ml", "max_contains_weight": "2 kg", "max_item_length": "24 cm", "moves": 80},
@@ -406,6 +427,9 @@
   {"type": "item_overlay", "id": "saddlebag", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_contains_weight": "20 kg", "max_item_length": "60 cm", "moves": 200},
     {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_contains_weight": "20 kg", "max_item_length": "60 cm", "moves": 200}
+  ]},
+  {"type": "item_overlay", "id": "saddlebag_small_quadruped", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "10 L", "max_item_length": "50 cm", "moves": 100}
   ]},
   {"type": "item_overlay", "id": "shorts", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "1250 ml", "max_contains_weight": "4 kg", "max_item_length": "19 cm", "moves": 80},
@@ -503,6 +527,12 @@
   {"type": "item_overlay", "id": "slingpack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "8 L", "max_contains_weight": "16 kg", "max_item_length": "40 cm", "moves": 200, "magazine_well": "2 L"}
   ]},
+  {"type": "item_overlay", "id": "solarpack", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_item_length": "40 cm", "moves": 100}
+  ]},
+  {"type": "item_overlay", "id": "solarpack_on", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_item_length": "40 cm", "moves": 100}
+  ]},
   {"type": "item_overlay", "id": "straw_basket", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "10 L", "max_contains_weight": "3 kg", "max_item_length": "40 cm", "rigid": true, "moves": 300}
   ]},
@@ -511,6 +541,9 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "1250 ml", "max_contains_weight": "4 kg", "max_item_length": "19 cm", "moves": 80},
     {"pocket_type": "CONTAINER", "max_contains_volume": "1080 ml", "max_contains_weight": "4 kg", "max_item_length": "165 mm", "moves": 100},
     {"pocket_type": "CONTAINER", "max_contains_volume": "1080 ml", "max_contains_weight": "4 kg", "max_item_length": "165 mm", "moves": 100}
+  ]},
+  {"type": "item_overlay", "id": "subsuit_xl", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "1 L", "max_item_length": "18 cm", "moves": 100}
   ]},
   {"type": "item_overlay", "id": "suit", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "700 ml", "max_contains_weight": "2 kg", "max_item_length": "15 cm", "moves": 80},
@@ -533,6 +566,10 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 80, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 1, \"extra_encumbrance\": 5}"}
+  ]},
+  {"type": "item_overlay", "id": "survivor_hiking_backpack", "pocket_data": [
+    {"pocket_type": "CONTAINER", "max_contains_volume": "60 L", "max_item_length": "60 cm", "moves": 100},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "10 L", "max_item_volume": "10 L", "max_item_length": "150 cm", "holster": true, "moves": 100}
   ]},
   {"type": "item_overlay", "id": "survivor_rucksack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "40 L", "max_contains_weight": "60 kg", "max_item_length": "55 cm", "moves": 300, "magazine_well": "6 L"},
