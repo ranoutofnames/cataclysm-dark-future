@@ -3662,7 +3662,9 @@
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [],
+      "dropped_ids": [
+        "coal"
+      ],
       "storage": false
     },
     "char_purifier": {
@@ -3732,7 +3734,9 @@
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [],
+      "dropped_ids": [
+        "coal"
+      ],
       "storage": false
     },
     "chemical_thrower": {
@@ -4623,16 +4627,15 @@
     "control_laptop": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "BATTERY_MEDIUM"
-          ],
-          "default_magazine": "medium_battery_cell"
+          "ammo_restriction": {
+            "battery": 700
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -4660,16 +4663,15 @@
     "control_laptop_screen_lit": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "BATTERY_MEDIUM"
-          ],
-          "default_magazine": "medium_battery_cell"
+          "ammo_restriction": {
+            "battery": 700
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -5001,63 +5003,16 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "CONTAINER",
-          "max_contains_volume": "20 L",
-          "max_contains_weight": "40 kg",
-          "max_item_length": "50 cm",
-          "moves": 300,
-          "magazine_well": "5 L"
-        },
-        {
-          "pocket_type": "CONTAINER",
-          "max_contains_volume": "7 L",
-          "max_contains_weight": "10 kg",
-          "max_item_length": "30 cm",
-          "moves": 300
-        },
-        {
-          "pocket_type": "CONTAINER",
-          "max_contains_volume": "3250 ml",
-          "max_contains_weight": "4 kg",
-          "max_item_length": "30 cm",
-          "moves": 500
-        },
-        {
-          "pocket_type": "CONTAINER",
-          "max_contains_volume": "5 L",
-          "max_contains_weight": "6 kg",
-          "max_item_length": "120 cm",
-          "min_item_length": "20 cm",
-          "holster": true,
-          "moves": 150,
-          "transparent": true
-        },
-        {
-          "pocket_type": "CONTAINER",
-          "max_contains_volume": "5 L",
-          "max_contains_weight": "6 kg",
-          "max_item_length": "120 cm",
-          "min_item_length": "20 cm",
-          "holster": true,
-          "moves": 150,
-          "transparent": true
-        },
-        {
-          "pocket_type": "CONTAINER",
-          "max_contains_volume": "5 L",
-          "max_contains_weight": "4 kg",
-          "max_item_length": "150 cm",
-          "min_item_length": "60 cm",
-          "holster": true,
-          "moves": 200,
-          "transparent": true
-        },
-        {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
             "battery": 1000
           }
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "carry": true,
+          "max_contains_volume": "9 L"
         }
       ],
       "cdf_kept_ids": [],
@@ -5413,16 +5368,15 @@
     "dimensional_anchor": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "BATTERY_MEDIUM"
-          ],
-          "default_magazine": "medium_battery_cell"
+          "ammo_restriction": {
+            "plutonium": 1000
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -5432,16 +5386,15 @@
     "dimensional_anchor_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "BATTERY_MEDIUM"
-          ],
-          "default_magazine": "medium_battery_cell"
+          "ammo_restriction": {
+            "plutonium": 1000
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -6996,7 +6949,9 @@
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [],
+      "dropped_ids": [
+        "coal"
+      ],
       "storage": false
     },
     "g36mag_100rd": {
@@ -7092,16 +7047,15 @@
     "game_watch": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "BATTERY_ULTRA_LIGHT"
-          ],
-          "default_magazine": "light_minus_battery_cell"
+          "ammo_restriction": {
+            "battery": 120
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -8352,21 +8306,19 @@
     "helmet_scavenger": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "GASFILTER_SM"
-          ]
+          "ammo_restriction": {
+            "gasfilter_m": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_sm"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "helsing": {
@@ -8907,15 +8859,15 @@
     "holo_cloak": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "item_restriction": [
-            "medium_battery_cell"
-          ]
+          "ammo_restriction": {
+            "plutonium": 1000
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -12098,119 +12050,109 @@
     "mask_filter": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "GASFILTER_SM"
-          ]
+          "ammo_restriction": {
+            "gasfilter_s": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_sm"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_fsurvivor": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "GASFILTER_MED"
-          ]
+          "ammo_restriction": {
+            "gasfilter_m": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_med"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_gas": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "flag_restriction": [
-            "GASFILTER_MED"
-          ]
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "gasfilter_m": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_med"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_gas_xl": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "flag_restriction": [
-            "GASFILTER_MED"
-          ]
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "gasfilter_m": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_med"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_h20survivor": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "REBREATHER_CART"
-          ]
+          "ammo_restriction": {
+            "rebreather_filter": 120
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "rebreather_cartridge_o2"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_h20survivor_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "REBREATHER_CART"
-          ]
+          "ammo_restriction": {
+            "rebreather_filter": 120
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "rebreather_cartridge_o2"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_halfsurvivor": {
@@ -12234,40 +12176,37 @@
     "mask_hsurvivor": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "flag_restriction": [
-            "GASFILTER_MED"
-          ]
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "gasfilter_m": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_med"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_lsurvivor": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "GASFILTER_MED"
-          ]
+          "ammo_restriction": {
+            "gasfilter_m": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_med"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_sasurvivor": {
@@ -12291,21 +12230,19 @@
     "mask_survivor": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "GASFILTER_MED"
-          ]
+          "ammo_restriction": {
+            "gasfilter_m": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "gasfilter_med"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "mask_wsurvivor": {
@@ -14192,16 +14129,15 @@
     "plastic_jack_o_lantern": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "BATTERY_LIGHT"
-          ],
-          "default_magazine": "light_battery_cell"
+          "ammo_restriction": {
+            "battery": 100
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -15236,81 +15172,73 @@
     "rebreather": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "REBREATHER_CART"
-          ]
+          "ammo_restriction": {
+            "rebreather_filter": 60
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "rebreather_cartridge_o2"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "rebreather_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "REBREATHER_CART"
-          ]
+          "ammo_restriction": {
+            "rebreather_filter": 60
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "rebreather_cartridge_o2"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "rebreather_xl": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "REBREATHER_CART"
-          ]
+          "ammo_restriction": {
+            "rebreather_filter": 60
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "rebreather_cartridge_o2"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "rebreather_xl_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
+          "pocket_type": "MAGAZINE",
           "rigid": true,
-          "flag_restriction": [
-            "REBREATHER_CART"
-          ]
+          "ammo_restriction": {
+            "rebreather_filter": 60
+          }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "rebreather_cartridge_o2"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "recurbow": {
@@ -15956,7 +15884,7 @@
     "rm13_armor": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "HAND-FALLBACK",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
@@ -15979,7 +15907,7 @@
     "rm13_armor_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "HAND-FALLBACK",
+      "action": "AUTHOR-KEEP-CDF-INTEGRAL",
       "twin": true,
       "pockets": [
         {
@@ -18756,7 +18684,9 @@
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [],
+      "dropped_ids": [
+        "aerosol_paint"
+      ],
       "storage": false
     },
     "staff_druidic": {

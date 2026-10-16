@@ -11,7 +11,7 @@ The magazine port plan of `tools/cdf_port_dda_mags.py`, one entry per port targe
 
 Format (`format` 1): `{ "format": 1, "dda": "<DDA git hash the twins were read from>", "items": { "<item id>": { ... } } }`. Items are sorted by id, indent 2, LF line ends. Each item has, in this key order:
 
-- `class`: MAG, GUN-INT, TOOL-INT, WELL, CHARGES or DDA-POCKET; `rule`: R1..R8; `action`: COPY-TWIN, COPY-TWIN-KEEP-CDF-AMMO, AUTHOR, AUTHOR-KEEP-CDF-WELL, DROP-KEY, HAND-FALLBACK or KEEP-REVIEW.
+- `class`: MAG, GUN-INT, TOOL-INT, WELL, CHARGES or DDA-POCKET; `rule`: R1..R8; `action`: COPY-TWIN, COPY-TWIN-KEEP-CDF-AMMO, AUTHOR, AUTHOR-KEEP-CDF-WELL, AUTHOR-KEEP-CDF-INTEGRAL (AUTO-8: TOOL-INT rows keep the CDF integral charges), DROP-KEY, HAND-FALLBACK or KEEP-REVIEW.
 - `twin`: a DDA twin item with the same id exists.
 - KEEP-REVIEW rows (R6 ADAPTOR, no edit) carry the item as it is today: `pockets` is its effective `pocket_data` (empty for the adaptor mods), plus an `adaptor` block `{ "cdf": {magazine_adaptor, magazines_like}, "dda": {...} }` (the DDA twin's values, null where the twin lacks them). The adaptor swaps the well restriction (item_contents.cpp:359-369), so the C++ test must cover them; `--check` does not touch them.
 - `pockets`: the item's complete effective `pocket_data` after the port, only the keys that are present, in the order the loader must produce (`port_preserves_pocket_order` relies on that order; carry pockets of +STORAGE items come last). No `//` keys.
