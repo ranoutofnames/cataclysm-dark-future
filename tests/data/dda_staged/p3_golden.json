@@ -2207,6 +2207,34 @@
       "dropped_ids": [],
       "storage": false
     },
+    "arredondo_chute": {
+      "class": "ADAPTOR",
+      "rule": "R6",
+      "action": "KEEP-REVIEW",
+      "twin": true,
+      "pockets": [],
+      "cdf_kept_ids": [],
+      "dropped_ids": [],
+      "storage": false,
+      "adaptor": {
+        "cdf": {
+          "magazine_adaptor": [
+            [
+              "shot",
+              [
+                "shot_speedloader6",
+                "shot_speedloader8"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        },
+        "dda": {
+          "magazine_adaptor": null,
+          "magazines_like": null
+        }
+      }
+    },
     "arx160": {
       "class": "WELL",
       "rule": "R3",
@@ -11770,6 +11798,131 @@
       "dropped_ids": [],
       "storage": false
     },
+    "magazine_battery_heavy_mod": {
+      "class": "ADAPTOR",
+      "rule": "R6",
+      "action": "KEEP-REVIEW",
+      "twin": true,
+      "pockets": [],
+      "cdf_kept_ids": [],
+      "dropped_ids": [],
+      "storage": false,
+      "adaptor": {
+        "cdf": {
+          "magazine_adaptor": [
+            [
+              "battery",
+              [
+                "heavy_battery_cell"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        },
+        "dda": {
+          "magazine_adaptor": null,
+          "magazines_like": null
+        }
+      }
+    },
+    "magazine_battery_light_mod": {
+      "class": "ADAPTOR",
+      "rule": "R6",
+      "action": "KEEP-REVIEW",
+      "twin": true,
+      "pockets": [],
+      "cdf_kept_ids": [],
+      "dropped_ids": [],
+      "storage": false,
+      "adaptor": {
+        "cdf": {
+          "magazine_adaptor": [
+            [
+              "battery",
+              [
+                "light_battery_cell",
+                "light_minus_battery_cell"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        },
+        "dda": {
+          "magazine_adaptor": null,
+          "magazines_like": null
+        }
+      }
+    },
+    "magazine_battery_medium_mod": {
+      "class": "ADAPTOR",
+      "rule": "R6",
+      "action": "KEEP-REVIEW",
+      "twin": true,
+      "pockets": [],
+      "cdf_kept_ids": [],
+      "dropped_ids": [],
+      "storage": false,
+      "adaptor": {
+        "cdf": {
+          "magazine_adaptor": [
+            [
+              "battery",
+              [
+                "medium_battery_cell"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        },
+        "dda": {
+          "magazine_adaptor": null,
+          "magazines_like": null
+        }
+      }
+    },
+    "magazine_battery_mod": {
+      "class": "ADAPTOR",
+      "rule": "R6",
+      "action": "KEEP-REVIEW",
+      "twin": true,
+      "pockets": [],
+      "cdf_kept_ids": [],
+      "dropped_ids": [],
+      "storage": false,
+      "adaptor": {
+        "cdf": {
+          "magazine_adaptor": [
+            [
+              "battery",
+              [
+                "medium_storage_battery",
+                "small_storage_battery",
+                "storage_battery",
+                "huge_atomic_battery_cell",
+                "battery_car",
+                "battery_motorbike",
+                "battery_motorbike_small"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        },
+        "dda": {
+          "magazine_adaptor": [
+            [
+              "battery",
+              [
+                "small_storage_battery",
+                "medium_storage_battery",
+                "battery_car",
+                "battery_motorbike"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        }
+      }
+    },
     "makarov": {
       "class": "WELL",
       "rule": "R3",
@@ -15393,6 +15546,56 @@
       "cdf_kept_ids": [],
       "dropped_ids": [],
       "storage": false
+    },
+    "retool_ar15_300blk": {
+      "class": "ADAPTOR",
+      "rule": "R6",
+      "action": "KEEP-REVIEW",
+      "twin": true,
+      "pockets": [],
+      "cdf_kept_ids": [],
+      "dropped_ids": [],
+      "storage": false,
+      "adaptor": {
+        "cdf": {
+          "magazine_adaptor": [
+            [
+              "300blk",
+              [
+                "stanag30",
+                "stanag50",
+                "survivor223mag"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        },
+        "dda": {
+          "magazine_adaptor": [
+            [
+              "223",
+              [
+                "stanag30",
+                "stanag5",
+                "stanag10",
+                "stanag20",
+                "stanag40",
+                "stanag50",
+                "stanag60",
+                "stanag60drum",
+                "stanag90",
+                "stanag100",
+                "stanag100drum",
+                "stanag150",
+                "stanag20_beowulf",
+                "stanag30_beowulf",
+                "survivor223mag"
+              ]
+            ]
+          ],
+          "magazines_like": null
+        }
+      }
     },
     "revenant_crown": {
       "class": "TOOL-INT",

@@ -137,7 +137,8 @@ whose `capacity` is gone, GUN-INT rows that lost the speedloader ids with `magaz
 only when every target is ok.
 
 `--golden FILE` writes the emitted plan of every port target (sorted by id, pocket order as
-emitted) as `{format, dda, items}`; see tests/data/dda_staged/README.md.
+emitted) plus the KEEP-REVIEW adaptor rows (not edited: the item's effective pockets and an
+`adaptor: {cdf, dda}` block with `magazine_adaptor` / `magazines_like`) as `{format, dda, items}`; see tests/data/dda_staged/README.md.
 """
 
 import argparse
@@ -1439,6 +1440,14 @@ def plan_adaptor(ctx, rec, cls, exp, twin):
                         % json.dumps(rec["eff"].get("magazine_adaptor")))
     if twin is not None:
         out["action"] = "KEEP-REVIEW"
+        # no edit: the golden records the data as it is today (adaptor + effective pockets)
+        out["adaptor"] = {
+            "cdf": {"magazine_adaptor": copy.deepcopy(rec["eff"].get("magazine_adaptor")),
+                    "magazines_like": copy.deepcopy(rec["eff"].get("magazines_like"))},
+            "dda": {"magazine_adaptor": copy.deepcopy(twin["eff"].get("magazine_adaptor")),
+                    "magazines_like": copy.deepcopy(twin["eff"].get("magazines_like"))},
+        }
+        out["current_pockets"] = copy.deepcopy(pocket_list(rec["eff"]))
         out["notes"].append("REVIEW row (DDA twin has the adaptor too): the golden matrix covers "
                             "it, the adaptor swaps the well restriction "
                             "(item_contents.cpp:359-369)")
@@ -2440,18 +2449,26 @@ def pocket_out(p):
 def golden_item(rec):
     kept = list((rec.get("well_diff") or {}).get("cdf_added") or [])
     dropped = list(dict.fromkeys(d["id"] for d in rec["dropped_ids"]))
-    return collections.OrderedDict([
+    review = rec["action"] == "KEEP-REVIEW"
+    pockets = rec.get("current_pockets", []) if review else rec["pocket_data"]
+    item = collections.OrderedDict([
         ("class", rec["class"]), ("rule", rec["rule"]), ("action", rec["action"]),
         ("twin", bool(rec["has_twin"])),
-        ("pockets", [pocket_out(p) for p in rec["pocket_data"]]),
+        ("pockets", [pocket_out(p) for p in pockets]),
         ("cdf_kept_ids", kept), ("dropped_ids", dropped),
         ("storage", "STORAGE" in rec["tags"]),
     ])
+    if review:
+        item["adaptor"] = copy.deepcopy(rec["adaptor"])
+    return item
 
 
 def write_golden(path, records, dda_root):
+    """Port targets (emitted plan) plus the KEEP-REVIEW adaptor rows (R6, not edited: the
+    item as it is today, so the golden matrix covers the adaptor's well-restriction swap)."""
     items = collections.OrderedDict()
-    for rec in sorted(port_targets(records), key=lambda r: r["id"]):
+    sel = port_targets(records) + [r for r in records if r["action"] == "KEEP-REVIEW"]
+    for rec in sorted(sel, key=lambda r: r["id"]):
         items[rec["id"]] = golden_item(rec)
     doc = collections.OrderedDict([("format", 1), ("dda", dda_hash(dda_root)),
                                    ("items", items)])
