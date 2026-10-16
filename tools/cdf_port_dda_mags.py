@@ -7,10 +7,10 @@ BN stores ammo and magazine data in item keys (`ammo_type` + `capacity`, `clip_s
 item should get and which BN keys go away, with the DDA twin (same id in the DDA tree) as the
 model. Deviations from DDA are marked `// CDF:` below and in the notes of each record.
 
-Status of this tool: chunk 1d. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
+Status of this tool: chunk 1e. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
 R3 (WELL), R4 (TOOL-INT), R5 (CHARGES), R6 (ADAPTOR), R8 (DDA-POCKET), the R9 STORAGE/EXPLICIT
 handling and the HAND-FALLBACK defaults for NEEDS-HAND rows in `--report` mode, and `--apply`
-(see below). `--check` comes in the next chunk.
+(see below), `--check` and `--golden` (see below).
 
 Rules (PLAN-P3 section 4.3; the numbers are the plan's)
   R1  MAG with twin. Copy DDA's `pocket_data` (MAGAZINE, rigid, ammo_restriction,
@@ -118,6 +118,26 @@ the emitted list, and whose keys are already gone, is not edited (idempotent). `
 paths (or directories) relative to `--cdf`; `--dry-run` prints the counts and writes nothing.
 `--apply` rewrites files in place: run it on a scratch copy of `data/` (`--cdf <scratch>`),
 not on a worktree's data/json and data/mods. No MOD pocket is emitted (see `synth_lost`).
+
+  py -3 -I tools/cdf_port_dda_mags.py --check [--cdf <root>] [--baseline-cdf <unported root>]
+        [--classes ...] [--ids ...] [--list-pending]
+  py -3 -I tools/cdf_port_dda_mags.py --golden FILE [--cdf <root>] [--baseline-cdf <root>]
+
+`--check` plans on the baseline tree (default: `--cdf` itself) and verifies `--cdf` for every
+port target (action COPY-TWIN / AUTHOR / DROP-KEY / HAND-FALLBACK-authored): (a) the effective
+(copy-from resolved) pocket_data equals the emitted list, ignoring `//` keys, key order and a
+false `rigid`; (b) COPY-TWIN rows equal the DDA twin's MAGAZINE / MAGAZINE_WELL pockets modulo
+the differences the record documents (dropped ids, `// CDF:` kept ids, well volume, cap);
+(c) every pocket passes the static check_definition port (`check_pocket`); (d) no dropped or
+renamed BN key is left on the item, set_keys have their value. Rows whose tree still has all
+the BN keys and no magazine pocket are `pending` (not ported yet; a distinct reason, still
+exit 1). A tree that is already ported must be checked with `--baseline-cdf <pristine tree>`:
+re-planning a ported tree against itself gives artifacts (HAND-FALLBACK left-as-is MAG rows
+whose `capacity` is gone, GUN-INT rows that lost the speedloader ids with `magazines`). Exit 0
+only when every target is ok.
+
+`--golden FILE` writes the emitted plan of every port target (sorted by id, pocket order as
+emitted) as `{format, dda, items}`; see tests/data/dda_staged/README.md.
 """
 
 import argparse
@@ -2175,6 +2195,272 @@ def apply_records(ctx, records, root, files, dry_run):
     return counts, skipped, inherited, edited
 
 
+# ---------------------------------------------------------------------------------------------
+# Check and golden (P3-2 steps 3-4)
+# ---------------------------------------------------------------------------------------------
+# The plan (build_records) is computed on the BASELINE tree (the unported CDF tree; default: the
+# tree being checked). --check then looks at the CHECKED tree (--cdf). A ported tree re-planned
+# against itself shows artifacts (the planner cannot re-derive pockets whose BN keys are gone:
+# MAG rows whose `capacity` went, GUN-INT rows that lost the `magazines` speedloader ids), so the
+# intended run on a ported tree is `--check --cdf <ported> --baseline-cdf <pristine>`.
+
+MAG_TYPES = ("MAGAZINE", "MAGAZINE_WELL")
+
+
+def check_norm(v):
+    """Comparison form of pockets: no `//` comment keys, a false `rigid` is the same as none
+    (loader default). Key order never matters (dict equality); list order does."""
+    if isinstance(v, dict):
+        out = {}
+        for k, x in v.items():
+            if k.startswith("//"):
+                continue
+            if k == "rigid" and not x:
+                continue
+            out[k] = check_norm(x)
+        return out
+    if isinstance(v, list):
+        return [check_norm(x) for x in v]
+    return v
+
+
+def first_diff(a, b, path="pocket_data"):
+    """Short description of the first difference between two normalised JSON values."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        for k in a:
+            if k not in b:
+                return "%s.%s only in tree (%s)" % (path, k, json.dumps(a[k])[:60])
+        for k in b:
+            if k not in a:
+                return "%s.%s only in expected (%s)" % (path, k, json.dumps(b[k])[:60])
+        for k in a:
+            if a[k] != b[k]:
+                return first_diff(a[k], b[k], "%s.%s" % (path, k))
+        return None
+    if isinstance(a, list) and isinstance(b, list):
+        scalars = all(not isinstance(x, (dict, list)) for x in a + b)
+        if len(a) != len(b) and not scalars:
+            return "%s has %d entries in tree, %d expected" % (path, len(a), len(b))
+        if scalars:
+            return "%s: tree %s, expected %s" % (path, json.dumps(a)[:70], json.dumps(b)[:70])
+        for i, (x, y) in enumerate(zip(a, b)):
+            if x != y:
+                return first_diff(x, y, "%s[%d]" % (path, i))
+        return None
+    if a != b:
+        return "%s: tree %s, expected %s" % (path, json.dumps(a)[:70], json.dumps(b)[:70])
+    return None
+
+
+# pocket types each planner copies from the twin (the others are listed in the record's notes
+# as "not copied": a GUN-INT row's DDA twin may also carry a well, a well row's an integral)
+COPIED_TYPES = {"MAG": ("MAGAZINE",), "GUN-INT": ("MAGAZINE",), "WELL": ("MAGAZINE_WELL",)}
+
+
+def mag_pockets(pockets, cls=None):
+    types = COPIED_TYPES.get(cls, MAG_TYPES)
+    return [p for p in pockets if p.get("pocket_type") in types]
+
+
+def allowed_twin_view(rec, twin_pockets, tree_pockets):
+    """(b): bring the DDA twin's magazine pockets and the tree's into the same form by applying
+    only the differences the record documents: ids CDF lacks (`dropped_ids`) left out of the
+    twin, CDF-only ids kept in the well (`well_diff.cdf_added`) taken out of the tree side,
+    `magazine_well` where the record reports a well-volume difference, per-ammo numbers listed
+    in `cap`."""
+    want = copy.deepcopy(twin_pockets)
+    got = copy.deepcopy(tree_pockets)
+    dropped = collections.defaultdict(set)
+    for d in rec["dropped_ids"]:
+        dropped[d["where"]].add(d["id"])
+    for p in want:
+        ar = p.get("ammo_restriction")
+        if isinstance(ar, dict):
+            for a in list(ar):
+                if a in dropped.get("ammo_restriction", ()):
+                    del ar[a]
+        for key in ("item_restriction", "allowed_speedloaders"):
+            if key in p:
+                keep = [i for i in listify(p[key]) if i not in dropped.get(key, ())]
+                if keep:
+                    p[key] = keep
+                else:
+                    del p[key]
+        if p.get("default_magazine") in dropped.get("default_magazine", ()):
+            del p["default_magazine"]
+    want = [p for p in want if p.get("ammo_restriction") != {}]
+    wd = rec.get("well_diff") or {}
+    added = set(wd.get("cdf_added") or [])
+    for p in got:
+        if added and "item_restriction" in p:
+            keep = [i for i in listify(p["item_restriction"]) if i not in added]
+            if keep:
+                p["item_restriction"] = keep
+            else:
+                del p["item_restriction"]
+    if any(str(k).startswith("well-volume") for k in rec["diff"]):
+        for p in want + got:
+            p.pop("magazine_well", None)
+    for row in rec.get("cap") or []:
+        for p in want + got:
+            ar = p.get("ammo_restriction")
+            if isinstance(ar, dict) and row["ammo"] in ar:
+                ar[row["ammo"]] = row["dda"]
+    return want, got
+
+
+def check_record(rec, ctx_chk):
+    """Return (status, rule, reason): status ok | pending | fail. `rule` is the failed check
+    (a effective == emitted, b == DDA twin, c check_definition, d dropped keys) or, for pending
+    rows, the port rule."""
+    iid = rec["id"]
+    item = ctx_chk.cdf.items.get(iid)
+    if item is None:
+        return "fail", "a", "item not found in the checked tree"
+    eff, raw = item["eff"], item["raw"]
+    pockets = pocket_list(eff)
+    emitted = rec["pocket_data"]
+    # keys still present (dropped / renamed-from)
+    present = []
+    for d in rec["dropped_keys"]:
+        site = key_site(raw, eff, d["key"])
+        if site:
+            present.append("%s (%s)" % (d["key"], site))
+    renames = [r for r in rec.get("renamed_keys", []) if r["from"] != r["to"]]
+    for r in renames:
+        if key_site(raw, eff, r["from"]) == "own" and key_site(raw, eff, r["to"]) is None:
+            present.append("%s (own, not renamed to %s)" % (r["from"], r["to"]))
+    n_keys = len(rec["dropped_keys"]) + len(renames)
+    if check_norm(pockets) != check_norm(emitted):
+        untouched = (n_keys > 0 and len(present) == n_keys) or \
+            (n_keys == 0 and not mag_pockets(pockets))
+        if untouched:
+            return "pending", rec["rule"], "not ported yet"
+        return "fail", "a", "effective pocket_data != emitted: %s" % first_diff(
+            check_norm(pockets), check_norm(emitted))
+    # (d) dropped keys
+    if present:
+        return "fail", "d", "dropped key remains: %s" % ", ".join(present)
+    for k, v in rec["set_keys"].items():
+        got = eff.get(k)
+        gd = eff.get("gun_data")
+        if got is None and isinstance(gd, dict):
+            got = gd.get(k)
+        if got != v:
+            return "fail", "d", "key %s is %r, plan sets %r" % (k, got, v)
+    # (c) static check_definition
+    viol = []
+    for p in pockets:
+        viol += check_pocket(p, ctx_chk)
+    if viol:
+        return "fail", "c", "; ".join(viol[:3]) + (" (+%d)" % (len(viol) - 3)
+                                                      if len(viol) > 3 else "")
+    # (b) COPY-TWIN records equal the DDA twin modulo the documented differences
+    twin = ctx_chk.dda.items.get(iid)
+    if rec["action"] == "COPY-TWIN" and rec["has_twin"] and twin is not None \
+            and usable_twin(twin) is not None:
+        want, got = allowed_twin_view(rec, mag_pockets(pocket_list(twin["eff"]), rec["class"]),
+                                      mag_pockets(pockets, rec["class"]))
+        if check_norm(got) != check_norm(want):
+            return "fail", "b", "differs from DDA twin: %s" % first_diff(
+                check_norm(got), check_norm(want))
+    return "ok", rec["rule"], ""
+
+
+def port_targets(records):
+    """Records the port edits: COPY-TWIN / AUTHOR / DROP-KEY / HAND-FALLBACK (authored). A
+    HAND-FALLBACK row that was 'left as it is' has no pocket and no key change: not a target."""
+    return [r for r in records if r["action"] in EDIT_ACTIONS
+            and r.get("fallback") != "left-as-is"]
+
+
+def run_check(args, classes, ids, cdf, dda):
+    base = cdf
+    if args.baseline_cdf and Path(args.baseline_cdf).resolve() != Path(args.cdf).resolve():
+        base = Tree(args.baseline_cdf)
+        for e in base.errors:
+            print("warning: baseline JSON not read: %s" % e, file=sys.stderr)
+    records = build_records(Ctx(base, dda), set(classes), ids)
+    ctx_chk = Ctx(cdf, dda)
+    targets = port_targets(records)
+    tset = set(id(r) for r in targets)
+    rows, counts = [], collections.OrderedDict()
+    for rec in targets:
+        status, rule, reason = check_record(rec, ctx_chk)
+        c = counts.setdefault(rec["class"], collections.Counter())
+        c["targets"] += 1
+        c[status] += 1
+        if status != "ok":
+            rows.append((status, rec["id"], rule, reason, rec["class"]))
+    other = collections.Counter(
+        r["action"] if r.get("fallback") != "left-as-is" else "HAND-FALLBACK(left-as-is)"
+        for r in records if id(r) not in tset)
+    print("check: CDF %s, baseline %s, DDA %s" % (args.cdf, base.root, args.dda))
+    print("%-10s %8s %6s %8s %6s" % ("class", "targets", "ok", "pending", "fail"))
+    tot = collections.Counter()
+    for cls, c in counts.items():
+        print("%-10s %8d %6d %8d %6d" % (cls, c["targets"], c["ok"], c["pending"], c["fail"]))
+        tot.update(c)
+    print("%-10s %8d %6d %8d %6d" % ("all", tot["targets"], tot["ok"], tot["pending"],
+                                     tot["fail"]))
+    print("not port targets (not checked): %s" % dict(other))
+    fails = [r for r in rows if r[0] == "fail"]
+    pend = [r for r in rows if r[0] == "pending"]
+    if fails:
+        print("\nFAILING (%d): id | rule | class | reason" % len(fails))
+        for _s, iid, rule, reason, cls in sorted(fails, key=lambda r: (r[2], r[1])):
+            print("  %s | %s | %s | %s" % (iid, rule, cls, reason))
+    if pend:
+        print("\npending: %d item(s) not ported yet%s" % (
+            len(pend), "" if args.list_pending else " (--list-pending shows the ids)"))
+        if args.list_pending:
+            for _s, iid, rule, _r, cls in sorted(pend, key=lambda r: (r[4], r[1])):
+                print("  %s | %s | %s" % (iid, rule, cls))
+    print("\ncheck result: %s" % ("FAIL" if rows else "ok"))
+    return 1 if rows else 0
+
+
+def dda_hash(dda_root):
+    try:
+        import subprocess
+        res = subprocess.run(["git", "-C", str(dda_root), "rev-parse", "HEAD"],
+                             capture_output=True, text=True, timeout=30)
+        h = res.stdout.strip()
+        return h if res.returncode == 0 and len(h) >= 7 else None
+    except Exception:
+        return None
+
+
+def pocket_out(p):
+    """Pocket as the loader sees it: `//` comment keys removed, everything else as emitted."""
+    return collections.OrderedDict((k, copy.deepcopy(v)) for k, v in p.items()
+                                   if not k.startswith("//"))
+
+
+def golden_item(rec):
+    kept = list((rec.get("well_diff") or {}).get("cdf_added") or [])
+    dropped = list(dict.fromkeys(d["id"] for d in rec["dropped_ids"]))
+    return collections.OrderedDict([
+        ("class", rec["class"]), ("rule", rec["rule"]), ("action", rec["action"]),
+        ("twin", bool(rec["has_twin"])),
+        ("pockets", [pocket_out(p) for p in rec["pocket_data"]]),
+        ("cdf_kept_ids", kept), ("dropped_ids", dropped),
+        ("storage", "STORAGE" in rec["tags"]),
+    ])
+
+
+def write_golden(path, records, dda_root):
+    items = collections.OrderedDict()
+    for rec in sorted(port_targets(records), key=lambda r: r["id"]):
+        items[rec["id"]] = golden_item(rec)
+    doc = collections.OrderedDict([("format", 1), ("dda", dda_hash(dda_root)),
+                                   ("items", items)])
+    with open(str(path), "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(doc, fh, indent=2, ensure_ascii=False, sort_keys=False)
+        fh.write("\n")
+    return len(items)
+
+
 def main():
     here = Path(__file__).resolve().parent.parent
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -2192,14 +2478,19 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="with --apply: write nothing")
     ap.add_argument("--files", default="",
                     help="with --apply: comma separated paths relative to --cdf")
-    ap.add_argument("--check", action="store_true", help="reserved (next chunk)")
+    ap.add_argument("--check", action="store_true",
+                    help="verify the tree under --cdf against the plan (exit 1 on any failure)")
+    ap.add_argument("--baseline-cdf", type=Path, default=None,
+                    help="with --check/--golden: the unported tree the plan is computed from "
+                         "(default: --cdf itself)")
+    ap.add_argument("--list-pending", action="store_true",
+                    help="with --check: list the ids that are not ported yet")
+    ap.add_argument("--golden", type=Path, metavar="FILE",
+                    help="write the golden JSON (the emitted plan of every port target)")
     args = ap.parse_args()
 
-    if args.check:
-        print("--check is not implemented in this chunk", file=sys.stderr)
-        return 2
-    if not args.report and not args.apply:
-        ap.error("nothing to do: use --report or --apply")
+    if not (args.report or args.apply or args.check or args.golden):
+        ap.error("nothing to do: use --report, --apply, --check or --golden")
     classes = [c.strip() for c in args.classes.split(",") if c.strip()] or list(PLANNERS)
     for c in classes:
         if c not in ALL_CLASSES:
@@ -2210,6 +2501,17 @@ def main():
     for side, t in (("CDF", cdf), ("DDA", dda)):
         for e in t.errors:
             print("warning: %s JSON not read: %s" % (side, e), file=sys.stderr)
+    if args.check:
+        return run_check(args, classes, ids, cdf, dda)
+    if args.golden:
+        plan_tree = cdf
+        if args.baseline_cdf and Path(args.baseline_cdf).resolve() != Path(args.cdf).resolve():
+            plan_tree = Tree(args.baseline_cdf)
+        recs = build_records(Ctx(plan_tree, dda), set(classes), ids)
+        n = write_golden(args.golden, recs, args.dda)
+        print("golden: %d item(s) written to %s" % (n, args.golden))
+        if not (args.report or args.apply):
+            return 0
     ctx = Ctx(cdf, dda)
     records = build_records(ctx, set(classes), ids)
 
