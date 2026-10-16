@@ -1367,22 +1367,6 @@ item *game_menus::inv::wield( avatar &you )
                          _( "You have nothing to wield." ) );
 }
 
-class holster_inventory_preset: public weapon_inventory_preset
-{
-    public:
-        holster_inventory_preset( const player &p, const item &holster ) :
-            weapon_inventory_preset( p ), holster( holster ) {
-        }
-
-        bool is_shown( const item *loc ) const override {
-            // a free pocket must accept the item, or store() would have to refuse it
-            return holster.can_holster( *loc, false );
-        }
-
-    private:
-        const item &holster;
-};
-
 namespace
 {
 /**
@@ -1625,33 +1609,6 @@ bool game_menus::inv::select_pocket_and_store( Character &you, item &source, ite
     }
 
     return false;
-}
-
-item *game_menus::inv::holster( player &p, item &holster )
-{
-    const std::string holster_name = holster.tname( 1, false );
-    // F9 (P1f): a holster that holds through pockets only has no holster use action
-    const use_function *holster_use = holster.type->get_use( "holster" );
-    const auto actor = holster_use == nullptr ? nullptr :
-                       dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
-
-    if( !actor ) {
-        const std::string msg = string_format( _( "You can't put anything into your %s." ),
-                                               holster_name );
-        popup( msg, PF_GET_KEY );
-        return nullptr;
-    }
-
-    const std::string title = actor->holster_prompt.empty()
-                              ? _( "Holster item" )
-                              : _( actor->holster_prompt );
-    const std::string hint = string_format( _( "Choose an item to put into your %s" ),
-                                            holster_name );
-
-    return inv_internal( p, holster_inventory_preset( p, holster ), title, 1,
-                         string_format( _( "You have no items you could put into your %s." ),
-                                        holster_name ),
-                         hint );
 }
 
 class saw_barrel_inventory_preset: public weapon_inventory_preset

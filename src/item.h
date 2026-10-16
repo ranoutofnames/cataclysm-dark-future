@@ -1379,7 +1379,6 @@ class item : public location_visitable<item>, public game_object<item>
         bool is_magazine() const;
         bool is_battery() const;
         bool is_ammo_belt() const;
-        bool is_bandolier() const;
         bool is_holster() const;
         bool is_ammo() const;
         // is this armor for a pet creature?  if on_pet is true, returns false if a pet isn't
@@ -1562,12 +1561,6 @@ class item : public location_visitable<item>, public game_object<item>
         bool can_holster( const item &obj, bool ignore = false ) const;
         /** True if a holster pocket of this item has room for another item. */
         bool has_free_holster_pocket() const;
-
-        /** Checks if item is a bandolier and currently capable of storing obj
-         *  @param obj object that we want to holster
-         *  @param ignore only check item is compatible and ignore any existing contents
-         */
-        bool can_put_in_bandolier( const item &obj, bool ignore = false ) const;
 
         /**
          * Callback when a character starts wearing the item. The item is already in the worn
@@ -2338,7 +2331,7 @@ class item : public location_visitable<item>, public game_object<item>
         /** Set of ammo types (@ref ammunition_type) used by item
          *  @param conversion whether to include the effect of any flags or mods which convert the type
          *  @return empty set if item does not use a specific ammo type (and is consequently not reloadable) */
-        const std::set<ammotype> &ammo_types( bool conversion = true ) const;
+        std::set<ammotype> ammo_types( bool conversion = true ) const;
 
         /** Ammo type of an ammo item
          *  @return ammotype of ammo item or a null id if the item is not ammo */

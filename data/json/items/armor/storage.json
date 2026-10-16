@@ -41,20 +41,140 @@
     "rigid": false,
     "encumbrance": 10,
     "max_encumbrance": 55,
-    "storage": "55 L",
     "warmth": 10,
     "material_thickness": 2,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Sheath blade",
-      "holster_msg": "You sheath your %s",
-      "min_volume": "250ml",
-      "max_volume": "2500ml",
-      "multi": 2,
-      "draw_cost": 150,
-      "flags": [ "SHEATH_KNIFE", "SHEATH_SWORD" ]
-    },
-    "flags": [ "BELTED", "WATERPROOF", "ONLY_ONE", "OVERSIZE" ]
+    "use_action": { "type": "holster", "holster_prompt": "Sheath blade", "holster_msg": "You sheath your %s" },
+    "flags": [ "BELTED", "WATERPROOF", "ONLY_ONE", "OVERSIZE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "50 L",
+        "max_contains_weight": "50 kg",
+        "max_item_length": "60 cm",
+        "magazine_well": "12 L",
+        "moves": 450,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "8 kg",
+        "max_item_length": "35 cm",
+        "magazine_well": "1 L",
+        "moves": 450,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "25 cm",
+        "magazine_well": "500 ml",
+        "moves": 450,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "25 cm",
+        "magazine_well": "500 ml",
+        "moves": 450,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "70 cm",
+        "moves": 40,
+        "holster": true,
+        "flag_restriction": [ "SHEATH_KNIFE", "SHEATH_SWORD" ],
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "70 cm",
+        "moves": 40,
+        "holster": true,
+        "flag_restriction": [ "SHEATH_KNIFE", "SHEATH_SWORD" ],
+        "carry": true
+      },
+      {
+        "//": "hydration pouch storage",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3250 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "30 cm",
+        "moves": 500,
+        "description": "Pouch sized for a hydration pack.",
+        "carry": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": { "volume": 8, "chance": 10 },
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": { "volume": 8, "chance": 10 },
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "//": "dedicated tool loops. either a daisy chain, hooking to compression straps, or ice axe loop",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "100 cm",
+        "min_item_length": "40 cm",
+        "moves": 300,
+        "extra_encumbrance": 1,
+        "description": "Secured under compression straps or with a tool loop.",
+        "ripoff": 5,
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "//": "dedicated tool loops. either a daisy chain, hooking to compression straps, or ice axe loop",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "100 cm",
+        "min_item_length": "40 cm",
+        "moves": 300,
+        "extra_encumbrance": 1,
+        "description": "Secured under compression straps or with a tool loop.",
+        "ripoff": 5,
+        "transparent": true,
+        "carry": true
+      }
+    ]
   },
   {
     "id": "backpack_giant",
@@ -403,18 +523,63 @@
     "rigid": false,
     "encumbrance": 4,
     "max_encumbrance": 18,
-    "storage": "18 L",
     "warmth": 5,
     "material_thickness": 3,
     "flags": [ "BELTED", "OVERSIZE" ],
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Sheath golf club",
-      "holster_msg": "You awkwardly sheath your %s",
-      "max_volume": "1 L",
-      "draw_cost": 150,
-      "flags": [ "SHEATH_GOLF" ]
-    }
+    "use_action": { "type": "holster", "holster_prompt": "Sheath golf club", "holster_msg": "You awkwardly sheath your %s" },
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "40 L",
+        "max_contains_weight": "200 kg",
+        "moves": 300,
+        "rigid": true,
+        "max_item_length": "150 cm",
+        "carry": true
+      },
+      {
+        "max_contains_volume": "90 ml",
+        "max_contains_weight": "750 g",
+        "max_item_length": "10 cm",
+        "moves": 200,
+        "carry": true
+      },
+      {
+        "max_contains_volume": "90 ml",
+        "max_contains_weight": "750 g",
+        "max_item_length": "10 cm",
+        "moves": 200,
+        "carry": true
+      },
+      {
+        "max_contains_volume": "1350 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "25 cm",
+        "moves": 300,
+        "carry": true
+      },
+      {
+        "max_contains_volume": "675 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "20 cm",
+        "moves": 300,
+        "carry": true
+      },
+      {
+        "max_contains_volume": "675 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "20 cm",
+        "moves": 300,
+        "carry": true
+      },
+      {
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "300 g",
+        "max_item_length": "15 cm",
+        "moves": 100,
+        "carry": true
+      }
+    ]
   },
   {
     "id": "hide_bag",
@@ -489,8 +654,16 @@
     "encumbrance": 5,
     "warmth": 5,
     "material_thickness": 2,
-    "container_data": { "contains": "10 L", "seals": true, "watertight": true },
-    "flags": [ "OVERSIZE", "BELTED", "WATER_FRIENDLY" ]
+    "flags": [ "OVERSIZE", "BELTED", "WATER_FRIENDLY" ],
+    "pocket_data": [
+      {
+        "max_contains_volume": "10 L",
+        "max_contains_weight": "10 kg",
+        "max_item_volume": "65 ml",
+        "watertight": true,
+        "rigid": true
+      }
+    ]
   },
   {
     "id": "leather_pouch",
@@ -630,22 +803,87 @@
     "rigid": false,
     "encumbrance": 2,
     "max_encumbrance": 9,
-    "storage": "12 L",
     "warmth": 10,
     "material_thickness": 2,
     "valid_mods": [ "resized_large", "resized_small" ],
     "flags": [ "BELTED", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stow gear",
-      "holster_msg": "You stow your %s",
-      "min_volume": "250ml",
-      "max_volume": "2500ml",
-      "multi": 2,
-      "draw_cost": 120,
-      "flags": [ "SHEATH_KNIFE", "SHEATH_SWORD", "SHEATH_AXE", "MAG_COMPACT", "MAG_BULKY", "MAG_BELT", "SPEEDLOADER", "BELT_CLIP" ],
-      "skills": [ "pistol", "smg", "shotgun", "rifle", "launcher" ]
-    }
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "20 L",
+        "max_contains_weight": "40 kg",
+        "max_item_length": "50 cm",
+        "magazine_well": "5 L",
+        "moves": 300,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "7 L",
+        "max_contains_weight": "10 kg",
+        "max_item_length": "30 cm",
+        "moves": 300,
+        "description": "Front pocket.",
+        "carry": true
+      },
+      {
+        "//": "hydration pouch storage",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3250 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "30 cm",
+        "moves": 500,
+        "description": "Pouch sized for a hydration pack.",
+        "carry": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": { "volume": 8, "chance": 10 },
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": { "volume": 8, "chance": 10 },
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "//": "tucked against back",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "150 cm",
+        "min_item_length": "60 cm",
+        "moves": 200,
+        "extra_encumbrance": 10,
+        "description": "Tucked between your back and the backpack.",
+        "ripoff": 3,
+        "transparent": true,
+        "carry": true
+      }
+    ]
   },
   {
     "id": "petpack",
@@ -919,19 +1157,30 @@
     "rigid": false,
     "encumbrance": 9,
     "max_encumbrance": 45,
-    "storage": "60 L",
     "material_thickness": 2,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Sheath blade",
-      "holster_msg": "You sheath your %s",
-      "min_volume": "250ml",
-      "max_volume": "2500ml",
-      "multi": 2,
-      "draw_cost": 120,
-      "flags": [ "SHEATH_KNIFE", "SHEATH_SWORD" ]
-    },
-    "flags": [ "ONLY_ONE", "WATER_FRIENDLY", "STURDY", "BELTED", "OVERSIZE" ]
+    "use_action": { "type": "holster", "holster_prompt": "Sheath blade", "holster_msg": "You sheath your %s" },
+    "flags": [ "ONLY_ONE", "WATER_FRIENDLY", "STURDY", "BELTED", "OVERSIZE" ],
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "max_contains_volume": "60 L" },
+      {
+        "holster": true,
+        "max_contains_volume": "2500ml",
+        "max_item_volume": "2500ml",
+        "min_item_volume": "250ml",
+        "max_item_length": "60 cm",
+        "flag_restriction": [ "SHEATH_KNIFE", "SHEATH_SWORD" ],
+        "moves": 120
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2500ml",
+        "max_item_volume": "2500ml",
+        "min_item_volume": "250ml",
+        "max_item_length": "60 cm",
+        "flag_restriction": [ "SHEATH_KNIFE", "SHEATH_SWORD" ],
+        "moves": 120
+      }
+    ]
   },
   {
     "id": "survivor_duffel_bag",
@@ -973,21 +1222,80 @@
     "rigid": false,
     "encumbrance": 2,
     "max_encumbrance": 12,
-    "storage": "16 L",
     "material_thickness": 2,
     "valid_mods": [ "resized_large", "resized_small" ],
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stow gear",
-      "holster_msg": "You stow your %s",
-      "min_volume": "250ml",
-      "max_volume": "2500ml",
-      "multi": 2,
-      "draw_cost": 120,
-      "flags": [ "SHEATH_KNIFE", "SHEATH_SWORD", "SHEATH_AXE", "MAG_COMPACT", "MAG_BULKY", "MAG_BELT", "SPEEDLOADER", "BELT_CLIP" ],
-      "skills": [ "pistol", "smg", "shotgun", "rifle", "launcher" ]
-    },
-    "flags": [ "WATER_FRIENDLY", "STURDY", "BELTED", "ALLOWS_WINGS" ]
+    "flags": [ "WATER_FRIENDLY", "STURDY", "BELTED", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "25 L",
+        "max_contains_weight": "32 kg",
+        "max_item_length": "50 cm",
+        "magazine_well": "5 L",
+        "moves": 300,
+        "carry": true
+      },
+      {
+        "//": "water bottle pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "510 ml",
+        "max_contains_weight": "1 kg",
+        "max_item_length": "24 cm",
+        "min_item_length": "18 cm",
+        "moves": 80,
+        "description": "Small pocket for a water bottle.",
+        "ripoff": 2,
+        "carry": true
+      },
+      {
+        "//": "dedicated tool loops. either a daisy chain, hooking to compression straps, or ice axe loop",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "100 cm",
+        "min_item_length": "40 cm",
+        "moves": 300,
+        "extra_encumbrance": 1,
+        "description": "Secured under compression straps or with a tool loop.",
+        "ripoff": 5,
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": { "volume": 8, "chance": 60 },
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": { "volume": 8, "chance": 60 },
+        "transparent": true,
+        "carry": true
+      }
+    ]
   },
   {
     "id": "survivor_rucksack",

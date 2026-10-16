@@ -1304,20 +1304,18 @@ ret_val<item_pocket::contain_code> item_pocket::is_compatible( const item &it ) 
                 _( "holster does not accept this item type or form factor" ) );
     }
 
-    // CDF: owner answer 2 item 1 and item 2: BN holsters accept guns by skill and refuse active
-    // items (DDA holster_actor::store), until P1f ports the DDA holster data
-    const bool by_skill = it.is_gun() && !data->skill_restriction.empty() &&
-                          data->skill_restriction.count( it.gun_skill() ) != 0;
+    // CDF: P-2 (plan P1f): holster pockets of items with the holster use action refuse active
+    // items (DDA holster_actor::store); the BN skill gate is gone (D19)
     if( data->no_active_items && it.is_active() ) {
         return ret_val<item_pocket::contain_code>::make_failure( contain_code::ERR_FLAG,
                 _( "it is active" ) );
     }
 
     if( !data->item_id_restriction.empty() || !data->get_flag_restrictions().empty() ||
-        !data->material_restriction.empty() || !data->skill_restriction.empty() ) {
+        !data->material_restriction.empty() ) {
         if( data->item_id_restriction.count( it.typeId() ) == 0 &&
             !it.has_any_flag( data->get_flag_restrictions() ) &&
-            !data->material_restriction.count( it.get_base_material().ident() ) && !by_skill ) {
+            !data->material_restriction.count( it.get_base_material().ident() ) ) {
             return ret_val<item_pocket::contain_code>::make_failure( contain_code::ERR_FLAG,
                     _( "holster does not accept this item type or form factor" ) );
         }
@@ -1595,7 +1593,7 @@ detached_ptr<item> move_to_parent_pocket_recursive( const tripoint_bub_ms &pos,
         detached_ptr<item> &&it, item *holder, Character *carrier )
 {
     // walk up through the containers holding `holder`
-    while( holder != nullptr && holder->where() == item_location_type::container ) {
+    while( holder != nullptr ) {
         item *grand = holder->parent_item();
         if( grand == nullptr ) {
             break;

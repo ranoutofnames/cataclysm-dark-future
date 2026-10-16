@@ -19,7 +19,8 @@
     "loudness": 0,
     "speed": 100,
     "count": 4,
-    "dont_recover_one_in": 5
+    "dont_recover_one_in": 5,
+    "flags": [ "SHEATH_SPEAR" ]
   },
   {
     "type": "AMMO",
@@ -41,7 +42,8 @@
     "loudness": 0,
     "speed": 100,
     "count": 4,
-    "dont_recover_one_in": 3
+    "dont_recover_one_in": 3,
+    "flags": [ "SHEATH_SPEAR" ]
   },
   {
     "type": "AMMO",
@@ -63,7 +65,8 @@
     "loudness": 0,
     "speed": 100,
     "count": 4,
-    "dont_recover_one_in": 15
+    "dont_recover_one_in": 15,
+    "flags": [ "SHEATH_SPEAR" ]
   },
   {
     "id": "airspeargun",

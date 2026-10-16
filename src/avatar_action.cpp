@@ -1585,32 +1585,9 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
         use_loc = false;
     }
 
-    if( it->is_holster() ) {
-        // F9 (P1f): a holster that holds through pockets only has no holster use action
-        const use_function *holster_use = it->type->get_use( "holster" );
-        const auto ptr = holster_use == nullptr ? nullptr :
-                         dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
-        if( ptr != nullptr && it->has_free_holster_pocket() ) {
-            item *loc = game_menus::inv::holster( u, *it );
-
-            if( !loc ) {
-                u.add_msg_if_player( _( "Never mind." ) );
-                return;
-            }
-            ptr->store_or_return( u, *it, loc->detach() );
-            return;
-        }
-    }
-
-    // for bandoliers we currently defer to iuse_actor methods
-    if( it->is_bandolier() ) {
-        const use_function *bandolier_use = it->type->get_use( "bandolier" );
-        const auto ptr = bandolier_use == nullptr ? nullptr :
-                         dynamic_cast<const bandolier_actor *>( bandolier_use->get_actor_ptr() );
-        if( ptr != nullptr ) {
-            ptr->reload( u, *it );
-            return;
-        }
+    // per DDA game.cpp:7124: for holsters try to reload any contained item
+    if( it->type->can_use( "holster" ) && it->contents.num_item_stacks() == 1 ) {
+        it = &it->contents.front();
     }
 
     item_reload_option opt = favorite_ammo_or_select( u, *it, empty, prompt );
@@ -1628,7 +1605,7 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
 
         u.assign_activity( activity_id( "ACT_RELOAD" ), moves, opt.qty() );
         if( use_loc ) {
-            u.activity->targets.emplace_back( loc );
+            u.activity->targets.emplace_back( *it );
         } else {
             u.activity->targets.emplace_back( opt.target );
         }

@@ -727,7 +727,8 @@
     "bashing": 6,
     "cutting": 8,
     "to_hit": -1,
-    "qualities": [ [ "BUTCHER", -38 ] ]
+    "qualities": [ [ "BUTCHER", -38 ] ],
+    "flags": [ "SHEATH_KNIFE" ]
   },
   {
     "type": "GENERIC",

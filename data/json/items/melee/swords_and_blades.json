@@ -15,7 +15,7 @@
     "cutting": 10,
     "to_hit": 1,
     "price_postapoc": "50 cent",
-    "flags": [ "SHEATH_SWORD", "STAB" ],
+    "flags": [ "SHEATH_SWORD", "STAB", "BELT_CLIP" ],
     "techniques": [ "WBLOCK_1" ]
   },
   {
@@ -193,7 +193,7 @@
     "color": "dark_gray",
     "techniques": [ "WBLOCK_1" ],
     "qualities": [ [ "CUT", 1 ], [ "SAW_W", 1 ], [ "SAW_M", 1 ], [ "BUTCHER", 7 ] ],
-    "flags": [ "STAB", "SHEATH_SWORD" ]
+    "flags": [ "STAB", "SHEATH_SWORD", "SHEATH_KNIFE" ]
   },
   {
     "id": "knife_rm42",
@@ -764,7 +764,7 @@
     "color": "yellow",
     "techniques": [ "WBLOCK_2", "DEF_DISARM" ],
     "qualities": [ [ "CUT", 1 ], [ "BUTCHER", 8 ] ],
-    "flags": [ "DURABLE_MELEE" ]
+    "flags": [ "DURABLE_MELEE", "SHEATH_SWORD" ]
   },
   {
     "id": "dao",

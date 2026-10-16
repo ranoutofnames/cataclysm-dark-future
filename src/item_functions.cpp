@@ -14,7 +14,8 @@ namespace item_funcs
 
 bool can_be_unloaded( const item &itm )
 {
-    if( ( itm.is_container() || itm.is_bandolier() || itm.type->can_use( "holster" ) ) &&
+    if( ( itm.is_container() || !itm.get_container_pockets().empty() ||
+          itm.type->can_use( "holster" ) ) &&
         !itm.contents.empty() &&
         itm.can_unload_liquid() ) {
         return true;

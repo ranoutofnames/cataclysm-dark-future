@@ -763,16 +763,20 @@
     "covers": [ "torso" ],
     "coverage": 5,
     "material_thickness": 1,
-    "use_action": {
-      "type": "holster",
-      "max_volume": "10 L",
-      "min_volume": "1500 ml",
-      "draw_cost": 150,
-      "flags": [ "SHEATH_SWORD", "SHEATH_AXE", "SHEATH_SPEAR" ],
-      "skills": [ "smg", "shotgun", "rifle", "launcher" ]
-    },
+    "use_action": { "type": "holster" },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "POWERARMOR_MOD", "COMPACT", "BELTED", "ONLY_ONE" ]
+    "flags": [ "POWERARMOR_MOD", "COMPACT", "BELTED", "ONLY_ONE" ],
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "10 L",
+        "max_item_volume": "10 L",
+        "min_item_volume": "1500 ml",
+        "max_item_length": "133 cm",
+        "flag_restriction": [ "SHEATH_SWORD", "SHEATH_AXE", "SHEATH_SPEAR" ],
+        "moves": 150
+      }
+    ]
   },
   {
     "id": "power_armor_leg_hardpoint",
@@ -790,15 +794,19 @@
     "covers": [ "leg_either" ],
     "coverage": 5,
     "material_thickness": 1,
-    "use_action": {
-      "type": "holster",
-      "max_volume": "3 L",
-      "min_volume": "250 ml",
-      "flags": [ "SHEATH_KNIFE", "SHEATH_SWORD", "BELT_CLIP" ],
-      "skills": [ "pistol", "smg", "shotgun", "rifle", "launcher" ]
-    },
+    "use_action": { "type": "holster" },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "POWERARMOR_MOD", "COMPACT", "STURDY", "WAIST" ]
+    "flags": [ "POWERARMOR_MOD", "COMPACT", "STURDY", "WAIST" ],
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "3 L",
+        "max_item_volume": "3 L",
+        "min_item_volume": "250 ml",
+        "max_item_length": "30 cm",
+        "flag_restriction": [ "SHEATH_KNIFE", "SHEATH_SWORD", "BELT_CLIP" ]
+      }
+    ]
   },
   {
     "id": "power_armor_chest_rig",
@@ -818,18 +826,29 @@
     "coverage": 5,
     "material_thickness": 2,
     "//": "Able to hold up to a fully-loaded .308 or .50 BMG ammo belt",
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 2,
-      "min_volume": "250 ml",
-      "max_volume": "2500 ml",
-      "draw_cost": 80,
-      "flags": [ "MAG_COMPACT", "MAG_BULKY", "MAG_BELT" ]
-    },
+    "use_action": { "type": "holster", "holster_prompt": "Stash ammo", "holster_msg": "You stash your %s." },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "POWERARMOR_MOD", "COMPACT", "STURDY", "WAIST" ]
+    "flags": [ "POWERARMOR_MOD", "COMPACT", "STURDY", "WAIST" ],
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "2500 ml",
+        "max_item_volume": "2500 ml",
+        "min_item_volume": "250 ml",
+        "max_item_length": "240 mm",
+        "flag_restriction": [ "MAG_COMPACT", "MAG_BULKY", "MAG_BELT" ],
+        "moves": 80
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2500 ml",
+        "max_item_volume": "2500 ml",
+        "min_item_volume": "250 ml",
+        "max_item_length": "240 mm",
+        "flag_restriction": [ "MAG_COMPACT", "MAG_BULKY", "MAG_BELT" ],
+        "moves": 80
+      }
+    ]
   },
   {
     "id": "power_armor_back_holster",

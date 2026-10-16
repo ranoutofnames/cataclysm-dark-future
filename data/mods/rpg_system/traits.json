@@ -441,6 +441,7 @@
     "valid": false,
     "purifiable": false,
     "player_display": true,
+    "packmule_modifier": 1.5,
     "enchantments": [ "ENCH_RPG_PACK_RAT" ]
   },
   {

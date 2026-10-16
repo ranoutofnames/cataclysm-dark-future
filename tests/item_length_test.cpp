@@ -131,10 +131,15 @@ TEST_CASE("derived item length never exceeds the default pocket limit", "[item][
                     continue;
                 }
                 if (t->volume <= pd.raw_volume_capacity) {
-                    // DDA: the loader default is cbrt( capacity ) * sqrt( 2 ), or the explicit value
-                    if (pd.max_item_length <= 0_mm) {
-                        continue;
-                    }
+                    // DDA: the loader default is cbrt( capacity ) * sqrt( 2 ), or the explicit
+                    // value
+                    if (pd.max_item_length <= 0_mm) { continue; }
+                    // CDF: DDA data states explicit limits (a 1 mm liquid-only hat pocket); only
+                    // the loader-derived default is promised to fit every derived length.
+                    pocket_data derived = pd;
+                    derived.apply_default_length();
+                    if (derived.max_item_length != pd.max_item_length) { continue; }
+                    CAPTURE(t->get_id(), c->get_id(), t->longest_side, pd.max_item_length);
                     REQUIRE(t->longest_side <= pd.max_item_length);
                     ++checked;
                 }

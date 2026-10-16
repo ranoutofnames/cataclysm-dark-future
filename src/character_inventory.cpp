@@ -810,9 +810,16 @@ units::volume Character::volume_capacity( const std::function<bool( const item_p
     if( !primary_weapon().is_null() ) {
         volume_capacity += primary_weapon().get_volume_capacity( include_pocket );
     }
+    units::volume worn_capacity = 0_ml;
     for( const item * const &worn_it : worn ) {
-        volume_capacity += worn_it->get_volume_capacity( include_pocket );
+        worn_capacity += worn_it->get_volume_capacity( include_pocket );
     }
+    // CDF: packmule_modifier scales the capacity of worn containers (BN behaviour, kept on top of DDA's pockets)
+    const double packmule = mutation_value( "packmule_modifier" );
+    if( packmule != 1.0 && worn_capacity < units::volume_max / 2 ) {
+        worn_capacity = units::from_milliliter( static_cast<int>( worn_capacity.value() * packmule ) );
+    }
+    volume_capacity += worn_capacity;
     // CDF: the body storage (bionic and shell compartments)
     if( const item *storage = get_body_storage() ) {
         volume_capacity += storage->get_volume_capacity( include_pocket );

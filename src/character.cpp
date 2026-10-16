@@ -3511,7 +3511,9 @@ units::volume Character::volume_capacity_reduced_by(
         return units::volume_max;
     }
 
-    // DDA volume_capacity (D8: no packmule multiplier), less what leaves with excluded items
+    // DDA volume_capacity, less what leaves with excluded items
+    // CDF: packmule_modifier scales the worn pockets, so the excluded ones are scaled the same way
+    const double packmule = mutation_value( "packmule_modifier" );
     units::volume ret = volume_capacity();
     if( !without.empty() ) {
         for( const item * const &worn_it : worn ) {
@@ -3520,7 +3522,7 @@ units::volume Character::volume_capacity_reduced_by(
             }
             for( const item_pocket &pocket : worn_it->contents.get_pockets() ) {
                 if( is_carried_pocket( pocket ) ) {
-                    ret -= pocket.volume_capacity();
+                    ret -= units::from_milliliter( static_cast<int>( pocket.volume_capacity().value() * packmule ) );
                 }
             }
         }
@@ -8985,7 +8987,7 @@ detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std:
             }
             opts.emplace_back( dispose_option{
                 string_format( _( "Store in %s" ), e->tname() ), true, e->invlet,
-                item_store_cost( *obj, *e, false, ptr->draw_cost ),
+                item_store_cost( *obj, *e, false, e->insert_cost( *obj ) ),
                 [this, ptr, &e, &obj] {
                     return ptr->store( *this->as_player(), *e, std::move( obj ) );
                 }
@@ -13307,10 +13309,6 @@ int Character::item_reload_cost( const item &it, item &ammo, int qty ) const
         /** @EFFECT_STR over 10 reduces reload time of some weapons */
         /** maximum reduction down to 25% of reload rate */
         mv *= std::max<float>( 10.0f / std::max<float>( 10.0f, get_str() ), 0.25f );
-    } else if( it.has_flag( flag_STR_DRAW ) && it.get_min_str() > 1 ) {
-        // Threshold depends on str_req of the weapon instead of a fixed value
-        // Allow understrength characters to draw slower since base reload rate is about the same for all bows
-        mv *= std::max<float>( it.get_min_str() / std::max<float>( 1, get_str() ), 0.25f );
     }
 
     return std::max( mv, 25 );

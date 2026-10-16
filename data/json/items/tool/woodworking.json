@@ -141,7 +141,7 @@
     "color": "brown",
     "qualities": [ [ "AXE", 2 ], [ "BUTCHER", -44 ] ],
     "techniques": [ "WBLOCK_1", "BRUTAL", "SWEEP" ],
-    "flags": [ "NONCONDUCTIVE", "SHEATH_AXE" ]
+    "flags": [ "NONCONDUCTIVE", "SHEATH_AXE", "BELT_CLIP" ]
   },
   {
     "id": "hatchet",
@@ -236,7 +236,7 @@
     "symbol": ";",
     "color": "brown",
     "qualities": [ [ "SAW_W", 1 ], [ "BUTCHER", -56 ] ],
-    "flags": [ "BELT_CLIP" ]
+    "flags": [ "BELT_CLIP", "SHEATH_AXE" ]
   },
   {
     "id": "primitive_axe",

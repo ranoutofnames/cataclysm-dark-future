@@ -104,14 +104,12 @@ TEST_CASE("pocket_data loads DDA-format JSON", "[item][pocket]") {
             "max_contains_volume": "1 L",
             "min_item_volume": "100 ml",
             "flag_restriction": [ "SHEATH_KNIFE" ],
-            "item_restriction": [ "rock" ],
-            "skill_restriction": [ "pistol" ]
+            "item_restriction": [ "rock" ]
         })");
         CHECK(data.holster);
         CHECK(data.min_item_volume == 100_ml);
         CHECK(data.get_flag_restrictions().contains(flag_id("SHEATH_KNIFE")));
         CHECK(data.item_id_restriction.contains(itype_id("rock")));
-        CHECK(data.skill_restriction.contains(skill_id("pistol")));
         CHECK(data.has_item_restrictions());
     }
 
@@ -395,15 +393,15 @@ TEST_CASE("can_contain reports why an item doesn't fit", "[item][pocket]") {
         tight_pocket.insert(item::spawn(itype_id("water_clean"), calendar::turn, 1));
         CHECK(contain_code_of(tight_pocket, *rock) == code::ERR_LIQUID);
     }
-    SECTION("flag and skill restrictions") {
+    SECTION("flag restrictions") {
         pocket_data data;
         data.max_item_length = 2_km; // J2: C++-built pockets have no default length
         data.add_flag_restriction(flag_id("SHEATH_KNIFE"));
-        data.skill_restriction.insert(skill_id("pistol"));
         item_pocket pocket(&*owner, &data);
         CHECK(contain_code_of(pocket, *rock) == code::ERR_FLAG);
+        // P1f: the BN skill gate is gone (D19), a pistol needs a matching flag like any item
         detached_ptr<item> pistol = item::spawn(itype_id("glock_19"));
-        CHECK(contain_code_of(pocket, *pistol) == code::SUCCESS);
+        CHECK(contain_code_of(pocket, *pistol) == code::ERR_FLAG);
         detached_ptr<item> knife = item::spawn(itype_id("knife_combat"));
         CHECK(knife->has_flag(flag_id("SHEATH_KNIFE")));
         CHECK(contain_code_of(pocket, *knife) == code::SUCCESS);
@@ -668,8 +666,8 @@ TEST_CASE("holsters and bandoliers decide through their pockets", "[item][pocket
         detached_ptr<item> bandolier = item::spawn(itype_id("bandolier_shotgun"));
         detached_ptr<item> shells = item::spawn(itype_id("shot_00"), calendar::turn, 6);
         detached_ptr<item> pistol = item::spawn(itype_id("glock_19"));
-        CHECK(bandolier->can_put_in_bandolier(*shells));
-        CHECK_FALSE(bandolier->can_put_in_bandolier(*pistol));
+        CHECK(bandolier->can_contain(*shells).success());
+        CHECK_FALSE(bandolier->can_contain(*pistol).success());
     }
 }
 

@@ -2887,24 +2887,9 @@ std::unique_ptr<iuse_actor> holster_actor::clone() const
 
 void holster_actor::load( const JsonObject &obj )
 {
+    // per DDA iuse_actor.cpp:2897: only the prompt and the message; pockets are item data
     holster_prompt = obj.get_string( "holster_prompt", "" );
     holster_msg = obj.get_string( "holster_msg", "" );
-    assign( obj, "max_volume", max_volume );
-    if( !assign( obj, "min_volume", min_volume ) ) {
-        min_volume = max_volume / 3;
-    }
-
-    assign( obj, "max_weight", max_weight );
-    multi      = obj.get_int( "multi",      multi );
-    draw_cost  = obj.get_int( "draw_cost",  draw_cost );
-
-    auto tmp = obj.get_string_array( "skills" );
-    std::transform( tmp.begin(), tmp.end(), std::back_inserter( skills ),
-    []( const std::string & elem ) {
-        return skill_id( elem );
-    } );
-
-    flags = obj.get_string_array( "flags" );
 }
 
 detached_ptr<item> holster_actor::store( player &p, item &holster, detached_ptr<item> &&obj ) const
@@ -2974,8 +2959,9 @@ detached_ptr<item> holster_actor::store( player &p, item &holster, detached_ptr<
 
     const std::string obj_name = obj->tname();
     // Holsters ignore penalty effects (e.g. GRABBED) when determining number of moves to consume
+    const int cost = holster.insert_cost( *obj );
     const ret_val<bool> stored = character_funcs::store_in_container( p, holster, std::move( obj ),
-                                 false, draw_cost );
+                                 false, cost );
     if( !stored.success() ) {
         p.add_msg_if_player( m_info, stored.str() );
         // try_put_in leaves obj untouched when it refuses
@@ -3013,8 +2999,15 @@ int holster_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) con
     int pos = 0;
     std::vector<std::string> opts;
 
-    if( it.has_free_holster_pocket() ) {
-        std::string prompt = holster_prompt.empty() ? _( "Holster item" ) : _( holster_prompt );
+    // per DDA iuse_actor.cpp:2945: the insert entry is offered. CDF: not when every container
+    // pocket is a full holster pocket, so a filled single-slot holster still draws directly
+    const bool can_insert = std::ranges::any_of( it.contents.get_pockets(),
+    []( const item_pocket & pocket ) {
+        return pocket.is_type( pocket_type::CONTAINER ) && ( !pocket.is_holster() ||
+                !pocket.holster_full() );
+    } );
+    if( can_insert ) {
+        const std::string prompt = holster_prompt.empty() ? _( "Holster item" ) : _( holster_prompt );
         opts.push_back( prompt );
         pos = -1;
     }
@@ -3035,8 +3028,10 @@ int holster_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) con
             if( opts.size() != it.contents.num_item_stacks() ) {
                 ret--;
             }
-            auto iter = std::next( top_contents.begin(), ret );
-            internal_item = *iter;
+            // per DDA iuse_actor.cpp:2965: the insert entry selects no item
+            if( ret >= 0 ) {
+                internal_item = *std::next( top_contents.begin(), ret );
+            }
         }
     } else if( !it.contents.empty() ) {
         internal_item = &it.contents.front();
@@ -3053,7 +3048,7 @@ int holster_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) con
         int cost;
         if( p.is_worn( it ) ) {
             penalties = false;
-            cost = draw_cost;
+            cost = it.obtain_cost( *internal_item );
         } else {
             penalties = true;
             cost = INVENTORY_HANDLING_PENALTY;
@@ -3061,13 +3056,11 @@ int holster_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) con
         character_funcs::try_wield_contents( p, it, internal_item, penalties, cost );
 
     } else {
-        item *loc = game_menus::inv::holster( p, it );
-
-        if( !loc ) {
-            p.add_msg_if_player( _( "Never mind." ) );
+        // per DDA iuse_actor.cpp:3003
+        if( !p.is_avatar() ) {
             return 0;
         }
-        store_or_return( p, it, loc->detach() );
+        game_menus::inv::insert_items( it );
     }
 
     return 0;
@@ -3075,191 +3068,8 @@ int holster_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) con
 
 void holster_actor::info( const item &, std::vector<iteminfo> &dump ) const
 {
-    std::string message = vgettext( "Can be activated to store a suitable item.",
-                                    "Can be activated to store suitable items.", multi );
-    dump.emplace_back( "DESCRIPTION", message );
-    dump.emplace_back( "TOOL", _( "Num items: " ), "<num>", iteminfo::no_flags, multi );
-    dump.emplace_back( "TOOL", _( "Item volume: Min: " ),
-                       string_format( "<num> %s", volume_units_abbr() ),
-                       iteminfo::is_decimal | iteminfo::no_newline | iteminfo::lower_is_better,
-                       convert_volume( min_volume.value() ) );
-    dump.emplace_back( "TOOL", _( "  Max: " ),
-                       string_format( "<num> %s", volume_units_abbr() ),
-                       iteminfo::is_decimal,
-                       convert_volume( max_volume.value() ) );
-
-    if( max_weight > 0_gram ) {
-        dump.emplace_back( "TOOL", _( "Max item weight: " ),
-                           string_format( _( "<num> %s" ), weight_units() ),
-                           iteminfo::is_decimal,
-                           convert_weight( max_weight ) );
-    }
-}
-
-units::volume holster_actor::max_stored_volume() const
-{
-    return max_volume * multi;
-}
-
-std::unique_ptr<iuse_actor> bandolier_actor::clone() const
-{
-    return std::make_unique<bandolier_actor>( *this );
-}
-
-void bandolier_actor::load( const JsonObject &obj )
-{
-    capacity = obj.get_int( "capacity", capacity );
-    ammo.clear();
-    for( auto &e : obj.get_tags( "ammo" ) ) {
-        ammo.insert( ammotype( e ) );
-    }
-
-    draw_cost = obj.get_int( "draw_cost", draw_cost );
-}
-
-std::string bandolier_actor::check() const
-{
-    std::string res = "";
-    for( const auto &ammotype : ammo ) {
-        if( !ammotype.is_valid() ) {
-            res += string_format( "invalid ammotype %s\n", ammotype.str() );
-        }
-    }
-    return res;
-}
-
-void bandolier_actor::info( const item &, std::vector<iteminfo> &dump ) const
-{
-    if( !ammo.empty() ) {
-        auto str = enumerate_as_string( ammo.begin(), ammo.end(),
-        [&]( const ammotype & a ) {
-            return string_format( "<stat>%s</stat>", a->name() );
-        }, enumeration_conjunction::or_ );
-
-        dump.emplace_back( "TOOL", string_format(
-                               vgettext( "Can be activated to store a single round of ",
-                                         "Can be activated to store up to <stat>%i</stat> rounds of ", capacity ),
-                               capacity ),
-                           str );
-    }
-}
-
-bool bandolier_actor::is_valid_ammo_type( const itype &t ) const
-{
-    if( !t.ammo ) {
-        return false;
-    }
-    return ammo.contains( t.ammo->type );
-}
-
-bool bandolier_actor::can_store( const item &bandolier, const item &obj ) const
-{
-    return bandolier.can_put_in_bandolier( obj );
-}
-
-bool bandolier_actor::reload( player &p, item &obj ) const
-{
-    if( !obj.is_bandolier() ) {
-        debugmsg( "Invalid item passed to bandolier_actor" );
-        return false;
-    }
-    // find all nearby compatible ammo (matching type currently contained if appropriate)
-    auto found = p.nearby( [&]( const item * e, const item * parent ) {
-        return parent != &obj && can_store( obj, *e );
-    } );
-
-    if( found.empty() ) {
-        p.add_msg_if_player( m_bad, _( "No matching ammo for the %1$s" ), obj.type_name() );
-        return false;
-    }
-
-    // convert these into reload options and display the selection prompt
-    std::vector<item_reload_option> opts;
-    std::transform( std::make_move_iterator( found.begin() ), std::make_move_iterator( found.end() ),
-    std::back_inserter( opts ), [&]( item * e ) {
-        return item_reload_option( &p, &obj, &obj, *e );
-    } );
-
-    auto sel = reload_ui::select_ammo( p, obj, std::move( opts ) );
-    if( !sel ) {
-        return false; // canceled menu
-    }
-
-    p.mod_moves( -sel.moves() );
-
-    // add or stack the ammo dependent upon existing contents
-    if( obj.contents.empty() ) {
-        obj.put_in( sel.ammo->split( sel.qty() ) );
-    } else {
-        obj.contents.front().charges += sel.qty();
-        if( sel.ammo->charges > sel.qty() ) {
-            sel.ammo->charges -= sel.qty();
-        } else {
-            sel.ammo->detach();
-        }
-    }
-
-    p.add_msg_if_player( _( "You store the %1$s in your %2$s" ),
-                         obj.contents.front().tname( sel.qty() ),
-                         obj.type_name() );
-
-    return true;
-}
-
-int bandolier_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) const
-{
-    if( p.is_wielding( it ) ) {
-        p.add_msg_if_player( _( "You need to unwield your %s before using it." ),
-                             it.type_name() );
-        return 0;
-    }
-
-    uilist menu;
-    menu.text = _( "Store ammo" );
-
-    std::vector<std::function<void()>> actions;
-
-    menu.addentry( -1, it.contents.empty() || it.contents.front().charges < capacity,
-                   'r', _( "Store ammo in %s" ), it.type_name() );
-
-    actions.emplace_back( [&] { reload( p, it ); } );
-
-    menu.addentry( -1, !it.contents.empty(), 'u', _( "Unload %s" ), it.type_name() );
-
-    actions.emplace_back( [&] {
-
-        it.contents.front().attempt_detach( [&p]( detached_ptr<item> &&it )
-        {
-            it = p.i_add_or_drop( std::move( it ) );
-            if( it ) {
-                p.add_msg_if_player( _( "Never mind." ) );
-            }
-            return std::move( it );
-        } );
-    } );
-
-    menu.query();
-    if( menu.ret >= 0 ) {
-        actions[ menu.ret ]();
-    }
-
-    return 0;
-}
-
-units::volume bandolier_actor::max_stored_volume() const
-{
-    // This is relevant only for bandoliers with the non-rigid flag
-
-    // Find all valid ammo
-    auto ammo_types = item_controller->find( [&]( const itype & t ) {
-        return is_valid_ammo_type( t );
-    } );
-    // Figure out which has the greatest volume and calculate on that basis
-    units::volume max_ammo_volume{};
-    for( const auto *ammo_type : ammo_types ) {
-        max_ammo_volume = std::max( max_ammo_volume, ammo_type->volume / ammo_type->stack_size );
-    }
-    return max_ammo_volume * capacity;
+    // per DDA iuse_actor.cpp:3009
+    dump.emplace_back( "DESCRIPTION", _( "Can be activated to store suitable items." ) );
 }
 
 std::unique_ptr<iuse_actor> ammobelt_actor::clone() const

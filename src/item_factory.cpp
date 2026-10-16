@@ -343,39 +343,45 @@ static void finalize_armor_portions( itype &obj )
         portion.max_encumber = from_sub_data ? summed : full_encumbrance( portion );
     }
 
-    // Precalc hardness and comfort. Uncomfortable material supersedes softness (all rigid
-    // materials are assumed to be uncomfy).
-    bool rigid = false;
-    bool comfortable = false;
-    for( const material_id &mat : obj.materials ) {
-        if( !mat.is_valid() ) {
-            continue;
+    // Precalc hardness and comfort per portion (DDA item_factory.cpp:1138-1148). Portions
+    // without materials of their own take the item materials, covering 100% (DDA default).
+    const auto portion_flags = [&obj]( armor_portion_data & portion ) {
+        if( portion.materials.empty() ) {
+            for( const material_id &mat : obj.materials ) {
+                portion.materials.push_back( { mat, 100 } );
+            }
         }
-        if( mat->soft() ) {
-            comfortable = true;
-        } else {
-            rigid = true;
+        portion.rigid = false;
+        portion.comfortable = false;
+        // Uncomfortable material supersedes softness (all rigid materials are assumed to be uncomfy).
+        for( const part_material &m : portion.materials ) {
+            if( !m.id.is_valid() || m.cover <= islot_armor::test_threshold ) {
+                continue;
+            }
+            if( m.id->soft() ) {
+                portion.comfortable = true;
+            } else {
+                portion.rigid = true;
+            }
+            if( m.id->uncomfortable() ) {
+                portion.comfortable = false;
+            }
         }
-        if( mat->uncomfortable() ) {
-            comfortable = false;
+        // anything on a non traditional clothing layer can't be "rigid" as well since it's
+        // storage pouches and stuff
+        if( obj.layer != UNDERWEAR_LAYER && obj.layer != REGULAR_LAYER && obj.layer != OUTER_LAYER ) {
+            portion.rigid = false;
         }
-    }
-    // anything on a non traditional clothing layer can't be "rigid" as well since it's storage
-    // pouches and stuff
-    if( obj.layer != UNDERWEAR_LAYER && obj.layer != REGULAR_LAYER && obj.layer != OUTER_LAYER ) {
-        rigid = false;
-    }
+    };
     bool all_rigid = !armor.data.empty();
     bool all_comfortable = !armor.data.empty();
     for( armor_portion_data &portion : armor.data ) {
-        portion.rigid = rigid;
-        portion.comfortable = comfortable;
+        portion_flags( portion );
         all_rigid = all_rigid && portion.rigid;
         all_comfortable = all_comfortable && portion.comfortable;
     }
     for( armor_portion_data &sub : armor.sub_data ) {
-        sub.rigid = rigid;
-        sub.comfortable = comfortable;
+        portion_flags( sub );
     }
     armor.rigid = all_rigid;
     armor.comfortable = all_comfortable;
@@ -868,6 +874,15 @@ void Item_factory::synthesize_pockets( itype &obj ) const
                 pocket._no_reload = obj.has_flag( flag_NO_RELOAD );
                 pocket.name = obj.name;
             }
+            // CDF: P-2 (plan P1f). A holster pocket of an item with the holster use action
+            // refuses active items, as BN holsters do; DDA enforces it only in holster_actor.
+            if( obj.get_use( "holster" ) != nullptr ) {
+                for( pocket_data &pocket : obj.pockets ) {
+                    if( pocket.holster ) {
+                        pocket.no_active_items = true;
+                    }
+                }
+            }
             finalize_armor_portions( obj );
         }
     } finish{ obj };
@@ -918,53 +933,6 @@ void Item_factory::synthesize_pockets( itype &obj ) const
     }
 
     add_molle( obj );
-
-    // BN holster use_action: one holster pocket per `multi`.
-    if( const use_function *use = obj.get_use( "holster" ) ) {
-        const auto *actor = dynamic_cast<const holster_actor *>( use->get_actor_ptr() );
-        if( actor != nullptr ) {
-            pocket_data pocket( pocket_type::CONTAINER );
-            pocket.rigid = obj.rigid;
-            pocket.holster = true;
-            pocket.raw_volume_capacity = actor->max_volume;
-            // CDF: BN holsters have no length limit (D3: keep today's behaviour)
-            pocket.max_item_length = 2_km;
-            pocket.max_item_volume = actor->max_volume;
-            pocket.min_item_volume = actor->min_volume;
-            if( actor->max_weight > 0_gram ) {
-                pocket.max_contains_weight = actor->max_weight;
-            }
-            for( const std::string &f : actor->flags ) {
-                pocket.add_flag_restriction( flag_id( f ) );
-            }
-            for( const skill_id &sk : actor->skills ) {
-                pocket.skill_restriction.insert( sk );
-            }
-            if( actor->flags.empty() && actor->skills.empty() ) {
-                // BN: a holster with neither flags nor skills accepts nothing
-                pocket.item_id_restriction.insert( itype_id::NULL_ID() );
-            }
-            pocket.no_active_items = true;
-            pocket.moves = actor->draw_cost;
-            for( int i = 0; i < actor->multi; ++i ) {
-                obj.pockets.push_back( pocket );
-            }
-        }
-    }
-
-    // BN bandolier use_action: one ammo-restricted container pocket.
-    if( const use_function *use = obj.get_use( "bandolier" ) ) {
-        const auto *actor = dynamic_cast<const bandolier_actor *>( use->get_actor_ptr() );
-        if( actor != nullptr ) {
-            pocket_data pocket( pocket_type::CONTAINER );
-            pocket.rigid = obj.rigid;
-            for( const ammotype &at : actor->ammo ) {
-                pocket.ammo_restriction[at] = actor->capacity;
-            }
-            pocket.moves = actor->draw_cost;
-            obj.pockets.push_back( pocket );
-        }
-    }
 
     // Magazines hold their ammo.
     if( obj.magazine ) {
@@ -1645,7 +1613,6 @@ void Item_factory::init()
     add_iuse( "HEATPACK", &iuse::toggle_heats_food );
 
     add_actor( std::make_unique<ammobelt_actor>() );
-    add_actor( std::make_unique<bandolier_actor>() );
     add_actor( std::make_unique<cauterize_actor>() );
     add_actor( std::make_unique<consume_drug_iuse>() );
     add_actor( std::make_unique<delayed_transform_iuse>() );
@@ -1835,10 +1802,9 @@ void Item_factory::check_definitions() const
             }
         }
 
-        if( type->explicit_pockets && ( type->container || type->can_use( "holster" ) ||
-                                        type->can_use( "bandolier" ) ) ) {
+        if( type->explicit_pockets && type->container ) {
             DebugLog( DL::Warn, DC::Game ) << "item " << type->id.str() <<
-                                           ": both pocket_data and legacy container_data/holster/bandolier "
+                                           ": both pocket_data and legacy container_data "
                                            "are defined; pocket_data is used";
         }
         for( size_t i = 0; i < type->pockets.size(); ++i ) {
@@ -2751,6 +2717,23 @@ void Item_factory::load( islot_armor &slot, const JsonObject &jo, const std::str
             tempData.cover_ranged = obj.get_int( "cover_ranged", -1 );
             tempData.cover_vitals = obj.get_int( "cover_vitals", 0 );
             tempData.rigid_layer_only = obj.get_bool( "rigid_layer_only", false );
+            // DDA part_material: strings or { "type", "covered_by_mat" } (default 100)
+            if( obj.has_array( "material" ) ) {
+                for( const JsonValue entry : obj.get_array( "material" ) ) {
+                    part_material pm;
+                    if( entry.test_string() ) {
+                        pm.id = material_id( entry.get_string() );
+                    } else {
+                        const JsonObject mo = entry.get_object();
+                        pm.id = material_id( mo.get_string( "type" ) );
+                        pm.cover = mo.get_int( "covered_by_mat", 100 );
+                        if( pm.cover < 1 || pm.cover > 100 ) {
+                            mo.throw_error( string_format( "invalid covered_by_mat \"%d\"", pm.cover ) );
+                        }
+                    }
+                    tempData.materials.push_back( pm );
+                }
+            }
             tempData.volume_encumber_modifier = static_cast<float>( obj.get_float( "volume_encumber_modifier",
                                                 1.0 ) );
             if( tempData.sub_coverage.empty() ) {

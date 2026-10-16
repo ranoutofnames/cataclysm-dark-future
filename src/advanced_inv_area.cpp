@@ -238,7 +238,8 @@ bool advanced_inv_area::canputitems( const advanced_inv_listitem *advitem )
                 it = get_container( from_vehicle );
             }
             if( it != nullptr ) {
-                canputitems = it->is_watertight_container();
+                // CDF: any container pocket, carry or not (DDA uses is_container())
+                canputitems = !it->get_container_pockets().empty();
             }
             break;
         default:

@@ -993,7 +993,13 @@
     "symbol": "[",
     "color": "light_gray",
     "pocket_data": [
-      { "pocket_type": "CONTAINER", "max_item_length": "1 m", "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "moves": 120 },
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_length": "1 m",
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "5 kg",
+        "moves": 120
+      },
       {
         "pocket_type": "CONTAINER",
         "max_contains_volume": "500 ml",
@@ -1064,16 +1070,29 @@
     "material": "leather",
     "symbol": "[",
     "color": "light_gray",
-    "use_action": {
-      "type": "holster",
-      "max_volume": "1 L",
-      "min_volume": "100 ml",
-      "max_weight": "2 kg",
-      "multi": 2,
-      "draw_cost": 50,
-      "skills": [ "pistol" ],
-      "flags": [ "SHEATH_KNIFE" ]
-    }
+    "use_action": { "type": "holster" },
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "1 L",
+        "max_item_volume": "1 L",
+        "min_item_volume": "100 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "1 m",
+        "moves": 50
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "1 L",
+        "max_item_volume": "1 L",
+        "min_item_volume": "100 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "1 m",
+        "moves": 50
+      }
+    ]
   },
   {
     "id": "test_holster_one",
@@ -1086,15 +1105,19 @@
     "material": "leather",
     "symbol": "[",
     "color": "light_gray",
-    "use_action": {
-      "type": "holster",
-      "max_volume": "1 L",
-      "min_volume": "100 ml",
-      "max_weight": "2 kg",
-      "multi": 1,
-      "draw_cost": 50,
-      "skills": [ "pistol" ]
-    }
+    "use_action": { "type": "holster" },
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "1 L",
+        "max_item_volume": "1 L",
+        "min_item_volume": "100 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "1 m",
+        "moves": 50
+      }
+    ]
   },
   {
     "id": "test_pocket_rig",
@@ -1109,7 +1132,14 @@
     "color": "light_gray",
     "pocket_data": [
       { "pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "10 kg" },
-      { "pocket_type": "CONTAINER", "holster": true, "max_item_length": "1 m", "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 }
+      {
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_item_length": "1 m",
+        "max_contains_volume": "1 L",
+        "item_restriction": [ "glock_19" ],
+        "moves": 50
+      }
     ]
   },
   {
@@ -1124,8 +1154,22 @@
     "symbol": "[",
     "color": "light_gray",
     "pocket_data": [
-      { "pocket_type": "CONTAINER", "holster": true, "max_item_length": "1 m", "max_contains_volume": "1 L", "skill_restriction": [ "pistol" ], "moves": 50 },
-      { "pocket_type": "CONTAINER", "holster": true, "max_item_length": "1 m", "max_contains_volume": "1 L", "flag_restriction": [ "SHEATH_KNIFE" ], "moves": 50 }
+      {
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_item_length": "1 m",
+        "max_contains_volume": "1 L",
+        "item_restriction": [ "glock_19" ],
+        "moves": 50
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_item_length": "1 m",
+        "max_contains_volume": "1 L",
+        "flag_restriction": [ "SHEATH_KNIFE" ],
+        "moves": 50
+      }
     ]
   },
   {
@@ -1185,9 +1229,7 @@
     "color": "light_gray",
     "material_thickness": 2,
     "flags": [ "UNBREAKABLE", "OUTER" ],
-    "armor_portion_data": [
-      { "covers": [ "torso" ], "specifically_covers": [ "torso_upper" ], "coverage": 100 }
-    ]
+    "armor_portion_data": [ { "covers": [ "torso" ], "specifically_covers": [ "torso_upper" ], "coverage": 100 } ]
   },
   {
     "id": "test_sub_overlap_vest",
@@ -1305,9 +1347,7 @@
     "color": "light_gray",
     "material_thickness": 3,
     "flags": [ "CANT_WEAR" ],
-    "armor_portion_data": [
-      { "covers": [ "arm_l", "arm_r" ], "specifically_covers": [ "arm_shoulder_l", "arm_shoulder_r" ], "coverage": 80 }
-    ]
+    "armor_portion_data": [ { "covers": [ "arm_l", "arm_r" ], "specifically_covers": [ "arm_shoulder_l", "arm_shoulder_r" ], "coverage": 80 } ]
   },
   {
     "id": "test_plate_carrier",
@@ -1326,11 +1366,55 @@
     "material_thickness": 2,
     "flags": [ "UNBREAKABLE", "OUTER" ],
     "pocket_data": [
-      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_LARGE" ], "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "max_item_length": "33 cm", "moves": 800 },
-      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_LARGE" ], "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "max_item_length": "33 cm", "moves": 800 },
-      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_MEDIUM" ], "max_contains_volume": "800 ml", "max_contains_weight": "2 kg", "max_item_length": "21 cm", "moves": 800 },
-      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "flag_restriction": [ "ABLATIVE_MEDIUM" ], "max_contains_volume": "800 ml", "max_contains_weight": "2 kg", "max_item_length": "21 cm", "moves": 800 },
-      { "pocket_type": "CONTAINER", "ablative": true, "volume_encumber_modifier": 0, "item_restriction": [ "test_plate_protector" ], "max_contains_volume": "1 L", "max_contains_weight": "2 kg", "moves": 800 }
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "flag_restriction": [ "ABLATIVE_LARGE" ],
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "flag_restriction": [ "ABLATIVE_LARGE" ],
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "flag_restriction": [ "ABLATIVE_MEDIUM" ],
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "flag_restriction": [ "ABLATIVE_MEDIUM" ],
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "item_restriction": [ "test_plate_protector" ],
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "moves": 800
+      }
     ]
   },
   {

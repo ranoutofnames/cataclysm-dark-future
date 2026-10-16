@@ -16,18 +16,47 @@
     "color": "yellow",
     "covers": [ "torso" ],
     "encumbrance": 4,
-    "storage": "1 L",
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Attach what to belt loop?",
-      "holster_msg": "You clip your %s to your %s",
-      "min_volume": "600 ml",
-      "max_volume": "2 L",
-      "max_weight": "3600 g",
-      "flags": [ "BELT_CLIP" ]
-    },
+    "use_action": { "type": "holster", "holster_prompt": "Attach what to belt loop?", "holster_msg": "You clip your %s to your %s" },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "FANCY", "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
+    "flags": [ "FANCY", "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      { "max_contains_volume": "1 L", "max_contains_weight": "1500 g", "moves": 100, "carry": true },
+      {
+        "volume_encumber_modifier": 0.5,
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "90 cm",
+        "moves": 50,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "holster": true,
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.5,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.5,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      }
+    ]
   },
   {
     "abstract": "judo_belt_abstract",
@@ -121,16 +150,71 @@
     "covers": [ "torso" ],
     "coverage": 5,
     "material_thickness": 1,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stick what into your belt",
-      "holster_msg": "You tuck your %s into your %s",
-      "max_volume": "500 ml",
-      "max_weight": "400 g",
-      "flags": [ "BELT_CLIP" ]
-    },
+    "use_action": { "type": "holster", "holster_prompt": "Stick what into your belt", "holster_msg": "You tuck your %s into your %s" },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
+    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 110,
+        "description": "Clipped directly to back of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 110,
+        "description": "Clipped directly to back of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      }
+    ]
   },
   {
     "id": "obi_gi",
@@ -164,18 +248,61 @@
     "color": "brown",
     "covers": [ "torso" ],
     "encumbrance": 6,
-    "storage": "2 L",
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Attach what to holder?",
-      "holster_msg": "You attach your %s to your %s.",
-      "min_volume": "250 ml",
-      "max_volume": "2250 ml",
-      "max_weight": "3600 g",
-      "flags": [ "BELT_CLIP" ]
-    },
+    "use_action": { "type": "holster", "holster_prompt": "Attach what to holder?", "holster_msg": "You attach your %s to your %s." },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
+    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "description": "flashlight storage",
+        "max_contains_volume": "500 ml",
+        "max_item_length": "40 cm",
+        "max_contains_weight": "1500 g",
+        "moves": 100,
+        "carry": true
+      },
+      {
+        "description": "radio storage",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "1500 g",
+        "moves": 100,
+        "carry": true
+      },
+      { "max_contains_volume": "500 ml", "max_contains_weight": "1500 g", "moves": 100, "carry": true },
+      { "max_contains_volume": "500 ml", "max_contains_weight": "1500 g", "moves": 100, "carry": true },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.5,
+        "max_contains_volume": "2250 ml",
+        "max_contains_weight": "3600 g",
+        "max_item_length": "70 cm",
+        "moves": 50,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.5,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.5,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      }
+    ]
   },
   {
     "id": "survivor_belt_notools",
@@ -193,19 +320,88 @@
     "covers": [ "torso" ],
     "coverage": 15,
     "encumbrance": 4,
-    "storage": "4 L",
     "material_thickness": 2,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Store tool or blade",
-      "holster_msg": "You put your %1$s in your %2$s",
-      "multi": 6,
-      "min_volume": "40 ml",
-      "max_volume": "2000 ml",
-      "max_weight": "2500 g",
-      "flags": [ "BELT_CLIP", "SHEATH_KNIFE", "SHEATH_SWORD" ]
-    },
-    "flags": [ "WATER_FRIENDLY", "STURDY", "WAIST", "COMPACT", "OVERSIZE" ]
+    "use_action": { "type": "holster", "holster_prompt": "Store tool or blade", "holster_msg": "You put your %1$s in your %2$s" },
+    "flags": [ "WATER_FRIENDLY", "STURDY", "WAIST", "COMPACT", "OVERSIZE" ],
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "70 cm",
+        "moves": 20,
+        "flag_restriction": [ "SHEATH_KNIFE" ],
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "1000 g",
+        "max_item_length": "13 cm",
+        "moves": 50,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "1000 g",
+        "max_item_length": "13 cm",
+        "moves": 50,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "1000 g",
+        "max_item_length": "13 cm",
+        "moves": 50,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "1000 g",
+        "max_item_length": "13 cm",
+        "moves": 50,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "1000 g",
+        "max_item_length": "13 cm",
+        "moves": 50,
+        "carry": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "1000 g",
+        "max_item_length": "13 cm",
+        "moves": 50,
+        "carry": true
+      },
+      {
+        "magazine_well": "350 ml",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "min_item_volume": "300 ml",
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "30 cm",
+        "moves": 50,
+        "carry": true
+      },
+      {
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "90 cm",
+        "moves": 50,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      }
+    ]
   },
   {
     "id": "tool_belt",
@@ -224,21 +420,94 @@
     "color": "brown",
     "covers": [ "torso" ],
     "coverage": 20,
-    "storage": "1 L",
     "encumbrance": 6,
     "material_thickness": 2,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Store tool or blade",
-      "holster_msg": "You put your %1$s in your %2$s",
-      "multi": 6,
-      "min_volume": "40 ml",
-      "max_volume": "1500 ml",
-      "max_weight": "1500 g",
-      "flags": [ "BELT_CLIP", "SHEATH_KNIFE" ]
-    },
+    "use_action": { "type": "holster", "holster_prompt": "Store tool or blade", "holster_msg": "You put your %1$s in your %2$s" },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
+    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "max_contains_volume": "1500 ml",
+        "max_contains_weight": "5000 g",
+        "max_item_length": "20 cm",
+        "moves": 100,
+        "description": "Pouch to store multiple items.",
+        "carry": true
+      },
+      {
+        "max_contains_volume": "1500 ml",
+        "max_contains_weight": "5000 g",
+        "max_item_length": "20 cm",
+        "moves": 100,
+        "description": "Pouch to store multiple items.",
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.5,
+        "min_item_volume": "50 ml",
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.5,
+        "min_item_volume": "50 ml",
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.25,
+        "min_item_volume": "50 ml",
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 50,
+        "description": "In a sheath.",
+        "flag_restriction": [ "BELT_CLIP", "SHEATH_KNIFE" ],
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.25,
+        "min_item_volume": "50 ml",
+        "max_contains_volume": "1500 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 50,
+        "description": "In a sheath.",
+        "flag_restriction": [ "BELT_CLIP", "SHEATH_KNIFE" ],
+        "transparent": true,
+        "carry": true
+      },
+      {
+        "holster": true,
+        "volume_encumber_modifier": 0.25,
+        "min_item_volume": "50 ml",
+        "max_contains_volume": "1500 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 50,
+        "description": "In a sheath.",
+        "flag_restriction": [ "BELT_CLIP", "SHEATH_KNIFE" ],
+        "transparent": true,
+        "carry": true
+      }
+    ]
   },
   {
     "id": "webbing_belt",
@@ -256,16 +525,58 @@
     "color": "yellow",
     "covers": [ "torso" ],
     "encumbrance": 1,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stick what into your belt",
-      "holster_msg": "You tuck your %s into your %s",
-      "max_volume": "2000 ml",
-      "max_weight": "2500 g",
-      "min_volume": "40 ml",
-      "flags": [ "BELT_CLIP" ]
-    },
+    "use_action": { "type": "holster", "holster_prompt": "Store tool or blade", "holster_msg": "You put your %1$s in your %2$s" },
     "valid_mods": [ "resized_large", "resized_small" ],
-    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
+    "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "holster": true,
+        "//": "volume encumber modifier set high since the whole belt is being scaled by 0.35. This equals .5005",
+        "volume_encumber_modifier": 1.43,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "//": "volume encumber modifier set high since the whole belt is being scaled by 0.35. This equals .5005",
+        "volume_encumber_modifier": 1.43,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "//": "volume encumber modifier set high since the whole belt is being scaled by 0.35. This equals .5005",
+        "volume_encumber_modifier": 1.43,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 110,
+        "description": "Clipped directly to the back of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "//": "volume encumber modifier set high since the whole belt is being scaled by 0.35. This equals .5005",
+        "volume_encumber_modifier": 1.43,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "70 cm",
+        "moves": 110,
+        "description": "Clipped directly to the back of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      }
+    ]
   }
 ]

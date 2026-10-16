@@ -328,11 +328,12 @@
     "id": "PACKMULE",
     "name": { "str": "Packmule" },
     "points": 2,
-    "description": "You pack things very efficiently!  You can retrieve things from containers 10% faster.",
+    "description": "You can manage to find space for anything!  You can carry 40% more volume.  You can retrieve things from containers 10% faster.",
     "starting_trait": true,
     "valid": false,
     "purifiable": false,
     "cancels": [ "DISORGANIZED" ],
+    "packmule_modifier": 1.4,
     "enchantments": [ "ENCH_PACKMULE" ]
   },
   {
@@ -852,6 +853,7 @@
     "valid": false,
     "purifiable": false,
     "cancels": [ "PACKMULE" ],
+    "packmule_modifier": 0.6,
     "enchantments": [ "ENCH_DISORGANIZED" ]
   },
   {

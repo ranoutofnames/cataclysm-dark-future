@@ -51,49 +51,49 @@
       },
       {
         "collection": [
-          { "item": "fn1910", "container-item": "bholster" },
+          { "item": "fn1910", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "fn1910mag", "fn1910mag" ] }
         ],
         "prob": 5
       },
       {
         "collection": [
-          { "item": "glock_17", "container-item": "bholster" },
+          { "item": "glock_17", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "glock17_17", "glock17_17" ] }
         ],
         "prob": 55
       },
       {
         "collection": [
-          { "item": "glock_19", "container-item": "bholster" },
+          { "item": "glock_19", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "glockmag", "glockmag" ] }
         ],
         "prob": 40
       },
       {
         "collection": [
-          { "item": "glock_20", "container-item": "bholster" },
+          { "item": "glock_20", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "glock20mag", "glock20mag" ] }
         ],
         "prob": 20
       },
       {
         "collection": [
-          { "item": "glock_21", "container-item": "bholster" },
+          { "item": "glock_21", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "glock_21mag", "glock_21mag" ] }
         ],
         "prob": 15
       },
       {
         "collection": [
-          { "item": "glock_22", "container-item": "bholster" },
+          { "item": "glock_22", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "glock40mag", "glock40mag" ] }
         ],
         "prob": 30
       },
       {
         "collection": [
-          { "item": "glock_31", "container-item": "bholster" },
+          { "item": "glock_31", "container-item": "holster" },
           { "item": "legpouch_large", "contents-group": "mags_glock_31_carry" }
         ],
         "prob": 15
@@ -195,7 +195,7 @@
       },
       {
         "collection": [
-          { "item": "p320_357sig", "container-item": "bholster" },
+          { "item": "p320_357sig", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "p320mag_13rd_357sig", "p320mag_13rd_357sig" ] }
         ],
         "prob": 40
@@ -342,7 +342,7 @@
       },
       {
         "collection": [
-          { "item": "walther_ppq_45", "container-item": "bholster" },
+          { "item": "walther_ppq_45", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "ppq45mag", "ppq45mag" ] }
         ],
         "prob": 10
@@ -732,7 +732,7 @@
     "type": "item_group",
     "subtype": "collection",
     "id": "bandolier_grenadier",
-    "entries": [ { "item": "40x46mm_m433", "charges": 6 } ]
+    "entries": [ { "item": "40x46mm_m433", "charges": 4 } ]
   },
   {
     "type": "item_group",
@@ -756,7 +756,7 @@
     "type": "item_group",
     "subtype": "collection",
     "id": "bandolier_rifle_big_game_hunter",
-    "entries": [ { "item": "3006", "charges": 19 } ]
+    "entries": [ { "item": "3006", "charges": 16 } ]
   },
   {
     "type": "item_group",
@@ -798,13 +798,13 @@
     "type": "item_group",
     "subtype": "collection",
     "id": "flintlock_pouch_reenactor",
-    "entries": [ { "item": "flintlock_ammo", "charges": 29 } ]
+    "entries": [ { "item": "flintlock_ammo", "charges": 14 } ]
   },
   {
     "type": "item_group",
     "subtype": "collection",
     "id": "flintlock_pouch_pirate",
-    "entries": [ { "item": "flintlock_ammo", "charges": 24 } ]
+    "entries": [ { "item": "flintlock_ammo", "charges": 14 } ]
   },
   {
     "type": "item_group",
@@ -841,13 +841,13 @@
     "type": "item_group",
     "subtype": "collection",
     "id": "flintlock_pouch_skyfarer",
-    "entries": [ { "item": "36navy", "charges": 19 } ]
+    "entries": [ { "item": "36navy", "charges": 14 } ]
   },
   {
     "type": "item_group",
     "subtype": "collection",
     "id": "bandolier_ww_gunslinger",
-    "entries": [ { "item": "45colt_jhp", "charges": 34 } ]
+    "entries": [ { "item": "45colt_jhp", "charges": 18 } ]
   },
   {
     "type": "item_group",
@@ -2909,7 +2909,7 @@
           "diving_watch"
         ],
         "entries": [
-          { "item": "tec9", "ammo-item": "9mmfmj", "container-item": "shoulder_holster", "charges": 32 },
+          { "item": "tec9", "ammo-item": "9mmfmj", "charges": 32 },
           { "item": "chestrig", "contents-group": "smuggler_mags_tec9" },
           { "item": "lighter", "charges": 25 }
         ]
@@ -3519,7 +3519,7 @@
         "entries": [
           { "group": "charged_two_way_radio" },
           { "group": "charged_flashlight" },
-          { "item": "sw629", "ammo-item": "44fmj", "charges": 6, "container-item": "shoulder_holster" },
+          { "item": "sw629", "ammo-item": "44fmj", "charges": 6, "container-item": "holster" },
           { "item": "shoulder_pouch", "contents-group": "speedloaders_44_detective" },
           { "item": "44fmj", "charges": 12 }
         ]
@@ -3563,7 +3563,7 @@
           "ref_lighter"
         ],
         "entries": [
-          { "item": "colt_python", "ammo-item": "357mag_fmj", "charges": 6, "container-item": "shoulder_holster" },
+          { "item": "colt_python", "ammo-item": "357mag_fmj", "charges": 6, "container-item": "holster" },
           { "item": "shoulder_pouch", "contents-group": "speedloaders_357_detective_scen" },
           { "item": "357mag_fmj", "charges": 12 }
         ]
@@ -4839,7 +4839,7 @@
     "items": {
       "both": {
         "items": [ "cowboy_hat", "tshirt", "gloves_leather", "socks", "jeans", "boots_western", "jacket_leather", "horse_tack" ],
-        "entries": [ { "item": "knife_hunting", "container-item": "sheath" }, { "item": "v29", "container-item": "shoulder_holster" } ]
+        "entries": [ { "item": "knife_hunting", "container-item": "sheath" }, { "item": "v29", "container-item": "holster" } ]
       },
       "male": [ "boxer_shorts" ],
       "female": [ "bra", "boxer_shorts" ]
@@ -6070,7 +6070,7 @@
         ],
         "entries": [
           { "item": "tool_belt", "contents-item": [ "knife_combat", "pliers", "wrench", "hacksaw" ] },
-          { "item": "XL_holster", "contents-group": "shotgun_d_roadwarrior" },
+          { "group": "shotgun_d_roadwarrior" },
           { "item": "bandolier_shotgun", "contents-group": "bandolier_roadwarrior" },
           { "item": "medium_battery_cell", "ammo-item": "battery", "charges": 500, "container-item": "mess_kit" }
         ]
@@ -6176,7 +6176,7 @@
           "wristwatch"
         ],
         "entries": [
-          { "item": "hand_crossbow", "ammo-item": "bolt_wood", "charges": 1, "container-item": "holster" },
+          { "item": "hand_crossbow", "ammo-item": "bolt_wood", "charges": 1 },
           { "item": "quiver", "contents-group": "quiver_player_bandit" },
           { "item": "makeshift_knife", "container-item": "bootsheath" },
           { "item": "bwirebat", "custom-flags": [ "auto_wield" ] },
@@ -6628,7 +6628,7 @@
           "grapnel"
         ],
         "entries": [
-          { "item": "tanto_inferior", "container-item": "bootsheath" },
+          { "item": "tanto_inferior", "container-item": "sheath" },
           { "item": "bandolier_knife", "contents-group": "bandolier_shuriken_ninja" },
           { "item": "katana_inferior", "custom-flags": [ "auto_wield" ] }
         ]
@@ -7802,7 +7802,7 @@
       "both": {
         "items": [ "fancy_sunglasses", "platinum_watch", "money_bundle" ],
         "entries": [
-          { "item": "shoulder_holster", "contents-group": "hitman_pistol" },
+          { "item": "holster", "contents-group": "hitman_pistol" },
           { "item": "shoulder_pouch", "contents-group": "hitman_mags_ppq" }
         ]
       },
@@ -8793,7 +8793,7 @@
     "items": {
       "both": {
         "items": [ "breeches", "chainmail_hauberk", "socks", "chainmail_feet", "helmet_plate", "chainmail_hands", "shield_leather" ],
-        "entries": [ { "item": "longsword", "container-item": "scabbard" } ]
+        "entries": [ { "item": "longsword" } ]
       },
       "female": [ "chestwrap" ]
     }

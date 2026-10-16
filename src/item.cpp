@@ -2842,8 +2842,9 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
             }
         }
     } else if( parts->test( iteminfo_parts::GUN_TYPE ) ) {
-        info.emplace_back( "GUN", _( "Type: " ), enumerate_as_string( mod->ammo_types().begin(),
-        mod->ammo_types().end(), []( const ammotype & at ) {
+        const std::set<ammotype> mod_ammo = mod->ammo_types();
+        info.emplace_back( "GUN", _( "Type: " ), enumerate_as_string( mod_ammo.begin(),
+        mod_ammo.end(), []( const ammotype & at ) {
             return at->name();
         }, enumeration_conjunction::none ) );
     }
@@ -3555,8 +3556,9 @@ void item::tool_info( std::vector<iteminfo> &info, const iteminfo_query *parts, 
             //~ "%s" is ammunition type. This types can't be plural.
             tmp = vgettext( "Maximum <num> charge of %s.", "Maximum <num> charges of %s.",
                             ammo_capacity() );
-            tmp = string_format( tmp, enumerate_as_string( ammo_types().begin(),
-            ammo_types().end(), []( const ammotype & at ) {
+            const std::set<ammotype> tool_ammo = ammo_types();
+            tmp = string_format( tmp, enumerate_as_string( tool_ammo.begin(),
+            tool_ammo.end(), []( const ammotype & at ) {
                 return at->name();
             }, enumeration_conjunction::none ) );
 
@@ -7904,11 +7906,6 @@ bool item::is_ammo_belt() const
     return is_magazine() && has_flag( flag_MAG_BELT );
 }
 
-bool item::is_bandolier() const
-{
-    return type->can_use( "bandolier" );
-}
-
 bool item::is_holster() const
 {
     return type->can_use( "holster" );
@@ -8812,9 +8809,9 @@ int item::ammo_remaining() const
         return charges;
     }
 
-    if( is_magazine() || is_bandolier() ) {
+    if( is_magazine() ) {
         int res = 0;
-        // bandoliers hold ammo in container pockets, magazines in their MAGAZINE pocket
+        // magazines hold their ammo in the MAGAZINE pocket
         for( const item_pocket &pocket : contents.get_pockets() ) {
             if( !pocket.is_standard_type() && !pocket.is_type( pocket_type::MIGRATION ) ) {
                 continue;
@@ -8826,7 +8823,20 @@ int item::ammo_remaining() const
         return res;
     }
 
-    return 0;
+    // per DDA item_gun_tool_ammo.cpp:1500: non-magazines with ammo_restriction in a CONTAINER
+    // pocket (quivers, ammo pouches, bandoliers) count the ammo inside
+    int res = 0;
+    for( const item_pocket &pocket : contents.get_pockets() ) {
+        if( !pocket.is_type( pocket_type::CONTAINER ) || pocket.get_data().ammo_restriction.empty() ) {
+            continue;
+        }
+        for( const item *e : pocket.items() ) {
+            if( e->is_ammo() ) {
+                res += e->charges;
+            }
+        }
+    }
+    return res;
 }
 
 int item::ammo_capacity() const
@@ -8869,9 +8879,10 @@ int item::ammo_capacity( bool potential_capacity ) const
         res = type->magazine->capacity;
     }
 
-    if( is_bandolier() ) {
+    if( !is_gun() && !is_tool() && !is_magazine() ) {
         for( const item_pocket &pocket : contents.get_pockets() ) {
-            if( !pocket.is_holster() && !pocket.get_data().ammo_restriction.empty() ) {
+            if( pocket.is_type( pocket_type::CONTAINER ) && !pocket.is_holster() &&
+                !pocket.get_data().ammo_restriction.empty() ) {
                 int cap = 0;
                 for( const auto &restriction : pocket.get_data().ammo_restriction ) {
                     cap = std::max( cap, restriction.second );
@@ -9004,7 +9015,7 @@ itype_id item::ammo_current() const
     return ammo ? ammo->get_id() : itype_id::NULL_ID();
 }
 
-const std::set<ammotype> &item::ammo_types( bool conversion ) const
+std::set<ammotype> item::ammo_types( bool conversion ) const
 {
     if( conversion ) {
         const std::vector<const item *> &mods = is_gun() ? gunmods() : toolmods();
@@ -9023,8 +9034,8 @@ const std::set<ammotype> &item::ammo_types( bool conversion ) const
         return type->magazine->type;
     }
 
-    static std::set<ammotype> atypes = {};
-    return atypes;
+    // Per DDA: containers with ammo restricted pockets (quivers, bandoliers) report those ammo types
+    return contents.ammo_types();
 }
 
 ammotype item::ammo_type() const
@@ -9833,15 +9844,6 @@ units::volume item::get_total_capacity() const
 {
     units::volume result = get_storage() + get_container_capacity();
 
-    // Consider various iuse_actors which add containing capability
-    // Treating these two as special cases for now; if more appear in the
-    // future then this probably warrants a new method on use_function to
-    // access this information generically.
-    if( is_bandolier() ) {
-        result += dynamic_cast<const bandolier_actor *>
-                  ( type->get_use( "bandolier" )->get_actor_ptr() )->max_stored_volume();
-    }
-
     for( const item_pocket &pocket : contents.get_pockets() ) {
         // worn storage is already counted by get_storage()
         if( pocket.is_holster() && is_live_pocket( pocket ) ) {
@@ -10297,14 +10299,6 @@ bool item::has_free_holster_pocket() const
     const std::list<item_pocket> &pockets = contents.get_pockets();
     return std::ranges::any_of( pockets, []( const item_pocket & pocket ) {
         return pocket.is_holster() && is_live_pocket( pocket ) && !pocket.holster_full();
-    } );
-}
-
-bool item::can_put_in_bandolier( const item &obj, bool ) const
-{
-    const std::list<item_pocket> &pockets = contents.get_pockets();
-    return std::ranges::any_of( pockets, [&]( const item_pocket & pocket ) {
-        return pocket.accepts_some_ammo( obj );
     } );
 }
 
@@ -11653,13 +11647,19 @@ bool item::is_reloadable() const
     if( has_flag( flag_NO_RELOAD ) && !has_flag( flag_VEHICLE ) ) {
         return false; // turrets ignore NO_RELOAD flag
 
-    } else if( is_bandolier() || is_holster() ) {
-        return true;
-
     } else if( is_container() ) {
         // TODO: Make buckets actually reloadable using reload menu
         // This would be done via locking this off by weather or not it was wielded or on dirt most likely
-        return type->container ? type->container->seals : true;
+        if( type->container ) {
+            return type->container->seals;
+        }
+        // per DDA item_gun_tool_ammo.cpp:4473: a watertight pocket that is not full and holds
+        // nothing or liquid; holsters and ammo pouches are filled with the insert action instead
+        return std::ranges::any_of( contents.get_all_reloadable_pockets(),
+        []( const item_pocket * pocket ) {
+            return pocket->is_type( pocket_type::CONTAINER ) && !pocket->full( false ) &&
+                   ( pocket->empty() || pocket->front().made_of( phase_id::LIQUID ) );
+        } );
 
     } else if( !is_gun() && !is_tool() && !is_magazine() ) {
         return false;

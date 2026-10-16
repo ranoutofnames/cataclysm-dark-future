@@ -11,6 +11,7 @@
 #include "type_id.h"
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <sstream>
 #include <string>
@@ -211,4 +212,18 @@ TEST_CASE("Mutating marloss does not crash on missing category data", "[mutation
 
     CHECK(dummy.mutate_towards(trait_marloss));
     CHECK(dummy.has_trait(trait_marloss));
+}
+
+// CDF: BN's packmule_modifier scales worn container capacity on top of DDA's pocket system
+TEST_CASE("Pack Mule carries more volume", "[mutations][pocket]") {
+    auto dummy = npc{};
+    dummy.set_fake(true);
+    clear_character(dummy);
+    dummy.remove_mutation(trait_id("DEBUG_STORAGE"));
+    dummy.wear_item(item::spawn("backpack", calendar::start_of_cataclysm), false);
+    const auto base = dummy.volume_capacity();
+    REQUIRE(base > 0_ml);
+    dummy.set_mutation(trait_id("PACKMULE"));
+    CHECK(dummy.volume_capacity() > base);
+    CHECK(std::abs(dummy.volume_capacity().value() - base.value() * 1.4) <= 2.0);
 }

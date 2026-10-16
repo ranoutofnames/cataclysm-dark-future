@@ -165,8 +165,9 @@ bool game::dump_stats( const std::string &what, dump_mode mode,
         auto dump = [&rows, &locations]( const standard_npc & who, const item & obj ) {
             std::vector<std::string> r;
             r.push_back( obj.tname( 1, false ) );
-            r.push_back( !obj.ammo_types().empty() ? enumerate_as_string( obj.ammo_types().begin(),
-            obj.ammo_types().end(), []( const ammotype & at ) {
+            const std::set<ammotype> obj_ammo = obj.ammo_types();
+            r.push_back( !obj_ammo.empty() ? enumerate_as_string( obj_ammo.begin(),
+            obj_ammo.end(), []( const ammotype & at ) {
                 return at.str();
             }, enumeration_conjunction::none ) : "" );
             r.push_back( std::to_string( obj.volume() / units::legacy_volume_factor ) );

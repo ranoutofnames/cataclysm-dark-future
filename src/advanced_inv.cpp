@@ -12,6 +12,7 @@
 #include "debug.h"
 #include "enums.h"
 #include "examine_item_menu.h"
+#include "flag.h"
 #include "game.h"
 #include "game_constants.h"
 #include "ime.h"
@@ -1237,10 +1238,22 @@ bool advanced_inventory::action_move_item( advanced_inv_listitem *sitem,
     recalc = true;
     assert( amount_to_move > 0 );
     if( destarea == AIM_CONTAINER ) {
-        if( !move_content( *sitem->items.front(),
-                           *squares[destarea].get_container( to_vehicle ) ) ) {
+        // per DDA advanced_inv.cpp:1191: insert through the actor, so pockets are chosen by the item
+        item *container = squares[destarea].get_container( to_vehicle );
+        if( container == nullptr ) {
+            popup( _( "Destination container isn't valid." ) );
             return false;
         }
+        if( container->has_flag( flag_NO_RELOAD ) ) {
+            popup( _( "Destination container can't be reloaded." ) );
+            return false;
+        }
+        do_return_entry();
+        drop_locations items_to_insert;
+        items_to_insert.emplace_back( *sitem->items.front(), amount_to_move );
+        g->u.assign_activity( std::make_unique<player_activity>(
+                                  std::make_unique<insert_item_activity_actor>( *container,
+                                          items_to_insert ) ) );
     } else if( srcarea == AIM_INVENTORY ) {
 
         // make sure advanced inventory is reopened after activity completion.
@@ -1676,50 +1689,6 @@ bool advanced_inventory::query_destination( aim_location &def )
         return true;
     }
     return false;
-}
-
-bool advanced_inventory::move_content( item &src_container, item &dest_container )
-{
-    if( !src_container.is_container() ) {
-        popup( _( "Source must be container." ) );
-        return false;
-    }
-    if( src_container.is_container_empty() ) {
-        popup( _( "Source container is empty." ) );
-        return false;
-    }
-
-    item &src_contents = src_container.contents.front();
-
-    if( !src_contents.made_of( LIQUID ) ) {
-        popup( _( "You can unload only liquids into target container." ) );
-        return false;
-    }
-
-    std::string err;
-    // TODO: Allow buckets here, but require them to be on the ground or wielded
-    const int amount = dest_container.get_remaining_capacity_for_liquid( src_contents, false, &err );
-    if( !err.empty() ) {
-        popup( err );
-        return false;
-    }
-    if( src_container.is_non_resealable_container() ) {
-        if( src_contents.charges > amount ) {
-            popup( _( "You can't partially unload liquids from unsealable container." ) );
-            return false;
-        }
-        src_container.on_contents_changed();
-    }
-    detached_ptr<item> moved = src_contents.split( amount ) ;
-    detached_ptr<item> leftover = dest_container.fill_with( std::move( moved ), amount );
-    if( leftover ) {
-        // whatever didn't fit goes back where it came from
-        src_container.put_in( std::move( leftover ) );
-    }
-
-    uistate.adv_inv_container_content_type = dest_container.contents.front().typeId();
-
-    return true;
 }
 
 bool advanced_inventory::query_charges( aim_location destarea, const advanced_inv_listitem &sitem,

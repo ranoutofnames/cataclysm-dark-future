@@ -223,7 +223,6 @@
     "weight": "2000 g",
     "color": "brown",
     "covers": [ "torso" ],
-    "storage": "1 L",
     "symbol": "[",
     "description": "A custom-built leather utility belt that instantly creates any tool that you reach for.  Activate to sheathe/draw a weapon.",
     "price": "5000 USD",
@@ -233,17 +232,7 @@
     "coverage": 10,
     "encumbrance": 4,
     "material_thickness": 4,
-    "use_action": [
-      {
-        "type": "holster",
-        "holster_prompt": "Sheath blade",
-        "holster_msg": "You sheath your %s",
-        "min_volume": "250 ml",
-        "max_volume": "1 L",
-        "flags": [ "SHEATH_KNIFE", "SHEATH_SWORD" ]
-      },
-      "CROWBAR"
-    ],
+    "use_action": [ "CROWBAR", { "type": "holster", "holster_prompt": "Sheath blade", "holster_msg": "You sheath your %s" } ],
     "qualities": [
       [ "HAMMER", 3 ],
       [ "PRY", 1 ],
@@ -256,6 +245,16 @@
       [ "SAW_M_FINE", 1 ],
       [ "WRENCH_FINE", 1 ],
       [ "SCREW_FINE", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "3 kg",
+        "max_item_length": "70 cm",
+        "moves": 2,
+        "holster": true
+      }
     ]
   },
   {

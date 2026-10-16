@@ -175,8 +175,6 @@ class pocket_data
         std::map<ammotype, int> ammo_restriction;
         /** Only these item types fit (or items matching another restriction). DDA `item_id_restriction`. */
         cata::flat_set<itype_id> item_id_restriction;
-        /** CDF: guns using one of these skills fit (BN holster `skills`). */
-        std::set<skill_id> skill_restriction;
         /** CDF: refuse active items (BN holster behaviour). */
         bool no_active_items = false;
 

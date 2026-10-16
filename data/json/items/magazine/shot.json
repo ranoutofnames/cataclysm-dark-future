@@ -107,7 +107,7 @@
     "color": "light_gray",
     "ammo_type": "shot",
     "capacity": 6,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER", "BELT_CLIP" ]
   },
   {
     "id": "shot_speedloader8",
@@ -124,6 +124,6 @@
     "color": "light_gray",
     "ammo_type": "shot",
     "capacity": 8,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER", "BELT_CLIP" ]
   }
 ]

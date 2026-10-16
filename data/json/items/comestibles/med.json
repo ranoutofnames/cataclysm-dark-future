@@ -1193,7 +1193,7 @@
     "symbol": "~",
     "color": "pink",
     "phase": "liquid",
-    "container": "sippy_cup",
+    "container": "tumbler_plastic",
     "vitamins": [ [ "junk_allergen", 1 ] ],
     "fun": 35,
     "stim": -1,

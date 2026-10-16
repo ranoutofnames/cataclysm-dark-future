@@ -1000,19 +1000,15 @@ std::vector<item *> find_reloadables( Character &who )
             reloadable = node->magazine_current() == nullptr ||
                          node->ammo_remaining() < node->ammo_capacity();
         } else {
-            reloadable = ( node->is_magazine() || node->is_bandolier() ||
-                           ( node->is_gun() && node->magazine_integral() ) ) &&
+            reloadable = ( node->is_magazine() || ( node->is_gun() && node->magazine_integral() ) ) &&
                          node->ammo_remaining() < node->ammo_capacity();
-        }
-        if( node->is_holster() ) {
-            if( node->has_free_holster_pocket() ) {
-                reloadable = true;
-            }
         }
         if( reloadable ) {
             reloadables.push_back( node );
         }
-        return VisitResponse::SKIP;
+        // per DDA character_ammo.cpp:233-246: descend into everything, so a gun or magazine in a
+        // worn rig or pack is found
+        return VisitResponse::NEXT;
     } );
     return reloadables;
 }

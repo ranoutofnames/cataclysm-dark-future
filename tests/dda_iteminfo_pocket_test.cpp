@@ -205,3 +205,25 @@ TEST_CASE( "weight_to_info", "[iteminfo][weight]" )
     CHECK( wt.is_int == false );
     CHECK( wt.three_decimal == false );
 }
+
+static const itype_id itype_test_quiver("test_quiver");
+
+TEST_CASE("ammo_restriction_info", "[iteminfo][ammo_restriction]") {
+    clear_all_state();
+
+    SECTION("container pocket with ammo restriction") {
+        std::vector<iteminfo_parts> pockets = {iteminfo_parts::DESCRIPTION_POCKETS};
+        detached_ptr<item> quiver = item::spawn(itype_test_quiver);
+        REQUIRE_FALSE(quiver->is_magazine());
+        REQUIRE_FALSE(quiver->ammo_types().empty());
+        CHECK(
+            item_info_str(*quiver, pockets)
+            == "--\n"
+               "<color_c_white>Total capacity</color>:\n"
+               "Holds: <color_c_yellow>20</color> rounds of arrows\n"
+               "Holds: <color_c_yellow>20</color> rounds of bolts\n"
+               "Base moves to remove item: <color_c_yellow>20</color>\n");
+    }
+    // DDA's "magazine pocket with ammo restriction" section needs guns/tools as magazines
+    // (is_magazine on test_matches/test_compbow); not available in BN (P3).
+}

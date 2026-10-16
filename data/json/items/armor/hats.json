@@ -120,8 +120,16 @@
     "covers": [ "head" ],
     "coverage": 15,
     "material_thickness": 1,
-    "container_data": { "contains": "500 ml", "watertight": true },
-    "flags": [ "OVERSIZE", "BELTED", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS" ]
+    "flags": [ "OVERSIZE", "BELTED", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS" ],
+    "pocket_data": [
+      {
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "1 kg",
+        "max_item_length": "1 mm",
+        "watertight": true,
+        "rigid": true
+      }
+    ]
   },
   {
     "id": "eboshi",

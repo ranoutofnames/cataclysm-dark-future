@@ -2771,5 +2771,12 @@
     "id": "CRAFT_WITH_FULL_MAG",
     "type": "json_flag",
     "context": [ "GENERIC" ]
+  },
+  {
+    "id": "SHEATH_BOW",
+    "type": "json_flag",
+    "context": [ "GENERIC", "TOOL" ],
+    "restriction": "Item must fit in a bow sling",
+    "info": "This item can <info>fit in a bow sling</info> of the appropriate size."
   }
 ]

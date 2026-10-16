@@ -362,7 +362,9 @@ void Single_item_creator::check_consistency( const std::string &context ) const
                     } else if( container->is_holster() && !container->can_holster( *item ) ) {
                         debugmsg( "Incorrect holstered object object: ( %s %s ) in %s", item->type->get_id().str(),
                                   context, container->type->get_id().str() );
-                    } else if( container->is_bandolier() && !container->can_put_in_bandolier( *item ) ) {
+                    } else if( !container->get_container_pockets().empty() &&
+                               !container->can_contain( *item ).success() ) {
+                        // CDF: ammo pouches and quivers are plain pocket containers (P1f)
                         debugmsg( "Incorrect bandoliered object object: ( %s %s ) in %s", item->type->get_id().str(),
                                   context, container->type->get_id().str() );
                     } else if( container->is_tool() ) {
@@ -418,8 +420,8 @@ void Single_item_creator::check_consistency( const std::string &context ) const
                             debugmsg( "Incorrect holstered object object: ( %s %s ) in %s", contents->type->get_id().str(),
                                       context, item->type->get_id().str() );
                         }
-                    } else if( item->is_bandolier() ) {
-                        if( !item->can_put_in_bandolier( *contents ) ) {
+                    } else if( !item->get_container_pockets().empty() ) {
+                        if( !item->can_contain( *contents ).success() ) {
                             debugmsg( "Incorrect bandoliered object object: ( %s %s ) in %s", contents->type->get_id().str(),
                                       context, item->type->get_id().str() );
                         }

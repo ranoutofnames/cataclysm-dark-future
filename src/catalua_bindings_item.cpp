@@ -438,7 +438,6 @@ void reg_item( sol::state &lua )
         SET_FX( is_gunmod );
         SET_FX( is_bionic );
         SET_FX( is_ammo_belt );
-        SET_FX( is_bandolier );
         SET_FX( is_holster );
         SET_FX( is_ammo );
         SET_FX( is_comestible );

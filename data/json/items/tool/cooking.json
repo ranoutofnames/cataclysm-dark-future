@@ -206,10 +206,18 @@
     "material": "clay",
     "symbol": ")",
     "color": "brown",
-    "container_data": { "contains": "2 L", "watertight": true },
     "qualities": [ [ "COOK", 3 ], [ "BOIL", 2 ], [ "CONTAIN", 1 ], [ "CHEM", 1 ] ],
     "use_action": "HEAT_FOOD",
-    "flags": [ "ALLOWS_REMOTE_USE", "SHATTERS" ]
+    "flags": [ "ALLOWS_REMOTE_USE", "SHATTERS" ],
+    "pocket_data": [
+      {
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "2100 g",
+        "open_container": true,
+        "watertight": true,
+        "rigid": true
+      }
+    ]
   },
   {
     "id": "clay_quern",
@@ -240,9 +248,9 @@
     "material": "clay",
     "symbol": ")",
     "color": "brown",
-    "container_data": { "contains": "750 ml", "watertight": true },
     "qualities": [ [ "BOIL", 1 ] ],
-    "flags": [ "SHATTERS" ]
+    "flags": [ "SHATTERS" ],
+    "pocket_data": [ { "max_contains_volume": "750 ml", "max_contains_weight": "2 kg", "watertight": true, "rigid": true } ]
   },
   {
     "id": "coffeemaker",
@@ -1051,10 +1059,10 @@
     "symbol": ")",
     "color": "light_gray",
     "looks_like": "pot_canning",
-    "container_data": { "contains": "2 L", "seals": true, "watertight": true },
     "qualities": [ [ "COOK", 3 ], [ "BOIL", 2 ], [ "CONTAIN", 1 ], [ "CHEM", 1 ] ],
     "use_action": "HEAT_FOOD",
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [ { "max_contains_volume": "6 L", "max_contains_weight": "100 kg", "watertight": true, "rigid": true } ]
   },
   {
     "id": "rock_quern",
@@ -1180,8 +1188,8 @@
     "material": "steel",
     "symbol": ")",
     "color": "dark_gray",
-    "container_data": { "contains": "500 ml", "watertight": true },
-    "qualities": [ [ "BOIL", 1 ] ]
+    "qualities": [ [ "BOIL", 1 ] ],
+    "pocket_data": [ { "max_contains_volume": "500 ml", "max_contains_weight": "2 kg", "watertight": true, "rigid": true } ]
   },
   {
     "id": "vac_sealer",

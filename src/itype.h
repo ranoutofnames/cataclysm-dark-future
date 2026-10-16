@@ -247,6 +247,13 @@ struct islot_container {
     itype_id unseals_into = itype_id::NULL_ID();
 };
 
+/** DDA part_material: a material of one armor portion and the percentage it covers of it. */
+struct part_material {
+    material_id id = material_id::NULL_ID();
+    // CDF: DDA default of covered_by_mat
+    int cover = 100;
+};
+
 struct armor_portion_data {
     /**
      * How much this item encumbers the player.
@@ -284,6 +291,8 @@ struct armor_portion_data {
 
     /** DDA: how much the volume of the pockets of this item adds to its encumbrance. */
     float volume_encumber_modifier = 1;
+    /** Materials of this portion (DDA); filled from the item materials when not given. */
+    std::vector<part_material> materials;
     /** DDA: volume of non-rigid pocket capacity that adds one point of encumbrance. */
     static constexpr units::volume volume_per_encumbrance = 250_ml;
 
@@ -293,6 +302,8 @@ struct armor_portion_data {
 };
 
 struct islot_armor {
+    // thresholds for an item to count as hard / comfortable to wear (DDA itype.h)
+    static constexpr int test_threshold = 40;
     /**
     * Whether this item can be worn on either side of the body
     */

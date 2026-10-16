@@ -14,22 +14,37 @@
     "covers": [ "torso" ],
     "coverage": 5,
     "material_thickness": 2,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stick what into your belt",
-      "holster_msg": "You tuck your %s into your %s",
-      "max_volume": "500 ml",
-      "max_weight": "400 g",
-      "flags": [ "BELT_CLIP" ]
-    },
-    "flags": [ "WAIST", "WATER_FRIENDLY", "STURDY", "ALLOWS_WINGS" ]
+    "use_action": { "type": "holster", "holster_prompt": "Stick what into your belt", "holster_msg": "You tuck your %s into your %s" },
+    "flags": [ "WAIST", "WATER_FRIENDLY", "STURDY", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",
     "copy-from": "mbelt_leather",
     "id": "mbelt_haste",
     "name": { "str": "Belt of Haste", "str_pl": "Belts of Haste" },
-    "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "SPEED", "multiply": 0.15, "add": 5 } ] } ] }
+    "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "SPEED", "multiply": 0.15, "add": 5 } ] } ] },
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",
@@ -41,7 +56,18 @@
     "material_thickness": 10,
     "environmental_protection": 20,
     "weight_capacity_bonus": "50 kg",
-    "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "STRENGTH", "multiply": 1 } ] } ] }
+    "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "STRENGTH", "multiply": 1 } ] } ] },
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",
@@ -52,7 +78,44 @@
     "coverage": 10,
     "encumbrance": 4,
     "weight_capacity_bonus": "5 kg",
-    "storage": "10 L"
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3 L",
+        "max_contains_weight": "9 kg",
+        "max_item_length": "70 cm",
+        "moves": 90,
+        "weight_multiplier": 0.5,
+        "volume_multiplier": 0.35
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3 L",
+        "max_contains_weight": "9 kg",
+        "max_item_length": "70 cm",
+        "moves": 90,
+        "weight_multiplier": 0.5,
+        "volume_multiplier": 0.35
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3 L",
+        "max_contains_weight": "9 kg",
+        "max_item_length": "70 cm",
+        "moves": 90,
+        "weight_multiplier": 0.5,
+        "volume_multiplier": 0.35
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3 L",
+        "max_contains_weight": "9 kg",
+        "max_item_length": "70 cm",
+        "moves": 90,
+        "weight_multiplier": 0.5,
+        "volume_multiplier": 0.35
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",
@@ -63,7 +126,44 @@
     "coverage": 10,
     "encumbrance": 6,
     "weight_capacity_bonus": "10 kg",
-    "storage": "15 L"
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "12 kg",
+        "max_item_length": "125 cm",
+        "moves": 80,
+        "weight_multiplier": 0.3,
+        "volume_multiplier": 0.2
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "12 kg",
+        "max_item_length": "125 cm",
+        "moves": 80,
+        "weight_multiplier": 0.3,
+        "volume_multiplier": 0.2
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "12 kg",
+        "max_item_length": "125 cm",
+        "moves": 80,
+        "weight_multiplier": 0.3,
+        "volume_multiplier": 0.2
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "12 kg",
+        "max_item_length": "125 cm",
+        "moves": 80,
+        "weight_multiplier": 0.3,
+        "volume_multiplier": 0.2
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",
@@ -74,32 +174,41 @@
     "coverage": 10,
     "encumbrance": 3,
     "weight_capacity_bonus": "10 kg",
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stick what into your belt",
-      "holster_msg": "You tuck your %s into your %s",
-      "min_volume": "1 ml",
-      "max_volume": "4 L",
-      "max_weight": "5 kg",
-      "multi": 4,
-      "skills": [
-        "pistol",
-        "shotgun",
-        "cutting",
-        "archery",
-        "bashing",
-        "launcher",
-        "melee",
-        "rifle",
-        "smg",
-        "stabbing",
-        "throw",
-        "ALL",
-        "gun",
-        "unarmed"
-      ],
-      "flags": [ "SHEATH_KNIFE", "SHEATH_SWORD", "BELT_CLIP", "SHEATH_SPEAR", "SHEATH_AXE", "SHEATH_GOLF" ]
-    }
+    "use_action": { "type": "holster", "holster_prompt": "Stick what into your belt", "holster_msg": "You tuck your %s into your %s" },
+    "pocket_data": [
+      {
+        "holster": true,
+        "moves": 5,
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "125 cm",
+        "weight_multiplier": 0.0
+      },
+      {
+        "holster": true,
+        "moves": 5,
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "125 cm",
+        "weight_multiplier": 0.0
+      },
+      {
+        "holster": true,
+        "moves": 5,
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "125 cm",
+        "weight_multiplier": 0.0
+      },
+      {
+        "holster": true,
+        "moves": 5,
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "2500 g",
+        "max_item_length": "125 cm",
+        "weight_multiplier": 0.0
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",
@@ -148,6 +257,68 @@
     "copy-from": "mbelt_leather",
     "type": "ARMOR",
     "name": { "str": "belt of strength +2", "str_pl": "belts of strength +2" },
-    "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "STRENGTH", "add": 2 } ] } ] }
+    "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "STRENGTH", "add": 2 } ] } ] },
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 60,
+        "description": "Clipped directly to side of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 110,
+        "description": "Clipped directly to back of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "1750 g",
+        "max_item_length": "70 cm",
+        "moves": 110,
+        "description": "Clipped directly to back of the belt.",
+        "flag_restriction": [ "BELT_CLIP" ],
+        "transparent": true
+      }
+    ]
   }
 ]

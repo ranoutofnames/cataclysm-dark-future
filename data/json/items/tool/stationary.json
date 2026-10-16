@@ -49,7 +49,7 @@
     "symbol": ",",
     "color": "light_red",
     "qualities": [ [ "CUT", 1 ] ],
-    "flags": [ "STAB" ]
+    "flags": [ "STAB", "BELT_CLIP", "SHEATH_KNIFE" ]
   },
   {
     "type": "GENERIC",

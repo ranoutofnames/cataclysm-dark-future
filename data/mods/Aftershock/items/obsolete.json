@@ -173,8 +173,8 @@
     "coverage": 20,
     "encumbrance": 5,
     "material_thickness": 1,
-    "use_action": { "type": "bandolier", "capacity": 40, "ammo": [ "arrow", "bolt" ], "draw_cost": 20 },
-    "flags": [ "BELTED", "OVERSIZE", "WATER_FRIENDLY" ]
+    "flags": [ "BELTED", "OVERSIZE", "WATER_FRIENDLY" ],
+    "pocket_data": [ { "ammo_restriction": { "arrow": 40, "bolt": 40 }, "moves": 20 } ]
   },
   {
     "id": "afs_survivor_belt",
@@ -223,16 +223,6 @@
     "storage": "2500 ml",
     "warmth": 15,
     "material_thickness": 3,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
     "flags": [ "STURDY", "OUTER" ]
   },
   {

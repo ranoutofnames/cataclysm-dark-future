@@ -76,11 +76,11 @@ TEST_CASE( "PALS pouches attach with their contents and use up webbing", "[item]
     REQUIRE( pouch->get_pocket_size() == 1 );
     const units::mass pouch_weight = pouch->weight( false );
     const units::volume pouch_volume = pouch->volume();
-    const int pouch_pockets = static_cast<int>( pouch->contents.get_container_pockets().size() );
-    REQUIRE( pouch_pockets > 0 );
-    pouch->put_in( item::spawn( itype_id( "stanag30" ), calendar::turn ) );
-    REQUIRE( pouch->contents.all_items_top().size() == 1 );
-    const item *pouch_ptr = pouch.get();
+    const int pouch_pockets = static_cast<int>(pouch->contents.get_container_pockets().size());
+    REQUIRE(pouch_pockets > 0);
+    pouch->put_in(item::spawn(itype_id("stanag20"), calendar::turn));
+    REQUIRE(pouch->contents.all_items_top().size() == 1);
+    const item* pouch_ptr = pouch.get();
 
     vest->contents.add_pocket( std::move( pouch ) );
 
@@ -102,10 +102,10 @@ TEST_CASE( "PALS pouches attach with their contents and use up webbing", "[item]
         CHECK( vest->contents.get_additional_volume() == pouch_volume );
     }
 
-    SECTION( "a magazine goes into the pocket of an attached pouch" ) {
-        detached_ptr<item> spare = item::spawn( itype_id( "stanag30" ), calendar::turn );
-        const pocket_choice chosen = vest->contents.best_pocket( *spare );
-        REQUIRE( chosen.pocket != nullptr );
+    SECTION("a magazine goes into the pocket of an attached pouch") {
+        detached_ptr<item> spare = item::spawn(itype_id("stanag20"), calendar::turn);
+        const pocket_choice chosen = vest->contents.best_pocket(*spare);
+        REQUIRE(chosen.pocket != nullptr);
         // the chosen pocket is one of the pouch's pockets, which sit after the vest's own
         const auto &all_pockets = vest->contents.get_pockets();
         const auto chosen_at = std::ranges::find_if( all_pockets, [&chosen]( const item_pocket &p ) {

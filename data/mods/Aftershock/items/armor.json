@@ -196,15 +196,66 @@
     "coverage": 20,
     "encumbrance": 8,
     "material_thickness": 2,
-    "storage": "9 L",
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "max_volume": "4 L",
-      "max_weight": "12 kg",
-      "flags": [ "BELT_CLIP" ]
-    },
-    "flags": [ "WATER_FRIENDLY", "BELTED", "ALLOWS_WINGS" ]
+    "use_action": { "type": "holster", "holster_prompt": "Stash ammo", "holster_msg": "You stash your %s." },
+    "flags": [ "WATER_FRIENDLY", "BELTED", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "90 cm",
+        "moves": 40,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "holster": true,
+        "transparent": true
+      },
+      {
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "90 cm",
+        "moves": 40,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "holster": true,
+        "transparent": true
+      },
+      {
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "90 cm",
+        "moves": 40,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "holster": true,
+        "transparent": true
+      },
+      {
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "90 cm",
+        "moves": 40,
+        "flag_restriction": [ "BELT_CLIP" ],
+        "rigid": true,
+        "holster": true,
+        "transparent": true
+      },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "1 L", "max_contains_weight": "2 kg", "moves": 60 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "1 L", "max_contains_weight": "2 kg", "moves": 60 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "1 L", "max_contains_weight": "2 kg", "moves": 60 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "moves": 150 },
+      {
+        "pocket_type": "CONTAINER",
+        "min_item_volume": "2 L",
+        "max_contains_volume": "10 L",
+        "max_contains_weight": "30 kg",
+        "flag_restriction": [ "MAG_BULKY", "HEAVY_TOOL" ],
+        "moves": 60
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "min_item_volume": "2 L",
+        "max_contains_volume": "10 L",
+        "max_contains_weight": "30 kg",
+        "flag_restriction": [ "MAG_BULKY", "HEAVY_TOOL" ],
+        "moves": 60
+      }
+    ]
   }
 ]

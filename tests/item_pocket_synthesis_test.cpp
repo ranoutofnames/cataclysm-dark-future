@@ -24,14 +24,7 @@ auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
     std::map<pocket_type, int> ret;
     int containers = 0;
     if (t.container) { containers++; }
-    if (const use_function* use = t.get_use("holster")) {
-        if (const auto* actor = dynamic_cast<const holster_actor*>(use->get_actor_ptr())) {
-            containers += actor->multi;
-        }
-    }
-    if (const use_function* use = t.get_use("bandolier")) {
-        if (dynamic_cast<const bandolier_actor*>(use->get_actor_ptr()) != nullptr) { containers++; }
-    }
+    // P1f: holsters and bandoliers are explicit pocket_data now, there is nothing to synthesise
     // attach_molle is no longer a pocket: MOLLE is DDA additional_pockets (J5, owner decision)
     if (containers > 0) { ret[pocket_type::CONTAINER] = containers; }
     if (t.magazine) { ret[pocket_type::MAGAZINE] = 1; }
@@ -79,31 +72,27 @@ TEST_CASE("synthesised pockets spot checks", "[item][pocket][synthesis]") {
         CHECK(p.raw_volume_capacity == t.container->contains);
         CHECK_FALSE(p.holster);
     }
-    SECTION("holster: one holster pocket from the actor") {
+    SECTION("holster: one holster pocket from pocket_data, thin use action") {
         const itype& t = *itype_id("holster");
-        const auto* actor = dynamic_cast<const holster_actor*>(
-            t.get_use("holster")->get_actor_ptr());
-        REQUIRE(actor != nullptr);
-        REQUIRE(count_type(t, pocket_type::CONTAINER) == actor->multi);
+        REQUIRE(t.get_use("holster") != nullptr);
+        REQUIRE(t.explicit_pockets);
+        REQUIRE(count_type(t, pocket_type::CONTAINER) == 1);
         const pocket_data& p = t.pockets.front();
         CHECK(p.holster);
-        CHECK(p.max_item_volume == actor->max_volume);
-        CHECK(p.min_item_volume == actor->min_volume);
-        CHECK(p.moves == actor->draw_cost);
-        CHECK(p.skill_restriction.size() == actor->skills.size());
-        CHECK(p.get_flag_restrictions().size() == actor->flags.size());
+        // P-2: the holster use action makes its holster pockets refuse active items
+        CHECK(p.no_active_items);
+        CHECK(p.moves == 50);
     }
-    SECTION("multi: 2 holster gets two holster pockets") {
+    SECTION("two holster pockets declared in pocket_data") {
         const itype& t = *itype_id("test_holster_two");
         REQUIRE(t.pockets.size() == 2);
         for (const pocket_data& p : t.pockets) {
             CHECK(p.holster);
+            CHECK(p.no_active_items);
             CHECK(p.max_item_volume == 1_liter);
             CHECK(p.min_item_volume == 100_ml);
             CHECK(p.max_contains_weight == 2_kilogram);
             CHECK(p.moves == 50);
-            CHECK(p.skill_restriction.contains(skill_id("pistol")));
-            CHECK(p.get_flag_restrictions().contains(flag_id("SHEATH_KNIFE")));
         }
     }
     SECTION("bandolier: one ammo-restricted container") {

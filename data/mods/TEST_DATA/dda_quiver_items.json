@@ -1,0 +1,43 @@
+[
+  {
+    "id": "test_quiver",
+    "type": "ARMOR",
+    "name": { "str": "test quiver" },
+    "description": "Quiver of Testing, with room for 20 arrows or bolts.",
+    "weight": "260 g",
+    "volume": "500 ml",
+    "price": "65 USD",
+    "price_postapoc": "10 USD",
+    "material": [ "leather" ],
+    "symbol": "[",
+    "looks_like": "bscabbard",
+    "color": "brown",
+    "covers": [ "leg_l", "leg_r" ],
+    "coverage": 10,
+    "encumbrance": 3,
+    "material_thickness": 1,
+    "pocket_data": [ { "ammo_restriction": { "arrow": 20, "bolt": 20 }, "moves": 20 } ],
+    "flags": [ "BELTED", "OVERSIZE", "WATER_FRIENDLY" ]
+  },
+  {
+    "id": "test_arrow_wood",
+    "type": "AMMO",
+    "price": "10 USD",
+    "name": { "str": "test wooden broadhead arrow" },
+    "symbol": "=",
+    "color": "green",
+    "looks_like": "arrow_fire_hardened_fletched",
+    "description": "Test arrow",
+    "material": [ "wood", "steel" ],
+    "volume": "250 ml",
+    "price_postapoc": "250 cent",
+    "weight": "30 g",
+    "bashing": 2,
+    "cutting": 1,
+    "ammo_type": "arrow",
+    "dispersion": 110,
+    "loudness": 0,
+    "speed": 100,
+    "count": 10
+  }
+]

@@ -83,8 +83,6 @@ item *steal( avatar &you, player &victim );
 item *use( avatar &you );
 /** Item wielding/unwielding menu. */
 item *wield( avatar &you );
-/** Item wielding/unwielding menu. */
-item *holster( player &p, item &holster );
 /** Choose items to insert into @p holster and start the insert activity (DDA game_inventory.cpp:2088). */
 void insert_items( item &holster );
 /** Choose another container for items that could not be inserted (DDA game.cpp:6590). */

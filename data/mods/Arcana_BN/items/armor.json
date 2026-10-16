@@ -113,7 +113,7 @@
         }
       ]
     },
-    "use_action": { "type": "bandolier", "capacity": 200, "ammo": [ "essence_type" ], "draw_cost": 10 }
+    "pocket_data": [ { "ammo_restriction": { "essence_type": 200 }, "moves": 10 } ]
   },
   {
     "id": "mana_gem_blood",
@@ -124,7 +124,8 @@
     "material": [ "silver", "essencemat" ],
     "looks_like": "silver_locket",
     "color": "light_gray",
-    "use_action": { "type": "bandolier", "capacity": 600, "ammo": [ "essence_blood_type" ], "draw_cost": 10 }
+    "use_action": [  ],
+    "pocket_data": [ { "ammo_restriction": { "essence_blood_type": 600 }, "moves": 10 } ]
   },
   {
     "id": "mana_gem_dull",
@@ -135,7 +136,8 @@
     "material": [ "copper", "essencemat" ],
     "looks_like": "copper_locket",
     "color": "light_red",
-    "use_action": { "type": "bandolier", "capacity": 6000, "ammo": [ "essence_dull_type" ], "draw_cost": 10 }
+    "use_action": [  ],
+    "pocket_data": [ { "ammo_restriction": { "essence_dull_type": 6000 }, "moves": 10 } ]
   },
   {
     "id": "mana_gem_pure",
@@ -146,7 +148,8 @@
     "material": [ "platinum", "essencemat" ],
     "looks_like": "platinum_locket",
     "color": "white",
-    "use_action": { "type": "bandolier", "capacity": 20, "ammo": [ "essence_pure_type" ], "draw_cost": 10 }
+    "use_action": [  ],
+    "pocket_data": [ { "ammo_restriction": { "essence_pure_type": 20 }, "moves": 10 } ]
   },
   {
     "id": "satchel_eternity",
@@ -168,7 +171,6 @@
     "rigid": false,
     "encumbrance": 0,
     "max_encumbrance": 25,
-    "storage": "50 L",
     "material_thickness": 1,
     "weight_capacity_modifier": 2,
     "relic_data": {
@@ -194,16 +196,42 @@
         }
       ]
     },
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Store magic focus",
-      "holster_msg": "You store your %s",
-      "multi": 4,
-      "min_volume": "1 ml",
-      "max_volume": "5 L",
-      "draw_cost": 0,
-      "flags": [ "MAGIC_FOCUS" ]
-    },
-    "flags": [ "WAIST", "COMPACT", "OVERSIZE", "NO_SALVAGE" ]
+    "use_action": { "type": "holster", "holster_prompt": "Store magic focus", "holster_msg": "You store your %s" },
+    "flags": [ "WAIST", "COMPACT", "OVERSIZE", "NO_SALVAGE" ],
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "max_contains_volume": "50 L" },
+      {
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_item_volume": "5 L",
+        "min_item_volume": "1 ml",
+        "flag_restriction": [ "MAGIC_FOCUS" ],
+        "moves": 0
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_item_volume": "5 L",
+        "min_item_volume": "1 ml",
+        "flag_restriction": [ "MAGIC_FOCUS" ],
+        "moves": 0
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_item_volume": "5 L",
+        "min_item_volume": "1 ml",
+        "flag_restriction": [ "MAGIC_FOCUS" ],
+        "moves": 0
+      },
+      {
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_item_volume": "5 L",
+        "min_item_volume": "1 ml",
+        "flag_restriction": [ "MAGIC_FOCUS" ],
+        "moves": 0
+      }
+    ]
   }
 ]

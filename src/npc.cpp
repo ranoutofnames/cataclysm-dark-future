@@ -3187,7 +3187,7 @@ bool npc::dispose_item( item &obj, const std::string & )
                 continue;
             }
             opts.emplace_back( dispose_option {
-                item_store_cost( obj, *e, false, ptr->draw_cost ),
+                item_store_cost( obj, *e, false, e->insert_cost( obj ) ),
                 [this, ptr, &e, &obj]{
                     detached_ptr<item> failed = ptr->store( *this, *e, obj.detach() );
                     g->m.add_item_or_charges( bub_pos(), std::move( failed ) );

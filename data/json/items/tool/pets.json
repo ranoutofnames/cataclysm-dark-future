@@ -49,7 +49,7 @@
     "symbol": ";",
     "color": "light_gray",
     "qualities": [ [ "CUT", 1 ], [ "SHEAR", 1 ] ],
-    "flags": [ "STAB" ]
+    "flags": [ "STAB", "SHEATH_KNIFE" ]
   },
   {
     "id": "elec_shears",

@@ -1193,7 +1193,7 @@
     "id": "sherry",
     "category": "drugs",
     "name": { "str_sp": "sherry" },
-    "weight": "120 g",
+    "weight": "50 g",
     "color": "brown",
     "addiction_type": "alcohol",
     "use_action": "ALCOHOL",

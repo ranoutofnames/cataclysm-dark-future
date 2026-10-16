@@ -1,9 +1,12 @@
 #include "avatar.h"
+#include "calendar.h"
 #include "catch/catch.hpp"
+#include "detached_ptr.h"
 #include "flag.h"
 #include "flat_set.h"
 #include "game.h"
 #include "item.h"
+#include "pocket_type.h"
 #include "state_helpers.h"
 #include "type_id.h"
 
@@ -115,4 +118,36 @@ TEST_CASE("item sizing display", "[item][iteminfo][display_name][sizing]") {
             }
         }
     }
+}
+
+// DDA source: tests/itemname_test.cpp:136-166 (DDA commit b4b62254ae2), P1f K7.
+// CDF: items are spawned detached, and the name format is BN's: a container with a single content
+// stack shows the content name, the container in brackets and "(held/capacity)".
+TEST_CASE("display_name_includes_item_contents", "[item][display_name][contents]") {
+    clear_all_state();
+
+    detached_ptr<item> arrow_ptr =
+        item::spawn(itype_id("test_arrow_wood"), calendar::turn_zero, item::default_charges_tag{});
+    // Arrows are ammo with a default count of 10
+    REQUIRE(arrow_ptr->is_ammo());
+    REQUIRE(arrow_ptr->count() == 10);
+
+    item& quiver = *item::spawn_temporary(itype_id("test_quiver"));
+    // Quivers are not magazines, nor do they have magazines
+    REQUIRE_FALSE(quiver.is_magazine());
+    REQUIRE_FALSE(quiver.magazine_current());
+    // But they can contain ammo (CDF: item::ammo_types stays empty for non-gun, tool or magazine)
+    REQUIRE(quiver.can_contain(*arrow_ptr).success());
+
+    // Check empty quiver display
+    CHECK(quiver.display_name()
+          == "<color_c_light_green>||\u00A0</color>test quiver<color_c_light_gray> (0/20)</color>");
+
+    // Insert one stack of arrows
+    quiver.put_in(std::move(arrow_ptr), pocket_type::CONTAINER);
+    // Expect 10 arrows remaining and displayed
+    CHECK(quiver.ammo_remaining() == 10);
+    CHECK(
+        quiver.display_name()
+        == "<color_c_light_green>||\u00A0</color>test wooden broadhead arrow (test quiver) (10/20)");
 }

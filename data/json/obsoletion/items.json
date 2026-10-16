@@ -1071,7 +1071,7 @@
     "description": "A modern bow that curves away from the archer at the tips for increased power, which can be used effectively by those of somewhat above-average strength.  Good and easy to use, but nothing special.",
     "price": "380 USD",
     "material": [ "steel", "plastic" ],
-    "flags": [ "FIRE_TWOHAND", "STR_DRAW", "RELOAD_AND_SHOOT", "PRIMITIVE_RANGED_WEAPON", "BELTED", "WATER_FRIENDLY" ],
+    "flags": [ "FIRE_TWOHAND", "STR_DRAW", "RELOAD_AND_SHOOT", "PRIMITIVE_RANGED_WEAPON", "BELTED", "WATER_FRIENDLY", "SHEATH_BOW" ],
     "skill": "archery",
     "min_strength": 9,
     "ammo": "arrow",
@@ -1099,7 +1099,7 @@
     "description": "A bow with limbs that curve away from the archer near the riser for power.  Smaller than some bows, but decently powerful and quick.",
     "price": "420 USD",
     "material": [ "wood" ],
-    "flags": [ "FIRE_TWOHAND", "STR_DRAW", "RELOAD_AND_SHOOT", "PRIMITIVE_RANGED_WEAPON", "BELTED", "WATER_FRIENDLY" ],
+    "flags": [ "FIRE_TWOHAND", "STR_DRAW", "RELOAD_AND_SHOOT", "PRIMITIVE_RANGED_WEAPON", "BELTED", "WATER_FRIENDLY", "SHEATH_BOW" ],
     "skill": "archery",
     "ammo": "arrow",
     "min_strength": 9,
@@ -1155,7 +1155,7 @@
     "description": "A modernized bow that combines the traits from both the reflex and the recurve bows, with both limbs and tips curving away from the archer, and reinforced with composite materials.  This dramatically increases the power and requires significant strength to draw the bow effectively, but can still be fired quickly.",
     "price": "720 USD",
     "material": [ "wood" ],
-    "flags": [ "FIRE_TWOHAND", "STR_DRAW", "RELOAD_AND_SHOOT", "PRIMITIVE_RANGED_WEAPON", "BELTED", "WATER_FRIENDLY" ],
+    "flags": [ "FIRE_TWOHAND", "STR_DRAW", "RELOAD_AND_SHOOT", "PRIMITIVE_RANGED_WEAPON", "BELTED", "WATER_FRIENDLY", "SHEATH_BOW" ],
     "skill": "archery",
     "min_strength": 8,
     "ammo": "arrow",
@@ -1754,16 +1754,6 @@
     "storage": "1 L",
     "warmth": 15,
     "material_thickness": 6,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
     "flags": [ "STURDY", "OUTER" ]
   },
   {
@@ -4454,16 +4444,6 @@
     "storage": "2500 ml",
     "warmth": 15,
     "material_thickness": 4,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
     "flags": [ "OVERSIZE", "STURDY", "OUTER" ]
   },
   {
@@ -4696,16 +4676,6 @@
     "storage": "2500 ml",
     "warmth": 15,
     "material_thickness": 7,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
     "flags": [ "STURDY", "OUTER", "ALLOWS_WINGS" ]
   },
   {
@@ -4729,16 +4699,6 @@
     "storage": "1 L",
     "warmth": 15,
     "material_thickness": 10,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
     "resistance": { "bullet": 90 },
     "flags": [ "OUTER", "NO_REPAIR", "ALLOWS_WINGS" ]
   },
@@ -4763,16 +4723,6 @@
     "storage": "1 L",
     "warmth": 15,
     "material_thickness": 10,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
     "resistance": { "bullet": 90 },
     "flags": [ "STURDY", "OUTER", "NO_REPAIR", "ALLOWS_WINGS" ]
   },
@@ -4797,16 +4747,6 @@
     "storage": "1 L",
     "warmth": 15,
     "material_thickness": 10,
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
     "resistance": { "bullet": 70 },
     "flags": [ "STURDY", "OUTER", "NO_REPAIR", "ALLOWS_WINGS" ]
   },

@@ -41,7 +41,7 @@ const pocket_data &migration_pocket_data()
 
 bool pocket_data::has_item_restrictions() const
 {
-    return !flag_restrictions.empty() || !item_id_restriction.empty() || !skill_restriction.empty();
+    return !flag_restrictions.empty() || !item_id_restriction.empty();
 }
 
 void pocket_data::load( const JsonObject &jo )
@@ -77,12 +77,7 @@ void pocket_data::load( const JsonObject &jo )
         mandatory( jo, was_loaded, "item_restriction", item_restriction );
         default_magazine = item_restriction.front();
     }
-    // CDF: BN holster skills and the carry flag of worn storage
-    if( jo.has_member( "skill_restriction" ) ) {
-        for( const std::string &id : jo.get_string_array( "skill_restriction" ) ) {
-            skill_restriction.insert( skill_id( id ) );
-        }
-    }
+    // CDF: the carry flag of worn storage
     optional( jo, was_loaded, "carry", carry, false );
     // ammo_restriction is a type of override, making the mandatory members not mandatory and superfluous
     // putting it in an if statement like this should allow for report_unvisited_member to work here
@@ -110,6 +105,17 @@ void pocket_data::load( const JsonObject &jo )
         // CDF: BN's JsonObject can't read a type with a load() member through optional()
         if( jo.has_object( "activity_noise" ) ) {
             activity_noise.load( jo.get_object( "activity_noise" ) );
+        }
+    } else {
+        // CDF: DDA ammo_restriction pockets (bandoliers, pouches) carry volume_encumber_modifier;
+        // DDA's JsonObject never reports it as unvisited, BN's does. Value is ignored per DDA.
+        for( const char *ignored : {
+                 "volume_encumber_modifier", "extra_encumbrance", "ripoff",
+                 "activity_noise"
+             } ) {
+            if( jo.has_member( ignored ) ) {
+                jo.get_member( ignored );
+            }
         }
     }
     optional( jo, was_loaded, "spoil_multiplier", spoil_multiplier, 1.0f );
@@ -195,11 +201,6 @@ std::string pocket_data::check_definition() const
     for( const flag_id &f : flag_restrictions ) {
         if( !f.is_valid() ) {
             res += string_format( "flag_restriction has invalid flag \"%s\"\n", f.str() );
-        }
-    }
-    for( const skill_id &sk : skill_restriction ) {
-        if( !sk.is_valid() ) {
-            res += string_format( "skill_restriction has invalid skill \"%s\"\n", sk.str() );
         }
     }
     for( const auto &ammo_res : ammo_restriction ) {
@@ -331,6 +332,5 @@ bool pocket_data::operator==( const pocket_data &rhs ) const
            volume_encumber_modifier == rhs.volume_encumber_modifier &&
            magazine_well == rhs.magazine_well &&
            sealed_by_type == rhs.sealed_by_type &&
-           skill_restriction == rhs.skill_restriction &&
            no_active_items == rhs.no_active_items;
 }

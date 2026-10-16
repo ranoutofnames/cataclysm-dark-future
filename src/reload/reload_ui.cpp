@@ -293,8 +293,9 @@ auto present(const player& who, item& base, reload_selection::selection_result r
             } else if (base.is_container()) {
                 name = base.is_container_empty() ? "items" : base.contents.front().tname();
             } else {
+                const auto base_ammo = base.ammo_types();
                 name = enumerate_as_string(
-                    base.ammo_types().begin(), base.ammo_types().end(),
+                    base_ammo.begin(), base_ammo.end(),
                     [](const ammotype& ammo_type) { return ammo_type->name(); },
                     enumeration_conjunction::none);
             }
