@@ -529,11 +529,13 @@
   {
     "id": "GASFILTER_SM",
     "type": "json_flag",
+    "context": [  ],
     "info": "A small-sized gas mask filter."
   },
   {
     "id": "GASFILTER_MED",
     "type": "json_flag",
+    "context": [  ],
     "info": "A medium-sized gas mask filter."
   },
   {
@@ -2229,6 +2231,7 @@
   {
     "id": "REBREATHER_CART",
     "type": "json_flag",
+    "context": [  ],
     "info": "A filter for a rebreather."
   },
   {
@@ -2336,27 +2339,32 @@
   {
     "id": "SPEEDLOADER_CLIP",
     "type": "json_flag",
+    "context": [  ],
     "info": "This item can quickly reload rounds into gun or magazine that <info>don't have enough space</info>.",
     "conflicts": [ "SPEEDLOADER" ]
   },
   {
     "id": "BATTERY_ULTRA_LIGHT",
     "type": "json_flag",
+    "context": [  ],
     "info": "This item fits in items that use ultra-light batteries."
   },
   {
     "id": "BATTERY_LIGHT",
     "type": "json_flag",
+    "context": [  ],
     "info": "This item fits in items that use light batteries."
   },
   {
     "id": "BATTERY_MEDIUM",
     "type": "json_flag",
+    "context": [  ],
     "info": "This item fits in items that use medium batteries."
   },
   {
     "id": "BATTERY_HEAVY",
     "type": "json_flag",
+    "context": [  ],
     "info": "This item fits in items that use tool batteries."
   },
   {
