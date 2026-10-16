@@ -527,6 +527,16 @@
     "info": "This gear <good>completely protects</good> you from <info>any gas</info>."
   },
   {
+    "id": "GASFILTER_SM",
+    "type": "json_flag",
+    "info": "A small-sized gas mask filter."
+  },
+  {
+    "id": "GASFILTER_MED",
+    "type": "json_flag",
+    "info": "A medium-sized gas mask filter."
+  },
+  {
     "id": "HOLSTER_PISTOL",
     "type": "json_flag",
     "context": [ "GENERIC", "TOOL" ],
@@ -2217,6 +2227,11 @@
     "context": [  ]
   },
   {
+    "id": "REBREATHER_CART",
+    "type": "json_flag",
+    "info": "A filter for a rebreather."
+  },
+  {
     "id": "RECHARGE",
     "type": "json_flag",
     "context": [  ]
@@ -2317,6 +2332,32 @@
     "id": "SPEEDLOADER",
     "type": "json_flag",
     "context": [  ]
+  },
+  {
+    "id": "SPEEDLOADER_CLIP",
+    "type": "json_flag",
+    "info": "This item can quickly reload rounds into gun or magazine that <info>don't have enough space</info>.",
+    "conflicts": [ "SPEEDLOADER" ]
+  },
+  {
+    "id": "BATTERY_ULTRA_LIGHT",
+    "type": "json_flag",
+    "info": "This item fits in items that use ultra-light batteries."
+  },
+  {
+    "id": "BATTERY_LIGHT",
+    "type": "json_flag",
+    "info": "This item fits in items that use light batteries."
+  },
+  {
+    "id": "BATTERY_MEDIUM",
+    "type": "json_flag",
+    "info": "This item fits in items that use medium batteries."
+  },
+  {
+    "id": "BATTERY_HEAVY",
+    "type": "json_flag",
+    "info": "This item fits in items that use tool batteries."
   },
   {
     "id": "SPLINT",
