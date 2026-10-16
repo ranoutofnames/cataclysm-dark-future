@@ -17,6 +17,18 @@ noted per record); (2) `cap`-kind rows keep CDF's number in the pocket and on th
 CDF well / pocket authored from the item (action AUTHOR-KEEP-CDF-WELL); (5) R5 charge counts
 stay CDF's. Where the rules below say "DDA's number", this paragraph overrides them.
 
+AUTO-8 (orchestrator DECISIONS, 2026-10-16): (6) TOOL-INT rows whose DDA twin has a magazine well
+but whose CDF item has integral charges keep the CDF integral charges: the MAGAZINE pocket is
+authored from `ammo` / `max_charges`, no twin well (action AUTHOR-KEEP-CDF-INTEGRAL, diff kind
+`well(dda)`); (7) `initial_charges` and `count` stay as the CDF values (balance) and are never
+listed as dropped keys or removed by --apply; only the keys DDA's structure replaces go
+(`magazines`, item-level `magazine_well`, `capacity`, `max_charges`, `ammo` -> `tool_ammo`). A
+kept `count` / `initial_charges` above the emitted pocket capacity is listed per record
+(`kept_over_cap`; the P3-1 loader check `count > capacity` is an engine concern); (8) ids a
+DDA-only well names and CDF lacks, and `default_magazine` shifts, follow DDA only through the
+existing id-drop logic (a magazine that exists in CDF); (9) DDA ammotypes that CDF does not define
+(e.g. `coal`) are still listed in `dropped_ids` when the CDF ammo set replaces the twin's.
+
 Status of this tool: chunk 1e. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
 R3 (WELL), R4 (TOOL-INT), R5 (CHARGES), R6 (ADAPTOR), R8 (DDA-POCKET), the R9 STORAGE/EXPLICIT
 handling and the HAND-FALLBACK defaults for NEEDS-HAND rows in `--report` mode, and `--apply`
@@ -46,7 +58,7 @@ Rules (PLAN-P3 section 4.3; the numbers are the plan's)
   R4  TOOL-INT    `ammo` -> `tool_ammo` (renamed_keys; the CDF loader keeps `ammo` as alias,
                   `// CDF:`), pocket MAGAZINE { ammo_restriction: { <ammo>: max_charges } } (the
                   twin's MAGAZINE / MAGAZINE_WELL pockets are copied where a twin exists),
-                  `max_charges` / `initial_charges` dropped (DDA "Redundant max charge value").
+                  `max_charges` dropped (DDA "Redundant max charge value"); `initial_charges` kept (AUTO-8).
                   Battery tools without a twin pocket take the nearest DDA twin tool's shape
                   (copy-from chain, id stem, same parent, same max_charges + volume): flag well
                   copied from a BATTERY_* twin, or integral MAGAZINE {battery: max_charges}; no
@@ -56,7 +68,7 @@ Rules (PLAN-P3 section 4.3; the numbers are the plan's)
                   tools). Where every ammotype / well id / flag of the twin's MAGAZINE (or
                   MAGAZINE_WELL) pocket exists in CDF (an ammotype whose default ammo item is
                   empty counts as undefined), the twin pocket is copied (COPY-TWIN; the item's
-                  `max_charges` / `initial_charges` go, `tool_ammo` is set from the twin); else
+                  `max_charges` goes, `initial_charges` is kept, `tool_ammo` is set from the twin); else
                   the tool stays on `charges` (KEEP-CHARGES, the missing names are listed).
   R6  ADAPTOR     no edit: `magazine_adaptor` and `magazines_like` stay (KEEP); the 6 REVIEW
                   rows (DDA twin has the adaptor) are KEEP-REVIEW, the golden matrix covers them
@@ -550,6 +562,7 @@ def new_record(rec, cls, twin, ctx):
         "id": rec["id"], "class": cls, "has_twin": twin is not None,
         "source_file": rec["file"], "twin_file": twin_file, "action": None, "rule": None,
         "pocket_data": [], "dropped_keys": [], "inherited_keys": [], "dropped_ids": [],
+        "kept_over_cap": [],
         "set_keys": {}, "cap": [], "diff": [], "ammo_diff": {},
         "violations": [], "tags": tags, "notes": [], "carry": [], "synth_lost": synth_lost(rec),
     }
@@ -593,6 +606,26 @@ def carry_pockets(ctx, rec):
     return res
 
 
+def note_kept_counts(out, rec, pockets):
+    """AUTO-8: `count` and `initial_charges` stay the CDF values (balance, never dropped). When a
+    kept value exceeds the capacity of the emitted integral MAGAZINE pocket it is listed in
+    `kept_over_cap` (the P3-1 loader check `count > capacity` is an engine concern)."""
+    caps = []
+    for p in pockets:
+        ar = p.get("pocket_type") == "MAGAZINE" and p.get("ammo_restriction")
+        if isinstance(ar, dict):
+            caps += [n for n in (to_int(v) for v in ar.values()) if n is not None]
+    if not caps:
+        return
+    cap = max(caps)
+    for key in ("count", "initial_charges"):
+        v = to_int(rec["eff"].get(key))
+        if v is not None and v > cap:
+            out["kept_over_cap"].append({"key": key, "value": v, "capacity": cap})
+            out["notes"].append("kept `%s` %d exceeds the pocket capacity %d (engine concern, "
+                                "P3-1 loader)" % (key, v, cap))
+
+
 def finish(out, rec, existing_pockets, new_pockets, mag_types=("MAGAZINE",), ctx=None):
     """Merge with an existing explicit pocket_data (R9 EXPLICIT) and settle the action.
     `mag_types` are the pocket types the planner replaces (R3 adds MAGAZINE_WELL).
@@ -601,6 +634,7 @@ def finish(out, rec, existing_pockets, new_pockets, mag_types=("MAGAZINE",), ctx
     an explicit pocket_data would otherwise drop."""
     keep = [p for p in existing_pockets if p.get("pocket_type") not in mag_types]
     out["pocket_data"] = keep + new_pockets
+    note_kept_counts(out, rec, new_pockets)
     if keep:
         out["notes"].append("EXPLICIT: %d existing non-magazine pocket(s) kept in front "
                             "(R9, merge by hand)" % len(keep))
@@ -705,7 +739,7 @@ def ammo_kinds(want, got, out):
             out["cap"] = rows
 
 
-def keep_cdf_numbers(pockets, want, out):
+def keep_cdf_numbers(pockets, want, out, ctx=None):
     """Owner rule (functionality port, not balance port): the pocket keeps the twin's STRUCTURE
     (pocket_type, rigid, allowed_speedloaders, ...) but its `ammo_restriction` carries the CDF
     item's own ammo set and numbers (`want`: ammo -> capacity / clip_size / max_charges). Ammo
@@ -721,6 +755,11 @@ def keep_cdf_numbers(pockets, want, out):
         for a, n in ar.items():
             if a in want:
                 new[a] = want[a] if want[a] > 0 else n
+            elif ctx is not None and a not in ctx.cdf.ammotypes:
+                # information only: the twin's ammotype does not exist in CDF (e.g. DDA `coal`);
+                # sanitize() would have listed it before the owner rule removed it here
+                out["dropped_ids"].append({"where": "ammo_restriction", "id": a,
+                                           "why": "ammotype undefined in CDF"})
         for a, n in want.items():
             if a not in new and n > 0:
                 new[a] = n
@@ -769,11 +808,11 @@ def plan_mag(ctx, rec, cls, exp, twin):
         new = copy.deepcopy(tmag)
         out["action"] = "COPY-TWIN"
         ammo_kinds(want, pocket_ammo(tmag), out)
-        keep_cdf_numbers(new, want, out)   # owner rule: CDF ammo set and capacity
+        keep_cdf_numbers(new, want, out, ctx)   # owner rule: CDF ammo set and capacity
         # R1: remove capacity/count where the twin has no such key; where it has one the CDF
         # item keeps its own number (owner rule: no set_keys from the twin)
         teff = twin["eff"]
-        for key in ("capacity", "count"):
+        for key in ("capacity",):   # AUTO-8: `count` stays the CDF value
             site = key_site(raw, eff, key)
             if site is None:
                 continue
@@ -802,7 +841,7 @@ def plan_mag(ctx, rec, cls, exp, twin):
                 "ammo_restriction": collections.OrderedDict(want)}]
         out["action"] = "AUTHOR"
         # CDF: no twin to read from; DDA's convention (no `capacity`/`count` on magazines) applies
-        for key in ("capacity", "count"):
+        for key in ("capacity",):   # AUTO-8: `count` stays the CDF value
             site = key_site(raw, eff, key)
             if site == "inherited":
                 out["inherited_keys"].append({"key": key, "value": eff.get(key),
@@ -854,7 +893,7 @@ def plan_gun_int(ctx, rec, cls, exp, twin):
         new = copy.deepcopy(tmag)
         out["action"] = "COPY-TWIN"
         ammo_kinds(want, pocket_ammo(tmag), out)
-        keep_cdf_numbers(new, want, out)   # owner rule: CDF ammo set and clip_size
+        keep_cdf_numbers(new, want, out, ctx)   # owner rule: CDF ammo set and clip_size
         dsl = pocket_loaders(tmag)
         if loaders and not dsl:
             out["diff"].append("speedloaders-unrestricted")
@@ -1240,22 +1279,29 @@ def plan_tool_int(ctx, rec, cls, exp, twin):
                                                   for p in tother))))
     battery = "battery" in want
     new = []
+    tmag = [p for p in tshape if p.get("pocket_type") == "MAGAZINE"]
+    well_dda = bool(tshape) and not tmag
+    if well_dda:
+        # AUTO-8: DDA has a magazine well where CDF has integral charges. CDF keeps its integral
+        # charges: the MAGAZINE pocket is authored from `ammo` / `max_charges` as for a CDF-only
+        # integral tool; the twin well is not copied.
+        out["diff"].append("well(dda)")
+        out["notes"].append("DDA twin carries a magazine well (%s) where CDF has integral "
+                            "charges (max_charges %s): CDF integral charges kept (AUTO-8), "
+                            "integral MAGAZINE authored, twin well not copied"
+                            % (",".join(json.dumps(p.get("flag_restriction") or
+                                                   p.get("item_restriction"))
+                                        for p in tshape),
+                               ",".join(str(v) for v in want.values())))
+        tshape = []
+        battery = False
     if tshape:
         out["action"] = "COPY-TWIN"
-        tmag = [p for p in tshape if p.get("pocket_type") == "MAGAZINE"]
         if tmag:
             ammo_kinds(want, pocket_ammo(tmag), out)
-        else:
-            out["diff"].append("well(dda)")
-            out["notes"].append("DDA twin carries a magazine well (%s) where CDF has integral "
-                                "charges (max_charges %s)"
-                                % (",".join(json.dumps(p.get("flag_restriction") or
-                                                       p.get("item_restriction"))
-                                            for p in tshape),
-                                   ",".join(str(v) for v in want.values())))
         tshape_c = copy.deepcopy(tshape)
         if len([p for p in tshape_c if p.get("pocket_type") == "MAGAZINE"]) == 1:
-            keep_cdf_numbers(tshape_c, want, out)   # owner rule: CDF ammo set and max_charges
+            keep_cdf_numbers(tshape_c, want, out, ctx)   # owner rule: CDF ammo set and max_charges
         for p in tshape_c:
             if p.get("pocket_type") == "MAGAZINE":
                 got = sanitize([p], ctx, out)
@@ -1280,7 +1326,7 @@ def plan_tool_int(ctx, rec, cls, exp, twin):
         if any(d["where"] == "item_restriction" for d in out["dropped_ids"]):
             out["diff"].append("mags-absent")
     else:
-        if twin is not None:
+        if twin is not None and not well_dda:
             out["diff"].append("nopocket")
             out["notes"].append("DDA twin has no magazine pocket (tool_ammo %s, max_charges %s): "
                                 "authored like a CDF-only item"
@@ -1362,8 +1408,7 @@ def plan_tool_int(ctx, rec, cls, exp, twin):
                                     "site": site})
     move_item_key(ctx, rec, out, "max_charges",
                   "DDA: the magazine pocket carries the capacity (\"Redundant max charge value\")")
-    move_item_key(ctx, rec, out, "initial_charges", "DDA: not kept on tools with a magazine "
-                  "pocket (R4)")
+    # AUTO-8: `initial_charges` is kept as the CDF value (balance); only the capacity moves
     if rec["type"] == "ARMOR":
         out["notes"].append("type ARMOR (not TOOL_ARMOR) with ammo/max_charges: check the DDA "
                             "loader accepts tool_ammo here")
@@ -1456,7 +1501,7 @@ def plan_copy_pocket(ctx, rec, cls, twin, rule, missing_action):
                                         % (charges, n))
         move_item_key(ctx, rec, out, "max_charges", "DDA twin carries the charge count in its "
                       "magazine pocket (R5)")
-        move_item_key(ctx, rec, out, "initial_charges", "DDA twin has no initial_charges (R5)")
+        # AUTO-8: `initial_charges` stays the CDF value (checked against the pocket in finish)
     # DDA names the ammo in `tool_ammo` (or `ammo`); the CDF item has neither
     tam = twin["eff"].get("tool_ammo", twin["eff"].get("ammo"))
     if tam is not None and not eff.get("tool_ammo") and not eff.get("ammo"):
@@ -1556,6 +1601,7 @@ ALL_CLASSES = ["MAG", "GUN-INT", "TOOL-INT", "WELL", "ADAPTOR", "CHARGES", "DDA-
 
 
 ACT_KEEP_AMMO = "COPY-TWIN-KEEP-CDF-AMMO"   # twin structure, CDF ammo set and numbers
+ACT_KEEP_INTEGRAL = "AUTHOR-KEEP-CDF-INTEGRAL"   # AUTO-8: DDA well, CDF integral charges kept
 ACT_KEEP_WELL = "AUTHOR-KEEP-CDF-WELL"      # DDA twin has no magazine pocket: CDF's well/pocket kept
 
 
@@ -1590,6 +1636,8 @@ def build_records(ctx, classes, ids):
         # owner rule labels (functionality port): visible in the action column
         if out["action"] == "COPY-TWIN" and out["ammo_diff"] and out["rule"] in ("R1", "R2", "R4"):
             out["action"] = ACT_KEEP_AMMO
+        elif out["action"] == "AUTHOR" and "well(dda)" in out["diff"] and cls == "TOOL-INT":
+            out["action"] = ACT_KEEP_INTEGRAL
         elif out["action"] == "AUTHOR" and "nopocket" in out["diff"] and cls in ("WELL", "TOOL-INT"):
             out["action"] = ACT_KEEP_WELL
         for p in out["pocket_data"]:
@@ -1824,13 +1872,23 @@ def write_markdown(path, records, args, ctx):
     ren = [r for r in records if r.get("renamed_keys")]
     if any(r["rule"] == "R4" for r in records):
         L.append("## R4 key moves\n")
-        L.append("`ammo` renamed to `tool_ammo` on %d items; `max_charges` dropped on %d, "
-                 "`initial_charges` on %d (inherited ones are in the inherited-keys section).\n"
+        L.append("`ammo` renamed to `tool_ammo` on %d items; `max_charges` dropped on %d (the "
+                 "pocket carries the number). `initial_charges` and `count` are KEPT as CDF "
+                 "values (AUTO-8); rows where a kept value exceeds the emitted pocket capacity "
+                 "are listed below (inherited keys are in the inherited-keys section).\n"
                  % (len(ren),
                     sum(1 for r in records if r["rule"] == "R4" and any(
-                        d["key"] == "max_charges" for d in r["dropped_keys"])),
-                    sum(1 for r in records if r["rule"] == "R4" and any(
-                        d["key"] == "initial_charges" for d in r["dropped_keys"]))))
+                        d["key"] == "max_charges" for d in r["dropped_keys"]))))
+        over = [r for r in records if r["kept_over_cap"]]
+        if over:
+            L.append("Kept `count` / `initial_charges` above the pocket capacity (%d rows, "
+                     "engine concern for the P3-1 `count > capacity` check):\n" % len(over))
+            L.append("| id | class | key | value | pocket capacity |\n|---|---|---|---|---|")
+            for r in over:
+                for k in r["kept_over_cap"]:
+                    L.append("| `%s` | %s | %s | %d | %d |" % (r["id"], r["class"], k["key"],
+                                                           k["value"], k["capacity"]))
+            L.append("")
         sib = [r for r in records if any(d.startswith("sibling") for d in r["diff"])]
         if sib:
             L.append("Battery tools authored from the nearest DDA twin tool:\n")
@@ -1866,6 +1924,7 @@ def write_markdown(path, records, args, ctx):
 # (`--cdf <scratch root>`), never on a worktree's data/json or data/mods directly.
 
 EDIT_ACTIONS = ("COPY-TWIN", "COPY-TWIN-KEEP-CDF-AMMO", "AUTHOR", "AUTHOR-KEEP-CDF-WELL",
+                "AUTHOR-KEEP-CDF-INTEGRAL",
                 "DROP-KEY", "HAND-FALLBACK")
 WS = " \t\r\n"
 
@@ -2345,7 +2404,9 @@ def allowed_twin_view(rec, twin_pockets, tree_pockets):
         dropped[d["where"]].add(d["id"])
     for p in want:
         ar = p.get("ammo_restriction")
-        if isinstance(ar, dict):
+        if isinstance(ar, dict) and not rec.get("ammo_diff"):
+            # (with an ammo_diff the twin's extra ammo is handled by `ad` below, including the
+            # undefined ones listed in dropped_ids for information, e.g. `coal`)
             for a in list(ar):
                 if a in dropped.get("ammo_restriction", ()):
                     del ar[a]
@@ -2358,7 +2419,8 @@ def allowed_twin_view(rec, twin_pockets, tree_pockets):
                     del p[key]
         if p.get("default_magazine") in dropped.get("default_magazine", ()):
             del p["default_magazine"]
-    want = [p for p in want if p.get("ammo_restriction") != {}]
+    if not rec.get("ammo_diff"):
+        want = [p for p in want if p.get("ammo_restriction") != {}]
     wd = rec.get("well_diff") or {}
     added = set(wd.get("cdf_added") or [])
     for p in got:
