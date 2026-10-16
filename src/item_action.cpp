@@ -90,7 +90,7 @@ item_action_map item_action_generator::map_actions_to_items( player &p,
     }
 
     item_action_map candidates;
-    std::vector< item * > items = p.inv_dump();
+    std::vector< item * > items = p.all_items_loc();
     items.reserve( items.size() + pseudos.size() );
     items.insert( items.end(), pseudos.begin(), pseudos.end() );
 
@@ -330,8 +330,6 @@ void game::item_action_menu()
 
     u.invoke_item( it, *action );
 
-    u.inv_restack( );
-    u.inv_unsort();
 }
 
 std::string use_function::get_type() const

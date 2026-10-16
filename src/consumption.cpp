@@ -3,6 +3,7 @@
 #include "activity_handlers.h"
 #include "addiction.h"
 #include "avatar.h"
+#include "carried_stacks.h"
 #include "avatar_functions.h"
 #include "bionics.h"
 #include "calendar.h"
@@ -207,34 +208,45 @@ struct prepared_item_consumption {
     }
 };
 
-// Should return item_location instead, but it's really hard to get it from inventory
+// CDF: find_food_heater is a BN-only feature (no DDA equivalent), ported to temp_crafting_inventory
 static std::optional<prepared_item_consumption> find_food_heater( Character &c,
-        const inventory &inv, bool has_fire )
+        temp_crafting_inventory &inv, bool has_fire )
 {
+    const auto first_with = [&inv]( const std::function<bool( const item & )> &pred ) -> item * {
+        item *found = nullptr;
+        inv.visit_items( [&]( item * it )
+        {
+            if( pred( *it ) ) {
+                found = it;
+                return VisitResponse::ABORT;
+            }
+            return VisitResponse::NEXT;
+        } );
+        return found;
+    };
     if( has_fire ) {
-        std::vector<item *> fire_heaters = inv.items_with( []( const item & it ) {
+        item *fire_heater = first_with( []( const item & it ) {
             return it.has_flag( flag_HEATS_FOOD_USING_FIRE );
         } );
-        if( !fire_heaters.empty() ) {
-            return prepared_item_consumption( item_consumption_t::none, *fire_heaters.front() );
+        if( fire_heater ) {
+            return prepared_item_consumption( item_consumption_t::none, *fire_heater );
         }
     }
-    std::vector<item *> charged_heaters = inv.items_with( [&c]( const item & it ) {
+    item *charged_heater = first_with( [&c]( const item & it ) {
         return it.has_flag( flag_HEATS_FOOD_USING_CHARGES ) &&
                it.has_flag( flag_HEATS_FOOD ) &&
                c.has_enough_charges( it, false );
     } );
-    if( !charged_heaters.empty() ) {
-        return prepared_item_consumption( item_consumption_t::tool, *charged_heaters.front() );
+    if( charged_heater ) {
+        return prepared_item_consumption( item_consumption_t::tool, *charged_heater );
     }
-    std::vector<item *> consumed_heaters = inv.items_with( []( const item & it ) {
+    item *consumed_heater = first_with( []( const item & it ) {
         return it.has_flag( flag_HEATS_FOOD_IS_CONSUMED ) &&
                it.has_flag( flag_HEATS_FOOD ) &&
                is_crafting_component( it );
     } );
-    if( !consumed_heaters.empty() ) {
-        return prepared_item_consumption( item_consumption_t::component, *consumed_heaters.front() );
-
+    if( consumed_heater ) {
+        return prepared_item_consumption( item_consumption_t::component, *consumed_heater );
     }
     return std::nullopt;
 }
@@ -1072,7 +1084,8 @@ void Character::modify_morale( item &food, int nutr )
     };
 
     if( food.has_flag( flag_EATEN_HOT ) ) {
-        auto heater = find_food_heater( *this, crafting_inventory(),
+        temp_crafting_inventory temp_inv = crafting_inventory();
+        auto heater = find_food_heater( *this, temp_inv,
                                         get_map().has_nearby_fire( bub_pos(), PICKUP_RANGE ) );
         if( heater && heater->consume( *this ) ) {
             add_msg_player_or_npc( m_good,
@@ -1591,10 +1604,8 @@ void Character::consume( item &target )
         return who.consume_item( std::move( it ) );
     } );
 
-    // Restack and sort so that we don't lie about target's invlet
+    // Invlets live on the items, no restack is needed to keep target's invlet truthful
     if( inv_item ) {
-        inv_restack();
-
         // in the case that the consumable was in a container, but the container is now empty (no more charges)
         // the invlet is lost
         // so we find try to find a new container with a consumable of the same type, and re-assign to it
@@ -1603,10 +1614,10 @@ void Character::consume( item &target )
             auto &cont_type = target.typeId();
             auto &item_type = comest.typeId();
 
-            auto stacks = inv_const_slice();
+            const std::vector<carried_stack> stacks = carried_item_stacks( *this );
             // find a non-empty container of the same type, with the same content type
-            for( auto &stack : stacks ) {
-                auto &c = stack->front();
+            for( const carried_stack &stack : stacks ) {
+                item *const c = stack.front();
                 if( c->typeId() != cont_type ) {
                     continue;
                 }
@@ -1619,7 +1630,11 @@ void Character::consume( item &target )
 
                 // remove the assignment from the now-empty container regardless,
                 // and assign it to the next container if found
-                inv_reassign_item( *c, old_invlet, true );
+                // CDF: avatar-only, npcs have no invlets (per DDA)
+                if( avatar *you = as_avatar() ) {
+                    target.invlet = 0;
+                    you->reassign_item_cache( *c, old_invlet, true );
+                }
 
                 break;
             }
@@ -1644,7 +1659,7 @@ void Character::consume( item &target )
                 add_msg( _( "You drop the empty %s." ), target.tname() );
                 put_into_vehicle_or_drop( *this, item_drop_reason::deliberate, target.detach() );
             } else {
-                int quantity = inv_const_stack( inv_position_by_item( &target ) ).size();
+                const int quantity = carried_stack_of( *this, &target ).size();
                 char letter = target.invlet ? target.invlet : ' ';
                 add_msg( m_info, _( "%c - %d empty %s" ), letter, quantity, target.tname( quantity ) );
             }
@@ -1653,9 +1668,6 @@ void Character::consume( item &target )
         target.attempt_detach( [&who]( detached_ptr<item> &&it ) {
             return pickup::handle_spillable_contents( who, std::move( it ), get_map() );
         } );
-
-        inv_restack();
-        inv_unsort();
     }
 }
 

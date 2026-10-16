@@ -1,6 +1,7 @@
 #include "action_time_scale.h"
 #include "addiction.h"
 #include "avatar.h"
+#include "carried_stacks.h"
 #include "bionics.h"
 #include "bodypart.h"
 #include "calendar.h"
@@ -1803,7 +1804,7 @@ bool Character::irradiate( float rads, bool bypass )
         mod_rad( rng( 0, rads_max ) );
 
         // Apply rads to any radiation badges.
-        for( item *const it : inv_dump() ) {
+        for( item *const it : all_items_loc() ) {
             if( it->typeId() != itype_rad_badge ) {
                 continue;
             }
@@ -1820,7 +1821,10 @@ bool Character::irradiate( float rads, bool bypass )
             it->irradiation += delta;
 
             // If in inventory (not worn), don't print anything.
-            if( inv.has_item( *it ) ) {
+            const std::vector<carried_stack> carried = carried_item_stacks( *this );
+            if( std::ranges::any_of( carried, [it]( const carried_stack & stack ) {
+            return std::ranges::find( stack, it ) != stack.end();
+            } ) ) {
                 continue;
             }
 
@@ -2113,6 +2117,16 @@ int Character::addiction_level( add_type type ) const
 int  Character::leak_level( const flag_id &flag ) const
 {
     int leak_level = 0;
-    leak_level = inv.leak_level( flag );
+    for( const carried_stack &stack : carried_item_stacks( *this ) ) {
+        for( const item *it : stack ) {
+            if( it->has_flag( flag ) ) {
+                if( it->has_flag( flag_LEAK_ALWAYS ) ) {
+                    leak_level += it->volume() / units::legacy_volume_factor;
+                } else if( it->has_flag( flag_LEAK_DAM ) && it->damage() > 0 ) {
+                    leak_level += it->damage_level( 4 );
+                }
+            }
+        }
+    }
     return leak_level;
 }

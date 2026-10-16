@@ -98,8 +98,6 @@ class inventory : public temp_visitable<inventory>
         size_t size() const;
         bool locked = false;
 
-        std::map<char, itype_id> assigned_invlet;
-
         inventory();
         inventory( inventory && ) = default;
         inventory( const inventory & ) = default;
@@ -206,14 +204,6 @@ class inventory : public temp_visitable<inventory>
         // returns all items that need processing
         std::vector<item *> active_items();
 
-        // Assigns an invlet if any remain.  If none do, will assign ` if force is
-        // true, empty (invlet = 0) otherwise.
-        void assign_empty_invlet( item &it, const Character &p, bool force = false );
-        // Assigns the item with the given invlet, and updates the favorite invlet cache. Does not check for uniqueness
-        void reassign_item( item &it, char invlet, bool remove_old = true );
-        // Removes invalid invlets, and assigns new ones if assign_invlet is true. Does not update the invlet cache.
-        void update_invlet( item &it, bool assign_invlet = true );
-
         void set_stack_favorite( int position, bool favorite );
 
         invlets_bitset allocated_invlets() const;
@@ -224,7 +214,6 @@ class inventory : public temp_visitable<inventory>
          */
         const itype_bin &get_binned_items() const;
 
-        void update_invlet_cache_with_item( item &newit );
         // gets a singular enchantment that is an amalgamation of all items that have active enchantments
         enchantment get_active_enchantment_cache( const Character &owner ) const;
 
@@ -235,17 +224,12 @@ class inventory : public temp_visitable<inventory>
 
         void build_items_type_cache();
 
-        void json_load_invcache( JsonIn &jsin );
-        void json_save_invcache( JsonOut &json ) const;
 
     private:
         friend location_inventory;
         friend visitable<inventory>;
         friend temp_visitable<inventory>;
         friend location_visitable<location_inventory>;
-        invlet_favorites invlet_cache;
-        char find_usable_cached_invlet( const itype_id &item_type );
-
         std::list<std::vector<item *>> items;
         std::map<itype_id, std::list<std::vector<item *> *>> items_type_cache;
         std::map<quality_id, std::map<int, int>> quality_cache;
@@ -289,8 +273,6 @@ class location_inventory : public location_visitable<location_inventory>
         location_inventory &operator=( const location_inventory & ) = delete;
 
         ~location_inventory();
-
-        std::map<char, itype_id> assigned_invlet;
 
         void unsort();
         void clear();
@@ -379,19 +361,9 @@ class location_inventory : public location_visitable<location_inventory>
         // returns all items that need processing
         std::vector<item *> active_items();
 
-        void json_load_invcache( JsonIn &jsin );
         void json_load_items( JsonIn &jsin );
 
-        void json_save_invcache( JsonOut &json ) const;
         void json_save_items( JsonOut &json ) const;
-
-        // Assigns an invlet if any remain.  If none do, will assign ` if force is
-        // true, empty (invlet = 0) otherwise.
-        void assign_empty_invlet( item &it, const Character &p, bool force = false );
-        // Assigns the item with the given invlet, and updates the favorite invlet cache. Does not check for uniqueness
-        void reassign_item( item &it, char invlet, bool remove_old = true );
-        // Removes invalid invlets, and assigns new ones if assign_invlet is true. Does not update the invlet cache.
-        void update_invlet( item &it, bool assign_invlet = true );
 
         void set_stack_favorite( int position, bool favorite );
 
@@ -403,7 +375,6 @@ class location_inventory : public location_visitable<location_inventory>
          */
         const itype_bin &get_binned_items() const;
 
-        void update_invlet_cache_with_item( item &newit );
 
         // gets a singular enchantment that is an amalgamation of all items that have active enchantments
         enchantment get_active_enchantment_cache( const Character &owner ) const;

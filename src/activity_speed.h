@@ -14,7 +14,7 @@
 #include "units_volume.h"
 
 class Character;
-class inventory;
+class temp_crafting_inventory;
 struct tripoint;
 
 using stat_reqs = std::vector<activity_req<character_stat>>;
@@ -22,7 +22,7 @@ using stat_factors = std::vector<std::pair<character_stat, float>>;
 
 using bench_factor_fn = std::function<void( bench_loc &, const metric & )>;
 using morale_factor_fn = std::function<float( const Character & )>;
-using tools_factor_fn = std::function<float( const q_reqs &, const inventory & )>;
+using tools_factor_fn = std::function<float( const q_reqs &, const temp_crafting_inventory & )>;
 using skills_factor_fn = std::function<float( const Character &, const skill_reqs & )>;
 using stats_factor_fn = std::function<stat_factors( const Character &, const stat_reqs & )>;
 
@@ -34,7 +34,7 @@ static morale_factor_fn default_morale_factor = []( const Character & )
 {
     return -1.f;
 };
-static tools_factor_fn default_tools_factor = []( const q_reqs &, const inventory & )
+static tools_factor_fn default_tools_factor = []( const q_reqs &, const temp_crafting_inventory & )
 {
     return -1.f;
 };
@@ -120,5 +120,5 @@ class activity_speed
         void calc_tools_factor( Character &who, const q_reqs &quality_reqs,
                                 const activity_target &target );
         static float get_best_qual_mod( const activity_req<quality_id> &q,
-                                        const inventory &inv );
+                                        const temp_crafting_inventory &inv );
 };

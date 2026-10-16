@@ -805,15 +805,8 @@ class atm_menu
 
         //!Move money from bank account onto cash card.
         bool do_withdraw_money() {
-            //We may want to use visit_items here but that's fairly heavy.
-            //For now, just check weapon if we didn't find it in the inventory.
-            int pos = u.inv_position_by_type( itype_cash_card );
-            item *dst;
-            if( pos == INT_MIN ) {
-                dst = &u.primary_weapon();
-            } else {
-                dst = &u.i_at( pos );
-            }
+            const std::vector<item *> cards = u.all_items_with_id( itype_cash_card );
+            item *dst = cards.empty() ? &null_item_reference() : cards.front();
 
             if( dst == nullptr || dst->is_null() ) {
                 //Just in case we run into an edge case
@@ -873,15 +866,14 @@ class atm_menu
                     return false;
                 }
             } else {
-                const int pos = u.inv_position_by_type( itype_cash_card );
-
-                if( pos == INT_MIN ) {
+                const std::vector<item *> cards = u.all_items_with_id( itype_cash_card );
+                if( cards.empty() ) {
                     return false;
                 }
-                dst = &u.i_at( pos );
+                dst = cards.front();
             }
 
-            for( auto &i : u.inv_dump() ) {
+            for( auto &i : u.all_items_loc() ) {
                 if( i == dst || i->charges <= 0 || i->typeId() != itype_cash_card ) {
                     continue;
                 }
@@ -1526,7 +1518,7 @@ void iexamine::portable_structure( player &p, const tripoint_bub_ms &examp )
  */
 void iexamine::pit( player &p, const tripoint_bub_ms &examp )
 {
-    const inventory &crafting_inv = p.crafting_inventory();
+    const temp_crafting_inventory crafting_inv = p.crafting_inventory();
     if( !crafting_inv.has_amount( itype_2x4, 1 ) ) {
         none( p, examp );
         return;
@@ -4477,7 +4469,7 @@ void iexamine::tree_maple( player &p, const tripoint_bub_ms &examp )
         return;
     }
 
-    const inventory &crafting_inv = p.crafting_inventory();
+    const temp_crafting_inventory crafting_inv = p.crafting_inventory();
 
     if( !crafting_inv.has_amount( itype_tree_spile, 1 ) ) {
         add_msg( m_info, _( "You need a %s to tap this maple tree." ),
@@ -5513,8 +5505,8 @@ static int findBestGasDiscount( player &p )
 {
     int discount = 0;
 
-    for( size_t i = 0; i < p.inv_size(); i++ ) {
-        item &it = p.inv_find_item( i );
+    for( item * const &itp : p.all_items_loc() ) {
+        item &it = *itp;
 
         if( it.has_flag( flag_GAS_DISCOUNT ) ) {
 
@@ -5796,14 +5788,14 @@ void iexamine::pay_gas( player &p, const tripoint_bub_ms &examp )
     }
 
     if( refund == choice ) {
-        const int pos = p.inv_position_by_type( itype_id( "cash_card" ) );
+        const std::vector<item *> cards = p.all_items_with_id( itype_id( "cash_card" ) );
 
-        if( pos == INT_MIN ) {
+        if( cards.empty() ) {
             add_msg( _( "Never mind." ) );
             return;
         }
 
-        item *cashcard = &( p.i_at( pos ) );
+        item *cashcard = cards.front();
         // Okay, we have a cash card. Now we need to know what's left in the pump.
         const std::optional<tripoint_bub_ms> pGasPump = getGasPumpByNumber( examp,
                 uistate.ags_pay_gas_selected_pump );
@@ -6664,7 +6656,7 @@ void iexamine::autodoc( player &p, const tripoint_bub_ms &examp )
     std::vector<tool_comp> anesth_kit;
 
     if( needs_anesthesia && amenu.ret < 2 ) {
-        const inventory &crafting_inv = p.crafting_inventory();
+        const temp_crafting_inventory crafting_inv = p.crafting_inventory();
         std::vector<item *> a_filter = crafting_inv.items_with( []( const item & it ) {
             return it.has_quality( qual_ANESTHESIA );
         } );
@@ -7076,7 +7068,7 @@ static void cloning_vat_activate( player &p, const tripoint_bub_ms &examp )
         if( selected_syringe->get_var( "specimen_sample" ) == items[x]->get_var( "specimen_sample" ) ) {
             if( items[x]->units_remaining( p ) <= 1 ) {
                 // this consumes the container. need to figure that out
-                detached_ptr<item> garbage = p.i_rem( p.inv_position_by_item( items[x] ) );
+                detached_ptr<item> garbage = items[x]->detach();
             } else {
                 items[x]->mod_charges( -1 );
             }
@@ -7444,7 +7436,7 @@ static void smoker_load_food( player &p, const tripoint_bub_ms &examp,
     }
 
     // filter SMOKABLE food
-    inventory inv = p.crafting_inventory();
+    temp_crafting_inventory inv = p.crafting_inventory();
     inv.remove_items_with( []( const item & it ) {
         return it.rotten();
     } );
@@ -7553,7 +7545,7 @@ static void mill_load_food( player &p, const tripoint_bub_ms &examp,
         return;
     }
     // filter millable food
-    inventory inv = p.crafting_inventory();
+    temp_crafting_inventory inv = p.crafting_inventory();
     inv.remove_items_with( []( const item & it ) {
         return it.rotten();
     } );
@@ -8639,13 +8631,11 @@ void iexamine::multicooker( player &p, const tripoint_bub_ms &pos )
 
         std::vector<const recipe *> dishes;
 
-        inventory crafting_inv = g->u.crafting_inventory();
+        temp_crafting_inventory crafting_inv = g->u.crafting_inventory();
 
         for( itype item : furniture->crafting_pseudo_item_types() ) {
-            crafting_inv.add_item( *item::spawn_temporary( item.get_id(), calendar::start_of_cataclysm ),
-                                   false );
+            crafting_inv.add_item_loc( *item::spawn_temporary( item.get_id(), calendar::start_of_cataclysm ) );
         }
-        crafting_inv.update_quality_cache();
 
         int counter = 0;
 

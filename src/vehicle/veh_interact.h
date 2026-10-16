@@ -5,6 +5,7 @@
 #include "cursesdef.h"
 #include "input.h"
 #include "inventory.h"
+#include "temp_crafting_inventory.h"
 #include "memory_fast.h"
 #include "player_activity_ptr.h"
 #include "type_id.h"
@@ -109,7 +110,7 @@ private:
     std::unique_ptr<install_info_t> install_info;
 
     vehicle* veh;
-    inventory crafting_inv;
+    temp_crafting_inventory crafting_inv;
     input_context main_context;
 
     // maximum level of available lifting equipment (if any)

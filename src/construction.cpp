@@ -170,7 +170,7 @@ IMPLEMENT_STRING_AND_INT_IDS( construction, all_constructions )
 // Helper functions, nobody but us needs to call these.
 static bool can_construct( const construction_group_str_id &group );
 static bool can_construct( const construction &con );
-static bool player_can_build( Character &ch, const inventory &inv,
+static bool player_can_build( Character &ch, const temp_crafting_inventory &inv,
                               const construction_group_str_id &group );
 static bool player_can_see_to_build( Character &ch, const construction_group_str_id &group );
 static void place_construction( const construction_group_str_id &group );
@@ -376,7 +376,7 @@ static nc_color construction_color( const construction_group_str_id &group, bool
     } else if( can_construct( group ) ) {
         const construction *con_first = nullptr;
         std::vector<const construction *> cons = constructions_by_group( group );
-        const inventory &total_inv = player_character.crafting_inventory();
+        const temp_crafting_inventory &total_inv = player_character.crafting_inventory();
         for( const construction *con : cons ) {
             if( con->requirements->can_make_with_inventory( total_inv, is_crafting_component ) ) {
                 con_first = con;
@@ -465,7 +465,7 @@ std::optional<construction_id> construction_menu( const bool blueprint )
     std::vector<int> construct_buffer_breakpoints;
     int total_project_breakpoints = 0;
     int current_construct_breakpoint = 0;
-    const inventory &total_inv = g->u.crafting_inventory();
+    const temp_crafting_inventory &total_inv = g->u.crafting_inventory();
     int current_category_total = 0;
 
     input_context ctxt( "CONSTRUCTION" );
@@ -1516,7 +1516,8 @@ std::optional<construction_id> construction_menu( const bool blueprint )
     return ret;
 }
 
-bool player_can_build( Character &ch, const inventory &inv, const construction_group_str_id &group )
+bool player_can_build( Character &ch, const temp_crafting_inventory &inv,
+                       const construction_group_str_id &group )
 {
     // check all with the same group to see if player can build any
     std::vector<const construction *> cons = constructions_by_group( group );
@@ -1528,7 +1529,7 @@ bool player_can_build( Character &ch, const inventory &inv, const construction_g
     return false;
 }
 
-bool player_can_build( Character &ch, const inventory &inv, const construction &con )
+bool player_can_build( Character &ch, const temp_crafting_inventory &inv, const construction &con )
 {
     if( ch.has_trait( trait_DEBUG_HS ) ) {
         return true;
@@ -1614,7 +1615,7 @@ bool can_construct( const construction &con )
 
 void place_construction( const construction_group_str_id &group )
 {
-    const inventory &total_inv = g->u.crafting_inventory();
+    const temp_crafting_inventory &total_inv = g->u.crafting_inventory();
 
     std::vector<const construction *> cons = constructions_by_group( group );
     std::map<tripoint_bub_ms, const construction *> valid;

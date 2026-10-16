@@ -559,7 +559,7 @@ hint_rating rate_action_salvage( avatar &you, const item &it )
     //is_salvageable is much cheaper so we do it first
     if( !it.is_salvageable() ) {
         return hint_rating::cant; // never possible
-    } else if( auto cache = you.crafting_inventory().get_quality_cache();
+    } else if( auto cache = salvage::get_quality_cache( you.crafting_inventory() );
                salvage::try_salvage( it, cache ).success() ) {
         return hint_rating::good; // possible
     } else {

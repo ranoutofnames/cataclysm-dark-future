@@ -1,6 +1,7 @@
 #include "npctrade.h"
 
 #include "avatar.h"
+#include "carried_stacks.h"
 #include "faction.h"
 #include "game.h"
 #include "item.h"
@@ -64,7 +65,14 @@ std::vector<item_pricing> npc_trading::init_selling( npc &np )
             }
         } );
     };
-    add_stacks( np.inv_const_slice() );
+    for( const carried_stack &stack : carried_item_stacks( np ) ) {
+        auto &it = *stack.front();
+        const auto price = it.price( true );
+        auto val = np.value( it );
+        if( np.wants_to_sell( it, val, price ) ) {
+            result.emplace_back( stack, val, static_cast<int>( stack.size() ) );
+        }
+    }
     add_stacks( np.shop_stock.const_slice() );
 
     if( np.will_exchange_items_freely() ) {
@@ -141,10 +149,9 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
         }
     };
 
-    const_invslice slice = seller.inv_const_slice();
-    std::ranges::for_each( slice, [&]( const auto & i ) {
-        check_item( *i, i->size() );
-    } );
+    for( const carried_stack &stack : carried_item_stacks( seller ) ) {
+        check_item( stack, stack.size() );
+    }
 
     if( is_npc ) {
         const_invslice stock = np.shop_stock.const_slice();

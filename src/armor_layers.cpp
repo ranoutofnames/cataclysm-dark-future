@@ -978,7 +978,7 @@ void show_armor_layers_ui( Character &who )
                     } else if( who.invlet_to_item( invlet ) != nullptr ) {
                         ++iiter;
                     } else {
-                        who.inv_reassign_item( w, invlet );
+                        who.as_avatar()->reassign_item( w, invlet );
                         ++witer;
                         ++iiter;
                     }

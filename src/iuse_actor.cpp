@@ -406,7 +406,9 @@ int iuse_transform::use( player &p, item &it, bool t, const tripoint_bub_ms &pos
         p.update_bodytemp( get_map(), get_weather() );
         p.on_item_wear( it );
     }
-    p.inv_update_invlet_cache_with_item( it );
+    if( avatar *you = p.as_avatar() ) {
+        you->update_cache_with_item( it );
+    }
     // Update luminosity as object is "added"
     get_map().update_lum( it, true );
     ( active || countdown ) ? it.activate() : it.deactivate();
@@ -3173,7 +3175,7 @@ bool repair_item_actor::handle_components( player &pl, const item &fix,
         return false;
     }
 
-    const inventory &crafting_inv = pl.crafting_inventory();
+    const temp_crafting_inventory &crafting_inv = pl.crafting_inventory();
     const int items_needed = get_material_amt_needed( fix, just_check );
 
     // Go through all discovered repair items and see if we have any of them available
@@ -3188,7 +3190,7 @@ bool repair_item_actor::handle_components( player &pl, const item &fix,
             continue;
         }
         if( item::count_by_charges( component_id ) ) {
-            if( crafting_inv.has_charges( component_id, items_needed ) ) {
+            if( crafting_inv.charges_of( component_id, items_needed ) >= items_needed ) {
                 comps.emplace_back( component_id, items_needed );
             }
         } else if( crafting_inv.has_amount( component_id, items_needed, false, is_crafting_component ) ) {
@@ -5143,7 +5145,7 @@ int sew_advanced_actor::use( player &p, item &it, bool, const tripoint_bub_ms & 
     // Cache available materials
     std::map< itype_id, bool > has_enough;
     const int items_needed = mod.volume() / 750_ml + 1;
-    const inventory &crafting_inv = p.crafting_inventory();
+    const temp_crafting_inventory &crafting_inv = p.crafting_inventory();
     // Go through all discovered repair items and see if we have any of them available
     for( auto cm : clothing_mods::get_all() ) {
         auto item_string = cm.item_string;
@@ -5159,7 +5161,7 @@ int sew_advanced_actor::use( player &p, item &it, bool, const tripoint_bub_ms & 
 
         has_enough[item_string] =
             item::count_by_charges( item_string )
-            ? crafting_inv.has_charges( item_string, items_needed )
+            ? crafting_inv.charges_of( item_string, items_needed ) >= items_needed
             : crafting_inv.has_amount( item_string, items_needed );
     }
 
@@ -5980,13 +5982,12 @@ int multicooker_iuse::use( player &p, item &it, bool t, const tripoint_bub_ms &p
 
             std::vector<const recipe *> dishes;
 
-            inventory crafting_inv = g->u.crafting_inventory();
+            temp_crafting_inventory crafting_inv = g->u.crafting_inventory();
 
             const time_point bday = calendar::start_of_cataclysm;
             for( const std::string &item : temporary_tools ) {
-                crafting_inv.add_item( *item::spawn_temporary( item, bday ), false );
+                crafting_inv.add_item_loc( *item::spawn_temporary( item, bday ) );
             }
-            crafting_inv.update_quality_cache();
 
             int counter = 0;
 
@@ -6401,7 +6402,9 @@ int iuse_music_player::use( player &p, item &it, bool t, const tripoint_bub_ms &
         p.update_bodytemp( get_map(), get_weather() );
         p.on_item_wear( it );
     }
-    p.inv_update_invlet_cache_with_item( it );
+    if( avatar *you = p.as_avatar() ) {
+        you->update_cache_with_item( it );
+    }
     // Update luminosity as object is "added"
     get_map().update_lum( it, true );
     it.activate();

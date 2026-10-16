@@ -17,6 +17,7 @@ class JsonIn;
 class JsonOut;
 class player_activity;
 class inventory;
+class temp_crafting_inventory;
 
 struct bench_loc;
 
@@ -277,7 +278,7 @@ class activity_actor
          * anything below 0 is invalid, promting to use default formula
         */
         virtual float calc_tools_factor( const std::vector<activity_req<quality_id>> &/*qualities*/,
-                                         const inventory &/*inv*/ ) const {
+                                         const temp_crafting_inventory &/*inv*/ ) const {
             return -1.0f;
         }
 

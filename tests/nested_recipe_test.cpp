@@ -24,7 +24,7 @@ TEST_CASE("nested_recipe_known_check", "[crafting][nested][recipe]") {
         dummy.set_skill_level(skill_id("tailor"), 0);
 
         // Get the character's available recipes (recipes they know)
-        inventory crafting_inv = dummy.crafting_inventory();
+        temp_crafting_inventory crafting_inv = dummy.crafting_inventory();
         const recipe_subset& available = dummy.get_available_recipes(crafting_inv);
 
         THEN("hiking backpack should NOT be in available recipes") {
@@ -36,7 +36,7 @@ TEST_CASE("nested_recipe_known_check", "[crafting][nested][recipe]") {
         // Set tailor skill to 5 (meets difficulty requirement for autolearn)
         dummy.set_skill_level(skill_id("tailor"), 5);
 
-        inventory crafting_inv = dummy.crafting_inventory();
+        temp_crafting_inventory crafting_inv = dummy.crafting_inventory();
         const recipe_subset& available = dummy.get_available_recipes(crafting_inv);
 
         THEN("hiking backpack should be in available recipes") {

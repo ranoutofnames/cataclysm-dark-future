@@ -195,8 +195,9 @@ static auto check_invlet(player& p, item& it, const char invlet) -> invlet_state
     if (it.invlet == '\0') {
         return NONE;
     } else if (it.invlet == invlet) {
-        if (p.inv_assigned_invlet().find(invlet) != p.inv_assigned_invlet().end()
-            && p.inv_assigned_invlet()[invlet] == it.typeId()) {
+        // CDF: assigned invlets live on the avatar (per DDA)
+        const auto& assigned = get_avatar().get_assigned_invlet();
+        if (assigned.find(invlet) != assigned.end() && assigned.at(invlet) == it.typeId()) {
             return ASSIGNED;
         } else {
             return CACHED;

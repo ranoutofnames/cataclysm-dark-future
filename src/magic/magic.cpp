@@ -813,7 +813,7 @@ void spell::use_components(Character& who) const {
     if (type->spell_components.is_empty()) { return; }
     const requirement_data& spell_components = type->spell_components.obj();
     // if we're here, we're assuming the Character has the correct components (using can_cast())
-    inventory map_inv;
+    temp_crafting_inventory map_inv;
     for (const auto& it : spell_components.get_components()) {
         who.consume_items(who.select_item_component(it, 1, map_inv), 1);
     }

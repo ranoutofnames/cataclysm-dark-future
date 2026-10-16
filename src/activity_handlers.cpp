@@ -55,6 +55,7 @@
 #include "iexamine.h"
 #include "int_id.h"
 #include "inventory.h"
+#include "temp_crafting_inventory.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_group.h"
@@ -557,7 +558,7 @@ butchery_setup consider_butchery( const item &corpse_item, player &u, butcher_ty
         }
     };
 
-    const inventory &inv = u.crafting_inventory();
+    const temp_crafting_inventory inv = u.crafting_inventory();
     // Must check both u and inventory because crafting inventory lacks mutation butcher items
     const int factor = std::max(
                            u.max_quality( action == DISSECT ? qual_CUT_FINE : qual_BUTCHER ),
@@ -1196,7 +1197,7 @@ void activity_handlers::butcher_finish( player_activity *act, player *p )
 
     map &here = get_map();
     safe_reference<item> &target = act->targets.back();
-    const inventory &inv = p->crafting_inventory();
+    const temp_crafting_inventory inv = p->crafting_inventory();
 
     // Corpses can disappear (rezzing!), so check for that
     if( !target || !target->is_corpse() ) {
@@ -2984,7 +2985,7 @@ void activity_handlers::repair_item_finish( player_activity *act, player *p )
 
         int items_needed = actor->get_material_amt_needed( fix, true );
         const auto valid_materials = actor->get_valid_materials( fix );
-        const auto &crafting_inv = p->crafting_inventory();
+        const temp_crafting_inventory crafting_inv = p->crafting_inventory();
         auto listed_components = std::set<itype_id> {};
         auto material_list = std::vector<std::string> {};
 
@@ -2996,9 +2997,7 @@ void activity_handlers::repair_item_finish( player_activity *act, player *p )
             listed_components.emplace( component_id );
             int nearby_amount = 0;
             if( item::count_by_charges( component_id ) ) {
-                if( crafting_inv.has_charges( component_id, 1 ) ) {
-                    nearby_amount = crafting_inv.charges_of( component_id );
-                }
+                nearby_amount = crafting_inv.charges_of( component_id );
             } else if( crafting_inv.has_amount( component_id, 1, false, is_crafting_component ) ) {
                 nearby_amount = crafting_inv.amount_of( component_id, false );
             }
@@ -3080,7 +3079,7 @@ void activity_handlers::mend_item_finish( player_activity *act, player *p )
         return;
     }
 
-    const inventory &inv = p->crafting_inventory();
+    const temp_crafting_inventory &inv = p->crafting_inventory();
     const requirement_data &reqs = method->requirements.obj();
     if( !reqs.can_make_with_inventory( inv, is_crafting_component ) ) {
         add_msg( m_info, _( "You are currently unable to mend the %s." ), target->tname() );

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -9,6 +10,7 @@
 #include "calendar.h"
 #include "character.h"
 #include "enums.h"
+#include "inventory.h"
 #include "item.h"
 #include "player.h"
 #include "pldata.h"
@@ -273,7 +275,31 @@ class avatar : public player
             return mon_visible;
         }
 
+        // invlets, per DDA avatar.h:375-385,458-460. Invlets live on items, the avatar owns the cache.
+        void reassign_item( item &it, int invlet );
+        void reassign_item_cache( item &it, char invlet, bool remove_old );
+        void add_invlet_to_new_item( item &newit );
+        void update_invlet( item &newit, const item *ignore_invlet_collision_with = nullptr,
+                            bool assign_invlet = true ); // CDF: assign_invlet is interim, for flat inventory adds
+        void update_cache_with_item( item &newit );
+        void assign_empty_invlet( item &it, bool force = false );
+        char free_assigned_invlet( const itype_id &id );
+        bool invlet_is_assigned( char invlet ) const;
+        itype_id get_itype_by_invlet( char invlet ) const;
+        std::map<char, itype_id> &get_assigned_invlet() {
+            return assigned_invlet;
+        }
+        const std::map<char, itype_id> &get_assigned_invlet() const {
+            return assigned_invlet;
+        }
+        void json_save_invcache( JsonOut &json ) const;
+        void json_load_invcache( JsonIn &jsin );
+
     private:
+        std::map<char, itype_id> assigned_invlet;
+        invlet_favorites invlet_cache;
+        char find_usable_cached_invlet( const itype_id &item_type );
+
         // The name used to generate save filenames for this avatar. Not serialized in json.
         std::string save_id;
 

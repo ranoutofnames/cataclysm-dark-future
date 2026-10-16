@@ -6,6 +6,7 @@
 
 #include "requirements.h"
 #include "inventory.h"
+#include "temp_crafting_inventory.h"
 
 void cata::detail::reg_requirement( sol::state &lua )
 {
@@ -53,7 +54,14 @@ void cata::detail::reg_requirement( sol::state &lua )
         DOC( "Check if requirements can be made with given inventory" );
         luna::set_fx( ut, "can_make_with_inventory",
         []( const requirement_data & req, const inventory & inv ) -> bool {
-            return req.can_make_with_inventory( inv, return_true<item>, 1 );
+            // CDF: Lua still hands over a flat inventory; wrap its items in a temp crafting inventory
+            temp_crafting_inventory tmp;
+            inv.visit_items( [&tmp]( const item * it )
+            {
+                tmp.add_item_loc( *const_cast<item *>( it ) );
+                return VisitResponse::SKIP;
+            } );
+            return req.can_make_with_inventory( tmp, return_true<item>, 1 );
         } );
 
         DOC( "Multiply requirements by a scalar (e.g. for batch crafting)" );

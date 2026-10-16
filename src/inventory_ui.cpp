@@ -3,6 +3,7 @@
 #include "avatar.h"
 #include "cata_utility.h"
 #include "catacharset.h"
+#include "carried_stacks.h"
 #include "character.h"
 #include "debug.h"
 #include "detached_ptr.h"
@@ -212,7 +213,7 @@ nc_color inventory_entry::get_invlet_color() const
 {
     if( !is_selectable() ) {
         return c_dark_gray;
-    } else if( g->u.inv_assigned_invlet().contains( get_invlet() ) ) {
+    } else if( g->u.invlet_is_assigned( get_invlet() ) ) {
         return c_yellow;
     } else {
         return c_white;
@@ -274,8 +275,8 @@ bool inventory_selector_preset::sort_compare( const inventory_entry &lhs,
         const inventory_entry &rhs ) const
 {
     // Place items with an assigned inventory letter first, since the player cared enough to assign them
-    const bool left_fav  = g->u.inv_assigned_invlet().contains( lhs.any_item()->invlet );
-    const bool right_fav = g->u.inv_assigned_invlet().contains( rhs.any_item()->invlet );
+    const bool left_fav  = g->u.invlet_is_assigned( lhs.any_item()->invlet );
+    const bool right_fav = g->u.invlet_is_assigned( rhs.any_item()->invlet );
     if( left_fav == right_fav ) {
         return lhs.cached_name.compare( rhs.cached_name ) < 0; // Simple alphabetic order
     } else if( left_fav ) {
@@ -1344,8 +1345,8 @@ void inventory_selector::add_character_items( Character &character )
     } );
     // Visitable interface does not support stacks so it has to be here
     // CDF P1c step 22: carried items are grouped under a header per garment (or the body storage)
-    for( const auto &elem : character.inv_const_slice() ) {
-        const std::vector<std::list<item *>> stacks = restack_items( ( *elem ).begin(), ( *elem ).end(),
+    for( const carried_stack &elem : carried_item_stacks( character ) ) {
+        const std::vector<std::list<item *>> stacks = restack_items( elem.begin(), elem.end(),
                 preset.get_checking_components() );
         for( const std::list<item *> &stack : stacks ) {
             const item *holder = stack.front()->parent_item();
@@ -2686,7 +2687,7 @@ auto inventory_drop_selector::update_drop_preview() -> void
     for( const auto &drop : predicted_drops ) {
         auto *target = &*drop.loc;
         if( !u.is_worn( *target ) && !u.is_wielding( *target ) ) {
-            target = u.inv_const_stack( u.get_item_position( target ) ).front();
+            target = carried_stack_of( u, target ).front();
         }
         drop_order.try_emplace( target, drop_order.size() );
     }

@@ -791,7 +791,7 @@ void talk_function::stranger_neutral( npc &p )
 void talk_function::drop_stolen_item( npc &p )
 {
     map &here = get_map();
-    for( auto &elem : g->u.inv_dump() ) {
+    for( auto &elem : g->u.all_items_loc() ) {
         if( elem->is_old_owner( p ) ) {
             detached_ptr<item> to_drop = elem->detach( );
             to_drop->remove_old_owner();

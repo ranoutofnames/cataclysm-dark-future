@@ -394,7 +394,6 @@ auto pick_target(player& who, const std::function<bool(const item&)>& is_target)
     auto picker = reload_target_picker(who, preset);
     picker.set_title(_("Reload item"));
     picker.set_display_stats(false);
-    who.inv_restack();
     picker.add_character_items(who);
     picker.add_nearby_items(1);
     if (picker.empty()) {

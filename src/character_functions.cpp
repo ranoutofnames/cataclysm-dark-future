@@ -1,6 +1,7 @@
 #include "character_functions.h"
 
 #include "ammo.h"
+#include "avatar.h"
 #include "bionics.h"
 #include "bodypart.h"
 #include "calendar.h"
@@ -682,12 +683,12 @@ bool try_wield_contents( Character &who, item &container, item *internal_item, b
         if( !who.as_player()->unwield() ) {
             return false;
         }
-        who.inv_unsort();
     }
 
     who.set_primary_weapon( internal_item->detach() );
-    who.inv_update_invlet( *internal_item );
-    who.inv_update_invlet_cache_with_item( *internal_item );
+    if( avatar *you = who.as_avatar() ) {
+        you->add_invlet_to_new_item( *internal_item );
+    }
     who.last_item = internal_item->typeId();
 
     /**

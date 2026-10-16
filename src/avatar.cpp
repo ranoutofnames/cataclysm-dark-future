@@ -29,6 +29,8 @@
 #include "help.h"
 #include "init.h"
 #include "inventory.h"
+#include "inventory_ui.h"
+#include "json.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_factory.h"
@@ -1537,8 +1539,7 @@ detached_ptr<item> avatar::wield( detached_ptr<item> &&target )
     obj.on_wield( *this, mv );
 
 
-    inv_update_invlet( obj );
-    inv_update_invlet_cache_with_item( obj );
+    add_invlet_to_new_item( obj );
     return detached_ptr<item>();
 }
 
@@ -1620,4 +1621,225 @@ bool avatar::add_faction_warning( const faction_id &id )
         fac->respects_u -= 1;
     }
     return false;
+}
+
+// Invlet handling below follows DDA avatar.cpp:1803-2056 (PR-independent port of the avatar cache).
+void avatar::reassign_item_cache( item &it, char invlet, bool remove_old )
+{
+    if( it.invlet == invlet ) { // no change needed
+        return;
+    }
+    if( remove_old && it.invlet ) {
+        invlet_cache.erase( it.invlet );
+    }
+    it.invlet = invlet;
+    update_cache_with_item( it );
+}
+
+void avatar::reassign_item( item &it, int invlet )
+{
+    bool remove_old = true;
+    if( invlet ) {
+        item *prev = invlet_to_item( invlet );
+        if( prev != nullptr ) {
+            remove_old = it.typeId() != prev->typeId();
+            reassign_item_cache( *prev, it.invlet, remove_old );
+        }
+    }
+
+    if( !invlet || inv_chars.valid( invlet ) ) {
+        const auto iter = assigned_invlet.find( it.invlet );
+        bool found = iter != assigned_invlet.end();
+        if( found ) {
+            assigned_invlet.erase( iter );
+        }
+        if( invlet && ( !found || it.invlet != invlet ) ) {
+            assigned_invlet[invlet] = it.typeId();
+        }
+        reassign_item_cache( it, invlet, remove_old );
+    }
+}
+
+char avatar::find_usable_cached_invlet( const itype_id &item_type )
+{
+    for( char invlet : invlet_cache.invlets_for( item_type ) ) {
+        // Don't overwrite user assignments.
+        if( assigned_invlet.contains( invlet ) ) {
+            continue;
+        }
+        // Check if anything is using this invlet.
+        if( invlet_to_item( invlet ) != nullptr ) {
+            continue;
+        }
+        return invlet;
+    }
+    return 0;
+}
+
+void avatar::update_cache_with_item( item &newit )
+{
+    // Adds newit's invlet to the favorite letters of its type and removes it from all other types.
+    if( newit.invlet == 0 ) {
+        return;
+    }
+    invlet_cache.set( newit.invlet, newit.typeId() );
+}
+
+bool avatar::invlet_is_assigned( const char invlet ) const
+{
+    return assigned_invlet.contains( invlet );
+}
+
+void avatar::add_invlet_to_new_item( item &newit )
+{
+    update_invlet( newit );
+    update_cache_with_item( newit );
+}
+
+void avatar::update_invlet( item &newit, const item *ignore_invlet_collision_with,
+                            bool assign_invlet )
+{
+    if( newit.invlet ) {
+        // Avoid letters that have been manually assigned to other things.
+        if( assigned_invlet.contains( newit.invlet ) ) {
+            if( assigned_invlet[newit.invlet] != newit.typeId() ) {
+                newit.invlet = '\0';
+            }
+            // Remove letters that are not in the favorites cache
+        } else if( !invlet_cache.contains( newit.invlet, newit.typeId() ) ) {
+            newit.invlet = '\0';
+        }
+    }
+
+    // Remove letters that have been assigned to other items in the inventory
+    if( newit.invlet ) {
+        const char tmp_invlet = newit.invlet;
+        newit.invlet = '\0';
+        const item *colliding = invlet_to_item( tmp_invlet );
+        if( colliding == nullptr || colliding == ignore_invlet_collision_with ) {
+            newit.invlet = tmp_invlet;
+        }
+    }
+
+    if( !assign_invlet ) {
+        return;
+    }
+
+    // Assign a cached letter to the item
+    if( !newit.invlet ) {
+        newit.invlet = find_usable_cached_invlet( newit.typeId() );
+    }
+
+    // Give the item an invlet if it has none
+    if( !newit.invlet ) {
+        assign_empty_invlet( newit );
+    }
+}
+
+itype_id avatar::get_itype_by_invlet( const char invlet ) const
+{
+    const auto iter = assigned_invlet.find( invlet );
+    if( iter == assigned_invlet.end() ) {
+        return itype_id::NULL_ID();
+    }
+    return iter->second;
+}
+
+char avatar::free_assigned_invlet( const itype_id &id )
+{
+    const invlets_bitset cur_inv = allocated_invlets();
+    for( const auto &iter : assigned_invlet ) {
+        if( iter.second == id && !cur_inv[iter.first] ) {
+            return iter.first;
+        }
+    }
+    return 0;
+}
+
+void avatar::assign_empty_invlet( item &it, const bool force )
+{
+    const std::string auto_setting = get_option<std::string>( "AUTO_INV_ASSIGN" );
+    if( auto_setting == "disabled" || ( ( auto_setting == "favorites" ) && !it.is_favorite ) ) {
+        return;
+    }
+
+    if( const char invlet = free_assigned_invlet( it.typeId() ) ) {
+        it.invlet = invlet;
+        return;
+    }
+    const invlets_bitset cur_inv = allocated_invlets();
+    if( cur_inv.count() < inv_chars.size() ) {
+        // FIXME: Find a better way to get bound keys
+        inventory_selector selector( *this );
+        const std::vector<char> binds = selector.all_bound_keys();
+
+        for( const char &inv_char : inv_chars ) {
+            if( assigned_invlet.contains( inv_char ) ) {
+                // don't overwrite assigned keys
+                continue;
+            }
+            if( std::ranges::contains( binds, inv_char ) ) {
+                // don't auto-assign bound keys
+                continue;
+            }
+            if( !cur_inv[inv_char] ) {
+                it.invlet = inv_char;
+                return;
+            }
+        }
+    }
+    if( !force ) {
+        it.invlet = 0;
+        return;
+    }
+    // No free hotkey exist, re-use some of the existing ones
+    bool found = false;
+    visit_items( [&it, &found]( item * node ) {
+        if( node->invlet != 0 ) {
+            it.invlet = node->invlet;
+            node->invlet = 0;
+            found = true;
+            return VisitResponse::ABORT;
+        }
+        return VisitResponse::NEXT;
+    } );
+    if( !found ) {
+        debugmsg( "could not find a hotkey for %s", it.tname() );
+    }
+}
+
+void avatar::json_save_invcache( JsonOut &json ) const
+{
+    json.start_array();
+    for( const auto &elem : invlet_cache.get_invlets_by_id() ) {
+        json.start_object();
+        json.member( elem.first.str() );
+        json.start_array();
+        for( const auto &_sym : elem.second ) {
+            json.write( static_cast<int>( _sym ) );
+        }
+        json.end_array();
+        json.end_object();
+    }
+    json.end_array();
+}
+
+void avatar::json_load_invcache( JsonIn &jsin )
+{
+    try {
+        std::unordered_map<itype_id, std::string> map;
+        for( JsonObject jo : jsin.get_array() ) {
+            jo.allow_omitted_members();
+            for( const JsonMember member : jo ) {
+                std::string invlets;
+                for( const int i : member.get_array() ) {
+                    invlets.push_back( i );
+                }
+                map[itype_id( member.name() )] = invlets;
+            }
+        }
+        invlet_cache = { map };
+    } catch( const JsonError &jsonerr ) {
+        debugmsg( "bad invcache json:\n%s", jsonerr.c_str() );
+    }
 }

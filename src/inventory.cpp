@@ -227,40 +227,6 @@ inventory &inventory::add_items( const location_vector<item> &rhs, bool keep_inv
     return *this;
 }
 
-// This function keeps the invlet cache updated when a new item is added.
-void inventory::update_invlet_cache_with_item( item &newit )
-{
-    // This function does two things:
-    // 1. It adds newit's invlet to the list of favorite letters for newit's item type.
-    // 2. It removes newit's invlet from the list of favorite letters for all other item types.
-
-    // no invlet item, just return.
-    // TODO: Should we instead remember that the invlet was cleared?
-    if( newit.invlet == 0 ) {
-        return;
-    }
-
-    invlet_cache.set( newit.invlet, newit.typeId() );
-}
-
-char inventory::find_usable_cached_invlet( const itype_id &item_type )
-{
-    // Some of our preferred letters might already be used.
-    for( auto invlet : invlet_cache.invlets_for( item_type ) ) {
-        // Don't overwrite user assignments.
-        if( assigned_invlet.contains( invlet ) ) {
-            continue;
-        }
-        // Check if anything is using this invlet.
-        if( g->u.invlet_to_item( invlet ) != nullptr ) {
-            continue;
-        }
-        return invlet;
-    }
-
-    return 0;
-}
-
 void inventory::build_items_type_cache()
 {
     items_type_cache.clear();
@@ -280,9 +246,9 @@ inline static bool add_item_stack_helper( inventory &inv, item &newit, std::vect
     if( it->stacks_with( newit ) ) {
         if( it->invlet == '\0' ) {
             if( !keep_invlet ) {
-                inv.update_invlet( newit, assign_invlet );
+                g->u.update_invlet( newit, nullptr, assign_invlet );
             }
-            inv.update_invlet_cache_with_item( newit );
+            g->u.update_cache_with_item( newit );
             it->invlet = newit.invlet;
         } else {
             newit.invlet = it->invlet;
@@ -293,7 +259,7 @@ inline static bool add_item_stack_helper( inventory &inv, item &newit, std::vect
     } else if( keep_invlet && assign_invlet && it->invlet == newit.invlet &&
                it->invlet != '\0' ) {
         // If keep_invlet is true, we'll be forcing other items out of their current invlet.
-        inv.assign_empty_invlet( *it, g->u );
+        g->u.assign_empty_invlet( *it );
     }
     return false;
 }
@@ -336,9 +302,9 @@ item &inventory::add_item_internal( item &newit, bool keep_invlet, bool assign_i
 
     // Couldn't stack the item, proceed.
     if( !keep_invlet ) {
-        update_invlet( newit, assign_invlet );
+        g->u.update_invlet( newit, nullptr, assign_invlet );
     }
-    update_invlet_cache_with_item( newit );
+    g->u.update_cache_with_item( newit );
 
     items.push_back( {&newit} );
 
@@ -386,7 +352,7 @@ void inventory::restack( player &p )
         const item *invlet_item = p.invlet_to_item( topmost.invlet );
         if( !inv_chars.valid( topmost.invlet ) || ( invlet_item != nullptr &&
                 position_by_item( invlet_item ) != idx ) ) {
-            assign_empty_invlet( topmost, p );
+            g->u.assign_empty_invlet( topmost );
             for( auto &stack_iter : stack ) {
                 stack_iter->invlet = topmost.invlet;
             }
@@ -1127,119 +1093,6 @@ int inventory::count_item( const itype_id &item_type ) const
     return num;
 }
 
-void inventory::assign_empty_invlet( item &it, const Character &p, const bool force )
-{
-    const std::string auto_setting = get_option<std::string>( "AUTO_INV_ASSIGN" );
-    if( auto_setting == "disabled" || ( ( auto_setting == "favorites" ) && !it.is_favorite ) ) {
-        return;
-    }
-
-    invlets_bitset cur_inv = p.allocated_invlets();
-    itype_id target_type = it.typeId();
-    for( auto iter : assigned_invlet ) {
-        if( iter.second == target_type && !cur_inv[iter.first] ) {
-            it.invlet = iter.first;
-            return;
-        }
-    }
-    if( cur_inv.count() < inv_chars.size() ) {
-        // XXX YUCK I don't know how else to get the keybindings
-        // FIXME: Find a better way to get bound keys
-        avatar &u = g->u;
-        inventory_selector selector( u );
-
-        std::vector<char> binds = selector.all_bound_keys();
-
-        for( const auto &inv_char : inv_chars ) {
-            if( assigned_invlet.contains( inv_char ) ) {
-                // don't overwrite assigned keys
-                continue;
-            }
-            if( std::ranges::contains( binds, inv_char ) ) {
-                // don't auto-assign bound keys
-                continue;
-            }
-            if( !cur_inv[inv_char] ) {
-                it.invlet = inv_char;
-                return;
-            }
-        }
-    }
-    if( !force ) {
-        it.invlet = 0;
-        return;
-    }
-    // No free hotkey exist, re-use some of the existing ones
-    for( auto &elem : items ) {
-        item &o = *elem.front();
-        if( o.invlet != 0 ) {
-            it.invlet = o.invlet;
-            o.invlet = 0;
-            return;
-        }
-    }
-    debugmsg( "could not find a hotkey for %s", it.tname() );
-}
-
-void inventory::reassign_item( item &it, char invlet, bool remove_old )
-{
-    if( it.invlet == invlet ) { // no change needed
-        return;
-    }
-    if( remove_old && it.invlet ) {
-        invlet_cache.erase( it.invlet );
-    }
-
-    // Remove invlet from other items beforehand, since restack may assign it to other items in the same stack.
-    auto fn = [ = ]( item * ii ) {
-        if( ii->invlet == invlet ) {
-            ii->invlet = 0;
-        }
-        return VisitResponse::SKIP;
-    };
-    visit_items( fn );
-
-    it.invlet = invlet;
-    update_invlet_cache_with_item( it );
-}
-
-void inventory::update_invlet( item &newit, bool assign_invlet )
-{
-    // Avoid letters that have been manually assigned to other things.
-    if( newit.invlet && assigned_invlet.contains( newit.invlet ) &&
-        assigned_invlet[newit.invlet] != newit.typeId() ) {
-        newit.invlet = '\0';
-    }
-
-    // Remove letters that are not in the favorites cache
-    if( newit.invlet ) {
-        if( !invlet_cache.contains( newit.invlet, newit.typeId() ) ) {
-            newit.invlet = '\0';
-        }
-    }
-
-    // Remove letters that have been assigned to other items in the inventory
-    if( newit.invlet ) {
-        char tmp_invlet = newit.invlet;
-        newit.invlet = '\0';
-        if( g->u.invlet_to_item( tmp_invlet ) == nullptr ) {
-            newit.invlet = tmp_invlet;
-        }
-    }
-
-    if( assign_invlet ) {
-        // Assign a cached letter to the item
-        if( !newit.invlet ) {
-            newit.invlet = find_usable_cached_invlet( newit.typeId() );
-        }
-
-        // Give the item an invlet if it has none
-        if( !newit.invlet ) {
-            assign_empty_invlet( newit, g->u );
-        }
-    }
-}
-
 void inventory::set_stack_favorite( const int position, const bool favorite )
 {
     for( auto &e : *std::next( items.begin(), position ) ) {
@@ -1509,21 +1362,6 @@ std::vector<item *> location_inventory::active_items()
     return inv.active_items();
 }
 
-void location_inventory::assign_empty_invlet( item &it, const Character &p, bool force )
-{
-    return inv.assign_empty_invlet( it, p, force );
-}
-
-void location_inventory::reassign_item( item &it, char invlet, bool remove_old )
-{
-    return inv.reassign_item( it, invlet, remove_old );
-}
-
-void location_inventory::update_invlet( item &it, bool assign_invlet )
-{
-    return inv.update_invlet( it, assign_invlet );
-}
-
 void location_inventory::set_stack_favorite( int position, bool favorite )
 {
     return inv.set_stack_favorite( position, favorite );
@@ -1537,11 +1375,6 @@ invlets_bitset location_inventory::allocated_invlets() const
 const itype_bin &location_inventory::get_binned_items() const
 {
     return inv.get_binned_items();
-}
-
-void location_inventory::update_invlet_cache_with_item( item &newit )
-{
-    return inv.update_invlet_cache_with_item( newit );
 }
 
 enchantment location_inventory::get_active_enchantment_cache( const Character &owner ) const

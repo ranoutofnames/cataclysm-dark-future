@@ -2,6 +2,7 @@
 
 #include "advanced_inv_listitem.h"
 #include "avatar.h"
+#include "carried_stacks.h"
 #include "enums.h"
 #include "game.h"
 #include "game_constants.h"
@@ -256,11 +257,11 @@ item *advanced_inv_area::get_container( bool in_vehicle )
     if( uistate.adv_inv_container_location != -1 ) {
         // try to find valid container in the area
         if( uistate.adv_inv_container_location == AIM_INVENTORY ) {
-            const_invslice stacks = g->u.inv_const_slice();
+            const std::vector<carried_stack> stacks = carried_item_stacks( g->u );
 
             // check index first
             if( stacks.size() > static_cast<size_t>( uistate.adv_inv_container_index ) ) {
-                auto &it = stacks[uistate.adv_inv_container_index]->front();
+                auto &it = stacks[uistate.adv_inv_container_index].front();
                 if( is_container_valid( it ) ) {
                     container = it;
                 }
@@ -269,7 +270,7 @@ item *advanced_inv_area::get_container( bool in_vehicle )
             // try entire area
             if( container == nullptr ) {
                 for( size_t x = 0; x < stacks.size(); ++x ) {
-                    auto &it = stacks[x]->front();
+                    auto &it = stacks[x].front();
                     if( is_container_valid( it ) ) {
                         container = it;
                         uistate.adv_inv_container_index = x;

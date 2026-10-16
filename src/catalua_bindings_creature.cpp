@@ -1,3 +1,4 @@
+#include "carried_stacks.h"
 #include "activity_type.h"
 #include "avatar.h"
 #include "bionics.h"
@@ -1165,9 +1166,9 @@ void cata::detail::reg_character( sol::state &lua )
         DOC( "Gets the top-level carried items (those inside carrying pockets of worn garments and the body storage)." );
         luna::set_fx( ut, "get_carried_items", []( const UT_CLASS & c ) -> std::vector<item *> {
             std::vector<item *> res;
-            for( const std::vector<item *> *stack : c.carried_view().const_slice() )
+            for( const carried_stack &stack : carried_item_stacks( c ) )
             {
-                res.insert( res.end(), stack->begin(), stack->end() );
+                res.insert( res.end(), stack.begin(), stack.end() );
             }
             return res;
         } );
@@ -1412,12 +1413,7 @@ void cata::detail::reg_character( sol::state &lua )
 
         DOC( "Drops all items (inventory, worn, wielded) at the character's current position." );
         luna::set_fx( ut, "drop_all_items", []( Character & ch ) -> void {
-            std::vector<detached_ptr<item>> tmp = ch.inv_dump_remove();
-            map &here = get_map();
-            for( auto &itm : tmp )
-            {
-                here.add_item_or_charges( ch.bub_pos(), std::move( itm ) );
-            }
+            ch.drop_inv( -1 );
         } );
 
         DOC( "Returns how exposed each body part is through worn items, from 0.0 (fully covered) to 1.0 (bare)." );
@@ -1443,7 +1439,13 @@ void cata::detail::reg_character( sol::state &lua )
 
         DOC( "Returns the crafting inventory for this character (includes nearby items)" );
         luna::set_fx( ut, "crafting_inventory", []( UT_CLASS & ch ) -> const inventory & {
-            return ch.crafting_inventory( tripoint_bub_ms::zero(), PICKUP_RANGE, true );
+            // CDF: Lua API still exposes a flat inventory; rebuilt from the temp crafting inventory
+            static inventory lua_flat_inv;
+            lua_flat_inv.clear();
+            lua_flat_inv.add_items( ch.crafting_inventory( tripoint_bub_ms::zero(), PICKUP_RANGE,
+                                    true ).top_items(), true );
+            lua_flat_inv.update_quality_cache();
+            return lua_flat_inv;
         } );
 
         DOC( "Invalidates the cached crafting inventory" );
@@ -1456,7 +1458,7 @@ void cata::detail::reg_character( sol::state &lua )
         luna::set_fx( ut, "consume_requirement", []( UT_CLASS & ch, const requirement_data & req, const sol::table & opts ) -> bool {
             int range = opts.get_or( "range", PICKUP_RANGE );
             int size = opts.get_or( "count", 1 );
-            inventory map_inv;
+            temp_crafting_inventory map_inv;
             map_inv.form_from_map( ch.bub_pos(), range );
             for( const auto &it : req.get_components() )
             {

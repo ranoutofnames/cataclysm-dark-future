@@ -2,6 +2,7 @@
 
 #include "advanced_inv_area.h"
 #include "avatar.h"
+#include "carried_stacks.h"
 #include "inventory.h"
 #include "item.h"
 #include "item_contents.h"
@@ -95,10 +96,10 @@ void advanced_inventory_pane::add_items_from_area( advanced_inv_area &square,
     // Existing items are *not* cleared on purpose, this might be called
     // several times in case all surrounding squares are to be shown.
     if( square.id == AIM_INVENTORY ) {
-        const_invslice stacks = u.inv_const_slice();
+        const std::vector<carried_stack> stacks = carried_item_stacks( u );
         for( size_t x = 0; x < stacks.size(); ++x ) {
             std::list<item *> item_pointers;
-            for( item * const &i : *stacks[x] ) {
+            for( item * const &i : stacks[x] ) {
                 item_pointers.push_back( i );
             }
             advanced_inv_listitem it( item_pointers, x, square.id, false );

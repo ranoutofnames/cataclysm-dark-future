@@ -16,6 +16,7 @@
 #include "mtype.h"
 #include "mutation.h"
 #include "pimpl.h"
+#include "temp_crafting_inventory.h"
 #include "player.h"
 #include "point.h"
 #include "type_id.h"
@@ -222,6 +223,24 @@ bool visitable<inventory>::has_quality( const quality_id &qual, int level, int q
         }
     }
     return false;
+}
+
+// CDF: same counting as the inventory quality cache (own qualities of each visited item,
+// by charges), so requirement checks answer as they did on the flat inventory
+template <>
+bool visitable<temp_crafting_inventory>::has_quality( const quality_id &qual, int level,
+        int qty ) const
+{
+    int res = 0;
+    visit_items( [&]( const item * e ) {
+        const std::map<quality_id, int> item_qualities = e->get_qualities();
+        const auto iter = item_qualities.find( qual );
+        if( iter != item_qualities.end() && iter->second >= level ) {
+            res = sum_no_wrap( res, e->count_by_charges() ? e->charges : 1 );
+        }
+        return res >= qty ? VisitResponse::ABORT : VisitResponse::NEXT;
+    } );
+    return res >= qty;
 }
 
 template <>
@@ -527,6 +546,21 @@ VisitResponse visitable<item>::visit_items(
 }
 
 /** @relates visitable */
+// CDF: temp_crafting_inventory (J01) walks its stored top-level references
+template <>
+VisitResponse visitable<temp_crafting_inventory>::visit_items(
+    const std::function<VisitResponse( item *, item * )> &func )
+{
+    auto inv = static_cast<const temp_crafting_inventory *>( this );
+    for( item *it : inv->top_items() ) {
+        if( visit_internal( func, it ) == VisitResponse::ABORT ) {
+            return VisitResponse::ABORT;
+        }
+    }
+    return VisitResponse::NEXT;
+}
+
+/** @relates visitable */
 template <>
 VisitResponse visitable<inventory>::visit_items(
     const std::function<VisitResponse( item *, item * )> &func )
@@ -798,6 +832,14 @@ std::vector<item *> temp_visitable<inventory>::remove_items_with( const
     inv->items_type_cached = false;
     inv->locked = false;
     return res;
+}
+
+// CDF: forwards to temp_crafting_inventory::remove_items_with (reference removal only)
+template <>
+std::vector<item *> temp_visitable<temp_crafting_inventory>::remove_items_with( const
+        std::function<bool( const item &e )> &filter, int count )
+{
+    return static_cast<temp_crafting_inventory *>( this )->remove_items_with( filter, count );
 }
 
 template <>
@@ -1171,6 +1213,18 @@ int visitable<inventory>::charges_of( const itype_id &what, int limit,
     return std::min( limit, res );
 }
 
+/** @relates visitable */
+template <>
+int visitable<temp_crafting_inventory>::charges_of( const itype_id &what, int limit,
+        const std::function<bool( const item & )> &filter,
+        std::function<void( int )> visitor ) const
+{
+    if( what == itype_UPS ) {
+        return std::min( charges_of_ups( this, limit, filter, visitor ), limit );
+    }
+    return charges_of_internal( *this, *this, what, limit, filter, std::move( visitor ) );
+}
+
 template <>
 int visitable<location_inventory>::charges_of( const itype_id &what, int limit,
         const std::function<bool( const item & )> &filter,
@@ -1369,6 +1423,7 @@ void location_visitable<T>::remove_all_items_with( const std::function < detache
 // explicit template initialization for all classes implementing the visitable interface
 template class visitable<item>;
 template class visitable<inventory>;
+template class visitable<temp_crafting_inventory>;
 template class visitable<location_inventory>;
 template class visitable<Character>;
 template class visitable<map_selector>;
@@ -1378,6 +1433,7 @@ template class visitable<vehicle_cursor>;
 template class visitable<monster>;
 
 template class temp_visitable<inventory>;
+template class temp_visitable<temp_crafting_inventory>;
 template class location_visitable<item>;
 template class location_visitable<location_inventory>;
 template class location_visitable<Character>;

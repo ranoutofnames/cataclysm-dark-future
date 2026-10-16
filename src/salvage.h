@@ -12,6 +12,7 @@
 
 class Character;
 class inventory;
+class temp_crafting_inventory;
 class item;
 class material_type;
 class player;
@@ -33,6 +34,9 @@ enum class q_result {
     skip,
     fail
 };
+
+// CDF: quality counts of a crafting inventory (BN salvage keeps its own quality cache)
+quality_cache get_quality_cache( const temp_crafting_inventory &inv );
 
 ret_val<bool> try_salvage( const item &, quality_cache & );
 

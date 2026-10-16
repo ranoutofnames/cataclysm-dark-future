@@ -1290,7 +1290,7 @@ static void sleep()
 
     // List all active items, bionics or mutations so player can deactivate them
     std::vector<std::string> active;
-    for( auto &it : u.inv_dump() ) {
+    for( auto &it : u.all_items_loc() ) {
         if( it->has_flag( flag_LITCIG ) ||
             ( it->is_active() && ( it->charges > 0 || it->units_remaining( u ) > 0 ) && it->is_tool() &&
               !it->has_flag( flag_SLEEP_IGNORE ) ) ) {
@@ -1322,7 +1322,7 @@ static void sleep()
     }
 
     // check for deactivating any currently played music instrument.
-    for( auto &item : u.inv_dump() ) {
+    for( auto &item : u.all_items_loc() ) {
         if( item->is_active() && item->get_use( "musical_instrument" ) != nullptr ) {
             u.add_msg_if_player( _( "You stop playing your %s before trying to sleep." ), item->tname() );
             // deactivate instrument

@@ -327,9 +327,7 @@ void mission::wrap_up()
     std::vector<item_comp> comps;
     switch( type->goal ) {
         case MGOAL_FIND_ITEM_GROUP: {
-            inventory tmp_inv = u.crafting_inventory();
-            std::vector<item *> items = std::vector<item *>();
-            tmp_inv.dump( items );
+            std::vector<item *> items = u.crafting_inventory().top_items();
             item_group_id grp_type = type->group_id;
             itype_id container = type->container_id;
             bool specific_container_required = !container.is_null();
@@ -401,9 +399,7 @@ bool mission::is_complete( const character_id &_npc_id ) const
         }
 
         case MGOAL_FIND_ITEM_GROUP: {
-            inventory tmp_inv = u.crafting_inventory();
-            std::vector<item *> items = std::vector<item *>();
-            tmp_inv.dump( items );
+            std::vector<item *> items = u.crafting_inventory().top_items();
             item_group_id grp_type = type->group_id;
             itype_id container = type->container_id;
             bool specific_container_required = !container.is_null();
@@ -425,10 +421,11 @@ bool mission::is_complete( const character_id &_npc_id ) const
             if( npc_id.is_valid() && npc_id != _npc_id ) {
                 return false;
             }
-            const inventory &tmp_inv = u.crafting_inventory();
+            const temp_crafting_inventory &tmp_inv = u.crafting_inventory();
             // TODO: check for count_by_charges and use appropriate player::has_* function
             if( !tmp_inv.has_amount( type->item_id, item_count ) ) {
-                return tmp_inv.has_amount( type->item_id, 1 ) && tmp_inv.has_charges( type->item_id, item_count );
+                return tmp_inv.has_amount( type->item_id, 1 ) &&
+                       tmp_inv.charges_of( type->item_id, item_count ) >= item_count;
             }
         }
         return true;

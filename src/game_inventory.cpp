@@ -214,7 +214,6 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
     }
 
     do {
-        u.inv_restack( );
 
         inv_s.clear_items();
         inv_s.add_character_items( u );
@@ -279,7 +278,6 @@ void game_menus::inv::common( avatar &you )
 
     bool started_action = false;
     do {
-        you.inv_restack( );
         inv_s.clear_items();
         inv_s.add_character_items( you );
 
@@ -482,7 +480,7 @@ item *game_menus::inv::container_for( avatar &you, const item &liquid, int radiu
 class disassemble_inventory_preset : public pickup_inventory_preset
 {
     public:
-        disassemble_inventory_preset( const player &p, const inventory &inv ) :
+        disassemble_inventory_preset( const player &p, const temp_crafting_inventory &inv ) :
             pickup_inventory_preset( p ), p( p ), inv( inv ) {
 
             check_components = true;
@@ -524,7 +522,7 @@ class disassemble_inventory_preset : public pickup_inventory_preset
 
     private:
         const player &p;
-        const inventory &inv;
+        const temp_crafting_inventory &inv;
 };
 
 item *game_menus::inv::disassemble( player &p )
@@ -1691,9 +1689,9 @@ class attach_molle_inventory_preset : public inventory_selector_preset
 class salvage_inventory_preset : public pickup_inventory_preset
 {
     public:
-        salvage_inventory_preset( const player &p, const inventory &inv ):
+        salvage_inventory_preset( const player &p, const temp_crafting_inventory &inv ):
             pickup_inventory_preset( p ),
-            qualities( inv.get_quality_cache() ) {
+            qualities( salvage::get_quality_cache( inv ) ) {
 
             append_cell( []( const item * loc ) {
                 auto components = salvage::salvage_results( *loc );
@@ -1798,7 +1796,7 @@ class repair_inventory_preset: public inventory_selector_preset
         }
 
     private:
-        auto get_cached_component_count( const inventory &crafting_inv,
+        auto get_cached_component_count( const temp_crafting_inventory &crafting_inv,
                                          const itype_id &component_id ) const -> int {
             auto [ iter, inserted ] = component_count_cache.try_emplace( component_id, 0 );
             if( !inserted ) {
@@ -1806,7 +1804,7 @@ class repair_inventory_preset: public inventory_selector_preset
             }
 
             if( item::count_by_charges( component_id ) ) {
-                if( crafting_inv.has_charges( component_id, 1 ) ) {
+                if( crafting_inv.charges_of( component_id, 1 ) >= 1 ) {
                     iter->second = crafting_inv.charges_of( component_id );
                 }
             } else if( crafting_inv.has_amount( component_id, 1, false, is_crafting_component ) ) {
@@ -1916,7 +1914,6 @@ item *game_menus::inv::saw_stock( player &p, item &tool )
 
 drop_locations game_menus::inv::multidrop( player &p )
 {
-    p.inv_restack( );
 
     const inventory_filter_preset preset( [ &p ]( const item & location ) {
         const item &itm = location;
@@ -1936,7 +1933,6 @@ drop_locations game_menus::inv::multidrop( player &p )
     inv_s.set_hint( _( "To drop x items, type a number before selecting." ) );
 
     while( true ) {
-        p.inv_restack( );
         inv_s.clear_items();
         inv_s.add_character_items( p );
 
@@ -1958,7 +1954,6 @@ drop_locations game_menus::inv::multidrop( player &p )
 std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( player &p,
         const tripoint_bub_ms &target )
 {
-    p.inv_restack( );
 
     pickup_inventory_preset preset( p );
     inventory_pickup_selector inv_s( p, preset );
@@ -1967,7 +1962,6 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( play
     inv_s.set_hint( _( "To pickup x items, type a number before selecting." ) );
 
     while( true ) {
-        p.inv_restack( );
         inv_s.clear_items();
         inv_s.add_map_items( target );
         inv_s.add_vehicle_items( target );
@@ -1984,7 +1978,6 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( play
 
 std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player &p )
 {
-    p.inv_restack( );
 
     pickup_inventory_preset preset( p );
     inventory_pickup_selector inv_s( p, preset );
@@ -1993,7 +1986,6 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player 
     inv_s.set_hint( _( "To pickup x items, type a number before selecting." ) );
 
     while( true ) {
-        p.inv_restack( );
         inv_s.clear_items();
         inv_s.add_nearby_items();
 
@@ -2010,7 +2002,6 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player 
 
 void game_menus::inv::compare( player &p, const std::optional<tripoint_rel_ms> &offset )
 {
-    p.inv_restack( );
 
     inventory_compare_selector inv_s( p );
 
@@ -2103,26 +2094,8 @@ void game_menus::inv::compare( const item &l, const item &r )
 
 void game_menus::inv::reassign_letter( Character &who, item &it, int invlet )
 {
-    bool remove_old = true;
-    if( invlet ) {
-        item *prev = who.invlet_to_item( invlet );
-        if( prev != nullptr ) {
-            remove_old = it.typeId() != prev->typeId();
-            who.inv_reassign_item( *prev, it.invlet, remove_old );
-        }
-    }
-
-    if( !invlet || inv_chars.valid( invlet ) ) {
-        auto &invlets = who.inv_assigned_invlet();
-        const auto iter = invlets.find( it.invlet );
-        bool found = iter != invlets.end();
-        if( found ) {
-            invlets.erase( iter );
-        }
-        if( invlet && ( !found || it.invlet != invlet ) ) {
-            invlets[invlet] = it.typeId();
-        }
-        who.inv_reassign_item( it, invlet, remove_old );
+    if( avatar *you = who.as_avatar() ) {
+        you->reassign_item( it, invlet );
     }
 }
 
@@ -2152,7 +2125,6 @@ void game_menus::inv::prompt_reassign_letter( Character &who, item &it )
 
 void game_menus::inv::swap_letters( player &p )
 {
-    p.inv_restack( );
 
     inventory_pick_selector inv_s( p );
 
@@ -2168,7 +2140,7 @@ void game_menus::inv::swap_letters( player &p )
     while( true ) {
         const std::string invlets = colorize_symbols( inv_chars.get_allowed_chars(),
         [ &p ]( const std::string::value_type & elem ) {
-            if( p.inv_assigned_invlet().contains( elem ) ) {
+            if( g->u.invlet_is_assigned( elem ) ) {
                 return c_yellow;
             } else if( p.invlet_to_item( elem ) != nullptr ) {
                 return c_white;
@@ -2204,7 +2176,7 @@ static item *autodoc_internal( player &u, player &patient,
         } else if( patient.has_trait( trait_DEBUG_BIONICS ) ) {
             hint = _( "<color_yellow>Bug-hunters don't need anesthetics to withstand pain.</color>" );
         } else {
-            const inventory &crafting_inv = u.crafting_inventory();
+            const temp_crafting_inventory &crafting_inv = u.crafting_inventory();
             std::vector<item *> a_filter = crafting_inv.items_with( []( const item & it ) {
                 return it.has_quality( qual_ANESTHESIA );
             } );
@@ -2232,7 +2204,6 @@ static item *autodoc_internal( player &u, player &patient,
     inv_s.set_display_stats( false );
 
     do {
-        u.inv_restack( );
 
         inv_s.clear_items();
         inv_s.add_character_items( u );
@@ -2566,7 +2537,6 @@ static item *autoclave_internal( player &u,
     inv_s.set_display_stats( false );
 
     do {
-        u.inv_restack( );
 
         inv_s.clear_items();
         inv_s.add_character_items( u );

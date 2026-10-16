@@ -343,7 +343,7 @@ void activity_speed::calc_stats_factors( const Character &who,
 }
 
 float activity_speed::get_best_qual_mod( const activity_req<quality_id> &q,
-        const inventory &inv )
+        const temp_crafting_inventory &inv )
 {
     int q_level = 0;
     inv.visit_items( [&q, &q_level]( const item * itm ) {
@@ -375,7 +375,7 @@ float activity_speed::get_best_qual_mod( const activity_req<quality_id> &q,
 
 void activity_speed::calc_tools_factor( Character &who, const q_reqs &quality_reqs )
 {
-    auto &inv = who.crafting_inventory();
+    const auto &inv = who.crafting_inventory();
     float ac_f = tools_factor_custom_formula( quality_reqs, inv );
     //Any factor above 0 is valid, else - use default calc
     if( ac_f > 0 ) {

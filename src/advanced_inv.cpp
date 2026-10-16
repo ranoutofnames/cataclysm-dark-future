@@ -5,6 +5,7 @@
 #include "auto_pickup.h"
 #include "avatar.h"
 #include "calendar.h"
+#include "carried_stacks.h"
 #include "cata_utility.h"
 #include "catacharset.h"
 #include "character.h"
@@ -857,8 +858,7 @@ bool advanced_inventory::move_all_items( bool nested_call )
         drop_locations dropped_favorite;
 
         if( spane.get_area() == AIM_INVENTORY ) {
-            for( size_t index = 0; index < g->u.inv_size(); ++index ) {
-                const std::vector<item *> &stack = g->u.inv_const_stack( index );
+            for( const carried_stack &stack : carried_item_stacks( g->u ) ) {
                 item *const &it = stack.front();
 
                 if( !spane.is_filtered( *it ) ) {
@@ -1265,7 +1265,7 @@ bool advanced_inventory::action_move_item( advanced_inv_listitem *sitem,
             g->u.activity->targets.emplace_back( sitem->items.front() );
             g->u.activity->values.push_back( amount_to_move );
         } else {
-            item *itm = &g->u.i_at( sitem->idx );
+            item *itm = sitem->items.front();
 
             drop_locations to_move = { drop_location( *itm, amount_to_move ) };
             g->u.assign_activity( std::make_unique<player_activity>( std::make_unique<drop_activity_actor>
@@ -1325,9 +1325,7 @@ void advanced_inventory::action_examine( advanced_inv_listitem *sitem,
         return colstart + ( src == advanced_inventory::side::left ? w_width / 2 : 0 );
     };
     if( spane.get_area() == AIM_INVENTORY || spane.get_area() == AIM_WORN ) {
-        int idx = spane.get_area() == AIM_INVENTORY ? sitem->idx :
-                  player::worn_position_to_index( sitem->idx );
-        item *loc = &g->u.i_at( idx );
+        item *loc = sitem->items.front();
         // Setup a "return to AIM" activity. If examining the item creates a new activity
         // (e.g. reading, reloading, activating), the new activity will be put on top of
         // "return to AIM". Once the new activity is finished, "return to AIM" comes back
@@ -1345,10 +1343,6 @@ void advanced_inventory::action_examine( advanced_inv_listitem *sitem,
             exit = true;
         } else {
             g->u.cancel_activity();
-        }
-        // Might have changed a stack (activated an item, repaired an item, etc.)
-        if( spane.get_area() == AIM_INVENTORY ) {
-            g->u.inv_restack( );
         }
         recalc = true;
     } else {
@@ -1374,7 +1368,6 @@ void advanced_inventory::display()
 {
     init();
 
-    g->u.inv_restack( );
 
     input_context ctxt{ register_ctxt() };
 

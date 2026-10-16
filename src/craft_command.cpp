@@ -104,7 +104,7 @@ void craft_command::execute( const tripoint_bub_ms &new_loc )
     }
 
     bool need_selections = true;
-    inventory map_inv;
+    temp_crafting_inventory map_inv;
     map_inv.form_from_map( crafter->bub_pos(), PICKUP_RANGE, crafter );
 
     if( has_cached_selections() ) {
@@ -236,7 +236,7 @@ detached_ptr<item> craft_command::create_in_progress_craft()
         return detached_ptr<item>();
     }
 
-    inventory map_inv;
+    temp_crafting_inventory map_inv;
     map_inv.form_from_map( crafter->bub_pos(), PICKUP_RANGE, crafter );
 
     if( !check_item_components_missing( map_inv ).empty() ) {
@@ -287,7 +287,7 @@ detached_ptr<item> craft_command::create_in_progress_craft()
                     }
                     break;
                 case usage_from::map:
-                    if( !map_inv.has_charges( type, full_cost ) ) {
+                    if( !map_inv.charges_of( type ) >= full_cost ) {
                         can_fully_prepay = false;
                     }
                     break;
@@ -309,7 +309,7 @@ detached_ptr<item> craft_command::create_in_progress_craft()
                     }
                     break;
                 case usage_from::map:
-                    if( !map_inv.has_tools( type, 1 ) ) {
+                    if( !map_inv.has_amount( type, 1, true ) ) {
                         return detached_ptr<item>();
                     }
                     break;
@@ -350,7 +350,7 @@ detached_ptr<item> craft_command::create_in_progress_craft()
                     has_start = crafter->has_charges( tool_sel.comp.type, start_cost );
                     break;
                 case usage_from::map:
-                    has_start = map_inv.has_charges( tool_sel.comp.type, start_cost );
+                    has_start = map_inv.charges_of( tool_sel.comp.type ) >= start_cost;
                     break;
                 case usage_from::both:
                     has_start = crafter->charges_of( tool_sel.comp.type ) +
@@ -385,7 +385,7 @@ skill_id craft_command::get_skill_id()
 }
 
 std::vector<comp_selection<item_comp>> craft_command::check_item_components_missing(
-                                        const inventory &map_inv ) const
+                                        const temp_crafting_inventory &map_inv ) const
 {
     std::vector<comp_selection<item_comp>> missing;
 
@@ -404,7 +404,7 @@ std::vector<comp_selection<item_comp>> craft_command::check_item_components_miss
                     }
                     break;
                 case usage_from::map:
-                    if( !map_inv.has_charges( type, count, filter ) ) {
+                    if( !map_inv.charges_of( type, INT_MAX, filter ) >= count ) {
                         missing.push_back( item_sel );
                     }
                     break;
@@ -428,7 +428,7 @@ std::vector<comp_selection<item_comp>> craft_command::check_item_components_miss
                     }
                     break;
                 case usage_from::map:
-                    if( !map_inv.has_components( type, count, filter ) ) {
+                    if( !map_inv.has_amount( type, count, false, filter ) ) {
                         missing.push_back( item_sel );
                     }
                     break;
@@ -450,7 +450,7 @@ std::vector<comp_selection<item_comp>> craft_command::check_item_components_miss
 }
 
 std::vector<comp_selection<tool_comp>> craft_command::check_tool_components_missing(
-                                        const inventory &map_inv ) const
+                                        const temp_crafting_inventory &map_inv ) const
 {
     std::vector<comp_selection<tool_comp>> missing;
 
@@ -465,7 +465,7 @@ std::vector<comp_selection<tool_comp>> craft_command::check_tool_components_miss
                     }
                     break;
                 case usage_from::map:
-                    if( !map_inv.has_charges( type, count ) ) {
+                    if( !map_inv.charges_of( type ) >= count ) {
                         missing.push_back( tool_sel );
                     }
                     break;
@@ -475,7 +475,7 @@ std::vector<comp_selection<tool_comp>> craft_command::check_tool_components_miss
                 case usage_from::num_usages_from:
                     break;
             }
-        } else if( !crafter->has_amount( type, 1 ) && !map_inv.has_tools( type, 1 ) ) {
+        } else if( !crafter->has_amount( type, 1 ) && !map_inv.has_amount( type, 1, true ) ) {
             missing.push_back( tool_sel );
         }
     }

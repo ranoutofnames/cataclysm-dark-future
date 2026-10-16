@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "carried_stacks.h"
 #include "avatar.h"
 #include "cached_options.h"
 #include "calendar.h"
@@ -683,10 +684,12 @@ void test_scenario::run()
         where_dump += "] ";
     }
     where_dump += "inv: ";
-    for( const std::vector<item *> *stack : guy.inv_const_slice() ) {
-        const item *stack_parent = stack->front()->parent_item();
-        where_dump += stack->front()->typeId().str() + "x" + std::to_string( stack->size() ) + " in " +
-                      ( stack_parent ? stack_parent->typeId().str() : std::string( "nothing" ) ) + " ";
+    for (const carried_stack& stack_ref : carried_item_stacks(guy)) {
+        const carried_stack* stack = &stack_ref;
+        const item* stack_parent = stack->front()->parent_item();
+        where_dump +=
+            stack->front()->typeId().str() + "x" + std::to_string(stack->size()) + " in "
+            + (stack_parent ? stack_parent->typeId().str() : std::string("nothing")) + " ";
     }
     where_dump += "wielded: " + guy.primary_weapon().typeId().str() + " ground: ";
     for( item * const &ground_it : here.i_at( guy.bub_pos() ) ) {

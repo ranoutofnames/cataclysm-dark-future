@@ -2,6 +2,7 @@
 #ifndef CATA_SRC_DROP_PREVIEW_H
 #define CATA_SRC_DROP_PREVIEW_H
 
+#include "carried_stacks.h"
 #include "character.h"
 #include "item.h"
 #include "pickup_token.h"
@@ -22,7 +23,7 @@ inline auto make_drop_preview( Character &owner, const drop_locations &selected 
         auto *target = &*entry.loc;
         result.items.emplace_back( *target, entry.count );
         if( !owner.is_worn( *target ) && !owner.is_wielding( *target ) ) {
-            target = owner.inv_const_stack( owner.get_item_position( target ) ).front();
+            target = carried_stack_of( owner, target ).front();
         }
         result.counts[target] += entry.count;
     }

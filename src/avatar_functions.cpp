@@ -200,7 +200,7 @@ void mend_item( avatar &you, item &obj, bool interactive )
         return;
     }
 
-    auto inv = you.crafting_inventory();
+    const auto &inv = you.crafting_inventory();
 
     struct mending_option {
         fault_id fault;

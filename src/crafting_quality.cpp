@@ -13,7 +13,7 @@
 
 namespace
 {
-auto best_quality_multiplier_for_req( const inventory &crafting_inv,
+auto best_quality_multiplier_for_req( const temp_crafting_inventory &crafting_inv,
                                       const quality_requirement &quality_req ) -> float
 {
     auto best_multiplier = 1.0f;
@@ -45,7 +45,7 @@ auto best_quality_multiplier_for_req( const inventory &crafting_inv,
     return best_multiplier;
 }
 
-auto best_tool_multiplier_for_group( const inventory &crafting_inv,
+auto best_tool_multiplier_for_group( const temp_crafting_inventory &crafting_inv,
                                      const std::vector<tool_comp> &tool_group ) -> float
 {
     auto best_multiplier = 1.0f;
@@ -60,7 +60,7 @@ auto best_tool_multiplier_for_group( const inventory &crafting_inv,
     return best_multiplier;
 }
 
-auto crafting_tools_speed_multiplier( const inventory &crafting_inv,
+auto crafting_tools_speed_multiplier( const temp_crafting_inventory &crafting_inv,
                                       const requirement_data &requirements ) -> float
 {
     const auto &quality_reqs = requirements.get_qualities();

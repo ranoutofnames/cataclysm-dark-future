@@ -55,8 +55,10 @@ status_t character_oracle_t::can_wear_warmer_clothes() const
     const player *p = dynamic_cast<const player *>( subject );
     // Check inventory for wearable warmer clothes, greedily.
     // Don't consider swapping clothes yet, just evaluate adding clothes.
-    for( const auto &i : subject->inv_const_slice() ) {
-        const item *const &candidate = i->front();
+    for( const item *candidate : subject->all_items_loc() ) {
+        if( subject->is_worn( *candidate ) || subject->is_wielding( *candidate ) ) {
+            continue;
+        }
         if( candidate->get_warmth() > 0 || p->can_wear( *candidate ).success() ) {
             return running;
         }
@@ -69,8 +71,10 @@ status_t character_oracle_t::can_make_fire() const
     // Check inventory for firemaking tools and fuel
     bool tool = false;
     bool fuel = false;
-    for( const auto &i : subject->inv_const_slice() ) {
-        const item *const &candidate = i->front();
+    for( const item *candidate : subject->all_items_loc() ) {
+        if( subject->is_worn( *candidate ) || subject->is_wielding( *candidate ) ) {
+            continue;
+        }
         if( candidate->has_flag( STATIC( flag_id( "FIRESTARTER" ) ) ) ) {
             tool = true;
             if( fuel ) {

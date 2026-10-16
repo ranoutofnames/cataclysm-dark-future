@@ -5,6 +5,7 @@
 #include "bionics.h"
 #include "bodypart.h"
 #include "calendar.h"
+#include "carried_stacks.h"
 #include "cata_variant.h"
 #include "character_id.h"
 #include "debug.h"
@@ -334,14 +335,12 @@ void memorial_logger::write( std::ostream &file, const std::string &epitaph ) co
 
     //Inventory
     file << _( "Inventory:" ) << eol;
-    u.inv_restack( );
-    const_invslice slice = u.inv_const_slice();
-    for( const std::vector<item *> *elem : slice ) {
-        const item &next_item = *elem->front();
+    for( const carried_stack &elem : carried_item_stacks( u ) ) {
+        const item &next_item = *elem.front();
         file << indent << next_item.invlet << " - " <<
-             next_item.tname( static_cast<unsigned>( elem->size() ), false );
-        if( elem->size() > 1 ) {
-            file << " [" << elem->size() << "]";
+             next_item.tname( static_cast<unsigned>( elem.size() ), false );
+        if( elem.size() > 1 ) {
+            file << " [" << elem.size() << "]";
         }
         if( next_item.charges > 0 ) {
             file << " (" << next_item.charges << ")";

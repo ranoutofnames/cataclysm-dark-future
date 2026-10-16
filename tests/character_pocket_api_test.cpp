@@ -1,3 +1,4 @@
+#include "carried_stacks.h"
 #include "avatar.h"
 #include "bionics.h"
 #include "catch/catch.hpp"
@@ -52,7 +53,7 @@ TEST_CASE("body storage follows the CARRY_STORAGE enchantment", "[character][poc
         auto r = u.try_add(item::spawn(itype_id("rock")));
         REQUIRE(r.success());
         CHECK(u.get_body_storage()->contents.num_item_stacks() == 1);
-        CHECK(u.carried_view().size() == 1);
+        CHECK(carried_item_stacks(u).size() == 1);
         // J4 (A22): volume_carried no longer aliases carried_volume (the contents); nothing is worn
         CHECK(u.volume_carried() == 0_ml);
         CHECK(u.carried_volume() > 0_ml);
@@ -115,7 +116,7 @@ TEST_CASE("best_pocket and try_add use worn carry pockets", "[character][pocket]
     CHECK(u.volume_capacity() == u.carried_capacity());
     CHECK(u.volume_capacity() == legacy_capacity);
     CHECK(u.carried_volume() == legacy_carried + r.value()->volume());
-    CHECK(u.carried_view().size() == 1);
+    CHECK(carried_item_stacks(u).size() == 1);
 }
 
 TEST_CASE("a refused try_add leaves the item with the caller", "[character][pocket][body_storage]") {
@@ -134,13 +135,13 @@ TEST_CASE("shop stock is not carried", "[npc][shop]") {
     clear_all_state();
     npc& shopkeeper = spawn_npc(get_avatar().bub_pos() + point(5, 0), "test_talker");
     const units::volume carried_before = shopkeeper.carried_volume();
-    const size_t slices_before = shopkeeper.inv_const_slice().size();
+    const size_t slices_before = carried_item_stacks(shopkeeper).size();
     shopkeeper.shop_stock.add_item(item::spawn(itype_id("rock")), false);
     shopkeeper.shop_stock.add_item(item::spawn(itype_id("rock")), false);
     CHECK(shopkeeper.shop_stock.size() > 0);
     // the stock does not count as carried (the NPC's own starting kit does)
     CHECK(shopkeeper.carried_volume() == carried_before);
-    CHECK(shopkeeper.inv_const_slice().size() == slices_before);
+    CHECK(carried_item_stacks(shopkeeper).size() == slices_before);
 
     SECTION("an item leaves the stock through its location") {
         item* it = shopkeeper.shop_stock.const_stack(0).front();
@@ -151,7 +152,7 @@ TEST_CASE("shop stock is not carried", "[npc][shop]") {
     SECTION("the wares move to the inventory when the shopkeeper dies") {
         shopkeeper.shop_stock_to_inventory();
         CHECK(shopkeeper.shop_stock.size() == 0);
-        CHECK(shopkeeper.inv_const_slice().size() == slices_before + 1);
+        CHECK(carried_item_stacks(shopkeeper).size() == slices_before + 1);
     }
 }
 
@@ -224,7 +225,7 @@ TEST_CASE("a liquid in a bottle in a backpack behaves", "[character][pocket][liq
     CHECK(carried.parent_item() == pack);
     CHECK(!carried.is_in_container());
     CHECK(water.is_in_container());
-    CHECK(u.carried_view().size() == 1);
+    CHECK(carried_item_stacks(u).size() == 1);
     CHECK(u.carried_volume() >= carried.volume());
 
     SECTION("taking the backpack off keeps the bottle and its water inside") {
@@ -244,7 +245,7 @@ TEST_CASE("a liquid in a bottle in a backpack behaves", "[character][pocket][liq
     SECTION("the water in the carried bottle can be drunk") {
         // consume() starts an activity, so only the ability is checked here
         CHECK(u.can_consume(water));
-        CHECK(u.carried_view().size() == 1);
+        CHECK(carried_item_stacks(u).size() == 1);
     }
 }
 

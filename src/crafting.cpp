@@ -539,11 +539,24 @@ std::vector<const item *> Character::get_eligible_containers_for_crafting() cons
             conts.push_back( it );
         }
     }
-    for( size_t i = 0; i < inv_size(); i++ ) {
-        for( const auto &it : inv_const_stack( i ) ) {
-            if( is_container_eligible_for_crafting( *it, false ) ) {
+    // what the worn items and the body storage hold (the carried view is built from them)
+    const auto add_contained = [&conts]( const item & root ) {
+        root.visit_items( [&conts, &root]( const item * it ) {
+            if( it != &root && is_container_eligible_for_crafting( *it, false ) ) {
                 conts.push_back( it );
             }
+            return VisitResponse::NEXT;
+        } );
+    };
+    for( const item *it : worn ) {
+        add_contained( *it );
+    }
+    if( const item *storage = get_body_storage() ) {
+        for( const item *stored : storage->contents.all_items_top() ) {
+            if( is_container_eligible_for_crafting( *stored, false ) ) {
+                conts.push_back( stored );
+            }
+            add_contained( *stored );
         }
     }
 
@@ -577,14 +590,14 @@ std::vector<const item *> Character::get_eligible_containers_for_crafting() cons
 
 bool Character::can_make( const recipe *r, int batch_size )
 {
-    const inventory &crafting_inv = crafting_inventory();
+    const temp_crafting_inventory &temp_inv = crafting_inventory();
 
-    if( has_recipe( r, crafting_inv, character_funcs::get_crafting_helpers( *this ) ) < 0 ) {
+    if( has_recipe( r, temp_inv, character_funcs::get_crafting_helpers( *this ) ) < 0 ) {
         return false;
     }
 
     return r->deduped_requirements().can_make_with_inventory(
-               crafting_inv, r->get_component_filter(), batch_size );
+               temp_inv, r->get_component_filter(), batch_size );
 }
 
 bool Character::can_start_craft( const recipe *rec, recipe_filter_flags flags, int batch_size )
@@ -593,18 +606,18 @@ bool Character::can_start_craft( const recipe *rec, recipe_filter_flags flags, i
         return false;
     }
 
-    const inventory &inv = crafting_inventory();
+    const temp_crafting_inventory &inv = crafting_inventory();
     return rec->deduped_requirements().can_make_with_inventory(
                inv, rec->get_component_filter( flags ), batch_size, cost_adjustment::start_only );
 }
 
-const inventory &Character::crafting_inventory( bool clear_path )
+const temp_crafting_inventory &Character::crafting_inventory( bool clear_path )
 {
     return crafting_inventory( tripoint_bub_ms::zero(), PICKUP_RANGE, clear_path );
 }
 
-const inventory &Character::crafting_inventory( const tripoint_bub_ms &src_pos, int radius,
-        bool clear_path )
+const temp_crafting_inventory &Character::crafting_inventory( const tripoint_bub_ms &src_pos,
+        int radius, bool clear_path )
 {
     auto inv_pos = src_pos;
     if( src_pos == tripoint_bub_ms::zero() ) {
@@ -613,40 +626,41 @@ const inventory &Character::crafting_inventory( const tripoint_bub_ms &src_pos, 
     const auto cache_hit = cached_time == calendar::turn
                            && cached_position == inv_pos;
     if( cache_hit ) {
-        return cached_crafting_inventory;
+        return cached_temp_crafting_inventory;
     }
-    cached_crafting_inventory.form_from_map( inv_pos, radius, this, false, clear_path );
-    cached_crafting_inventory.add_item( primary_weapon(), true );
+    cached_temp_crafting_inventory.clear();
+    cached_temp_crafting_inventory.form_from_map( inv_pos, radius, this, clear_path );
+    cached_temp_crafting_inventory.add_item_loc( primary_weapon() );
     // the carried items are inside the worn ones (and the body storage)
-    cached_crafting_inventory.add_items( worn, true );
+    for( item * const &it : worn ) {
+        cached_temp_crafting_inventory.add_item_loc( *it );
+    }
     if( item *storage = get_body_storage() ) {
         for( item *stored : storage->contents.all_items_top() ) {
-            cached_crafting_inventory.add_item( *stored, true );
+            cached_temp_crafting_inventory.add_item_loc( *stored );
         }
     }
     for( const bionic &bio : get_bionic_collection() ) {
         const bionic_data &bio_data = bio.info();
         if( ( !bio_data.has_flag( flag_BIONIC_TOGGLED ) || bio.powered ) &&
             !bio_data.fake_item.is_empty() ) {
-            cached_crafting_inventory.add_item( *item::spawn_temporary( bio.info().fake_item, calendar::turn,
-                                                units::to_kilojoule( get_power_level() ) ), true );
+            cached_temp_crafting_inventory.add_item_loc( *item::spawn_temporary( bio.info().fake_item,
+                    calendar::turn, units::to_kilojoule( get_power_level() ) ) );
         }
     }
     for( const itype_id &it : enchantment_cache->get_fake_items() ) {
         if( it->has_flag( flag_USES_BIONIC_POWER ) ) {
-            cached_crafting_inventory.add_item( *item::spawn_temporary( it, calendar::turn,
-                                                units::to_kilojoule( get_power_level() ) ), true );
+            cached_temp_crafting_inventory.add_item_loc( *item::spawn_temporary( it, calendar::turn,
+                    units::to_kilojoule( get_power_level() ) ) );
         } else {
-            cached_crafting_inventory.add_item( *item::spawn_temporary( it, calendar::turn ), true );
+            cached_temp_crafting_inventory.add_item_loc( *item::spawn_temporary( it, calendar::turn ) );
         }
     }
 
     cached_moves = moves;
     cached_time = calendar::turn;
     cached_position = inv_pos;
-    // cache the qualities of the items in cached_crafting_inventory
-    cached_crafting_inventory.update_quality_cache();
-    return cached_crafting_inventory;
+    return cached_temp_crafting_inventory;
 }
 
 void Character::invalidate_crafting_inventory()
@@ -781,7 +795,10 @@ static void set_item_map_or_vehicle( const Character &who, const tripoint_bub_ms
 
 static void set_item_inventory( Character &who, detached_ptr<item> &&newit )
 {
-    who.inv_assign_empty_invlet( *newit );
+    if( who.is_avatar() ) {
+        // invlets are avatar-only, per DDA crafting.cpp
+        who.as_avatar()->assign_empty_invlet( *newit );
+    }
     // We might not have space for the item
     if( who.can_pick_volume( *newit ) &&
         who.can_pick_weight( *newit, !get_option<bool>( "DANGEROUS_PICKUPS" ) ) ) {
@@ -1311,7 +1328,6 @@ void complete_craft( Character &who, item &craft )
         }
     }
 
-    who.inv_restack( );
 }
 
 bool Character::can_continue_craft( item &craft )
@@ -1366,7 +1382,7 @@ bool Character::can_continue_craft( item &craft )
             }
         }
 
-        inventory map_inv;
+        temp_crafting_inventory map_inv;
         map_inv.form_from_map( bub_pos(), PICKUP_RANGE, this );
 
         std::vector<comp_selection<item_comp>> item_selections;
@@ -1424,7 +1440,7 @@ bool Character::can_continue_craft( item &craft )
             return false;
         }
 
-        inventory map_inv;
+        temp_crafting_inventory map_inv;
         map_inv.form_from_map( bub_pos(), PICKUP_RANGE, this );
 
         std::vector<comp_selection<tool_comp>> new_tool_selections;
@@ -1445,7 +1461,8 @@ bool Character::can_continue_craft( item &craft )
     return true;
 }
 const requirement_data *Character::select_requirements(
-    const std::vector<const requirement_data *> &alternatives, int batch, const inventory &inv,
+    const std::vector<const requirement_data *> &alternatives, int batch,
+    const temp_crafting_inventory &inv,
     const std::function<bool( const item & )> &filter ) const
 {
     assert( !alternatives.empty() );
@@ -1479,7 +1496,7 @@ const requirement_data *Character::select_requirements(
 /* selection of component if a recipe requirement has multiple options (e.g. 'duct tap' or 'welder') */
 comp_selection<item_comp> Character::select_item_component( const std::vector<item_comp>
         &components,
-        int batch, inventory &map_inv, bool can_cancel,
+        int batch, temp_crafting_inventory &map_inv, bool can_cancel,
         const std::function<bool( const item & )> &filter, bool player_inv )
 {
     std::vector<item_comp> player_has;
@@ -1529,7 +1546,7 @@ comp_selection<item_comp> Character::select_item_component( const std::vector<it
                     player_has.push_back( component );
                     found = true;
                 }
-                if( map_inv.has_components( type, count, filter ) ) {
+                if( map_inv.has_amount( type, count, false, filter ) ) {
                     map_has.push_back( component );
                     found = true;
                 }
@@ -1539,7 +1556,7 @@ comp_selection<item_comp> Character::select_item_component( const std::vector<it
                     mixed.push_back( component );
                 }
             } else {
-                if( map_inv.has_components( type, count, filter ) ) {
+                if( map_inv.has_amount( type, count, false, filter ) ) {
                     map_has.push_back( component );
                 }
             }
@@ -1771,7 +1788,7 @@ std::vector<detached_ptr<item>> Character::consume_items( const std::vector<item
                              int batch,
                              const std::function<bool( const item & )> &filter )
 {
-    inventory map_inv;
+    temp_crafting_inventory map_inv;
     map_inv.form_from_map( bub_pos(), PICKUP_RANGE, this );
     return consume_items( select_item_component( components, batch, map_inv, false, filter ), batch,
                           filter );
@@ -1795,7 +1812,7 @@ namespace crafting
 static std::vector<avail_tool_comp>
 find_tool_component( const Character *player_with_inv, const std::vector<tool_comp> &tools,
                      int batch,
-                     const inventory &map_inv, cost_adjustment charge_mod )
+                     const temp_crafting_inventory &map_inv, cost_adjustment charge_mod )
 {
     std::vector<avail_tool_comp> available_tools;
 
@@ -1832,13 +1849,13 @@ find_tool_component( const Character *player_with_inv, const std::vector<tool_co
                     available_tools.emplace_back( sel, total_charges, ideal );
                 }
             }
-            if( map_inv.has_charges( type, count ) ) {
+            if( map_inv.charges_of( type ) >= count ) {
                 int total_charges = map_inv.charges_of( type );
                 comp_selection<tool_comp> sel( usage_from::map, *it );
                 available_tools.emplace_back( sel, total_charges, ideal );
             }
         } else if( ( player_with_inv && player_with_inv->has_amount( type, 1 ) )
-                   || map_inv.has_tools( type, 1 ) ) {
+                   || map_inv.has_amount( type, 1, true ) ) {
             comp_selection<tool_comp> sel( usage_from::none, *it );
             available_tools.emplace_back( sel, 0, 0 );
         }
@@ -1927,7 +1944,8 @@ query_tool_selection( const std::vector<avail_tool_comp> &available_tools,
 }
 
 comp_selection<tool_comp>
-select_tool_component( const std::vector<tool_comp> &tools, int batch, const inventory &map_inv,
+select_tool_component( const std::vector<tool_comp> &tools, int batch,
+                       const temp_crafting_inventory &map_inv,
                        const Character *player_with_inv,
                        bool can_cancel,
                        const std::string &hotkeys,
@@ -1940,7 +1958,8 @@ select_tool_component( const std::vector<tool_comp> &tools, int batch, const inv
 }
 
 comp_selection<tool_comp>
-select_tool_component( const std::vector<tool_comp> &tools, int batch, const inventory &map_inv,
+select_tool_component( const std::vector<tool_comp> &tools, int batch,
+                       const temp_crafting_inventory &map_inv,
                        const Character *player_with_inv,
                        bool can_cancel )
 {
@@ -1986,7 +2005,7 @@ bool Character::craft_consume_tools( item &craft, int mulitplier, bool start_cra
     const std::vector<comp_selection<tool_comp>> &cached_tool_selections =
                 craft.get_cached_tool_selections();
 
-    inventory map_inv;
+    temp_crafting_inventory map_inv;
     map_inv.form_from_map( bub_pos(), PICKUP_RANGE, this );
 
     for( const comp_selection<tool_comp> &tool_sel : cached_tool_selections ) {
@@ -2005,7 +2024,7 @@ bool Character::craft_consume_tools( item &craft, int mulitplier, bool start_cra
                     }
                     break;
                 case usage_from::map:
-                    if( !map_inv.has_charges( type, count ) ) {
+                    if( !map_inv.charges_of( type ) >= count ) {
                         add_msg_player_or_npc(
                             _( "You have insufficient %s charges and can't continue crafting" ),
                             _( "<npcname> has insufficient %s charges and can't continue crafting" ),
@@ -2020,7 +2039,7 @@ bool Character::craft_consume_tools( item &craft, int mulitplier, bool start_cra
                 case usage_from::num_usages_from:
                     break;
             }
-        } else if( !has_amount( type, 1 ) && !map_inv.has_tools( type, 1 ) ) {
+        } else if( !has_amount( type, 1 ) && !map_inv.has_amount( type, 1, true ) ) {
             add_msg_player_or_npc(
                 _( "You no longer have a %s and can't continue crafting" ),
                 _( "<npcname> no longer has a %s and can't continue crafting" ),
@@ -2069,14 +2088,14 @@ to consume_tools */
 void Character::consume_tools( const std::vector<tool_comp> &tools, int batch,
                                const std::string &hotkeys )
 {
-    inventory map_inv;
+    temp_crafting_inventory map_inv;
     map_inv.form_from_map( bub_pos(), PICKUP_RANGE, this );
     consume_tools( crafting::select_tool_component( tools, batch, map_inv, this, false, hotkeys,
                    cost_adjustment::none ), batch );
 }
 
 ret_val<bool> crafting::can_disassemble( const Character &who, const item &obj,
-        const inventory &inv )
+        const temp_crafting_inventory &inv )
 {
     const auto &r = recipe_dictionary::get_uncraft( obj.typeId() );
 
@@ -2112,9 +2131,10 @@ ret_val<bool> crafting::can_disassemble( const Character &who, const item &obj,
     }
     const auto &dis = r.disassembly_requirements();
 
+    const temp_crafting_inventory &temp_inv = inv;
     for( const auto &opts : dis.get_qualities() ) {
         for( const auto &qual : opts ) {
-            if( !qual.has( inv, return_true<item> ) ) {
+            if( !qual.has( temp_inv, return_true<item> ) ) {
                 // Here should be no dot at the end of the string as 'to_string()' provides it.
                 return ret_val<bool>::make_failure( _( "You need %s" ), qual.to_string() );
             }
@@ -2124,8 +2144,8 @@ ret_val<bool> crafting::can_disassemble( const Character &who, const item &obj,
     for( const auto &opts : dis.get_tools() ) {
         const bool found = std::ranges::any_of( opts,
         [&]( const tool_comp & tool ) {
-            return ( tool.count <= 0 && inv.has_tools( tool.type, 1 ) ) ||
-                   ( tool.count  > 0 && inv.has_charges( tool.type, tool.count ) );
+            return ( tool.count <= 0 && inv.has_amount( tool.type, 1, true ) ) ||
+                   ( tool.count  > 0 && inv.charges_of( tool.type ) >= tool.count );
         } );
 
         if( !found ) {
@@ -2562,7 +2582,8 @@ std::pair<bench_type, float> best_bench_here( const item &craft, const tripoint_
     return std::make_pair( best_type, best_mult );
 }
 
-std::set<itype_id> get_books_for_recipe( const Character &c, const inventory &crafting_inv,
+std::set<itype_id> get_books_for_recipe( const Character &c,
+        const temp_crafting_inventory &crafting_inv,
         const recipe *r )
 {
     std::set<itype_id> book_ids;

@@ -4,6 +4,7 @@
 #include "bionics.h"
 #include "bodypart.h"
 #include "calendar.h"
+#include "carried_stacks.h"
 #include "catalua.h"
 #include "catalua_coord.h"
 #include "catalua_hooks.h"
@@ -2026,21 +2027,20 @@ bool npc::can_use_offensive_cbm() const
 
 bool npc::consume_cbm_items( const std::function<bool( const item & )> &filter )
 {
-    const_invslice slice = inv_const_slice();
-    int index = -1;
-    for( size_t i = 0; i < slice.size(); i++ ) {
-        item *const &it = slice[i]->front();
+    item *to_consume = nullptr;
+    for( const carried_stack &stack : carried_item_stacks( *this ) ) {
+        item *const &it = stack.front();
         const item &real_item = it->is_container() ?  it->contents.front() : *it;
         if( filter( real_item ) ) {
-            index = i;
+            to_consume = it;
             break;
         }
     }
-    if( index < 0 ) {
+    if( to_consume == nullptr ) {
         return false;
     }
     int old_moves = moves;
-    consume( i_at( index ) );
+    consume( *to_consume );
     // TODO: a more reliable check for whether item has been consumed
     return old_moves != moves;
 }
@@ -3558,8 +3558,8 @@ std::vector<item *> npc::pick_up_item_vehicle( vehicle &veh, int part_index )
 // Used in npc::drop_items()
 struct ratio_index {
     double ratio;
-    int index;
-    ratio_index( double R, int I ) : ratio( R ), index( I ) {}
+    item *loc;
+    ratio_index( double R, item *I ) : ratio( R ), loc( I ) {}
 };
 
 /* As of October 2019, this is buggy, do not use!! */
@@ -3579,9 +3579,8 @@ void npc::drop_items( units::mass drop_weight, units::volume drop_volume, int mi
     std::vector<ratio_index> rWgt, rVol; // Weight/Volume to value ratios
 
     // First fill our ratio vectors, so we know which things to drop first
-    const_invslice slice = inv_const_slice();
-    for( size_t i = 0; i < slice.size(); i++ ) {
-        item &it = *slice[i]->front();
+    for( const carried_stack &stack : carried_item_stacks( *this ) ) {
+        item &it = *stack.front();
         double wgt_ratio = 0.0;
         double vol_ratio = 0.0;
         if( value( it ) == 0 || value( it ) <= min_val ) {
@@ -3596,20 +3595,20 @@ void npc::drop_items( units::mass drop_weight, units::volume drop_volume, int mi
         for( size_t j = 0; j < rWgt.size() && !added_wgt; j++ ) {
             if( wgt_ratio > rWgt[j].ratio ) {
                 added_wgt = true;
-                rWgt.insert( rWgt.begin() + j, ratio_index( wgt_ratio, i ) );
+                rWgt.insert( rWgt.begin() + j, ratio_index( wgt_ratio, &it ) );
             }
         }
         if( !added_wgt ) {
-            rWgt.emplace_back( ratio_index( wgt_ratio, i ) );
+            rWgt.emplace_back( ratio_index( wgt_ratio, &it ) );
         }
         for( size_t j = 0; j < rVol.size() && !added_vol; j++ ) {
             if( vol_ratio > rVol[j].ratio ) {
                 added_vol = true;
-                rVol.insert( rVol.begin() + j, ratio_index( vol_ratio, i ) );
+                rVol.insert( rVol.begin() + j, ratio_index( vol_ratio, &it ) );
             }
         }
         if( !added_vol ) {
-            rVol.emplace_back( ratio_index( vol_ratio, i ) );
+            rVol.emplace_back( ratio_index( vol_ratio, &it ) );
         }
     }
 
@@ -3626,34 +3625,22 @@ void npc::drop_items( units::mass drop_weight, units::volume drop_volume, int mi
                                   units::to_milliliter( drop_volume - volume_dropped ) / 250,
                                   static_cast<decltype( units::to_milliliter( drop_volume ) )>( INT_MAX ) );
         const auto dVolume = static_cast<int>( d_volume );
-        int index;
+        item *to_drop = nullptr;
         // Which is more important, weight or volume?
         if( dWeight > dVolume ) {
-            index = rWgt[0].index;
-            rWgt.erase( rWgt.begin() );
-            // Fix the rest of those indices.
-            for( auto &elem : rWgt ) {
-                if( elem.index > index ) {
-                    elem.index--;
-                }
-            }
+            to_drop = rWgt[0].loc;
         } else {
-            index = rVol[0].index;
-            rVol.erase( rVol.begin() );
-            // Fix the rest of those indices.
-            for( size_t i = 0; i < rVol.size(); i++ ) {
-                if( i > rVol.size() ) {
-                    debugmsg( "npc::drop_items() - looping through rVol - Size is %d, i is %d",
-                              rVol.size(), i );
-                }
-                if( rVol[i].index > index ) {
-                    rVol[i].index--;
-                }
-            }
+            to_drop = rVol[0].loc;
         }
-        weight_dropped += slice[index]->front()->weight();
-        volume_dropped += slice[index]->front()->volume();
-        detached_ptr<item> dropped = i_rem( index );
+        // the dropped item must not stay in either list
+        const auto is_dropped = [to_drop]( const ratio_index & r ) {
+            return r.loc == to_drop;
+        };
+        std::erase_if( rWgt, is_dropped );
+        std::erase_if( rVol, is_dropped );
+        weight_dropped += to_drop->weight();
+        volume_dropped += to_drop->volume();
+        detached_ptr<item> dropped = inv_remove_item( to_drop );
         num_items_dropped++;
         if( num_items_dropped == 1 ) {
             item_name += dropped->tname();
@@ -4057,24 +4044,21 @@ bool npc::alt_attack()
     };
 
     check_alt_item( primary_weapon() );
-    for( auto &sl : inv_const_slice() ) {
+    for( item *carried : all_items_loc() ) {
+        if( is_worn( *carried ) || is_wielding( *carried ) ) {
+            continue;
+        }
         // TODO: Cached values - an itype slot maybe?
-        check_alt_item( *sl->front() );
+        check_alt_item( *carried );
     }
 
     if( used == nullptr ) {
         return false;
     }
 
-    int weapon_index = get_item_position( used );
-    if( weapon_index == INT_MIN ) {
-        debugmsg( "npc::alt_attack() couldn't find expected item %s", used->tname() );
-        return false;
-    }
-
     // Are we going to throw this item?
     if( !used->is_active() && used->has_flag( flag_NPC_ACTIVATE ) ) {
-        activate_item( weapon_index );
+        activate_item( *used );
         // Note: intentional lack of return here
         // We want to ignore player-centric rules to avoid carrying live explosives
         // TODO: Non-grenades
@@ -4145,14 +4129,13 @@ bool npc::alt_attack()
     return true;
 }
 
-void npc::activate_item( int item_index )
+void npc::activate_item( item &it )
 {
     if( is_hallucination() ) {
         move_pause();
         return;
     }
     const int oldmoves = moves;
-    item &it = i_at( item_index );
     if( it.is_tool() || it.is_food() ) {
         it.type->invoke( *this, it, bub_pos() );
     }
@@ -4215,13 +4198,17 @@ void npc::heal_self()
     if( has_effect( effect_asthma ) ) {
         item *treatment = &null_item_reference();
         std::string iusage = "OXYGEN_BOTTLE";
+        const auto find_charged = [this]( const itype_id & type ) -> item * {
+            const std::vector<item *> found = all_items_with_id( type, true );
+            return found.empty() ? &null_item_reference() : found.front();
+        };
         if( has_charges( itype_inhaler, 1 ) ) {
-            treatment = &inv_find_item( inv_position_by_type( itype_inhaler ) );
+            treatment = find_charged( itype_inhaler );
             iusage = "INHALER";
         } else if( has_charges( itype_oxygen_tank, 1 ) ) {
-            treatment = &inv_find_item( inv_position_by_type( itype_oxygen_tank ) );
+            treatment = find_charged( itype_oxygen_tank );
         } else if( has_charges( itype_smoxygen_tank, 1 ) ) {
-            treatment = &inv_find_item( inv_position_by_type( itype_smoxygen_tank ) );
+            treatment = find_charged( itype_smoxygen_tank );
         }
         if( !treatment->is_null() ) {
             treatment->type->invoke( *this, *treatment, bub_pos(), iusage );
@@ -4362,23 +4349,22 @@ bool npc::consume_food()
         return false;
     }
     float best_weight = 0.0f;
-    int index = -1;
+    item *best_food = nullptr;
     int want_hunger = std::max<int>( 0, ( max_stored_kcal() - get_stored_kcal() ) / 10 );
     int want_quench = std::max( 0, get_thirst() );
-    const_invslice slice = inv_const_slice();
-    for( size_t i = 0; i < slice.size(); i++ ) {
-        const item &it = *slice[i]->front();
+    for( const carried_stack &stack : carried_item_stacks( *this ) ) {
+        item &it = *stack.front();
         if( const item *food_item = it.get_food() ) {
             float cur_weight = rate_food( *food_item, want_hunger, want_quench );
             // Note: will_eat is expensive, avoid calling it if possible
             if( cur_weight > best_weight && will_eat( *food_item ).success() ) {
                 best_weight = cur_weight;
-                index = i;
+                best_food = &it;
             }
         }
     }
 
-    if( index == -1 ) {
+    if( best_food == nullptr ) {
         if( !is_player_ally() ) {
             // TODO: Remove this and let player "exploit" hungry NPCs
             set_stored_kcal( max_stored_kcal() );
@@ -4390,11 +4376,11 @@ bool npc::consume_food()
     // consume doesn't return a meaningful answer, we need to compare moves
     // TODO: Make player::consume return false if it fails to consume
     int old_moves = moves;
-    consume( i_at( index ) );
+    consume( *best_food );
     // TODO: a more reliable check for whether item has been consumed
     bool consumed = old_moves != moves;
     if( !consumed ) {
-        debugmsg( "%s failed to consume %s", name, i_at( index ).tname() );
+        debugmsg( "%s failed to consume %s", name, best_food->tname() );
     }
 
     return consumed;
@@ -4443,9 +4429,11 @@ void npc::mug_player( Character &mark )
     }
     double best_value = minimum_item_value() * value_mod;
     item *to_steal = nullptr;
-    const_invslice slice = mark.inv_const_slice();
-    for( const std::vector<item *> *stack : slice ) {
-        item &front_stack = *stack->front();
+    for( item *candidate : mark.all_items_loc() ) {
+        if( mark.is_worn( *candidate ) || mark.is_wielding( *candidate ) ) {
+            continue;
+        }
+        item &front_stack = *candidate;
         if( value( front_stack ) >= best_value &&
             can_pick_volume( front_stack ) &&
             can_pick_weight( front_stack, true ) ) {

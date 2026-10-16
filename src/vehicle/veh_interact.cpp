@@ -318,7 +318,7 @@ auto veh_interact::format_reqs(
     std::string& msg, const requirement_data& reqs, const std::map<skill_id, int>& skills,
     int moves) const -> bool {
     auto& you = get_avatar();
-    const inventory& inv = you.crafting_inventory();
+    const temp_crafting_inventory& inv = you.crafting_inventory();
     bool ok = reqs.can_make_with_inventory(inv, is_crafting_component);
 
     msg += _("<color_white>Time required:</color>\n");
@@ -3017,7 +3017,7 @@ void veh_interact::complete_vehicle(Character& who) {
     // cmd = Install Repair reFill remOve Siphon Unload reName relAbel
     switch (static_cast<char>(who.activity->index)) {
         case 'i': {
-            const inventory& inv = who.crafting_inventory();
+            const temp_crafting_inventory& inv = who.crafting_inventory();
 
             const auto reqs = vpinfo.install_requirements();
             const auto using_debug_hammerspace = who.has_trait(trait_DEBUG_HS);
@@ -3164,7 +3164,7 @@ void veh_interact::complete_vehicle(Character& who) {
         }
 
         case 'o': {
-            const inventory& inv = who.crafting_inventory();
+            const temp_crafting_inventory& inv = who.crafting_inventory();
             if (vehicle_part >= veh->part_count()) {
                 vehicle_part = veh->get_next_shifted_index(vehicle_part, who);
                 if (vehicle_part == -1) {

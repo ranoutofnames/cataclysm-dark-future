@@ -17,6 +17,7 @@
 #include "player_activity.h"
 #include "popup.h"
 #include "recipe_dictionary.h"
+#include "temp_crafting_inventory.h"
 #include "type_id.h"
 #include "ui_manager.h"
 
@@ -83,6 +84,19 @@ static q_result yn_ignore_query( const std::string &text )
 
 
 // It is used to check if an item can be salvaged or not.
+quality_cache get_quality_cache( const temp_crafting_inventory &inv )
+{
+    quality_cache cache;
+    inv.visit_items( [&cache]( const item * e ) {
+        const int item_count = e->count_by_charges() ? e->charges : 1;
+        for( const std::pair<const quality_id, int> &quality : e->get_qualities() ) {
+            cache[quality.first][quality.second] += item_count;
+        }
+        return VisitResponse::NEXT;
+    } );
+    return cache;
+}
+
 ret_val<bool> try_salvage( const item &target, quality_cache &q_cache )
 {
     if( target.is_null() ) {
@@ -315,7 +329,7 @@ bool menu_salvage_single( player &you )
 
 bool prompt_salvage_single( Character &who, item &target )
 {
-    quality_cache cache = who.crafting_inventory().get_quality_cache();
+    quality_cache cache = get_quality_cache( who.crafting_inventory() );
     if( auto res = try_salvage( target, cache ); !res.success() ) {
         add_msg( m_bad, res.str() );
         return false;
@@ -346,7 +360,7 @@ bool prompt_salvage_single( Character &who, item &target )
 
 bool salvage_single( Character &who, item &target )
 {
-    quality_cache cache = who.crafting_inventory().get_quality_cache();
+    quality_cache cache = get_quality_cache( who.crafting_inventory() );
 
     if( auto res = try_salvage( target, cache ); !res.success() ) {
         add_msg( m_bad, res.str() );
@@ -367,7 +381,7 @@ bool salvage_all( Character &who )
     auto pos = who.bub_pos();
     std::vector<iuse_location> targets;
     //yes this should NOT be a reference
-    quality_cache cache = who.crafting_inventory().get_quality_cache();
+    quality_cache cache = get_quality_cache( who.crafting_inventory() );
 
     for( auto target : here.i_at( pos ) ) {
         if( target && try_salvage( *target, cache ).success() ) {
@@ -413,7 +427,7 @@ void salvage_activity_actor::calc_all_moves( player_activity &act, Character &wh
 void salvage_activity_actor::start( player_activity &act, Character &who )
 {
     //yes this should NOT be a reference
-    auto cache = who.crafting_inventory().get_quality_cache();
+    auto cache = salvage::get_quality_cache( who.crafting_inventory() );
     for( auto &target : targets ) {
         if( !target.loc ) {
             debugmsg( "Lost target of ", get_type() );
@@ -469,7 +483,7 @@ void salvage_activity_actor::do_turn( player_activity &act, Character &who )
         } else {
             if( !mute_prompts ) {
                 //yes this should NOT be a reference
-                auto cache = who.crafting_inventory().get_quality_cache();
+                auto cache = salvage::get_quality_cache( who.crafting_inventory() );
                 switch( salvage::prompt_warnings( who, *target.loc, cache ) ) {
                     case salvage::q_result::ignore:
                         mute_prompts = true;

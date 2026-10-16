@@ -3,6 +3,7 @@
 #include "avatar.h"
 #include "avatar_action.h"
 #include "calendar.h"
+#include "carried_stacks.h"
 #include "character.h"
 #include "character_functions.h"
 #include "clzones.h"
@@ -22,6 +23,7 @@
 #include "iexamine.h"
 #include "int_id.h"
 #include "inventory.h"
+#include "temp_crafting_inventory.h"
 #include "item.h"
 #include "itype.h"
 #include "iuse.h"
@@ -540,7 +542,7 @@ static std::list<pickup::act_item> convert_to_items( Character &p,
                 continue;
             }
             int obtained = 0;
-            for( item * const &it : p.inv_const_stack( p.get_item_position( &*loc ) ) ) {
+            for( item * const &it : carried_stack_of( p, loc ) ) {
                 if( obtained >= count ) {
                     break;
                 }
@@ -584,15 +586,17 @@ std::list<act_item> reorder_for_dropping( Character &p, const drop_locations &dr
             dropping_clothing_ids.insert( clothing_id );
         }
     }
-    for( const auto *stack : p.inv_const_slice() ) {
-        for( auto *it : *stack ) {
-            const auto target_id = it->get_var( "DROP_WITH_CLOTHING_TARGET", 0 );
-            if( dropping_clothing_ids.contains( target_id ) &&
-            !std::ranges::any_of( inv, [it]( const act_item & candidate ) {
-            return &*candidate.loc == it;
-        } ) ) {
-                inv.emplace_back( *it, it->count(), 0 );
-            }
+    // per DDA: walk every carried item, skipping the wielded and worn ones
+    for( item *it : p.all_items_loc() ) {
+        if( p.is_worn( *it ) || p.is_wielding( *it ) ) {
+            continue;
+        }
+        const auto target_id = it->get_var( "DROP_WITH_CLOTHING_TARGET", 0 );
+        if( dropping_clothing_ids.contains( target_id ) &&
+        !std::ranges::any_of( inv, [it]( const act_item & candidate ) {
+        return &*candidate.loc == it;
+    } ) ) {
+            inv.emplace_back( *it, it->count(), 0 );
         }
     }
 
@@ -1044,7 +1048,7 @@ static std::vector<construction_id> get_group_roots( const std::vector<construct
 static activity_reason_info find_base_construction(
     const std::vector<construction_id> &list_constructions,
     player &p,
-    const inventory &inv,
+    const temp_crafting_inventory &inv,
     const tripoint_bub_ms &loc,
     const std::optional<construction_id> &part_con_id,
     const construction_id id,
@@ -1243,7 +1247,7 @@ static bool are_requirements_nearby( const std::vector<tripoint_bub_ms> &loot_sp
                                      const bool in_loot_zones, const tripoint_bub_ms &src_loc )
 {
     zone_manager &mgr = zone_manager::get_manager();
-    inventory temp_inv;
+    temp_crafting_inventory temp_inv;
     units::volume volume_allowed = p.free_space();
     units::mass weight_allowed = p.weight_capacity() - p.weight_carried();
     static const auto check_weight_if = []( const activity_id & id ) {
@@ -1260,11 +1264,11 @@ static bool are_requirements_nearby( const std::vector<tripoint_bub_ms> &loot_sp
     const bool check_weight = check_weight_if( activity_to_restore ) || ( !p.backlog.empty() &&
                               check_weight_if( p.backlog.front()->id() ) );
     bool found_welder = false;
-    for( item *elem : p.inv_dump() ) {
+    for( item *elem : p.all_items_loc() ) {
         if( elem->has_quality( qual_WELD ) ) {
             found_welder = true;
         }
-        temp_inv.add_item( *elem, true );
+        temp_inv.add_item_loc( *elem );
     }
     map &here = get_map();
     for( const auto &elem : loot_spots ) {
@@ -1291,7 +1295,7 @@ static bool are_requirements_nearby( const std::vector<tripoint_bub_ms> &loot_sp
                     continue;
                 }
             }
-            temp_inv.add_item( *elem2, true );
+            temp_inv.add_item_loc( *elem2 );
         }
         if( !in_loot_zones ) {
             if( const std::optional<vpart_reference> vp = here.veh_at( elem ).part_with_feature( "CARGO",
@@ -1299,7 +1303,7 @@ static bool are_requirements_nearby( const std::vector<tripoint_bub_ms> &loot_sp
                 vehicle &src_veh = vp->vehicle();
                 int src_part = vp->part_index();
                 for( auto &it : src_veh.get_items( src_part ) ) {
-                    temp_inv.add_item( *it, true );
+                    temp_inv.add_item_loc( *it );
                 }
             }
         }
@@ -1315,12 +1319,12 @@ static bool are_requirements_nearby( const std::vector<tripoint_bub_ms> &loot_sp
                     item *welder = item::spawn_temporary( itype_welder, calendar::start_of_cataclysm );
                     welder->charges = veh.fuel_left( itype_battery, true );
                     welder->set_flag( flag_PSEUDO );
-                    temp_inv.add_item( *welder, false );
+                    temp_inv.add_item_loc( *welder );
                     item *soldering_iron = item::spawn_temporary( itype_soldering_iron,
                                            calendar::start_of_cataclysm );
                     soldering_iron->charges = veh.fuel_left( itype_battery, true );
                     soldering_iron->set_flag( flag_PSEUDO );
-                    temp_inv.add_item( *soldering_iron, false );
+                    temp_inv.add_item_loc( *soldering_iron );
                 }
             }
         }
@@ -1530,7 +1534,7 @@ static activity_reason_info can_do_activity_there( const activity_id &act, playe
                     continue;
                 }
                 const auto &reqs = vpinfo.removal_requirements();
-                const inventory &inv = p.crafting_inventory( false );
+                const temp_crafting_inventory &inv = p.crafting_inventory( false );
 
                 const bool can_make = reqs.can_make_with_inventory( inv, is_crafting_component );
                 p.set_value( "veh_index_type", vpinfo.name() );
@@ -1585,7 +1589,7 @@ static activity_reason_info can_do_activity_there( const activity_id &act, playe
                     continue;
                 }
                 const auto &reqs = vpinfo.repair_requirements();
-                const inventory &inv = p.crafting_inventory( src_loc, PICKUP_RANGE - 1, false );
+                const temp_crafting_inventory &inv = p.crafting_inventory( src_loc, PICKUP_RANGE - 1, false );
                 const bool can_make = reqs.can_make_with_inventory( inv, is_crafting_component );
                 p.set_value( "veh_index_type", vpinfo.name() );
                 // temporarily store the intended index, we do this so two NPCs don't try and work on the same part at same time.
@@ -1678,7 +1682,7 @@ static activity_reason_info can_do_activity_there( const activity_id &act, playe
         }
         bool b_rack_present = false;
         for( const auto &pt : here.points_in_radius( src_loc, 2 ) ) {
-            const inventory &inv = p.crafting_inventory();
+            const temp_crafting_inventory &inv = p.crafting_inventory();
             if( here.has_flag_furn( flag_BUTCHER_EQ, pt ) || inv.has_item_with( []( const item & it ) {
             return it.has_flag( flag_BUTCHER_RACK );
             } ) ) {
@@ -1687,7 +1691,7 @@ static activity_reason_info can_do_activity_there( const activity_id &act, playe
         }
         if( !corpses.empty() ) {
             if( big_count > 0 && small_count == 0 ) {
-                const inventory &inv = p.crafting_inventory();
+                const temp_crafting_inventory &inv = p.crafting_inventory();
                 if( !b_rack_present || !( here.has_nearby_table( src_loc, PICKUP_RANGE ) ||
                 inv.has_item_with( []( const item & it ) {
                 return it.has_flag( flag_FLAT_SURFACE );
@@ -1761,7 +1765,7 @@ static activity_reason_info can_do_activity_there( const activity_id &act, playe
         const map_stack stuff_there = here.i_at( src_loc );
 
         // PICKUP_RANGE -1 because we will be adjacent to the spot when arriving.
-        const inventory &pre_inv = p.crafting_inventory( src_loc, PICKUP_RANGE - 1 );
+        const temp_crafting_inventory &pre_inv = p.crafting_inventory( src_loc, PICKUP_RANGE - 1 );
         for( const zone_data &zone : zones ) {
             const blueprint_options &options = dynamic_cast<const blueprint_options &>( zone.get_options() );
             const construction_id index = options.get_index();
@@ -2195,7 +2199,7 @@ static bool tidy_activity( player &p, const tripoint_bub_ms &src_loc,
     }
     // we are adjacent to an unsorted zone, we came here to just drop items we are carrying
     if( mgr.has( zone_type_LOOT_UNSORTED, bub_to_abs( src_loc ) ) ) {
-        for( item *inv_elem : p.inv_dump() ) {
+        for( item *inv_elem : p.all_items_loc() ) {
             if( inv_elem->has_var( "activity_var" ) ) {
                 inv_elem->erase_var( "activity_var" );
                 put_into_vehicle_or_drop( p, item_drop_reason::deliberate, inv_elem->detach(),
@@ -2783,7 +2787,7 @@ static std::unordered_set<tripoint_abs_ms> generic_multi_activity_locations( pla
             }
         }
         if( src_set.empty() && unsorted_spot != tripoint_bub_ms::zero() ) {
-            for( const item *inv_elem : p.inv_dump() ) {
+            for( const item *inv_elem : p.all_items_loc() ) {
                 if( inv_elem->has_var( "activity_var" ) ) {
                     // we've gone to tidy up all the things lying around, now tidy up the things we picked up.
                     src_set.insert( bub_to_abs( unsorted_spot ) );

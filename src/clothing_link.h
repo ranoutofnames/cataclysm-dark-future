@@ -2,6 +2,7 @@
 #ifndef CATA_SRC_CLOTHING_LINK_H
 #define CATA_SRC_CLOTHING_LINK_H
 
+#include "carried_stacks.h"
 #include "character.h"
 #include "item.h"
 #include "units_volume.h"
@@ -16,8 +17,8 @@ inline auto can_link_to_clothing( const Character &owner, const item &candidate,
     }
     const auto clothing_id = clothing.get_var( "DROP_WITH_CLOTHING_ID", 0 );
     if( clothing_id > 0 ) {
-        for( const auto *stack : owner.inv_const_slice() ) {
-            for( const auto *linked : *stack ) {
+        for( const auto &stack : carried_item_stacks( owner ) ) {
+            for( const auto *linked : stack ) {
                 if( linked != &candidate &&
                     linked->get_var( "DROP_WITH_CLOTHING_TARGET", 0 ) == clothing_id ) {
                     remaining -= linked->volume();

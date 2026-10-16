@@ -15,6 +15,7 @@
 
 class Character;
 class inventory;
+class temp_crafting_inventory;
 struct construction;
 struct point;
 
@@ -128,7 +129,7 @@ void override_build_times( time_duration time );
 std::optional<construction_id> construction_menu( bool blueprint );
 void complete_construction( Character &who, tripoint_abs_ms &where );
 bool can_construct( const construction &con, const tripoint_bub_ms &p );
-bool player_can_build( Character &ch, const inventory &inv, const construction &con );
+bool player_can_build( Character &ch, const temp_crafting_inventory &inv, const construction &con );
 
 
 

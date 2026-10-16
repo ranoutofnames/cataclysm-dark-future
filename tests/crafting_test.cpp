@@ -315,7 +315,7 @@ static void prep_craft(
     // and just in case "used" skill difficulty is higher, set that too
     g->u.set_skill_level(r.skill_used, std::max(r.difficulty, g->u.get_skill_level(r.skill_used)));
 
-    const inventory& crafting_inv = g->u.crafting_inventory();
+    const temp_crafting_inventory& crafting_inv = g->u.crafting_inventory();
     bool can_craft =
         r.deduped_requirements().can_make_with_inventory(crafting_inv, r.get_component_filter());
     REQUIRE(can_craft == expect_craftable);
@@ -748,8 +748,12 @@ static void verify_inventory(
     const std::vector<std::string>& has, const std::vector<std::string>& hasnt) {
     std::ostringstream os;
     os << "Inventory:\n";
-    for (const item* i : g->u.inv_dump()) {
-        os << "  " << i->typeId().str() << " (" << i->charges << ")\n";
+    // CDF: DDA lists all_items_loc(); walk the worn items and what they hold
+    for (const item* worn_it : g->u.top_items()) {
+        worn_it->visit_items([&os](const item* i) {
+            os << "  " << i->typeId().str() << " (" << i->charges << ")\n";
+            return VisitResponse::NEXT;
+        });
     }
     os << "Wielded:\n" << g->u.primary_weapon().tname() << "\n";
     INFO(os.str());
@@ -946,9 +950,9 @@ TEST_CASE("oven electric grid", "[crafting][overmap][grids][slow]") {
             REQUIRE(grid.get_resource() == 10);
             AND_WHEN("crafting inventory is built") {
                 u.invalidate_crafting_inventory();
-                const inventory& crafting_inv = u.crafting_inventory();
+                const temp_crafting_inventory& crafting_inv = u.crafting_inventory();
                 THEN("it contains an oven item with 10 charges") {
-                    REQUIRE(crafting_inv.has_charges(itype_id("fake_oven"), 10));
+                    REQUIRE(crafting_inv.charges_of(itype_id("fake_oven"), 10) >= 10);
                 }
             }
 
@@ -960,7 +964,7 @@ TEST_CASE("oven electric grid", "[crafting][overmap][grids][slow]") {
                 m.add_item(u.bub_pos(), item::spawn("meat"));
                 THEN("cooked meat can be crafted") {
                     const recipe& r = *recipe_id("meat_cooked");
-                    const inventory& crafting_inv = u.crafting_inventory();
+                    const temp_crafting_inventory& crafting_inv = u.crafting_inventory();
                     const deduped_requirement_data& ddrd = r.deduped_requirements();
                     bool can_craft =
                         ddrd.can_make_with_inventory(crafting_inv, r.get_component_filter());
@@ -1005,20 +1009,19 @@ TEST_CASE("tool selection ui", "[crafting][ui]") {
     std::vector<tool_comp> tools;
     comp_selection<tool_comp> expected_result;
 
-    inventory map_inv;
+    temp_crafting_inventory map_inv;
 
     GIVEN("One compatible tool in map inventory") {
         tool_comp tool_component(itype_id("test_soldering_iron"), 10);
         tools = {tool_component};
-        map_inv.add_item(
-            *item::spawn_temporary(tool_component.type, calendar::start_of_cataclysm, 100), false);
+        map_inv.add_item_loc(
+            *item::spawn_temporary(tool_component.type, calendar::start_of_cataclysm, 100));
 
         comp_selection<tool_comp> result = crafting::select_tool_component(
             tools, 1, map_inv, &dummy, false, DEFAULT_HOTKEYS, cost_adjustment::none);
 
         THEN("That tool is selected and is from map") {
             REQUIRE(map_inv.size() == 1);
-            CAPTURE(map_inv.find_item(0).display_name());
             CHECK(result.comp.type == tool_component.type);
             CHECK(result.use_from == usage_from::map);
         }
@@ -1028,8 +1031,8 @@ TEST_CASE("tool selection ui", "[crafting][ui]") {
         tool_comp costly(itype_id("test_soldering_iron"), 10);
         tool_comp free(itype_id("test_screwdriver"), -1);
         tools = {costly, free};
-        map_inv.add_item(*item::spawn_temporary(costly.type), false);
-        map_inv.add_item(*item::spawn_temporary(free.type), false);
+        map_inv.add_item_loc(*item::spawn_temporary(costly.type));
+        map_inv.add_item_loc(*item::spawn_temporary(free.type));
 
         comp_selection<tool_comp> result = crafting::select_tool_component(
             tools, 1, map_inv, &dummy, false, DEFAULT_HOTKEYS, cost_adjustment::none);
@@ -1042,10 +1045,10 @@ TEST_CASE("tool selection ui", "[crafting][ui]") {
         tool_comp too_little(itype_id("test_soldering_iron"), 200);
         tool_comp enough(itype_id("test_battery_tool"), 100);
         tools = {too_little, enough};
-        map_inv.add_item(
-            *item::spawn_temporary(too_little.type, calendar::start_of_cataclysm, 100), false);
-        map_inv.add_item(
-            *item::spawn_temporary(enough.type, calendar::start_of_cataclysm, 100), false);
+        map_inv.add_item_loc(
+            *item::spawn_temporary(too_little.type, calendar::start_of_cataclysm, 100));
+        map_inv.add_item_loc(
+            *item::spawn_temporary(enough.type, calendar::start_of_cataclysm, 100));
 
         comp_selection<tool_comp> result = crafting::select_tool_component(
             tools, 1, map_inv, &dummy, false, DEFAULT_HOTKEYS, cost_adjustment::none);
@@ -1208,7 +1211,7 @@ auto craft_cooked_meat_at_vehicle(const vehicle_craft_fixture& fixture) -> item*
     set_time(calendar::turn);
 
     you.invalidate_crafting_inventory();
-    REQUIRE(you.crafting_inventory().has_components(itype_id("meat"), 1));
+    REQUIRE(you.crafting_inventory().has_amount(itype_id("meat"), 1));
 
     you.make_craft(rid, 1, fixture.vehicle_pos);
     REQUIRE(you.activity);

@@ -1217,7 +1217,7 @@ bool game::start_game()
         }
 
     }
-    for( auto &e : u.inv_dump() ) {
+    for( auto &e : u.all_items_loc() ) {
         e->set_owner( g->u );
     }
     // Profession pets
@@ -4236,7 +4236,7 @@ bool game::load( const save_t &name )
     update_map( u );
     discard_monster_map_for_loaded_bubble( m, current_dimension_id_ );
     m.build_floor_cache( get_levz() );
-    for( auto &e : u.inv_dump() ) {
+    for( auto &e : u.all_items_loc() ) {
         e->set_owner( g->u );
     }
     // legacy, needs to be here as we access the map.
@@ -12102,7 +12102,7 @@ static void add_disassemblables( uilist &menu,
 static void butcher_submenu( const std::vector<item *> &corpses, int corpse = -1 )
 {
     avatar &you = get_avatar();
-    const inventory &inv = you.crafting_inventory();
+    const temp_crafting_inventory &inv = you.crafting_inventory();
 
     const int factor = std::max( you.max_quality( quality_id( "BUTCHER" ) ),
                                  inv.max_quality( quality_id( "BUTCHER" ) ) );
@@ -12309,8 +12309,8 @@ void game::butcher()
     std::vector<item *> salvageables;
     std::vector<item *> unloadables;
     map_stack items = m.i_at( u.bub_pos() );
-    const inventory &crafting_inv = u.crafting_inventory();
-    auto q_cache = u.crafting_inventory().get_quality_cache();
+    const temp_crafting_inventory &crafting_inv = u.crafting_inventory();
+    auto q_cache = salvage::get_quality_cache( crafting_inv );
 
     // Reserve capacity for each to hold entire item set if necessary to prevent
     // reallocations later on

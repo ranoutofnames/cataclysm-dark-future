@@ -157,7 +157,7 @@ void player_activity::init_all_moves( Character &who )
             return actor->calc_morale_factor( who );
         };
         speed.tools_factor_custom_formula = [&]( const q_reqs & reqs,
-        const inventory & inv ) {
+        const temp_crafting_inventory & inv ) {
             return actor->calc_tools_factor( reqs, inv );
         };
         speed.stats_factor_custom_formula = [&]( const Character & who,

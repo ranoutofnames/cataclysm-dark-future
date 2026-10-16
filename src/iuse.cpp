@@ -7799,7 +7799,9 @@ int iuse::radiocar( player *p, item *it, bool, const tripoint_bub_ms & )
         } else { // Disarm the car
             p->moves -= to_moves<int>( 2_seconds );
 
-            p->inv_assign_empty_invlet( *bomb_it, true ); // force getting an invlet.
+            if( avatar *you = p->as_avatar() ) {
+                you->assign_empty_invlet( *bomb_it, true ); // force getting an invlet.
+            }
             p->i_add( it->remove_item( *bomb_it ) );
 
             p->add_msg_if_player( _( "You disarmed your RC car." ) );
@@ -9279,7 +9281,7 @@ int iuse::modify_grid_connections( player *p, item *it, bool, const tripoint_bub
             cost_mult = lhs_locations.size() + rhs_locations.size();
         }
         const requirement_data &reqs = *requirement_add_grid_connection * cost_mult;
-        const inventory &crafting_inv = p->crafting_inventory();
+        const temp_crafting_inventory &crafting_inv = p->crafting_inventory();
         std::string grid_connection_string;
         if( cost_mult == 0 ) {
             grid_connection_string = string_format(

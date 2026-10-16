@@ -522,7 +522,7 @@ void npc::set_fac( const faction_id &id )
 
 void npc::apply_ownership_to_inv()
 {
-    for( auto &e : inv_dump() ) {
+    for( auto &e : all_items_loc() ) {
         e->set_owner( *this );
     }
     std::vector<item *> wares;
@@ -1419,8 +1419,6 @@ detached_ptr<item> npc::wield( detached_ptr<item> &&target )
     obj.on_wield( *this, mv );
 
 
-    inv_update_invlet( obj );
-    inv_update_invlet_cache_with_item( obj );
     return detached_ptr<item>();
 }
 
@@ -1751,10 +1749,12 @@ void npc::decide_needs()
     needrank[need_weapon] = npc_ai::wielded_value( *this );
     needrank[need_food] = 15.0f - ( max_stored_kcal() - get_stored_kcal() ) / 10.0f;
     needrank[need_drink] = 15 - get_thirst();
-    const_invslice slice = inv_const_slice();
-    for( auto &i : slice ) {
-        item &inventory_item = *i->front();
-        if( const item *food = inventory_item.get_food() ) {
+    // per DDA npc::assess_danger/needs: visit every carried item
+    for( const item *inventory_item : all_items_loc() ) {
+        if( is_worn( *inventory_item ) || is_wielding( *inventory_item ) ) {
+            continue;
+        }
+        if( const item *food = inventory_item->get_food() ) {
             needrank[ need_food ] += nutrition_for( *food ) / 4.0;
             needrank[ need_drink ] += food->get_comestible()->quench / 4.0;
         }
@@ -2818,7 +2818,7 @@ void npc::die( Creature *nkiller )
     if( my_fac ) {
         if( !is_fake() && !is_hallucination() ) {
             if( my_fac->members.size() == 1 ) {
-                for( auto elem : inv_dump() ) {
+                for( auto elem : all_items_loc() ) {
                     elem->remove_owner();
                     elem->remove_old_owner();
                 }
@@ -2895,7 +2895,7 @@ void npc::erase()
     if( my_fac ) {
         if( !is_fake() && !is_hallucination() ) {
             if( my_fac->members.size() == 1 ) {
-                for( auto elem : inv_dump() ) {
+                for( auto elem : all_items_loc() ) {
                     elem->remove_owner();
                     elem->remove_old_owner();
                 }
@@ -3202,7 +3202,6 @@ bool npc::dispose_item( item &obj, const std::string & )
             [this, &obj] {
                 moves -= item_handling_cost( obj );
                 inv_add_item( obj.detach(), true );
-                inv_unsort();
             }
         } );
     }

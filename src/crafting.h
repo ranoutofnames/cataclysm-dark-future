@@ -12,7 +12,7 @@
 
 class avatar;
 class Character;
-class inventory;
+class temp_crafting_inventory;
 class item;
 class recipe;
 struct iuse_location;
@@ -65,7 +65,8 @@ std::pair<bench_type, float> best_bench_here( const item &craft, const tripoint_
 * @param crafting_inv Current available items that may contain readable books
 * @param r Recipe to search for in the available books
 */
-std::set<itype_id> get_books_for_recipe( const Character &c, const inventory &crafting_inv,
+std::set<itype_id> get_books_for_recipe( const Character &c,
+        const temp_crafting_inventory &crafting_inv,
         const recipe *r );
 
 /**
@@ -88,19 +89,22 @@ int charges_for_continuing( int full_charges );
  * @param adjustment affects required charges, see @ref cost_adjustment
  */
 comp_selection<tool_comp>
-select_tool_component( const std::vector<tool_comp> &tools, int batch, const inventory &map_inv,
+select_tool_component( const std::vector<tool_comp> &tools, int batch,
+                       const temp_crafting_inventory &map_inv,
                        const Character *player_with_inv,
                        bool can_cancel,
                        const std::string &hotkeys,
                        cost_adjustment adjustment );
 
 comp_selection<tool_comp>
-select_tool_component( const std::vector<tool_comp> &tools, int batch, const inventory &map_inv,
+select_tool_component( const std::vector<tool_comp> &tools, int batch,
+                       const temp_crafting_inventory &map_inv,
                        const Character *player_with_inv,
                        bool can_cancel = false );
 
 /** Check if character can disassemble an item using the given crafting inventory. */
-ret_val<bool> can_disassemble( const Character &who, const item &obj, const inventory &inv );
+ret_val<bool> can_disassemble( const Character &who, const item &obj,
+                               const temp_crafting_inventory &inv );
 
 /**
  * Prompt for an item to disassemble, then start activity.

@@ -33,7 +33,7 @@
 #include <vector>
 
 auto get_remaining_charges(const std::string& tool_id) -> int {
-    const inventory crafting_inv = g->u.crafting_inventory();
+    const temp_crafting_inventory& crafting_inv = g->u.crafting_inventory();
     std::vector<item*> items = crafting_inv.items_with([tool_id](const item& i) {
         return i.typeId() == itype_id(tool_id);
     });
@@ -44,7 +44,7 @@ auto get_remaining_charges(const std::string& tool_id) -> int {
 
 auto player_has_item_of_type(const std::string& type) -> bool {
 
-    std::vector<item*> inv_items = g->u.inv_dump();
+    std::vector<item*> inv_items = g->u.all_items_loc();
 
     return std::any_of(inv_items.begin(), inv_items.end(), [&](const item* const& i) {
         return i->type->get_id() == itype_id(type);

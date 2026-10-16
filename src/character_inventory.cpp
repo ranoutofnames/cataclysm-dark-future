@@ -5,6 +5,7 @@
 //  * item_location handles become `item *`; the parent is `item::parent_item()`.
 //  * insert paths take `detached_ptr<item> &&` and only consume it on success.
 // Every difference from DDA is tagged `// CDF:`.
+#include "avatar.h"
 #include "character.h"
 
 #include <algorithm>
@@ -63,6 +64,17 @@ std::vector<item *> Character::top_items() const
         ret.push_back( const_cast<item *>( worn_it ) );
     }
     return ret;
+}
+
+// CDF: item* handle instead of DDA's item_location (option A), per DDA character_inventory.cpp:639-692
+std::vector<item *> Character::top_items_loc() const
+{
+    return top_items();
+}
+
+std::vector<item *> Character::all_items_loc() const
+{
+    return all_items( false );
 }
 
 units::length Character::max_single_item_length() const
@@ -332,7 +344,9 @@ ret_val<item *> Character::try_add( detached_ptr<item> &&it, int &copies_remaini
         if( first_item_added == nullptr ) {
             first_item_added = newits.front();
             if( first_item_added->invlet == '\0' ) {
-                inv_update_invlet( *first_item_added );
+                if( avatar *you = as_avatar() ) {
+                    you->update_invlet( *first_item_added );
+                }
             }
         }
 
@@ -343,7 +357,6 @@ ret_val<item *> Character::try_add( detached_ptr<item> &&it, int &copies_remaini
         }
         pocket.container->on_contents_changed();
         pocket.pocket->on_contents_changed();
-        carried_dirty = true;
     }
 
     if( copies_remaining > 0 && allow_wield && !has_weapon() ) {
@@ -388,12 +401,6 @@ item &Character::i_add( detached_ptr<item> &&it, bool should_stack, const item *
     invalidate_inventory_validity_cache();
     const itype_id item_type_id = it->typeId();
     last_item = item_type_id;
-
-    // CDF: the flat inventory view re-sorts when something is added (see inventory::unsort)
-    if( it->is_food() || it->is_ammo() || it->is_gun() || it->is_armor() ||
-        it->is_book() || it->is_tool() || it->is_melee() || it->is_food_container() ) {
-        inv.unsort();
-    }
 
     ret_val<item *> added = try_add( std::move( it ), avoid, original_inventory_item, allow_wield,
                                      ignore_pkt_settings );
@@ -689,7 +696,6 @@ std::vector<pocket_data_with_parent> Character::get_all_pocket_with_parent(
 void Character::add_stash( const item &newit, int &remaining_charges, bool ignore_pkt_settings )
 {
     worn_weight_cache_dirty = true;
-    carried_dirty = true;
     if( ignore_pkt_settings ) {
         // Crawl all pockets regardless of priority
         // Crawl First : wielded item
@@ -1174,8 +1180,9 @@ bool Character::wield( item &it, std::optional<int> obtain_cost, bool combat )
     recoil = MAX_RECOIL;
     wielded->on_wield( *as_player(), mv );
 
-    inv_update_invlet( *wielded );
-    inv_update_invlet_cache_with_item( *wielded );
+    if( avatar *you = as_avatar() ) {
+        you->add_invlet_to_new_item( *wielded );
+    }
     ( void )combat;
     return true;
 }

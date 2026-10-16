@@ -163,7 +163,7 @@ namespace
 struct availability {
     explicit availability( Character &crafter, const recipe *r, int batch_size, bool known ) {
         this->known = known;
-        const inventory &inv = crafter.crafting_inventory();
+        const temp_crafting_inventory &inv = crafter.crafting_inventory();
         auto all_items_filter = r->get_component_filter( recipe_filter_flags::none );
         auto no_rotten_filter = r->get_component_filter( recipe_filter_flags::no_rotten );
         const deduped_requirement_data &req = r->deduped_requirements();
@@ -216,7 +216,7 @@ struct availability {
 
 struct list_nested_options {
     const recipe *rec = nullptr;
-    const inventory *crafting_inv = nullptr;
+    const temp_crafting_inventory *crafting_inv = nullptr;
     const std::vector<npc *> *helpers = nullptr;
     Character *crafter = nullptr;
     int indent = 0;
@@ -555,7 +555,7 @@ static std::vector<std::string> recipe_info(
                           _( "Reasonable" ) );
 
     std::string nearby_string;
-    const inventory &crafting_inv = crafter.crafting_inventory();
+    const temp_crafting_inventory &crafting_inv = crafter.crafting_inventory();
     const int nearby_amount = crafting_inv.count_item( recp.result() );
     if( nearby_amount == 0 ) {
         nearby_string = "<color_light_gray>0</color>";
@@ -872,7 +872,7 @@ const recipe *select_crafting_recipe( int &batch_size_out, Character &crafter )
     int batch_line = 0;
     const recipe *chosen = nullptr;
 
-    const inventory &crafting_inv = crafter.crafting_inventory();
+    const temp_crafting_inventory &crafting_inv = crafter.crafting_inventory();
     const std::vector<npc *> helpers = character_funcs::get_crafting_helpers( crafter );
     std::string filterstring;
 

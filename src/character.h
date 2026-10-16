@@ -47,6 +47,7 @@
 #include "safe_reference.h"
 #include "stomach.h"
 #include "string_formatter.h"
+#include "temp_crafting_inventory.h"
 #include "type_id.h"
 #include "units.h"
 #include "visitable.h"
@@ -1359,33 +1360,13 @@ class Character : public Creature, public location_visitable<Character>
          */
         int get_item_position( const item *it ) const;
 
-        const std::vector<item *> &inv_const_stack( int position ) const;
-
-        const_invslice inv_const_slice() const;
-
-        void inv_assign_empty_invlet( item &it, bool force = false );
-
         size_t inv_size() const;
-
-        void inv_restack();
 
         detached_ptr<item> inv_remove_item( item * );
 
-        void inv_unsort();
-
         void inv_clear();
-        void dump_inv( std::vector<item *> &to );
-
-        std::map<char, itype_id> &inv_assigned_invlet();
-        const std::map<char, itype_id> &inv_assigned_invlet() const;
-
-        void inv_reassign_item( item &it, char invlet, bool remove_old = true );
-
-        void inv_update_invlet( item &it );
 
         int inv_position_by_item( item *it ) const;
-
-        void inv_update_invlet_cache_with_item( item &it );
 
         int inv_invlet_to_position( char invlet ) const;
 
@@ -1398,16 +1379,9 @@ class Character : public Creature, public location_visitable<Character>
 
         int inv_position_by_type( const itype_id &type ) const;
 
-        void inv_json_save_invcache( JsonOut &json ) const;
-        void inv_json_load_invcache( JsonIn &jsin );
-
-        /** Read-only view of the carried items (not the worn or wielded ones). */
-        const inventory &carried_view() const;
-
         /*
          * CDF P1c: carried items live in the `carry` pockets of the worn items and in the body
-         * storage. The inv_* methods work on carried_view(), a non-owning view that is rebuilt
-         * whenever those pockets change.
+         * storage. Positions used by the inv_* methods index carried_item_stacks().
          */
         /** The body storage item, or nullptr while the character has no body storage. */
         item *get_body_storage() const;
@@ -1477,6 +1451,11 @@ class Character : public Creature, public location_visitable<Character>
         void on_carried_contents_changed();
         /** The worn items (DDA top_items_loc, TT8); the wielded item is not included. */
         std::vector<item *> top_items() const;
+        // CDF: item_location option A, the handle is item* (BN item_location is an owning slot).
+        /** Per DDA Character::top_items_loc: worn items, not the wielded one. Same as top_items(). */
+        std::vector<item *> top_items_loc() const;
+        /** Per DDA Character::all_items_loc: wielded item, worn items and everything inside them. */
+        std::vector<item *> all_items_loc() const;
         /**
          * All pockets of the wielded item, the worn items and what they hold that pass @p filter,
          * optionally sorted (DDA character_attire.cpp:2431; CDF puts it in character_inventory.cpp).
@@ -1634,11 +1613,6 @@ class Character : public Creature, public location_visitable<Character>
         /// Alternate version if you need to specify a different orign point for nearby vehicle sources of lifting
         /// used for operations on distant objects (e.g. vehicle installation/uninstallation)
         int best_nearby_lifting_assist( const tripoint_bub_ms &world_pos ) const;
-
-        // Inventory + weapon + worn (for death, etc)
-        std::vector<item *> inv_dump();
-
-        std::vector<detached_ptr<item>> inv_dump_remove();
 
         units::mass weight_carried() const;
         // TODO: See if we can move all weight_carried instances to this
@@ -2200,22 +2174,8 @@ class Character : public Creature, public location_visitable<Character>
     protected:
         void on_damage_of_type( int adjusted_damage, damage_type type, const bodypart_id &bp ) override;
     private:
-        /**
-         * The carried items. Private since CDF P1c step 17: only Character code (and the
-         * visitable friends) touch it, everything else goes through the inv_* methods and
-         * carried_view(), so the storage can move into pockets later without touching callers.
-         */
-        /**
-         * Non-owning view of the items in the `carry` pockets of the worn items and the body
-         * storage. The items live in the pockets; rebuilt lazily by refresh_carried().
-         */
-        mutable inventory inv;
-        mutable bool carried_dirty = true;
         /** DDA cache_inventory_is_valid: false once pockets changed, until the overflow check ran. */
         bool cache_inventory_is_valid = false;
-        mutable unsigned carried_worn_version = 0;
-        mutable const item *carried_body_storage = nullptr;
-        void refresh_carried() const;
         /** Pocket choice, invlet and insertion shared by try_add and inv_add_item; no pickup handling. */
         ret_val<item *> add_to_pocket( detached_ptr<item> &&it, const item *avoid, bool keep_invlet,
                                        bool assign_invlet, bool ignore_pkt_settings = false );
@@ -2526,9 +2486,9 @@ class Character : public Creature, public location_visitable<Character>
         void clear_morale();
         bool has_morale_to_read() const;
         bool has_morale_to_craft() const;
-        const inventory &crafting_inventory( bool clear_path );
-        const inventory &crafting_inventory( const tripoint_bub_ms &src_pos = tripoint_bub_ms::zero(),
-                                             int radius = PICKUP_RANGE, bool clear_path = true );
+        const temp_crafting_inventory &crafting_inventory( bool clear_path );
+        const temp_crafting_inventory &crafting_inventory( const tripoint_bub_ms &src_pos =
+                    tripoint_bub_ms::zero(), int radius = PICKUP_RANGE, bool clear_path = true );
         void invalidate_crafting_inventory();
 
         /** Returns all known recipes. */
@@ -2755,7 +2715,7 @@ class Character : public Creature, public location_visitable<Character>
 
         int cached_moves = 0;
         tripoint_bub_ms cached_position;
-        inventory cached_crafting_inventory;
+        temp_crafting_inventory cached_temp_crafting_inventory;
 
         mutable std::array<double, npc_ai_info::num_npc_ai_info> npc_ai_info_cache;
 
@@ -2786,14 +2746,14 @@ class Character : public Creature, public location_visitable<Character>
         // Checks crafting inventory for books providing the requested recipe.
         // Then checks nearby NPCs who could provide it too.
         // Returns -1 to indicate recipe not found, otherwise difficulty to learn.
-        int has_recipe( const recipe *r, const inventory &crafting_inv,
+        int has_recipe( const recipe *r, const temp_crafting_inventory &crafting_inv,
                         const std::vector<npc *> &helpers ) const;
         bool has_recipe_requirements( const recipe &rec ) const;
 
         bool studied_all_recipes( const itype &book ) const;
 
         /** Returns all recipes that are known from the books (either in inventory or nearby). */
-        recipe_subset get_recipes_from_books( const inventory &crafting_inv,
+        recipe_subset get_recipes_from_books( const temp_crafting_inventory &crafting_inv,
                                               const recipe_filter &filter = nullptr ) const;
         /**
           * Returns all available recipes (from books and npc companions)
@@ -2801,7 +2761,7 @@ class Character : public Creature, public location_visitable<Character>
           * @param helpers List of NPCs that could help with crafting.
           * @param filter If set, will return only recipes that match the filter (should be much faster).
           */
-        recipe_subset get_available_recipes( const inventory &crafting_inv,
+        recipe_subset get_available_recipes( const temp_crafting_inventory &crafting_inv,
                                              const std::vector<npc *> *helpers = nullptr,
                                              recipe_filter filter = nullptr ) const;
 
@@ -2864,11 +2824,11 @@ class Character : public Creature, public location_visitable<Character>
         void craft_skill_gain( const item &craft, const int &multiplier );
 
         const requirement_data *select_requirements(
-            const std::vector<const requirement_data *> &, int batch, const inventory &,
+            const std::vector<const requirement_data *> &, int batch, const temp_crafting_inventory &,
             const std::function<bool( const item & )> &filter ) const;
         comp_selection<item_comp>
         select_item_component( const std::vector<item_comp> &components,
-                               int batch, inventory &map_inv, bool can_cancel = false,
+                               int batch, temp_crafting_inventory &map_inv, bool can_cancel = false,
                                const std::function<bool( const item & )> &filter = return_true<item>, bool player_inv = true );
         std::vector<detached_ptr<item>> consume_items( const comp_selection<item_comp> &is, int batch,
                                      const std::function<bool( const item & )> &filter = return_true<item> );

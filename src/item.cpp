@@ -4590,9 +4590,9 @@ void item::final_info( std::vector<iteminfo> &info, const iteminfo_query &parts_
     // Recipes using this item as an ingredient
     if( parts->test( iteminfo_parts::DESCRIPTION_APPLICABLE_RECIPES ) ) {
         itype_id tid = contents.empty() ? typeId() : contents.front().typeId();
-        const inventory &crafting_inv = you.crafting_inventory();
+        const temp_crafting_inventory &temp_crafting_inv = you.crafting_inventory();
 
-        const recipe_subset available_recipe_subset = you.get_available_recipes( crafting_inv, nullptr,
+        const recipe_subset available_recipe_subset = you.get_available_recipes( temp_crafting_inv, nullptr,
                 recipe_filter_by_component( tid ) );
         const std::set<const recipe *> &item_recipes = available_recipe_subset.of_component( tid );
 
@@ -4615,9 +4615,9 @@ void item::final_info( std::vector<iteminfo> &info, const iteminfo_query &parts_
                 std::ranges::transform(
                     item_recipes,
                     std::back_inserter( result_names ),
-                [&crafting_inv]( const recipe * r ) {
+                [&temp_crafting_inv]( const recipe * r ) {
                     bool can_make = r->deduped_requirements().can_make_with_inventory(
-                                        crafting_inv, r->get_component_filter() );
+                                        temp_crafting_inv, r->get_component_filter() );
                     return std::make_pair( r->result_name( /*decorated=*/true ), can_make );
                 } );
                 std::ranges::sort( result_names, localized_compare );
@@ -9657,9 +9657,6 @@ bool item::reload( Character &who, item &loc, int qty )
         // TODO: why don't we just remove 0-charge items?
         if( ammo->charges == 0 && !ammo->has_flag( flag_SPEEDLOADER ) ) {
             ammo->detach();
-            if( container != nullptr ) {
-                who.inv_restack();
-            }
         }
     }
 

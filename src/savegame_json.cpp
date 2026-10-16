@@ -987,7 +987,6 @@ void Character::load( const JsonObject &data )
         data.read( "body_storage", stored );
         body_storage = std::move( stored );
     }
-    carried_dirty = true;
 
     remove_primary_weapon( );
     detached_ptr<item> weap;
@@ -1338,6 +1337,19 @@ void avatar::store( JsonOut &json ) const
 {
     player::store( json );
 
+    json.member( "assigned_invlet" );
+    json.start_array();
+    for( const auto &iter : assigned_invlet ) {
+        json.start_array();
+        json.write( iter.first );
+        json.write( iter.second );
+        json.end_array();
+    }
+    json.end_array();
+
+    json.member( "invcache" );
+    json_save_invcache( json );
+
     if( g->scen != nullptr ) {
         json.member( "scenario", g->scen->ident() );
     }
@@ -1382,19 +1394,6 @@ void avatar::store( JsonOut &json ) const
 
     json.member( "show_map_memory", show_map_memory );
 
-    json.member( "assigned_invlet" );
-    json.start_array();
-    for( auto iter : inv_assigned_invlet() ) {
-        json.start_array();
-        json.write( iter.first );
-        json.write( iter.second );
-        json.end_array();
-    }
-    json.end_array();
-
-    json.member( "invcache" );
-    inv_json_save_invcache( json );
-
     json.member( "preferred_aiming_mode", preferred_aiming_mode );
 
     json.member( "snippets_read", snippets_read );
@@ -1423,6 +1422,15 @@ void avatar::deserialize( JsonIn &jsin )
 void avatar::load( const JsonObject &data )
 {
     player::load( data );
+
+    for( JsonArray pair : data.get_array( "assigned_invlet" ) ) {
+        assigned_invlet[static_cast<char>( pair.get_int( 0 ) )] = itype_id( pair.get_string( 1 ) );
+    }
+
+    if( data.has_member( "invcache" ) ) {
+        JsonIn *jip = data.get_raw( "invcache" );
+        json_load_invcache( *jip );
+    }
 
     data.read( "controlling_vehicle", controlling_vehicle );
 
@@ -1555,16 +1563,6 @@ void avatar::load( const JsonObject &data )
     }
 
     data.read( "show_map_memory", show_map_memory );
-
-    for( JsonArray pair : data.get_array( "assigned_invlet" ) ) {
-        inv_assigned_invlet()[static_cast<char>( pair.get_int( 0 ) )] =
-            itype_id( pair.get_string( 1 ) );
-    }
-
-    if( data.has_member( "invcache" ) ) {
-        JsonIn *jip = data.get_raw( "invcache" );
-        inv_json_load_invcache( *jip );
-    }
 
     data.read( "preferred_aiming_mode", preferred_aiming_mode );
 
@@ -2155,58 +2153,6 @@ void npc::store( JsonOut &json ) const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///// inventory.h
-/*
- * Save invlet cache
- */
-void location_inventory::json_save_invcache( JsonOut &json ) const
-{
-    inv.json_save_invcache( json );
-}
-
-void inventory::json_save_invcache( JsonOut &json ) const
-{
-    json.start_array();
-    for( const auto &elem : invlet_cache.get_invlets_by_id() ) {
-        json.start_object();
-        json.member( elem.first.str() );
-        json.start_array();
-        for( const auto &_sym : elem.second ) {
-            json.write( static_cast<int>( _sym ) );
-        }
-        json.end_array();
-        json.end_object();
-    }
-    json.end_array();
-}
-
-/*
- * Invlet cache: player specific, thus not wrapped in inventory::json_load/save
- */
-void location_inventory::json_load_invcache( JsonIn &jsin )
-{
-    inv.json_load_invcache( jsin );
-}
-
-void inventory::json_load_invcache( JsonIn &jsin )
-{
-    try {
-        std::unordered_map<itype_id, std::string> map;
-        for( JsonObject jo : jsin.get_array() ) {
-            jo.allow_omitted_members();
-            for( const JsonMember member : jo ) {
-                std::string invlets;
-                for( const int i : member.get_array() ) {
-                    invlets.push_back( i );
-                }
-                map[itype_id( member.name() )] = invlets;
-            }
-        }
-        invlet_cache = { map };
-    } catch( const JsonError &jsonerr ) {
-        debugmsg( "bad invcache json:\n%s", jsonerr.c_str() );
-    }
-}
-
 /*
  * save all items. Just this->items, invlet cache saved separately
  */

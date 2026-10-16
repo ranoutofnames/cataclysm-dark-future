@@ -782,7 +782,7 @@ bool can_butcher_at( const tripoint_bub_ms &p )
     const int factorD = you.max_quality( qual_CUT_FINE );
     map_stack items = get_map().i_at( p );
 
-    const inventory &crafting_inv = you.crafting_inventory();
+    const temp_crafting_inventory &crafting_inv = you.crafting_inventory();
     for( item *&items_it : items ) {
         if( items_it->is_corpse() ) {
             if( factor != INT_MIN  || factorD != INT_MIN ) {
