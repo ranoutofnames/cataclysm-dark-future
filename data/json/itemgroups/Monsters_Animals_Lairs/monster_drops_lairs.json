@@ -24,6 +24,8 @@
     "type": "item_group",
     "id": "migo_storage_pod_contents",
     "subtype": "collection",
+    "container-item": "alien_pod_storage",
+    "on_overflow": "discard",
     "entries": [
       { "item": "resin_chunk", "count": [ 1, 2 ] },
       { "item": "fetid_goop", "count": [ 1, 2 ] },
@@ -49,6 +51,8 @@
     "type": "item_group",
     "id": "migo_organ_pod_contents",
     "subtype": "collection",
+    "container-item": "alien_pod_organ",
+    "on_overflow": "discard",
     "entries": [
       { "item": "resin_chunk", "count": [ 1, 2 ] },
       { "item": "fetid_goop", "count": [ 1, 2 ] },
@@ -235,8 +239,8 @@
       { "item": "meat_tainted", "prob": 60 },
       { "item": "arm", "prob": 4 },
       { "item": "leg", "prob": 4 },
-      { "item": "1st_aid", "prob": 28 },
-      { "item": "1st_aid_deluxe", "prob": 7 },
+      { "group": "pocket_first_aid_kit", "prob": 28 },
+      { "group": "deluxe_first_aid_kit", "prob": 7 },
       { "item": "codeine", "prob": 15 },
       { "item": "oxycodone", "prob": 7 },
       { "item": "pipe_tobacco", "prob": 5 },

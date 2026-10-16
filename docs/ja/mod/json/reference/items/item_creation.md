@@ -963,11 +963,6 @@ use_actionフィールドの内容には、アイテムが起動された際に�
     "moves_cost": 15 // 火を熾すのに要する移動コストです。
 },
 "use_action": {
-    "type": "unpack", // このアイテムを開封します。
-    "group": "gobag_contents", // 開封した際に出現するアイテムグループのIDです。
-    "items_fit": true, // 出現した防具アイテムがフィットしているかどうか。既定値はfalseです。
-},
-"use_action": {
     "type": "extended_firestarter", // 火を熾します(虫眼鏡や火揉み棒など)。このアクションは通常のfirestarter(数アクションで完了)とは異なり、完了までに多くのターンを要します。また、途中でキャンセルすることも可能です(通常のfirestarterはキャンセル不可)。
     "need_sunlight": true // 虫眼鏡のように、キャラクターが直射日光の下にいる必要があるかどうか。
 },

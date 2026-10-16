@@ -235,7 +235,10 @@
     "id": "infantry_medical_gear",
     "subtype": "collection",
     "entries": [
-      { "distribution": [ { "item": "1st_aid_ifak", "prob": 80 }, { "item": "1st_aid_deluxe", "prob": 20 } ], "prob": 80 },
+      {
+        "distribution": [ { "group": "individual_first_aid_kit", "prob": 80 }, { "group": "deluxe_first_aid_kit", "prob": 20 } ],
+        "prob": 80
+      },
       { "collection": [ { "item": "morphine" }, { "item": "syringe" } ], "prob": 40 },
       {
         "distribution": [
@@ -348,7 +351,7 @@
       { "item": "mag_satchel_leg", "prob": 4 },
       { "item": "chestpouch", "prob": 6 },
       { "item": "ammo_satchel", "prob": 3 },
-      { "item": "gobag", "prob": 1 },
+      { "group": "gobag_contents", "prob": 1 },
       { "item": "gasoline_cooker", "prob": 5 },
       { "item": "mess_kit", "prob": 4 },
       { "item": "mil_mess_kit", "prob": 1 },
@@ -694,8 +697,8 @@
       { "item": "neccowafers", "prob": 30 },
       { "item": "can_beans", "prob": 40 },
       { "item": "pork_beans", "prob": 40 },
-      { "item": "1st_aid_ifak", "prob": 28 },
-      { "item": "1st_aid_deluxe", "prob": 7 },
+      { "group": "individual_first_aid_kit", "prob": 28 },
+      { "group": "deluxe_first_aid_kit", "prob": 7 },
       { "item": "saline", "prob": 10 },
       { "item": "con_milk", "prob": 10 },
       { "item": "milk_UHT", "prob": 25 },
@@ -767,7 +770,7 @@
       { "item": "molle_pack", "prob": 8 },
       { "item": "legrig", "prob": 10 },
       { "item": "rucksack", "prob": 20 },
-      { "item": "gobag", "prob": 2 },
+      { "group": "gobag_contents", "prob": 2 },
       { "item": "survival_kit", "prob": 3 },
       { "item": "urban_ghillie", "prob": 3 },
       { "item": "nature_ghillie", "prob": 3 },
@@ -998,7 +1001,7 @@
     "subtype": "collection",
     "entries": [
       { "item": "flotation_vest", "prob": 25 },
-      { "item": "premium_survival_kit", "prob": 25 },
+      { "group": "premium_contents", "prob": 25 },
       { "item": "mil_gps_device", "prob": 25 },
       { "item": "knife_combat", "container-item": "sheath", "prob": 25 }
     ]

@@ -1138,7 +1138,7 @@
           "socks_wool",
           "socks",
           "hoodie",
-          "folding_poncho_on",
+          "folding_poncho",
           "knit_scarf",
           "jug_plastic",
           "can_beans",
@@ -2346,7 +2346,6 @@
           "wristwatch",
           "canteen",
           "molle_pack",
-          "1st_aid_deluxe",
           "quikclot",
           "morphine",
           "iodine",
@@ -2355,6 +2354,7 @@
           "rx12_injector"
         ],
         "entries": [
+          { "group": "deluxe_first_aid_kit" },
           { "group": "charged_two_way_radio" },
           { "item": "webbing_belt", "contents-item": "e_tool" },
           { "item": "modularvestceramic", "contents-group": "army_mags_m4" },
@@ -2825,9 +2825,9 @@
           "bandages",
           "aspirin",
           "smart_phone",
-          "1st_aid_deluxe",
           "stethoscope"
-        ]
+        ],
+        "entries": [ { "group": "deluxe_first_aid_kit" } ]
       },
       "male": [ "boxer_shorts" ],
       "female": [ "bra", "panties" ]
@@ -5943,7 +5943,7 @@
     "items": {
       "both": {
         "items": [ "shorts", "undershirt", "socks", "smart_phone", "lowtops", "wristwatch" ],
-        "entries": [ { "item": "personal_gobag", "custom-flags": [ "FIT" ] } ]
+        "entries": [ { "group": "gobag_contents", "custom-flags": [ "FIT" ] } ]
       },
       "male": [ "boxer_shorts" ],
       "female": [ "bra", "panties" ]
@@ -6872,12 +6872,11 @@
           "water_clean",
           "scissors",
           "magnifying_glass",
-          "1st_aid",
           "wristwatch",
           "smart_phone",
           "whistle"
         ],
-        "entries": [ { "group": "charged_flashlight" } ]
+        "entries": [ { "group": "pocket_first_aid_kit" }, { "group": "charged_flashlight" } ]
       },
       "male": [ "briefs" ],
       "female": [ "boy_shorts" ]
@@ -7087,10 +7086,10 @@
           "granola",
           "pur_tablets",
           "smart_phone",
-          "wristwatch",
-          "1st_aid"
+          "wristwatch"
         ],
         "entries": [
+          { "group": "pocket_first_aid_kit" },
           { "item": "hatchet", "container-item": "axe_ring" },
           { "item": "medium_battery_cell", "ammo-item": "battery", "charges": 500, "container-item": "mess_kit" }
         ]
@@ -7133,11 +7132,10 @@
           "pur_tablets",
           "smart_phone",
           "wristwatch",
-          "1st_aid",
           "mess_tin",
           "jumper_cable"
         ],
-        "entries": [ { "item": "hatchet", "container-item": "axe_ring" } ]
+        "entries": [ { "group": "pocket_first_aid_kit" }, { "item": "hatchet", "container-item": "axe_ring" } ]
       },
       "male": [ "briefs" ],
       "female": [ "sports_bra", "boy_shorts" ]
@@ -7291,12 +7289,12 @@
           "coat_lab",
           "bandages",
           "anesthetic_kit",
-          "1st_aid_deluxe",
           "wristwatch",
           "smart_phone",
           "scalpel",
           "stethoscope"
-        ]
+        ],
+        "entries": [ { "group": "deluxe_first_aid_kit" } ]
       },
       "male": [ "boxer_shorts" ],
       "female": [ "bra", "panties" ]
@@ -7421,11 +7419,10 @@
           "bfipowder",
           "antibiotics",
           "oxycodone",
-          "1st_aid_deluxe",
           "smart_phone",
           "wristwatch"
         ],
-        "entries": [ { "item": "medium_battery_cell", "charges": 500 } ]
+        "entries": [ { "group": "deluxe_first_aid_kit" }, { "item": "medium_battery_cell", "charges": 500 } ]
       },
       "male": [ "boxer_shorts" ],
       "female": [ "bra", "panties" ]
@@ -9189,7 +9186,7 @@
           "backpack_tactical_large"
         ],
         "entries": [
-          { "item": "premium_survival_kit" },
+          { "group": "premium_contents" },
           { "item": "mask_gas", "custom-flags": [ "no_auto_equip" ] },
           { "item": "army_powered_earmuffs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "halligan" },

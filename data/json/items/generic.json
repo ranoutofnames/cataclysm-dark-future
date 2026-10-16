@@ -3419,17 +3419,18 @@
   {
     "id": "premium_survival_kit",
     "type": "GENERIC",
-    "category": "tools",
+    "category": "container",
     "name": { "str": "survival kit" },
-    "description": "The ultimate survival kit purchased either by the wealthy or the dedicated urban survivalist.  It contains tools and items to help you survive in case of an emergency.  Disassemble to get its contents.",
-    "weight": "1612 g",
-    "volume": "1 L",
+    "looks_like": "box_small",
+    "description": "The ultimate survival kit purchased either by the wealthy or the dedicated urban survivalist.  It contains tools and items to help you survive in case of an emergency.",
+    "weight": "850 g",
+    "volume": "8900 ml",
     "price": "150 USD",
-    "material": "aluminum",
+    "material": "cardboard",
     "symbol": "!",
-    "color": "green",
-    "use_action": { "type": "unpack", "group": "premium_contents", "items_fit": true },
-    "flags": [ "NO_REPAIR", "NO_SALVAGE" ]
+    "color": "brown",
+    "flags": [ "NO_REPAIR", "NO_SALVAGE" ],
+    "pocket_data": [ { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "8500 ml", "max_contains_weight": "20000 g" } ]
   },
   {
     "id": "plastic_six_dice",

@@ -118,25 +118,6 @@ class iuse_transform : public iuse_actor
         void info( const item &, std::vector<iteminfo> & ) const override;
 };
 
-class unpack_actor : public iuse_actor
-{
-    public:
-        /** The itemgroup from which we unpack items from */
-        item_group_id unpack_group;
-
-        /** Whether or not the items from the group should spawn fitting */
-        bool items_fit = false;
-
-
-        unpack_actor( const std::string &type = "unpack" ) : iuse_actor( type ) {}
-
-        ~unpack_actor() override = default;
-        void load( const JsonObject &obj ) override;
-        int use( player &p, item &it, bool, const tripoint_bub_ms & ) const override;
-        std::unique_ptr<iuse_actor> clone() const override;
-        void info( const item &, std::vector<iteminfo> &dump ) const override;
-};
-
 class countdown_actor : public iuse_actor
 {
     public:

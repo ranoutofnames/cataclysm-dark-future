@@ -485,57 +485,6 @@ void iuse_transform::info( const item &it, std::vector<iteminfo> &dump ) const
     }
 }
 
-std::unique_ptr<iuse_actor> unpack_actor::clone() const
-{
-    return std::make_unique<unpack_actor>( *this );
-}
-
-void unpack_actor::load( const JsonObject &obj )
-{
-    obj.read( "group", unpack_group );
-    obj.read( "items_fit", items_fit );
-}
-
-int unpack_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) const
-{
-    detached_ptr<item> unpacked = it.detach();
-    if( !unpacked ) {
-        debugmsg( "Could not detach item for unpacking" );
-        return 0;
-    }
-
-    p.add_msg_if_player( _( "You unpack the %s." ), unpacked->tname() );
-
-    std::vector<detached_ptr<item>> items = item_group::items_from( unpack_group, calendar::turn );
-    item *last_armor = &null_item_reference();
-    map &here = get_map();
-    for( detached_ptr<item> &content : items ) {
-        if( content->is_armor() ) {
-            if( items_fit ) {
-                content->set_flag( flag_FIT );
-            } else if( content->typeId() == last_armor->typeId() ) {
-                if( last_armor->has_flag( flag_FIT ) ) {
-                    content->set_flag( flag_FIT );
-                } else if( !last_armor->has_flag( flag_FIT ) ) {
-                    content->unset_flag( flag_FIT );
-                }
-            }
-            last_armor = &*content;
-        }
-
-
-        here.add_item_or_charges( p.bub_pos(), std::move( content ) );
-    }
-
-    return 0;
-}
-
-void unpack_actor::info( const item &, std::vector<iteminfo> &dump ) const
-{
-    dump.emplace_back( "DESCRIPTION",
-                       _( "This item could be unpacked to receive something." ) );
-}
-
 std::unique_ptr<iuse_actor> countdown_actor::clone() const
 {
     return std::make_unique<countdown_actor>( *this );

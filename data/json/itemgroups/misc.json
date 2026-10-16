@@ -217,9 +217,9 @@
     "id": "gobag_contents",
     "type": "item_group",
     "subtype": "collection",
-    "//": "Items generated from a go bag",
+    "container-item": "duffelbag",
+    "//": "Items generated from a go bag; the go bag itself is migrated to a duffel bag holding these",
     "items": [
-      { "item": "duffelbag" },
       { "item": "backpack" },
       { "item": "helmet_army" },
       { "item": "jacket_army" },
@@ -240,7 +240,7 @@
       { "item": "lighter", "charges": 25 },
       { "item": "pockknife" },
       { "item": "multitool" },
-      { "item": "1st_aid_ifak" },
+      { "group": "individual_first_aid_kit" },
       { "item": "rollmat" },
       { "item": "sleeping_bag_roll" },
       { "item": "ear_plugs" },
@@ -254,6 +254,7 @@
     "id": "individual_first_aid_kit",
     "type": "item_group",
     "subtype": "collection",
+    "container-item": "1st_aid_ifak",
     "items": [
       { "item": "medical_tape", "charges": 20 },
       { "item": "bfipowder", "charges": 4, "container-item": "bag_zipper_small" },
@@ -266,6 +267,7 @@
     "id": "pocket_first_aid_kit",
     "type": "item_group",
     "subtype": "collection",
+    "container-item": "1st_aid",
     "items": [
       { "item": "medical_tape", "charges": 20 },
       { "item": "disinfectant", "charges": 10, "container-item": "bottle_plastic_small" },
@@ -278,6 +280,7 @@
     "id": "deluxe_first_aid_kit",
     "type": "item_group",
     "subtype": "collection",
+    "container-item": "1st_aid_deluxe",
     "items": [
       { "item": "medical_tape", "charges": 20 },
       { "item": "aspirin", "charges": 10 },
@@ -295,7 +298,8 @@
     "id": "premium_contents",
     "type": "item_group",
     "subtype": "collection",
-    "//": "Items generated from a premium survival kit",
+    "container-item": "premium_survival_kit",
+    "//": "Items generated inside a premium survival kit",
     "items": [
       { "item": "knife_folding" },
       { "item": "flint_steel" },

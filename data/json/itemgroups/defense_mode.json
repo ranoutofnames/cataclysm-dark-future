@@ -96,8 +96,8 @@
     "id": "defense_caravan_food",
     "subtype": "collection",
     "items": [
-      { "item": "1st_aid" },
-      { "item": "1st_aid_deluxe" },
+      { "group": "pocket_first_aid_kit" },
+      { "group": "deluxe_first_aid_kit" },
       { "item": "water" },
       { "item": "energy_drink" },
       { "item": "whiskey" },

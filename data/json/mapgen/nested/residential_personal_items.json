@@ -273,7 +273,7 @@
       "mapgensize": [ 1, 1 ],
       "rows": [ "x" ],
       "terrain": { "x": "t_null" },
-      "place_loot": [ { "item": "personal_gobag", "x": 0, "y": 0 } ]
+      "place_loot": [ { "group": "gobag_contents", "x": 0, "y": 0 } ]
     }
   },
   {

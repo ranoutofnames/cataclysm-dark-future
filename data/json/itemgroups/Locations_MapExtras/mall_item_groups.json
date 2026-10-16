@@ -71,8 +71,8 @@
     "type": "item_group",
     "items": [
       [ "bandages", 25 ],
-      [ "1st_aid", 16 ],
-      [ "1st_aid_deluxe", 4 ],
+      { "group": "pocket_first_aid_kit", "prob": 16 },
+      { "group": "deluxe_first_aid_kit", "prob": 4 },
       [ "vitamins", 75 ],
       [ "calcium_tablet", 75 ],
       [ "aspirin", 45 ],

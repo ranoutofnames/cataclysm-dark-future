@@ -19,7 +19,10 @@
     "items": [
       { "item": "iodine", "prob": 50 },
       { "item": "prussian_blue", "prob": 75 },
-      { "distribution": [ { "item": "1st_aid", "prob": 80 }, { "item": "1st_aid_deluxe", "prob": 20 } ], "prob": 50 },
+      {
+        "distribution": [ { "group": "pocket_first_aid_kit", "prob": 80 }, { "group": "deluxe_first_aid_kit", "prob": 20 } ],
+        "prob": 50
+      },
       { "item": "gloves_medical", "prob": 20 },
       { "item": "rag_bloody", "prob": 30 },
       { "group": "drugs_emergency", "prob": 30 },

@@ -34,9 +34,17 @@
     "copy-from": "alien_pod_resin",
     "type": "TOOL",
     "name": { "str": "alien storage pod" },
-    "description": "This is a large pod, filled with a thick gel obscuring its contents.  Something is suspended in it, suggesting this is an alien container of some sort.  Activate to tear it open and see what's inside.",
+    "description": "This is a large pod, filled with a thick gel obscuring its contents.  Something is suspended in it, suggesting this is an alien container of some sort.",
     "color": "magenta",
-    "use_action": { "type": "unpack", "group": "migo_storage_pod_contents" },
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "max_contains_volume": "22 L",
+        "max_contains_weight": "50 kg",
+        "max_item_length": "2 m"
+      }
+    ],
     "extend": { "flags": [ "ALLOWS_REMOTE_USE" ] }
   },
   {
@@ -44,9 +52,17 @@
     "copy-from": "alien_pod_resin",
     "type": "TOOL",
     "name": { "str": "alien organ pod" },
-    "description": "This is a large pod.  What appear to be human organs can be seen floating instead, like some sort of morbid trophy.  Activate to tear it open and see what's inside, if you really want to.",
+    "description": "This is a large pod.  What appear to be human organs can be seen floating instead, like some sort of morbid trophy.",
     "color": "yellow",
-    "use_action": { "type": "unpack", "group": "migo_organ_pod_contents" },
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "max_contains_volume": "22 L",
+        "max_contains_weight": "50 kg",
+        "max_item_length": "2 m"
+      }
+    ],
     "extend": { "flags": [ "ALLOWS_REMOTE_USE" ] }
   }
 ]

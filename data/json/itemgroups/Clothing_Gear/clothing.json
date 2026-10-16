@@ -797,8 +797,8 @@
       { "item": "aspirin", "prob": 30 },
       { "item": "water_clean", "prob": 30 },
       { "item": "sports_drink", "prob": 30 },
-      { "item": "1st_aid", "prob": 16 },
-      { "item": "1st_aid_deluxe", "prob": 4 }
+      { "group": "pocket_first_aid_kit", "prob": 16 },
+      { "group": "deluxe_first_aid_kit", "prob": 4 }
     ]
   },
   {
@@ -3302,7 +3302,7 @@
           { "item": "backpack_hiking", "prob": 25 },
           { "item": "duffelbag", "prob": 80 },
           { "item": "travelpack", "prob": 25 },
-          { "item": "gobag", "prob": 1 }
+          { "group": "gobag_contents", "prob": 1 }
         ],
         "prob": 80
       }

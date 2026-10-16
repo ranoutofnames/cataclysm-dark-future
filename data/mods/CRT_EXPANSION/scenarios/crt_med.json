@@ -30,10 +30,10 @@
           "mre_veggy_box",
           "crt_la_boots",
           "two_way_radio",
-          "1st_aid",
           "bandages"
         ],
         "entries": [
+          { "group": "pocket_first_aid_kit" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "sleeping_bag_roll", "custom-flags": [ "no_auto_equip" ] },
           { "item": "crt_solarpack", "contents-item": [ "crt_laser_pistol_brk", "knife_crt" ] }
@@ -72,10 +72,10 @@
           "mre_veggy_box",
           "crt_la_boots",
           "two_way_radio",
-          "1st_aid",
           "bandages"
         ],
         "entries": [
+          { "group": "pocket_first_aid_kit" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "sleeping_bag_roll", "custom-flags": [ "no_auto_equip" ] },
           { "item": "crt_solarpack", "contents-item": [ "crt_laser_pistol_brk", "knife_crt" ] }
@@ -117,10 +117,10 @@
           "mre_veggy_box",
           "crt_la_boots",
           "two_way_radio",
-          "1st_aid",
           "bandages"
         ],
         "entries": [
+          { "group": "pocket_first_aid_kit" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "sleeping_bag_roll", "custom-flags": [ "no_auto_equip" ] },
           { "item": "crt_solarpack", "contents-item": [ "crt_laser_pistol_brk", "knife_crt" ] }

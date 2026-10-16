@@ -191,11 +191,6 @@
   },
   {
     "type": "item_action",
-    "id": "unpack",
-    "name": { "str": "Unpack" }
-  },
-  {
-    "type": "item_action",
     "id": "learn_spell",
     "name": { "str": "Learn spell" }
   },
@@ -656,11 +651,6 @@
   },
   {
     "type": "item_action",
-    "id": "PACK_ITEM",
-    "name": { "str": "Pack an item" }
-  },
-  {
-    "type": "item_action",
     "id": "PHEROMONE",
     "name": { "str": "Squeeze" }
   },
@@ -858,11 +848,6 @@
     "type": "item_action",
     "id": "UNFOLD_GENERIC",
     "name": { "str": "Unfold" }
-  },
-  {
-    "type": "item_action",
-    "id": "UNPACK_ITEM",
-    "name": { "str": "Unpack" }
   },
   {
     "type": "item_action",

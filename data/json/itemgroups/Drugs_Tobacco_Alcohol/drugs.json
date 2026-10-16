@@ -10,8 +10,8 @@
     "type": "item_group",
     "//": "Common healing items found almost everywhere",
     "items": [
-      [ "1st_aid", 4 ],
-      [ "1st_aid_deluxe", 1 ],
+      { "group": "pocket_first_aid_kit", "prob": 4 },
+      { "group": "deluxe_first_aid_kit", "prob": 1 },
       [ "aspirin", 50 ],
       [ "bandages", 50 ],
       { "item": "cotton_ball", "prob": 40, "container-item": "box_small", "charges": 20 },
@@ -94,8 +94,8 @@
     "subtype": "distribution",
     "//": "Healing items appropriate for soldiers and other paramilitary forces",
     "entries": [
-      { "item": "1st_aid_ifak", "prob": 40 },
-      { "item": "1st_aid_deluxe", "prob": 10 },
+      { "group": "individual_first_aid_kit", "prob": 40 },
+      { "group": "deluxe_first_aid_kit", "prob": 10 },
       { "item": "antibiotics", "prob": 20 },
       { "item": "bandages", "prob": 100 },
       { "item": "morphine", "prob": 20 },
@@ -155,8 +155,8 @@
     "items": [
       [ "bandages", 50 ],
       { "item": "cotton_ball", "prob": 50, "container-item": "box_small", "charges-min": 1, "charges-max": 20 },
-      [ "1st_aid", 28 ],
-      [ "1st_aid_deluxe", 7 ],
+      { "group": "pocket_first_aid_kit", "prob": 28 },
+      { "group": "deluxe_first_aid_kit", "prob": 7 },
       [ "saline", 25 ],
       [ "contacts", 10 ],
       [ "vitamins", 75 ],

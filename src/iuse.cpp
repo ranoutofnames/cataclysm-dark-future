@@ -1946,20 +1946,6 @@ int iuse::extinguisher( player *p, item *it, bool, const tripoint_bub_ms & )
     return it->type->charges_to_use();
 }
 
-int iuse::unpack_item( player *p, item *it, bool, const tripoint_bub_ms & )
-{
-    if( p->is_underwater() ) {
-        p->add_msg_if_player( m_info, _( "You can't do that while underwater." ) );
-        return 0;
-    }
-    std::string oname = it->typeId().str() + "_on";
-    p->moves -= to_moves<int>( 10_seconds );
-    p->add_msg_if_player( _( "You unpack your %s for use." ), it->tname() );
-    it->convert( itype_id( oname ) );
-    it->deactivate();
-    return 0;
-}
-
 int iuse::pack_cbm( player *p, item *it, bool, const tripoint_bub_ms & )
 {
     item *bionic = g->inv_map_splice( []( const item & e ) {
@@ -1988,34 +1974,6 @@ int iuse::pack_cbm( player *p, item *it, bool, const tripoint_bub_ms & )
     comps.emplace_back( it->typeId(), 1 );
     p->consume_items( comps, 1, is_crafting_component );
 
-    return 0;
-}
-
-int iuse::pack_item( player *p, item *it, bool t, const tripoint_bub_ms & )
-{
-    if( p->is_underwater() ) {
-        p->add_msg_if_player( m_info, _( "You can't do that while underwater." ) );
-        return 0;
-    }
-    if( t ) { // Normal use
-        // Numbers below -1 are reserved for worn items
-    } else if( p->get_item_position( it ) < -1 ) {
-        p->add_msg_if_player( m_info, _( "You can't pack your %s until you take it off." ),
-                              it->tname() );
-        return 0;
-    } else { // Turning it off
-        std::string oname = it->typeId().str();
-        if( oname.ends_with( "_on" ) ) {
-            oname.erase( oname.length() - 3, 3 );
-        } else {
-            debugmsg( "no item type to turn it into (%s)!", oname );
-            return 0;
-        }
-        p->moves -= to_moves<int>( 10_seconds );
-        p->add_msg_if_player( _( "You pack your %s for storage." ), it->tname() );
-        it->convert( itype_id( oname ) );
-        it->deactivate();
-    }
     return 0;
 }
 

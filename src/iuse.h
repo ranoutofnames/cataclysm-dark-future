@@ -145,9 +145,7 @@ int gun_clean( player *, item *, bool, const tripoint_bub_ms & );
 int gun_repair( player *, item *, bool, const tripoint_bub_ms & );
 int gunmod_attach( player *, item *, bool, const tripoint_bub_ms & );
 int toolmod_attach( player *, item *, bool, const tripoint_bub_ms & );
-int unpack_item( player *, item *, bool, const tripoint_bub_ms & );
 int pack_cbm( player *p, item *it, bool, const tripoint_bub_ms & );
-int pack_item( player *, item *, bool, const tripoint_bub_ms & );
 int radglove( player *, item *, bool, const tripoint_bub_ms & );
 int robotcontrol( player *, item *, bool, const tripoint_bub_ms & );
 // Helper for validating a potential taget of robot control

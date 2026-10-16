@@ -52,7 +52,7 @@
     "type": "item_group",
     "id": "REFUGEE_Uyen_carried",
     "subtype": "collection",
-    "entries": [ { "item": "1st_aid_deluxe" } ]
+    "entries": [ { "group": "deluxe_first_aid_kit" } ]
   },
   {
     "type": "item_group",

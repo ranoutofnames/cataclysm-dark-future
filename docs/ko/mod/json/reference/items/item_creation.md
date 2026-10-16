@@ -995,11 +995,6 @@ use_action 필드의 내용은 다음과 같은 경우 호출할 내장 함수�
     "moves_cost": 15 // 불을 시작하는 데 필요한 이동 횟수입니다.
 },
 "use_action": {
-    "type": "unpack", // 이 항목의 포장을 풀다
-    "group": "gobag_contents", // 항목 그룹이 압축 해제됨
-    "items_fit": true, // 이 갑옷 아이템이 맞나요? 기본값은 거짓입니다.
-},
-"use_action": {
     "type": "extended_firestarter", // 불을 지르세요(돋보기나 소방 훈련 등을 사용하여). 이 작업은 여러 차례 걸릴 수 있으며, Firestarter와 같은 일부 동작뿐만 아니라 취소할 수도 있습니다(Firestarter는 불가능).
     "need_sunlight": true // 캐릭터가 직사광선 아래에 있어야 하는지 여부. 돋보기를 사용하는 것.
 },

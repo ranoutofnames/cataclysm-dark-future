@@ -181,7 +181,7 @@
     "flags": [ "TRANSPARENT", "EASY_DECONSTRUCT" ],
     "deployed_item": "alien_pod_storage",
     "examine_action": "deployed_furniture",
-    "deconstruct": { "items": [ { "item": "alien_pod_storage", "count": 1 } ] },
+    "deconstruct": { "items": [ { "group": "migo_storage_pod_contents" } ] },
     "bash": {
       "str_min": 8,
       "str_max": 40,
@@ -210,7 +210,7 @@
     "flags": [ "TRANSPARENT", "EASY_DECONSTRUCT" ],
     "deployed_item": "alien_pod_organ",
     "examine_action": "deployed_furniture",
-    "deconstruct": { "items": [ { "item": "alien_pod_organ", "count": 1 } ] },
+    "deconstruct": { "items": [ { "group": "migo_organ_pod_contents" } ] },
     "bash": {
       "str_min": 8,
       "str_max": 40,
