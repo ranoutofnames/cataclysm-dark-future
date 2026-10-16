@@ -12,7 +12,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "4570": 6
+            "4570": 7
           }
         }
       ],
@@ -390,7 +390,7 @@
     "454_speedloader5": {
       "class": "MAG",
       "rule": "R1",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
@@ -398,8 +398,7 @@
           "rigid": true,
           "ammo_restriction": {
             "454": 5,
-            "45colt": 5,
-            "410shot": 5
+            "45colt": 5
           }
         }
       ],
@@ -1248,13 +1247,14 @@
     "afs_bionic_rocket": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "40x46mm": 1
+            "40x46mm": 3,
+            "40x53mm": 3
           }
         }
       ],
@@ -1605,7 +1605,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "fishspear": 1
+            "fishspear": 4
           }
         }
       ],
@@ -1826,7 +1826,7 @@
     "analytical_set_basic": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -1853,7 +1853,7 @@
           "rigid": true,
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "anesthetic": 6000
+            "anesthetic": 3000
           }
         }
       ],
@@ -1942,14 +1942,15 @@
     "ar10mag_20rd": {
       "class": "MAG",
       "rule": "R1",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "308": 20
+            "308": 20,
+            "277": 20
           }
         }
       ],
@@ -2285,7 +2286,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "50": 5
+            "50": 10
           }
         }
       ],
@@ -2479,7 +2480,7 @@
     "autoclave": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -2580,7 +2581,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 450
+            "battery": 600
           }
         }
       ],
@@ -2598,7 +2599,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 225
+            "battery": 300
           }
         }
       ],
@@ -2633,7 +2634,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": false,
           "ammo_restriction": {
-            "223": 500
+            "223": 200
           }
         }
       ],
@@ -2705,7 +2706,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": false,
           "ammo_restriction": {
-            "308": 500
+            "308": 200
           }
         }
       ],
@@ -2902,7 +2903,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "shot": 1
+            "shot": 8
           }
         }
       ],
@@ -2913,13 +2914,13 @@
     "bio_skullgun_gun": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "10mm": 1
+            "40": 1
           }
         }
       ],
@@ -3184,7 +3185,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "shot": 4
+            "shot": 5
           }
         }
       ],
@@ -3335,7 +3336,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 100
+            "battery": 200
           }
         }
       ],
@@ -3382,14 +3383,15 @@
     "carbine_flintlock": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "flintlock": 1
+            "flintlock": 1,
+            "flintlockshot": 1
           }
         }
       ],
@@ -3400,14 +3402,15 @@
     "carbine_flintlock_double": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "flintlock": 2
+            "flintlock": 2,
+            "flintlockshot": 2
           }
         }
       ],
@@ -3493,7 +3496,7 @@
     "carver_off": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -3512,7 +3515,7 @@
     "carver_on": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -3647,7 +3650,7 @@
     "char_forge": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
@@ -3659,9 +3662,7 @@
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "coal"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "char_purifier": {
@@ -3673,7 +3674,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "charcoal": 180
+            "charcoal": 150
           }
         }
       ],
@@ -3709,7 +3710,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "charcoal": 2000
+            "charcoal": 200
           }
         }
       ],
@@ -3720,20 +3721,18 @@
     "charcoal_cooker": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "charcoal": 400
+            "charcoal": 50
           }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "coal"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "chemical_thrower": {
@@ -3757,7 +3756,7 @@
     "chemistry_set": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -4063,7 +4062,7 @@
     "closed_loop_extractor_large": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -4123,7 +4122,7 @@
     "closed_loop_extractor_small": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -4208,7 +4207,7 @@
     "coffeemaker": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -5184,7 +5183,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "230 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "cz75mag_20rd",
@@ -5378,7 +5377,7 @@
     "dehydrator": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -5497,7 +5496,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "fishspear": 1
+            "fishspear": 2
           }
         }
       ],
@@ -5812,7 +5811,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 85
+            "battery": 200
           }
         }
       ],
@@ -5905,7 +5904,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 7920
+            "battery": 10000
           }
         }
       ],
@@ -6077,7 +6076,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "esbit": 100
+            "esbit": 50
           }
         }
       ],
@@ -6486,7 +6485,7 @@
           "max_contains_weight": "400 kg",
           "max_item_length": "2000 m",
           "ammo_restriction": {
-            "rock": 5
+            "rock": 1
           }
         }
       ],
@@ -6534,14 +6533,15 @@
     "firekatana_off": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "gasoline": 50
+            "gasoline": 250,
+            "lighter_fluid": 250
           },
           "watertight": true
         }
@@ -6553,14 +6553,15 @@
     "firekatana_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "gasoline": 50
+            "gasoline": 250,
+            "lighter_fluid": 250
           },
           "watertight": true
         }
@@ -6614,7 +6615,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "fish_bait": 5
+            "fish_bait": 20
           }
         }
       ],
@@ -6890,7 +6891,7 @@
     "food_processor": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -6947,7 +6948,7 @@
     "forge": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -6984,20 +6985,18 @@
     "fuel_bunker": {
       "class": "MAG",
       "rule": "R1",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "charcoal": 10000
+            "charcoal": 2000
           }
         }
       ],
       "cdf_kept_ids": [],
-      "dropped_ids": [
-        "coal"
-      ],
+      "dropped_ids": [],
       "storage": false
     },
     "g36mag_100rd": {
@@ -7148,13 +7147,14 @@
     "gasoline_cooker": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "gasoline": 500
+            "gasoline": 500,
+            "lighter_fluid": 500
           },
           "watertight": true,
           "rigid": true
@@ -7442,14 +7442,15 @@
     "glock40bigmag": {
       "class": "MAG",
       "rule": "R1",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "40": 22
+            "40": 22,
+            "357sig": 22
           }
         }
       ],
@@ -7479,14 +7480,15 @@
     "glock40mag": {
       "class": "MAG",
       "rule": "R1",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "40": 15
+            "40": 15,
+            "357sig": 15
           }
         }
       ],
@@ -7584,7 +7586,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "103 ml",
+          "magazine_well": "150 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "glock20mag",
@@ -7612,7 +7614,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "107 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "glock_21mag",
@@ -7761,7 +7763,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "9mm": 33
+            "9mm": 30
           }
         }
       ],
@@ -8211,7 +8213,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 4800
+            "battery": 10000
           }
         }
       ],
@@ -8229,7 +8231,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 259
+            "battery": 1000
           }
         }
       ],
@@ -8303,7 +8305,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 503
+            "battery": 1500
           }
         }
       ],
@@ -8428,7 +8430,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "185 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "bhp40mag"
@@ -8446,7 +8448,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "191 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "bhp9mag_13rd",
@@ -8671,7 +8673,7 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
+          "magazine_well": "150 ml",
           "item_restriction": [
             "hk_g80mag"
           ]
@@ -8923,7 +8925,7 @@
     "hotplate": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -8982,7 +8984,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "284 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "hptc9mag_8rd",
@@ -9056,7 +9058,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "236 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "hptcf380mag_8rd",
@@ -9111,7 +9113,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "312 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "hptjcpmag"
@@ -9147,7 +9149,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "353 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "hptjhpmag"
@@ -9232,7 +9234,7 @@
     "hydraulic_press": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -9348,7 +9350,7 @@
           "rigid": true,
           "watertight": true,
           "ammo_restriction": {
-            "gasoline": 1200
+            "gasoline": 400
           }
         }
       ],
@@ -9417,7 +9419,7 @@
     "kiln": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -9637,7 +9639,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "shot": 14
+            "shot": 7
           }
         }
       ],
@@ -10055,7 +10057,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 700
           }
         }
       ],
@@ -10073,7 +10075,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 700
           }
         }
       ],
@@ -10109,7 +10111,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 700
           }
         }
       ],
@@ -10401,7 +10403,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 16
+            "battery": 100
           }
         }
       ],
@@ -10455,7 +10457,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 2
+            "battery": 50
           }
         }
       ],
@@ -10473,7 +10475,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 2
+            "battery": 150
           }
         }
       ],
@@ -10502,15 +10504,17 @@
     "lighter": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "HAND-FALLBACK",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
+          "airtight": true,
           "ammo_restriction": {
             "lighter_fluid": 25
-          }
+          },
+          "watertight": true
         }
       ],
       "cdf_kept_ids": [],
@@ -10520,7 +10524,7 @@
     "lightstrip_inactive": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -10674,7 +10678,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "shot": 7
+            "shot": 8
           }
         }
       ],
@@ -11523,7 +11527,7 @@
     "m47a1": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
@@ -11532,7 +11536,8 @@
             "9mm": 6,
             "380": 6,
             "357mag": 6,
-            "38": 6
+            "38": 6,
+            "357sig": 6
           }
         }
       ],
@@ -11962,7 +11967,7 @@
     "makeshift_sealer": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -12075,7 +12080,7 @@
     "mask_bunker": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -12402,7 +12407,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "crystallized_mana": 1
+            "crystallized_mana": 24
           }
         }
       ],
@@ -12420,7 +12425,7 @@
           "pocket_type": "MAGAZINE",
           "holster": true,
           "ammo_restriction": {
-            "crystallized_mana": 3
+            "crystallized_mana": 72
           }
         }
       ],
@@ -12438,7 +12443,7 @@
           "pocket_type": "MAGAZINE",
           "holster": true,
           "ammo_restriction": {
-            "crystallized_mana": 3
+            "crystallized_mana": 72
           }
         }
       ],
@@ -12474,7 +12479,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 56
+            "battery": 500
           }
         }
       ],
@@ -12539,7 +12544,7 @@
     "melting_point": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -12559,7 +12564,7 @@
     "mess_kit": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -12791,7 +12796,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "plutonium": 1000
+            "plutonium": 10000
           },
           "rigid": true
         }
@@ -12821,7 +12826,7 @@
     "misc_repairkit": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -12925,7 +12930,7 @@
           "pocket_type": "MAGAZINE",
           "holster": true,
           "ammo_restriction": {
-            "crystallized_mana": 1
+            "crystallized_mana": 12
           }
         }
       ],
@@ -13192,7 +13197,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 50
+            "battery": 200
           }
         }
       ],
@@ -13210,7 +13215,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 50
+            "battery": 200
           }
         }
       ],
@@ -13960,14 +13965,14 @@
     "phase_immersion_suit": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 5000
+            "plutonium": 2500
           }
         },
         {
@@ -13983,14 +13988,14 @@
     "phase_immersion_suit_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 5000
+            "plutonium": 2500
           }
         },
         {
@@ -14114,14 +14119,15 @@
     "pistol_flintlock": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "flintlock": 1
+            "flintlock": 1,
+            "flintlockshot": 1
           }
         }
       ],
@@ -14287,7 +14293,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 48
+            "battery": 200
           }
         }
       ],
@@ -14814,7 +14820,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "flammable": 8000
+            "flammable": 3000
           },
           "watertight": true
         }
@@ -15076,14 +15082,13 @@
     "raging_bull": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
             "454": 5,
-            "410shot": 5,
             "45colt": 5
           },
           "allowed_speedloaders": [
@@ -15127,7 +15132,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "metal_rail": 100
+            "metal_rail": 30
           }
         }
       ],
@@ -15329,7 +15334,7 @@
     "ref_lighter": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
@@ -15337,7 +15342,8 @@
           "rigid": true,
           "airtight": true,
           "ammo_restriction": {
-            "lamp_oil": 50
+            "lighter_fluid": 50,
+            "gasoline": 50
           },
           "watertight": true
         }
@@ -15349,7 +15355,7 @@
     "ref_lighter_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
@@ -15357,7 +15363,8 @@
           "rigid": true,
           "airtight": true,
           "ammo_restriction": {
-            "lamp_oil": 50
+            "lighter_fluid": 50,
+            "gasoline": 50
           },
           "watertight": true
         }
@@ -15430,7 +15437,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "shot": 4
+            "shot": 10
           }
         }
       ],
@@ -15818,14 +15825,15 @@
     "rifle_flintlock": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "flintlock": 1
+            "flintlock": 1,
+            "flintlockshot": 1
           }
         }
       ],
@@ -16517,15 +16525,14 @@
     "ruger30": {
       "class": "MAG",
       "rule": "R1",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "223": 30,
-            "300blk": 30
+            "223": 30
           }
         }
       ],
@@ -16538,15 +16545,14 @@
     "ruger5": {
       "class": "MAG",
       "rule": "R1",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "223": 5,
-            "300blk": 5
+            "223": 5
           }
         }
       ],
@@ -16579,7 +16585,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "34 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "ruger1022mag",
@@ -16710,7 +16716,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "60 ml",
+          "magazine_well": "75 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "rugerlcpmag"
@@ -16820,7 +16826,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "shot": 20
+            "shot": 30
           }
         }
       ],
@@ -17242,7 +17248,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "thread": 200
+            "thread": 400
           }
         }
       ],
@@ -17253,7 +17259,7 @@
     "sewing_machine": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -18028,13 +18034,14 @@
     "sling": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "pebble": 1
+            "pebble": 1,
+            "rock": 1
           },
           "open_container": true
         }
@@ -18204,7 +18211,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 1000
+            "battery": 500
           }
         }
       ],
@@ -18287,7 +18294,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 56
+            "battery": 200
           }
         }
       ],
@@ -18305,7 +18312,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 56
+            "battery": 200
           }
         }
       ],
@@ -18500,7 +18507,7 @@
     "soldering_iron": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -18736,15 +18743,16 @@
     "spray_can": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "HAND-FALLBACK",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
-          "rigid": true,
           "ammo_restriction": {
             "spray_paint": 20
-          }
+          },
+          "watertight": true,
+          "rigid": true
         }
       ],
       "cdf_kept_ids": [],
@@ -18772,13 +18780,14 @@
     "staff_sling": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "rock": 1
+            "rock": 1,
+            "pebble": 1
           },
           "open_container": true
         }
@@ -19653,7 +19662,7 @@
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "thread": 400
+            "thread": 600
           }
         }
       ],
@@ -19887,7 +19896,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "shot": 15
+            "shot": 5
           }
         }
       ],
@@ -20695,7 +20704,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "tinder": 50
+            "tinder": 100
           }
         }
       ],
@@ -20713,7 +20722,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "tinder": 50
+            "tinder": 100
           }
         }
       ],
@@ -20731,7 +20740,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "weldgas": 100
+            "weldgas": 60
           },
           "watertight": true
         }
@@ -21155,7 +21164,7 @@
     "vac_oven_small": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -21299,7 +21308,7 @@
     "vac_sealer": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -21410,7 +21419,7 @@
     "voltmeter": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -21434,7 +21443,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "176 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "ccpmag"
@@ -21454,7 +21463,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "126 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "wp22mag"
@@ -21472,7 +21481,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "228 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "p38mag"
@@ -21529,7 +21538,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "240 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "ppq45mag"
@@ -21547,7 +21556,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "207 ml",
+          "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "ppq9mag_10rd",
@@ -22303,7 +22312,7 @@
     "water_purifier": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -22323,13 +22332,16 @@
     "watercannon": {
       "class": "GUN-INT",
       "rule": "R2",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "ammo_restriction": {
-            "water": 100
+            "water": 100,
+            "acid": 100,
+            "lubricant": 100,
+            "glue": 100
           },
           "watertight": true
         }
@@ -22435,7 +22447,7 @@
     "welder": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -22454,7 +22466,7 @@
     "welder_crude": {
       "class": "WELL",
       "rule": "R3",
-      "action": "AUTHOR",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
@@ -22483,7 +22495,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "weldgas": 1400
+            "weldgas": 240
           },
           "watertight": true
         }
@@ -22752,14 +22764,15 @@
     "zweifire_off": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "gasoline": 50
+            "gasoline": 250,
+            "lighter_fluid": 250
           },
           "watertight": true
         }
@@ -22771,14 +22784,15 @@
     "zweifire_on": {
       "class": "TOOL-INT",
       "rule": "R4",
-      "action": "COPY-TWIN",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
       "twin": true,
       "pockets": [
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "gasoline": 50
+            "gasoline": 250,
+            "lighter_fluid": 250
           },
           "watertight": true
         }
