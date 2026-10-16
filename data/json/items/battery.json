@@ -33,7 +33,7 @@
     "ammo_type": "battery",
     "capacity": 50,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "BATTERY_ULTRA_LIGHT" ]
   },
   {
     "id": "light_minus_atomic_battery_cell",
@@ -55,7 +55,7 @@
     "//": "1% per hour, or ~1.39 watts",
     "reloads_like": "light_minus_battery_cell",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 1 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "BATTERY_ULTRA_LIGHT" ]
   },
   {
     "id": "light_minus_disposable_cell",
@@ -75,7 +75,7 @@
     "capacity": 150,
     "looks_like": "battery",
     "reloads_like": "light_minus_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "BATTERY_ULTRA_LIGHT" ]
   },
   {
     "id": "light_battery_cell",
@@ -94,7 +94,7 @@
     "ammo_type": "battery",
     "capacity": 100,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_LIGHT" ]
   },
   {
     "id": "light_plus_battery_cell",
@@ -113,7 +113,7 @@
     "capacity": 150,
     "looks_like": "battery",
     "reloads_like": "light_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_LIGHT" ]
   },
   {
     "id": "light_atomic_battery_cell",
@@ -135,7 +135,7 @@
     "//": "1% per hour, or ~2.78 watts",
     "reloads_like": "light_battery_cell",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 2 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT", "BATTERY_LIGHT" ]
   },
   {
     "id": "light_disposable_cell",
@@ -155,7 +155,7 @@
     "capacity": 300,
     "looks_like": "battery",
     "reloads_like": "light_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT", "BATTERY_LIGHT" ]
   },
   {
     "id": "medium_battery_cell",
@@ -174,7 +174,7 @@
     "ammo_type": "battery",
     "capacity": 500,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_MEDIUM" ]
   },
   {
     "id": "medium_plus_battery_cell",
@@ -193,7 +193,7 @@
     "capacity": 750,
     "looks_like": "battery",
     "reloads_like": "medium_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_MEDIUM" ]
   },
   {
     "id": "medium_atomic_battery_cell",
@@ -215,7 +215,7 @@
     "reloads_like": "medium_battery_cell",
     "//": "1% per hour, or ~13.89 watts",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 10 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT", "BATTERY_MEDIUM" ]
   },
   {
     "id": "medium_disposable_cell",
@@ -235,7 +235,7 @@
     "capacity": 1500,
     "looks_like": "battery",
     "reloads_like": "medium_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT", "BATTERY_MEDIUM" ]
   },
   {
     "id": "heavy_battery_cell",
@@ -254,7 +254,7 @@
     "ammo_type": "battery",
     "capacity": 1000,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY", "BATTERY_HEAVY" ]
   },
   {
     "id": "heavy_plus_battery_cell",
@@ -273,7 +273,7 @@
     "capacity": 1500,
     "looks_like": "battery",
     "reloads_like": "heavy_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY", "BATTERY_HEAVY" ]
   },
   {
     "id": "heavy_atomic_battery_cell",
@@ -295,7 +295,7 @@
     "reloads_like": "heavy_battery_cell",
     "//": "1% per hour, or ~27.78 watts",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 20 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_BULKY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_BULKY", "BATTERY_HEAVY" ]
   },
   {
     "id": "huge_atomic_battery_cell",
@@ -335,6 +335,6 @@
     "capacity": 3000,
     "looks_like": "battery",
     "reloads_like": "heavy_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_BULKY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_BULKY", "BATTERY_HEAVY" ]
   }
 ]
