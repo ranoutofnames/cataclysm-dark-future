@@ -7,10 +7,10 @@ BN stores ammo and magazine data in item keys (`ammo_type` + `capacity`, `clip_s
 item should get and which BN keys go away, with the DDA twin (same id in the DDA tree) as the
 model. Deviations from DDA are marked `// CDF:` below and in the notes of each record.
 
-Status of this tool: chunk 1c. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
+Status of this tool: chunk 1d. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
 R3 (WELL), R4 (TOOL-INT), R5 (CHARGES), R6 (ADAPTOR), R8 (DDA-POCKET), the R9 STORAGE/EXPLICIT
-handling and the HAND-FALLBACK defaults for NEEDS-HAND rows, all in `--report` mode. `--apply`
-and `--check` come in the next chunk.
+handling and the HAND-FALLBACK defaults for NEEDS-HAND rows in `--report` mode, and `--apply`
+(see below). `--check` comes in the next chunk.
 
 Rules (PLAN-P3 section 4.3; the numbers are the plan's)
   R1  MAG with twin. Copy DDA's `pocket_data` (MAGAZINE, rigid, ammo_restriction,
@@ -103,7 +103,21 @@ Run from anywhere:
   py -3 -I tools/cdf_port_dda_mags.py [--cdf <CDF root>] [--dda <DDA root>]
         [--classes MAG,GUN-INT] [--ids a,b] --report [--out FILE.md] [--json FILE.json]
 
-Read-only: `--apply` and `--check` are reserved for the next chunk.
+  py -3 -I tools/cdf_port_dda_mags.py --cdf <root> --apply [--dry-run] [--files F1,F2]
+        [--classes ...] [--ids ...]
+
+`--apply` edits the CDF JSON files under `--cdf` in place, as raw text, with minimal diffs: the
+item's object is located by brace matching and only the affected top-level keys change
+(`pocket_data` added or replaced per the record's emitted list, `ammo` renamed to `tool_ammo`,
+`set_keys` values set, `dropped_keys` removed, a `"//"` note naming what was dropped, and a
+`"//"` key inside a well pocket that lists the CDF-only magazines kept). CRLF/LF, a BOM and the
+file's indent unit are kept. Only actions COPY-TWIN, AUTHOR, DROP-KEY and HAND-FALLBACK are
+edited; KEEP, KEEP-CHARGES, KEEP-REVIEW and LEAVE rows are never touched. Keys inherited
+through copy-from are left alone and listed. A row whose effective pocket_data already equals
+the emitted list, and whose keys are already gone, is not edited (idempotent). `--files` takes
+paths (or directories) relative to `--cdf`; `--dry-run` prints the counts and writes nothing.
+`--apply` rewrites files in place: run it on a scratch copy of `data/` (`--cdf <scratch>`),
+not on a worktree's data/json and data/mods. No MOD pocket is emitted (see `synth_lost`).
 """
 
 import argparse
@@ -1753,6 +1767,414 @@ def write_markdown(path, records, args, ctx):
         fh.write("\n".join(L) + "\n")
 
 
+# ---------------------------------------------------------------------------------------------
+# Apply (text-level, minimal diffs)
+# ---------------------------------------------------------------------------------------------
+# The target files are edited as raw text: each item's object span is found by brace matching
+# (string aware), and only the affected top-level keys of that object are removed, renamed,
+# replaced or appended. Line ends (CRLF/LF), BOM and the file's own indent unit are preserved.
+# Run it with --dry-run first; the P3-2 lane rule is to apply on a scratch copy of `data/`
+# (`--cdf <scratch root>`), never on a worktree's data/json or data/mods directly.
+
+EDIT_ACTIONS = ("COPY-TWIN", "AUTHOR", "DROP-KEY", "HAND-FALLBACK")
+WS = " \t\r\n"
+
+
+def _skip_string(t, i):
+    """t[i] == '"'; return the index just past the closing quote."""
+    i += 1
+    n = len(t)
+    while i < n:
+        c = t[i]
+        if c == "\\":
+            i += 2
+            continue
+        if c == '"':
+            return i + 1
+        i += 1
+    raise ValueError("unterminated string")
+
+
+def _skip_value(t, i):
+    c = t[i]
+    if c == '"':
+        return _skip_string(t, i)
+    if c in "{[":
+        depth = 0
+        n = len(t)
+        while i < n:
+            c = t[i]
+            if c == '"':
+                i = _skip_string(t, i)
+                continue
+            if c in "{[":
+                depth += 1
+            elif c in "}]":
+                depth -= 1
+                if depth == 0:
+                    return i + 1
+            i += 1
+        raise ValueError("unterminated container")
+    n = len(t)
+    while i < n and t[i] not in ",}] \t\r\n":
+        i += 1
+    return i
+
+
+def scan_top_objects(text):
+    """[(start, end)] of the JSON objects at top level (or directly inside a top-level array)."""
+    spans = []
+    stack = []
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            i = _skip_string(text, i)
+            continue
+        if c in "{[":
+            stack.append((c, i))
+        elif c in "}]":
+            if not stack:
+                raise ValueError("unbalanced")
+            oc, st = stack.pop()
+            if oc == "{" and (not stack or (len(stack) == 1 and stack[0][0] == "[")):
+                spans.append((st, i + 1))
+        i += 1
+    spans.sort()
+    return spans
+
+
+def scan_keys(t):
+    """Top-level keys of the object text t: [{key, ks, ke, vs, ve}] (offsets into t)."""
+    out = []
+    i, n = 1, len(t)
+    while i < n:
+        while i < n and t[i] in WS:
+            i += 1
+        if i >= n or t[i] == "}":
+            break
+        if t[i] == ",":
+            i += 1
+            continue
+        if t[i] != '"':
+            raise ValueError("expected key at %d" % i)
+        ks = i
+        ke = _skip_string(t, i)
+        key = json.loads(t[ks:ke])
+        i = ke
+        while t[i] in WS:
+            i += 1
+        if t[i] != ":":
+            raise ValueError("expected ':' at %d" % i)
+        i += 1
+        while t[i] in WS:
+            i += 1
+        vs = i
+        ve = _skip_value(t, i)
+        out.append({"key": key, "ks": ks, "ke": ke, "vs": vs, "ve": ve})
+        i = ve
+    return out
+
+
+def _find(t, key):
+    for e in scan_keys(t):
+        if e["key"] == key:
+            return e
+    return None
+
+
+def _fix_trailing_comma(t):
+    keys = scan_keys(t)
+    if not keys:
+        return t
+    j = keys[-1]["ve"]
+    while t[j] in WS:
+        j += 1
+    if t[j] == ",":
+        t = t[:j] + t[j + 1:]
+    return t
+
+
+def remove_key(t, key):
+    e = _find(t, key)
+    if e is None:
+        return t
+    ks, ve = e["ks"], e["ve"]
+    j = ve
+    while t[j] in WS:
+        j += 1
+    end = j + 1 if t[j] == "," else ve
+    ls = t.rfind("\n", 0, ks) + 1
+    own_line = t[ls:ks].strip() == ""
+    k = end
+    while k < len(t) and t[k] in " \t":
+        k += 1
+    if own_line and t.startswith("\r\n", k):
+        t = t[:ls] + t[k + 2:]
+    elif own_line and k < len(t) and t[k] == "\n":
+        t = t[:ls] + t[k + 1:]
+    else:
+        t = t[:ks] + t[k:]
+    return _fix_trailing_comma(t)
+
+
+def replace_value(t, key, text):
+    e = _find(t, key)
+    return t[:e["vs"]] + text + t[e["ve"]:]
+
+
+def rename_key(t, old, new):
+    e = _find(t, old)
+    return t[:e["ks"]] + json.dumps(new) + t[e["ke"]:]
+
+
+def add_key(t, key, text, eol, base_indent, unit):
+    keys = scan_keys(t)
+    if not keys:
+        return "{" + eol + base_indent + unit + json.dumps(key) + ": " + text + eol + \
+            base_indent + "}"
+    last = keys[-1]
+    multi = "\n" in t[:keys[0]["ks"]]
+    if multi:
+        ls = t.rfind("\n", 0, last["ks"]) + 1
+        ind = t[ls:last["ks"]] if t[ls:last["ks"]].strip() == "" else base_indent + unit
+        ins = "," + eol + ind + json.dumps(key) + ": " + text
+    else:
+        ins = ", " + json.dumps(key) + ": " + text
+    return t[:last["ve"]] + ins + t[last["ve"]:]
+
+
+def _scalar(v):
+    return not isinstance(v, (dict, list))
+
+
+def _fmt(v, ind, unit, width):
+    if _scalar(v):
+        return json.dumps(v, ensure_ascii=False)
+    inner = ind + unit
+    if isinstance(v, list):
+        if not v:
+            return "[]"
+        if all(_scalar(x) for x in v):
+            one = "[ " + ", ".join(json.dumps(x, ensure_ascii=False) for x in v) + " ]"
+            if len(ind) + len(one) <= width:
+                return one
+        body = ",\n".join(inner + _fmt(x, inner, unit, width) for x in v)
+        return "[\n" + body + "\n" + ind + "]"
+    if not v:
+        return "{}"
+    if "pocket_type" not in v and all(
+            _scalar(x) or (isinstance(x, list) and all(_scalar(y) for y in x))
+            for x in v.values()):
+        one = "{ " + ", ".join("%s: %s" % (json.dumps(k), _fmt(x, "", unit, 10 ** 6))
+                               for k, x in v.items()) + " }"
+        if len(ind) + len(one) <= width - 20:
+            return one
+    body = ",\n".join("%s%s: %s" % (inner, json.dumps(k), _fmt(x, inner, unit, width))
+                      for k, x in v.items())
+    return "{\n" + body + "\n" + ind + "}"
+
+
+def fmt_json(v, ind, unit, eol, width=100):
+    """BN-style layout: pockets multi-line, short flat dicts / scalar lists inline."""
+    return _fmt(v, ind, unit, width).replace("\n", eol)
+
+
+def _norm(p):
+    """Pockets without their `//` comment keys (comments never count as a difference)."""
+    if isinstance(p, dict):
+        return {k: _norm(x) for k, x in p.items() if not k.startswith("//")}
+    if isinstance(p, list):
+        return [_norm(x) for x in p]
+    return p
+
+
+def _note(rec):
+    parts = []
+    dk = [d["key"] for d in rec["dropped_keys"]]
+    if dk:
+        parts.append("dropped keys %s (now in pocket_data)" % ", ".join(dk))
+    rn = ["%s->%s" % (r["from"], r["to"]) for r in rec.get("renamed_keys", [])]
+    if rn:
+        parts.append("renamed %s" % ", ".join(rn))
+    ids = []
+    for d in rec["dropped_ids"]:
+        if d["id"] not in ids:
+            ids.append(d["id"])
+    if ids:
+        parts.append("ids absent or undefined in CDF left out of the pocket: %s%s" % (
+            ", ".join(ids[:10]), " (+%d more)" % (len(ids) - 10) if len(ids) > 10 else ""))
+    return "; ".join(parts) if parts else None
+
+
+NOTE_PREFIX = "CDF: P3-2 DDA magazine port: "
+
+
+def edit_object(t, rec, ctx, eol, base_indent):
+    """Apply rec to the object text t; return (new_text, skipped reasons)."""
+    skipped = []
+    keys0 = scan_keys(t)
+    own = {e["key"] for e in keys0}
+    ki = None
+    if keys0:
+        ls = t.rfind("\n", 0, keys0[0]["ks"]) + 1
+        if t[ls:keys0[0]["ks"]].strip() == "" and "\n" in t[:keys0[0]["ks"]]:
+            ki = t[ls:keys0[0]["ks"]]
+    if ki is not None and ki.startswith(base_indent) and len(ki) > len(base_indent):
+        unit = ki[len(base_indent):]
+    else:
+        unit = "\t" if (ki or "").startswith("\t") else "  "
+    ind = ki if ki is not None else base_indent + unit
+    raw = ctx.cdf.items[rec["id"]]["raw"]
+
+    for r in rec.get("renamed_keys", []):
+        if r.get("site") != "own":
+            skipped.append("rename %s: not own (%s)" % (r["from"], r.get("site")))
+            continue
+        if r["from"] in own and r["to"] not in own:
+            t = rename_key(t, r["from"], r["to"])
+            own = {e["key"] for e in scan_keys(t)}
+    for k, v in rec["set_keys"].items():
+        if k not in own and k == "tool_ammo" and "ammo" in own:
+            t = rename_key(t, "ammo", "tool_ammo")
+            own = {e["key"] for e in scan_keys(t)}
+        if k not in own and isinstance(raw.get("gun_data"), dict) and k in raw["gun_data"]:
+            skipped.append("set %s: lives in gun_data (not edited)" % k)
+            continue
+        if k in own:
+            e = _find(t, k)
+            if json.loads(t[e["vs"]:e["ve"]]) != v:
+                t = replace_value(t, k, fmt_json(v, ind, unit, eol))
+        else:
+            t = add_key(t, k, fmt_json(v, ind, unit, eol), eol, base_indent, unit)
+            own.add(k)
+    for d in rec["dropped_keys"]:
+        if d["key"] in own:
+            t = remove_key(t, d["key"])
+            own.discard(d["key"])
+    eff_pd = pocket_list(ctx.cdf.items[rec["id"]]["eff"])
+    emitted = copy.deepcopy(rec["pocket_data"])
+    wd = rec.get("well_diff")
+    added = wd.get("cdf_added") if isinstance(wd, dict) else None
+    if added:
+        for i, p in enumerate(emitted):
+            if p.get("pocket_type") == "MAGAZINE_WELL":
+                q = collections.OrderedDict()
+                q["//"] = "CDF: CDF-only magazines kept in item_restriction: " + ", ".join(added)
+                q.update(p)
+                emitted[i] = q
+                break
+    # Idempotence: once an item carries its own pocket_data with the magazine / well pocket(s)
+    # (this tool wrote it, or it was ported by hand), the planner can no longer reproduce the
+    # BN-key derived details (e.g. the speedloader ids came from the dropped `magazines`), so
+    # the pocket_data is left as it is and only pending key edits are made.
+    own_pd = [p for p in listify(raw.get("pocket_data")) if isinstance(p, dict)]
+    already = any(p.get("pocket_type") in ("MAGAZINE", "MAGAZINE_WELL") for p in emitted) and         any(p.get("pocket_type") in ("MAGAZINE", "MAGAZINE_WELL") for p in own_pd)
+    if already and _norm(emitted) != _norm(own_pd):
+        skipped.append("own pocket_data already has the magazine pocket(s); kept as it is")
+    if emitted and not already and _norm(emitted) != _norm(eff_pd):
+        text = fmt_json(emitted, ind, unit, eol)
+        if "pocket_data" in own:
+            t = replace_value(t, "pocket_data", text)
+        else:
+            t = add_key(t, "pocket_data", text, eol, base_indent, unit)
+            own.add("pocket_data")
+    note = _note(rec) if t != "" else None
+    if note and (rec["dropped_keys"] or rec.get("renamed_keys") or rec["dropped_ids"]) and \
+            _applied_something(rec, keys0, own):
+        e = _find(t, "//")
+        if e is None:
+            t = add_key(t, "//", json.dumps(NOTE_PREFIX + note, ensure_ascii=False), eol,
+                        base_indent, unit)
+        else:
+            old = json.loads(t[e["vs"]:e["ve"]])
+            if isinstance(old, str):
+                if note not in old:
+                    sep = "; " if NOTE_PREFIX in old else " " + NOTE_PREFIX
+                    t = replace_value(t, "//", json.dumps(old + sep + note,
+                                                          ensure_ascii=False))
+            elif isinstance(old, list) and not any(note in str(x) for x in old):
+                t = replace_value(t, "//", fmt_json(old + [NOTE_PREFIX + note], ind, unit, eol))
+    return t, skipped
+
+
+def _applied_something(rec, keys0, own_after):
+    """The note is written only when this run removed/renamed a key or wrote the pocket."""
+    before = {e["key"] for e in keys0}
+    if any(d["key"] in before for d in rec["dropped_keys"]):
+        return True
+    if any(r["from"] in before and r["to"] not in before for r in rec.get("renamed_keys", [])):
+        return True
+    return "pocket_data" in own_after and "pocket_data" not in before
+
+
+def apply_records(ctx, records, root, files, dry_run):
+    """Edit the CDF files under root. Returns (per-file counts, skipped, inherited)."""
+    by_file = collections.OrderedDict()
+    for r in records:
+        if r["action"] not in EDIT_ACTIONS:
+            continue
+        if files and not any(r["source_file"] == f or r["source_file"].startswith(f + "/")
+                             for f in files):
+            continue
+        by_file.setdefault(r["source_file"], []).append(r)
+    counts, skipped, inherited = collections.OrderedDict(), [], []
+    edited = set()
+    for rel, recs in by_file.items():
+        path = Path(root) / rel
+        with open(str(path), "rb") as fh:
+            text = fh.read().decode("utf-8")
+        eol = "\r\n" if "\r\n" in text else "\n"
+        try:
+            spans = scan_top_objects(text)
+        except ValueError as exc:
+            for r in recs:
+                skipped.append((r["id"], rel, "file scan failed: %s" % exc))
+            continue
+        wanted = {r["id"]: r for r in recs}
+        found = {}
+        for s, e in spans:
+            seg = text[s:e]
+            for iid in wanted:
+                if iid in found or ('"%s"' % iid) not in seg:
+                    continue
+                try:
+                    o = json.loads(seg)
+                except ValueError:
+                    continue
+                if o.get("id") == iid and o.get("type") in ITEM_TYPES and "abstract" not in o:
+                    found[iid] = (s, e)
+        for iid, r in wanted.items():
+            if iid not in found:
+                skipped.append((iid, rel, "object not found in file"))
+            if r["inherited_keys"]:
+                inherited.append((iid, rel, [k["key"] for k in r["inherited_keys"]]))
+        n = 0
+        for iid, (s, e) in sorted(found.items(), key=lambda kv: -kv[1][0]):
+            ls = text.rfind("\n", 0, s) + 1
+            lead = text[ls:s]
+            base = lead if lead.strip() == "" else lead[:len(lead) - len(lead.lstrip())]
+            new, sk = edit_object(text[s:e], wanted[iid], ctx, eol, base)
+            for m in sk:
+                skipped.append((iid, rel, m))
+            if new != text[s:e]:
+                text = text[:s] + new + text[e:]
+                n += 1
+                edited.add(iid)
+        if n:
+            try:
+                json.loads(text.lstrip("﻿"))
+            except ValueError as exc:   # never write a file that no longer parses
+                skipped.append(("*", rel, "edited text does not parse, file not written: %s"
+                                % str(exc)[:80]))
+                continue
+            counts[rel] = n
+            if not dry_run:
+                with open(str(path), "wb") as fh:
+                    fh.write(text.encode("utf-8"))
+    return counts, skipped, inherited, edited
+
+
 def main():
     here = Path(__file__).resolve().parent.parent
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -1765,15 +2187,19 @@ def main():
     ap.add_argument("--report", action="store_true", help="plan per id (read-only)")
     ap.add_argument("--out", type=Path, help="markdown report file (with --report)")
     ap.add_argument("--json", type=Path, help="JSON file, one record per id (with --report)")
-    ap.add_argument("--apply", action="store_true", help="reserved (next chunk)")
+    ap.add_argument("--apply", action="store_true",
+                    help="edit the CDF JSON files under --cdf in place (use a scratch copy)")
+    ap.add_argument("--dry-run", action="store_true", help="with --apply: write nothing")
+    ap.add_argument("--files", default="",
+                    help="with --apply: comma separated paths relative to --cdf")
     ap.add_argument("--check", action="store_true", help="reserved (next chunk)")
     args = ap.parse_args()
 
-    if args.apply or args.check:
-        print("--apply and --check are not implemented in this chunk", file=sys.stderr)
+    if args.check:
+        print("--check is not implemented in this chunk", file=sys.stderr)
         return 2
-    if not args.report:
-        ap.error("nothing to do: use --report")
+    if not args.report and not args.apply:
+        ap.error("nothing to do: use --report or --apply")
     classes = [c.strip() for c in args.classes.split(",") if c.strip()] or list(PLANNERS)
     for c in classes:
         if c not in ALL_CLASSES:
@@ -1786,6 +2212,35 @@ def main():
             print("warning: %s JSON not read: %s" % (side, e), file=sys.stderr)
     ctx = Ctx(cdf, dda)
     records = build_records(ctx, set(classes), ids)
+
+    if args.apply:
+        files = [f.strip().replace("\\", "/") for f in args.files.split(",") if f.strip()]
+        # Porting a parent (or dropping `magazines`) changes how its children and the item
+        # itself classify, so the plan is recomputed from the edited files until a round edits
+        # nothing (at most 4 rounds). That makes a second --apply a no-op by construction.
+        all_counts, all_edited, rounds = collections.OrderedDict(), set(), 0
+        while True:
+            rounds += 1
+            counts, skipped, inherited, edited = apply_records(ctx, records, args.cdf, files,
+                                                               args.dry_run)
+            for rel, n in counts.items():
+                all_counts[rel] = all_counts.get(rel, 0) + n
+            print("round %d: %s %d item(s) in %d file(s)" % (
+                rounds, "would edit" if args.dry_run else "edited", len(edited), len(counts)))
+            for iid, rel, why in (skipped if rounds == 1 else []):
+                print("  skipped %s (%s): %s" % (iid, rel, why))
+            all_edited |= edited
+            if args.dry_run or not edited or rounds >= 4:
+                break
+            cdf = Tree(args.cdf)
+            ctx = Ctx(cdf, dda)
+            records = build_records(ctx, set(classes), ids)
+        for rel, n in all_counts.items():
+            print("%5d  %s" % (n, rel))
+        print("%s: %d distinct item(s) in %d file(s)" % (
+            "would edit" if args.dry_run else "edited", len(all_edited), len(all_counts)))
+        print("inherited keys left alone: %d item(s) (round %d)" % (len(inherited), rounds))
+        return 0
 
     if args.out:
         write_markdown(str(args.out), records, args, ctx)
