@@ -7,9 +7,10 @@ BN stores ammo and magazine data in item keys (`ammo_type` + `capacity`, `clip_s
 item should get and which BN keys go away, with the DDA twin (same id in the DDA tree) as the
 model. Deviations from DDA are marked `// CDF:` below and in the notes of each record.
 
-Status of this tool: chunk 1b. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
-R3 (WELL) and R4 (TOOL-INT) in `--report` mode. Rules R5-R9 (one planner function each,
-registered in PLANNERS), `--apply` and `--check` come in later chunks.
+Status of this tool: chunk 1c. Implemented: loader, classification, R1 (MAG), R2 (GUN-INT),
+R3 (WELL), R4 (TOOL-INT), R5 (CHARGES), R6 (ADAPTOR), R8 (DDA-POCKET), the R9 STORAGE/EXPLICIT
+handling and the HAND-FALLBACK defaults for NEEDS-HAND rows, all in `--report` mode. `--apply`
+and `--check` come in the next chunk.
 
 Rules (PLAN-P3 section 4.3; the numbers are the plan's)
   R1  MAG with twin. Copy DDA's `pocket_data` (MAGAZINE, rigid, ammo_restriction,
@@ -41,13 +42,39 @@ Rules (PLAN-P3 section 4.3; the numbers are the plan's)
                   copied from a BATTERY_* twin, or integral MAGAZINE {battery: max_charges}; no
                   evidence -> NEEDS-HAND (size flag unknown). Ammotypes whose default ammo item
                   is empty in CDF are dropped from pockets (check_definition would reject them).
-  R5  CHARGES     (later chunk)  DDA pocket when every ammotype exists, else stays on charges
-  R6  ADAPTOR     (later chunk)  no edit; goes through the golden matrix
+  R5  CHARGES     tools with `max_charges` and no `ammo` (DDA does the same for ammo-less
+                  tools). Where every ammotype / well id / flag of the twin's MAGAZINE (or
+                  MAGAZINE_WELL) pocket exists in CDF (an ammotype whose default ammo item is
+                  empty counts as undefined), the twin pocket is copied (COPY-TWIN; the item's
+                  `max_charges` / `initial_charges` go, `tool_ammo` is set from the twin); else
+                  the tool stays on `charges` (KEEP-CHARGES, the missing names are listed).
+  R6  ADAPTOR     no edit: `magazine_adaptor` and `magazines_like` stay (KEEP); the 6 REVIEW
+                  rows (DDA twin has the adaptor) are KEEP-REVIEW, the golden matrix covers them
   R7  CDF-only    authored by R1-R4 (action AUTHOR); also the `dda-obsolete` twins
-  R8  DDA-POCKET  (later chunk)  copy the DDA pocket when flag and ammotype prerequisites exist
-  R9  +STORAGE / +EXPLICIT: tagged in the record (`tags`); EXPLICIT pockets are merged (the
-      existing non-magazine pockets are kept in front of the emitted one) and need a hand look;
-      STORAGE rows need the carry pocket re-emitted (later chunk)
+  R8  DDA-POCKET  copy the DDA pocket when its flag, ammotype and item-id prerequisites exist
+                  in CDF (COPY-TWIN, `tool_ammo` set from the twin), else LEAVE and list the
+                  missing names; an item that already has its own explicit magazine pocket
+                  (TEST_DATA fixtures) is KEEP.
+  R9  +STORAGE / +EXPLICIT: tagged in the record (`tags`). Pocket order follows
+      synthesize_pockets (src/item_factory.cpp): container/holster/bandolier, MAGAZINE,
+      MAGAZINE_WELL, MOD, CORPSE, software, then the worn-storage carry pockets last. So a
+      STORAGE row (ARMOR/TOOL_ARMOR with storage > 0, not explicit) is emitted as
+      [magazine/well pocket(s)] + [carry pocket(s)]: the garment overlay layout when one exists
+      (`item_overlay` pocket_data, every pocket carry), else `{CONTAINER, carry, max_contains_
+      volume: storage}` (+ rigid when the item is) and a holster strap pocket when storage >=
+      10 L (`carry_pockets`). EXPLICIT rows (the item or its copy-from parent has pocket_data)
+      keep their existing pockets in front and get the magazine pocket appended; they are
+      noted for a hand look. A STORAGE+EXPLICIT row gets no synthesized carry pocket (the
+      explicit list is assumed to carry the garment pockets; capacity noted). `synth_lost`
+      lists the synthesized pockets an explicit pocket_data suppresses (MOD for guns and
+      ammo tools, container_data, holster, bandolier): the loader returns early on
+      explicit_pockets, DDA synthesizes MOD itself, so P3-1 must keep synthesizing MOD or
+      --apply must emit it.
+  HAND-FALLBACK   NEEDS-HAND rows get a concrete pocket so --apply is deterministic: the
+      planner re-run without the twin (the item's own CDF shape: integral magazine from
+      ammo/clip_size/max_charges, well from `magazines`; battery tools without size evidence:
+      integral MAGAZINE {battery: max_charges}), else the row is left as it is. The action stays
+      HAND-FALLBACK and the row is listed in the report; the reason is kept in `hand_reason`.
   R10 No stats, recipes or item groups change; data/json/items/* and the mods only.
 
 CDF deviations (all marked `// CDF:`)
@@ -65,9 +92,11 @@ CDF deviations (all marked `// CDF:`)
   // CDF: pockets are validated here against pocket_data::load / check_definition
   //      (src/pocket_data.cpp); violations are reported per record, never fixed silently.
 
-Record actions: KEEP (nothing to change), COPY-TWIN (twin pocket emitted), AUTHOR (pocket authored
-from CDF fields), DROP-KEY (pocket already present, only keys go), NEEDS-HAND (no rule covers
-it), UNPLANNED (class has no planner yet).
+Record actions: KEEP (nothing to change), KEEP-REVIEW (R6 REVIEW row), KEEP-CHARGES (R5, stays
+on charges), LEAVE (R8, prerequisites missing), COPY-TWIN (twin pocket emitted), AUTHOR (pocket
+authored from CDF fields), DROP-KEY (pocket already present, only keys go), HAND-FALLBACK
+(NEEDS-HAND row with a default; flagged), NEEDS-HAND (only when the fallback is disabled),
+UNPLANNED (class has no planner).
 
 Run from anywhere:
 
@@ -215,12 +244,15 @@ class Tree:
         self.dups = 0
         self.ammotypes = {}   # ammunition_type id -> default ammo item id
         self.flags = set()    # json_flag ids
+        self.overlays = {}    # item_overlay id -> pocket_data layout (worn storage, R9)
         for o, rel in entries:
             t = o.get("type")
             if t == "ammunition_type" and isinstance(o.get("id"), str):
                 self.ammotypes.setdefault(o["id"], o.get("default"))
             elif t == "json_flag" and isinstance(o.get("id"), str):
                 self.flags.add(o["id"])
+            elif t == "item_overlay" and isinstance(o.get("id"), str)                     and isinstance(o.get("pocket_data"), list):
+                self.overlays.setdefault(o["id"], o["pocket_data"])
             if not is_item(o):
                 continue
             iid = o["id"]
@@ -354,7 +386,7 @@ def compact(pockets):
             parts.append("MAGAZINE{%s%s%s}" % (s, ";sl=%d" % len(sl) if sl else "",
                                                "" if p.get("rigid") else ";!rigid"))
         else:
-            parts.append(pt)
+            parts.append(pt + ("(carry)" if p.get("carry") else ""))
     return " + ".join(parts) if parts else "-"
 
 
@@ -430,10 +462,39 @@ def sanitize(pockets, ctx, out):
     return [p for p in pockets if p.get("ammo_restriction") != {}]
 
 
+def storage_ml(eff):
+    """Worn storage of an item in ml (0 when none or not a plain volume string)."""
+    v = eff.get("storage")
+    if v is None:
+        return 0.0
+    ml = to_ml(v)
+    return ml if ml is not None else 0.0
+
+
+def synth_lost(rec):
+    """Pockets BN's synthesize_pockets builds that an explicit pocket_data would suppress
+    (item_factory.cpp: `if( obj.explicit_pockets ) return;` before any synthesis). DDA adds
+    the MOD pocket itself; CDF does not, so --apply must emit it or P3-1 must keep synthesizing
+    it. Only meaningful for items that have no explicit pocket_data today."""
+    eff, t = rec["eff"], rec["type"]
+    if eff.get("pocket_data"):
+        return []
+    lost = []
+    if t == "GUN" or (t == "GUNMOD" and isinstance(eff.get("gun_data"), dict)) or             (t in TOOLISH and (eff.get("ammo") or eff.get("tool_ammo") or eff.get("magazines"))):
+        lost.append("MOD")
+    if eff.get("container_data"):
+        lost.append("container_data")
+    ua = json.dumps(eff.get("use_action"), sort_keys=True)
+    for kind in ("holster", "bandolier"):
+        if '"%s"' % kind in ua:
+            lost.append(kind)
+    return lost
+
+
 def new_record(rec, cls, twin, ctx):
     eff = rec["eff"]
     tags = []
-    if eff.get("storage") not in (None, "0 ml", "0"):
+    if rec["type"] in ("ARMOR", "TOOL_ARMOR") and storage_ml(eff) > 0:
         tags.append("STORAGE")
     if eff.get("pocket_data"):
         tags.append("EXPLICIT")
@@ -445,13 +506,54 @@ def new_record(rec, cls, twin, ctx):
         "source_file": rec["file"], "twin_file": twin_file, "action": None, "rule": None,
         "pocket_data": [], "dropped_keys": [], "inherited_keys": [], "dropped_ids": [],
         "set_keys": {}, "cap": [], "diff": [], "ammo_diff": {},
-        "violations": [], "tags": tags, "notes": [],
+        "violations": [], "tags": tags, "notes": [], "carry": [], "synth_lost": synth_lost(rec),
     }
 
 
-def finish(out, rec, existing_pockets, new_pockets, mag_types=("MAGAZINE",)):
+def carry_pockets(ctx, rec):
+    """R9: the worn-storage pockets synthesize_pockets derives (item_factory.cpp, last block):
+    the garment overlay layout when one exists (every pocket `carry`), else one CONTAINER
+    `carry` pocket of the item's `storage` (rigid as the item), plus a holster strap pocket
+    when storage >= 10 L. `moves` (100) and `max_item_length` take the loader defaults, which
+    equal what the synthesis sets."""
+    if rec["type"] not in ("ARMOR", "TOOL_ARMOR") or storage_ml(rec["eff"]) <= 0:
+        return []
+    ov = ctx.cdf.overlays.get(rec["id"])
+    if ov:
+        res = []
+        for p in ov:
+            if isinstance(p, dict):
+                q = collections.OrderedDict(copy.deepcopy(p))
+                q["carry"] = True
+                res.append(q)
+        return res
+    main = collections.OrderedDict()
+    main["pocket_type"] = "CONTAINER"
+    main["carry"] = True
+    main["max_contains_volume"] = rec["eff"]["storage"]
+    if rec["eff"].get("rigid"):
+        main["rigid"] = True
+    res = [main]
+    if storage_ml(rec["eff"]) >= 10000:
+        strap = collections.OrderedDict()
+        strap["pocket_type"] = "CONTAINER"
+        strap["carry"] = True
+        strap["holster"] = True
+        strap["max_contains_volume"] = "10 L"
+        strap["max_item_volume"] = "10 L"
+        strap["max_item_length"] = "150 cm"
+        if rec["eff"].get("rigid"):
+            strap["rigid"] = True
+        res.append(strap)
+    return res
+
+
+def finish(out, rec, existing_pockets, new_pockets, mag_types=("MAGAZINE",), ctx=None):
     """Merge with an existing explicit pocket_data (R9 EXPLICIT) and settle the action.
-    `mag_types` are the pocket types the planner replaces (R3 adds MAGAZINE_WELL)."""
+    `mag_types` are the pocket types the planner replaces (R3 adds MAGAZINE_WELL).
+    Emitted order follows synthesize_pockets: existing explicit pockets, the magazine/well
+    pocket(s), then (R9 STORAGE) the carry pocket(s), which BN derives from `storage` and which
+    an explicit pocket_data would otherwise drop."""
     keep = [p for p in existing_pockets if p.get("pocket_type") not in mag_types]
     out["pocket_data"] = keep + new_pockets
     if keep:
@@ -461,6 +563,25 @@ def finish(out, rec, existing_pockets, new_pockets, mag_types=("MAGAZINE",)):
     if same and new_pockets:
         out["action"] = "DROP-KEY" if out["dropped_keys"] or out["set_keys"] else "KEEP"
         out["notes"].append("the effective item already has this pocket")
+        return
+    if "STORAGE" in out["tags"] and new_pockets and ctx is not None:
+        if existing_pockets:
+            cap = sum(to_ml(p.get("max_contains_volume")) or 0.0 for p in existing_pockets
+                      if p.get("pocket_type", "CONTAINER") == "CONTAINER" and not p.get("holster"))
+            out["notes"].append("STORAGE+EXPLICIT: the explicit pocket_data already carries the "
+                                "garment pockets (%.0f ml in CONTAINER pockets vs storage %.0f "
+                                "ml); no carry pocket added, check by hand (R9)"
+                                % (cap, storage_ml(rec["eff"])))
+        else:
+            carry = carry_pockets(ctx, rec)
+            if carry:
+                out["carry"] = carry
+                out["pocket_data"] = out["pocket_data"] + copy.deepcopy(carry)
+                out["notes"].append(
+                    "STORAGE (R9): %d carry pocket(s) from %s re-emitted after the magazine "
+                    "pocket (synthesize_pockets order: magazine/well, MOD, carry)"
+                    % (len(carry), "the garment overlay" if ctx.cdf.overlays.get(rec["id"])
+                       else "`storage` %s" % rec["eff"]["storage"]))
 
 
 def check_pocket(p, ctx):
@@ -620,7 +741,7 @@ def plan_mag(ctx, rec, cls, exp, twin):
         out["action"] = "NEEDS-HAND"
         out["notes"].append("no ammotype of the pocket is defined in CDF")
         return out
-    finish(out, rec, existing, new)
+    finish(out, rec, existing, new, ctx=ctx)
     return out
 
 
@@ -713,7 +834,7 @@ def plan_gun_int(ctx, rec, cls, exp, twin):
         out["action"] = "NEEDS-HAND"
         out["notes"].append("no ammotype of the pocket is defined in CDF")
         return out
-    finish(out, rec, existing, new)
+    finish(out, rec, existing, new, ctx=ctx)
     return out
 
 
@@ -1007,7 +1128,7 @@ def plan_well(ctx, rec, cls, exp, twin):
         out["action"] = "AUTHOR"
     move_item_key(ctx, rec, out, "magazines", "pocket item_restriction replaces the BN list")
     move_item_key(ctx, rec, out, "magazine_well", "moves to the pocket's magazine_well")
-    finish(out, rec, existing, new, ("MAGAZINE", "MAGAZINE_WELL"))
+    finish(out, rec, existing, new, ("MAGAZINE", "MAGAZINE_WELL"), ctx=ctx)
     return out
 
 
@@ -1088,6 +1209,22 @@ def plan_tool_int(ctx, rec, cls, exp, twin):
                                 % (twin["eff"].get("tool_ammo"), twin["eff"].get("max_charges")))
         if battery:
             sib = battery_sibling(ctx, rec)
+            if sib is None and getattr(ctx, "fallback", False):
+                # HAND-FALLBACK: the plan's fallback for a CDF battery tool without size
+                # evidence is the integral battery magazine of its own max_charges
+                new = [collections.OrderedDict([
+                    ("pocket_type", "MAGAZINE"), ("rigid", True),
+                    ("ammo_restriction", collections.OrderedDict(want))])]
+                out["diff"].append("fallback-integral")
+                out["notes"].append("no size evidence for a battery well: integral MAGAZINE "
+                                    "{battery: %s} (CDF-only integral battery tool shape)"
+                                    % eff.get("max_charges"))
+                out["action"] = "AUTHOR"
+                new = sanitize(new, ctx, out)
+                if not new:
+                    out["action"] = "NEEDS-HAND"
+                    return out
+                sib = "done"
             if sib is None:
                 out["action"] = "NEEDS-HAND"
                 out["notes"].insert(0, "battery tool (max_charges %s): no DDA twin tool of the "
@@ -1096,8 +1233,11 @@ def plan_tool_int(ctx, rec, cls, exp, twin):
                                     "integral MAGAZINE {battery: %s}"
                                     % (eff.get("max_charges"), eff.get("max_charges")))
                 return out
-            sid, kind, sp, why = sib
-            if kind == "WELL":
+            if sib != "done":
+                sid, kind, sp, why = sib
+            if sib == "done":
+                pass
+            elif kind == "WELL":
                 p = copy.deepcopy(sp)
                 fix_well_ids(p, ctx, out)
                 new = [p]
@@ -1149,19 +1289,175 @@ def plan_tool_int(ctx, rec, cls, exp, twin):
     if rec["type"] == "ARMOR":
         out["notes"].append("type ARMOR (not TOOL_ARMOR) with ammo/max_charges: check the DDA "
                             "loader accepts tool_ammo here")
-    finish(out, rec, existing, new, ("MAGAZINE", "MAGAZINE_WELL"))
+    finish(out, rec, existing, new, ("MAGAZINE", "MAGAZINE_WELL"), ctx=ctx)
     return out
 
 
-# class -> planner. Later chunks add CHARGES (R5), ADAPTOR (R6),
-# DDA-POCKET (R8); R7 is "author when there is no twin" inside each planner, R9 is the
-# STORAGE/EXPLICIT tagging above.
+# ---------------------------------------------------------------------------------------------
+# R5 CHARGES, R6 ADAPTOR, R8 DDA-POCKET (chunk 1c)
+# ---------------------------------------------------------------------------------------------
+
+def pocket_prereqs(pockets, ctx):
+    """What a twin's magazine pockets need that CDF lacks (plan 4.4): ammotypes (defined, with
+    an existing default ammo item), item ids, flags, default_magazine. [] = copyable as is."""
+    miss = []
+    for p in pockets:
+        ar = p.get("ammo_restriction")
+        if isinstance(ar, dict):
+            for at in ar:
+                if at not in ctx.cdf.ammotypes:
+                    miss.append("ammotype %s undefined" % at)
+                elif ctx.cdf.ammotypes[at] not in ctx.cdf.items:
+                    miss.append("ammotype %s has no default ammo item (default %r)"
+                                % (at, ctx.cdf.ammotypes[at]))
+        for key in ("item_restriction", "allowed_speedloaders"):
+            for i in listify(p.get(key)):
+                if i not in ctx.cdf.items:
+                    miss.append("%s id %s absent" % (key, i))
+        for f in listify(p.get("flag_restriction")):
+            if ctx.cdf.flags and f not in ctx.cdf.flags:
+                miss.append("flag %s undefined" % f)
+        dm = p.get("default_magazine")
+        if dm and dm not in ctx.cdf.items:
+            miss.append("default_magazine %s absent" % dm)
+    return miss
+
+
+def plan_copy_pocket(ctx, rec, cls, twin, rule, missing_action):
+    """Shared by R5 and R8: copy the twin's MAGAZINE / MAGAZINE_WELL pockets when every
+    prerequisite exists in CDF, else `missing_action` and the missing names."""
+    out = new_record(rec, cls, twin, ctx)
+    out["rule"] = rule
+    eff = rec["eff"]
+    twin = usable_twin(twin)
+    pk = pocket_list(twin["eff"]) if twin else []
+    tshape = [p for p in pk if p.get("pocket_type") in ("MAGAZINE", "MAGAZINE_WELL")]
+    if not tshape:
+        out["action"] = missing_action
+        out["notes"].append("DDA twin has no magazine pocket (or is an obsoletion shell): "
+                            "nothing to copy")
+        return out
+    em = [p for p in pocket_list(eff) if p.get("pocket_type") in ("MAGAZINE", "MAGAZINE_WELL")]
+    if em and rule == "R8":
+        out["action"] = "KEEP"
+        out["notes"].append("the CDF item already has its own explicit magazine pocket(s) "
+                            "(TEST_DATA fixture); nothing to copy")
+        if em != tshape:
+            out["diff"].append("differs-from-twin")
+            out["notes"].append("CDF pocket %s differs from the DDA twin's %s"
+                                % (compact(em), compact(tshape)))
+        return out
+    miss = pocket_prereqs(tshape, ctx)
+    if miss:
+        out["action"] = missing_action
+        out["diff"].append("prereq-missing")
+        out["notes"].append("%s: %s" % (
+            "stays on charges" if rule == "R5" else "left as it is",
+            "; ".join(sorted(set(miss)))))
+        out["missing"] = sorted(set(miss))
+        return out
+    new = copy.deepcopy(tshape)
+    out["action"] = "COPY-TWIN"
+    if rule == "R5":
+        # the twin pocket takes the place of the item's own charge count
+        charges = to_int(eff.get("max_charges"))
+        tm = [p for p in tshape if p.get("pocket_type") == "MAGAZINE"]
+        if len(tm) == 1 and isinstance(tm[0].get("ammo_restriction"), dict) \
+                and len(tm[0]["ammo_restriction"]) == 1:
+            at, n = next(iter(tm[0]["ammo_restriction"].items()))
+            if to_int(n) != charges:
+                out["diff"].append("cap")
+                out["cap"] = [{"ammo": at, "cdf": charges, "dda": to_int(n)}]
+        move_item_key(ctx, rec, out, "max_charges", "DDA twin carries the charge count in its "
+                      "magazine pocket (R5)")
+        move_item_key(ctx, rec, out, "initial_charges", "DDA twin has no initial_charges (R5)")
+    # DDA names the ammo in `tool_ammo` (or `ammo`); the CDF item has neither
+    tam = twin["eff"].get("tool_ammo", twin["eff"].get("ammo"))
+    if tam is not None and not eff.get("tool_ammo") and not eff.get("ammo"):
+        out["set_keys"]["tool_ammo"] = tam
+    existing = pocket_list(eff)
+    for p in new:
+        if p.get("pocket_type") == "MAGAZINE_WELL":
+            fix_well_ids(p, ctx, out)
+    finish(out, rec, existing, new, ("MAGAZINE", "MAGAZINE_WELL"), ctx=ctx)
+    return out
+
+
+def plan_charges(ctx, rec, cls, exp, twin):
+    """R5 CHARGES: DDA's MAGAZINE pocket when every ammotype (and well id/flag) exists in
+    CDF, else the tool stays on `charges` (KEEP-CHARGES)."""
+    return plan_copy_pocket(ctx, rec, cls, twin, "R5", "KEEP-CHARGES")
+
+
+def plan_dda_pocket(ctx, rec, cls, exp, twin):
+    """R8 DDA-POCKET: copy the DDA pocket when its flag / ammotype prerequisites exist in
+    CDF, else leave the item and list it (LEAVE)."""
+    return plan_copy_pocket(ctx, rec, cls, twin, "R8", "LEAVE")
+
+
+def plan_adaptor(ctx, rec, cls, exp, twin):
+    """R6 ADAPTOR: no edit. Rows with a DDA twin are the REVIEW rows; the golden covers them."""
+    out = new_record(rec, cls, twin, ctx)
+    out["rule"] = "R6"
+    out["action"] = "KEEP"
+    out["notes"].append("`magazine_adaptor` (%s) and `magazines_like` stay (DDA "
+                        "item_factory.cpp:3673-3691, CDF item_factory.cpp:2913-2921); no edit"
+                        % json.dumps(rec["eff"].get("magazine_adaptor")))
+    if twin is not None:
+        out["action"] = "KEEP-REVIEW"
+        out["notes"].append("REVIEW row (DDA twin has the adaptor too): the golden matrix covers "
+                            "it, the adaptor swaps the well restriction "
+                            "(item_contents.cpp:359-369)")
+    return out
+
+
+def hand_fallback(ctx, rec, cls, exp, twin, planner, first):
+    """NEEDS-HAND rows get a concrete, deterministic pocket so --apply is deterministic, but
+    stay visibly flagged (action HAND-FALLBACK, listed in the report). The fallback is the
+    item's own CDF shape: the planner re-run with no twin (CDF-only authoring; battery tools
+    without size evidence take the integral MAGAZINE {battery: max_charges}); when even that
+    cannot be authored the row is left as it is (empty pocket list, no key changes)."""
+    ctx.fallback = True
+    try:
+        alt = planner(ctx, rec, cls, exp, None)
+    finally:
+        ctx.fallback = False
+    reason = "; ".join(first["notes"]) or "no rule covers it"
+    if alt["action"] in ("AUTHOR", "COPY-TWIN") and alt["pocket_data"]:
+        alt["has_twin"] = first["has_twin"]
+        alt["twin_file"] = first["twin_file"]
+        alt["tags"] = first["tags"]
+        alt["action"] = "HAND-FALLBACK"
+        alt["fallback"] = "authored"
+        desc = "authored from the CDF fields: %s" % compact(alt["pocket_data"])
+    else:
+        keep = {k: first[k] for k in ("id", "class", "has_twin", "source_file", "twin_file",
+                                      "rule", "tags", "synth_lost")}
+        alt = new_record(rec, cls, twin, ctx)
+        alt.update(keep)
+        alt["action"] = "HAND-FALLBACK"
+        alt["fallback"] = "left-as-is"
+        desc = "left as it is (no pocket authored, no key changes)"
+    alt["hand_reason"] = reason
+    alt["diff"] = list(dict.fromkeys(first["diff"] + alt["diff"]))
+    alt["ammo_diff"] = first.get("ammo_diff") or alt["ammo_diff"]
+    alt["notes"] = ["HAND-FALLBACK (was NEEDS-HAND): %s => %s" % (reason, desc)] + \
+        [n for n in alt["notes"] if n not in first["notes"]]
+    return alt
+
+
+# class -> planner. R7 is "author when there is no twin" inside each planner; R9 is the
+# STORAGE/EXPLICIT handling in finish() and carry_pockets().
 PLANNERS = collections.OrderedDict([
     ("MAG", plan_mag),
     ("GUN-INT", plan_gun_int),
     ("TOOL-INT", plan_tool_int),
     ("WELL", plan_well),
+    ("ADAPTOR", plan_adaptor),
+    ("CHARGES", plan_charges),
+    ("DDA-POCKET", plan_dda_pocket),
 ])
+HAND_FALLBACK_CLASSES = ("MAG", "GUN-INT", "TOOL-INT", "WELL")
 ALL_CLASSES = ["MAG", "GUN-INT", "TOOL-INT", "WELL", "ADAPTOR", "CHARGES", "DDA-POCKET"]
 
 
@@ -1191,6 +1487,8 @@ def build_records(ctx, classes, ids):
             out["notes"].append("no planner for class %s in this chunk" % cls)
         else:
             out = planner(ctx, rec, cls, exp, twin)
+            if out["action"] == "NEEDS-HAND" and cls in HAND_FALLBACK_CLASSES:
+                out = hand_fallback(ctx, rec, cls, exp, twin, planner, out)
         for p in out["pocket_data"]:
             out["violations"] += check_pocket(p, ctx)
         records.append(out)
@@ -1234,19 +1532,103 @@ def write_markdown(path, records, args, ctx):
                 sum(1 for r in records if r["violations"]),
                 ", ".join("%s=%d" % kv for kv in sorted(collections.Counter(
                     t for r in records for t in r["tags"]).items())) or "none"))
-    hand = [r for r in records if r["action"] == "NEEDS-HAND"]
+    hand = [r for r in records if r["action"] in ("NEEDS-HAND", "HAND-FALLBACK")]
     twin_rows = sum(1 for r in records if r["has_twin"])
+    hand_twin = [r for r in hand if r["has_twin"]]
+    # the plan's 18 `ammo`-kind rows are the R1 + R2 (MAG, GUN-INT) rows; R4 TOOL-INT rows with
+    # an ammo difference are reported in the "Ammo differences" section, not counted here
+    r1_ammo = [r for r in records if r["class"] in ("MAG", "GUN-INT") and r["has_twin"]
+               and "ammo" in r["diff"]]
+    need = len(hand_twin) + len(r1_ammo)
     L.append("## Stop rule\n")
-    L.append("NEEDS-HAND rows with a DDA twin: %d of %d twin rows in this report (%.1f%%; limit 5%% "
-             "of all 725 twin rows = 36).\n"
-             % (sum(1 for r in hand if r["has_twin"]), twin_rows,
-                100.0 * sum(1 for r in hand if r["has_twin"]) / max(1, twin_rows)))
+    L.append("Twin rows that need a hand rule over the %d twin rows of this report: %d "
+             "HAND-FALLBACK twin rows (of %d HAND-FALLBACK rows in all) + %d R1/R2 `ammo`-kind "
+             "MAG/GUN-INT rows (CDF-only ammotype lost in the pocket, owner decision, listed "
+             "below) = %d, "
+             "%.1f%%. Limit 5%% of 725 = 36: **%s**.\n"
+             % (twin_rows, len(hand_twin), len(hand), len(r1_ammo), need,
+                100.0 * need / max(1, twin_rows),
+                "under the limit" if need < 36 else "OVER the limit"))
     if hand:
-        L.append("| id | class | twin | why |\n|---|---|---|---|")
+        L.append("### HAND-FALLBACK rows (default applied, still flagged: hand review wanted)\n")
+        L.append("| id | class | twin | fallback | proposed pocket | reason |\n|---|---|---|---|---|---|")
         for r in hand:
-            L.append("| `%s` | %s | %s | %s |" % (r["id"], r["class"], "yes" if r["has_twin"] else "no",
-                                               "; ".join(r["notes"])))
+            L.append("| `%s` | %s | %s | %s | %s | %s |" % (
+                r["id"], r["class"], "yes" if r["has_twin"] else "no", r.get("fallback", "-"),
+                compact(r["pocket_data"]).replace("|", "/"),
+                r.get("hand_reason", "; ".join(r["notes"])).replace("|", "/")))
         L.append("")
+    if r1_ammo:
+        L.append("### R1/R2 `ammo`-kind MAG/GUN-INT rows (owner decision: DDA's pocket drops the CDF-only "
+                 "ammotype)\n")
+        L.append("| id | CDF-only ammo | DDA-only ammo |\n|---|---|---|")
+        for r in r1_ammo:
+            L.append("| `%s` | %s | %s |" % (r["id"],
+                                             ",".join(r["ammo_diff"].get("cdf_only", [])) or "-",
+                                             ",".join(r["ammo_diff"].get("dda_only", [])) or "-"))
+        L.append("")
+    r5 = [r for r in records if r["rule"] == "R5"]
+    if r5:
+        L.append("## R5 CHARGES (tools with max_charges and no ammo)\n")
+        cp = [r for r in r5 if r["action"] == "COPY-TWIN"]
+        kp = [r for r in r5 if r["action"] == "KEEP-CHARGES"]
+        L.append("%d rows: %d take DDA's pocket (COPY-TWIN), %d stay on `charges` "
+                 "(KEEP-CHARGES). The plan estimated 37 / 16; the difference is the ids "
+                 "listed below (e.g. `fire_drill*`: `notched_plank`/`notched_stick` absent).\n"
+                 % (len(r5), len(cp), len(kp)))
+        if kp:
+            L.append("| stays on charges | missing |\n|---|---|")
+            for r in kp:
+                L.append("| `%s` | %s |" % (r["id"], "; ".join(r.get("missing", ["-"]))))
+            L.append("")
+        mi = collections.OrderedDict()
+        for r in kp:
+            for m_ in r.get("missing", []):
+                mi.setdefault(m_, []).append(r["id"])
+        if mi:
+            L.append("Missing prerequisites, distinct: " + "; ".join(
+                "%s (%d item(s))" % (k, len(v)) for k, v in mi.items()) + "\n")
+    r6 = [r for r in records if r["rule"] == "R6"]
+    if r6:
+        L.append("## R6 ADAPTOR\n")
+        L.append("%d rows, no edit (`magazine_adaptor` and `magazines_like` stay): KEEP=%d, "
+                 "KEEP-REVIEW=%d (golden matrix covers: %s).\n"
+                 % (len(r6), sum(1 for r in r6 if r["action"] == "KEEP"),
+                    sum(1 for r in r6 if r["action"] == "KEEP-REVIEW"),
+                    ", ".join("`%s`" % r["id"] for r in r6 if r["action"] == "KEEP-REVIEW")))
+    r8 = [r for r in records if r["rule"] == "R8"]
+    if r8:
+        L.append("## R8 DDA-POCKET\n")
+        L.append("| id | action | pocket | missing / note |\n|---|---|---|---|")
+        for r in r8:
+            L.append("| `%s` | %s | %s | %s |" % (
+                r["id"], r["action"], compact(r["pocket_data"]).replace("|", "/"),
+                "; ".join(r.get("missing", []) or r["notes"]).replace("|", "/") or "-"))
+        L.append("")
+    st = [r for r in records if "STORAGE" in r["tags"] or "EXPLICIT" in r["tags"]]
+    L.append("## R9 STORAGE / EXPLICIT rows\n")
+    L.append("Order follows synthesize_pockets: magazine / well pocket(s), (MOD), then the "
+             "carry pocket(s) last. EXPLICIT rows keep the existing pockets in front and "
+             "get the magazine pocket appended (hand look). %d rows (STORAGE %d, EXPLICIT %d); "
+             "the census counted 14 STORAGE rows because it tags `armor_wyrm` (`storage` "
+             "\"0 L\" inherited), which has no worn storage.\n"
+             % (len(st), sum(1 for r in st if "STORAGE" in r["tags"]),
+                sum(1 for r in st if "EXPLICIT" in r["tags"])))
+    L.append("| id | class | action | tags | emitted pocket list | hand review |\n|---|---|---|---|---|---|")
+    for r in st:
+        review = "yes: EXPLICIT merge" if "EXPLICIT" in r["tags"] else (
+            "yes: HAND-FALLBACK" if r["action"] == "HAND-FALLBACK" else "no")
+        L.append("| `%s` | %s | %s | %s | %s | %s |" % (
+            r["id"], r["class"], r["action"], ",".join(r["tags"]),
+            compact(r["pocket_data"]).replace("|", "/"), review))
+    L.append("")
+    sl = collections.Counter(k for r in records for k in r["synth_lost"])
+    L.append("Pockets synthesized by BN today that an explicit pocket_data suppresses "
+             "(`synth_lost`, rows without explicit pocket_data): %s. DDA synthesizes the MOD "
+             "pocket for guns itself; in CDF `synthesize_pockets` returns before it when "
+             "`explicit_pockets` is set, so P3-1 must keep synthesizing it or `--apply` must "
+             "emit `{ \"pocket_type\": \"MOD\" }` (owner decision).\n"
+             % (", ".join("%s=%d" % kv for kv in sorted(sl.items())) or "none"))
     caps = [r for r in records if r["cap"]]
     L.append("## Capacity differences (CDF number replaced by DDA's)\n")
     if caps:
