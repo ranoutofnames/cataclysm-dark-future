@@ -1788,6 +1788,15 @@ inventory_entry *inventory_selector::find_entry_by_invlet( int invlet ) const
 // once screen width becomes enough for the columns.
 void inventory_selector::rearrange_columns( size_t client_width )
 {
+    // CDF: single-column mode, DDA cpp:2521; off by default
+    if( force_single_column ) {
+        if( !own_gear_column.empty() ) {
+            own_gear_column.move_entries_to( own_inv_column );
+        }
+        if( !map_column.empty() ) {
+            map_column.move_entries_to( own_inv_column );
+        }
+    }
     while( is_overflown( client_width ) ) {
         if( !own_gear_column.empty() ) {
             own_gear_column.move_entries_to( own_inv_column );
@@ -2728,6 +2737,36 @@ bool inventory_selector::has_available_choices() const
     return std::any_of( columns.begin(), columns.end(), []( const inventory_column * element ) {
         return element->has_available_choices();
     } );
+}
+
+drop_location inventory_selector::get_only_choice() const
+{
+    // CDF: DDA (inventory_ui.cpp:3532) counts item_entry_count() and filters with
+    // return_item. CDF has neither, so reuse the test of
+    // inventory_column::has_available_choices() (inventory_ui.cpp:634).
+    const auto is_available = [this]( const inventory_entry & entry ) {
+        return entry.is_item() && preset.get_denial( entry ).empty();
+    };
+    std::vector<inventory_entry *> choices;
+    for( const inventory_column *const col : columns ) {
+        if( !col->allows_selecting() || !col->activatable() ) {
+            continue;
+        }
+        const std::vector<inventory_entry *> entries = col->get_entries( is_available );
+        std::ranges::copy( entries, std::back_inserter( choices ) );
+    }
+
+    if( choices.size() != 1 ) {
+        debugmsg( "inventory_selector::get_only_choice called with more than one choice" );
+        return drop_location();
+    }
+
+    // CDF: any_item() is a bare pointer rather than DDA's item_location.
+    item *const chosen = choices.front()->any_item();
+    if( chosen == nullptr ) {
+        return drop_location();
+    }
+    return drop_location( *chosen, static_cast<int>( choices.front()->chosen_count ) );
 }
 
 inventory_input inventory_selector::get_input()

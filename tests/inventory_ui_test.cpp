@@ -3,6 +3,7 @@
 #include "catch/catch.hpp"
 #include "inventory_ui.h"
 #include "item.h"
+#include "item_category.h"
 #include "item_pocket.h"
 #include "player_helpers.h"
 #include "state_helpers.h"
@@ -332,4 +333,42 @@ TEST_CASE(
         CHECK(carried[0]->any_item() == &rock);
         CHECK(carried[0]->indent == 0);
     }
+}
+
+TEST_CASE("inventory selector preset does not collate by default", "[inventory][p3][ui]") {
+    inventory_selector_preset preset;
+    CHECK_FALSE(preset.collate_entries());
+}
+
+TEST_CASE("inventory entry custom category replaces the natural category", "[inventory][p3][ui]") {
+    auto bandages = item::spawn("bandages");
+    const std::vector<item*> locations{bandages.get()};
+
+    inventory_entry plain_entry(locations);
+    const item_category* const natural_category = plain_entry.get_category_ptr();
+    REQUIRE(natural_category == &bandages->get_category());
+
+    item_category custom_category;
+    plain_entry.set_custom_category(&custom_category);
+    CHECK(plain_entry.get_category_ptr() == &custom_category);
+    CHECK(plain_entry.get_category_ptr() != natural_category);
+
+    // An entry that never had a custom category keeps its natural one.
+    inventory_entry untouched_entry(locations);
+    CHECK(untouched_entry.get_category_ptr() == natural_category);
+}
+
+TEST_CASE("inventory selector reports its only choice", "[inventory][p3][ui]") {
+    clear_avatar();
+    auto& dummy = get_avatar();
+
+    auto bandages = item::spawn("bandages");
+
+    auto selector = inventory_selector(dummy);
+    selector.add_item(selector.own_inv_column, bandages.get());
+
+    const auto only_choice = selector.get_only_choice();
+    REQUIRE(only_choice.loc == bandages.get());
+    // A plain selector never sets chosen_count, so the whole stack is implied.
+    CHECK(only_choice.count == 0);
 }

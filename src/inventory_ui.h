@@ -145,6 +145,10 @@ class inventory_entry
 
         size_t get_available_count() const;
         const item_category *get_category_ptr() const;
+        /// Per DDA inventory_ui.h:201. CDF: no cached_category_ptr to reset.
+        void set_custom_category( const item_category *category ) {
+            custom_category = category;
+        }
         int get_invlet() const;
         nc_color get_invlet_color() const;
         void update_cache();
@@ -160,6 +164,10 @@ class inventory_selector_preset
     public:
         inventory_selector_preset();
         virtual ~inventory_selector_preset() = default;
+        // CDF: collation hook (DDA inventory_ui.h:290); body deferred, always false in 5-1.
+        virtual bool collate_entries() const {
+            return false;
+        }
 
         /** Does this entry satisfy the basic preset conditions? */
         virtual bool is_shown( const item * ) const {
@@ -518,6 +526,8 @@ class inventory_selector
         bool empty() const;
         /** @return true when there are enabled entries to select. */
         bool has_available_choices() const;
+        /** Per DDA inventory_ui.h:687. The single available choice, if there is exactly one. */
+        drop_location get_only_choice() const;
 
         /** Apply filter string to all columns */
         void set_filter( const std::string &str );
@@ -548,6 +558,8 @@ class inventory_selector
     protected:
         player &u;
         const inventory_selector_preset &preset;
+        /// Per DDA inventory_ui.h:885. Off by default.
+        bool force_single_column = false;
 
         /**
          * The input context for navigation, already contains some actions for movement.
