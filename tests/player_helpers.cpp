@@ -18,9 +18,9 @@
 #include "map_helpers.h"
 #include "material.h"
 #include "npc.h"
+#include "pickup_token.h"
 #include "pimpl.h"
 #include "player.h"
-#include "pickup_token.h"
 #include "player_activity.h"
 #include "rng.h"
 #include "stomach.h"
@@ -185,7 +185,8 @@ void process_activity(player& dummy, bool pass_time) {
 }
 
 // CDF: player& because do_turn takes player&.
-auto process_activity_bounded(player& dummy, const int max_turns, const int max_dispatches) -> bool {
+auto process_activity_bounded(player& dummy, const int max_turns, const int max_dispatches)
+    -> bool {
     int turns = 0;
     int dispatches = 0;
     while (dummy.activity && turns < max_turns) {

@@ -61,9 +61,10 @@ void arm_character(
 
 // CDF: Character::clear_worn member absent; test helper used.
 void equip_shooter(npc& shooter, const std::vector<itype_id>& apparel);
-// CDF: ranged_balance_test.cpp still declares its own equip_shooter(npc&, const std::vector<std::string>&),
-// so an empty braced call equip_shooter( shooter, {} ) is ambiguous between the two vector overloads.
-// This initializer_list overload is an exact match for a braced list, so it wins and forwards to the vector one.
+// CDF: ranged_balance_test.cpp still declares its own equip_shooter(npc&, const
+// std::vector<std::string>&), so an empty braced call equip_shooter( shooter, {} ) is ambiguous
+// between the two vector overloads. This initializer_list overload is an exact match for a braced
+// list, so it wins and forwards to the vector one.
 void equip_shooter(npc& shooter, std::initializer_list<itype_id> apparel);
 
 #endif // CATA_TESTS_PLAYER_HELPERS_H
