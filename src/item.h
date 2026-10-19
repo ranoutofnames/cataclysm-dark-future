@@ -54,6 +54,7 @@ struct resistances;
 struct armor_portion_data;
 struct islot_comestible;
 struct itype;
+struct pocket_consumption_entry;
 struct item_comp;
 class item_drop_token;
 template<typename CompType>
@@ -587,6 +588,10 @@ class item : public location_visitable<item>, public game_object<item>
          * @param qty caps reloading to this (or fewer) units
          */
         bool reload( Character &who, item &loc, int qty );
+
+        // CDF: P3-3-0 declarations only; defined by later P3 sub-jobs (3-1..3-7, 4-*, 8-*)
+        // is this speedloader compatible with this item?
+        bool allows_speedloader( const itype_id &speedloader_id ) const;
 
         template<typename Archive>
         void io( Archive & );
@@ -2304,6 +2309,10 @@ class item : public location_visitable<item>, public game_object<item>
         int ammo_capacity() const;
         /** @param potential_capacity whether to try a default magazine if necessary */
         int ammo_capacity( bool potential_capacity ) const;
+        // Per-MAGAZINE_WELL-pocket overloads; the index is the pocket position in this->contents.
+        // CDF: item 2 ammo_remaining( int ) omitted (3-0): catalua_bindings_item.cpp:623 takes &item::ammo_remaining and needs one overload.
+        int ammo_capacity( int well_idx ) const;
+        int remaining_ammo_capacity( int well_idx ) const;
         /** Quantity of ammunition consumed per usage of tool or with each shot of gun */
         int ammo_required() const;
 
@@ -2373,6 +2382,14 @@ class item : public location_visitable<item>, public game_object<item>
          *  @return magazine type or "null" if item has integral magazine or no magazines for current ammo type */
         itype_id magazine_default( bool conversion = true ) const;
 
+        // Default magazine of every MAGAZINE_WELL pocket directly on this item; NULL_ID where none.
+        std::vector<itype_id> magazines_default() const;
+        // Every MAGAZINE_WELL pocket directly on this item.
+        std::vector<item_pocket *> all_magazine_well_pockets();
+        std::vector<const item_pocket *> all_magazine_well_pockets() const;
+        // Spawn-time dressing for every MAGAZINE_WELL on this item.
+        void dress_magazine_wells( bool insert_default_mag, bool fill_with_default_ammo );
+
         /** Get compatible magazines (if any) for this item
          *  @param conversion whether to include the effect of any flags or mods which convert item's ammo type
          *  @return magazine compatibility which is always empty if item has integral magazine
@@ -2386,6 +2403,20 @@ class item : public location_visitable<item>, public game_object<item>
          */
         item *magazine_current();
         const item *magazine_current() const;
+
+        // Currently loaded magazines (if any).
+        std::vector<item *> magazines_current();
+        std::vector<const item *> magazines_current() const;
+
+        // Pocket with the given id (if any).
+        item_pocket *pocket_by_id( const std::string &id );
+        const item_pocket *pocket_by_id( const std::string &id ) const;
+
+        // Ammo remaining in the pocket with the given id.
+        int ammo_remaining_in_pocket( const std::string &id ) const;
+        // Consume ammo from the pocket with the given id.
+        int ammo_consume_in_pocket( const std::string &id, int qty, map &here,
+                                    const tripoint_bub_ms &pos );
 
         /** Returns all gunmods currently attached to this item (always empty if item not a gun) */
         std::vector<item *> gunmods();
@@ -2415,6 +2446,53 @@ class item : public location_visitable<item>, public game_object<item>
 
         /** Try to set the mode for a gun, returning false if no such mode is possible */
         bool gun_set_mode( const gun_mode_id &mode );
+
+        bool uses_firing_requirements() const;
+        // Combined "needs any kind of charge" predicate for multimag, legacy energy-only guns, and legacy charge-tools.
+        bool needs_charges_to_use() const;
+
+        // Multimag gun: prefer a loaded MAGAZINE_WELL whose ammo intersects gun.ammo, then any such well, then any loaded well, then any well; nullptr if no MAGAZINE_WELL exists.
+        const item_pocket *primary_ammo_pocket() const;
+
+        // Pocket (well or integral mag) that accepts `at`; beats magazine_current().
+        const item_pocket *pocket_for_ammo( const ammotype &at ) const;
+
+        // Magazine driving ammo-identity queries: primary_ammo_pocket's mag for multimag guns, magazine_current otherwise.
+        const item *ammo_identity_mag() const;
+
+        bool pocket_accepts_battery( const item_pocket *p ) const;
+        bool pocket_is_primary_ammo( const item_pocket *p ) const;
+
+        // Per-shot qty after gunmod modifiers; sub-1 positive results round up to 1, non-positive disables the entry.
+        int effective_qty( const pocket_consumption_entry &e ) const;
+
+        std::string format_consumption_requirements(
+            const std::string &method = "",
+            const gun_mode_id &mode = gun_mode_id( "DEFAULT" ),
+            int uses = 1 ) const;
+
+        // Ranking-only scalar; never call for actual consumption.
+        int expected_cost_per_use( const std::string &method = "" ) const;
+
+        // _local excludes external pool so inventory aggregation does not sum the same UPS/bionic/cable once per matching item.
+        int tool_uses_remaining( map &here, const Character *carrier ) const;
+        int tool_uses_remaining_local() const;
+
+        // Multimag uses given an arbitrary external (cable / UPS / bionic) budget.
+        int feasible_tool_uses( int external_pool ) const;
+
+        int available_cable_charges( map &here ) const;
+        int available_ups_charges( const Character *carrier ) const;
+        int available_bionic_charges( const Character *carrier ) const;
+
+        int consume_shots( const gun_mode_id &mode, int shots, map &here,
+                           const tripoint_bub_ms &pos, Character *carrier );
+        int consume_tool_uses( int uses, map &here, const tripoint_bub_ms &pos,
+                               Character *carrier );
+        int consume_one_shot( map &here, const tripoint_bub_ms &pos, Character *carrier );
+
+        // True if mode cannot be fired: not live (all modes hidden), or an aux gunmod mode targeting the aux item on a multimag gun.
+        bool firing_mode_blocked( const gun_mode_id &mode ) const;
 
         /** Switch to the next available firing mode */
         void gun_cycle_mode();
