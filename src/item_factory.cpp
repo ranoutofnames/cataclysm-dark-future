@@ -2870,6 +2870,92 @@ void Item_factory::load( relic &slot, const JsonObject &jo, const std::string & 
     slot.load( jo );
 }
 
+void pocket_consumption_entry::deserialize( const JsonObject &jo )
+{
+    mandatory( jo, was_loaded, "pocket", pocket );
+    mandatory( jo, was_loaded, "qty", qty );
+    if( qty < 1 ) {
+        jo.throw_error( "pocket_consumption_entry qty must be >= 1 (zero or negative would divide by zero in feasibility math)",
+                        "qty" ); // CDF: jo.throw_error( msg, member ) in place of DDA's throw_error_at
+    }
+}
+
+void pocket_consumption_mod::deserialize( const JsonObject &jo )
+{
+    mandatory( jo, was_loaded, "pocket", pocket );
+    if( jo.has_member( "set" ) ) {
+        set = jo.get_int( "set" );
+        if( *set < 1 ) {
+            jo.throw_error( "consumption_mods set must be >= 1", "set" ); // CDF: throw_error in place of throw_error_at
+        }
+    }
+    optional( jo, was_loaded, "multiply", multiply, 1.0f );
+    if( multiply <= 0.0f ) {
+        jo.throw_error( "consumption_mods multiply must be > 0", "multiply" ); // CDF: throw_error in place of throw_error_at
+    }
+}
+
+void pocket_capacity_mod::deserialize( const JsonObject &jo )
+{
+    mandatory( jo, was_loaded, "pocket", pocket );
+    optional( jo, was_loaded, "multiply", multiply, 1.0f );
+    if( multiply <= 0.0f ) {
+        jo.throw_error( "capacity_mods multiply must be > 0", "multiply" ); // CDF: throw_error in place of throw_error_at
+    }
+}
+
+static std::vector<pocket_consumption_entry> read_consumption_entries(
+    const JsonValue &val )
+{
+    std::vector<pocket_consumption_entry> entries;
+    if( !val.test_array() ) {
+        val.throw_error( "consumption entry list must be a JSON array" );
+    }
+    for( const JsonValue &element : val.get_array() ) {
+        if( !element.test_object() ) {
+            element.throw_error( "consumption entry must be an object" );
+        }
+        pocket_consumption_entry entry;
+        JsonObject jo = element.get_object();
+        entry.deserialize( jo );
+        jo.allow_omitted_members();
+        entries.push_back( std::move( entry ) );
+    }
+    if( entries.empty() ) {
+        val.throw_error( "consumption entry list must not be empty" );
+    }
+    return entries;
+}
+
+void firing_requirement_set::deserialize_firing_requirements(
+    const JsonObject &jo, std::string_view member )
+{
+    JsonObject sub = jo.get_object( std::string( member ) ); // CDF: get_object takes const std::string&
+    if( !sub.has_member( "//" ) && sub.size() == 0 ) {
+        sub.throw_error( "firing_requirements must contain at least one mode entry" );
+    }
+    for( const JsonMember m : sub ) {
+        if( m.name() == "//" || m.name().substr( 0, 2 ) == "//" ) {
+            continue;
+        }
+        per_mode[gun_mode_id( m.name() )] = read_consumption_entries( m );
+    }
+    sub.allow_omitted_members();
+    if( per_mode.empty() ) {
+        jo.throw_error( "firing_requirements must contain at least one non-comment mode entry",
+                        std::string( member ) ); // CDF: throw_error in place of throw_error_at; std::string_view member
+    }
+    was_loaded = true;
+}
+
+void firing_requirement_set::deserialize_consumption_per_use(
+    const JsonObject &jo, std::string_view member )
+{
+    per_mode[gun_mode_id( "DEFAULT" )] = read_consumption_entries( jo.get_member( std::string( member ) ) ); // CDF: get_member takes const std::string&; gun_mode_id("DEFAULT") in place of gun_mode_DEFAULT
+    was_loaded = true;
+}
+
+
 void Item_factory::load( islot_mod &slot, const JsonObject &jo, const std::string &src )
 {
     const bool strict = is_strict_enabled( src );
@@ -2882,6 +2968,24 @@ void Item_factory::load( islot_mod &slot, const JsonObject &jo, const std::strin
         slot.ammo_modifier.insert( ammotype( jo.get_string( "ammo_modifier" ) ) );
     }
     assign( jo, "capacity_multiplier", slot.capacity_multiplier, strict );
+
+    // CDF: these replace DDA's islot_mod::deserialize optional() lines (item_factory.cpp:3693-3694)
+    if( jo.has_array( "consumption_mods" ) ) {
+        slot.consumption_mods.clear();
+        for( JsonObject mod_jo : jo.get_array( "consumption_mods" ) ) {
+            pocket_consumption_mod mod;
+            mod.deserialize( mod_jo );
+            slot.consumption_mods.push_back( mod );
+        }
+    }
+    if( jo.has_array( "capacity_mods" ) ) {
+        slot.capacity_mods.clear();
+        for( JsonObject mod_jo : jo.get_array( "capacity_mods" ) ) {
+            pocket_capacity_mod mod;
+            mod.deserialize( mod_jo );
+            slot.capacity_mods.push_back( mod );
+        }
+    }
 
     if( jo.has_member( "acceptable_ammo" ) ) {
         slot.acceptable_ammo.clear();
@@ -3159,6 +3263,10 @@ void Item_factory::load( islot_gunmod &slot, const JsonObject &jo, const std::st
     assign( jo, "mod_exclusion_category", slot.exclusion_category );
 
     assign( jo, "mode_modifier", slot.mode_modifier );
+    // Distinct key so it never collides with itype-level firing_requirements.
+    if( jo.has_member( "mode_firing_requirements" ) ) {
+        slot.firing_requirements.deserialize_firing_requirements( jo, "mode_firing_requirements" );
+    }
     assign( jo, "reload_modifier", slot.reload_modifier );
     assign( jo, "min_str_required_mod", slot.min_str_required_mod );
     if( jo.has_array( "add_mod" ) ) {
@@ -3197,6 +3305,7 @@ void Item_factory::load( islot_magazine &slot, const JsonObject &jo, const std::
     assign( jo, "default_ammo", slot.default_ammo, strict );
     assign( jo, "reliability", slot.reliability, strict, 0, 10 );
     assign( jo, "reload_time", slot.reload_time, strict, 0 );
+    assign( jo, "mag_jam_mult", slot.mag_jam_mult, strict, 1.0 ); // CDF: assign() in place of DDA's numeric_bound_reader{1.0} (minimum 1.0, no maximum)
     assign( jo, "linkage", slot.linkage, strict );
 
     if( jo.has_string( "reloads_like" ) ) {

@@ -29,6 +29,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <vector>
 
@@ -102,6 +103,53 @@ class gunmod_location
         bool operator<( const gunmod_location &rhs ) const {
             return _id < rhs._id;
         }
+};
+
+struct pocket_consumption_entry {
+    std::string pocket;
+    int qty = 0;
+
+    bool was_loaded = false;
+    void deserialize( const JsonObject &jo );
+};
+
+// A mod's adjustment to one host pocket's per-use consumption, targeted by id.
+// `set` overrides the resolved qty; `multiply` scales it.
+struct pocket_consumption_mod {
+    std::string pocket;
+    std::optional<int> set;
+    float multiply = 1.0f;
+
+    bool was_loaded = false;
+    void deserialize( const JsonObject &jo );
+};
+
+// A mod's scaling of one host pocket's ammo capacity, targeted by id. Applies to
+// integral MAGAZINE pockets only; multiple mods on one pocket combine by product.
+struct pocket_capacity_mod {
+    std::string pocket;
+    float multiply = 1.0f;
+
+    bool was_loaded = false;
+    void deserialize( const JsonObject &jo );
+};
+
+// Tools lower consumption_per_use into per_mode[DEFAULT]; guns use the
+// firing_requirements map directly.
+struct firing_requirement_set {
+    std::map<gun_mode_id, std::vector<pocket_consumption_entry>> per_mode;
+
+    bool empty() const {
+        return per_mode.empty();
+    }
+    const std::vector<pocket_consumption_entry> *for_mode( const gun_mode_id &m ) const {
+        const auto it = per_mode.find( m );
+        return it == per_mode.end() ? nullptr : &it->second;
+    }
+
+    bool was_loaded = false;
+    void deserialize_firing_requirements( const JsonObject &jo, std::string_view member );
+    void deserialize_consumption_per_use( const JsonObject &jo, std::string_view member );
 };
 
 struct islot_tool {
@@ -498,6 +546,14 @@ struct islot_mod {
 
     /** Proportional adjustment of parent item ammo capacity */
     float capacity_multiplier = 1.0;
+
+    /** Per-host-pocket consumption adjustments, targeted by pocket id. On the mod
+     *  slot so gunmods and toolmods share one reader. */
+    std::vector<pocket_consumption_mod> consumption_mods;
+
+    /** Per-host-pocket ammo capacity scaling, targeted by id. Integral MAGAZINE
+     *  pockets only; a MAGAZINE_WELL target is ignored. */
+    std::vector<pocket_capacity_mod> capacity_mods;
 };
 
 /**
@@ -719,6 +775,10 @@ struct islot_gunmod : common_ranged_data {
     /** Firing modes added to or replacing those of the base gun */
     std::map<gun_mode_id, gun_modifier_data> mode_modifier;
 
+    /** Per-pocket cost a gunmod imposes on its host for the modes it adds via
+     *  mode_modifier. Loaded from key "mode_firing_requirements". */
+    firing_requirement_set firing_requirements;
+
     std::set<ammo_effect_str_id> ammo_effects;
 
     /** Relative adjustment to base gun handling */
@@ -764,6 +824,9 @@ struct islot_magazine {
 
     /** How long it takes to load each unit of ammo into the magazine */
     int reload_time = 100;
+
+    /** Multiplier for the gun jamming from physical damage */
+    double mag_jam_mult = 1.0;
 
     /** For ammo belts one linkage (of given type) is dropped for each unit of ammo consumed */
     std::optional<itype_id> linkage;
