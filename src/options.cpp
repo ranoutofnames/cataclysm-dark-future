@@ -2178,6 +2178,20 @@ void options_manager::add_options_interface()
 
     add_empty_line();
 
+    add_option_group( interface, Group( "inventory_stats_opts",
+                                        to_translation( "Inventory stats options" ),
+                                        to_translation( "Options regarding the status summary shown in the header of many inventory screens." ) ),
+    [&]( const std::string & page_id ) {
+        add( "SHOW_MAX_SPACE", page_id, translate_marker( "Show max-sized spaces" ),
+             translate_marker( "Display the max-sized pocket space when different from the current free space." ),
+             true
+           );
+        add( "SHOW_OTHER_SPACES", page_id, translate_marker( "Show 'other' spaces" ),
+             translate_marker( "Display up to this many entries in the list of 'other' (not largest/longest) spaces.  0 will disable the list completely." ),
+             0, 5, 0
+           );
+    } );
+
     add( "ENABLE_JOYSTICK", interface, translate_marker( "Enable joystick" ),
          translate_marker( "Enable input from joystick." ),
          true, COPT_CURSES_HIDE

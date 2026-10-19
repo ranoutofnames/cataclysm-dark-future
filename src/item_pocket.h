@@ -445,6 +445,17 @@ class item_pocket
 
         favorite_settings settings;
 
+        // Pocket presets (per DDA item_pocket.h:416), kept in config/pocket_presets.json
+        static void serialize_presets( JsonOut &json );
+        static void deserialize_presets( const JsonArray &ja );
+        static void load_presets();
+        static void add_preset( const favorite_settings &preset );
+        static void save_presets();
+        static std::vector<favorite_settings>::iterator find_preset( const std::string &s );
+        static bool has_preset( const std::string &s );
+        static void delete_preset( std::vector<favorite_settings>::iterator iter );
+        static std::vector<favorite_settings> pocket_presets;
+
         // Set whether rigid items are blocked in the pocket
         void set_no_rigid( const std::set<sub_bodypart_id> &is_no_rigid );
 
@@ -544,6 +555,13 @@ class pocket_constraint
         // apply the capacity constraints of another, outer constraint to this one.
         // this never dominates the pocket.
         void constrain_by( const pocket_constraint &outer );
+};
+
+/** A pocket with the constraints that the pockets it is nested in put on it (per DDA's
+ *  std::pair<const item_pocket *, pocket_constraint>; named fields instead of a pair). */
+struct pocket_with_constraint {
+    const item_pocket *pocket = nullptr;
+    pocket_constraint constraint;
 };
 
 template<>

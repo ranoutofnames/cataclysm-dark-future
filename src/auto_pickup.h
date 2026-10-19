@@ -6,7 +6,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "coordinates.h"
 #include "enums.h"
+#include "item_stack.h"
 
 class JsonIn;
 class JsonOut;
@@ -120,9 +122,16 @@ class player_settings : public base_settings
 
     public:
         ~player_settings() override = default;
+        using base_settings::check_item;
+        /**
+         * DDA auto_pickup.cpp:794: rule state of the item's name; builds the cache entry
+         * for the item on first sight (matches filter and wildcard rules against the item).
+         */
+        rule_state check_item( const item &it );
         void create_rule( const item *it );
         bool has_rule( const item *it );
-        void add_rule( const item *it );
+        /** @param include true adds a whitelist rule, false a blacklist rule (DDA add_rule). */
+        void add_rule( const item *it, bool include = true );
         void remove_rule( const item *it );
 
         void clear_character_rules();
@@ -157,6 +166,19 @@ class npc_settings : public base_settings
 
 bool test_pattern_function( const itype &type, std::string filter );
 bool autopickup_item_function( const item &object, std::string filter );
+
+/**
+ * Select which items on the map tile should be auto-picked up (DDA auto_pickup.cpp:246).
+ * The return value holds the selected items; nested items inside a container on the tile are
+ * returned when only part of a container is picked.
+ * CDF: DDA returns drop_locations (item_location + count); post-IV CDF returns item pointers,
+ * the count is always the whole item (DDA passes 0 there as well).
+ *
+ * @param from stack of item entries on a map tile (or vehicle cargo tile).
+ * @param location where the stack of items is located on the map.
+ */
+std::vector<item *> select_items( const std::vector<item_stack::iterator> &from,
+                                  const tripoint_bub_ms &location );
 
 } // namespace auto_pickup
 

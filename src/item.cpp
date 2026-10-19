@@ -152,6 +152,7 @@ static const efftype_id effect_weed_high( "weed_high" );
 static const fault_id fault_gun_blackpowder( "fault_gun_blackpowder" );
 static const fault_id fault_bionic_nonsterile( "fault_bionic_nonsterile" );
 
+static const flag_id flag_COLLAPSE_CONTENTS( "COLLAPSE_CONTENTS" );
 static const flag_id flag_MARIJUANA( "MARIJUANA" );
 
 static const gun_mode_id gun_mode_REACH( "REACH" );
@@ -345,6 +346,20 @@ item::item( const itype *type, time_point turn, int qty ) : type( type ),
         }
     }
 
+    // per DDA item.cpp:215
+    if( has_flag( flag_COLLAPSE_CONTENTS ) ) {
+        for( item_pocket *pocket : contents.get_standard_pockets() ) {
+            pocket->settings.set_collapse( true );
+        }
+    } else {
+        const auto mag_filter = []( const item_pocket & pck ) {
+            return pck.is_type( pocket_type::MAGAZINE ) ||
+                   pck.is_type( pocket_type::MAGAZINE_WELL );
+        };
+        for( item_pocket *pocket : contents.get_pockets( mag_filter ) ) {
+            pocket->settings.set_collapse( true );
+        }
+    }
 
     if( type->gun ) {
         for( const itype_id &mod : type->gun->built_in_mods ) {
@@ -1190,6 +1205,27 @@ bool item::display_stacked_with( const item &rhs, bool check_components ) const
     return !count_by_charges() && stacks_with( rhs, check_components );
 }
 
+// per DDA item.cpp:631 _stacks_whiteblacklist
+static bool stacks_whiteblacklist( const item &lhs, const item &rhs )
+{
+    const std::vector<const item_pocket *> lpkts = lhs.get_container_pockets();
+    const std::vector<const item_pocket *> rpkts = rhs.get_container_pockets();
+    if( lpkts.size() != rpkts.size() ) {
+        return false;
+    }
+    for( size_t i = 0; i < lpkts.size(); i++ ) {
+        const item_pocket::favorite_settings &l = lpkts[i]->settings;
+        const item_pocket::favorite_settings &r = rpkts[i]->settings;
+        if( l.get_item_whitelist() != r.get_item_whitelist() ||
+            l.get_item_blacklist() != r.get_item_blacklist() ||
+            l.get_category_whitelist() != r.get_category_whitelist() ||
+            l.get_category_blacklist() != r.get_category_blacklist() ) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_check,
                         int depth ) const
 {
@@ -1262,6 +1298,10 @@ bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_c
         }
     }
     if( contents.num_item_stacks() != rhs.contents.num_item_stacks() ) {
+        return false;
+    }
+
+    if( !stacks_whiteblacklist( *this, rhs ) ) {
         return false;
     }
 
@@ -5423,6 +5463,22 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
         }
         if( modamt ) {
             labeltext += string_format( "+%d", modamt );
+        }
+        // per DDA item_tname.cpp:264 wbl_mark: a marker when a container pocket has a white/blacklist
+        {
+            bool wbl = false;
+            bool player_wbl = false;
+            for( const item_pocket *pkt : get_container_pockets() ) {
+                const bool wl = !pkt->settings.get_item_whitelist().empty() ||
+                                !pkt->settings.get_category_whitelist().empty();
+                const bool bl = !pkt->settings.get_item_blacklist().empty() ||
+                                !pkt->settings.get_category_blacklist().empty();
+                player_wbl |= ( wl || bl ) && pkt->settings.was_edited();
+                wbl |= wl || bl;
+            }
+            if( wbl ) {
+                labeltext += colorize( "⁺", player_wbl ? c_light_gray : c_dark_gray );
+            }
         }
 
         if( is_gun() || is_tool() || is_magazine() ) {

@@ -193,7 +193,7 @@
     "color": "dark_gray",
     "techniques": [ "WBLOCK_1" ],
     "qualities": [ [ "CUT", 1 ], [ "SAW_W", 1 ], [ "SAW_M", 1 ], [ "BUTCHER", 7 ] ],
-    "flags": [ "STAB", "SHEATH_SWORD", "SHEATH_KNIFE" ]
+    "flags": [ "STAB", "SHEATH_SWORD", "SHEATH_KNIFE", "COLLAPSE_CONTENTS" ]
   },
   {
     "id": "knife_rm42",

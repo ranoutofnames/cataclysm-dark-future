@@ -1,8 +1,14 @@
 #include "avatar.h"
+#include "calendar.h"
 #include "catch/catch.hpp"
 #include "inventory_ui.h"
 #include "item.h"
+#include "item_pocket.h"
 #include "player_helpers.h"
+#include "state_helpers.h"
+#include "type_id.h"
+
+#include <vector>
 
 TEST_CASE(
     "inventory selector restores consume selection by item type", "[inventory][ui][consume]") {
@@ -258,4 +264,72 @@ TEST_CASE(
 
     // The column is now ordered by name deterministically.
     CHECK(entries.front()->any_item()->tname(1) < entries.back()->any_item()->tname(1));
+}
+
+// CDF P2-7c: hierarchy (container tree) mode of the inventory selector
+namespace {
+auto item_rows(const inventory_column& col) -> std::vector<const inventory_entry*> {
+    std::vector<const inventory_entry*> rows;
+    for (const inventory_entry& e : col.entries) {
+        if (e.is_item()) { rows.push_back(&e); }
+    }
+    return rows;
+}
+} // namespace
+
+TEST_CASE(
+    "inventory hierarchy mode lists contents under the container", "[inventory][ui][hierarchy]") {
+    clear_all_state();
+    avatar& u = get_avatar();
+    clear_character(u, true);
+    u.wear_item(item::spawn(itype_id("backpack_hiking"), calendar::turn), false);
+    item& pack = *u.worn.front();
+    item& rock = u.i_add(item::spawn(itype_id("test_rock"), calendar::turn));
+    REQUIRE(rock.parent_item() == &pack);
+
+    inventory_selector sel(u);
+    sel.enable_view_mode_toggle();
+    sel.add_character_items(u);
+    sel.toggle_categorize_contained();
+    sel.own_gear_column.prepare_paging();
+
+    const std::vector<const inventory_entry*> rows = item_rows(sel.own_gear_column);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows[0]->any_item() == &pack);
+    CHECK(rows[0]->indent == 0);
+    CHECK(rows[0]->chevron);
+    CHECK(rows[1]->any_item() == &rock);
+    CHECK(rows[1]->indent == 2);
+    CHECK(rows[1]->topmost_parent == &pack);
+
+    SECTION("collapsed pockets hide the nested rows") {
+        for (item_pocket* pocket : pack.get_standard_pockets()) {
+            pocket->settings.set_collapse(true);
+        }
+        sel.own_gear_column.invalidate_paging();
+        sel.own_gear_column.prepare_paging();
+        const std::vector<const inventory_entry*> collapsed = item_rows(sel.own_gear_column);
+        REQUIRE(collapsed.size() == 1);
+        CHECK(collapsed[0]->any_item() == &pack);
+        for (item_pocket* pocket : pack.get_standard_pockets()) {
+            pocket->settings.set_collapse(false);
+        }
+        sel.own_gear_column.invalidate_paging();
+        sel.own_gear_column.prepare_paging();
+        CHECK(item_rows(sel.own_gear_column).size() == 2);
+    }
+
+    SECTION("toggling back restores the carried-group category view") {
+        sel.toggle_categorize_contained();
+        sel.own_gear_column.prepare_paging();
+        sel.own_inv_column.prepare_paging();
+        const std::vector<const inventory_entry*> gear = item_rows(sel.own_gear_column);
+        REQUIRE(gear.size() == 1);
+        CHECK(gear[0]->any_item() == &pack);
+        CHECK_FALSE(gear[0]->chevron);
+        const std::vector<const inventory_entry*> carried = item_rows(sel.own_inv_column);
+        REQUIRE(carried.size() == 1);
+        CHECK(carried[0]->any_item() == &rock);
+        CHECK(carried[0]->indent == 0);
+    }
 }

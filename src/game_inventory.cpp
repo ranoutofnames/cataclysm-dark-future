@@ -119,6 +119,7 @@ class common_inventory_selector : public inventory_pick_selector
         explicit common_inventory_selector( player &p ) : inventory_pick_selector( p ) {
             ctxt.register_action( "unload_all",
                                   to_translation( "Unload every carried item that can be unloaded" ) );
+            enable_view_mode_toggle();
         }
 
         auto clear_shortcuts() -> void {
@@ -131,6 +132,15 @@ class common_inventory_selector : public inventory_pick_selector
 
     protected:
         auto handle_action( const std::string &action ) -> bool override {
+            if( action == "ORGANIZE_MENU" ) {
+                // Per DDA inventory_ui.cpp:3971
+                u.organize_items_menu();
+                return true;
+            }
+            if( action == "VIEW_CATEGORY_MODE" ) {
+                toggle_categorize_contained();
+                return true;
+            }
             if( action != "unload_all" ) {
                 return false;
             }

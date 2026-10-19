@@ -815,9 +815,13 @@ TEST_CASE( "item contents default state and sealed pockets", "[item][pocket]" )
 {
     SECTION( "a fresh container is in its default state" ) {
         const item &canteen = *item::spawn_temporary( itype_id( "canteen" ) );
-        CHECK( canteen.contents.empty_with_no_mods() );
-        CHECK( canteen.empty() );
-        CHECK( canteen.empty_container() );
+        // CDF: COLLAPSE_CONTENTS (DDA item.cpp:215) collapses a canteen's pocket from the start,
+        // so it is no longer in the default state; a container without the flag is
+        CHECK_FALSE(canteen.contents.empty_with_no_mods());
+        const item& bag = *item::spawn_temporary(itype_id("test_pocket_two"));
+        CHECK(bag.contents.empty_with_no_mods());
+        CHECK(canteen.empty());
+        CHECK(canteen.empty_container());
     }
     SECTION( "mods are not contents" ) {
         item &gun = *item::spawn_temporary( itype_id( "m4a1" ) );

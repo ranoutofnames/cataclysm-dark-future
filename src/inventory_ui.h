@@ -19,6 +19,7 @@
 #include "detached_ptr.h"
 #include "input.h"
 #include "item_handling_util.h"
+#include "item_pocket.h"
 #include "memory_fast.h"
 #include "pimpl.h"
 #include "units.h"
@@ -61,6 +62,12 @@ class inventory_entry
         std::vector<item *> locations;
 
         size_t chosen_count = 0;
+        /// Topmost visible parent in an unbroken chain (hierarchy mode), per DDA inventory_ui.h:190.
+        const item *topmost_parent = nullptr;
+        /// True when the entry has visible contents listed below it (hierarchy mode).
+        bool chevron = false;
+        /// Indent of a contained entry (hierarchy mode).
+        int indent = 0;
         /// Additional items selected by the automatic drop preview.
         size_t automatic_drop_count = 0;
         /// Position of this stack in the predicted drop sequence.
@@ -358,10 +365,19 @@ class inventory_column
         }
 
         void set_filter( const std::string &filter );
+        void invalidate_paging() {
+            paging_is_valid = false;
+        }
 
         std::vector<inventory_entry> entries;
         std::vector<inventory_entry> entries_hidden;
         bool paging_is_valid = false;
+        /** Hierarchy mode (per DDA indent_entries): children sort under their parents, indented. */
+        void set_hierarchy( bool value ) {
+            hierarchy = value;
+            invalidate_paging();
+        }
+        bool hierarchy = false;
 
     protected:
         struct entry_cell_cache_t {
@@ -473,6 +489,17 @@ class inventory_selector
         void add_vehicle_items( const tripoint_bub_ms &target );
         void add_nearby_items( int radius = 1 );
         void add_fake_items( Character &character );
+        /** Per DDA inventory_ui.cpp:3821: switch between category columns and the container tree. */
+        void toggle_categorize_contained();
+        /** Registers VIEW_CATEGORY_MODE and shows its footer label (opt-in per selector). */
+        void enable_view_mode_toggle();
+
+        /** Per DDA inventory_ui.h:941: category columns (default) or the container hierarchy. */
+        enum class uimode : int {
+            categories = 0,
+            hierarchy,
+            last,
+        };
         /** Remove all items */
         void clear_items();
         /** Assigns a title that will be shown on top of the menu. */
@@ -503,7 +530,12 @@ class inventory_selector
 
         // An array of cells for the stat lines. Example: ["Weight (kg)", "10", "/", "20"].
         using stat = std::array<std::string, 4>;
-        using stats = std::array<stat, 2>;
+        using stats = std::array<stat, 2>; // legacy
+        // Per DDA inventory_ui.h:721: a header line is a list of cells; header_stats_tab_stop
+        // cells mark where the lines of a block are aligned.
+        using header_stats_line = std::vector<std::string>;
+        using header_stats = std::vector<header_stats_line>;
+        static header_stats convert_stats_to_header_stats( const stats &old_stats );
 
         bool keep_open = false;
 
@@ -528,6 +560,21 @@ class inventory_selector
         void add_entry( inventory_column &target_column,
                         std::vector<item *> &&locations,
                         const item_category *custom_category = nullptr );
+        /** Per DDA inventory_ui.cpp:1995, add_shown_entry: the preset check was already done. */
+        void add_shown_entry( inventory_column &target_column, std::vector<item *> &&locations,
+                              const item_category *custom_category, const item *topmost_parent,
+                              bool chevron, int indent );
+        /** Per DDA inventory_ui.cpp:2018. Adds loc and its contents; true if anything is visible. */
+        bool add_entry_rec( inventory_column &entry_column, inventory_column &children_column,
+                            item *loc, const item_category *entry_category,
+                            const item_category *children_category, const item *topmost_parent,
+                            int indent );
+        /** Per DDA inventory_ui.cpp:2105. Adds the items inside container to column. */
+        bool add_contained_items( item *container, inventory_column &column,
+                                  const item_category *custom_category = nullptr,
+                                  const item *topmost_parent = nullptr, int indent = 0 );
+
+        uimode _uimode = uimode::categories;
 
 
         void add_items( inventory_column &target_column,
@@ -559,10 +606,48 @@ class inventory_selector
             units::mass weight_carried, units::mass weight_capacity,
             const units::volume &volume_carried, const units::volume &volume_capacity );
 
+        // Per DDA inventory_ui.h:766-835.
+        static header_stats_line build_weight_and_volume_stats_line(
+            units::mass weight_carried, units::mass weight_capacity, const std::string &weight_label,
+            const units::volume &volume_in_pockets, const units::volume &volume_of_pockets,
+            const std::string &volume_label );
+        static header_stats_line build_selection_stats_line( units::volume volume, units::mass weight );
+        static header_stats_line build_pocket_stats_line(
+            const std::string &prefix, const item_pocket *free_pocket,
+            units::volume free_pocket_volume, units::length free_pocket_length,
+            int free_pocket_copies );
+        static header_stats_line build_pocket_stats_line(
+            const std::string &prefix, const item_pocket *free_pocket,
+            units::volume free_pocket_volume, units::length free_pocket_length,
+            int free_pocket_copies, const item_pocket *max_pocket,
+            units::volume max_pocket_volume, units::length max_pocket_length );
+        static bool pockets_match( const pocket_with_constraint &a, const pocket_with_constraint &b );
+        struct space_stats_text {
+            std::string volume;
+            std::string length;
+        };
+        /** Strings describing the volume and length of a space. */
+        static space_stats_text build_space_stats( units::volume size, units::length min_length,
+                units::length max_length, bool is_restricted );
+        /** Strings to use when such a space doesn't exist. */
+        static space_stats_text build_invalid_space_stats();
+        /** A multiline overview of the space available in @p pockets, with the constraints
+         * from their outer pockets. If @p show_unconstrained_max_space is set the "max" lines
+         * report the pocket's own size, ignoring outer constraints. */
+        static header_stats get_pocket_summary_header_stats(
+            const units::mass &weight_carried, const units::mass &weight_capacity,
+            const units::volume &volume_in_pockets, const units::volume &volume_of_pockets,
+            std::vector<pocket_with_constraint> pockets, bool show_unconstrained_max_space,
+            const std::string *weight_label_override = nullptr,
+            const std::string *volume_label_override = nullptr );
+        // This cell marks where text rows are aligned.
+        // NOLINTNEXTLINE(cata-text-style): the tab is not printed.
+        static constexpr const char *header_stats_tab_stop = "	";
+
         /** Get stats to display in top right.
          *
-         * By default, computes volume/weight numbers for @c u */
-        virtual stats get_raw_stats() const;
+         * By default, computes the pocket summary for @c u */
+        virtual header_stats get_raw_stats() const;
 
         std::vector<std::string> get_stats() const;
         std::pair<std::string, nc_color> get_footer( navigation_mode m ) const;
@@ -682,6 +767,9 @@ class inventory_selector
 
         bool is_empty = true;
         bool display_stats = true;
+        bool view_toggle_enabled = false;
+        int nearby_radius = -1;
+        bool fake_items_added = false;
 
     public:
         std::string action_bound_to_key( char key ) const;
@@ -750,7 +838,7 @@ class inventory_iuse_selector : public inventory_multiselector
         std::vector<iuse_location> execute();
 
     protected:
-        stats get_raw_stats() const override;
+        header_stats get_raw_stats() const override;
         void set_chosen_count( inventory_entry &entry, size_t count );
 
     private:
@@ -772,7 +860,7 @@ class inventory_drop_selector : public inventory_multiselector
          * @param count Number that the prompt starts out with
          * @return size_t Number the prompt returns
          */
-        stats get_raw_stats() const override;
+        header_stats get_raw_stats() const override;
         /** Toggle item dropping */
         void set_chosen_count( inventory_entry &entry, size_t count );
         void process_selected( int &count, const std::vector<inventory_entry *> &selected );
@@ -793,7 +881,7 @@ class inventory_pickup_selector : public inventory_multiselector
         inventory_pickup_selector( player &p, const inventory_selector_preset &preset = default_preset );
         std::vector<pickup::pick_drop_selection> execute();
     protected:
-        stats get_raw_stats() const override;
+        header_stats get_raw_stats() const override;
 };
 
 

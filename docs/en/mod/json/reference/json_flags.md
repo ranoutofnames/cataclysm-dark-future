@@ -695,6 +695,8 @@ List of known flags, used in both `terrain.json` and `furniture.json`.
 - `CRAFT_WITH_FULL_MAG` ... This item crafts with a full set of ammo
 - `COMBAT_NPC_ON` ... The "on" state for Items that NPCs will use in combat
 - `COMBAT_NPC_USE` ... Items and CBMs that NPCs will activate when in combat
+- `COLLAPSE_CONTENTS` ... This item has its content hidden by default, and you need to manually reveal
+  it using `> show/hide content` button.
 - `CORPSE` ... Flag used to spawn various human corpses during the mapgen.
 - `DANGEROUS` ... NPCs will not accept this item. Explosion iuse actor implies this flag. Implies
   "NPC_THROW_NOW".

@@ -669,7 +669,13 @@ bool unload_item( avatar &you, item &loc )
 
         bool changed = false;
         std::vector<item *> liquids;
-        it.contents.remove_top_items_with( [&changed, &you, &liquids]( detached_ptr<item> &&contained ) {
+        // per DDA character_inventory.cpp:2575: only pockets whose settings allow unloading
+        const std::vector<item *> unloadable = it.contents.all_items_top( pocket_type::CONTAINER, true );
+        it.contents.remove_top_items_with( [&changed, &you, &liquids,
+                  &unloadable]( detached_ptr<item> &&contained ) {
+            if( std::ranges::find( unloadable, &*contained ) == unloadable.end() ) {
+                return std::move( contained );
+            }
             if( contained->made_of( LIQUID ) ) {
                 liquids.push_back( &*contained );
                 return std::move( contained );

@@ -192,6 +192,7 @@ void uilist::init()
     allow_anykey = false;    // do not return on unbound keys
     allow_cancel = true;     // allow canceling with "QUIT" action
     allow_additional = false; // do not return on unhandled additional actions
+    allow_confirm = true;     // allow confirming with confirm action
     hilight_disabled =
         false; // if false, hitting 'down' onto a disabled entry will advance downward to the first enabled entry
     vshift = 0;              // scrolling menu offset
@@ -233,7 +234,9 @@ input_context uilist::create_main_input_context() const
         ctxt.register_action( "QUIT" );
     }
     ctxt.register_action( "SELECT" );
-    ctxt.register_action( "CONFIRM" );
+    if( allow_confirm ) {
+        ctxt.register_action( "CONFIRM" );
+    }
     ctxt.register_action( "FILTER" );
     ctxt.register_action( "ANY_INPUT" );
     ctxt.register_action( "HELP_KEYBINDINGS" );
@@ -1099,7 +1102,7 @@ void uilist::query( bool loop, int timeout )
                     }
                 }
             }
-        } else if( !fentries.empty() && ret_act == "CONFIRM" ) {
+        } else if( allow_confirm && !fentries.empty() && ret_act == "CONFIRM" ) {
             if( entries[ selected ].enabled ) {
                 ret = entries[ selected ].retval; // valid
             } else if( allow_disabled ) {

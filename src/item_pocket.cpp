@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "enums.h"
 #include "flag.h"
+#include "fstream_utils.h"
 #include "handle_liquid.h"
 #include "item.h"
 #include "item_category.h"
@@ -36,6 +37,7 @@
 #include "material.h"
 #include "messages.h"
 #include "output.h"
+#include "path_info.h"
 #include "string_formatter.h"
 #include "subbodypart.h"
 #include "translations.h"
@@ -2488,6 +2490,69 @@ bool item_pocket::favorite_settings::accepts_item( const item &it ) const
     }
     // no whitelist - everything goes.
     return true;
+}
+
+std::vector<item_pocket::favorite_settings> item_pocket::pocket_presets;
+
+// per DDA item_pocket.cpp:2460-2541, I/O through BN's read_from_file_json / write_to_file
+void item_pocket::add_preset( const favorite_settings &preset )
+{
+    pocket_presets.emplace_back( preset );
+    save_presets();
+}
+
+void item_pocket::save_presets()
+{
+    write_to_file( PATH_INFO::pocket_presets(), [&]( std::ostream & fout ) {
+        JsonOut jout( fout, true );
+        serialize_presets( jout );
+    }, _( "pocket preset configuration" ) );
+}
+
+bool item_pocket::has_preset( const std::string &s )
+{
+    return find_preset( s ) != pocket_presets.end();
+}
+
+std::vector<item_pocket::favorite_settings>::iterator item_pocket::find_preset(
+    const std::string &s )
+{
+    return std::find_if( pocket_presets.begin(), pocket_presets.end(),
+    [&s]( const favorite_settings & preset ) {
+        return preset.get_preset_name().value() == s;
+    } );
+}
+
+void item_pocket::delete_preset( const std::vector<favorite_settings>::iterator iter )
+{
+    pocket_presets.erase( iter );
+    save_presets();
+}
+
+void item_pocket::load_presets()
+{
+    read_from_file_json( PATH_INFO::pocket_presets(), []( JsonIn & jsin ) {
+        deserialize_presets( jsin.get_array() );
+    }, true );
+}
+
+void item_pocket::serialize_presets( JsonOut &json )
+{
+    json.start_array();
+    for( const favorite_settings &preset : pocket_presets ) {
+        preset.serialize( json );
+    }
+    json.end_array();
+}
+
+void item_pocket::deserialize_presets( const JsonArray &ja )
+{
+    pocket_presets.clear();
+    for( JsonObject jo : ja ) {
+        favorite_settings preset;
+        preset.deserialize( jo );
+        pocket_presets.emplace_back( preset );
+    }
 }
 
 bool item_pocket::favorite_settings::is_collapsed() const

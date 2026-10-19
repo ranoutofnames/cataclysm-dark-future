@@ -55,6 +55,7 @@ class item_category
             : name_( name ), sort_rank_( sort_rank ), id( item_category_id( id ) ) {}
 
         std::string name() const;
+        static const std::vector<item_category> &get_all();
         item_category_id get_id() const;
         std::optional<zone_type_id> priority_zone( const item &it ) const;
         std::optional<zone_type_id> zone() const;

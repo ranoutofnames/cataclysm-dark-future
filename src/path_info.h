@@ -11,6 +11,7 @@ void init_user_dir( std::string dir );
 void set_standard_filenames();
 
 std::string autopickup();
+std::string pocket_presets();
 std::string base_colors();
 std::string base_path();
 std::string colors();
@@ -69,6 +70,7 @@ void set_savedir( const std::string &savedir );
 void set_memorialdir( const std::string &memorialdir );
 void set_options( const std::string &options );
 void set_autopickup( const std::string &autopickup );
+void set_pocket_presets( const std::string &pocket_presets );
 void set_motd( const std::string &motd );
 
 } // namespace PATH_INFO

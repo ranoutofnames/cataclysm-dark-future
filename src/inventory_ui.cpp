@@ -28,6 +28,7 @@
 #include "string_formatter.h"
 #include "string_id.h"
 #include "string_input_popup.h"
+#include "string_utils.h"
 #include "translations.h"
 #include "type_id.h"
 #include "ui_manager.h"
@@ -53,6 +54,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <tuple>
 #include <vector>
 
 /** The maximum distance from the screen edge, to snap a window to it */
@@ -823,6 +825,76 @@ void inventory_column::move_entries_to( inventory_column &dest )
     clear();
 }
 
+// CDF: Q2 flat view; carried-item rows are hidden while the holding garment is collapsed.
+// Per DDA inventory_ui.cpp:585-600 (adapted: item * instead of item_location)
+static auto carried_holder( const inventory_entry &entry ) -> item *
+{
+    if( !entry.is_item() || entry.get_category_ptr() == nullptr ||
+        entry.get_category_ptr()->get_id().str().rfind( "CARRY_GROUP:", 0 ) != 0 ) {
+        return nullptr;
+    }
+    return entry.any_item()->parent_item();
+}
+
+static auto hidden_by_collapse( const inventory_entry &entry ) -> bool
+{
+    // Per DDA inventory_ui.cpp:575-600: hierarchy rows under a collapsed pocket of their parents
+    if( entry.is_item() && entry.topmost_parent != nullptr ) {
+        const item *it = entry.any_item();
+        while( it->parent_item() != nullptr && it != entry.topmost_parent ) {
+            const item *parent = it->parent_item();
+            const item_pocket *pocket = parent->contents.pocket_of( it );
+            if( pocket != nullptr && pocket->settings.is_collapsed() ) {
+                return true;
+            }
+            it = parent;
+        }
+    }
+    const item *holder = carried_holder( entry );
+    return holder != nullptr && holder->is_collapsed();
+}
+
+// Per DDA inventory_ui.cpp:139,1432 (path_to_top, indented_sort_compare), item * instead of item_location
+static auto path_to_top( const inventory_entry &e,
+                         const inventory_selector_preset &pr ) -> std::vector<item *>
+{
+    item *it = e.any_item();
+    std::vector<item *> path{ it };
+    while( it->parent_item() != nullptr ) {
+        it = const_cast<item *>( it->parent_item() );
+        if( pr.is_shown( it ) ) {
+            path.emplace_back( it );
+        }
+    }
+    return path;
+}
+
+static auto indented_sort_compare( const inventory_entry &lhs, const inventory_entry &rhs,
+                                   const inventory_selector_preset &preset ) -> bool
+{
+    // place children below all parents
+    const std::vector<item *> path_lhs = path_to_top( lhs, preset );
+    const std::vector<item *> path_rhs = path_to_top( rhs, preset );
+    const size_t common_depth = std::min( path_lhs.size(), path_rhs.size() );
+    size_t li = path_lhs.size() - common_depth;
+    size_t ri = path_rhs.size() - common_depth;
+    item *p_lhs = path_lhs[li];
+    item *p_rhs = path_rhs[ri];
+    if( p_lhs == p_rhs ) {
+        return path_lhs.size() < path_rhs.size();
+    }
+    // otherwise sort the entries below their lowest common ancestor
+    while( li < path_lhs.size() && path_lhs[li] != path_rhs[ri] ) {
+        p_lhs = path_lhs[li++];
+        p_rhs = path_rhs[ri++];
+    }
+    inventory_entry ep_lhs( { p_lhs }, nullptr, true );
+    inventory_entry ep_rhs( { p_rhs }, nullptr, true );
+    ep_lhs.update_cache();
+    ep_rhs.update_cache();
+    return preset.sort_compare( ep_lhs, ep_rhs );
+}
+
 void inventory_column::prepare_paging( const std::string &filter )
 {
     if( paging_is_valid ) {
@@ -843,14 +915,14 @@ void inventory_column::prepare_paging( const std::string &filter )
 
     entries_hidden.clear();
     for( size_t i = 0; i < entries.size(); ++i ) {
-        if( entries[i].is_item() && !filter_fn( entries[i] ) ) {
+        if( entries[i].is_item() && ( !filter_fn( entries[i] ) || hidden_by_collapse( entries[i] ) ) ) {
             entries_hidden.push_back( entries[i] );
         }
     }
 
     const auto new_end = std::remove_if( entries.begin(),
     entries.end(), [&filter_fn]( const inventory_entry & entry ) {
-        return !entry.is_item() || !filter_fn( entry );
+        return !entry.is_item() || !filter_fn( entry ) || hidden_by_collapse( entry );
     } );
     entries.erase( new_end, entries.end() );
     // don't sort with stale names
@@ -859,6 +931,8 @@ void inventory_column::prepare_paging( const std::string &filter )
     auto sort_function = [this]( const inventory_entry & lhs, const inventory_entry & rhs ) {
         if( *lhs.get_category_ptr() != *rhs.get_category_ptr() ) {
             return *lhs.get_category_ptr() < *rhs.get_category_ptr();
+        } else if( hierarchy ) {
+            return indented_sort_compare( lhs, rhs, preset );
         } else {
             return preset.sort_compare( lhs, rhs );
         }
@@ -935,6 +1009,9 @@ size_t inventory_column::get_entry_indent( const inventory_entry &entry ) const
     }
 
     size_t res = 2;
+    if( hierarchy ) {
+        res += entry.indent;
+    }
     if( get_option<bool>( "ITEM_SYMBOLS" ) ) {
         res += 2;
     }
@@ -1034,6 +1111,11 @@ void inventory_column::draw( const catacurses::window &win, point pos ) const
                                    text_width; // Align either to the left or to the right
                 const std::string &text = entry_cell_cache.text[cell_index];
 
+                // Per DDA inventory_ui.cpp:1800: chevron before an entry that has visible contents
+                if( cell_index == 0 && entry.chevron && entry.is_item() ) {
+                    trim_and_print( win, point( text_x - 1, yy ), 1, c_dark_gray,
+                                    entry.any_item()->is_collapsed() ? "▶" : "▼" );
+                }
                 if( entry.is_item() && ( selected || !entry.is_selectable() ) ) {
                     trim_and_print( win, point( text_x, yy ), text_width, selected ? h_white : c_dark_gray,
                                     remove_color_tags( text ) );
@@ -1324,8 +1406,114 @@ void inventory_selector::remove_item( item *location )
 }
 
 
+// Per DDA inventory_ui.cpp:208 (is_worn_ablative), adapted: item * and pocket_of() instead of
+// item_location::parent_pocket()
+static auto is_worn_ablative( const Character &who, const item *container,
+                              const item *child ) -> bool
+{
+    if( container == nullptr || !container->is_ablative() || !who.is_worn( *container ) ) {
+        return false;
+    }
+    const item_pocket *slot = container->contents.pocket_of( child );
+    return slot != nullptr && slot->get_data().ablative;
+}
+
+// Per DDA inventory_ui.cpp:132
+static auto get_topmost_parent( const item *topmost, const item *loc,
+                                bool loc_shown ) -> const item *
+{
+    return loc_shown ? ( topmost != nullptr ? topmost : loc ) : nullptr;
+}
+
+// Per DDA inventory_ui.cpp:189 (wielded_worn_category)
+static auto wielded_worn_category( const item *loc, const Character &u ) -> const item_category *
+{
+    if( loc == &u.primary_weapon() ) {
+        return &item_category_id( "WEAPON_HELD" ).obj();
+    }
+    if( u.is_worn( *loc ) || is_worn_ablative( u, loc->parent_item(), loc ) ) {
+        // CDF: no BIONIC_FUEL_SOURCE / INTEGRATED categories or flags exist here
+        return &item_category_id( "ITEMS_WORN" ).obj();
+    }
+    return nullptr;
+}
+
+void inventory_selector::add_shown_entry( inventory_column &target_column,
+        std::vector<item *> &&locations, const item_category *custom_category,
+        const item *topmost_parent, bool chevron, int indent )
+{
+    is_empty = false;
+    inventory_entry entry( locations, custom_category,
+                           preset.get_denial( locations.front() ).empty() );
+    entry.topmost_parent = topmost_parent;
+    entry.chevron = chevron;
+    entry.indent = indent;
+    target_column.add_entry( entry );
+
+    shared_ptr_fast<ui_adaptor> current_ui = ui.lock();
+    if( current_ui ) {
+        current_ui->mark_resize();
+    }
+}
+
+bool inventory_selector::add_entry_rec( inventory_column &entry_column,
+                                        inventory_column &children_column, item *loc,
+                                        const item_category *entry_category,
+                                        const item_category *children_category,
+                                        const item *topmost_parent, int indent )
+{
+    // is_shown can be costly, so ask once per item
+    const bool shown = preset.is_shown( loc );
+    inventory_column temp_children( preset );
+    bool vis_contents = add_contained_items( loc, temp_children, children_category,
+                        get_topmost_parent( topmost_parent, loc, shown ),
+                        shown ? indent + 2 : indent );
+    if( shown ) {
+        add_shown_entry( entry_column, std::vector<item *>( 1, loc ), entry_category,
+                         topmost_parent, vis_contents, indent );
+        vis_contents = true;
+    }
+    temp_children.move_entries_to( children_column );
+    return vis_contents;
+}
+
+bool inventory_selector::add_contained_items( item *container, inventory_column &column,
+        const item_category *custom_category, const item *topmost_parent, int indent )
+{
+    if( container->has_flag( flag_NO_UNLOAD ) ) {
+        return false;
+    }
+    bool vis_top = false;
+    inventory_column temp( preset );
+    for( item *it : container->all_items_top() ) {
+        const item_category *hacked_cat = custom_category;
+        inventory_column *hacked_col = &column;
+        if( is_worn_ablative( u, container, it ) ) {
+            hacked_cat = &item_category_id( "ITEMS_WORN" ).obj();
+            hacked_col = &own_gear_column;
+        }
+        vis_top |= add_entry_rec( *hacked_col, temp, it, hacked_cat, custom_category,
+                                  topmost_parent, indent );
+    }
+    temp.move_entries_to( column );
+    return vis_top;
+}
+
 void inventory_selector::add_character_items( Character &character )
 {
+    // Per DDA inventory_ui.cpp:2196: hierarchy mode lists gear with its contents as a tree
+    if( _uimode == uimode::hierarchy ) {
+        item &weapon = character.primary_weapon();
+        if( !weapon.is_null() ) {
+            const item_category *cat = &item_category_id( "WEAPON_HELD" ).obj();
+            add_entry_rec( own_gear_column, own_gear_column, &weapon, cat, cat, nullptr, 0 );
+        }
+        for( item *worn_item : character.top_items_loc() ) {
+            const item_category *cat = wielded_worn_category( worn_item, u );
+            add_entry_rec( own_gear_column, own_gear_column, worn_item, cat, cat, nullptr, 0 );
+        }
+        return;
+    }
     character.visit_items( [ this, &character ]( item * it ) {
         if( character.is_wielding( *it ) ) {
             add_item( own_gear_column,  it,
@@ -1415,6 +1603,7 @@ void inventory_selector::add_vehicle_items( const tripoint_bub_ms &target )
 
 void inventory_selector::add_nearby_items( int radius )
 {
+    nearby_radius = radius;
     if( radius >= 0 ) {
         for( const tripoint_bub_ms &pos : closest_points_first( u.bub_pos(), radius ) ) {
             // can not reach this -> can not access its contents
@@ -1430,6 +1619,7 @@ void inventory_selector::add_nearby_items( int radius )
 
 void inventory_selector::add_fake_items( Character &character )
 {
+    fake_items_added = true;
     for( bionic bio : character.get_bionic_collection() ) {
         const itype_id fake = bio.info().fake_item;
         if( bio.info().has_flag( flag_BIONIC_TOOLS ) && !fake.is_null() && fake.str() != "" ) {
@@ -1442,6 +1632,42 @@ void inventory_selector::add_fake_items( Character &character )
         item *fakeitem = g->add_fake_item( item::spawn( fake ) );
         add_entry( own_gear_column, std::vector<item *>( 1, fakeitem ),
                    &item_category_id( "MISC_USABLES" ).obj() );
+    }
+}
+
+void inventory_selector::enable_view_mode_toggle()
+{
+    view_toggle_enabled = true;
+    ctxt.register_action( "VIEW_CATEGORY_MODE", to_translation( "Switch view mode" ) );
+}
+
+void inventory_selector::toggle_categorize_contained()
+{
+    // Per DDA inventory_ui.cpp:3821. DDA re-labels the existing entries; CDF's category mode has no
+    // contained rows, so the entries are rebuilt from the same sources in the other mode.
+    const item *highlighted = nullptr;
+    if( has_available_choices() && get_selected().is_item() ) {
+        highlighted = get_selected().any_item();
+    }
+    _uimode = _uimode == uimode::hierarchy ? uimode::categories : uimode::hierarchy;
+    clear_items();
+    for( inventory_column *col : columns ) {
+        col->set_hierarchy( _uimode == uimode::hierarchy );
+    }
+    add_character_items( u );
+    if( nearby_radius >= 0 ) {
+        add_nearby_items( nearby_radius );
+    }
+    if( fake_items_added ) {
+        add_fake_items( u );
+    }
+    if( highlighted != nullptr ) {
+        select( highlighted );
+    }
+    prepare_layout();
+    shared_ptr_fast<ui_adaptor> current_ui = ui.lock();
+    if( current_ui ) {
+        current_ui->invalidate_ui();
     }
 }
 
@@ -1661,7 +1887,11 @@ size_t inventory_selector::get_layout_height() const
 
 size_t inventory_selector::get_header_height() const
 {
-    return display_stats || !hint.empty() ? 3 : 1;
+    // per DDA inventory_ui.cpp:2663
+    return std::max<size_t>( { 1,
+                               display_stats ? get_stats().size() : 0,
+                               !hint.empty() ? 2 + static_cast<size_t>( std::count( hint.begin(), hint.end(), '\n' ) ) : 0 }
+                           );
 }
 
 size_t inventory_selector::get_header_min_width() const
@@ -1743,44 +1973,498 @@ inventory_selector::stats inventory_selector::get_weight_and_volume_stats(
     };
 }
 
-inventory_selector::stats inventory_selector::get_raw_stats() const
+bool inventory_selector::pockets_match( const pocket_with_constraint &a,
+                                        const pocket_with_constraint &b )
 {
-    return get_weight_and_volume_stats( u.weight_carried(), u.weight_capacity(),
-                                        u.carried_volume(), u.volume_capacity() );
+    return a.pocket == b.pocket ||
+           ( a.pocket != nullptr
+             && a.constraint == b.constraint
+             && a.pocket->min_containable_length() == b.pocket->min_containable_length()
+             && a.pocket->is_restricted() == b.pocket->is_restricted() );
+}
+
+inventory_selector::header_stats inventory_selector::get_pocket_summary_header_stats(
+    const units::mass &weight_carried, const units::mass &weight_capacity,
+    const units::volume &volume_in_pockets, const units::volume &volume_of_pockets,
+    std::vector<pocket_with_constraint> pockets,
+    bool show_unconstrained_max_space,
+    const std::string *weight_label_override, const std::string *volume_label_override
+)
+{
+    pocket_with_constraint large_free_space;
+    int large_free_space_copies = 0;
+    pocket_with_constraint large_max_space;
+    pocket_with_constraint long_free_space;
+    int long_free_space_copies = 0;
+    pocket_with_constraint long_max_space;
+    std::vector<pocket_with_constraint> pockets_with_space;
+
+    bool show_max_space_opt = get_option<bool>( "SHOW_MAX_SPACE" );
+    int show_other_spaces_opt = get_option<int>( "SHOW_OTHER_SPACES" );
+
+    pockets.erase(
+        std::remove_if( pockets.begin(), pockets.end(),
+    []( pocket_with_constraint & p ) {
+        return p.constraint.is_dominated;
+    }
+                      ),
+    pockets.end()
+    );
+
+    std::vector<std::string> other_space_strings;
+
+    if( !pockets.empty() ) {
+        std::copy_if( pockets.begin(), pockets.end(), std::back_inserter( pockets_with_space ),
+        []( const pocket_with_constraint & p ) {
+            return p.constraint.remaining_volume > 0_ml && !p.pocket->holster_full();
+        }
+                    );
+
+        if( !pockets_with_space.empty() ) {
+            // determine largest space
+            std::sort( pockets_with_space.begin(),
+            pockets_with_space.end(), []( const pocket_with_constraint & a, const pocket_with_constraint & b ) {
+                return std::tuple( a.pocket->is_restricted(), b.constraint.remaining_volume,
+                                   b.constraint.max_containable_length )
+                       < std::tuple( b.pocket->is_restricted(), a.constraint.remaining_volume,
+                                     a.constraint.max_containable_length );
+            } );
+            large_free_space = pockets_with_space[0];
+
+            // determine longest space; count large and long space copies
+            for( const auto &pwc : pockets_with_space ) {
+                if( pockets_match( pwc, large_free_space ) ) {
+                    large_free_space_copies++;
+                }
+                if( long_free_space.pocket == nullptr
+                    || std::tuple( pwc.pocket->is_restricted(), long_free_space.constraint.max_containable_length,
+                                   long_free_space.constraint.remaining_volume )
+                    < std::tuple( long_free_space.pocket->is_restricted(), pwc.constraint.max_containable_length,
+                                  pwc.constraint.remaining_volume ) ) {
+                    long_free_space = pwc;
+                    long_free_space_copies = 1;
+                } else if( pockets_match( pwc, long_free_space ) ) {
+                    long_free_space_copies++;
+                }
+            }
+
+            if( show_other_spaces_opt > 0 ) {
+                // count other spaces
+                std::vector<pocket_with_constraint> other_spaces;
+                std::vector<int> other_spaces_copies;
+                bool other_spaces_display_truncated = false;
+                for( const auto &pwc : pockets_with_space ) {
+                    if( !pockets_match( pwc, large_free_space ) && !pockets_match( pwc, long_free_space ) ) {
+                        if( other_spaces.empty() || !pockets_match( pwc, other_spaces.back() ) ) {
+                            if( other_spaces.size() < static_cast<size_t>( show_other_spaces_opt ) ) {
+                                other_spaces.push_back( pwc );
+                                other_spaces_copies.push_back( 1 );
+                            } else {
+                                other_spaces_display_truncated = true;
+                                break;
+                            }
+                        } else {
+                            other_spaces_copies.back()++;
+                        }
+                    }
+                }
+
+                for( size_t i = 0; i < other_spaces.size(); i++ ) {
+                    const space_stats_text other_t = build_space_stats( other_spaces[i].constraint.remaining_volume,
+                                                     other_spaces[i].pocket->min_containable_length(),
+                                                     other_spaces[i].constraint.max_containable_length,
+                                                     other_spaces[i].pocket->is_restricted()
+                                                                      );
+                    other_space_strings.push_back( string_format( "%s %s%s", other_t.volume, other_t.length,
+                                                   ( other_spaces_copies[i] > 1 ? string_format( " (%d)", other_spaces_copies[i] ) : "" ) )
+                                                 );
+                }
+                if( other_spaces_display_truncated ) {
+                    other_space_strings.emplace_back( "…" );
+                }
+            }
+        }
+
+
+        if( show_max_space_opt ) {
+            // largest / longest pockets [not spaces] we have.
+            // 'ignore_restrict' check makes it so we don't report a smaller 'max' space than 'free' space if we selected a restricted pocket for that.
+            if( show_unconstrained_max_space ) {
+                std::sort( pockets.begin(), pockets.end(), [ignore_restrict = large_free_space.pocket &&
+                                           large_free_space.pocket->is_restricted()]( const pocket_with_constraint & a,
+                const pocket_with_constraint & b ) {
+                    return std::tuple( ignore_restrict || a.pocket->is_restricted(), b.pocket->volume_capacity() )
+                           < std::tuple( ignore_restrict || b.pocket->is_restricted(), a.pocket->volume_capacity() );
+                } );
+                large_max_space = pockets[0];
+
+                std::sort( pockets.begin(), pockets.end(), [ignore_restrict = long_free_space.pocket &&
+                                           long_free_space.pocket->is_restricted()]( const pocket_with_constraint & a,
+                const pocket_with_constraint & b ) {
+                    return std::tuple( ignore_restrict ||
+                                       a.pocket->is_restricted(), b.pocket->max_containable_length(), b.pocket->volume_capacity() )
+                           < std::tuple( ignore_restrict ||
+                                         b.pocket->is_restricted(), a.pocket->max_containable_length(), a.pocket->volume_capacity() );
+                } );
+                long_max_space = pockets[0];
+            } else {
+                std::sort( pockets.begin(), pockets.end(), [ignore_restrict = large_free_space.pocket &&
+                                           large_free_space.pocket->is_restricted()]( const pocket_with_constraint & a,
+                const pocket_with_constraint & b ) {
+                    return std::tuple( ignore_restrict || a.pocket->is_restricted(), b.constraint.volume_capacity )
+                           < std::tuple( ignore_restrict || b.pocket->is_restricted(), a.constraint.volume_capacity );
+                } );
+                large_max_space = pockets[0];
+
+                std::sort( pockets.begin(), pockets.end(), [ignore_restrict = long_free_space.pocket &&
+                                           long_free_space.pocket->is_restricted()]( const pocket_with_constraint & a,
+                const pocket_with_constraint & b ) {
+                    return std::tuple( ignore_restrict ||
+                                       a.pocket->is_restricted(), b.constraint.max_containable_length, b.constraint.volume_capacity )
+                           < std::tuple( ignore_restrict ||
+                                         b.pocket->is_restricted(), a.constraint.max_containable_length, a.constraint.volume_capacity );
+                } );
+                long_max_space = pockets[0];
+            }
+        }
+    }
+
+    inventory_selector::header_stats ret = {
+        build_weight_and_volume_stats_line( weight_carried,
+                                            weight_capacity,
+                                            weight_label_override ? *weight_label_override : _( "Total Weight:" ),
+                                            volume_in_pockets,
+                                            volume_of_pockets,
+                                            volume_label_override ? *volume_label_override : _( "Total Volume:" )
+                                          )
+    };
+    bool show_large_max = show_max_space_opt &&
+                          large_free_space.constraint.remaining_volume != large_max_space.constraint.volume_capacity;
+    bool show_long_max = show_max_space_opt &&
+                         long_free_space.constraint.remaining_volume != long_max_space.constraint.volume_capacity;
+    if( !show_large_max ) {
+        ret.push_back( build_pocket_stats_line( _( "Largest Space" ),
+                                                large_free_space.pocket,
+                                                large_free_space.constraint.remaining_volume,
+                                                large_free_space.constraint.max_containable_length,
+                                                ( show_other_spaces_opt > 0 ) ? large_free_space_copies : 1
+                                              ) );
+    } else {
+        ret.push_back( build_pocket_stats_line( _( "Largest Space" ),
+                                                large_free_space.pocket,
+                                                large_free_space.constraint.remaining_volume,
+                                                large_free_space.constraint.max_containable_length,
+                                                ( show_other_spaces_opt > 0 ) ? large_free_space_copies : 1,
+                                                large_max_space.pocket,
+                                                show_unconstrained_max_space ? large_max_space.pocket->volume_capacity() :
+                                                large_max_space.constraint.volume_capacity,
+                                                show_unconstrained_max_space ? large_max_space.pocket->max_containable_length() :
+                                                large_max_space.constraint.max_containable_length
+                                              ) );
+    }
+    if( large_free_space.pocket != long_free_space.pocket || ( show_long_max != show_large_max ) ) {
+        if( !show_long_max ) {
+            ret.push_back( build_pocket_stats_line( _( "Longest Space" ),
+                                                    long_free_space.pocket,
+                                                    long_free_space.constraint.remaining_volume,
+                                                    long_free_space.constraint.max_containable_length,
+                                                    ( show_other_spaces_opt > 0 ) ? long_free_space_copies : 1
+                                                  )
+                         );
+        } else {
+            ret.push_back( build_pocket_stats_line( _( "Longest Space" ),
+                                                    long_free_space.pocket,
+                                                    long_free_space.constraint.remaining_volume,
+                                                    long_free_space.constraint.max_containable_length,
+                                                    ( show_other_spaces_opt > 0 ) ? long_free_space_copies : 1,
+                                                    long_max_space.pocket,
+                                                    show_unconstrained_max_space ? long_max_space.pocket->volume_capacity() :
+                                                    long_max_space.constraint.volume_capacity,
+                                                    show_unconstrained_max_space ? long_max_space.pocket->max_containable_length() :
+                                                    long_max_space.constraint.max_containable_length
+                                                  )
+                         );
+        }
+    }
+    if( ( show_other_spaces_opt > 0 ) && !other_space_strings.empty() ) {
+        ret.push_back( { _( "Other: " ) + join( other_space_strings, ", " ) } );
+    }
+    return ret;
+}
+
+inventory_selector::header_stats_line inventory_selector::build_weight_and_volume_stats_line(
+    units::mass weight_carried, units::mass weight_capacity, const std::string &weight_label,
+    const units::volume &volume_in_pockets, const units::volume &volume_of_pockets,
+    const std::string &volume_label
+)
+{
+    const nc_color &color_numeral = c_light_gray;
+    const nc_color &color_unit = c_light_gray;
+    const nc_color &color_label = c_dark_gray;
+    const nc_color &color_weight = weight_carried > weight_capacity ? c_red : color_numeral;
+    return { string_format( "%s %s/%s %s %s %s/%s %s",
+                            colorize( volume_label, color_label ),
+                            colorize( format_volume( volume_in_pockets ), color_numeral ),
+                            colorize( format_volume( volume_of_pockets ), color_numeral ),
+                            colorize( volume_units_abbr(), color_unit ),
+                            colorize( weight_label, color_label ),
+                            colorize( string_format( "%.1f", round_up( convert_weight( weight_carried ), 1 ) ), color_weight ),
+                            colorize( string_format( "%.1f", round_up( convert_weight( weight_capacity ), 1 ) ), color_numeral ),
+                            colorize( weight_units(), color_unit )
+                          ) };
+}
+
+inventory_selector::header_stats_line inventory_selector::build_selection_stats_line(
+    units::volume volume, units::mass weight
+)
+{
+    const nc_color &color_numeral = ( volume > 0_ml || weight > 0_gram ) ? c_yellow : c_dark_gray;
+    return { string_format( "%s %s %s %s %s",
+                            colorize( _( "Selected" ), c_dark_gray ),
+                            colorize( format_volume( volume ), color_numeral ),
+                            volume_units_abbr(),
+                            colorize( string_format( "%.1f", round_up( convert_weight( weight ), 1 ) ), color_numeral ),
+                            weight_units()
+                          ) };
+}
+
+inventory_selector::space_stats_text inventory_selector::build_invalid_space_stats()
+{
+    return { "", _( "None" ) };
+}
+
+inventory_selector::space_stats_text inventory_selector::build_space_stats( units::volume size,
+        units::length min_length, units::length max_length, bool is_restricted )
+{
+    const nc_color &color_unit = c_light_gray;
+    const nc_color &color_numeral = c_light_gray;
+    std::string vol_str = string_format( "%s %s%s",
+                                         colorize( format_volume( size ), color_numeral ),
+                                         colorize( volume_units_abbr(), color_unit ),
+                                         is_restricted ? "*" : "" // possibly try to give more info on the restriction(s)?
+                                       );
+    if( min_length > max_length ) { //you need a weird object for this, but it's not illegal
+        max_length = 0_mm;
+        min_length = 0_mm;
+    }
+    std::string length_str = colorize( std::to_string( convert_length( max_length ) ),
+                                       color_numeral ) + " " + colorize( length_units( max_length ), color_unit );
+    if( min_length > 0_mm ) {
+        length_str = colorize( std::to_string( convert_length( min_length ) ),
+                               color_numeral ) + " " + colorize( length_units( min_length ), color_unit ) + "-" + length_str;
+    }
+    return { vol_str, length_str };
+}
+
+inventory_selector::header_stats_line inventory_selector::build_pocket_stats_line(
+    const std::string &prefix,
+    const item_pocket *free_pocket,
+    units::volume free_pocket_volume,
+    units::length free_pocket_length,
+    int free_pocket_copies
+)
+{
+    const nc_color &color_label = c_dark_gray;
+    const space_stats_text free_pocket_t = free_pocket ? build_space_stats( free_pocket_volume,
+                                           free_pocket->min_containable_length(), free_pocket_length,
+                                           free_pocket->is_restricted() ) : build_invalid_space_stats();
+    return {
+        prefix.empty() ? "" : ( prefix + " " ) + colorize( _( "Free: " ), color_label ),
+        header_stats_tab_stop,
+        free_pocket_t.volume + " ",
+        header_stats_tab_stop,
+        free_pocket_t.length,
+        header_stats_tab_stop,
+        ( free_pocket_copies > 1 ? string_format( " (%d)", free_pocket_copies ) : "" ),
+        header_stats_tab_stop, // extra stops to align with the max-space printing version
+        header_stats_tab_stop,
+        header_stats_tab_stop
+    };
+}
+
+inventory_selector::header_stats_line inventory_selector::build_pocket_stats_line(
+    const std::string &prefix,
+    const item_pocket *free_pocket,
+    units::volume free_pocket_volume,
+    units::length free_pocket_length,
+    int free_pocket_copies,
+    const item_pocket *max_pocket,
+    units::volume max_pocket_volume,
+    units::length max_pocket_length
+)
+{
+    const nc_color &color_label = c_dark_gray;
+    const space_stats_text free_pocket_t = free_pocket ? build_space_stats( free_pocket_volume,
+                                           free_pocket->min_containable_length(), free_pocket_length,
+                                           free_pocket->is_restricted() ) : build_invalid_space_stats();
+    const space_stats_text max_pocket_t = max_pocket ? build_space_stats( max_pocket_volume,
+                                          max_pocket->min_containable_length(), max_pocket_length,
+                                          max_pocket->is_restricted() ) : build_invalid_space_stats();
+    return {
+        prefix.empty() ? "" : ( prefix + " " ) + colorize( _( "Free: " ), color_label ),
+        header_stats_tab_stop,
+        free_pocket_t.volume + " ",
+        header_stats_tab_stop,
+        free_pocket_t.length,
+        header_stats_tab_stop,
+        ( free_pocket_copies > 1 ? string_format( " (%d)", free_pocket_copies ) : "" ),
+        header_stats_tab_stop,
+        " | ",
+        colorize( _( "Max: " ), color_label ),
+        header_stats_tab_stop,
+        max_pocket_t.volume + " ",
+        header_stats_tab_stop,
+        max_pocket_t.length
+    };
+}
+
+inventory_selector::header_stats inventory_selector::get_raw_stats() const
+{
+    // pockets it's okay to insert items into
+    std::function<bool( const item_pocket & )> check_pocket_tree = []( const item_pocket & pocket ) {
+        return pocket.is_type( pocket_type::CONTAINER )
+               && !pocket.is_forbidden()
+               && !pocket.settings.is_disabled();
+    };
+
+    // general-purpose bulk pocket criteria
+    std::function<bool( const item_pocket & )> include_pocket_capacity = [](
+    const item_pocket & pocket ) {
+        return !pocket.is_restricted()
+               && !pocket.is_holster()
+               && !pocket.is_ablative()
+               && pocket.min_containable_length() == 0_mm
+               && pocket.get_pocket_data()->min_item_volume == 0_ml
+               && !pocket.get_pocket_data()->max_item_volume
+               && pocket.settings.get_category_whitelist().empty()
+               && pocket.settings.get_item_whitelist().empty();
+    };
+
+    // space check has extra criteria to make pockets report as 'full' when they can't be used for storing most items.
+    std::function<bool( const item_pocket & )> include_pocket_space = [&](
+    const item_pocket & pocket ) {
+        return include_pocket_capacity( pocket )
+               && item_pocket::ok_for_solids( pocket )
+               && !pocket.sealed();
+    };
+    units::volume free_space = u.free_space( include_pocket_space, check_pocket_tree );
+    units::volume capacity = u.volume_capacity_recursive( include_pocket_capacity, check_pocket_tree );
+
+    // pockets we want to list as 'spaces'
+    std::vector<pocket_with_constraint> pockets = u.get_all_pockets_with_constraints(
+    []( const item_pocket & pocket ) {
+        return pocket.is_type( pocket_type::CONTAINER )
+               && !pocket.sealed()
+               && pocket.settings.get_category_whitelist().empty()
+               && pocket.settings.get_item_whitelist().empty()
+               && item_pocket::ok_for_solids( pocket );
+    },
+    check_pocket_tree
+            );
+
+    std::string volume_label_override = _( "Bulk Volume:" );
+    return get_pocket_summary_header_stats(
+               u.weight_carried(), u.weight_capacity(),
+               capacity - free_space, capacity,
+               pockets, false,
+               nullptr, &volume_label_override
+           );
 }
 
 std::vector<std::string> inventory_selector::get_stats() const
 {
-    // Stats consist of arrays of cells.
-    const size_t num_stats = 2;
-    const std::array<stat, num_stats> stats = get_raw_stats();
-    // Streams for every stat.
-    std::array<std::string, num_stats> lines;
-    std::array<size_t, num_stats> widths;
-    // Add first cells and spaces after them.
-    for( size_t i = 0; i < stats.size(); ++i ) {
-        lines[i] += string_format( "%s", stats[i][0] ) + " ";
+    header_stats stats = get_raw_stats();
+    std::vector<std::string> lines( stats.size() );
+    if( lines.empty() ) {
+        return lines;
     }
-    // Now add the rest of the cells and align them to the right.
-    for( size_t j = 1; j < stats.front().size(); ++j ) {
-        // Calculate actual cell width for each stat.
-        std::transform( stats.begin(), stats.end(), widths.begin(),
-        [j]( const stat & elem ) {
-            return utf8_width( elem[j], true );
+    std::vector<size_t> line_rindex( stats.size() );
+    size_t blockEnd = 0;
+    for( size_t blockStart = 0; blockStart < stats.size(); blockStart = blockEnd ) {
+        ptrdiff_t num_stops = std::count_if( stats[blockStart].begin(),
+        stats[blockStart].end(), []( const auto & x ) {
+            return x == header_stats_tab_stop;
         } );
-        // Determine the max width.
-        const size_t max_w = *std::max_element( widths.begin(), widths.end() );
-        // Align all stats in this cell with spaces.
-        for( size_t i = 0; i < stats.size(); ++i ) {
-            if( max_w > widths[i] ) {
-                lines[i] += std::string( max_w - widths[i], ' ' );
+        blockEnd = stats.size();
+        for( size_t i = blockStart + 1; i < stats.size(); i++ ) {
+            if( std::count_if( stats[i].begin(), stats[i].end(), []( const auto & x ) {
+            return x == header_stats_tab_stop;
+        } ) != num_stops ) {
+                blockEnd = i;
+                break;
             }
-            lines[i] += string_format( "%s", stats[i][j] );
+        }
+
+        for( int tab_stop = 0; tab_stop < num_stops; tab_stop++ ) {
+            // each line in the block writes out its parts until its next tab stop
+            for( size_t i = blockStart; i < blockEnd; i++ ) {
+                for( ; line_rindex[i] < stats[i].size(); line_rindex[i]++ ) {
+                    int line_index = stats[i].size() - 1 - line_rindex[i];
+                    if( stats[i][line_index] != header_stats_tab_stop ) {
+                        lines[i] = stats[i][line_index] + lines[i];
+                    } else {
+                        line_rindex[i]++; // eat the tab-stop
+                        break;
+                    }
+                }
+            }
+            // Determine current max width of the block
+            std::vector<size_t> widths( blockEnd - blockStart );
+            std::transform( lines.begin() + blockStart, lines.begin() + blockEnd, widths.begin(),
+            []( const std::string & part ) {
+                return utf8_width( part, true );
+            } );
+            size_t max_width = *std::max_element( widths.begin(), widths.end() );
+            // leftpad all lines in block to the same length
+            for( size_t i = blockStart; i < blockEnd; i++ ) {
+                if( max_width > widths[i - blockStart] ) {
+                    lines[i] = std::string( max_width - widths[i - blockStart], ' ' ) + lines[i];
+                }
+            }
         }
     }
-    // Construct the final result.
-    return std::vector<std::string>( lines.begin(), lines.end() );
+
+    // add remaining elements
+    for( size_t i = 0; i < lines.size(); i++ ) {
+        for( int line_index = stats[i].size() - 1 - line_rindex[i]; line_index >= 0; line_index-- ) {
+            lines[i] = stats[i][line_index] + lines[i];
+        }
+    }
+    // Determine max width of the whole header
+    std::vector<size_t> widths( lines.size() );
+    std::transform( lines.begin(), lines.end(), widths.begin(),
+    []( const std::string & part ) {
+        return utf8_width( part, true );
+    } );
+    size_t max_width = *std::max_element( widths.begin(), widths.end() );
+    // leftpad all lines to the same length, right-justifying the block
+    for( size_t i = 0; i < lines.size(); i++ ) {
+        if( max_width > widths[i] ) {
+            lines[i] = std::string( max_width - widths[i], ' ' ) + lines[i];
+        }
+    }
+
+    return lines;
 }
+
+inventory_selector::header_stats inventory_selector::convert_stats_to_header_stats(
+    const stats &old_stats )
+{
+    header_stats new_stats;
+    // Stats consist of arrays of cells.
+    // Add first cells and spaces after them.
+    for( const inventory_selector::stat &old_stat : old_stats ) {
+        header_stats_line line;
+        line.push_back( old_stat[0] + " " ); //First cell gets a space inserted after it
+        for( size_t i = 1; i < old_stat.size(); i++ ) {
+            line.emplace_back( header_stats_tab_stop ); //The rest get put in columns
+            line.push_back( old_stat[i] );
+        }
+        new_stats.push_back( line );
+    }
+    return new_stats;
+}
+
 
 void inventory_selector::resize_window( int width, int height )
 {
@@ -1972,6 +2656,12 @@ void inventory_selector::draw_footer( const catacurses::window &w ) const
             wprintz( w, c_light_gray, " >" );
         }
 
+        if( view_toggle_enabled ) {
+            // Per DDA inventory_ui.cpp:3416
+            right_print( w, getmaxy( w ) - border, border + 1, c_light_gray,
+                         string_format( "< [%s] %s >", ctxt.get_desc( "VIEW_CATEGORY_MODE" ),
+                                        _uimode == uimode::hierarchy ? _( "hierarchy" ) : _( "categories" ) ) );
+        }
         const auto footer = get_footer( mode );
         if( !footer.first.empty() ) {
             const int string_width = utf8_width( footer.first );
@@ -2016,6 +2706,9 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "WIELD" );
     ctxt.register_action( "WEAR" );
     ctxt.register_action( "ANY_INPUT" ); // For invlets
+    // Per DDA inventory_ui.cpp:3481; registered here so auto-assigned invlets skip its key.
+    ctxt.register_action( "ORGANIZE_MENU" );
+    ctxt.register_action( "SHOW_HIDE_CONTENTS", to_translation( "Show/hide contents" ) );
 
 
     append_column( own_inv_column );
@@ -2062,6 +2755,27 @@ void inventory_selector::on_input( const inventory_input &input )
         toggle_active_column( scroll_direction::FORWARD );
     } else if( input.action == "INVENTORY_FILTER" ) {
         set_filter();
+    } else if( input.action == "SHOW_HIDE_CONTENTS" ) {
+        // Per DDA inventory_ui.cpp:1295-1310 (set_collapsed), adapted to the flat view:
+        // a row of a carried group toggles its holder, any other row toggles itself.
+        if( has_available_choices() ) {
+            const inventory_entry &sel = get_selected();
+            if( sel.is_item() ) {
+                item *target = carried_holder( sel );
+                if( target == nullptr ) {
+                    target = sel.any_item();
+                }
+                const bool collapse = !target->is_collapsed();
+                for( item_pocket *pocket : target->get_standard_pockets() ) {
+                    pocket->settings.set_collapse( collapse );
+                }
+                for( inventory_column *elem : columns ) {
+                    elem->invalidate_paging();
+                }
+                refresh_active_column();
+                prepare_layout();
+            }
+        }
     } else if( input.action == "TOGGLE_FAVORITE" ) {
         if( has_available_choices() ) {
             for( inventory_column *elem : columns ) {
@@ -2503,7 +3217,7 @@ void inventory_iuse_selector::set_chosen_count( inventory_entry &entry, size_t c
     on_change( entry );
 }
 
-inventory_selector::stats inventory_iuse_selector::get_raw_stats() const
+inventory_selector::header_stats inventory_iuse_selector::get_raw_stats() const
 {
     if( get_stats ) {
         std::map<const item *, int> tmp;
@@ -2514,9 +3228,9 @@ inventory_selector::stats inventory_iuse_selector::get_raw_stats() const
             }
             tmp.insert( std::make_pair( elem.first, num ) );
         }
-        return get_stats( tmp );
+        return convert_stats_to_header_stats( get_stats( tmp ) );
     }
-    return stats{{ stat{{ "", "", "", "" }}, stat{{ "", "", "", "" }} }};
+    return convert_stats_to_header_stats( stats{{ stat{{ "", "", "", "" }}, stat{{ "", "", "", "" }} }} );
 }
 
 inventory_drop_selector::inventory_drop_selector( player &p,
@@ -2731,13 +3445,13 @@ void inventory_drop_selector::set_chosen_count( inventory_entry &entry, size_t c
     on_change( entry );
 }
 
-inventory_selector::stats inventory_drop_selector::get_raw_stats() const
+inventory_selector::header_stats inventory_drop_selector::get_raw_stats() const
 {
-    return get_weight_and_volume_stats(
-               u.weight_carried_reduced_by( predicted_counts ),
-               u.weight_capacity(),
-               u.volume_carried_reduced_by( predicted_counts ),
-               u.volume_capacity_reduced_by( 0_ml, predicted_counts ) );
+    return convert_stats_to_header_stats( get_weight_and_volume_stats(
+            u.weight_carried_reduced_by( predicted_counts ),
+            u.weight_capacity(),
+            u.volume_carried_reduced_by( predicted_counts ),
+            u.volume_capacity_reduced_by( 0_ml, predicted_counts ) ) );
 }
 
 inventory_pickup_selector::inventory_pickup_selector( player &p,
@@ -2842,7 +3556,7 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
     return std::vector<pickup::pick_drop_selection>();
 }
 
-inventory_selector::stats inventory_pickup_selector::get_raw_stats() const
+inventory_selector::header_stats inventory_pickup_selector::get_raw_stats() const
 {
     units::mass weight_carried = u.weight_carried();
     units::volume volume_carried = u.carried_volume();
@@ -2870,9 +3584,9 @@ inventory_selector::stats inventory_pickup_selector::get_raw_stats() const
         }
     }
 
-    return get_weight_and_volume_stats(
-               weight_carried,
-               u.weight_capacity(),
-               volume_carried,
-               u.volume_capacity() );
+    return convert_stats_to_header_stats( get_weight_and_volume_stats(
+            weight_carried,
+            u.weight_capacity(),
+            volume_carried,
+            u.volume_capacity() ) );
 }

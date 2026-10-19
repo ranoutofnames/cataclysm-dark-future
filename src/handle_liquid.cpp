@@ -389,7 +389,7 @@ static auto perform_liquid_transfer( item &liquid,
             };
         case LD_ITEM:
             liquid.attempt_split( 0, [&target]( detached_ptr<item> &&it ) {
-                return get_player_character().pour_into( *target.it, std::move( it ) );
+                return get_player_character().pour_into( *target.it, std::move( it ), -1, true );
             } );
             g->u.mod_moves( -100 );
             return { .handled = true, .continue_handling = false };
@@ -437,7 +437,7 @@ static auto perform_liquid_transfer( detached_ptr<item> &liquid,
                 .continue_handling = static_cast<bool>( liquid ),
             };
         case LD_ITEM:
-            liquid = you.pour_into( *target.it, std::move( liquid ) );
+            liquid = you.pour_into( *target.it, std::move( liquid ), -1, true );
             you.mod_moves( -100 );
             return {
                 .handled = true,

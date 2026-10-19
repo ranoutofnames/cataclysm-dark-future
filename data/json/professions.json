@@ -163,7 +163,7 @@
       },
       {
         "collection": [
-          { "item": "kpf9", "container-item": "bholster" },
+          { "item": "kpf9", "container-item": "sholster" },
           { "item": "legpouch_large", "contents-item": [ "kpf9mag", "kpf9mag" ] }
         ],
         "prob": 15
@@ -216,14 +216,14 @@
       },
       {
         "collection": [
-          { "item": "ruger_lcr_22", "container-item": "bholster" },
+          { "item": "ruger_lcr_22", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "22_speedloader8", "22_speedloader8" ] }
         ],
         "prob": 35
       },
       {
         "collection": [
-          { "item": "ruger_lcr_38", "container-item": "bholster" },
+          { "item": "ruger_lcr_38", "container-item": "holster" },
           { "item": "legpouch_large", "contents-group": "speedloaders_38_carry" }
         ],
         "prob": 20
@@ -244,14 +244,14 @@
       },
       {
         "collection": [
-          { "item": "sig_mosquito", "container-item": "bholster" },
+          { "item": "sig_mosquito", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "mosquitomag", "mosquitomag" ] }
         ],
         "prob": 15
       },
       {
         "collection": [
-          { "item": "sw_22", "container-item": "bholster" },
+          { "item": "sw_22", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "sw22mag", "sw22mag" ] }
         ],
         "prob": 15
@@ -286,35 +286,35 @@
       },
       {
         "collection": [
-          { "item": "taurus_spectrum", "container-item": "bholster" },
+          { "item": "taurus_spectrum", "container-item": "sholster" },
           { "item": "legpouch_large", "contents-item": [ "taurus_spectrum_mag", "taurus_spectrum_mag" ] }
         ],
         "prob": 10
       },
       {
         "collection": [
-          { "item": "usp_45", "container-item": "bholster" },
+          { "item": "usp_45", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "usp45mag", "usp45mag" ] }
         ],
         "prob": 15
       },
       {
         "collection": [
-          { "item": "usp_9mm", "container-item": "bholster" },
+          { "item": "usp_9mm", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "usp9mag", "usp9mag" ] }
         ],
         "prob": 20
       },
       {
         "collection": [
-          { "item": "walther_ccp", "container-item": "bholster" },
+          { "item": "walther_ccp", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "ccpmag", "ccpmag" ] }
         ],
         "prob": 15
       },
       {
         "collection": [
-          { "item": "walther_p22", "container-item": "bholster" },
+          { "item": "walther_p22", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "wp22mag", "wp22mag" ] }
         ],
         "prob": 15
@@ -328,14 +328,14 @@
       },
       {
         "collection": [
-          { "item": "walther_ppk", "container-item": "bholster" },
+          { "item": "walther_ppk", "container-item": "sholster" },
           { "item": "legpouch_large", "contents-item": [ "ppkmag", "ppkmag" ] }
         ],
         "prob": 15
       },
       {
         "collection": [
-          { "item": "walther_ppq_40", "container-item": "bholster" },
+          { "item": "walther_ppq_40", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "ppq40mag_10rd", "ppq40mag_10rd" ] }
         ],
         "prob": 10
@@ -349,7 +349,7 @@
       },
       {
         "collection": [
-          { "item": "walther_ppq_9mm", "container-item": "bholster" },
+          { "item": "walther_ppq_9mm", "container-item": "holster" },
           { "item": "legpouch_large", "contents-item": [ "ppq9mag_10rd", "ppq9mag_10rd" ] }
         ],
         "prob": 15

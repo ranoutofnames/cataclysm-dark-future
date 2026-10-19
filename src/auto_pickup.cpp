@@ -5,34 +5,49 @@
 #include <functional>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "avatar.h"
+#include "character.h"
 #include "color.h"
+#include "coordinates.h"
 #include "cursesdef.h"
 #include "debug.h"
 #include "filesystem.h"
+#include "flag.h"
 #include "fstream_utils.h"
 #include "game.h"
 #include "input.h"
 #include "item.h"
+#include "item_contents.h"
 #include "item_factory.h"
+#include "item_stack.h"
 #include "itype.h"
 #include "json.h"
+#include "map/map.h"
 #include "material.h"
 #include "options.h"
 #include "output.h"
 #include "path_info.h"
 #include "point.h"
+#include "pocket_type.h"
 #include "string_formatter.h"
 #include "string_input_popup.h"
 #include "string_utils.h"
 #include "translations.h"
 #include "type_id.h"
 #include "ui_manager.h"
+#include "units.h"
 #include "world.h"
 #include "item_search.h"
 
 using namespace auto_pickup;
+
+static const ammotype ammo_battery( "battery" );
+
+// CDF: DDA declares check_special_rule here (auto_pickup.cpp:53) for the `m:` / `M:` material
+// rule prefixes used by rule_list::create_rule and refresh_map_items. Not ported: CDF rules are
+// filter based (filter_from_string / wildcard_item_filter) and have no material prefix syntax.
 
 bool auto_pickup::test_pattern_function( const itype &type, std::string filter )
 {
@@ -50,6 +65,327 @@ auto_pickup::player_settings &get_auto_pickup()
 {
     static auto_pickup::player_settings single_instance;
     return single_instance;
+}
+
+/**
+ * The function will return `true` if the user has set all limits to a value of 0.
+ * @param pickup_item item to check.
+ * @return `true` if given item's weight and volume is within auto pickup user configured limits.
+ */
+static bool within_autopickup_limits( const item *pickup_item )
+{
+    // CDF: DDA passes cata::flat_set<flag_id>{ ZERO_WEIGHT, NO_DROP } to has_any_flag; CDF's
+    // flat_set has no initializer-list constructor, so the two flags are tested separately.
+    bool valid_item = !pickup_item->has_flag( flag_ZERO_WEIGHT ) &&
+                      !pickup_item->has_flag( flag_NO_DROP );
+
+    int weight_limit = get_option<int>( "AUTO_PICKUP_WEIGHT_LIMIT" );
+    // CDF: DDA calls this option AUTO_PICKUP_VOLUME_LIMIT; CDF keeps its AUTO_PICKUP_VOL_LIMIT name.
+    int volume_limit = get_option<int>( "AUTO_PICKUP_VOL_LIMIT" );
+
+    // CDF: no _ml literal used; units::from_milliliter is what the previous pickup.cpp code used.
+    bool valid_volume = pickup_item->volume() <= units::from_milliliter( volume_limit * 50 );
+    bool valid_weight = pickup_item->weight() <= weight_limit * 50_gram;
+
+    return valid_item && ( volume_limit <= 0 || valid_volume ) && ( weight_limit <= 0 || valid_weight );
+}
+
+/**
+ * @param pickup_item item to get the auto pickup rule for.
+ * @return `rule_state` associated with the given item.
+ */
+static rule_state get_autopickup_rule( const item *pickup_item )
+{
+    return get_auto_pickup().check_item( *pickup_item );
+}
+
+/**
+ * @return `true` if the item is a tool or other container that takes batteries.
+ * CDF: item::ammo_capacity( const ammotype & ) does not exist on item; the contents route
+ * (item_contents::ammo_capacity, magazine pockets only) is what DDA's item version forwards to.
+ * Legacy tools (e.g. flashlight: "ammo": "battery" + "magazines") get a MAGAZINE_WELL pocket,
+ * which ammo_capacity() ignores (it counts MAGAZINE pockets only; those are the pockets of
+ * magazine items themselves). So a tool with a well that takes battery ammo is powered too.
+ */
+static bool is_battery_powered( const item &it )
+{
+    const item_contents &it_contents = it.get_contents();
+    return it_contents.ammo_capacity( ammo_battery ) != 0 ||
+           ( !it_contents.magazine_compatible().empty() &&
+             it.ammo_types( false ).count( ammo_battery ) > 0 );
+}
+
+/**
+ * @return the items directly inside the given item that auto pickup looks at.
+ * CDF: item::all_items_top() covers the standard pockets only (container, magazine, magazine well).
+ * DDA corpses hold their contents in a container pocket; CDF corpses keep them in the CORPSE pocket,
+ * so for a corpse those items are included.
+ */
+static std::vector<item *> autopickup_contents( item &what )
+{
+    std::vector<item *> result = what.all_items_top();
+    if( what.is_corpse() ) {
+        const std::vector<item *> corpse_items = what.all_items_top( pocket_type::CORPSE );
+        result.insert( result.end(), corpse_items.begin(), corpse_items.end() );
+    }
+    return result;
+}
+
+// CDF: DDA's item::is_container() counts every container pocket; CDF's item::is_container()
+// ignores `carry` (worn storage) pockets, so a ground backpack was never looked into by
+// auto pickup (DDA auto_pickup.cpp uses is_container() at the same places). Auto pickup
+// therefore uses this check, which includes carry pockets.
+static bool is_autopickup_container( const item &what )
+{
+    for( const item_pocket &pocket : what.get_contents().get_pockets() ) {
+        if( pocket.is_type( pocket_type::CONTAINER ) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * @return `true` if the item has contents that auto pickup should look into: a container with
+ * items, or a corpse with items (CDF: item::is_container() is false for a corpse).
+ */
+static bool has_autopickup_contents( const item &what )
+{
+    if( what.is_corpse() ) {
+        return !what.is_container_empty();
+    }
+    return is_autopickup_container( what ) && !what.is_container_empty();
+}
+
+/**
+ * Drop all items from the given container that match special auto pickup rules.
+ * The items will be removed from the container and dropped in the designated location.
+ *
+ * @param what container to drop items from.
+ * @param where location on the map to drop items to.
+ */
+// CDF: item_location is replaced by a plain item pointer (post-IV handles); DDA copies the item
+// and removes the original, CDF moves the detached_ptr out of the container onto the tile.
+static void empty_autopickup_target( item *what, const tripoint_bub_ms &where )
+{
+    bool is_rigid = what->all_pockets_rigid();
+    // CDF: all_items_top() returns a copy (std::vector), so removing entries below is safe.
+    const std::vector<item *> entries = what->all_items_top();
+    for( item *entry : entries ) {
+        const rule_state ap_rule = get_autopickup_rule( entry );
+        // rigid containers want to keep as much items as possible so drop only blacklisted items
+        // non-rigid containers want to drop as much items as possible so keep only whitelisted items
+        if( is_rigid ? ap_rule == RULE_BLACKLISTED : ap_rule != RULE_WHITELISTED ) {
+            detached_ptr<item> removed = what->get_contents().remove_top( entry );
+            // drop the items on the same tile the container is on
+            if( removed ) {
+                get_map().add_item( where, std::move( removed ) );
+            }
+        }
+    }
+}
+
+/**
+ * Iterate through every item inside the container to find items that match auto pickup rules.
+ * In most cases whitelisted items will be included and blacklisted one will be excluded however
+ * there are special cases. Below is an overview of selection rules for container auto pickup.
+ *
+ * Containers and items will **never** be picked up when:
+ *
+ * - they are owned by player and `AUTO_PICKUP_OWNED` game option is disabled.
+ * - they exceed volume or weight user auto pickup limitations.
+ * - they are blacklisted in auto pickup rules.
+ *
+ * Containers will **always** be picked up when:
+ *
+ * - the container is sealed.
+ * - there is any liquids stored in container pockets.
+ * - all items inside the container are marked for pickup.
+ *
+ * Containers will **never** be picked up when:
+ *
+ * - only batteries were selected and the container is battery powered.
+ * - the container is a non-whitelisted corpse.
+ *
+ * Items will **NOT** be picked up when:
+ *
+ * - the parent container is non-rigid and the item is not whitelisted.
+ *
+ * @param from item to search for items to auto pickup from.
+ * @param where map tile the top level container is on (empty_autopickup_target drops there).
+ * CDF: DDA derives it with from.pos_bub( here ); without item_location it is passed down.
+ * @return sequence of items to auto pickup from given container.
+ */
+static std::vector<item *> get_autopickup_items( item *from, const tripoint_bub_ms &where )
+{
+    item *container_item = from;
+    // items sealed in containers should never be unsealed by auto pickup
+    bool force_pick_container = container_item->any_pockets_sealed();
+    bool pick_all_items = true;
+
+    std::vector<item *> result;
+    // do not auto pickup owned containers or items
+    if( !get_option<bool>( "AUTO_PICKUP_OWNED" ) &&
+        container_item->is_owned_by( get_player_character() ) ) {
+        return result;
+    }
+    // CDF: all_items_top() returns std::vector<item *> (DDA: std::list<item *>), by value
+    const std::vector<item *> contents = autopickup_contents( *container_item );
+    result.reserve( contents.size() );
+
+    bool any_whitelisted = false;
+    for( item *item_entry : contents ) {
+        // CDF: DDA skips items reserved by a craft here (craft_reservation::contains_reserved,
+        // auto_pickup.cpp:164) before empty_autopickup_target turns a container out. Not ported:
+        // CDF has no craft_reservation subsystem.
+        if( !within_autopickup_limits( item_entry ) ) {
+            pick_all_items = false;
+            continue;
+        }
+        const rule_state pickup_state = get_autopickup_rule( item_entry );
+        if( pickup_state == RULE_WHITELISTED ) {
+            any_whitelisted = true;
+            if( !force_pick_container ) {
+                // CDF: is_autopickup_container also covers carry-only containers (backpack)
+                if( is_autopickup_container( *item_entry ) ) {
+                    // whitelisted containers should exclude contained blacklisted items
+                    empty_autopickup_target( item_entry, where );
+                } else if( item_entry->made_of_from_type( LIQUID ) ) {
+                    // liquid items should never be picked up without container
+                    force_pick_container = true;
+                    break;
+                }
+                // pick up the whitelisted item
+                result.push_back( item_entry );
+            }
+        } else if( !force_pick_container && has_autopickup_contents( *item_entry ) ) {
+            // get pickup list from nested item container
+            std::vector<item *> result_nested = get_autopickup_items( item_entry, where );
+
+            // container with content was NOT marked for pickup
+            if( result_nested.size() != 1 || result_nested[0] != item_entry ) {
+                pick_all_items = false;
+            }
+            result.reserve( result_nested.size() + result.size() );
+            result.insert( result.end(), result_nested.begin(), result_nested.end() );
+        } else {
+            // skip not whitelisted items that are not containers with items
+            pick_all_items = false;
+        }
+    }
+    // all items in container were approved for pickup
+    if( !contents.empty() && ( pick_all_items || force_pick_container ) ) {
+        // only auto pickup corpses if they are whitelisted
+        // blacklisted containers should still have their contents picked up but themselves should be excluded.
+        // If all items inside blacklisted container match then just pickup the items without the container
+        rule_state pickup_state = get_autopickup_rule( container_item );
+        if( pickup_state == RULE_BLACKLISTED || !any_whitelisted ||
+            ( container_item->is_corpse() && pickup_state != RULE_WHITELISTED ) ) {
+            return result;
+        }
+        bool all_batteries = true;
+        const bool powered_container = is_battery_powered( *container_item );
+        if( powered_container ) {
+            // when dealing with battery powered tools there should only be one pocket
+            // and one battery inside but this could change in future so account for that here
+            // CDF: item::is_battery() is `!!type->battery` (energy-storage items) and is false for
+            // MAGAZINE items such as light_battery_cell, which is what tools actually hold.
+            all_batteries = std::all_of( result.begin(), result.end(),
+            []( const item * il ) {
+                return il->is_battery() ||
+                       ( il->is_magazine() && il->ammo_types( false ).count( ammo_battery ) > 0 );
+            } );
+        }
+        bool batteries_from_tool = powered_container && all_batteries;
+        // make sure container is allowed to be picked up
+        // when picking up batteries from powered containers don't pick container
+        if( within_autopickup_limits( container_item ) && !batteries_from_tool ) {
+            result.clear();
+            result.push_back( from );
+        } else if( force_pick_container ) {
+            // when force picking never pick individual items
+            result.clear();
+        }
+    }
+    return result;
+}
+
+/**
+ * Select which items on the map tile should be auto-picked up.
+ * The return value represents the selected items on the map.
+ *
+ * @param from stack of item entries on a map tile.
+ * @param location where the stack of items is located on the map.
+ * @return sequence of selected items on the map.
+ */
+// CDF: returns item pointers instead of drop_locations (item_location + count). DDA's count is
+// always 0 (TODO there), i.e. the whole item, which pointers express as is. DDA builds a
+// map_cursor for the item_locations; not needed here.
+std::vector<item *> auto_pickup::select_items(
+    const std::vector<item_stack::iterator> &from, const tripoint_bub_ms &location )
+{
+    bool picking_up_itype_id = true;
+    itype_id picking_up_last_itype_id = itype_id::NULL_ID();
+    std::vector<item *> result;
+
+    // CDF: location_vector iterators are invalidated when empty_autopickup_target adds the
+    // emptied items to the same tile (DDA's list-backed stacks are not), so only the stable
+    // item pointers are kept from here on.
+    std::vector<item *> entries;
+    entries.reserve( from.size() );
+    for( const item_stack::iterator &stack : from ) {
+        entries.push_back( *stack );
+    }
+
+    // iterate over all item stacks found in location
+    for( item *item_entry : entries ) {
+        if( item_entry->typeId() != picking_up_last_itype_id ) {
+            picking_up_itype_id = false;
+            picking_up_last_itype_id = item_entry->typeId();
+        } else if( !picking_up_itype_id ) {
+            // Don't bother checking if we didn't pick up the last item that had this itype_id
+            continue;
+        }
+
+        // do not auto pickup owned containers or items
+        if( !get_option<bool>( "AUTO_PICKUP_OWNED" ) &&
+            item_entry->is_owned_by( get_player_character() ) ) {
+            continue;
+        }
+        // do not auto pickup spilt liquids
+        if( item_entry->made_of( LIQUID ) ) {
+            continue;
+        }
+        // CDF: DDA skips craft-reserved items here (craft_reservation::contains_reserved,
+        // auto_pickup.cpp:277) before empty_autopickup_target turns a container out. Not ported:
+        // CDF has no craft_reservation subsystem.
+        rule_state pickup_state = get_autopickup_rule( item_entry );
+        // CDF: has_autopickup_contents also covers a corpse (DDA: corpses are containers)
+        bool is_container = has_autopickup_contents( *item_entry );
+
+        // before checking contents check if item is on pickup list
+        if( pickup_state == RULE_WHITELISTED ) {
+            // CDF: is_autopickup_container also covers carry-only containers (backpack)
+            if( is_autopickup_container( *item_entry ) ) {
+                empty_autopickup_target( item_entry, location );
+            }
+            // skip if the container is still above the limit after emptying it
+            if( !within_autopickup_limits( item_entry ) ) {
+                continue;
+            }
+            // TODO (DDA): factor in auto pickup max_quantity here
+            picking_up_itype_id = true;
+            result.push_back( item_entry );
+        } else if( is_container || is_battery_powered( *item_entry ) ) {
+            // CDF: is_battery_powered also covers tools with a magazine well, see there
+            picking_up_itype_id = true; // Always check containers or tools with batteries
+            for( item *add_item : get_autopickup_items( item_entry, location ) ) {
+                // TODO (DDA): factor in auto pickup max_quantity here
+                result.push_back( add_item );
+            }
+        }
+    }
+    return result;
 }
 
 void user_interface::show()
@@ -551,9 +887,11 @@ bool player_settings::has_rule( const item *it )
     return false;
 }
 
-void player_settings::add_rule( const item *it )
+void player_settings::add_rule( const item *it, bool include )
 {
-    character_rules.push_back( rule( it->tname( 1, false ), true, false ) );
+    // CDF: DDA add_rule( const item *, bool include ); include == false adds a blacklist rule.
+    // The default include = true (header) keeps the one-argument behaviour of existing callers.
+    character_rules.push_back( rule( it->tname( 1, false ), true, !include ) );
     create_rule( it );
 
     if( !get_option<bool>( "AUTO_PICKUP" ) &&
@@ -596,6 +934,22 @@ void rule_list::create_rule( cache &map_items, const std::string &to_match )
 
         map_items[ to_match ] = elem.bExclude ? RULE_BLACKLISTED : RULE_WHITELISTED;
     }
+}
+
+// DDA auto_pickup.cpp:794
+// CDF: returns the unscoped RULE_* enum (DDA: enum class rule_state).
+rule_state player_settings::check_item( const item &it )
+{
+    const std::string item_name = it.tname( 1, false );
+    const rule_state cached_state = base_settings::check_item( item_name );
+
+    // RULE_NONE = uncached OR cached unmatched.
+    if( cached_state != RULE_NONE || map_items.find( item_name ) != map_items.end() ) {
+        return cached_state;
+    }
+
+    create_rule( &it );
+    return map_items.try_emplace( item_name, RULE_NONE ).first->second;
 }
 
 void player_settings::create_rule( const item *it )

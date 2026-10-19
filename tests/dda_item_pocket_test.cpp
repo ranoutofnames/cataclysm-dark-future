@@ -1,21 +1,13 @@
-// DDA source: tests/item_pocket_test.cpp (DDA commit b4b62254ae2). Staged for P1-transplant J2, not compiled until J2 lands.
-// TEST_CASEs copied (15): max_item_length, max_item_volume, max_container_volume, magazine_with_ammo_restriction, pocket_with_item_flag_restriction, holster_can_contain_one_fitting_item, pockets_containing_liquids, pockets_containing_gases, rigid_and_non-rigid_or_flexible_pockets, corpse_can_contain_anything, sealed_containers, when_one_pocket_is_better_than_another, pocket_favorites_allow_or_restrict_items, pocket_favorites_allow_or_restrict_containers, pocket_leak
-// CUT usb_drives_and_software: CUT, needs E_FILE_STORAGE (plan D16/E1); not copied
-// DDA test helpers / APIs this file uses that BN lacks (identifier absent from CDF src/ and tests/):
-//   accepts_item, add_flag_restriction, ammo_45_half_clip, ammo_45_over, ammo_45_refill, ammo_9mm, ammo_9mm_bullet, ammo_9mm_full_clip, ammo_9mm_half_clip, ammo_9mm_over, ammo_9mm_overfill, ammo_9mm_refill, blacklist_category, clear_map_without_vision, data_ammo_box, data_balloon, data_belt, data_box, data_bucket, data_corpse, data_holster, data_jug, data_mag, data_sheath, data_sock, expect_can_contain, force_insert_item, get_category_blacklist, get_category_shallow, get_category_whitelist, get_container_pockets, get_freeze_point, get_item_blacklist, get_item_whitelist, get_volume_capacity, get_wielded_item, halligan, is_better_favorite, is_frozen_liquid, item_plastic_bag, ketchup, mustard, pocket_balloon, pocket_belt, pocket_bucket, pocket_corpse, pocket_holster, pocket_jug, pocket_mag, pocket_sheath, pocket_sock, pos_bub, rod_14, rod_15, set_item_temperature, test_item_different_category, test_item_same_category, whitelist_category, whitelist_item
-// Translation TT1-TT8 (orchestration/plans/P1-transplant/COMMON.md) is NOT applied here; J-job owns it.
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
-#include <list>
-#include <map>
-#include <memory>
-#include <optional>
-#include <string>
-#include <utility>
-#include <vector>
-
+// DDA source: tests/item_pocket_test.cpp (DDA commit b4b62254ae2). Compiled and enabled.
+// TEST_CASEs copied (15): max_item_length, max_item_volume, max_container_volume,
+// magazine_with_ammo_restriction, pocket_with_item_flag_restriction,
+// holster_can_contain_one_fitting_item, pockets_containing_liquids, pockets_containing_gases,
+// rigid_and_non-rigid_or_flexible_pockets, corpse_can_contain_anything, sealed_containers,
+// when_one_pocket_is_better_than_another, pocket_favorites_allow_or_restrict_items,
+// pocket_favorites_allow_or_restrict_containers, pocket_leak CUT usb_drives_and_software: CUT,
+// needs E_FILE_STORAGE (plan D16/E1); not copied The accepts_item/whitelist_item/blacklist_* pocket
+// settings API this file uses exists in CDF src (item_pocket.h favorite_settings). Only
+// is_better_favorite is absent, and in DDA it is a TODO comment too.
 #include "activity_actor_definitions.h"
 #include "avatar.h"
 #include "calendar.h"

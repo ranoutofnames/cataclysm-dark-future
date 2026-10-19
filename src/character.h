@@ -1451,6 +1451,8 @@ class Character : public Creature, public location_visitable<Character>
         void on_carried_contents_changed();
         /** The worn items (DDA top_items_loc, TT8); the wielded item is not included. */
         std::vector<item *> top_items() const;
+        /** Inventory organization menu (per DDA outfit::organize_items_menu).. */
+        void organize_items_menu();
         // CDF: item_location option A, the handle is item* (BN item_location is an owning slot).
         /** Per DDA Character::top_items_loc: worn items, not the wielded one. Same as top_items(). */
         std::vector<item *> top_items_loc() const;
@@ -1563,7 +1565,8 @@ class Character : public Creature, public location_visitable<Character>
          * @return The remaining liquid, if any.
          */
         /**@{*/
-        detached_ptr<item> pour_into( item &container, detached_ptr<item> &&liquid, int limit = -1 );
+        detached_ptr<item> pour_into( item &container, detached_ptr<item> &&liquid, int limit = -1,
+                                      bool ignore_settings = false );
         detached_ptr<item> pour_into( vehicle &veh, detached_ptr<item> &&liquid, int limit = -1 );
         /**@}*/
 
@@ -1644,6 +1647,13 @@ class Character : public Creature, public location_visitable<Character>
         },
         const std::function<bool( const item_pocket & )> &check_pocket_tree =
             item_pocket::ok_default_containers ) const;
+        /**
+         * All pockets accepted by @p include_pocket, with the constraints of the pockets they are
+         * nested in (DDA character_attire.cpp:2372). @p check_pocket_tree selects the pockets to descend into.
+         */
+        std::vector<pocket_with_constraint> get_all_pockets_with_constraints(
+            const std::function<bool( const item_pocket & )> &include_pocket,
+            const std::function<bool( const item_pocket & )> &check_pocket_tree ) const;
         units::mass free_weight_capacity() const;
         units::volume volume_capacity_reduced_by(
             const units::volume &mod,

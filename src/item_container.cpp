@@ -35,6 +35,9 @@
 #include "item_category.h"
 #include "item_contents.h"
 #include "item_pocket.h"
+#include "item_pocket_menu.h"
+#include "game.h"
+#include "output.h"
 #include "itype.h"
 #include "iuse.h"
 #include "iuse_actor.h"
@@ -132,6 +135,11 @@ void item::force_insert_item( const item &it, pocket_type pk_type )
     on_contents_changed();
 }
 
+void item::favorite_settings_menu()
+{
+    pocket_management_menu( remove_color_tags( display_name() ), { this }, get_player_character() );
+}
+
 bool item::is_collapsed() const
 {
     return !contents.empty() && !contents.get_pockets( []( item_pocket const & pocket ) {
@@ -217,6 +225,11 @@ std::vector<const item_pocket *> item::get_pockets( const
 std::vector<const item_pocket *> item::get_container_pockets() const
 {
     return contents.get_container_pockets();
+}
+
+bool item::has_container_pockets() const
+{
+    return !get_container_pockets().empty();
 }
 
 std::vector<item_pocket *> item::get_container_pockets()
@@ -1005,7 +1018,7 @@ int item::get_remaining_capacity_for_id( const itype_id &liquid, bool allow_buck
     return 0;
 }
 
-detached_ptr<item> item::fill_with( detached_ptr<item> &&liquid, int amount )
+detached_ptr<item> item::fill_with( detached_ptr<item> &&liquid, int amount, bool ignore_settings )
 {
     if( amount == -1 ) {
         amount = INT_MAX;
@@ -1025,8 +1038,14 @@ detached_ptr<item> item::fill_with( detached_ptr<item> &&liquid, int amount )
         ammo_set( liquid->typeId(), ammo_remaining() + amount );
         liquid->mod_charges( -amount );
     } else {
+        // no pocket accepts it (all disabled or filtered): refuse quietly, no debugmsg
+        item &probe = *item::spawn_temporary( *liquid );
+        probe.charges = 1;
+        if( best_pocket( probe, nullptr, false, ignore_settings ).pocket == nullptr ) {
+            return std::move( liquid );
+        }
         // DDA: the liquid goes into the best pockets, a copy per pocket (T2)
-        const int filled = fill_with( *liquid, amount );
+        const int filled = fill_with( *liquid, amount, false, false, ignore_settings );
         if( filled <= 0 ) {
             return std::move( liquid );
         }

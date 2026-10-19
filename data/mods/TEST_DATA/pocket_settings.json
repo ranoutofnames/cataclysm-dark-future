@@ -1,0 +1,14 @@
+[
+  {
+    "id": "test_ps_single_group",
+    "type": "item_group",
+    "subtype": "collection",
+    "entries": [ { "item": "test_rock", "container-item": "test_box" } ]
+  },
+  {
+    "id": "test_ps_bulk_group",
+    "type": "item_group",
+    "subtype": "collection",
+    "entries": [ { "item": "test_rock", "count": 3, "container-item": "test_box" } ]
+  }
+]

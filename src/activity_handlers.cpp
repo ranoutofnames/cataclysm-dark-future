@@ -1671,7 +1671,7 @@ void activity_handlers::fill_liquid_do_turn( player_activity *act, player *p )
                 }
 
                 finished = transfer( [&p, &container]( detached_ptr<item> &&it ) {
-                    return p->pour_into( *container,  std::move( it ) );
+                    return p->pour_into( *container,  std::move( it ), -1, true );
                 } );
 
                 break;

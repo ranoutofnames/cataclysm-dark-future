@@ -37,6 +37,7 @@ static std::string datadir_value;
 static std::string base_path_value;
 static std::string savedir_value;
 static std::string autopickup_value;
+static std::string pocket_presets_value;
 static std::string options_value;
 static std::string memorialdir_value;
 
@@ -152,6 +153,7 @@ void PATH_INFO::set_standard_filenames()
 #endif
     options_value = config_dir_value + "options.json";
     autopickup_value = config_dir_value + "auto_pickup.json";
+    pocket_presets_value = config_dir_value + "pocket_presets.json";
 }
 
 std::string find_translated_file( const std::string &base_path, const std::string &extension,
@@ -167,6 +169,11 @@ std::string find_translated_file( const std::string &base_path, const std::strin
     }
 
     return fallback;
+}
+
+std::string PATH_INFO::pocket_presets()
+{
+    return pocket_presets_value;
 }
 
 std::string PATH_INFO::autopickup()
@@ -406,6 +413,7 @@ void PATH_INFO::set_config_dir( const std::string &config_dir )
     config_dir_value = config_dir;
     options_value = config_dir_value + "options.json";
     autopickup_value = config_dir_value + "auto_pickup.json";
+    pocket_presets_value = config_dir_value + "pocket_presets.json";
 }
 
 void PATH_INFO::set_savedir( const std::string &savedir )
@@ -421,6 +429,11 @@ void PATH_INFO::set_memorialdir( const std::string &memorialdir )
 void PATH_INFO::set_options( const std::string &options )
 {
     options_value = options;
+}
+
+void PATH_INFO::set_pocket_presets( const std::string &pocket_presets )
+{
+    pocket_presets_value = pocket_presets;
 }
 
 void PATH_INFO::set_autopickup( const std::string &autopickup )

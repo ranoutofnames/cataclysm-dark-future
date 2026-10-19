@@ -35,6 +35,27 @@ struct action_entry {
 
 namespace examine_item_menu
 {
+// Per DDA game.cpp:1991,2001
+static hint_rating rate_action_collapse( const item &it )
+{
+    for( const item_pocket *pocket : it.get_standard_pockets() ) {
+        if( !pocket->settings.is_collapsed() ) {
+            return hint_rating::good;
+        }
+    }
+    return hint_rating::cant;
+}
+
+static hint_rating rate_action_expand( const item &it )
+{
+    for( const item_pocket *pocket : it.get_standard_pockets() ) {
+        if( pocket->settings.is_collapsed() ) {
+            return hint_rating::good;
+        }
+    }
+    return hint_rating::cant;
+}
+
 
 bool run(
     item &loc,
@@ -200,6 +221,28 @@ bool run(
             return true;
         } );
     }
+
+    if( itm.is_container() && !itm.is_corpse() ) {
+        // Per DDA game.cpp:2190,2434
+        add_entry( "POCKET_SETTINGS", hint_rating::good, [&]() {
+            itm.favorite_settings_menu();
+            return true;
+        } );
+    }
+
+    add_entry( "HIDE_CONTENTS", rate_action_collapse( itm ), [&]() {
+        for( item_pocket *pocket : itm.get_standard_pockets() ) {
+            pocket->settings.set_collapse( true );
+        }
+        return false;
+    } );
+
+    add_entry( "SHOW_CONTENTS", rate_action_expand( itm ), [&]() {
+        for( item_pocket *pocket : itm.get_standard_pockets() ) {
+            pocket->settings.set_collapse( false );
+        }
+        return false;
+    } );
 
     add_entry( "RELOAD", rate_action_reload( you, itm ), [&]() {
         avatar_action::reload( itm );

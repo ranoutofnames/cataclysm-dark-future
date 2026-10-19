@@ -62,6 +62,11 @@ bool item_category::operator!=( const item_category &rhs ) const
     return !operator==( rhs );
 }
 
+const std::vector<item_category> &item_category::get_all()
+{
+    return item_category_factory.get_all();
+}
+
 std::string item_category::name() const
 {
     return name_.translated();

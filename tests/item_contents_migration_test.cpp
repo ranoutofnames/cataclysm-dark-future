@@ -204,8 +204,12 @@ TEST_CASE("pocket placement and empty pockets in the DDA format", "[item][pocket
     SECTION("an item in its default state writes no contents") {
         detached_ptr<item> empty = load_item(R"({"typeid":"canteen"})");
         CHECK(save_item(*empty).find("contents") == std::string::npos);
+        // CDF: a gun's magazine pocket is collapsed from the start (DDA item.cpp:222), so its
+        // contents are written; a pocketless item still writes none
         detached_ptr<item> gun = spawn_with("m4a1");
-        CHECK(save_item(*gun).find("contents") == std::string::npos);
+        CHECK(save_item(*gun).find("contents") != std::string::npos);
+        detached_ptr<item> rock = spawn_with("rock");
+        CHECK(save_item(*rock).find("contents") == std::string::npos);
     }
 
     SECTION("a gun with a magazine writes its pockets") {

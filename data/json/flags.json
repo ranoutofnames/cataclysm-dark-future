@@ -248,6 +248,12 @@
     "context": [ "GENERIC" ]
   },
   {
+    "id": "COLLAPSE_CONTENTS",
+    "type": "json_flag",
+    "context": [  ],
+    "info": "Contents are hidden by default in inventory view."
+  },
+  {
     "id": "COLLAR",
     "type": "json_flag",
     "context": [ "ARMOR", "TOOL_ARMOR" ],

@@ -381,6 +381,8 @@ class uilist // NOLINT(cata-xy)
         // return UILIST_ADDITIONAL if the input action is inside `additional_actions`
         // and unhandled by callback, default false.
         bool allow_additional = false;
+        // allow confirming with the "CONFIRM" action, default true (per DDA uilist.h:487)
+        bool allow_confirm = true;
         bool hilight_disabled = false;
 
     private:

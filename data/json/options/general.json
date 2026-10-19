@@ -100,6 +100,17 @@
   },
   {
     "type": "OPTION",
+    "name": "AUTO_PICKUP_OWNED",
+    "stype": "bool",
+    "scope": "global",
+    "page": "general",
+    "menu_text": "Auto pickup owned items",
+    "tooltip": "If true, items that belong to your faction will be included in auto pickup.",
+    "default": false,
+    "deps": [ { "option": "AUTO_PICKUP" } ]
+  },
+  {
+    "type": "OPTION",
     "name": "AUTO_PICKUP_WEIGHT_LIMIT",
     "stype": "int",
     "scope": "global",

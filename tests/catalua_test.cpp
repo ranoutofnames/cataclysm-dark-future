@@ -4400,6 +4400,10 @@ TEST_CASE("lua_hook_avatar_enters_omt_activity_skip", "[lua][hooks][activity]") 
     const auto no_underground_bubble = override_option("UNDERGROUND_BUBBLE_SIZE", "0");
     const auto no_vehicle_bubble = override_option("VEHICLE_BUBBLE_SIZE", "0");
     const auto no_combat_bubble = override_option("COMBAT_BUBBLE_SIZE", "0");
+    // The hook's move shifts the map and generates new submaps mid-skip; rolled mapgen spawns
+    // there (seed dependent) change the monster count and make the skip stop early.
+    const auto no_spawns = override_option("SPAWN_DENSITY", "0.0");
+    const auto no_animal_spawns = override_option("SPAWN_ANIMAL_DENSITY", "0.0");
 
     clear_all_state();
     build_test_map(ter_id("t_pavement"));
@@ -4468,6 +4472,9 @@ TEST_CASE("lua_hook_avatar_enters_omt_activity_skip", "[lua][hooks][activity]") 
     sol::protected_function mover = mover_table["l2b_mover"];
     every_x.push_back(cata::on_every_x_hooks{1_turns, {mover}});
 
+    // Strays left in the tracker (far hordes/spawns, depends on earlier tests) are despawned by
+    // the first skipped monmove; the skip loop stops on a changed monster count before the hook.
+    clear_creatures();
     const auto start_turn = calendar::turn;
     CHECK_FALSE(g->do_turn());
     // The turn must have gone through the skip path, not a normal turn.

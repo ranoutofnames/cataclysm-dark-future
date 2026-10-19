@@ -85,61 +85,9 @@ struct pickup_count {
     bool all_children_picked = false;
 };
 
-static bool select_autopickup_items( const std::vector<std::list<item_stack::iterator>> &here,
-                                     std::vector<pickup_count> &getitem )
-{
-    bool found_something = false;
-
-    //Loop through Items lowest Volume first
-    bool do_pickup = false;
-
-    for( size_t rounded_volume = 0, num_checked = 0; num_checked < here.size(); rounded_volume++ ) {
-        for( size_t i = 0; i < here.size(); i++ ) {
-            do_pickup = false;
-            item *begin = *here[i].front();
-            if( begin->volume() / units::legacy_volume_factor == static_cast<int>( rounded_volume ) ) {
-                num_checked++;
-                const std::string item_name = begin->tname( 1, false );
-
-                //Check the Pickup Rules
-                if( get_auto_pickup().check_item( item_name ) == RULE_WHITELISTED ) {
-                    do_pickup = true;
-                } else if( begin->is_container() && !begin->is_container_empty() &&
-                           get_auto_pickup().check_item( begin->get_contained().tname( 1, false ) ) == RULE_WHITELISTED ) {
-                    do_pickup = true;
-                } else if( get_auto_pickup().check_item( item_name ) != RULE_BLACKLISTED ) {
-                    //No prematched pickup rule found
-                    //check rules in more detail
-                    get_auto_pickup().create_rule( begin );
-
-                    if( get_auto_pickup().check_item( item_name ) == RULE_WHITELISTED ) {
-                        do_pickup = true;
-                    }
-                }
-
-                //Auto Pickup all items with Volume <= AUTO_PICKUP_VOL_LIMIT * 50 and Weight <= AUTO_PICKUP_ZERO * 50
-                //items will either be in the autopickup list ("true") or unmatched ("")
-                if( !do_pickup ) {
-                    int weight_limit = get_option<int>( "AUTO_PICKUP_WEIGHT_LIMIT" );
-                    int volume_limit = get_option<int>( "AUTO_PICKUP_VOL_LIMIT" );
-                    if( weight_limit && volume_limit ) {
-                        if( begin->volume() <= units::from_milliliter( volume_limit * 50 ) &&
-                            begin->weight() <= weight_limit * 50_gram &&
-                            get_auto_pickup().check_item( item_name ) != RULE_BLACKLISTED ) {
-                            do_pickup = true;
-                        }
-                    }
-                }
-            }
-
-            if( do_pickup ) {
-                getitem[i].pick = true;
-                found_something = true;
-            }
-        }
-    }
-    return found_something;
-}
+// CDF: the former select_autopickup_items (BN: whitelist check of the stack name and one contained
+// level, plus a limits-only pickup of unmatched light items) is replaced by DDA's container aware
+// auto_pickup::select_items (auto_pickup.cpp), called from pick_up_from_items for min == -1.
 
 enum pickup_answer : int {
     CANCEL = -1,
@@ -650,7 +598,8 @@ auto append_item_iterators( item_stack &stack, std::vector<item_stack::iterator>
 }
 
 auto pick_up_from_items( const std::vector<item_stack::iterator> &here, const int min,
-                         const std::optional<tripoint_bub_ms> &starting_pos ) -> void
+                         const std::optional<tripoint_bub_ms> &starting_pos,
+                         const tripoint_bub_ms &where ) -> void
 {
     if( here.empty() ) {
         return;
@@ -661,6 +610,26 @@ auto pick_up_from_items( const std::vector<item_stack::iterator> &here, const in
         g->u.assign_activity( std::make_unique<player_activity>( std::make_unique<pickup_activity_actor>(
         std::vector<pickup::pick_drop_selection> { { *here.front(), std::nullopt, {} } },
         starting_pos ) ) );
+        return;
+    }
+
+    if( min == -1 ) {
+        // Auto pickup (DDA Pickup::autopickup), select matching items
+        // CDF: DDA hands the selection (item_location, count) to a pickup activity; here the selected
+        // item pointers go through optimize_pickup. The selection may contain items nested in a
+        // container on the tile, so it cannot go through the stacked UI lists below, and the stack
+        // iterators in `here` are not used after select_items (it may add items to the tile).
+        const std::vector<item *> selected = auto_pickup::select_items( here, where );
+        if( selected.empty() ) {
+            return;
+        }
+        const std::vector<int> quantities( selected.size(), 0 );
+        const std::vector<pickup::pick_drop_selection> targets =
+            pickup::optimize_pickup( selected, quantities );
+        g->u.assign_activity( std::make_unique<player_activity>( std::make_unique<pickup_activity_actor>
+                              ( targets, starting_pos ) ) );
+        // Auto pickup will need to auto resume since there can be several of them on the stack.
+        g->u.activity->auto_resume = true;
         return;
     }
 
@@ -677,12 +646,8 @@ auto pick_up_from_items( const std::vector<item_stack::iterator> &here, const in
         }
     }
 
-    if( min == -1 ) { //Auto Pickup, select matching items
-        if( !select_autopickup_items( stacked_here, getitem ) ) {
-            // If we didn't find anything, bail out now.
-            return;
-        }
-    } else {
+    {
+        // CDF: the manual pickup menu (min != -1), formerly the else branch of the auto pickup test
         g->temp_exit_fullscreen();
 
         int start = 0;
@@ -1347,7 +1312,7 @@ auto pickup::pick_up( const tripoint_bub_ms &p, int min, from_where get_items_fr
     }
 
     const auto starting_pos = from_vehicle ? std::nullopt : std::make_optional( g->u.bub_pos() );
-    pick_up_from_items( here, min, starting_pos );
+    pick_up_from_items( here, min, starting_pos, p );
 }
 
 auto pickup::nearby_items_for_pickup( const tripoint_bub_ms &center ) -> nearby_pickup_items
@@ -1391,7 +1356,7 @@ auto pickup::pick_up_all_nearby() -> void
 
     const auto starting_pos = nearby.has_ground_items ? std::make_optional(
                                   g->u.bub_pos() ) : std::nullopt;
-    pick_up_from_items( nearby.items, 0, starting_pos );
+    pick_up_from_items( nearby.items, 0, starting_pos, g->u.bub_pos() );
 }
 
 //helper function for Pickup::pick_up

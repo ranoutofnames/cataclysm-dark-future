@@ -845,7 +845,8 @@ class item : public location_visitable<item>, public game_object<item>
          * @param amount Amount to fill item with, capped by remaining capacity
          * @return the remaining liquid
          */
-        detached_ptr<item> fill_with( detached_ptr<item> &&liquid, int amount = INFINITE_CHARGES );
+        detached_ptr<item> fill_with( detached_ptr<item> &&liquid, int amount = INFINITE_CHARGES,
+                                      bool ignore_settings = false );
         /**
          * How much more of this liquid (in charges) can be put in this container.
          * If this is not a container (or not suitable for the liquid), it returns 0.
@@ -1679,7 +1680,11 @@ class item : public location_visitable<item>, public game_object<item>
         std::vector<const item_pocket *> get_pockets( const std::function<bool( const item_pocket & )>
                 &filter ) const;
         std::vector<const item_pocket *> get_container_pockets() const;
+        /** True if the item has any CONTAINER pockets (per owner F10). */
+        bool has_container_pockets() const;
         std::vector<item_pocket *> get_container_pockets();
+        /** Pocket settings menu (per DDA item.h:3446).: menu not written yet. */
+        void favorite_settings_menu();
         std::vector<const item_pocket *> get_standard_pockets() const;
         std::vector<item_pocket *> get_standard_pockets();
         std::vector<item_pocket *> get_ablative_pockets();

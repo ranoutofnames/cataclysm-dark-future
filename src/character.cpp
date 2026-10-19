@@ -7964,7 +7964,8 @@ enchantment_vision_id Character::sees_with_specials( const Creature &critter,
     return enchantment_vision_id::NULL_ID();
 }
 
-detached_ptr<item> Character::pour_into( item &container, detached_ptr<item> &&liquid, int limit )
+detached_ptr<item> Character::pour_into( item &container, detached_ptr<item> &&liquid, int limit,
+        bool ignore_settings )
 {
     std::string err;
     const int amount = std::min( limit, container.get_remaining_capacity_for_liquid( *liquid, *this,
@@ -7977,7 +7978,7 @@ detached_ptr<item> Character::pour_into( item &container, detached_ptr<item> &&l
 
     add_msg_if_player( _( "You pour %1$s into the %2$s." ), liquid->tname(), container.tname() );
 
-    liquid = container.fill_with( std::move( liquid ), amount );
+    liquid = container.fill_with( std::move( liquid ), amount, ignore_settings );
 
     if( liquid ) {
         add_msg_if_player( _( "There's some left over!" ) );

@@ -454,7 +454,17 @@ void item_contents::rebuild_pockets()
         kept.splice( kept.end(), pockets, added_begin, end_of_real_pockets() );
     }
     std::vector<detached_ptr<item>> held;
+    // CDF: the player's pocket settings follow the layout change, matched by index and type
+    // (DDA keeps them in update_modified_pockets, item_contents.cpp:2183)
+    struct kept_settings {
+        pocket_type type;
+        item_pocket::favorite_settings settings;
+    };
+    std::vector<kept_settings> old_settings;
     for( item_pocket &pocket : pockets ) {
+        if( !pocket.is_type( pocket_type::MIGRATION ) ) {
+            old_settings.push_back( { pocket.get_type(), pocket.settings } );
+        }
         for( detached_ptr<item> &it : pocket.items().clear() ) {
             held.push_back( std::move( it ) );
         }
@@ -463,8 +473,13 @@ void item_contents::rebuild_pockets()
     adapted_pockets = adapted ? std::move( fresh ) : std::vector<pocket_data>();
     const std::vector<pocket_data> &layout = adapted ? adapted_pockets : type_data;
     pockets_type = owner->type;
+    size_t settings_idx = 0;
     for( const pocket_data &data : layout ) {
         pockets.emplace_back( owner, &data );
+        if( settings_idx < old_settings.size() && old_settings[settings_idx].type == data.type ) {
+            pockets.back().settings = old_settings[settings_idx].settings;
+        }
+        settings_idx++;
     }
     pockets.splice( pockets.end(), kept );
     for( detached_ptr<item> &it : held ) {

@@ -29,6 +29,7 @@
 #include "game_constants.h"
 #include "item.h"
 #include "item_contents.h"
+#include "item_pocket_menu.h"
 #include "item_parent_checks.h"
 #include "item_pocket.h"
 #include "itype.h"
@@ -1185,4 +1186,69 @@ bool Character::wield( item &it, std::optional<int> obtain_cost, bool combat )
     }
     ( void )combat;
     return true;
+}
+
+void Character::organize_items_menu()
+{
+    pocket_management_menu( _( "Inventory Organization" ), top_items_loc(), *this );
+}
+
+// ---------------------------------------------------------------------------------------------
+// Pockets with constraints (DDA character_attire.cpp:2372-2430)
+// ---------------------------------------------------------------------------------------------
+
+static auto get_all_pockets_with_constraints_recursive(
+    const item_pocket *pocket,
+    const std::function<bool( const item_pocket & )> &include_pocket,
+    const std::function<bool( const item_pocket & )> &check_pocket_tree )
+-> std::vector<pocket_with_constraint>
+{
+    std::vector<pocket_with_constraint> pwcs;
+    if( include_pocket( *pocket ) ) {
+        pwcs.push_back( { pocket, pocket_constraint( pocket ) } );
+    }
+    for( const item *contained : pocket->all_items_top() ) {
+        for( const item_pocket *inner_pocket : contained->get_pockets( check_pocket_tree ) ) {
+            std::vector<pocket_with_constraint> children = get_all_pockets_with_constraints_recursive(
+                        inner_pocket, include_pocket, check_pocket_tree );
+            for( pocket_with_constraint &c : children ) {
+                c.constraint.constrain_by( pocket );
+            }
+            pwcs.insert( pwcs.end(), children.begin(), children.end() );
+        }
+    }
+    return pwcs;
+}
+
+static void get_all_pockets_with_constraints_in_item_recursive( const item &it,
+        const std::function<bool( const item_pocket & )> &include_pocket,
+        const std::function<bool( const item_pocket & )> &check_pocket_tree,
+        std::vector<pocket_with_constraint> &insert_in )
+{
+    for( const item_pocket *pocket : it.get_pockets( check_pocket_tree ) ) {
+        std::vector<pocket_with_constraint> children = get_all_pockets_with_constraints_recursive(
+                    pocket, include_pocket, check_pocket_tree );
+        insert_in.insert( insert_in.end(), children.begin(), children.end() );
+    }
+}
+
+std::vector<pocket_with_constraint> Character::get_all_pockets_with_constraints(
+    const std::function<bool( const item_pocket & )> &include_pocket,
+    const std::function<bool( const item_pocket & )> &check_pocket_tree ) const
+{
+    std::vector<pocket_with_constraint> ret;
+    if( !primary_weapon().is_null() ) {
+        get_all_pockets_with_constraints_in_item_recursive( primary_weapon(), include_pocket,
+                check_pocket_tree, ret );
+    }
+    for( const item *worn_it : top_items_loc() ) {
+        get_all_pockets_with_constraints_in_item_recursive( *worn_it, include_pocket,
+                check_pocket_tree, ret );
+    }
+    // CDF: the body storage counts like a worn container (as in free_space)
+    if( const item *storage = get_body_storage() ) {
+        get_all_pockets_with_constraints_in_item_recursive( *storage, include_pocket,
+                check_pocket_tree, ret );
+    }
+    return ret;
 }

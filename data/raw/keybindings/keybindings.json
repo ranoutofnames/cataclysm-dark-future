@@ -366,6 +366,27 @@
   },
   {
     "type": "keybinding",
+    "id": "ORGANIZE_MENU",
+    "category": "INVENTORY",
+    "name": "Organize contents",
+    "bindings": [ { "input_method": "keyboard", "key": "i" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "SHOW_HIDE_CONTENTS",
+    "category": "INVENTORY",
+    "name": "Show/hide contents",
+    "bindings": [ { "input_method": "keyboard", "key": ">" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "VIEW_CATEGORY_MODE",
+    "category": "INVENTORY",
+    "name": "Toggle inventory view to show item categories",
+    "bindings": [ { "input_method": "keyboard", "key": ";" } ]
+  },
+  {
+    "type": "keybinding",
     "id": "EXAMINE",
     "category": "INVENTORY",
     "name": "Examine item",
@@ -3671,6 +3692,27 @@
     "bindings": [ { "input_method": "keyboard", "key": "u" } ]
   },
   {
+    "id": "POCKET_SETTINGS",
+    "type": "keybinding",
+    "category": "INVENTORY_ITEM",
+    "name": "Pocket settings",
+    "bindings": [ { "input_method": "keyboard", "key": "v" } ]
+  },
+  {
+    "id": "HIDE_CONTENTS",
+    "type": "keybinding",
+    "category": "INVENTORY_ITEM",
+    "name": "Hide contents",
+    "bindings": [ { "input_method": "keyboard", "key": ">" } ]
+  },
+  {
+    "id": "SHOW_CONTENTS",
+    "type": "keybinding",
+    "category": "INVENTORY_ITEM",
+    "name": "Show contents",
+    "bindings": [ { "input_method": "keyboard", "key": "<" } ]
+  },
+  {
     "id": "INSERT",
     "type": "keybinding",
     "category": "INVENTORY_ITEM",
@@ -4061,5 +4103,103 @@
     "id": "SWAPTONPC",
     "name": "Swap To NPC",
     "bindings": [ { "input_method": "keyboard", "key": "s" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_PRIORITY",
+    "category": "INVENTORY",
+    "name": "Set priority",
+    "bindings": [ { "input_method": "keyboard", "key": "p" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_AUTO_PICKUP",
+    "category": "INVENTORY",
+    "name": "Toggle auto pickup",
+    "bindings": [ { "input_method": "keyboard", "key": "d" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_AUTO_UNLOAD",
+    "category": "INVENTORY",
+    "name": "Toggle auto unload",
+    "bindings": [ { "input_method": "keyboard", "key": "u" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_ITEM",
+    "category": "INVENTORY",
+    "name": "Whitelist/blacklist item",
+    "bindings": [ { "input_method": "keyboard", "key": "i" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_CATEGORY",
+    "category": "INVENTORY",
+    "name": "Whitelist/blacklist category",
+    "bindings": [ { "input_method": "keyboard", "key": "c" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_WHITELIST",
+    "category": "INVENTORY",
+    "name": "Switch to modifying whitelist",
+    "bindings": [ { "input_method": "keyboard", "key": "w" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_WHITELIST_CONTENTS",
+    "category": "INVENTORY",
+    "name": "Whitelist Contents",
+    "bindings": [ { "input_method": "keyboard", "key": "W" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_BLACKLIST",
+    "category": "INVENTORY",
+    "name": "Switch to modifying blacklist",
+    "bindings": [ { "input_method": "keyboard", "key": "b" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_SAVE_PRESET",
+    "category": "INVENTORY",
+    "name": "Save preset",
+    "bindings": [ { "input_method": "keyboard", "key": "S" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_APPLY_PRESET",
+    "category": "INVENTORY",
+    "name": "Apply preset",
+    "bindings": [ { "input_method": "keyboard", "key": "A" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_DEL_PRESET",
+    "category": "INVENTORY",
+    "name": "Delete preset",
+    "bindings": [ { "input_method": "keyboard", "key": "D" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_CLEAR",
+    "category": "INVENTORY",
+    "name": "Clear entries",
+    "bindings": [ { "input_method": "keyboard", "key": "x" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_MOVE_ITEM",
+    "category": "INVENTORY",
+    "name": "Move item",
+    "bindings": [ { "input_method": "keyboard", "key": "m" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "FAV_CONTEXT_MENU",
+    "category": "INVENTORY",
+    "name": "Open context menu",
+    "bindings": [ { "input_method": "keyboard", "key": "RETURN" } ]
   }
 ]
