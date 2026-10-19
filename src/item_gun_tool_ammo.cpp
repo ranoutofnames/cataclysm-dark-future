@@ -259,13 +259,11 @@ int item::ammo_capacity( int well_idx ) const
     }
     const itype *adata = mag->ammo_data();
     if( adata ) {
-        // CDF: no item::ammo_capacity( const ammotype & ); use the magazine's contents.
-        return mag->get_contents().ammo_capacity( adata->ammo->type );
+        return mag->ammo_capacity( adata->ammo->type );
     }
     const itype_id default_ammo = mag->ammo_default();
     if( !default_ammo.is_null() && default_ammo->ammo ) {
-        // CDF: as above, via the magazine's contents.
-        return mag->get_contents().ammo_capacity( default_ammo->ammo->type );
+        return mag->ammo_capacity( default_ammo->ammo->type );
     }
     return 0;
 }
@@ -283,6 +281,104 @@ int item::remaining_ammo_capacity( int well_idx ) const
     // CDF: no no-arg item::remaining_ammo_capacity(); derive it from the
     // per-well capacity and the loaded count.
     return std::max( 0, ammo_capacity( well_idx ) - ammo_remaining( well_idx ) );
+}
+
+int item::ammo_capacity( const ammotype &ammo, bool include_linked ) const
+{
+    // CDF: cable link block (DDA 1722-1726) omitted: CDF has no link API.
+    // Unblock: 4-b2 (cable tail) or an owner decision on a cable port.
+    // `include_linked` is kept for signature parity.
+    static_cast<void>( include_linked );
+
+    // Route per-ammotype lookup through the matching pocket; magazine_current()
+    // returns the first loaded mag regardless of ammotype and misreports here.
+    if( const item_pocket *p = pocket_for_ammo( ammo ) ) {
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            if( const item *mag = p->magazine_current() ) {
+                return mag->ammo_capacity( ammo );
+            }
+            // Multimag hosts surface the default mag's capacity for unloaded
+            // wells so item info shows the projected per-well number. Single-
+            // well guns keep returning 0 so "is this loaded?" stays correct.
+            if( uses_firing_requirements() ) {
+                const itype_id default_mag = p->magazine_default();
+                if( !default_mag.is_null() && default_mag->magazine ) {
+                    return default_mag->magazine->capacity;
+                }
+            }
+        } else {
+            const auto &restrictions = p->get_pocket_data()
+                                       ? p->get_pocket_data()->ammo_restriction
+                                       : std::map<ammotype, int> {};
+            if( restrictions.find( ammo ) != restrictions.end() ) {
+                // pocket-level applies any installed capacity_mods scaling
+                return p->ammo_capacity( ammo );
+            }
+        }
+    }
+
+    if( const item *mag = magazine_current() ) {
+        return mag->ammo_capacity( ammo );
+    }
+    if( has_flag( flag_USES_BIONIC_POWER ) ) {
+        return units::to_kilojoule( get_player_character().get_max_power_level() );
+    }
+
+    if( contents.has_pocket_type( pocket_type::MAGAZINE ) ) {
+        return contents.ammo_capacity( ammo );
+    }
+    if( is_magazine() ) {
+        return type->magazine->capacity;
+    }
+    return 0;
+}
+
+const item_pocket *item::pocket_for_ammo( const ammotype &at ) const
+{
+    if( at.is_null() ) {
+        return nullptr;
+    }
+    const std::vector<const item_pocket *> wells = get_pockets(
+    []( const item_pocket & p ) {
+        return p.is_type( pocket_type::MAGAZINE_WELL ) ||
+               p.is_type( pocket_type::MAGAZINE );
+    } );
+    auto matches = [&at]( const item_pocket * p ) {
+        for( const ammotype &pt : p->ammo_types() ) {
+            if( pt == at ) {
+                return true;
+            }
+        }
+        for( const itype_id &allowed : p->item_type_restrictions() ) {
+            if( !allowed->magazine ) {
+                continue;
+            }
+            for( const ammotype &slot : allowed->magazine->type ) {
+                if( slot == at ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    for( const item_pocket *p : wells ) {
+        if( !matches( p ) ) {
+            continue;
+        }
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            if( p->magazine_current() != nullptr ) {
+                return p;
+            }
+        } else if( !p->empty() ) {
+            return p;
+        }
+    }
+    for( const item_pocket *p : wells ) {
+        if( matches( p ) ) {
+            return p;
+        }
+    }
+    return nullptr;
 }
 
 std::vector<item_pocket *> item::all_magazine_well_pockets()

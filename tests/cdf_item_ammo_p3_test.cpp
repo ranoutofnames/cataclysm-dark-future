@@ -288,3 +288,37 @@ TEST_CASE( "item magazines_current lists loaded magazines", "[p3][ammo]" ) {
     detached_ptr<item> unloaded = item::spawn( itype_id( "m4a1" ) );
     CHECK( unloaded->magazines_current().empty() );
 }
+
+// DDA item_gun_tool_ammo.cpp:1720-1769: per-ammotype capacity reads the
+// matching pocket.
+TEST_CASE( "ammo_capacity by ammotype reads the magazine's own pocket", "[p3][ammo]" ) {
+    const ammotype round = item::spawn( itype_id( "556" ) )->ammo_type();
+
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    CHECK( mag->ammo_capacity( round ) == 30 );
+
+    // CDF: loaded_m4a1( 0 ) still holds an empty stanag30, so its well reports
+    // the magazine's 30-round capacity. A m4a1 with no magazine reports 0.
+    detached_ptr<item> empty_gun = item::spawn( itype_id( "m4a1" ) );
+    CHECK( empty_gun->ammo_capacity( round ) == 0 );
+
+    detached_ptr<item> empty_mag_gun = loaded_m4a1( 0 );
+    CHECK( empty_mag_gun->ammo_capacity( round ) == 30 );
+
+    detached_ptr<item> loaded_gun = loaded_m4a1( 30 );
+    CHECK( loaded_gun->ammo_capacity( round ) == 30 );
+}
+
+// DDA item_gun_tool_ammo.cpp:2481-2527: a loaded well is the pocket for its
+// ammotype; items without ammo pockets have none.
+TEST_CASE( "pocket_for_ammo returns the matching well", "[p3][ammo]" ) {
+    const ammotype round = item::spawn( itype_id( "556" ) )->ammo_type();
+
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    const item_pocket *p = gun->pocket_for_ammo( round );
+    REQUIRE( p != nullptr );
+    CHECK( p->is_type( pocket_type::MAGAZINE_WELL ) );
+
+    detached_ptr<item> backpack = item::spawn( itype_id( "backpack" ) );
+    CHECK( backpack->pocket_for_ammo( round ) == nullptr );
+}
