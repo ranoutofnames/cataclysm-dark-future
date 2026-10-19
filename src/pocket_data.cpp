@@ -107,6 +107,11 @@ void pocket_data::load( const JsonObject &jo )
             activity_noise.load( jo.get_object( "activity_noise" ) );
         }
     } else {
+        // CDF: magazine wells take any length (per DDA item_factory.cpp:4086, 2 km); DDA sets it only
+        // on the generated well, so a JSON well with ammo_restriction would keep 0 mm here (AUTO-27)
+        if( type == pocket_type::MAGAZINE_WELL ) {
+            max_item_length = 2_km;
+        }
         // CDF: DDA ammo_restriction pockets (bandoliers, pouches) carry volume_encumber_modifier;
         // DDA's JsonObject never reports it as unvisited, BN's does. Value is ignored per DDA.
         for( const char *ignored : {

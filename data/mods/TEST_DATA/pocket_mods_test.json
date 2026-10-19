@@ -73,13 +73,7 @@
     "durability": 7,
     "min_cycle_recoil": 1350,
     "weapon_category": [
-      "AUTOMATIC_RIFLES"
-    ],
-    "melee_damage": {
-      "bash": 12
-    },
-    "flags": [
-      "NO_TURRET"
+      "RIFLES"
     ],
     "valid_mod_locations": [
       [
@@ -96,6 +90,7 @@
     "pocket_data": [
       {
         "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
         "ammo_restriction": {
           "223": 20
         }
@@ -151,7 +146,6 @@
     "integral_volume": "1550 ml",
     "integral_weight": "2268 g",
     "integral_longest_side": "41 cm",
-    "barrel_length": "406 mm",
     "price": "259 USD 99 cent",
     "price_postapoc": "10 USD",
     "material": [
@@ -163,7 +157,7 @@
     "color": "green",
     "location": "bore",
     "mod_targets": [
-      "debug_modular_ar15"
+      "ar15"
     ],
     "install_time": "5 m",
     "ammo_modifier": [
@@ -194,6 +188,7 @@
     "pocket_mods": [
       {
         "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
         "item_restriction": [
           "stanag30",
           "stanag5",
