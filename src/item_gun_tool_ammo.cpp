@@ -4,11 +4,14 @@
 #include <set>
 #include <vector>
 
+#include "character.h"
 #include "enums.h"
 #include "flag.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
+// CDF: needed for the free get_map() used as the dummy map argument below.
+#include "map/map.h"
 
 bool item::allows_speedloader( const itype_id &speedloader_id ) const
 {
@@ -95,6 +98,124 @@ bool item::is_toolmod() const
     return !is_gunmod() && type->mod;
 }
 
+// CDF: single removal point for the AUTO-26 O1 / REPLAN D14 legacy-charges guard. BN kept ammo
+// in direct `charges` for tools and guns without a MAGAZINE pocket; DDA counts only magazines.
+// Tools leave this in 4-b2, guns at the last 7-R2 group; 9-4 checks that no item still uses it.
+// A MAGAZINE_WELL pocket alone does not end the legacy path: BN guns with an optional `magazines`
+// list (e.g. sw_619 with a speedloader) get a well yet still store loaded rounds in `charges`
+// while magazine_integral() holds.
+static bool cdf_legacy_direct_charges( const item &it )
+{
+    if( !it.is_tool() && !it.is_gun() ) {
+        return false;
+    }
+    const item_contents &c = it.get_contents();
+    return !c.has_pocket_type( pocket_type::MAGAZINE ) &&
+           ( !c.has_pocket_type( pocket_type::MAGAZINE_WELL ) || it.magazine_integral() );
+}
+
+int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const Character *carrier,
+                          const bool include_linked ) const
+{
+    const bool is_tool_with_carrier = carrier != nullptr && is_tool();
+
+    // CDF: NEARBY_AMMO block (DDA 1439-1443) omitted: flag_USES_NEARBY_AMMO is
+    // absent from CDF (flag.h/cpp, flags.json) and Character::crafting_inventory()
+    // is non-const here. Unblock: 7-R4/R5.
+
+    int ret = 0;
+
+    // Sum ammo across every loaded MAGAZINE_WELL pocket.
+    // TODO(multimag): aggregate; per-well callers use the indexed overload.
+    for( const item *mag : magazines_current() ) {
+        ret += mag->ammo_remaining( );
+    }
+
+    // Integral MAGAZINE pockets sitting alongside wells (multimag).
+    // is_magazine() hosts are covered by the dedicated branch below.
+    if( !is_magazine() ) {
+        for( const item_pocket *p : get_pockets( []( const item_pocket & q ) {
+        return q.is_type( pocket_type::MAGAZINE );
+        } ) ) {
+            for( const item *e : p->all_items_top() ) {
+                if( e->has_flag( flag_CASING ) ) {
+                    continue;
+                }
+                if( !e->is_ammo() ) {
+                    continue;
+                }
+                if( !ammo.empty() && ammo.find( e->ammo_type() ) == ammo.end() ) {
+                    continue;
+                }
+                ret += e->charges > 0 ? e->charges : 1;
+            }
+        }
+    }
+
+    // CDF: cable link block (DDA 1474-1484) omitted: CDF has no link API
+    // (link(), link_length(), connected_battery_power_level() are absent).
+    // Unblock: 4-b2 (cable tail) or an owner decision on a cable port.
+    // `here` and `include_linked` are kept for signature parity.
+    static_cast<void>( here );
+    static_cast<void>( include_linked );
+
+    // Non ammo using item that uses charges (DDA 1486-1489), plus the CDF legacy guard.
+    // CDF: is_ammo() excluded: BN returned 0 for an ammo item's own charges (iteminfo "Ammunition type").
+    if( ( ammo.empty() && !is_ammo() ) || cdf_legacy_direct_charges( *this ) ) {
+        ret += charges;
+    }
+
+    // Magazines and integral magazines on their own
+    if( is_magazine() ) {
+        for( const item *e : contents.all_items_top( pocket_type::MAGAZINE ) ) {
+            if( e->is_ammo() ) {
+                ret += e->charges;
+            }
+        }
+    }
+
+    // Handle non-magazines with ammo_restriction in a CONTAINER type pocket (like quivers)
+    if( magazines_current().empty() && !is_magazine() && !ammo.empty() ) {
+        for( const item *e : contents.all_items_top( pocket_type::CONTAINER ) ) {
+            if( e->is_ammo() && ammo.find( e->ammo_type() ) != ammo.end() ) {
+                ret += e->charges;
+            }
+        }
+    }
+
+    // UPS/bionic power can replace ammo requirement.
+    // Only for tools. Guns should always use energy_drain for electricity use.
+    if( is_tool_with_carrier ) {
+        if( has_flag( flag_USES_BIONIC_POWER ) ) {
+            ret += units::to_kilojoule( carrier->get_power_level() );
+        }
+        // CDF: UPS tail deferred to 4-b2 (Character::available_ups absent).
+    }
+
+    return ret;
+}
+
+int item::ammo_remaining_linked( const map &here, const Character *carrier ) const
+{
+    std::set<ammotype> ammo = ammo_types();
+    return ammo_remaining( here, ammo, carrier, true );
+}
+int item::ammo_remaining( const Character *carrier ) const
+{
+    std::set<ammotype> ammo = ammo_types();
+    return ammo_remaining( get_map(), ammo, carrier, false ); // get_map() is a dummy parameter here.
+}
+
+int item::ammo_remaining_linked( const map &here ) const
+{
+    return ammo_remaining_linked( here, nullptr );
+}
+
+int item::ammo_remaining( ) const
+{
+    return ammo_remaining( nullptr );
+}
+
 // Returns the MAGAZINE_WELL pocket at well_idx in contents, or nullptr if
 // out of range or the pocket at that index is not a MAGAZINE_WELL.
 static const item_pocket *well_pocket_at( const item &it, int well_idx )
@@ -178,6 +299,16 @@ std::vector<const item_pocket *> item::all_magazine_well_pockets() const
     []( const item_pocket & p ) {
         return p.is_type( pocket_type::MAGAZINE_WELL );
     } );
+}
+
+std::vector<item *> item::magazines_current()
+{
+    return contents.magazines_current();
+}
+
+std::vector<const item *> item::magazines_current() const
+{
+    return contents.magazines_current();
 }
 
 int item::ammo_consume_in_pocket( const std::string &id, int qty, map &here,

@@ -2323,6 +2323,18 @@ class item : public location_visitable<item>, public game_object<item>
         int ammo_remaining( int well_idx ) const;
         int ammo_capacity( int well_idx ) const;
         int remaining_ammo_capacity( int well_idx ) const;
+        /** Quantity of ammunition currently loaded in tool, gun or auxiliary gunmod.
+         *  @param carrier is used for UPS and bionic power for tools */
+        int ammo_remaining( const Character *carrier ) const;
+        /** As above, but also counts linked power (e.g. cable-connected vehicles). */
+        int ammo_remaining_linked( const map &here, const Character *carrier ) const;
+        /** Looking for "ammo" via links (e.g. electricity). */
+        int ammo_remaining_linked( const map &here ) const;
+        /** Maximum quantity of a specific ammo type this item can hold.
+         *  @param include_linked add a linked grid's capacity */
+        int ammo_capacity( const ammotype &ammo, bool include_linked = false ) const;
+        /** How much more ammo can fit into this item. */
+        int remaining_ammo_capacity() const;
         /** Quantity of ammunition consumed per usage of tool or with each shot of gun */
         int ammo_required() const;
 
@@ -2847,6 +2859,11 @@ class item : public location_visitable<item>, public game_object<item>
 
         /** Helper for checking reloadability. **/
         bool is_reloadable_helper( const itype_id &ammo, bool now ) const;
+
+        // Shared implementation of the ammo_remaining overloads; the map parameter is
+        // only used when include_linked is true.
+        int ammo_remaining( const map &here, const std::set<ammotype> &ammo,
+                            const Character *carrier, bool include_linked ) const;
 
         /**
          * Splits an item similar to split, however it must be called on a count-by-charges item and if the entire stack is taken it will leave a 0 charge item behind.

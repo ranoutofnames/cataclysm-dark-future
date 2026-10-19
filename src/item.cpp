@@ -8836,52 +8836,6 @@ units::energy item::energy_remaining() const
     return 0_J;
 }
 
-int item::ammo_remaining() const
-{
-    const item *mag = magazine_current();
-    if( mag ) {
-        return mag->ammo_remaining();
-    }
-
-    if( is_tool() || is_gun() ) {
-        // includes auxiliary gunmods
-        if( has_flag( flag_USES_BIONIC_POWER ) ) {
-            int power = units::to_kilojoule( get_avatar().get_power_level() );
-            return power;
-        }
-        return charges;
-    }
-
-    if( is_magazine() ) {
-        int res = 0;
-        // magazines hold their ammo in the MAGAZINE pocket
-        for( const item_pocket &pocket : contents.get_pockets() ) {
-            if( !pocket.is_standard_type() && !pocket.is_type( pocket_type::MIGRATION ) ) {
-                continue;
-            }
-            for( const item *e : pocket.items() ) {
-                res += e->charges;
-            }
-        }
-        return res;
-    }
-
-    // per DDA item_gun_tool_ammo.cpp:1500: non-magazines with ammo_restriction in a CONTAINER
-    // pocket (quivers, ammo pouches, bandoliers) count the ammo inside
-    int res = 0;
-    for( const item_pocket &pocket : contents.get_pockets() ) {
-        if( !pocket.is_type( pocket_type::CONTAINER ) || pocket.get_data().ammo_restriction.empty() ) {
-            continue;
-        }
-        for( const item *e : pocket.items() ) {
-            if( e->is_ammo() ) {
-                res += e->charges;
-            }
-        }
-    }
-    return res;
-}
-
 int item::ammo_capacity() const
 {
     return ammo_capacity( false );

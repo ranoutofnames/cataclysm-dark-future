@@ -226,3 +226,65 @@ TEST_CASE( "loaded_ammo returns the speedloader rounds", "[p3][ammo]" ) {
     detached_ptr<item> empty = item::spawn( itype_id( "40_speedloader6" ) );
     CHECK( empty->loaded_ammo().is_null() );
 }
+
+// DDA item_gun_tool_ammo.cpp:1528-1542: the carrier overload and the no-arg
+// forwarder agree on a locally loaded gun.
+TEST_CASE( "ammo_remaining with a carrier matches the no-arg overload", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+
+    CHECK( gun->ammo_remaining( nullptr ) == 30 );
+    CHECK( gun->ammo_remaining() == 30 );
+}
+
+// Guard: a magazine's own rounds are still summed by the no-arg overload.
+TEST_CASE( "ammo_remaining sums a loaded magazine", "[p3][ammo]" ) {
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    mag->put_in( item::spawn( itype_id( "556" ), calendar::turn, 10 ) );
+
+    CHECK( mag->ammo_remaining() == 10 );
+}
+
+// Guard: a charges-only tool with no ammo type reports its charges (the DDA
+// ammo.empty() branch).
+TEST_CASE( "ammo_remaining returns charges for a charges-only tool", "[p3][ammo]" ) {
+    detached_ptr<item> candle = item::spawn( itype_id( "candle" ) );
+    REQUIRE( candle->is_tool() );
+    REQUIRE( candle->ammo_types().empty() );
+
+    candle->charges = 37;
+    CHECK( candle->ammo_remaining() == 37 );
+}
+
+// O1 gate: a tool carrying an ammo type but no magazine pocket keeps its
+// direct charges (the // CDF: guard until 4-b2 converts tool ammo).
+TEST_CASE( "ammo_remaining keeps direct charges on an ammo tool with no magazine pocket",
+           "[p3][ammo]" ) {
+    detached_ptr<item> lantern = item::spawn( itype_id( "gasoline_lantern" ) );
+    REQUIRE( lantern->is_tool() );
+    REQUIRE_FALSE( lantern->ammo_types().empty() );
+    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE ) );
+    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
+
+    lantern->charges = 5;
+    CHECK( lantern->ammo_remaining() == 5 );
+}
+
+// DDA item_gun_tool_ammo.cpp:2342-2350: the item-level magazines_current pair
+// forwards to item_contents.
+TEST_CASE( "item magazines_current lists loaded magazines", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    const item *mag = gun->magazine_current();
+    REQUIRE( mag != nullptr );
+
+    const item &const_gun = *gun;
+    const std::vector<const item *> const_mags = const_gun.magazines_current();
+    REQUIRE( const_mags.size() == 1 );
+    CHECK( const_mags.front() == mag );
+
+    std::vector<item *> mags = gun->magazines_current();
+    REQUIRE( mags.size() == 1 );
+    CHECK( mags.front() == mag );
+
+    detached_ptr<item> unloaded = item::spawn( itype_id( "m4a1" ) );
+    CHECK( unloaded->magazines_current().empty() );
+}
