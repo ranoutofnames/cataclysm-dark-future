@@ -1696,6 +1696,99 @@ bool Item_factory::check_ammo_type( std::string &msg, const ammotype &ammo ) con
     return true;
 }
 
+// CDF: DDA inlines the firing-requirement checks in check_definitions; CDF keeps them
+// in one free function so tests can exercise hand-built itypes.
+std::string check_firing_requirements( const itype &type )
+{
+    std::string msg;
+    if( !type.firing_requirements.empty() ) {
+        if( type.gun ) {
+            // CDF: CDF has no islot_gun::energy_drain; ups_charges is the base drain field.
+            if( type.gun->ups_charges > 0 ) {
+                msg += "firing_requirements and non-zero ups_charges are mutually exclusive\n";
+            }
+            if( type.gun->ammo_to_fire != 1 ) {
+                msg += "firing_requirements and non-default ammo_to_fire are mutually exclusive\n";
+            }
+        }
+        if( type.tool ) {
+            if( type.tool->charges_per_use != 0 ) {
+                msg += "consumption_per_use and charges_per_use are mutually exclusive\n";
+            }
+            // CDF: CDF's islot_tool::power_draw is a plain int, not units::power.
+            if( type.tool->power_draw != 0 ) {
+                msg += "consumption_per_use and power_draw are mutually exclusive\n";
+            }
+        }
+        // CDF: Group B (legacy_charges_per_use_factor) skipped: the field does not exist in CDF.
+        std::set<std::string> referenced;
+        for( const auto &mode_pair : type.firing_requirements.per_mode ) {
+            if( type.gun && !type.gun->modes.count( mode_pair.first ) ) {
+                msg += string_format( "firing_requirements mode \"%s\" is not in modes\n",
+                                      mode_pair.first.str() );
+            }
+            for( const pocket_consumption_entry &e : mode_pair.second ) {
+                referenced.insert( e.pocket );
+            }
+        }
+        // Every base-gun mode needs an explicit firing_requirements entry
+        // so authors can't silently underconsume by omitting BURST or AUTO.
+        // Gunmod-added modes (mode_modifier) inherit DEFAULT at runtime.
+        if( type.gun ) {
+            for( const auto &m : type.gun->modes ) {
+                if( !type.firing_requirements.per_mode.count( m.first ) ) {
+                    msg += string_format(
+                               "firing_requirements is missing entry for base mode \"%s\"\n",
+                               m.first.str() );
+                }
+            }
+        }
+        for( const std::string &id : referenced ) {
+            bool found = false;
+            bool right_type = false;
+            bool spawnable = false;
+            for( const pocket_data &p : type.pockets ) {
+                if( p.pocket_id == id ) {
+                    found = true;
+                    if( p.type == pocket_type::MAGAZINE_WELL ) {
+                        right_type = true;
+                        spawnable = !p.default_magazine.is_null();
+                    } else if( p.type == pocket_type::MAGAZINE && !p.ammo_restriction.empty() ) {
+                        right_type = true;
+                        spawnable = true;
+                    }
+                    break;
+                }
+            }
+            if( !found ) {
+                msg += string_format(
+                           "firing_requirements references unknown pocket id \"%s\"\n", id );
+            } else if( !right_type ) {
+                msg += string_format(
+                           "firing_requirements references pocket id \"%s\" which is neither a MAGAZINE_WELL nor a MAGAZINE with ammo_restriction\n",
+                           id );
+            } else if( !spawnable ) {
+                msg += string_format(
+                           "firing_requirements references MAGAZINE_WELL pocket \"%s\" with no default_magazine; spawn paths cannot populate it\n",
+                           id );
+            }
+        }
+    }
+
+    // Keys must be modes the mod owns via mode_modifier.
+    // CDF: Group E's hide_modes loop is skipped: islot_gunmod::hide_modes does not exist in CDF.
+    if( type.gunmod ) {
+        for( const auto &mode_pair : type.gunmod->firing_requirements.per_mode ) {
+            if( !type.gunmod->mode_modifier.count( mode_pair.first ) ) {
+                msg += string_format(
+                           "gunmod mode_firing_requirements mode \"%s\" is not in this mod's mode_modifier\n",
+                           mode_pair.first.str() );
+            }
+        }
+    }
+    return msg;
+}
+
 void Item_factory::check_definitions() const
 {
     for( const auto &ov : overlay_lengths ) {
@@ -1828,6 +1921,8 @@ void Item_factory::check_definitions() const
                 }
             }
         }
+
+        msg += check_firing_requirements( *type );
 
         if( type->weight < 0_gram ) {
             msg += "negative weight\n";

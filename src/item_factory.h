@@ -42,6 +42,10 @@ using item_action_id = std::string;
 
 extern std::unique_ptr<Item_factory> item_controller;
 
+// CDF: DDA inlines the firing-requirement checks in check_definitions; CDF keeps them
+// in one free function so tests can exercise hand-built itypes.
+std::string check_firing_requirements( const itype &type );
+
 class migration
 {
     public:

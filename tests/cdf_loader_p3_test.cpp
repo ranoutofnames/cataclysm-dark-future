@@ -1,10 +1,13 @@
 #include "catch/catch.hpp"
 #include "item.h"
+#include "item_factory.h"
 #include "itype.h"
 #include "json.h"
+#include "relic.h"
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -168,4 +171,149 @@ TEST_CASE("tool ammo alias fills ammo_id", "[p3][loader]") {
 TEST_CASE("islot_mod add_pockets defaults empty", "[p3][loader]") {
     REQUIRE(item("arrowrest").type->mod);
     CHECK(item("arrowrest").type->mod->add_pockets.empty());
+}
+
+namespace {
+
+itype make_p3_gun( const std::vector<std::string> &modes ) {
+    itype t;
+    t.gun = cata::make_value<islot_gun>();
+    for( const std::string &m : modes ) {
+        t.gun->modes.emplace( gun_mode_id( m ), gun_modifier_data( m, 1, {} ) );
+    }
+    return t;
+}
+
+void add_firing_requirement( firing_requirement_set &fr, const std::string &mode,
+                             const std::string &pocket, int qty ) {
+    pocket_consumption_entry entry;
+    entry.pocket = pocket;
+    entry.qty = qty;
+    fr.per_mode[gun_mode_id( mode )].push_back( entry );
+}
+
+pocket_data p3_magazine( const std::string &id ) {
+    pocket_data p( pocket_type::MAGAZINE );
+    p.pocket_id = id;
+    p.ammo_restriction[ammotype( "223" )] = 30;
+    return p;
+}
+
+} // namespace
+
+TEST_CASE("check_firing_requirements ignores empty requirements", "[p3][loader]") {
+    // An odd gun/tool is still ignored while firing_requirements is empty.
+    itype odd;
+    odd.gun = cata::make_value<islot_gun>();
+    odd.gun->ups_charges = 3;
+    odd.gun->ammo_to_fire = 2;
+    odd.tool = cata::make_value<islot_tool>();
+    odd.tool->charges_per_use = 1;
+    odd.tool->power_draw = 5;
+    CHECK( check_firing_requirements( odd ).empty() );
+}
+
+TEST_CASE("check_firing_requirements mutual exclusions", "[p3][loader]") {
+    SECTION("gun ups_charges") {
+        itype gun = make_p3_gun( { "DEFAULT" } );
+        add_firing_requirement( gun.firing_requirements, "DEFAULT", "mag", 1 );
+        gun.pockets.push_back( p3_magazine( "mag" ) );
+        gun.gun->ups_charges = 1;
+        CHECK_THAT( check_firing_requirements( gun ),
+                    Catch::Contains( "firing_requirements and non-zero ups_charges are mutually exclusive" ) );
+    }
+    SECTION("gun ammo_to_fire") {
+        itype gun = make_p3_gun( { "DEFAULT" } );
+        add_firing_requirement( gun.firing_requirements, "DEFAULT", "mag", 1 );
+        gun.pockets.push_back( p3_magazine( "mag" ) );
+        gun.gun->ammo_to_fire = 2;
+        CHECK_THAT( check_firing_requirements( gun ),
+                    Catch::Contains( "firing_requirements and non-default ammo_to_fire are mutually exclusive" ) );
+    }
+    SECTION("tool charges_per_use") {
+        itype tool;
+        tool.tool = cata::make_value<islot_tool>();
+        add_firing_requirement( tool.firing_requirements, "DEFAULT", "mag", 1 );
+        tool.pockets.push_back( p3_magazine( "mag" ) );
+        tool.tool->charges_per_use = 1;
+        CHECK_THAT( check_firing_requirements( tool ),
+                    Catch::Contains( "consumption_per_use and charges_per_use are mutually exclusive" ) );
+    }
+    SECTION("tool power_draw") {
+        itype tool;
+        tool.tool = cata::make_value<islot_tool>();
+        add_firing_requirement( tool.firing_requirements, "DEFAULT", "mag", 1 );
+        tool.pockets.push_back( p3_magazine( "mag" ) );
+        tool.tool->power_draw = 1;
+        CHECK_THAT( check_firing_requirements( tool ),
+                    Catch::Contains( "consumption_per_use and power_draw are mutually exclusive" ) );
+    }
+}
+
+TEST_CASE("check_firing_requirements mode checks", "[p3][loader]") {
+    SECTION("firing_requirements names an unknown mode") {
+        itype gun = make_p3_gun( { "DEFAULT" } );
+        add_firing_requirement( gun.firing_requirements, "AUTO", "mag", 1 );
+        gun.pockets.push_back( p3_magazine( "mag" ) );
+        CHECK_THAT( check_firing_requirements( gun ),
+                    Catch::Contains( "firing_requirements mode \"AUTO\" is not in modes" ) );
+    }
+    SECTION("base mode has no entry") {
+        itype gun = make_p3_gun( { "DEFAULT", "AUTO" } );
+        add_firing_requirement( gun.firing_requirements, "DEFAULT", "mag", 1 );
+        gun.pockets.push_back( p3_magazine( "mag" ) );
+        CHECK_THAT( check_firing_requirements( gun ),
+                    Catch::Contains( "firing_requirements is missing entry for base mode \"AUTO\"" ) );
+    }
+}
+
+TEST_CASE("check_firing_requirements pocket references", "[p3][loader]") {
+    SECTION("unknown pocket id") {
+        itype gun = make_p3_gun( { "DEFAULT" } );
+        add_firing_requirement( gun.firing_requirements, "DEFAULT", "ghost", 1 );
+        CHECK_THAT( check_firing_requirements( gun ),
+                    Catch::Contains( "firing_requirements references unknown pocket id \"ghost\"" ) );
+    }
+    SECTION("container pocket cannot be referenced") {
+        itype gun = make_p3_gun( { "DEFAULT" } );
+        add_firing_requirement( gun.firing_requirements, "DEFAULT", "bag", 1 );
+        pocket_data bag( pocket_type::CONTAINER );
+        bag.pocket_id = "bag";
+        gun.pockets.push_back( bag );
+        CHECK_THAT( check_firing_requirements( gun ),
+                    Catch::Contains( "neither a MAGAZINE_WELL nor a MAGAZINE" ) );
+    }
+    SECTION("magazine well without default_magazine") {
+        itype gun = make_p3_gun( { "DEFAULT" } );
+        add_firing_requirement( gun.firing_requirements, "DEFAULT", "well", 1 );
+        pocket_data well( pocket_type::MAGAZINE_WELL );
+        well.pocket_id = "well";
+        gun.pockets.push_back( well );
+        CHECK_THAT( check_firing_requirements( gun ),
+                    Catch::Contains( "no default_magazine" ) );
+    }
+}
+
+TEST_CASE("check_firing_requirements consistent gun", "[p3][loader]") {
+    itype gun = make_p3_gun( { "DEFAULT", "AUTO" } );
+    add_firing_requirement( gun.firing_requirements, "DEFAULT", "mag", 1 );
+    add_firing_requirement( gun.firing_requirements, "AUTO", "mag", 3 );
+    gun.pockets.push_back( p3_magazine( "mag" ) );
+    CHECK( check_firing_requirements( gun ).empty() );
+}
+
+TEST_CASE("check_firing_requirements gunmod modes", "[p3][loader]") {
+    itype mod;
+    mod.gunmod = cata::make_value<islot_gunmod>();
+    mod.gunmod->mode_modifier.emplace( gun_mode_id( "BURST" ),
+                                       gun_modifier_data( "BURST", 3, {} ) );
+    SECTION("mode not in mode_modifier") {
+        add_firing_requirement( mod.gunmod->firing_requirements, "AUTO", "mag", 1 );
+        CHECK_THAT( check_firing_requirements( mod ),
+                    Catch::Contains( "gunmod mode_firing_requirements mode \"AUTO\" is not in this mod's mode_modifier" ) );
+    }
+    SECTION("consistent gunmod") {
+        add_firing_requirement( mod.gunmod->firing_requirements, "BURST", "mag", 3 );
+        CHECK( check_firing_requirements( mod ).empty() );
+    }
 }
