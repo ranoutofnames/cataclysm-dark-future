@@ -340,6 +340,7 @@ extern const flag_id flag_SPAWN_FRIENDLY;
 extern const flag_id flag_SPAWN_HOSTILE;
 extern const flag_id flag_SPEAR;
 extern const flag_id flag_SPEEDLOADER;
+extern const flag_id flag_SPEEDLOADER_CLIP;
 extern const flag_id flag_SPLINT;
 extern const flag_id flag_STAB;
 extern const flag_id flag_STAB_IMMUNE;

@@ -339,6 +339,7 @@ const flag_id flag_SPAWN_FRIENDLY( "SPAWN_FRIENDLY" );
 const flag_id flag_SPAWN_HOSTILE( "SPAWN_HOSTILE" );
 const flag_id flag_SPEAR( "SPEAR" );
 const flag_id flag_SPEEDLOADER( "SPEEDLOADER" );
+const flag_id flag_SPEEDLOADER_CLIP( "SPEEDLOADER_CLIP" );
 const flag_id flag_SPLINT( "SPLINT" );
 const flag_id flag_STAB( "STAB" );
 const flag_id flag_STAB_IMMUNE( "STAB_IMMUNE" );

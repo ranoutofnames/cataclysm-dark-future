@@ -4,7 +4,10 @@
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
+#include "json.h"
 
+#include <sstream>
+#include <string>
 #include <vector>
 
 namespace {
@@ -30,6 +33,33 @@ auto loaded_m4a1( int rounds ) -> detached_ptr<item> {
     mag->put_in( item::spawn( itype_id( "556" ), calendar::turn, rounds ) );
     gun->put_in( std::move( mag ) );
     return gun;
+}
+
+// tests/cdf_item_pocket_test.cpp:24-30
+auto load_pocket( const std::string &json ) -> pocket_data {
+    std::istringstream buffer( json );
+    JsonIn jsin( buffer );
+    JsonObject jo = jsin.get_object();
+    pocket_data data;
+    data.load( jo );
+    return data;
+}
+
+// A MAGAZINE pocket holding six .40 rounds that takes the 6-round .40 speedloader.
+auto speedloader_pocket_data() -> pocket_data {
+    return load_pocket( R"({
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "40": 6 },
+        "allowed_speedloaders": [ "40_speedloader6" ]
+    })" );
+}
+
+auto loaded_speedloader( int rounds ) -> detached_ptr<item> {
+    detached_ptr<item> speedloader = item::spawn( itype_id( "40_speedloader6" ) );
+    if( rounds > 0 ) {
+        speedloader->put_in( item::spawn( itype_id( "40sw" ), calendar::turn, rounds ) );
+    }
+    return speedloader;
 }
 
 } // namespace
@@ -147,4 +177,52 @@ TEST_CASE( "primary_ammo_pocket finds the magazine well", "[p3][ammo]" ) {
 
     detached_ptr<item> backpack = item::spawn( itype_id( "backpack" ) );
     CHECK( backpack->primary_ammo_pocket() == nullptr );
+}
+
+TEST_CASE( "speedloader accepted by a pocket that allows it", "[p3][ammo]" ) {
+    const pocket_data data = speedloader_pocket_data();
+    item_pocket pocket( &data );
+    detached_ptr<item> speedloader = loaded_speedloader( 6 );
+
+    CHECK( pocket.can_reload_with( *speedloader, true ) );
+}
+
+TEST_CASE( "speedloader not in the allowed list is rejected", "[p3][ammo]" ) {
+    const pocket_data data = speedloader_pocket_data();
+    item_pocket pocket( &data );
+    detached_ptr<item> other = item::spawn( itype_id( "38_speedloader" ) );
+    other->put_in( item::spawn( itype_id( "38_special" ), calendar::turn, 7 ) );
+
+    CHECK_FALSE( pocket.can_reload_with( *other, true ) );
+}
+
+TEST_CASE( "speedloader rejected by a full pocket", "[p3][ammo]" ) {
+    const pocket_data data = speedloader_pocket_data();
+    item_pocket pocket( &data );
+    pocket.insert( item::spawn( itype_id( "40sw" ), calendar::turn, 6 ) );
+    REQUIRE( pocket.remaining_ammo_capacity( ammotype( "40" ) ) < 6 );
+    detached_ptr<item> speedloader = loaded_speedloader( 6 );
+
+    CHECK_FALSE( pocket.can_reload_with( *speedloader, true ) );
+}
+
+TEST_CASE( "empty speedloader is rejected without a crash", "[p3][ammo]" ) {
+    const pocket_data data = speedloader_pocket_data();
+    item_pocket pocket( &data );
+    detached_ptr<item> speedloader = loaded_speedloader( 0 );
+    REQUIRE( speedloader->loaded_ammo().is_null() );
+
+    CHECK_FALSE( pocket.can_reload_with( *speedloader, true ) );
+}
+
+TEST_CASE( "loaded_ammo returns the speedloader rounds", "[p3][ammo]" ) {
+    detached_ptr<item> speedloader = loaded_speedloader( 6 );
+    const item &rounds = speedloader->loaded_ammo();
+    REQUIRE_FALSE( rounds.is_null() );
+    CHECK( rounds.is_ammo() );
+    CHECK( rounds.typeId() == itype_id( "40sw" ) );
+    CHECK( rounds.count() == 6 );
+
+    detached_ptr<item> empty = item::spawn( itype_id( "40_speedloader6" ) );
+    CHECK( empty->loaded_ammo().is_null() );
 }

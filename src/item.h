@@ -2458,6 +2458,13 @@ class item : public location_visitable<item>, public game_object<item>
         bool gun_set_mode( const gun_mode_id &mode );
 
         bool uses_firing_requirements() const;
+
+        /**
+         * Get currently loaded ammo, if any.
+         * @return item reference or null item if not loaded.
+         */
+        const item &loaded_ammo() const;
+
         // Combined "needs any kind of charge" predicate for multimag, legacy energy-only guns, and legacy charge-tools.
         bool needs_charges_to_use() const;
 
