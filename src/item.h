@@ -1384,9 +1384,11 @@ class item : public location_visitable<item>, public game_object<item>
         bool is_bionic() const;
         bool is_magazine() const;
         bool is_battery() const;
+        bool is_vehicle_battery() const;
         bool is_ammo_belt() const;
         bool is_holster() const;
         bool is_ammo() const;
+        bool is_medical_tool() const;
         // is this armor for a pet creature?  if on_pet is true, returns false if a pet isn't
         // wearing it
         bool is_pet_armor( bool on_pet = false ) const;

@@ -62,6 +62,38 @@ bool item::can_reload_with( const item &ammo, bool now ) const
     return contents.can_reload_with( ammo, now );
 }
 
+bool item::is_magazine() const
+{
+    // CDF: the pocket clause is true only for items with a MAGAZINE pocket (none in CDF data today).
+    return !!type->magazine || contents.has_pocket_type( pocket_type::MAGAZINE );
+}
+
+// CDF: body is today's BN item::is_battery (type->battery); DDA's is_battery stays BN.
+bool item::is_vehicle_battery() const
+{
+    return !!type->battery;
+}
+
+bool item::is_ammo_belt() const
+{
+    return is_magazine() && has_flag( flag_MAG_BELT );
+}
+
+bool item::is_ammo() const
+{
+    return !!type->ammo;
+}
+
+bool item::is_medical_tool() const
+{
+    return type->get_use( "heal" ) != nullptr;
+}
+
+bool item::is_toolmod() const
+{
+    return !is_gunmod() && type->mod;
+}
+
 // Returns the MAGAZINE_WELL pocket at well_idx in contents, or nullptr if
 // out of range or the pocket at that index is not a MAGAZINE_WELL.
 static const item_pocket *well_pocket_at( const item &it, int well_idx )

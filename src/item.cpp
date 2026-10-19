@@ -7947,29 +7947,16 @@ bool item::is_bionic() const
     return !!type->bionic;
 }
 
-bool item::is_magazine() const
-{
-    return !!type->magazine;
-}
-
+// CDF: DDA's pocket-based is_battery body would be false for every CDF battery
+// (no MAGAZINE pockets, no item::ammo_capacity( ammotype )); see AUTO-24.
 bool item::is_battery() const
 {
     return !!type->battery;
 }
 
-bool item::is_ammo_belt() const
-{
-    return is_magazine() && has_flag( flag_MAG_BELT );
-}
-
 bool item::is_holster() const
 {
     return type->can_use( "holster" );
-}
-
-bool item::is_ammo() const
-{
-    return !!type->ammo;
 }
 
 bool item::is_comestible() const
@@ -8059,11 +8046,13 @@ void item::set_mtype( const mtype *const m )
     corpse = m;
 }
 
+// CDF: DDA checks any CONTAINER pocket; CDF keeps the BN front-item check (AUTO-24).
 bool item::is_ammo_container() const
 {
     return !is_magazine() && !contents.empty() && contents.front().is_ammo();
 }
 
+// CDF: CDF takes the damage_type enum, DDA takes damage_type_id (AUTO-24).
 bool item::is_melee() const
 {
     for( int idx = DT_NULL + 1; idx != NUM_DT; ++idx ) {
@@ -8169,14 +8158,10 @@ bool item::is_wheel() const
     return !!type->wheel;
 }
 
+// CDF: AUTO-23 keeps CDF's per-charge fuel model (type->fuel), not DDA's material model.
 bool item::is_fuel() const
 {
     return !!type->fuel;
-}
-
-bool item::is_toolmod() const
-{
-    return !is_gunmod() && type->mod;
 }
 
 bool item::is_faulty() const
@@ -8225,11 +8210,13 @@ int item::wheel_area() const
     return is_wheel() ? type->wheel->diameter * type->wheel->width : 0;
 }
 
+// CDF: AUTO-23 keeps CDF's kJ-per-charge fuel energy, not DDA's material x volume.
 float item::fuel_energy() const
 {
     return is_fuel() ? type->fuel->energy : 0.0f;
 }
 
+// CDF: AUTO-23 keeps CDF's ter_id fuel pump terrain, not DDA's std::string.
 ter_id item::fuel_pump_terrain() const
 {
     return is_fuel() ? type->fuel->pump_terrain : t_null;
