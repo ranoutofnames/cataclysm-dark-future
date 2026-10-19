@@ -317,3 +317,84 @@ TEST_CASE("check_firing_requirements gunmod modes", "[p3][loader]") {
         CHECK( check_firing_requirements( mod ).empty() );
     }
 }
+
+// CDF: 1-e integral magazine synthesis. Hand-built itypes, mirroring the 1-d idiom above.
+namespace {
+
+itype make_p3_ammo_tool( const std::vector<std::string> &ammo, int max_charges ) {
+    itype t;
+    t.tool = cata::make_value<islot_tool>();
+    for( const std::string &a : ammo ) {
+        t.tool->ammo_id.insert( ammotype( a ) );
+    }
+    t.tool->max_charges = max_charges;
+    return t;
+}
+
+} // namespace
+
+TEST_CASE("integral magazine synthesis builds a tool pocket", "[p3][loader]") {
+    itype tool = make_p3_ammo_tool( { "battery" }, 4 );
+    CHECK( needs_integral_magazine( tool ) );
+    REQUIRE( tool.pockets.empty() );
+
+    const std::string msg = add_integral_magazine_pocket( tool );
+    REQUIRE( tool.pockets.size() == 1 );
+    const pocket_data &pocket = tool.pockets.front();
+    CHECK( pocket.type == pocket_type::MAGAZINE );
+    CHECK( pocket.rigid );
+    CHECK( pocket.holster );
+    REQUIRE( pocket.ammo_restriction.size() == 1 );
+    CHECK( pocket.ammo_restriction.at( ammotype( "battery" ) ) == 4 );
+    CHECK_THAT( msg, Catch::Contains( "needs pocket definitions" ) );
+    // The max_charges/def_charges zeroing is deferred to P3-7.
+    CHECK( tool.tool->max_charges == 4 );
+}
+
+TEST_CASE("integral magazine synthesis skips tools that need no pocket", "[p3][loader]") {
+    SECTION( "no ammo_id" ) {
+        itype tool = make_p3_ammo_tool( {}, 4 );
+        CHECK_FALSE( needs_integral_magazine( tool ) );
+        CHECK( add_integral_magazine_pocket( tool ).empty() );
+        CHECK( tool.pockets.empty() );
+    }
+    SECTION( "no max_charges" ) {
+        itype tool = make_p3_ammo_tool( { "battery" }, 0 );
+        CHECK_FALSE( needs_integral_magazine( tool ) );
+        CHECK( add_integral_magazine_pocket( tool ).empty() );
+        CHECK( tool.pockets.empty() );
+    }
+    SECTION( "magazines defined" ) {
+        itype tool = make_p3_ammo_tool( { "battery" }, 4 );
+        tool.magazines[ammotype( "battery" )].insert( itype_id( "p3_mag" ) );
+        CHECK_FALSE( needs_integral_magazine( tool ) );
+        CHECK( add_integral_magazine_pocket( tool ).empty() );
+        CHECK( tool.pockets.empty() );
+    }
+    SECTION( "not a tool" ) {
+        itype plain;
+        CHECK_FALSE( needs_integral_magazine( plain ) );
+        CHECK( add_integral_magazine_pocket( plain ).empty() );
+    }
+}
+
+TEST_CASE("integral magazine synthesis warns on explicit pockets", "[p3][loader]") {
+    itype tool = make_p3_ammo_tool( { "battery" }, 4 );
+    tool.explicit_pockets = true;
+    CHECK_FALSE( needs_integral_magazine( tool ) );
+    const std::string msg = add_integral_magazine_pocket( tool );
+    CHECK( tool.pockets.empty() );
+    CHECK_THAT( msg, Catch::Contains( "Redundant max charge value" ) );
+}
+
+TEST_CASE("integral magazine synthesis handles two ammotypes", "[p3][loader]") {
+    itype tool = make_p3_ammo_tool( { "battery", "charcoal" }, 4 );
+    CHECK( needs_integral_magazine( tool ) );
+    CHECK_FALSE( add_integral_magazine_pocket( tool ).empty() );
+    REQUIRE( tool.pockets.size() == 1 );
+    const pocket_data &pocket = tool.pockets.front();
+    CHECK( pocket.type == pocket_type::MAGAZINE );
+    REQUIRE( pocket.ammo_restriction.size() == 2 );
+    CHECK( pocket.ammo_restriction.at( ammotype( "battery" ) ) == 4 );
+    CHECK( pocket.ammo_restriction.at( ammotype( "charcoal" ) ) == 4 );
+}

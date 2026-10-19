@@ -46,6 +46,12 @@ extern std::unique_ptr<Item_factory> item_controller;
 // in one free function so tests can exercise hand-built itypes.
 std::string check_firing_requirements( const itype &type );
 
+// CDF: free functions so tests can call them on hand-built itypes. This is DDA's
+// check_and_create_magazine_pockets tool branch (item_factory.cpp:4055-4121, 4127),
+// split into a predicate and the pocket builder.
+bool needs_integral_magazine( const itype &def );
+std::string add_integral_magazine_pocket( itype &def );
+
 class migration
 {
     public:

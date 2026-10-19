@@ -862,6 +862,56 @@ void Item_factory::finalize_pre( itype &obj )
     }
 }
 
+// CDF: DDA's check_and_create_magazine_pockets (item_factory.cpp:4049-4128), split so the
+// tool branch can be exercised from tests on hand-built itypes. Guns are not synthesized
+// here: DDA returns at :4052 for a gun without magazines (decision AUTO-20).
+bool needs_integral_magazine( const itype &def )
+{
+    return def.tool && !def.tool->ammo_id.empty() && def.tool->max_charges > 0 &&
+           def.magazines.empty() && !def.explicit_pockets;
+}
+
+std::string add_integral_magazine_pocket( itype &def )
+{
+    // CDF: the explicit-pockets early return at the top of synthesize_pockets means this
+    // warning path is only reachable from this free function in tests.
+    if( def.explicit_pockets && def.tool && def.tool->max_charges != 0 &&
+        !def.tool->ammo_id.empty() ) {
+        // CDF: DDA item_factory.cpp:4063-4071
+        return string_format( "Redundant max charge value specified for %s with magazine pocket.\n",
+                              def.get_id().str() );
+    }
+    if( !needs_integral_magazine( def ) ) {
+        return std::string();
+    }
+
+    // DDA item_factory.cpp:4082-4088
+    pocket_data mag_data;
+    mag_data.holster = true;
+    mag_data.raw_volume_capacity = 200_liter;
+    mag_data.max_contains_weight = 2000000_kilogram;
+    mag_data.max_item_length = 2_km;
+    mag_data.watertight = true;
+    // CDF: DDA item_factory.cpp:4111-4121 (MAGAZINE branch, tool only). The
+    // max_charges/def_charges zeroing (DDA :4122-4123) is deferred to P3-7.
+    mag_data.type = pocket_type::MAGAZINE;
+    mag_data.rigid = true;
+    for( const ammotype &amtype : def.tool->ammo_id ) {
+        mag_data.ammo_restriction.emplace( amtype, def.tool->max_charges );
+    }
+    def.pockets.push_back( mag_data );
+    // DDA item_factory.cpp:4127
+    return string_format( "%s needs pocket definitions\n", def.get_id().str() );
+}
+
+namespace
+{
+
+// CDF: P3-7 turns this on after the data port and the reader move.
+constexpr bool kSynthesizeIntegralMagazine = false;
+
+} // namespace
+
 void Item_factory::synthesize_pockets( itype &obj ) const
 {
     // per DDA item_factory.cpp:940-956 (finalize_post): NO_UNLOAD / NO_RELOAD items mark their
@@ -942,6 +992,15 @@ void Item_factory::synthesize_pockets( itype &obj ) const
         }
         pocket.fire_protection = obj.magazine->protects_contents;
         obj.pockets.push_back( pocket );
+    }
+
+    // CDF: integral magazine tool pocket (DDA check_and_create_magazine_pockets tool branch).
+    // Off until P3-7, so the pocket list stays identical to today.
+    if( kSynthesizeIntegralMagazine ) {
+        const std::string msg = add_integral_magazine_pocket( obj );
+        if( !msg.empty() ) {
+            debugmsg( "%s", msg );
+        }
     }
 
     // Guns and tools that take magazines get a magazine well.
