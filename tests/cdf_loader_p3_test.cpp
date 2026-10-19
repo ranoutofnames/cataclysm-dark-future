@@ -154,3 +154,18 @@ TEST_CASE("itype firing_requirements member", "[p3][loader]") {
 TEST_CASE("magazine mag_jam_mult default", "[p3][loader]") {
     CHECK(item("stanag30").type->magazine->mag_jam_mult == 1.0);
 }
+
+// CDF: fake_firestarter (data/json/items/fake.json) is a TOOL that still uses BN's "ammo" key,
+// so this exercises the tool_ammo alias through the real loader. No CDF JSON uses "tool_ammo"
+// and "pocket_mods" has no loaded file (pocket_mods_test.json.p3 arrives with job 2-d), so
+// neither key has loaded-data coverage until then.
+TEST_CASE("tool ammo alias fills ammo_id", "[p3][loader]") {
+    REQUIRE(item("fake_firestarter").type->tool);
+    CHECK_FALSE(item("fake_firestarter").type->tool->ammo_id.empty());
+    CHECK(item("fake_firestarter").type->tool->ammo_id.count(ammotype("battery")) == 1);
+}
+
+TEST_CASE("islot_mod add_pockets defaults empty", "[p3][loader]") {
+    REQUIRE(item("arrowrest").type->mod);
+    CHECK(item("arrowrest").type->mod->add_pockets.empty());
+}

@@ -2820,6 +2820,15 @@ void Item_factory::load( islot_tool &slot, const JsonObject &jo, const std::stri
 {
     const bool strict = is_strict_enabled( src );
 
+    // CDF: ammo is BN's name for DDA's tool_ammo (DDA item_factory.cpp:3652); both keys fill
+    // ammo_id without clearing, so they union when both are present.
+    if( jo.has_array( "tool_ammo" ) ) {
+        for( const std::string id : jo.get_array( "tool_ammo" ) ) {
+            slot.ammo_id.insert( ammotype( id ) );
+        }
+    } else if( jo.has_string( "tool_ammo" ) ) {
+        slot.ammo_id.insert( ammotype( jo.get_string( "tool_ammo" ) ) );
+    }
     if( jo.has_array( "ammo" ) ) {
         for( const std::string id : jo.get_array( "ammo" ) ) {
             slot.ammo_id.insert( ammotype( id ) );
@@ -2969,7 +2978,15 @@ void Item_factory::load( islot_mod &slot, const JsonObject &jo, const std::strin
     }
     assign( jo, "capacity_multiplier", slot.capacity_multiplier, strict );
 
-    // CDF: these replace DDA's islot_mod::deserialize optional() lines (item_factory.cpp:3693-3694)
+    // CDF: these replace DDA's islot_mod::deserialize optional() lines (item_factory.cpp:3692-3694)
+    if( jo.has_array( "pocket_mods" ) ) {
+        slot.add_pockets.clear();
+        for( const JsonObject jo_pocket : jo.get_array( "pocket_mods" ) ) {
+            pocket_data pocket;
+            pocket.load( jo_pocket );
+            slot.add_pockets.push_back( pocket );
+        }
+    }
     if( jo.has_array( "consumption_mods" ) ) {
         slot.consumption_mods.clear();
         for( JsonObject mod_jo : jo.get_array( "consumption_mods" ) ) {
