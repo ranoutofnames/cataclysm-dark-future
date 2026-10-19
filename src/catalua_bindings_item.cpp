@@ -620,7 +620,8 @@ void reg_item( sol::state &lua )
                       ( &item::ammo_capacity ) );
 
         DOC( "Get remaining ammo, works with batteries & stuff too" );
-        SET_FX( ammo_remaining );
+        // CDF: disambiguate the new ammo_remaining( int ) overload
+        SET_FX_T( ammo_remaining, int() const );
 
         SET_FX( ammo_data );
         SET_FX( ammo_required );

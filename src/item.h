@@ -2310,7 +2310,7 @@ class item : public location_visitable<item>, public game_object<item>
         /** @param potential_capacity whether to try a default magazine if necessary */
         int ammo_capacity( bool potential_capacity ) const;
         // Per-MAGAZINE_WELL-pocket overloads; the index is the pocket position in this->contents.
-        // CDF: item 2 ammo_remaining( int ) omitted (3-0): catalua_bindings_item.cpp:623 takes &item::ammo_remaining and needs one overload.
+        int ammo_remaining( int well_idx ) const;
         int ammo_capacity( int well_idx ) const;
         int remaining_ammo_capacity( int well_idx ) const;
         /** Quantity of ammunition consumed per usage of tool or with each shot of gun */
