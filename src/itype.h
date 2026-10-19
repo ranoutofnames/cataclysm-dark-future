@@ -1078,6 +1078,10 @@ struct itype {
         /** True if "pocket_data" was given in JSON, which disables synthesis. */
         bool explicit_pockets = false;
 
+        // Empty for legacy items. Tools use DEFAULT mode; guns use per-mode
+        // entries from the JSON map.
+        firing_requirement_set firing_requirements;
+
     private:
         /** Can item be combined with other identical items? */
         bool stackable_ = false;

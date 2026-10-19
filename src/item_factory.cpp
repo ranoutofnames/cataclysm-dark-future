@@ -3721,6 +3721,14 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
         }
         def.explicit_pockets = true;
     }
+    // CDF: DDA loads these in itype::load (item_factory.cpp:4635-4640); CDF has no such
+    // function, so the itype-level firing_requirements keys are loaded here.
+    if( jo.has_member( "firing_requirements" ) ) {
+        def.firing_requirements.deserialize_firing_requirements( jo, "firing_requirements" );
+    }
+    if( jo.has_member( "consumption_per_use" ) ) {
+        def.firing_requirements.deserialize_consumption_per_use( jo, "consumption_per_use" );
+    }
     load_slot_optional( def.armor, jo, "armor_data", src );
     load_slot_optional( def.pet_armor, jo, "pet_armor_data", src );
     load_slot_optional( def.book, jo, "book_data", src );
