@@ -100,9 +100,8 @@ Rules (PLAN-P3 section 4.3; the numbers are the plan's)
   R10 No stats, recipes or item groups change; data/json/items/* and the mods only.
 
 CDF deviations (all marked `// CDF:`)
-  // CDF: R1 for MAG without a DDA twin also drops `capacity` and `count` (DDA convention; the
-  //      pocket carries the number). `count` must go with `capacity` because item_factory.cpp
-  //      rejects count > capacity ("invalid count") and a magazine with capacity 0.
+  // CDF: R1 for MAG without a DDA twin drops `capacity` only when the item has no own `count`:
+  //      `count` is kept (AUTO-8) and needs `capacity` for the loader check (item_factory.cpp:2157).
   // CDF: R1 `cap` rows with a twin that keeps its own `capacity` key take DDA's number there too.
   // CDF: R2 `cap` rows: `clip_size` follows the twin when the twin has the key (pocket and key
   //      must agree), listed in `set_keys`.
@@ -812,7 +811,8 @@ def plan_mag(ctx, rec, cls, exp, twin):
         # R1: remove capacity/count where the twin has no such key; where it has one the CDF
         # item keeps its own number (owner rule: no set_keys from the twin)
         teff = twin["eff"]
-        for key in ("capacity",):   # AUTO-8: `count` stays the CDF value
+        # CDF: keep `capacity` when the item keeps `count` (loader check count > capacity, item_factory.cpp:2157)
+        for key in (() if key_site(raw, eff, "count") is not None else ("capacity",)):   # AUTO-8
             site = key_site(raw, eff, key)
             if site is None:
                 continue
@@ -841,7 +841,8 @@ def plan_mag(ctx, rec, cls, exp, twin):
                 "ammo_restriction": collections.OrderedDict(want)}]
         out["action"] = "AUTHOR"
         # CDF: no twin to read from; DDA's convention (no `capacity`/`count` on magazines) applies
-        for key in ("capacity",):   # AUTO-8: `count` stays the CDF value
+        # CDF: keep `capacity` when the item keeps `count` (loader check count > capacity, item_factory.cpp:2157)
+        for key in (() if key_site(raw, eff, "count") is not None else ("capacity",)):   # AUTO-8
             site = key_site(raw, eff, key)
             if site == "inherited":
                 out["inherited_keys"].append({"key": key, "value": eff.get(key),
