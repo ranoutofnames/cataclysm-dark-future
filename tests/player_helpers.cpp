@@ -28,6 +28,7 @@
 #include "type_id.h"
 
 #include <cstddef>
+#include <initializer_list>
 #include <list>
 #include <memory>
 #include <vector>
@@ -173,11 +174,36 @@ void assign_pickup_activity(player& they, const std::vector<item*>& items,
     if (autopickup) { they.activity->auto_resume = true; }
 }
 
-void process_activity(player& dummy) {
+void process_activity(player& dummy, bool pass_time) {
     do {
         dummy.moves += dummy.get_speed();
-        while (dummy.moves > 0 && dummy.activity) { dummy.activity->do_turn(dummy); }
+        while (dummy.moves > 0 && dummy.activity) {
+            dummy.activity->do_turn(dummy);
+            if (pass_time) { calendar::turn += 1_seconds; }
+        }
     } while (dummy.activity);
+}
+
+// CDF: player& because do_turn takes player&.
+auto process_activity_bounded(player& dummy, const int max_turns, const int max_dispatches) -> bool {
+    int turns = 0;
+    int dispatches = 0;
+    while (dummy.activity && turns < max_turns) {
+        dummy.moves += dummy.get_speed();
+        while (dummy.moves > 0 && dummy.activity) {
+            dummy.activity->do_turn(dummy);
+            if (++dispatches >= max_dispatches) { return false; }
+        }
+        ++turns;
+    }
+    return !dummy.activity;
+}
+
+// Clear player traits and give them a single trait by name
+void set_single_trait(Character& dummy, const std::string& trait_name) {
+    dummy.clear_mutations();
+    dummy.toggle_trait(trait_id(trait_name));
+    REQUIRE(dummy.has_trait(trait_id(trait_name)));
 }
 
 auto spawn_npc(const tripoint_bub_ms& p, const std::string& npc_class) -> npc& { // *NOPAD*
@@ -246,4 +272,33 @@ void arm_character(
     }
     for (const auto& mod : mods) { gun.put_in(item::spawn(itype_id(mod))); }
     shooter.wield(gun);
+}
+
+// CDF: detached_ptr return, item move ctor deleted.
+auto tool_with_ammo(const itype_id& tool, const int qty) -> detached_ptr<item> {
+    detached_ptr<item> tool_it = item::spawn(tool);
+    if (!tool_it->ammo_default().is_null()) {
+        tool_it->ammo_set(tool_it->ammo_default(), qty);
+    } else if (!tool_it->magazine_default().is_null()) {
+        detached_ptr<item> tool_it_mag = item::spawn(tool_it->magazine_default());
+        tool_it_mag->ammo_set(tool_it_mag->ammo_default(), qty);
+        tool_it->put_in(std::move(tool_it_mag), pocket_type::MAGAZINE_WELL);
+    }
+    return tool_it;
+}
+
+// CDF: Character::clear_worn member absent; test helper used.
+void equip_shooter(npc& shooter, const std::vector<itype_id>& apparel) {
+    CHECK(!shooter.in_vehicle);
+    clear_worn(shooter);
+    for (const itype_id& article : apparel) {
+        // CDF: detached_ptr.
+        shooter.wear_item(item::spawn(article));
+    }
+}
+
+// CDF: disambiguates equip_shooter( shooter, {} ) against ranged_balance_test's local
+// equip_shooter(npc&, const std::vector<std::string>&); see the header.
+void equip_shooter(npc& shooter, std::initializer_list<itype_id> apparel) {
+    equip_shooter(shooter, std::vector<itype_id>(apparel));
 }
