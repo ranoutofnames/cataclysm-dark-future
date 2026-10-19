@@ -111,3 +111,40 @@ TEST_CASE( "item can_reload_with an ammo item", "[p3][ammo]" ) {
     CHECK_FALSE( mag->contents.can_reload_with( *bad_ammo, true ) );
     CHECK_FALSE( mag->contents.can_reload_with( *bad_mag, true ) );
 }
+
+TEST_CASE( "uses_firing_requirements is false without itype data", "[p3][ammo]" ) {
+    // CDF: no data item sets firing_requirements yet (data port 7-R2), so a gun
+    // and a magazine both report false.
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    CHECK_FALSE( gun->uses_firing_requirements() );
+    CHECK_FALSE( mag->uses_firing_requirements() );
+}
+
+TEST_CASE( "ammo_identity_mag returns the loaded magazine", "[p3][ammo]" ) {
+    // No firing requirements: ammo_identity_mag falls through to magazine_current.
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    mag->put_in( item::spawn( itype_id( "556" ), calendar::turn, 30 ) );
+    item *mag_ptr = &*mag;
+    gun->put_in( std::move( mag ) );
+
+    const item *identity = gun->ammo_identity_mag();
+    REQUIRE( identity != nullptr );
+    CHECK( identity == mag_ptr );
+    CHECK( identity->typeId() == itype_id( "stanag30" ) );
+    CHECK( identity->ammo_remaining() == 30 );
+
+    detached_ptr<item> unloaded = item::spawn( itype_id( "m4a1" ) );
+    CHECK( unloaded->ammo_identity_mag() == nullptr );
+}
+
+TEST_CASE( "primary_ammo_pocket finds the magazine well", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    const item_pocket *p = gun->primary_ammo_pocket();
+    REQUIRE( p != nullptr );
+    CHECK( p->is_type( pocket_type::MAGAZINE_WELL ) );
+
+    detached_ptr<item> backpack = item::spawn( itype_id( "backpack" ) );
+    CHECK( backpack->primary_ammo_pocket() == nullptr );
+}

@@ -1,6 +1,7 @@
 #include "item.h"
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "enums.h"
@@ -183,4 +184,94 @@ int item::ammo_consume_in_pocket( const std::string &id, int qty, map &here,
                                   const tripoint_bub_ms &pos )
 {
     return contents.ammo_consume_in_pocket( id, qty, &here, pos );
+}
+
+bool item::uses_firing_requirements() const
+{
+    // itype-level firing_requirements is the item's own consumption, empty for a bare gunmod.
+    return type && !type->firing_requirements.empty();
+}
+
+const item_pocket *item::primary_ammo_pocket() const
+{
+    // MAGAZINE pockets count too: the schema accepts integral-mag items as
+    // multimag primaries (e.g. integral cartridge well + battery well).
+    const std::vector<const item_pocket *> wells = get_pockets(
+    []( const item_pocket & p ) {
+        return p.is_type( pocket_type::MAGAZINE_WELL ) ||
+               p.is_type( pocket_type::MAGAZINE );
+    } );
+    if( wells.empty() ) {
+        return nullptr;
+    }
+    const std::set<ammotype> *gun_ammo = nullptr;
+    if( type && type->gun ) {
+        gun_ammo = &type->gun->ammo;
+    }
+    auto matches_gun_ammo = [&gun_ammo]( const item_pocket * p ) {
+        if( gun_ammo == nullptr || gun_ammo->empty() ) {
+            return false;
+        }
+        for( const ammotype &at : p->ammo_types() ) {
+            if( gun_ammo->count( at ) ) {
+                return true;
+            }
+        }
+        for( const itype_id &allowed : p->item_type_restrictions() ) {
+            if( !allowed->magazine ) {
+                continue;
+            }
+            for( const ammotype &slot : allowed->magazine->type ) {
+                if( gun_ammo->count( slot ) ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    auto loaded = []( const item_pocket * p ) {
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            return p->magazine_current() != nullptr;
+        }
+        return !p->empty();
+    };
+    for( const item_pocket *p : wells ) {
+        if( matches_gun_ammo( p ) && loaded( p ) ) {
+            return p;
+        }
+    }
+    for( const item_pocket *p : wells ) {
+        if( matches_gun_ammo( p ) ) {
+            return p;
+        }
+    }
+    for( const item_pocket *p : wells ) {
+        if( loaded( p ) ) {
+            return p;
+        }
+    }
+    return wells.front();
+}
+
+const item *item::ammo_identity_mag() const
+{
+    if( uses_firing_requirements() && type && type->gun ) {
+        const item_pocket *p = primary_ammo_pocket();
+        if( p == nullptr ) {
+            return nullptr;
+        }
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            return p->magazine_current();
+        }
+        // Integral MAGAZINE pocket: the ammo itself drives identity.
+        // cycle_action leaves spent casings in the pocket; skip them.
+        for( const item *e : p->all_items_top() ) {
+            if( e->has_flag( flag_CASING ) ) {
+                continue;
+            }
+            return e;
+        }
+        return nullptr;
+    }
+    return magazine_current();
 }
