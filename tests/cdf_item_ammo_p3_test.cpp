@@ -322,3 +322,14 @@ TEST_CASE( "pocket_for_ammo returns the matching well", "[p3][ammo]" ) {
     detached_ptr<item> backpack = item::spawn( itype_id( "backpack" ) );
     CHECK( backpack->pocket_for_ammo( round ) == nullptr );
 }
+
+// DDA item_gun_tool_ammo.cpp:1635-1656: a loaded gun's remaining capacity is
+// the loaded magazine's free space.
+TEST_CASE( "remaining_ammo_capacity of a loaded gun is the magazine's free space",
+           "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 20 );
+    CHECK( gun->remaining_ammo_capacity() == 10 );
+
+    detached_ptr<item> full = loaded_m4a1( 30 );
+    CHECK( full->remaining_ammo_capacity() == 0 );
+}

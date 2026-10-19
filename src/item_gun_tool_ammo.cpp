@@ -216,6 +216,31 @@ int item::ammo_remaining( ) const
     return ammo_remaining( nullptr );
 }
 
+int item::remaining_ammo_capacity() const
+{
+    if( ammo_types().empty() ) {
+        return 0;
+    }
+
+    // First-loaded-mag fallback; per-pocket callers use the dedicated overload.
+    if( const item *mag = magazine_current() ) {
+        return mag->remaining_ammo_capacity();
+    }
+
+    // Integral mag: ammo_remaining() excludes MAGAZINE_WELL here.
+    const itype *loaded_ammo = ammo_data();
+    if( loaded_ammo == nullptr ) {
+        // CDF: item::find_type() does not exist here; string_id::operator-> resolves the itype.
+        const itype_id default_ammo = ammo_default();
+        loaded_ammo = default_ammo.is_null() ? nullptr : &*default_ammo;
+    }
+    if( !loaded_ammo || !loaded_ammo->ammo ) {
+        return 0;
+    }
+    // Clamp: a capacity-shrinking mod can leave an integral pocket overfilled.
+    return std::max( 0, ammo_capacity( loaded_ammo->ammo->type ) - ammo_remaining( ) );
+}
+
 // Returns the MAGAZINE_WELL pocket at well_idx in contents, or nullptr if
 // out of range or the pocket at that index is not a MAGAZINE_WELL.
 static const item_pocket *well_pocket_at( const item &it, int well_idx )
@@ -275,12 +300,7 @@ int item::remaining_ammo_capacity( int well_idx ) const
         return 0;
     }
     const item *mag = p->magazine_current();
-    if( !mag ) {
-        return 0;
-    }
-    // CDF: no no-arg item::remaining_ammo_capacity(); derive it from the
-    // per-well capacity and the loaded count.
-    return std::max( 0, ammo_capacity( well_idx ) - ammo_remaining( well_idx ) );
+    return mag ? mag->remaining_ammo_capacity() : 0;
 }
 
 int item::ammo_capacity( const ammotype &ammo, bool include_linked ) const
