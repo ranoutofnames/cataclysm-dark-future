@@ -90,3 +90,24 @@ TEST_CASE( "allows_speedloader needs a speedloader pocket", "[p3][ammo]" ) {
     CHECK_FALSE( gun->allows_speedloader( itype_id( "40_speedloader6" ) ) );
     CHECK_FALSE( gun->allows_speedloader( itype_id( "stanag30" ) ) );
 }
+
+TEST_CASE( "item can_reload_with an ammo item", "[p3][ammo]" ) {
+    // DDA tests/reload_magazine_test.cpp:52-62, with i_add swapped for item::spawn
+    // and the pocket API reached directly.
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    detached_ptr<item> ammo = item::spawn( itype_id( "556" ) );
+    detached_ptr<item> alt_ammo = item::spawn( itype_id( "223" ) );
+    detached_ptr<item> bad_ammo = item::spawn( itype_id( "9mm" ) );
+    detached_ptr<item> bad_mag = item::spawn( itype_id( "glockmag" ) );
+
+    CHECK( mag->can_reload_with( *ammo, true ) );
+    CHECK( mag->can_reload_with( *alt_ammo, true ) );
+    CHECK_FALSE( mag->can_reload_with( *bad_ammo, true ) );
+    CHECK_FALSE( mag->can_reload_with( *bad_mag, true ) );
+
+    // The same predicate through item_contents agrees.
+    CHECK( mag->contents.can_reload_with( *ammo, true ) );
+    CHECK( mag->contents.can_reload_with( *alt_ammo, true ) );
+    CHECK_FALSE( mag->contents.can_reload_with( *bad_ammo, true ) );
+    CHECK_FALSE( mag->contents.can_reload_with( *bad_mag, true ) );
+}

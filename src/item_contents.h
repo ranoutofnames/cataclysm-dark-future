@@ -266,6 +266,13 @@ class item_contents
                                          bool ignore_non_container_pocket = false ) const;
         bool can_contain_liquid( bool held_or_ground ) const;
         bool contains_no_solids() const;
+
+        /**
+         * returns whether any of the pockets can be reloaded with the specified item.
+         * @param ammo item to be loaded in
+         * @param now whether the currently contained ammo/magazine should be taken into account
+         */
+        bool can_reload_with( const item &ammo, bool now ) const;
         bool can_unload_liquid() const;
 
         /**

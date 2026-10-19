@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "enums.h"
+#include "flag.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
@@ -11,6 +12,54 @@
 bool item::allows_speedloader( const itype_id &speedloader_id ) const
 {
     return contents.allows_speedloader( speedloader_id );
+}
+
+bool item::can_reload_with( const item &ammo, bool now ) const
+{
+    if( has_flag( flag_NO_RELOAD ) && !has_flag( flag_VEHICLE ) ) {
+        return false; // turrets ignore NO_RELOAD flag
+    }
+
+    if( now && ammo.is_magazine() && !ammo.empty() ) {
+        const ammotype loaded_at = ammo.contents.first_ammo().ammo_type();
+        const bool tool_match = is_tool() && type->tool->ammo_id.count( loaded_at );
+        const bool gun_match = !is_tool() && ammo_types().count( loaded_at );
+        if( !tool_match && !gun_match ) {
+            // Sibling MAGAZINE_WELLs may take auxiliary ammotypes outside the
+            // host's declared `ammo` field. Accept if any well's allowed mags
+            // have a MAGAZINE pocket restricted to this ammo type.
+            bool well_match = false;
+            for( const item_pocket *p : contents.get_all_reloadable_pockets() ) {
+                if( !p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                    continue;
+                }
+                for( const itype_id &mag_id : p->item_type_restrictions() ) {
+                    if( !mag_id->magazine ) {
+                        continue;
+                    }
+                    for( const pocket_data &mp : mag_id->pockets ) {
+                        if( mp.type == pocket_type::MAGAZINE &&
+                            mp.ammo_restriction.count( loaded_at ) ) {
+                            well_match = true;
+                            break;
+                        }
+                    }
+                    if( well_match ) {
+                        break;
+                    }
+                }
+                if( well_match ) {
+                    break;
+                }
+            }
+            if( !well_match ) {
+                return false;
+            }
+        }
+    }
+
+    // Check if the item is in general compatible with any reloadable pocket.
+    return contents.can_reload_with( ammo, now );
 }
 
 // Returns the MAGAZINE_WELL pocket at well_idx in contents, or nullptr if

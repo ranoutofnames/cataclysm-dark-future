@@ -176,6 +176,13 @@ class item_pocket
         // is this speedloader compatible with this pocket (if any speedloaders are whitelisted)
         bool allows_speedloader( const itype_id &speedloader_id ) const;
 
+        /**
+         * returns whether this pocket can be reloaded with the specified item.
+         * @param ammo item to be loaded in
+         * @param now whether the currently contained ammo/magazine should be taken into account
+         */
+        bool can_reload_with( const item &ammo, bool now ) const;
+
         // is this pocket one of the standard types?
         // exceptions are MOD, CORPSE, MIGRATION, etc.
         bool is_standard_type() const;

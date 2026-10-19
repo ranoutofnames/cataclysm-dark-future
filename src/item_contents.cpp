@@ -1785,6 +1785,19 @@ bool item_contents::contains_no_solids() const
     return true;
 }
 
+bool item_contents::can_reload_with( const item &ammo, const bool now ) const
+{
+    // CDF: ensure_pockets() as in the other item_contents bodies
+    ensure_pockets();
+    for( const item_pocket *pocket : get_all_reloadable_pockets() ) {
+        if( pocket->can_reload_with( ammo, now ) ) {
+            return true;
+        }
+    }
+    return false;
+
+}
+
 bool item_contents::can_unload_liquid() const
 {
     ensure_pockets();

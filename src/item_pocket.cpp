@@ -1925,6 +1925,83 @@ bool item_pocket::inherits_flags() const
     return data->inherits_flags;
 }
 
+bool item_pocket::can_reload_with( const item &ammo, const bool now ) const
+{
+    if( is_type( pocket_type::CONTAINER ) ) {
+        // Only watertight container pockets are reloadable
+        if( !watertight() ) {
+            return false;
+        }
+
+        // CONTAINER pockets can reload liquids only
+        if( !ammo.made_of( phase_id::LIQUID ) ) {
+            return false;
+        }
+    }
+
+    // CDF: SPEEDLOADER / SPEEDLOADER_CLIP branches arrive with 3-1c (loaded_ammo chain)
+
+    if( !is_compatible( ammo ).success() ) {
+        return false;
+    }
+
+    if( !now ) {
+        return true;
+    } else {
+        // Require that the new ammo can fit in with the old ammo.
+
+        // No need to combine if empty.
+        if( empty() ) {
+            return true;
+        }
+
+        if( is_type( pocket_type::MAGAZINE ) ) {
+            // Reloading is refused if
+            // Pocket is full of ammo (casings are ignored)
+            // Ammos are of different ammo type
+            // If either of ammo is liquid while the other is not or they are different types
+
+            if( full( false ) ) {
+                return false;
+            }
+
+            for( const item *loaded : all_items_top() ) {
+                if( loaded->has_flag( flag_CASING ) ) {
+                    continue;
+                }
+                if( loaded->ammo_type() != ammo.ammo_type() ) {
+                    return false;
+                }
+                if( loaded->made_of( phase_id::LIQUID ) || ammo.made_of( phase_id::LIQUID ) ) {
+                    bool cant_combine = !loaded->made_of( phase_id::LIQUID ) || !ammo.made_of( phase_id::LIQUID ) ||
+                                        loaded->type != ammo.type;
+                    if( cant_combine ) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+
+        } else if( is_type( pocket_type::MAGAZINE_WELL ) ) {
+            // Reloading is refused if there already is full magazine here
+            // Reloading with another identical mag with identical contents is also pointless so it is not allowed
+            // Pocket can't know what ammo are compatible with the item so that is checked elsewhere
+
+            // CDF: no item::is_magazine_full(); the front item's contents carries it.
+            return !front().contents.is_magazine_full() && !( front().typeId() == ammo.typeId() &&
+                    front().same_contents( ammo ) );
+        } else if( is_type( pocket_type::CONTAINER ) ) {
+            // Reloading is possible if liquid combines with old liquid
+
+            if( front().can_combine( ammo ) ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool item_pocket::allows_speedloader( const itype_id &speedloader_id ) const
 {
     if( data->allowed_speedloaders.empty() ) {

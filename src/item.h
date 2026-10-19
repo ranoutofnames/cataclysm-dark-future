@@ -1487,6 +1487,14 @@ class item : public location_visitable<item>, public game_object<item>
          * ignoring currently loaded ammo.
          */
         bool can_reload_with( const itype_id &ammo ) const;
+
+        /**
+         * returns whether the item can be reloaded with the specified item.
+         * @param ammo item to be loaded in
+         * @param now whether the currently contained ammo/magazine should be taken into account
+         */
+        bool can_reload_with( const item &ammo, bool now ) const;
+
         /** Returns true if this item can be reloaded with specified ammo type at this moment. */
         bool is_reloadable_with( const itype_id &ammo ) const;
         /** Returns true if not empty if it's liquid, it's not currently frozen in resealable container */
