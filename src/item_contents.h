@@ -24,6 +24,7 @@ class JsonObject;
 class JsonOut;
 class item;
 class iteminfo_query;
+class map;
 struct itype;
 struct tripoint;
 
@@ -464,6 +465,10 @@ class item_contents
         bool any_pockets_sealed() const;
         /** Return the amount of ammo consumed. */
         int ammo_consume( int qty, const tripoint_bub_ms &pos, float fuel_efficiency = -1.0 );
+        int ammo_consume( int qty, map *here, const tripoint_bub_ms &pos,
+                          float fuel_efficiency = -1.0 );
+        int ammo_consume_in_pocket( const std::string &id, int qty, map *here,
+                                    const tripoint_bub_ms &pos );
         item *magazine_current();
         const item *magazine_current() const;
         std::vector<item *> magazines_current();

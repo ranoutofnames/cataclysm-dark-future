@@ -1905,24 +1905,108 @@ bool item_contents::any_pockets_sealed() const
     return false;
 }
 
-int item_contents::ammo_consume( int qty, const tripoint_bub_ms &, float )
+int item_contents::ammo_consume( int qty, const tripoint_bub_ms &pos, float fuel_efficiency )
 {
-    // CDF: BN item::ammo_consume keeps its own pocket walk (T12); DDA's magazine-well and
-    // fuel handling arrive with P3
+    return item_contents::ammo_consume( qty, &get_map(), pos, fuel_efficiency );
+}
+
+int item_contents::ammo_consume( int qty, map *here, const tripoint_bub_ms &pos,
+                                 float fuel_efficiency )
+{
     ensure_pockets();
     int consumed = 0;
     for( item_pocket &pocket : pockets ) {
         if( qty <= 0 ) {
             break;
         }
-        if( pocket.is_type( pocket_type::MAGAZINE ) ) {
-            const int res = pocket.ammo_consume( qty );
-            consumed += res;
+        if( pocket.is_type( pocket_type::MAGAZINE_WELL ) ) {
+            if( pocket.empty() ) {
+                continue;
+            }
+            item *mag = pocket.magazine_current();
+            if( mag == nullptr ) {
+                continue;
+            }
+            // CDF: no 4-arg item::ammo_consume( int, map&, pos, carrier ); the BN 2-arg
+            // one consumes straight from the magazine's own contents.
+            const int res = mag->ammo_consume( qty, pos );
+            if( res && mag->ammo_remaining() == 0 ) {
+                if( mag->has_flag( flag_MAG_DESTROY ) ) {
+                    pocket.remove_item( mag );
+                } else if( mag->has_flag( flag_MAG_EJECT ) ) {
+                    // CDF: pocket.remove_item returns the detached item to eject.
+                    here->add_item( pos, pocket.remove_item( mag ) );
+                }
+            }
             qty -= res;
+            consumed += res;
+        } else if( pocket.is_type( pocket_type::MAGAZINE ) ) {
+            if( !pocket.empty() && pocket.front().is_fuel() && fuel_efficiency >= 0 ) {
+                // if using fuel instead of battery, everything is in kJ
+                // charges is going to be the energy needed over the energy in 1 unit of fuel * the efficiency of the generator
+                // CDF: item::fuel_energy() is kJ per charge (AUTO-23), DDA's is an energy per
+                // volume; from_kilojoule() restores DDA's joule arithmetic.
+                int charges_used = ceil( static_cast<float>( units::from_kilojoule( static_cast<std::int64_t>
+                                         ( qty ) ).value() ) / (
+                                             static_cast<float>( units::from_kilojoule( static_cast<std::int64_t>
+                                                     ( pocket.front().fuel_energy() ) ).value() ) * fuel_efficiency ) );
+
+                const int res = pocket.ammo_consume( charges_used );
+                //calculate the amount of energy generated
+                int energy_generated = res * units::to_kilojoule( units::from_kilojoule(
+                                           static_cast<std::int64_t>( pocket.front().fuel_energy() ) ) );
+                consumed += energy_generated;
+                qty -= energy_generated;
+                qty = std::max( 0, qty );
+            } else {
+                const int res = pocket.ammo_consume( qty );
+                consumed += res;
+                qty -= res;
+            }
         }
     }
     contents_changed();
     return consumed;
+}
+
+int item_contents::ammo_consume_in_pocket( const std::string &id, int qty, map *here,
+        const tripoint_bub_ms &pos )
+{
+    if( id.empty() || qty <= 0 ) {
+        return 0;
+    }
+    ensure_pockets();
+    for( item_pocket &pocket : pockets ) {
+        const pocket_data *pd = pocket.get_pocket_data();
+        if( pd == nullptr || pd->pocket_id != id ) {
+            continue;
+        }
+        if( pocket.is_type( pocket_type::MAGAZINE_WELL ) ) {
+            item *mag = pocket.magazine_current();
+            if( mag == nullptr ) {
+                return 0;
+            }
+            // CDF: no 4-arg item::ammo_consume( int, map&, pos, carrier ); use the BN 2-arg one.
+            const int res = mag->ammo_consume( qty, pos );
+            if( res && mag->ammo_remaining() == 0 ) {
+                if( mag->has_flag( flag_MAG_DESTROY ) ) {
+                    pocket.remove_item( mag );
+                } else if( mag->has_flag( flag_MAG_EJECT ) ) {
+                    // CDF: pocket.remove_item returns the detached item to eject.
+                    here->add_item( pos, pocket.remove_item( mag ) );
+                }
+            }
+            contents_changed();
+            return res;
+        }
+        if( pocket.is_type( pocket_type::MAGAZINE ) ) {
+            const int res = pocket.ammo_consume( qty );
+            contents_changed();
+            return res;
+        }
+        return 0;
+    }
+    return 0;
 }
 
 item *item_contents::magazine_current()

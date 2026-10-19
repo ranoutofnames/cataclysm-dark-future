@@ -146,3 +146,9 @@ std::vector<const item_pocket *> item::all_magazine_well_pockets() const
         return p.is_type( pocket_type::MAGAZINE_WELL );
     } );
 }
+
+int item::ammo_consume_in_pocket( const std::string &id, int qty, map &here,
+                                  const tripoint_bub_ms &pos )
+{
+    return contents.ammo_consume_in_pocket( id, qty, &here, pos );
+}
