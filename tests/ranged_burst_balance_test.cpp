@@ -11,7 +11,7 @@ static constexpr tripoint_bub_ms shooter_pos(60, 60, 0);
 
 static void check_burst_penalty(
     const Character& shooter, item& gun, int expected, bool bipod = false) {
-    if (gun.ammo_required() && !gun.ammo_sufficient() && !gun.ammo_default().is_null()) {
+    if (gun.ammo_required() && !gun.ammo_sufficient( &shooter ) && !gun.ammo_default().is_null()) {
         gun.ammo_set(gun.ammo_default(), -1);
     }
     if (bipod) {

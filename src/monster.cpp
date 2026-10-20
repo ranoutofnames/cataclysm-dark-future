@@ -3832,7 +3832,7 @@ bool monster::use_mech_power( int amt )
         return false;
     }
     amt = -amt;
-    battery_item->ammo_consume( amt, bub_pos() );
+    battery_item->ammo_consume( amt, bub_pos(), nullptr );
     return battery_item->ammo_remaining() > 0;
 }
 

@@ -789,7 +789,7 @@ void gun_actor::shoot( monster &z, const tripoint_bub_ms &target, const gun_mode
         gun->ammo_set( ammo, z.ammo[ammo] );
     }
 
-    if( !gun->ammo_sufficient() ) {
+    if( !gun->ammo_sufficient( nullptr ) ) {
         if( !no_ammo_sound.empty() ) {
             sound_event se;
             se.origin = z.bub_pos();

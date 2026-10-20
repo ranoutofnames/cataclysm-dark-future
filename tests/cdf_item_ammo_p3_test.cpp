@@ -525,3 +525,18 @@ TEST_CASE( "rate_action_use of a charged bionic tool is good for the avatar with
     CHECK( examine_item_menu::rate_action_use( get_avatar(), *toolset ) ==
           examine_item_menu::hint_rating::iffy );
 }
+
+// 3-4b-c2 guard (passes before and after the caller edits): a nullptr carrier
+// has no bionic power, an avatar carrier does.
+TEST_CASE( "a nullptr carrier counts no bionic power", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> toolset = item::spawn( itype_id( "toolset" ) );
+    REQUIRE( toolset->is_tool() );
+    REQUIRE( toolset->has_flag( flag_USES_BIONIC_POWER ) );
+    toolset->charges = 0;
+
+    get_avatar().set_max_power_level( 100_kJ );
+    get_avatar().set_power_level( 50_kJ );
+    CHECK_FALSE( toolset->ammo_sufficient( nullptr ) );
+    CHECK( toolset->ammo_sufficient( &get_avatar() ) );
+}

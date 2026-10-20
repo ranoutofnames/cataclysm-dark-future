@@ -1077,7 +1077,7 @@ void npc::pretend_fire( npc *source, int shots, item &gun )
         add_msg( m_info, _( "%s shoots something." ), source->disp_name() );
     }
     while( curshot != shots ) {
-        if( gun.ammo_consume( gun.ammo_required(), bub_pos() ) != gun.ammo_required() ) {
+        if( gun.ammo_consume( gun.ammo_required(), bub_pos(), this ) != gun.ammo_required() ) {
             debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname().c_str() );
             break;
         }
@@ -1514,7 +1514,7 @@ int ranged::fire_gun( Character &who, const tripoint_bub_ms &target, int max_sho
             who.rem_morale( MORALE_PYROMANIA_NOFIRE );
         }
 
-        if( gun.ammo_consume( gun.ammo_required(), who.bub_pos() ) != gun.ammo_required() ) {
+        if( gun.ammo_consume( gun.ammo_required(), who.bub_pos(), &who ) != gun.ammo_required() ) {
             debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname() );
             break;
         }
@@ -4603,7 +4603,7 @@ auto ranged::gunmode_checks_weapon( avatar &you, const map &m, std::vector<std::
 {
     bool result = true;
 
-    if( !gmode->ammo_sufficient() && !gmode->has_flag( flag_RELOAD_AND_SHOOT ) ) {
+    if( !gmode->ammo_sufficient( &you ) && !gmode->has_flag( flag_RELOAD_AND_SHOOT ) ) {
         if( !gmode->ammo_remaining() ) {
             messages.push_back( string_format( _( "Your %s is empty!" ), gmode->tname() ) );
         } else {

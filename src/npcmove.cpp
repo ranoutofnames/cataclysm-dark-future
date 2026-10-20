@@ -1778,7 +1778,7 @@ npc_action npc::method_of_attack()
         }
     }
 
-    if( !primary_weapon().ammo_sufficient() && can_reload_current() ) {
+    if( !primary_weapon().ammo_sufficient( this ) && can_reload_current() ) {
         add_msg( m_debug, "%s is reloading", disp_name() );
         return npc_reload;
     }
