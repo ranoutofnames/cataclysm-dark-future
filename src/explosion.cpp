@@ -1992,7 +1992,8 @@ void emp_blast( const tripoint_bub_ms &p )
     if( here.has_items( p ) ) {
         for( auto &it : here.i_at( p ) ) {
             if( it->is_tool() && it->ammo_current() == itype_battery ) {
-                it->charges = 0;
+                // CDF: DDA emp_blast has no battery drain; drains the ammo count, magazine wells too (D14 legacy tools keep direct charges)
+                it->ammo_consume( it->ammo_remaining(), p, nullptr );
             }
         }
     }
