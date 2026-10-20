@@ -190,7 +190,7 @@ static auto test_efficiency(
     // Remove all items from cargo to normalize weight.
     for (const vpart_reference vp : veh.get_all_parts()) {
         veh_ptr->get_items(vp.part_index()).clear();
-        vp.part().ammo_consume(vp.part().ammo_remaining(), vp.pos());
+        vp.part().ammo_consume(vp.part().ammo_remaining(), &get_map(), vp.pos());
     }
     for (const vpart_reference vp : veh.get_avail_parts("OPENABLE")) { veh.close(vp.part_index()); }
 

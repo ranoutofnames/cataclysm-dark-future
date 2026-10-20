@@ -150,7 +150,7 @@ auto try_autoload_turret(vehicle& veh, vehicle_part& pt) -> bool {
     const auto needs_reload =
         gun.magazine_integral()
             ? (ammo_capacity > 0 && gun.ammo_remaining() < ammo_capacity)
-            : !gun.ammo_sufficient();
+            : !gun.ammo_sufficient(nullptr);
     if (!needs_reload) {
         gun.item_vars().set("autoloader_cycle_start", 0);
         return false;

@@ -344,7 +344,7 @@ void vehicle_part::ammo_unset() {
     }
 }
 
-auto vehicle_part::ammo_consume(int qty, const tripoint_bub_ms& pos) -> int {
+auto vehicle_part::ammo_consume(int qty, map* here, const tripoint_bub_ms& pos) -> int {
     if (is_tank() && !base->contents.empty()) {
         const int res = std::min(ammo_remaining(), qty);
         item& liquid = base->contents.back();
@@ -352,7 +352,7 @@ auto vehicle_part::ammo_consume(int qty, const tripoint_bub_ms& pos) -> int {
         if (liquid.charges == 0) { base->contents.clear_items(); }
         return res;
     }
-    return base->ammo_consume(qty, pos);
+    return base->ammo_consume(qty, *here, pos, nullptr); // CDF: vehicle parts have no carrier (ADV-7)
 }
 
 auto vehicle_part::consume_energy(const itype_id& ftype, double energy_j) -> double {

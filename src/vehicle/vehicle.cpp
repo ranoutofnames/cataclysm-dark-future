@@ -3792,7 +3792,7 @@ auto vehicle::drain(const itype_id& ftype, int amount) -> int {
     for (auto& p : parts) {
         if (amount <= 0) { break; }
         if (p.ammo_current() == ftype) {
-            int qty = p.ammo_consume(amount, bub_part_location(p));
+            int qty = p.ammo_consume(amount, &get_map(), bub_part_location(p));
             drained += qty;
             amount -= qty;
         }
@@ -3815,7 +3815,7 @@ auto vehicle::drain(const int index, int amount) -> int {
         return 0;
     }
 
-    const int drained = pt.ammo_consume(amount, bub_part_location(pt));
+    const int drained = pt.ammo_consume(amount, &get_map(), bub_part_location(pt));
     invalidate_mass();
     return drained;
 }
@@ -5283,7 +5283,7 @@ void vehicle::power_parts(int turns) {
                 int fuel_consumed = reactors_output_bat / efficiency;
                 // Remainder has a chance of resulting in more fuel consumption
                 fuel_consumed += x_in_y(reactors_output_bat % efficiency, efficiency) ? 1 : 0;
-                parts[elem].ammo_consume(fuel_consumed, bub_part_location(elem));
+                parts[elem].ammo_consume(fuel_consumed, &get_map(), bub_part_location(elem));
                 reactor_working = true;
                 delta_energy_bat += reactors_output_bat;
             }
@@ -5564,7 +5564,7 @@ auto vehicle::discharge_battery(int amount, bool recurse) -> int {
         prev_charge_level = std::max(0, prev_charge_level);
         const auto amount_to_discharge =
             std::min(part.ammo_remaining() - prev_charge_level, amount);
-        part.ammo_consume(amount_to_discharge, bub_part_location(part));
+        part.ammo_consume(amount_to_discharge, &get_map(), bub_part_location(part));
         amount -= amount_to_discharge;
         if (part.ammo_remaining() > 0) {
             dischargeable_parts[battery_charge_level(part)].push_back(part_index);
@@ -5739,17 +5739,17 @@ void vehicle::slow_leak() {
         // damaged batteries self-discharge without leaking, plutonium leaks slurry
         if (fuel != fuel_type_battery && fuel != fuel_type_plutonium_cell) {
             g->m.add_item_or_charges(dest, item::spawn(fuel, calendar::turn, qty));
-            p.ammo_consume(qty, bub_part_location(p));
+            p.ammo_consume(qty, &get_map(), bub_part_location(p));
         } else if (fuel == fuel_type_plutonium_cell) {
             if (p.ammo_remaining() >= PLUTONIUM_CHARGES / 10) {
                 g->m.add_item_or_charges(
                     dest, item::spawn("plut_slurry_dense", calendar::turn, qty));
-                p.ammo_consume(qty * PLUTONIUM_CHARGES / 10, bub_part_location(p));
+                p.ammo_consume(qty * PLUTONIUM_CHARGES / 10, &get_map(), bub_part_location(p));
             } else {
-                p.ammo_consume(p.ammo_remaining(), bub_part_location(p));
+                p.ammo_consume(p.ammo_remaining(), &get_map(), bub_part_location(p));
             }
         } else {
-            p.ammo_consume(qty, bub_part_location(p));
+            p.ammo_consume(qty, &get_map(), bub_part_location(p));
         }
     }
 }
@@ -7129,7 +7129,7 @@ void vehicle::leak_fuel(vehicle_part& pt) {
     const itype* fuel = &*pt.ammo_current();
     while (!tiles.empty() && pt.ammo_remaining()) {
         int qty =
-            pt.ammo_consume(rng(0, std::max(pt.ammo_remaining() / 3, 1)), bub_part_location(pt));
+            pt.ammo_consume(rng(0, std::max(pt.ammo_remaining() / 3, 1)), &get_map(), bub_part_location(pt));
         if (qty > 0) {
             g->m.add_item_or_charges(random_entry(tiles), item::spawn(fuel, calendar::turn, qty));
         }
@@ -7316,7 +7316,7 @@ void vehicle::update_time(const time_point& update_to, const bool batched) {
                 }
                 if (consume_tank != nullptr) {
                     consume_tank->ammo_consume(
-                        max_repeats * consume_charges, bub_part_location(*consume_tank));
+                        max_repeats * consume_charges, &get_map(), bub_part_location(*consume_tank));
                 }
                 if (output_tank != nullptr) {
                     output_tank->ammo_set(

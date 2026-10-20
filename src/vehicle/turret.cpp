@@ -196,7 +196,7 @@ auto turret_data::query() const -> turret_data::status {
         }
 
     } else {
-        if (!part->base->ammo_sufficient()) { return status::no_ammo; }
+        if (!part->base->ammo_sufficient(nullptr)) { return status::no_ammo; }
     }
 
     auto ups = part->base->get_gun_ups_drain() * part->base->gun_current_mode().qty;

@@ -100,10 +100,11 @@ public:
     /**
      * Consume fuel, charges or ammunition (if available)
      * @param qty maximum amount of ammo that should be consumed
+     * @param here map used to resolve the part's surroundings (e.g. when ejecting a magazine)
      * @param pos current bubble location of part from which ammo is being consumed
      * @return amount consumed which will be between 0 and specified qty
      */
-    auto ammo_consume(int qty, const tripoint_bub_ms& pos) -> int;
+    auto ammo_consume(int qty, map* here, const tripoint_bub_ms& pos) -> int;
 
     /**
      * Consume fuel by energy content.
