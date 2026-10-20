@@ -66,6 +66,56 @@ bool item::can_reload_with( const item &ammo, bool now ) const
     return contents.can_reload_with( ammo, now );
 }
 
+// CDF: defined below (AUTO-26 O1 / D14 legacy direct-charges guard).
+static bool cdf_legacy_direct_charges( const item &it );
+
+bool item::is_reloadable() const
+{
+    if( ( has_flag( flag_NO_RELOAD ) && !has_flag( flag_VEHICLE ) ) ||
+        ( is_gun() && !ammo_default() ) ) {
+        // turrets ignore NO_RELOAD flag
+        // don't show guns without default ammo defined in reload ui
+        return false;
+    }
+
+    // CDF: legacy direct-charges tools and guns (D14) have no MAGAZINE pocket, so DDA's pocket loop
+    // would skip them; keep BN's answer for them. Remove with cdf_legacy_direct_charges.
+    if( cdf_legacy_direct_charges( *this ) && !ammo_types().empty() ) {
+        return true;
+    }
+
+    for( const item_pocket *pocket : contents.get_all_reloadable_pockets() ) {
+        if( pocket->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            // CDF: no item::is_magazine_full(); the front item's contents carries it.
+            if( pocket->empty() || !pocket->front().contents.is_magazine_full() ) {
+                return true;
+            }
+        } else if( pocket->is_type( pocket_type::MAGAZINE ) ) {
+            // Parent aggregate stays correct when the integral mag is full
+            // of casings (not counted against ammo_remaining()).
+            if( remaining_ammo_capacity() > 0 ) {
+                return true;
+            }
+        } else if( pocket->is_type( pocket_type::CONTAINER ) ) {
+            // Container pockets are reloadable only if they are watertight, not full and do not contain non-liquid item
+            if( pocket->full( false ) || !pocket->watertight() ) {
+                continue;
+            }
+            if( pocket->empty() || pocket->front().made_of( phase_id::LIQUID ) ) {
+                return true;
+            }
+        }
+    }
+
+    for( const item *gunmod : gunmods() ) {
+        if( gunmod->is_reloadable() ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool item::is_magazine() const
 {
     // CDF: the pocket clause is true only for items with a MAGAZINE pocket (none in CDF data today).

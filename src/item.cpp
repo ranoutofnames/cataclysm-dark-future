@@ -11526,35 +11526,6 @@ bool item::is_soft() const
     } );
 }
 
-bool item::is_reloadable() const
-{
-    if( has_flag( flag_NO_RELOAD ) && !has_flag( flag_VEHICLE ) ) {
-        return false; // turrets ignore NO_RELOAD flag
-
-    } else if( is_container() ) {
-        // TODO: Make buckets actually reloadable using reload menu
-        // This would be done via locking this off by weather or not it was wielded or on dirt most likely
-        if( type->container ) {
-            return type->container->seals;
-        }
-        // per DDA item_gun_tool_ammo.cpp:4473: a watertight pocket that is not full and holds
-        // nothing or liquid; holsters and ammo pouches are filled with the insert action instead
-        return std::ranges::any_of( contents.get_all_reloadable_pockets(),
-        []( const item_pocket * pocket ) {
-            return pocket->is_type( pocket_type::CONTAINER ) && !pocket->full( false ) &&
-                   ( pocket->empty() || pocket->front().made_of( phase_id::LIQUID ) );
-        } );
-
-    } else if( !is_gun() && !is_tool() && !is_magazine() ) {
-        return false;
-
-    } else if( ammo_types().empty() ) {
-        return false;
-    }
-
-    return true;
-}
-
 std::string item::type_name( unsigned int quantity ) const
 {
     const auto iter = item_vars_.find( "name" );
