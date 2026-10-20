@@ -964,7 +964,22 @@ void npc::starting_weapon( const npc_class_id &type )
     set_primary_weapon( random_item_from( type, category ) );
 
     if( primary_weapon().is_gun() ) {
-        primary_weapon().ammo_set( primary_weapon().ammo_default() );
+        // CDF: DDA multi-well dispatch (npc.cpp:1389-1399); the single-well line is unchanged
+        const std::vector<itype_id> well_defaults = primary_weapon().magazines_default();
+        const bool is_multi_well = well_defaults.size() > 1;
+        bool any_well_default = false;
+        for( const itype_id &mag_id : well_defaults ) {
+            if( !mag_id.is_null() ) {
+                any_well_default = true;
+                break;
+            }
+        }
+        if( is_multi_well && any_well_default ) {
+            primary_weapon().dress_magazine_wells( /*insert_default_mag=*/true,
+                                                   /*fill_with_default_ammo=*/true );
+        } else {
+            primary_weapon().ammo_set( primary_weapon().ammo_default() );
+        }
     }
     primary_weapon().set_owner( get_faction()->id );
 }

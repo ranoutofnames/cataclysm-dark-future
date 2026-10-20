@@ -5531,12 +5531,23 @@ auto map::place_items(
 
     for (auto e : res) {
         if (e->is_tool() || e->is_gun() || e->is_magazine()) {
-            if (rng(0, 99) < magazine && !e->magazine_current()
-                && e->magazine_default() != itype_id::NULL_ID()) {
-                e->put_in(item::spawn(e->magazine_default(), e->birthday()));
-            }
-            if (rng(0, 99) < ammo && e->ammo_remaining() == 0) {
-                e->ammo_set(e->ammo_default(), e->ammo_capacity());
+            // CDF: DDA multi-well dispatch (mapgen.cpp:6791-6812)
+            const std::vector<itype_id> well_defaults = e->magazines_default();
+            const bool is_multi_well = well_defaults.size() > 1;
+            // CDF: !magazine_integral() added as in DDA mapgen.cpp:6795
+            const bool roll_mag = rng(0, 99) < magazine && !e->magazine_integral();
+            const bool roll_ammo = rng(0, 99) < ammo;
+            // TODO(multimag): per-well magazine-chance / ammo-chance keys.
+            if (is_multi_well) {
+                e->dress_magazine_wells(roll_mag, roll_ammo);
+            } else {
+                if (roll_mag && !e->magazine_current()
+                    && e->magazine_default() != itype_id::NULL_ID()) {
+                    e->put_in(item::spawn(e->magazine_default(), e->birthday()));
+                }
+                if (roll_ammo && e->ammo_remaining() == 0) {
+                    e->ammo_set(e->ammo_default(), e->ammo_capacity());
+                }
             }
         }
     }

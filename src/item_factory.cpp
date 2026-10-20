@@ -1016,6 +1016,18 @@ void Item_factory::synthesize_pockets( itype &obj ) const
                 }
             }
         }
+        // CDF: well default from the type's first listed magazine (3-5b)
+        std::set<itype_id> well_defaults;
+        for( const auto &kv : obj.magazine_default ) {
+            const auto found = m_templates.find( kv.second );
+            if( !kv.second.is_null() && ( found == m_templates.end() ||
+                                          !found->second.has_flag( flag_SPEEDLOADER ) ) ) {
+                well_defaults.insert( kv.second );
+            }
+        }
+        if( well_defaults.size() == 1 ) {
+            pocket.default_magazine = *well_defaults.begin();
+        }
         pocket.raw_volume_capacity = std::max( biggest, 1_ml );
         // per DDA item_factory.cpp:4086: magazine wells take any length
         pocket.max_item_length = 2_km;

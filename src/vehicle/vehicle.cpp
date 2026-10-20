@@ -5980,13 +5980,22 @@ void vehicle::place_spawn_items() {
 
         std::ranges::for_each(created, [this, &spawn, part](detached_ptr<item>& e) {
             if (e->is_tool() || e->is_gun() || e->is_magazine()) {
-                auto spawn_ammo = rng(0, 99) < spawn.with_ammo && e->ammo_remaining() == 0;
+                // CDF: DDA multi-well dispatch (vehicle.cpp:6666-6687)
+                const std::vector<itype_id> well_defaults = e->magazines_default();
+                const bool is_multi_well = well_defaults.size() > 1;
+                auto spawn_ammo = rng(0, 99) < spawn.with_ammo;
                 auto spawn_mag =
-                    rng(0, 99) < spawn.with_magazine && !e->magazine_integral()
-                    && !e->magazine_current();
+                    rng(0, 99) < spawn.with_magazine && !e->magazine_integral();
 
-                if (spawn_mag) { e->put_in(item::spawn(e->magazine_default(), e->birthday())); }
-                if (spawn_ammo) { e->ammo_set(e->ammo_default()); }
+                if (is_multi_well) {
+                    // TODO(multimag): per-well chance keys for vehicle gun-mount initial load.
+                    e->dress_magazine_wells(spawn_mag, spawn_ammo);
+                } else {
+                    spawn_ammo = spawn_ammo && e->ammo_remaining() == 0;
+                    spawn_mag = spawn_mag && !e->magazine_current();
+                    if (spawn_mag) { e->put_in(item::spawn(e->magazine_default(), e->birthday())); }
+                    if (spawn_ammo) { e->ammo_set(e->ammo_default()); }
+                }
             }
             add_item(part, std::move(e));
         });

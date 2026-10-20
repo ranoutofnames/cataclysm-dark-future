@@ -436,6 +436,38 @@ std::vector<itype_id> item::magazines_default() const
     return contents.magazines_default();
 }
 
+void item::dress_magazine_wells( bool insert_default_mag, bool fill_with_default_ammo )
+{
+    for( item_pocket *well : all_magazine_well_pockets() ) {
+        item *current_mag = well->magazine_current();
+        if( current_mag != nullptr ) {
+            if( fill_with_default_ammo && current_mag->ammo_remaining() == 0 &&
+                !current_mag->ammo_default().is_null() ) {
+                current_mag->ammo_set( current_mag->ammo_default() );
+            }
+            continue;
+        }
+        if( !insert_default_mag ) {
+            continue;
+        }
+        const itype_id mag_id = well->magazine_default();
+        if( mag_id.is_null() ) {
+            continue;
+        }
+        // CDF: detached overload instead of DDA's copy `item mag( mag_id, birthday() )`
+        detached_ptr<item> mag = item::spawn( mag_id, birthday() );
+        if( fill_with_default_ammo && !mag->ammo_default().is_null() ) {
+            mag->ammo_set( mag->ammo_default() );
+        }
+        // CDF: the detached insert leaves the item with us on failure; ~detached_ptr destroys it
+        const ret_val<item *> inserted = well->insert_item( std::move( mag ) );
+        if( !inserted.success() ) {
+            debugmsg( "dress_magazine_wells: cannot insert default magazine '%s' into '%s'",
+                      mag_id.str(), typeId().str() );
+        }
+    }
+}
+
 std::vector<item *> item::magazines_current()
 {
     return contents.magazines_current();

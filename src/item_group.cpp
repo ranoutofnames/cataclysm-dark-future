@@ -676,6 +676,18 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
         new_item->charges = std::max( 1, max_capacity );
     }
 
+    // CDF: hoisted from the DDA spawn block (item_group.cpp:625-626) so both blocks share it
+    const std::vector<itype_id> well_defaults = new_item->magazines_default();
+    const bool is_multi_well = well_defaults.size() > 1;
+
+    if( ch != -1 && is_multi_well ) {
+        // TODO(multimag): per-well charges JSON keys (e.g. well_charges: [N, M]).
+        // CDF: no `context` in scope here, so the message has no "in %s" prefix
+        debugmsg( "'charges' is ambiguous on multi-well item '%s'; use per-well JSON when available",
+                  new_item->typeId().str() );
+        ch = -1;
+    }
+
     if( ch != -1 ) {
         if( new_item->count_by_charges() || new_item->made_of( LIQUID ) ) {
             // food, ammo
@@ -713,24 +725,39 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
         }
     }
 
-    if( new_item->is_tool() || new_item->is_gun() || new_item->is_magazine() ) {
-        bool spawn_ammo = rng( 0, 99 ) < with_ammo && new_item->ammo_remaining() == 0 && ch == -1 &&
+    // CDF: DDA outer condition (item_group.cpp:687-688) is added to the old one, not substituted:
+    // integral-ammo guns and charge tools have no well and must keep getting their ammo
+    // (tests/item_group_test.cpp "item group ammo loading unwraps packaged ammunition")
+    if( new_item->is_tool() || new_item->is_gun() || new_item->is_magazine() ||
+        new_item->has_pocket_type( pocket_type::MAGAZINE_WELL ) ) {
+        bool spawn_ammo = rng( 0, 99 ) < with_ammo && ch == -1 &&
                           ( !new_item->is_tool() || new_item->type->tool->rand_charges.empty() );
-        bool spawn_mag  = rng( 0, 99 ) < with_magazine && !new_item->magazine_current()
-                          && new_item->magazine_default() != itype_id::NULL_ID();
+        // CDF: !magazine_integral() added as in DDA item_group.cpp:690
+        bool spawn_mag  = rng( 0, 99 ) < with_magazine && !new_item->magazine_integral();
 
-        if( spawn_mag ) {
-            new_item->put_in( item::spawn( new_item->magazine_default(), new_item->birthday() ) );
-        }
+        if( is_multi_well ) {
+            // CDF: DDA multi-well dispatch (item_group.cpp:689-698)
+            // TODO(multimag): per-well ammo-chance / magazine-chance JSON keys.
+            new_item->dress_magazine_wells( spawn_mag, spawn_ammo );
+        } else {
+            // CDF: the single-well guards stay as before, moved after the dispatch
+            spawn_ammo = spawn_ammo && new_item->ammo_remaining() == 0;
+            spawn_mag = spawn_mag && !new_item->magazine_current()
+                        && new_item->magazine_default() != itype_id::NULL_ID();
 
-        if( spawn_ammo ) {
-            if( ammo ) {
-                detached_ptr<item> am = ammo->create_single( new_item->birthday() );
-                if( am ) {
-                    new_item->ammo_set( spawned_ammo_id( *am ) );
+            if( spawn_mag ) {
+                new_item->put_in( item::spawn( new_item->magazine_default(), new_item->birthday() ) );
+            }
+
+            if( spawn_ammo ) {
+                if( ammo ) {
+                    detached_ptr<item> am = ammo->create_single( new_item->birthday() );
+                    if( am ) {
+                        new_item->ammo_set( spawned_ammo_id( *am ) );
+                    }
+                } else {
+                    new_item->ammo_set( new_item->ammo_default() );
                 }
-            } else {
-                new_item->ammo_set( new_item->ammo_default() );
             }
         }
     }
