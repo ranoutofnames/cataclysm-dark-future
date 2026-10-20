@@ -452,6 +452,12 @@ bool item::uses_firing_requirements() const
     return type && !type->firing_requirements.empty();
 }
 
+bool item::needs_charges_to_use() const
+{
+    // CDF: get_gun_ups_drain() is an int in UPS charges, not kJ; DDA get_gun_energy_drain() > 0_kJ is not ported
+    return ammo_required() > 0 || get_gun_ups_drain() > 0 || uses_firing_requirements();
+}
+
 const item_pocket *item::primary_ammo_pocket() const
 {
     // MAGAZINE pockets count too: the schema accepts integral-mag items as
@@ -831,4 +837,63 @@ int item::ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Characte
 bool item::uses_magazine() const
 {
     return contents.has_pocket_type( pocket_type::MAGAZINE_WELL );
+}
+
+units::energy item::energy_consume( units::energy qty, const tripoint_bub_ms &pos,
+                                    Character *carrier,
+                                    float fuel_efficiency )
+{
+    return item::energy_consume( qty, &get_map(), pos, carrier, fuel_efficiency );
+}
+
+units::energy item::energy_consume( units::energy qty, map *here, const tripoint_bub_ms &pos,
+                                    Character *carrier,
+                                    float fuel_efficiency )
+{
+    if( qty < 0_kJ ) {
+        debugmsg( "Cannot consume negative quantity of energy for %s", tname() );
+        return 0_kJ;
+    }
+
+    const units::energy wanted_energy = qty;
+
+    // Consume battery(ammo) and other fuel (if allowed)
+    if( is_battery() || fuel_efficiency >= 0 ) {
+        int consumed_kj = contents.ammo_consume( units::to_kilojoule( qty ), here, pos, fuel_efficiency );
+        qty -= units::from_kilojoule( static_cast<std::int64_t>( consumed_kj ) );
+        // Either we're out of juice or truncating the value above means we didn't drain quite enough.
+        // In the latter case at least this will bump up energy enough to satisfy the remainder,
+        // if not it will drain the item all the way.
+        // TODO: reconsider what happens with fuel burning, right now this stashes
+        // the remainder of energy from burning the fuel in the item in question,
+        // which potentially allows it to burn less fuel next time.
+        // Do we want an implicit 1kJ battery in the generator to smooth things out?
+        if( qty > energy ) {
+            int64_t residual_drain = contents.ammo_consume( 1, here, pos, fuel_efficiency );
+            energy += units::from_kilojoule( residual_drain );
+        }
+        if( qty > energy ) {
+            qty -= energy;
+            energy = 0_J;
+        } else {
+            energy -= qty;
+            qty = 0_J;
+        }
+    }
+
+    // Consume energy from contained magazine
+    if( magazine_current() ) {
+        qty -= magazine_current()->energy_consume( qty, here, pos, carrier );
+    }
+
+    // CDF: UPS tail deferred to 4-b2 (Character::consume_ups absent)
+
+    // Consume bio energy
+    if( carrier != nullptr && has_flag( flag_USES_BIONIC_POWER ) ) {
+        units::energy bio_used = std::min( carrier->get_power_level(), qty );
+        carrier->mod_power_level( -bio_used );
+        qty -= bio_used;
+    }
+
+    return wanted_energy - qty;
 }

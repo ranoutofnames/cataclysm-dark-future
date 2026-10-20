@@ -687,3 +687,86 @@ TEST_CASE( "multimag_integral_pocket_skips_casings", "[p3][ammo]" ) {
     CHECK( gun->has_ammo_data() );
     CHECK( gun->ammo_remaining() == 57 );
 }
+
+TEST_CASE( "battery_energy_test", "[p3][ammo]" ) {
+    clear_all_state();
+    // CDF: medium_battery_cell is a MAGAZINE here (is_battery() false); battery_test is the BATTERY item, 30 kJ.
+    detached_ptr<item> test_battery = item::spawn( itype_id( "battery_test" ) );
+    // CDF: mod_energy( 30_kJ ) in place of ammo_set( ammo_default(), 56 ).
+    REQUIRE( test_battery->mod_energy( 30_kJ ) == 0_J );
+
+    SECTION( "Integer drain from battery" ) {
+        REQUIRE( test_battery->energy_remaining() == 30_kJ ); // CDF: no carrier argument, 30 kJ
+        units::energy consumed = test_battery->energy_consume( 20_kJ, tripoint_bub_ms::zero(),
+                                 nullptr ); // CDF: 20 kJ (DDA 40)
+        CHECK( test_battery->energy_remaining() == 10_kJ ); // CDF: 10 kJ (DDA 16)
+        CHECK( consumed == 20_kJ ); // CDF: 20 kJ (DDA 40)
+    }
+
+    SECTION( "Integer over-drain from battery" ) {
+        REQUIRE( test_battery->energy_remaining() == 30_kJ ); // CDF: no carrier argument, 30 kJ
+        units::energy consumed = test_battery->energy_consume( 400_kJ, tripoint_bub_ms::zero(), nullptr );
+        CHECK( test_battery->energy_remaining() == 0_kJ ); // CDF: no carrier argument
+        CHECK( consumed == 30_kJ ); // CDF: 30 kJ (DDA 56)
+    }
+
+    SECTION( "Non-integer drain from battery" ) {
+        // Battery charge is in mJ now, so check for precise numbers.
+        // 4.5 kJ drain is 4.5 kJ drain
+        REQUIRE( test_battery->energy_remaining() == 30_kJ ); // CDF: no carrier argument, 30 kJ
+        units::energy consumed = test_battery->energy_consume( 4500_J, tripoint_bub_ms::zero(), nullptr );
+        CHECK( test_battery->energy_remaining() == 25.5_kJ ); // CDF: 25.5 kJ (DDA 51.5)
+        CHECK( consumed == 4500_J );
+    }
+
+    SECTION( "Tiny Non-integer drain from battery" ) {
+        // Make sure lots of tiny discharges sum up as expected.
+        REQUIRE( test_battery->energy_remaining() == 30_kJ ); // CDF: no carrier argument, 30 kJ
+        for( int i = 0; i < 133; ++i ) {
+            units::energy consumed = test_battery->energy_consume( 2_J, tripoint_bub_ms::zero(), nullptr );
+            CHECK( consumed == 2_J );
+        }
+        CHECK( test_battery->energy_remaining() == 29734_J ); // CDF: 30000 - 133 * 2 (DDA 55734)
+    }
+
+    SECTION( "Non-integer over-drain from battery" ) {
+        REQUIRE( test_battery->energy_remaining() == 30_kJ ); // CDF: no carrier argument, 30 kJ
+        units::energy consumed = test_battery->energy_consume( 500500_J, tripoint_bub_ms::zero(),
+                                 nullptr );
+        CHECK( test_battery->energy_remaining() == 0_kJ ); // CDF: no carrier argument
+        CHECK( consumed == 30_kJ ); // CDF: 30 kJ (DDA 56)
+    }
+
+    SECTION( "zero drain from battery" ) {
+        REQUIRE( test_battery->energy_remaining() == 30_kJ ); // CDF: no carrier argument, 30 kJ
+        units::energy consumed = test_battery->energy_consume( 0_J, tripoint_bub_ms::zero(), nullptr );
+        CHECK( test_battery->energy_remaining() == 30_kJ ); // CDF: no carrier argument, 30 kJ
+        CHECK( consumed == 0_kJ );
+    }
+}
+
+TEST_CASE( "needs_charges_to_use covers multimag", "[p3][ammo]" ) {
+    clear_all_state();
+    // DDA multimag_test.cpp:1267-1277 make_multimag_consume_gun()
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_consume" ) );
+    detached_ptr<item> bb_mag = item::spawn( itype_id( "glockmag" ) );
+    bb_mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+    detached_ptr<item> batt_mag = item::spawn( itype_id( "heavy_battery_cell" ) );
+    batt_mag->put_in( item::spawn( itype_id( "battery" ), calendar::turn, 100 ),
+                      pocket_type::MAGAZINE );
+    REQUIRE( gun->put_in( std::move( bb_mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun->put_in( std::move( batt_mag ), pocket_type::MAGAZINE_WELL ).success() );
+    CHECK( gun->needs_charges_to_use() );
+}
+
+TEST_CASE( "needs_charges_to_use true for a loaded m4a1, false for a plain non-gun item",
+           "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    REQUIRE( gun->ammo_required() > 0 );
+    CHECK( gun->needs_charges_to_use() );
+
+    detached_ptr<item> rock = item::spawn( itype_id( "rock" ) );
+    REQUIRE( rock->get_gun_ups_drain() == 0 );
+    CHECK_FALSE( rock->needs_charges_to_use() );
+}
