@@ -2463,6 +2463,10 @@ class item : public location_visitable<item>, public game_object<item>
         item_pocket *pocket_by_id( const std::string &id );
         const item_pocket *pocket_by_id( const std::string &id ) const;
 
+        /** debugmsg on duplicate pocket ids, unknown ids in installed mods' pocket references and
+         *  capacity_mods that target a pocket that is not an integral MAGAZINE (DDA item_container.cpp) */
+        void validate_mod_pocket_refs() const;
+
         // Ammo remaining in the pocket with the given id.
         int ammo_remaining_in_pocket( const std::string &id ) const;
         // Consume ammo from the pocket with the given id.

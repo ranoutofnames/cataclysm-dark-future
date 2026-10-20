@@ -118,6 +118,8 @@ void item_contents::copy_from( const item_contents &source )
             }
         }
     }
+    // CDF: the mods were pushed into the MOD pocket without a rebuild, so stamp the capacities here
+    restamp_capacity_mults();
     contents_changed();
 }
 
@@ -290,6 +292,17 @@ auto mod_changes_layout( const item &it ) -> bool
     return it.type->mod && ( !it.type->mod->magazine_adaptor.empty() ||
                              !it.type->mod->add_pockets.empty() );
 }
+
+// CDF: a mod also needs a rebuild when it only scales or re-targets pockets by id (capacity_mods,
+// consumption_mods, a gunmod's per-mode firing requirements): the rebuild restamps the capacity
+// and validates the pocket ids (DDA restamps and validates for every mod).
+auto mod_needs_rebuild( const item &it ) -> bool
+{
+    return mod_changes_layout( it ) ||
+           ( it.type->mod && ( !it.type->mod->capacity_mods.empty() ||
+                               !it.type->mod->consumption_mods.empty() ) ) ||
+           ( it.type->gunmod && !it.type->gunmod->firing_requirements.per_mode.empty() );
+}
 } // namespace
 
 std::vector<pocket_data> item_contents::adapted_layout() const
@@ -415,7 +428,7 @@ bool item_contents::has_adaptor_mod() const
             continue;
         }
         for( const item *it : pocket.items() ) {
-            if( mod_changes_layout( *it ) ) {
+            if( mod_needs_rebuild( *it ) ) {
                 return true;
             }
         }
@@ -506,6 +519,12 @@ void item_contents::rebuild_pockets()
             standard[i]->set_data( &layout[i] );
         }
         pockets_type = owner->type;
+        // CDF: DDA restamps and validates at the end of every update (item_container.cpp 181-200)
+        // CDF: no hide_modes, no gun mode reselect (DDA item_container.cpp 172-179)
+        restamp_capacity_mults();
+        if( has_adaptor_mod() ) {
+            owner->validate_mod_pocket_refs();
+        }
         contents_changed();
         check_overflow();
         return;
@@ -522,7 +541,8 @@ void item_contents::rebuild_pockets()
     }
     std::vector<detached_ptr<item>> held;
     // CDF: the player's pocket settings follow the layout change, matched by index and type
-    // (DDA keeps them in update_modified_pockets, item_contents.cpp:2183)
+    // (DDA keeps them in item_contents::update_modified_pockets, DDA item_contents.cpp:2173;
+    // CDF has no such function)
     struct kept_settings {
         pocket_type type;
         item_pocket::favorite_settings settings;
@@ -589,6 +609,11 @@ void item_contents::rebuild_pockets()
     for( detached_ptr<item> &it : held ) {
         item_pocket *dest = route( *it );
         dest->insert( std::move( it ) );
+    }
+    // CDF: DDA restamps and validates at the end of every update (item_container.cpp 181-200)
+    restamp_capacity_mults();
+    if( has_adaptor_mod() ) {
+        owner->validate_mod_pocket_refs();
     }
     contents_changed();
     // a type change is an overflow event (DDA #65518)
@@ -838,7 +863,7 @@ void item_contents::insert_into( item_pocket &pocket, detached_ptr<item> &&it )
     if( !it ) {
         return;
     }
-    const bool adaptor = mod_changes_layout( *it );
+    const bool adaptor = mod_needs_rebuild( *it );
     pocket.insert( std::move( it ) );
     contents_changed();
     if( adaptor ) {
@@ -851,7 +876,7 @@ ret_val<bool> item_contents::insert_item( detached_ptr<item> &&it )
     if( !it ) {
         return ret_val<bool>::make_failure();
     }
-    const bool adaptor = mod_changes_layout( *it );
+    const bool adaptor = mod_needs_rebuild( *it );
     item_pocket *dest = route( *it );
     dest->insert( std::move( it ) );
     contents_changed();
@@ -867,7 +892,7 @@ void item_contents::insert_copies( const item &proto, int n )
     if( n <= 0 ) {
         return;
     }
-    const bool adaptor = mod_changes_layout( proto );
+    const bool adaptor = mod_needs_rebuild( proto );
     if( adaptor ) {
         // changes the layout with every copy: nothing to share
         for( int i = 0; i < n; i++ ) {
@@ -1114,7 +1139,7 @@ detached_ptr<item> item_contents::remove_top( item *it )
         }
     }
     contents_changed();
-    if( ret && mod_changes_layout( *ret ) ) {
+    if( ret && mod_needs_rebuild( *ret ) ) {
         rebuild_pockets();
     }
     return ret;
@@ -1550,7 +1575,7 @@ ret_val<item *> item_contents::insert_item( detached_ptr<item> &&it, pocket_type
         return ret_val<item *>::make_failure( nullptr, pocket.str() );
     }
 
-    const bool adaptor = mod_changes_layout( *it );
+    const bool adaptor = mod_needs_rebuild( *it );
     ret_val<item *> inserted = pocket.value()->insert_item( std::move( it ), false, true,
                                ignore_contents );
     if( inserted.success() ) {
@@ -2557,79 +2582,30 @@ std::vector<const item *> item_contents::mods() const
     return mods;
 }
 
-void item_contents::update_modified_pockets(
-    std::vector<const pocket_data *> mag_or_mag_wells,
-    std::vector<const pocket_data *> container_pockets )
+void item_contents::restamp_capacity_mults()
 {
-    ensure_pockets();
-    for( auto pocket_iter = pockets.begin(); pocket_iter != pockets.end(); ) {
-        item_pocket &pocket = *pocket_iter;
-        if( pocket.is_type( pocket_type::CONTAINER ) ) {
-
-            const pocket_data *current = pocket.get_pocket_data();
-            bool found = false;
-            // this loop is to make sure the pockets on the current item are already here from @container_pockets,
-            // so we don't need to clear them (saving the favorite data)
-            for( auto container_pocket = container_pockets.begin(); container_pocket != container_pockets.end();
-               ) {
-                // comparing pointers because each pocket is uniquely defined in json as its own.
-                if( *container_pocket == current ) {
-                    container_pocket = container_pockets.erase( container_pocket );
-                    found = true;
-                    // there will not be more than one pocket with the same pocket_data pointer, so exit early
-                    break;
-                } else {
-                    ++container_pocket;
-                }
+    // Restamp per-pocket capacity scaling from installed mods (DDA item_container.cpp 181-200).
+    // Reset first so removing a mod restores base capacity; combine multiple mods by product.
+    // CDF: contents-local walk, no dependency on 3-5a
+    for( item_pocket &pocket : pockets ) {
+        pocket.set_capacity_mult( 1.0f );
+    }
+    for( const item *mod : mods() ) {
+        if( mod->type == nullptr || !mod->type->mod ) {
+            continue;
+        }
+        for( const pocket_capacity_mod &cm : mod->type->mod->capacity_mods ) {
+            if( cm.pocket.empty() ) {
+                continue;
             }
-
-            if( !found ) {
-                if( !pocket.empty() ) {
-                    // in case the debugmsg wasn't clear, this should never happen
-                    debugmsg( "Oops!  deleted some items when updating pockets that were added via toolmods" );
-                }
-                pocket_iter = pockets.erase( pocket_iter );
-            } else {
-                ++pocket_iter;
+            const auto target = std::ranges::find_if( pockets, [&cm]( const item_pocket & p ) {
+                return p.get_pocket_data() != nullptr && p.get_pocket_data()->pocket_id == cm.pocket;
+            } );
+            if( target != pockets.end() && target->is_type( pocket_type::MAGAZINE ) ) {
+                target->set_capacity_mult( target->get_capacity_mult() * cm.multiply );
             }
-
-        } else if( pocket.is_type( pocket_type::MAGAZINE ) ||
-                   pocket.is_type( pocket_type::MAGAZINE_WELL ) ) {
-            const pocket_data *current = pocket.get_pocket_data();
-            bool matched = false;
-            const auto found = std::find( mag_or_mag_wells.begin(), mag_or_mag_wells.end(), current );
-            if( found != mag_or_mag_wells.end() ) {
-                mag_or_mag_wells.erase( found );
-                matched = true;
-            }
-            if( matched ) {
-                ++pocket_iter;
-            } else {
-                if( !pocket.empty() ) {
-                    debugmsg( "Oops!  deleted some items when updating pockets that were added via toolmods" );
-                }
-                pocket_iter = pockets.erase( pocket_iter );
-            }
-        } else {
-            ++pocket_iter;
         }
     }
-
-    // we've deleted all of the superfluous copies already, so time to add the new pockets
-    // CDF: the MIGRATION pocket stays last
-    const auto add_before_migration = [this]( const pocket_data * data ) {
-        auto at = std::ranges::find_if( pockets, []( const item_pocket & p ) {
-            return p.is_type( pocket_type::MIGRATION );
-        } );
-        pockets.emplace( at, owner, data );
-    };
-    for( const pocket_data *container_pocket : container_pockets ) {
-        add_before_migration( container_pocket );
-    }
-    for( const pocket_data *mw : mag_or_mag_wells ) {
-        add_before_migration( mw );
-    }
-    contents_changed();
 }
 
 std::set<itype_id> item_contents::magazine_compatible() const

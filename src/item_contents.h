@@ -440,12 +440,11 @@ class item_contents
         std::vector<const item *> mods() const;
 
         /**
-         * DDA item_contents::update_modified_pockets: drops the pockets of removed toolmods and adds
-         * the ones of new mods. CDF rebuilds its layout from the type (@ref rebuild_pockets), this
-         * is the DDA entry for callers that compute pocket data themselves.
+         * Restamps every pocket's capacity_mult from the installed mods' capacity_mods: reset to 1,
+         * then the product over mods, MAGAZINE pockets only (DDA item_container.cpp 181-200).
+         * Not serialized: rebuild_pockets and copy_from re-derive it.
          */
-        void update_modified_pockets( std::vector<const pocket_data *> mag_or_mag_wells,
-                                      std::vector<const pocket_data *> container_pockets );
+        void restamp_capacity_mults();
         /** all magazines compatible with any pockets. This only checks MAGAZINE_WELL */
         std::set<itype_id> magazine_compatible() const;
         /** The default magazine of the first MAGAZINE_WELL pocket, NULL_ID if there is none. */

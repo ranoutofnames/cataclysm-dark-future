@@ -1,0 +1,37 @@
+[
+  {
+    "//": "CDF: explicit pocket_data suppresses the generated MOD pocket, so the two DDA multimag guns used by the 3-7b mod tests are copied here with an explicit MOD pocket (same as pocket_mods_p3.json).",
+    "id": "p3_multimag_gun_integral_ammo",
+    "type": "GUN",
+    "name": { "str": "p3 integral-mag multimag gun with a mod bay" },
+    "copy-from": "test_multimag_gun_integral_ammo",
+    "pocket_data": [
+      { "id": "ammo", "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 1 } },
+      {
+        "id": "power",
+        "magazine_well": "500 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "heavy_battery_cell" ]
+      },
+      { "pocket_type": "MOD" }
+    ]
+  },
+  {
+    "id": "p3_multimag_gun_consume",
+    "type": "GUN",
+    "name": { "str": "p3 multimag consume gun with a mod bay" },
+    "copy-from": "test_multimag_gun_consume",
+    "pocket_data": [
+      { "id": "ammo", "max_item_length": "2 km", "magazine_well": "250 ml", "pocket_type": "MAGAZINE_WELL", "item_restriction": [ "glockmag" ] },
+      {
+        "id": "power",
+        "magazine_well": "500 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "heavy_battery_cell" ]
+      },
+      { "pocket_type": "MOD" }
+    ]
+  }
+]

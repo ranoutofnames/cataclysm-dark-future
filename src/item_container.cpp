@@ -114,6 +114,68 @@ void item::clear_automatic_whitelist()
     }
 }
 
+// CDF: contents-local walk, no dependency on 3-5a (item::pocket_by_id)
+static const item_pocket *pocket_with_id( const item &host, const std::string &id )
+{
+    if( id.empty() ) {
+        return nullptr;
+    }
+    const std::vector<const item_pocket *> found = host.get_pockets( [&id]( const item_pocket & q ) {
+        return q.get_pocket_data() && q.get_pocket_data()->pocket_id == id;
+    } );
+    return found.empty() ? nullptr : found.front();
+}
+
+void item::validate_mod_pocket_refs() const
+{
+    if( !is_gun() && !is_tool() ) {
+        return;
+    }
+    std::set<std::string> seen;
+    for( const item_pocket *p : get_pockets( []( const item_pocket & q ) {
+    return q.get_pocket_data() && !q.get_pocket_data()->pocket_id.empty();
+    } ) ) {
+        const std::string &id = p->get_pocket_data()->pocket_id;
+        if( !seen.insert( id ).second ) {
+            debugmsg( "%s has duplicate pocket id \"%s\" after mod merge", tname(), id );
+        }
+    }
+    const auto check = [this]( const std::string & id, const char *what ) {
+        if( pocket_with_id( *this, id ) == nullptr ) {
+            debugmsg( "%s: mod %s references unknown pocket id \"%s\"", tname(), what, id );
+        }
+    };
+    // CDF: mods() is contents.mods()
+    for( const item *mod : contents.mods() ) {
+        if( mod->type == nullptr ) {
+            continue;
+        }
+        if( mod->type->gunmod ) {
+            for( const std::pair<const gun_mode_id, std::vector<pocket_consumption_entry>> &mp :
+                 mod->type->gunmod->firing_requirements.per_mode ) {
+                for( const pocket_consumption_entry &e : mp.second ) {
+                    check( e.pocket, "mode_firing_requirements" );
+                }
+            }
+        }
+        if( mod->type->mod ) {
+            for( const pocket_consumption_mod &cm : mod->type->mod->consumption_mods ) {
+                check( cm.pocket, "consumption_mods" );
+            }
+            for( const pocket_capacity_mod &cm : mod->type->mod->capacity_mods ) {
+                const item_pocket *p = pocket_with_id( *this, cm.pocket );
+                if( p == nullptr ) {
+                    debugmsg( "%s: mod capacity_mods references unknown pocket id \"%s\"",
+                              tname(), cm.pocket );
+                } else if( !p->is_type( pocket_type::MAGAZINE ) ) {
+                    debugmsg( "%s: capacity_mods pocket \"%s\" is not an integral MAGAZINE; "
+                              "well capacity is the loaded magazine's", tname(), cm.pocket );
+                }
+            }
+        }
+    }
+}
+
 bool item::same_contents( const item &rhs ) const
 {
     return get_contents().same_contents( rhs.get_contents() );

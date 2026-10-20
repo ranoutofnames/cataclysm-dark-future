@@ -1,13 +1,16 @@
+#include "calendar.h"
 #include "catch/catch.hpp"
 #include "debug.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
+#include "json.h"
 #include "test_data.h"
 
 #include <algorithm>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -91,6 +94,43 @@ auto modbay_with( const itype_id &base, int mods, std::vector<item *> &mod_ptrs 
     }
     return tool;
 }
+
+// CDF: copied from tests/item_contents_migration_test.cpp:23-33
+auto load_item( const std::string &json ) -> detached_ptr<item>
+{
+    std::istringstream buffer( json );
+    JsonIn jsin( buffer );
+    return item::spawn( jsin );
+}
+
+auto save_item( const item &it ) -> std::string
+{
+    std::ostringstream buffer;
+    JsonOut jsout( buffer );
+    it.serialize( jsout );
+    return buffer.str();
+}
+
+// DDA tests/multimag_test.cpp:1267-1277
+// CDF: item::spawn and detached_ptr forms
+auto make_multimag_consume_gun( int bb_count = 15, int batt = 100 ) -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( itype_id( "p3_multimag_gun_consume" ) );
+    detached_ptr<item> bb_mag = item::spawn( itype_id( "glockmag" ) );
+    bb_mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, bb_count ), pocket_type::MAGAZINE );
+    detached_ptr<item> batt_mag = item::spawn( itype_id( "heavy_battery_cell" ) );
+    batt_mag->put_in( item::spawn( itype_id( "battery" ), calendar::turn, batt ),
+                      pocket_type::MAGAZINE );
+    REQUIRE( gun->put_in( std::move( bb_mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun->put_in( std::move( batt_mag ), pocket_type::MAGAZINE_WELL ).success() );
+    return gun;
+}
+
+// CDF: the DDA fixtures test_multimag_gun_integral_ammo and test_multimag_gun_consume have no MOD
+// pocket here (explicit pocket_data suppresses it): the p3_ copies in
+// data/mods/TEST_DATA/multimag_p3.json add one, everything else is inherited.
+const itype_id integral_gun( "p3_multimag_gun_integral_ammo" );
+const itype_id capacity_mod( "test_multimag_capacity_gunmod" );
 
 } // namespace
 
@@ -197,4 +237,116 @@ TEST_CASE( "a copy of an item with a pocket mod has the same pockets", "[p3][poc
         CHECK( count_of( *copy, type ) == count_of( *tool, type ) );
     }
     CHECK( count_of( *copy, pocket_type::CONTAINER ) == 2 );
+}
+
+// DDA tests/multimag_test.cpp:1536
+TEST_CASE( "capacity_mods_survive_save_load_roundtrip", "[p3][pocket]" )
+{
+    detached_ptr<item> gun = item::spawn( integral_gun );
+    REQUIRE( gun->put_in( item::spawn( capacity_mod ), pocket_type::MOD ).success() );
+    const item_pocket *ammo_p = gun->pocket_by_id( "ammo" );
+    REQUIRE( ammo_p != nullptr );
+    const ammotype at = *ammo_p->ammo_types().begin();
+    REQUIRE( ammo_p->ammo_capacity( at ) == 2 );
+
+    // capacity_mult is not serialized: it must re-derive from the saved mod on load
+    detached_ptr<item> loaded = load_item( save_item( *gun ) );
+    const item_pocket *ammo2 = loaded->pocket_by_id( "ammo" );
+    REQUIRE( ammo2 != nullptr );
+    CHECK( ammo2->ammo_capacity( at ) == 2 );
+}
+
+// DDA tests/multimag_test.cpp:1560
+TEST_CASE( "capacity_mod_overflow_grandfathered_on_removal", "[p3][pocket]" )
+{
+    detached_ptr<item> gun = item::spawn( integral_gun );
+    REQUIRE( gun->put_in( item::spawn( capacity_mod ), pocket_type::MOD ).success() );
+    item_pocket *ammo = gun->pocket_by_id( "ammo" );
+    REQUIRE( ammo != nullptr );
+    const ammotype at = *ammo->ammo_types().begin();
+    REQUIRE( ammo->ammo_capacity( at ) == 2 );
+    REQUIRE( ammo->insert_item( item::spawn( itype_id( "9mm" ), calendar::turn, 1 ) ).success() );
+    REQUIRE( ammo->insert_item( item::spawn( itype_id( "9mm" ), calendar::turn, 1 ) ).success() );
+    REQUIRE( ammo->remaining_ammo_capacity( at ) == 0 );
+
+    // the boost mod is removed while the pocket is at the boosted fill
+    REQUIRE( !gun->gunmods().empty() );
+    detached_ptr<item> removed = gun->remove_item( *gun->gunmods().front() );
+    REQUIRE( removed );
+
+    // capacity drops but contents are grandfathered and remaining clamps to 0
+    const item_pocket *ammo2 = gun->pocket_by_id( "ammo" );
+    REQUIRE( ammo2 != nullptr );
+    CHECK( ammo2->ammo_capacity( at ) == 1 );
+    CHECK( ammo2->remaining_ammo_capacity( at ) == 0 );
+    // item-level API: capacity drops and remaining clamps (no -1)
+    CHECK( gun->ammo_capacity( at ) == 1 );
+    CHECK( gun->remaining_ammo_capacity() == 0 );
+    int loaded = 0;
+    for( const item *it : ammo2->all_items_top() ) {
+        loaded += it->count();
+    }
+    CHECK( loaded == 2 );
+}
+
+// DDA tests/multimag_test.cpp:1597
+TEST_CASE( "capacity_mods_on_magazine_well_diagnosed", "[p3][pocket]" )
+{
+    detached_ptr<item> gun = item::spawn( integral_gun ); // "power" is a MAGAZINE_WELL
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        gun->put_in( item::spawn( itype_id( "test_multimag_capacity_well_gunmod" ) ),
+                     pocket_type::MOD );
+    } );
+    CHECK( dmsg.find( "not an integral MAGAZINE" ) != std::string::npos );
+}
+
+// DDA tests/multimag_test.cpp:1635
+TEST_CASE( "mod_unknown_pocket_id_diagnosed_at_install", "[p3][pocket]" )
+{
+    detached_ptr<item> gun = make_multimag_consume_gun( 15, 100 );
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        gun->put_in( item::spawn( itype_id( "test_multimag_bad_pocket_gunmod" ) ), pocket_type::MOD );
+    } );
+    CHECK( dmsg.find( "unknown pocket id" ) != std::string::npos );
+    CHECK( dmsg.find( "nonexistent" ) != std::string::npos );
+}
+
+TEST_CASE( "an unmodded integral gun keeps its capacity and a removed mod restores it",
+           "[p3][pocket]" )
+{
+    detached_ptr<item> gun = item::spawn( integral_gun );
+    const item_pocket *ammo = gun->pocket_by_id( "ammo" );
+    REQUIRE( ammo != nullptr );
+    const ammotype at = *ammo->ammo_types().begin();
+    CHECK( ammo->ammo_capacity( at ) == 1 );
+    CHECK( ammo->get_capacity_mult() == 1.0f );
+
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        item *mod = nullptr;
+        {
+            detached_ptr<item> m = item::spawn( capacity_mod );
+            mod = &*m;
+            REQUIRE( gun->put_in( std::move( m ), pocket_type::MOD ).success() );
+        }
+        CHECK( gun->pocket_by_id( "ammo" )->ammo_capacity( at ) == 2 );
+        detached_ptr<item> removed = gun->remove_item( *mod );
+        REQUIRE( removed );
+        CHECK( gun->pocket_by_id( "ammo" )->ammo_capacity( at ) == 1 );
+        CHECK( gun->pocket_by_id( "ammo" )->get_capacity_mult() == 1.0f );
+    } );
+    CHECK( dmsg.empty() );
+}
+
+TEST_CASE( "a copy of a gun with a capacity mod keeps the boosted capacity", "[p3][pocket]" )
+{
+    detached_ptr<item> gun = item::spawn( integral_gun );
+    REQUIRE( gun->put_in( item::spawn( capacity_mod ), pocket_type::MOD ).success() );
+    const ammotype at = *gun->pocket_by_id( "ammo" )->ammo_types().begin();
+    REQUIRE( gun->pocket_by_id( "ammo" )->ammo_capacity( at ) == 2 );
+
+    // CDF: item::spawn( *gun ) is the copy form (the same copy constructor, location-owned)
+    detached_ptr<item> copy = item::spawn( *gun );
+    const item_pocket *ammo = copy->pocket_by_id( "ammo" );
+    REQUIRE( ammo != nullptr );
+    CHECK( ammo->ammo_capacity( at ) == 2 );
 }
