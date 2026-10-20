@@ -536,6 +536,113 @@ const item *item::ammo_identity_mag() const
     return magazine_current();
 }
 
+// CDF: file-static here; the item.cpp copy is not visible
+static const ammotype ammo_battery( "battery" );
+
+bool item::has_ammo() const
+{
+    const item *mag = ammo_identity_mag();
+    if( mag ) {
+        return mag->has_ammo();
+    }
+    // Multimag gun identity is anchored to the projectile pocket; never
+    // borrow sibling-pocket ammo (e.g. battery wells) when it is empty.
+    if( uses_firing_requirements() && is_gun() ) {
+        return false;
+    }
+
+    if( is_ammo() ) {
+        return true;
+    }
+
+    if( is_magazine() ) {
+        return !contents.empty() && contents.first_ammo().has_ammo();
+    }
+
+    auto mods = is_gun() ? gunmods() : toolmods();
+    for( const item *e : mods ) {
+        if( !e->type->mod->ammo_modifier.empty() && e->has_ammo() ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool item::has_ammo_data() const
+{
+    const item *mag = ammo_identity_mag();
+    if( mag ) {
+        return mag->has_ammo_data();
+    }
+    if( uses_firing_requirements() && is_gun() ) {
+        return false;
+    }
+
+    if( is_ammo() ) {
+        return true;
+    }
+
+    if( is_magazine() ) {
+        return !contents.empty() && contents.first_ammo().has_ammo_data();
+    }
+
+    auto mods = is_gun() ? gunmods() : toolmods();
+    for( const item *e : mods ) {
+        if( !e->type->mod->ammo_modifier.empty() && e->has_ammo_data() ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool item::pocket_accepts_battery( const item_pocket *p ) const
+{
+    if( p == nullptr ) {
+        return false;
+    }
+    for( const ammotype &at : p->ammo_types() ) {
+        if( at == ammo_battery ) {
+            return true;
+        }
+    }
+    for( const itype_id &allowed : p->item_type_restrictions() ) {
+        if( !allowed->magazine ) {
+            continue;
+        }
+        for( const ammotype &slot : allowed->magazine->type ) {
+            if( slot == ammo_battery ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool item::pocket_is_primary_ammo( const item_pocket *p ) const
+{
+    if( p == nullptr || !type || !type->gun || type->gun->ammo.empty() ) {
+        return false;
+    }
+    for( const ammotype &at : p->ammo_types() ) {
+        if( type->gun->ammo.count( at ) ) {
+            return true;
+        }
+    }
+    for( const itype_id &allowed : p->item_type_restrictions() ) {
+        if( !allowed->magazine ) {
+            continue;
+        }
+        for( const ammotype &slot : allowed->magazine->type ) {
+            if( type->gun->ammo.count( slot ) ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 const item &item::loaded_ammo() const
 {
     const item *mag = ammo_identity_mag();

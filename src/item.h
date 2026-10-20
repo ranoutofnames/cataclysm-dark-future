@@ -2368,6 +2368,23 @@ class item : public location_visitable<item>, public game_object<item>
         int ammo_consume( int qty, const tripoint_bub_ms &pos, Character *carrier );
         int ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Character *carrier );
 
+        /**
+         * Consume energy (if available) and return the amount of energy that was consumed
+         * Consume order: battery, UPS, bionic
+         * When consuming energy from batteries the consumption will round up by adding 1 kJ. More energy may be consumed than required.
+         * @param qty amount of energy that should be consumed
+         * @param pos current location of item, used for ejecting magazines and similar effects
+         * @param carrier holder of the item, used for getting UPS and bionic power
+         * @return amount of energy consumed which will be between 0 kJ and qty+1 kJ
+         */
+        // CDF: UPS tail deferred to 4-b2
+        units::energy energy_consume( units::energy qty, const tripoint_bub_ms &pos, Character *carrier,
+                                      float fuel_efficiency = -1.0 );
+        // CDF: UPS tail deferred to 4-b2
+        units::energy energy_consume( units::energy qty, map *here, const tripoint_bub_ms &pos,
+                                      Character *carrier,
+                                      float fuel_efficiency = -1.0 );
+
         /** Specific ammo data, returns nullptr if item is neither ammo nor loaded with any */
         const itype *ammo_data() const;
         /** Specific ammo type, returns "null" if item is neither ammo nor loaded with any */
@@ -2499,6 +2516,15 @@ class item : public location_visitable<item>, public game_object<item>
 
         // Magazine driving ammo-identity queries: primary_ammo_pocket's mag for multimag guns, magazine_current otherwise.
         const item *ammo_identity_mag() const;
+
+        /**
+         * Return whether the item has ammo in it, either directly or via a selected magazine, which
+         * contrasts with ammo_data(), which just returns the magazine data if a magazine is selected,
+         * regardless of whether that magazine is empty.
+         */
+        bool has_ammo() const;
+        /** A cheaper way to check if ammo_data exists. Useful when the data would be discarded afterwards. */
+        bool has_ammo_data() const;
 
         bool pocket_accepts_battery( const item_pocket *p ) const;
         bool pocket_is_primary_ammo( const item_pocket *p ) const;

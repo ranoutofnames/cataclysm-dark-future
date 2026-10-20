@@ -571,3 +571,119 @@ TEST_CASE( "a mounted-gun ammo_set loads the belt", "[p3][ammo]" ) {
     CHECK( gun->ammo_remaining() > 0 );
     CHECK( gun->ammo_sufficient( nullptr ) );
 }
+
+// 3-4c-a: pocket predicates, has_ammo / has_ammo_data.
+TEST_CASE( "pocket_is_primary_ammo true for the gun's ammo pocket, false for a battery pocket",
+           "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    const item_pocket *well = gun->primary_ammo_pocket();
+    REQUIRE( well != nullptr );
+    CHECK( gun->pocket_is_primary_ammo( well ) );
+    CHECK_FALSE( gun->pocket_is_primary_ammo( nullptr ) );
+
+    detached_ptr<item> carver = item::spawn( itype_id( "carver_off" ) );
+    const item_pocket *battery_well = carver->primary_ammo_pocket();
+    REQUIRE( battery_well != nullptr );
+    CHECK_FALSE( gun->pocket_is_primary_ammo( battery_well ) );
+}
+
+TEST_CASE( "pocket_accepts_battery true for a battery well, false for an ammo well",
+           "[p3][ammo]" ) {
+    detached_ptr<item> carver = item::spawn( itype_id( "carver_off" ) );
+    const item_pocket *battery_well = nullptr;
+    for( const item_pocket *p : carver->get_pockets( []( const item_pocket & ) {
+    return true;
+} ) ) {
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            battery_well = p;
+        }
+    }
+    REQUIRE( battery_well != nullptr );
+    CHECK( carver->pocket_accepts_battery( battery_well ) );
+
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    const item_pocket *ammo_well = gun->primary_ammo_pocket();
+    REQUIRE( ammo_well != nullptr );
+    CHECK_FALSE( gun->pocket_accepts_battery( ammo_well ) );
+    CHECK_FALSE( gun->pocket_accepts_battery( nullptr ) );
+}
+
+TEST_CASE( "has_ammo false for an empty magazine gun, true once loaded", "[p3][ammo]" ) {
+    // CDF: loaded_m4a1( 0 ) puts a zero-charge round item in the magazine, which is still an ammo
+    // item for has_ammo; an empty magazine is built directly instead.
+    detached_ptr<item> empty = item::spawn( itype_id( "m4a1" ) );
+    empty->put_in( item::spawn( itype_id( "stanag30" ) ) );
+    CHECK_FALSE( empty->has_ammo() );
+    detached_ptr<item> loaded = loaded_m4a1( 30 );
+    CHECK( loaded->has_ammo() );
+}
+
+TEST_CASE( "has_ammo is false for a battery-only tool", "[p3][ammo]" ) {
+    detached_ptr<item> carver = item::spawn( itype_id( "carver_off" ) );
+    CHECK_FALSE( carver->has_ammo() );
+    CHECK_FALSE( carver->has_ammo_data() );
+}
+
+TEST_CASE( "has_ammo_data matches has_ammo for a loaded magazine gun", "[p3][ammo]" ) {
+    // CDF: empty magazine built directly (see the has_ammo case above).
+    detached_ptr<item> empty = item::spawn( itype_id( "m4a1" ) );
+    empty->put_in( item::spawn( itype_id( "stanag30" ) ) );
+    CHECK( empty->has_ammo_data() == empty->has_ammo() );
+    detached_ptr<item> loaded = loaded_m4a1( 30 );
+    CHECK( loaded->has_ammo_data() == loaded->has_ammo() );
+    CHECK( loaded->has_ammo_data() );
+}
+
+TEST_CASE( "multimag_loaded_ammo_does_not_borrow_sibling_pocket", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_integral_ammo" ) );
+    REQUIRE( gun->uses_firing_requirements() );
+
+    detached_ptr<item> battery = item::spawn( itype_id( "heavy_battery_cell" ) );
+    // CDF: ammo_set takes an id; ammo_default() of the cell is "battery" (DDA used itype_battery, 100).
+    battery->ammo_set( battery->ammo_default(), 56 );
+    REQUIRE( gun->put_in( std::move( battery ), pocket_type::MAGAZINE_WELL ).success() );
+
+    CHECK_FALSE( gun->has_ammo() );
+    CHECK_FALSE( gun->has_ammo_data() );
+    // CDF: the ammo_data() / ammo_current() assertions are cut (ledger row): CDF item::ammo_data
+    // still reads magazine_current() and returns the battery here; it needs ammo_identity_mag().
+    CHECK( gun->loaded_ammo().is_null() );
+
+    // After loading the slug pocket, identity is anchored to the projectile
+    // and loaded_ammo() must resolve to the slug, not null.
+    REQUIRE( gun->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 1 ),
+                          pocket_type::MAGAZINE ).success() );
+    CHECK( gun->has_ammo() );
+    CHECK( gun->has_ammo_data() );
+    const item &loaded = gun->loaded_ammo();
+    CHECK_FALSE( loaded.is_null() );
+    CHECK( loaded.typeId() == itype_id( "9mm" ) );
+}
+
+TEST_CASE( "multimag_integral_pocket_skips_casings", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_integral_ammo" ) );
+    REQUIRE( gun->uses_firing_requirements() );
+
+    detached_ptr<item> battery = item::spawn( itype_id( "heavy_battery_cell" ) );
+    // CDF: ammo_set takes an id; 56 instead of DDA's 100, so the totals below are 56 and 57.
+    battery->ammo_set( battery->ammo_default(), 56 );
+    REQUIRE( gun->put_in( std::move( battery ), pocket_type::MAGAZINE_WELL ).success() );
+
+    // Casing alone in the projectile pocket: not loaded ammo.
+    detached_ptr<item> casing = item::spawn( itype_id( "9mm_casing" ), calendar::turn, 1 );
+    casing->set_flag( flag_CASING );
+    gun->force_insert_item( std::move( casing ), pocket_type::MAGAZINE );
+    CHECK_FALSE( gun->has_ammo() );
+    CHECK_FALSE( gun->has_ammo_data() );
+    // CDF: ammo_data() == nullptr cut (ledger row), see the sibling-pocket case above.
+    CHECK( gun->ammo_remaining() == 56 );
+
+    // Live slug alongside the casing: identity resolves to slug, count is 1.
+    REQUIRE( gun->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 1 ),
+                          pocket_type::MAGAZINE ).success() );
+    CHECK( gun->has_ammo() );
+    CHECK( gun->has_ammo_data() );
+    CHECK( gun->ammo_remaining() == 57 );
+}
