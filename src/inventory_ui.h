@@ -56,6 +56,13 @@ struct inventory_invlet_hint {
     nc_color color;
 };
 
+/// Per DDA inventory_ui.h:60-75. CDF: item * instead of item_location.
+struct collation_meta_t {
+    item *tip;
+    bool collapsed = true;
+    bool enabled = true;
+};
+
 class inventory_entry
 {
     public:
@@ -64,8 +71,11 @@ class inventory_entry
         size_t chosen_count = 0;
         /// Topmost visible parent in an unbroken chain (hierarchy mode), per DDA inventory_ui.h:190.
         const item *topmost_parent = nullptr;
+        /// For collation: true = header, false = entry.
         /// True when the entry has visible contents listed below it (hierarchy mode).
         bool chevron = false;
+        /// Collation metadata shared by a header and its entries (per DDA inventory_ui.h:186-212).
+        std::shared_ptr<collation_meta_t> collation_meta;
         /// Indent of a contained entry (hierarchy mode).
         int indent = 0;
         /// Additional items selected by the automatic drop preview.
@@ -123,6 +133,26 @@ class inventory_entry
         /** Whether the entry can be selected */
         bool is_selectable() const {
             return is_item() && enabled;
+        }
+        /// Per DDA inventory_ui.h:148-162.
+        bool is_collated() const {
+            return static_cast<bool>( collation_meta );
+        }
+
+        bool is_collation_header() const {
+            return is_collated() && chevron;
+        }
+
+        bool is_collation_entry() const {
+            return is_collated() && !chevron;
+        }
+
+        /// Per DDA inventory_ui.h:59-64.
+        void reset_collation() {
+            if( is_collation_header() ) {
+                chevron = false;
+            }
+            collation_meta.reset();
         }
 
         item *any_item() const {
@@ -315,6 +345,10 @@ class inventory_column
 
         void add_entry( const inventory_entry &entry );
         void move_entries_to( inventory_column &dest );
+        // Per DDA inventory_ui.h:510-518.
+        void collate();
+        void uncollate();
+        void set_collapsed( inventory_entry &entry, bool collapse );
         void clear();
         void set_stack_favorite( const item *location, bool favorite );
 
@@ -328,6 +362,9 @@ class inventory_column
          * @param dir If the entry is not selectable, move in the specified direction
          */
         void select( size_t new_index, scroll_direction dir );
+
+        /// Per DDA inventory_ui.h:538-543.
+        bool collated_sort_compare( inventory_entry const &lhs, inventory_entry const &rhs );
 
         size_t get_selected_index() {
             return selected_index;
@@ -386,6 +423,10 @@ class inventory_column
             invalidate_paging();
         }
         bool hierarchy = false;
+        // Per DDA inventory_ui.h:494-500.
+        bool collate_entries() const {
+            return preset.collate_entries();
+        }
 
     protected:
         struct entry_cell_cache_t {
@@ -456,6 +497,10 @@ class inventory_column
 
         /** @return Number of visible cells */
         size_t visible_cells() const;
+
+        // Per DDA inventory_ui.h:596-605.
+        static void _reset_collation( std::vector<inventory_entry> &entries );
+        bool _collated = false;
 };
 
 class selection_column : public inventory_column

@@ -490,6 +490,10 @@ inventory_column::entry_cell_cache_t inventory_column::make_entry_cell_cache(
     result.assigned = true;
     result.color = preset.get_color( entry );
     result.denial = preset.get_denial( entry );
+    // Per DDA inventory_ui.cpp:660-672: keep a collation header's enabled state aligned with denial.
+    if( entry.is_collation_header() ) {
+        entry.collation_meta->enabled = result.denial.empty();
+    }
     result.text.resize( preset.get_cells_count() );
 
     for( size_t i = 0, n = preset.get_cells_count(); i < n; ++i ) {
@@ -838,6 +842,10 @@ static auto carried_holder( const inventory_entry &entry ) -> item *
 
 static auto hidden_by_collapse( const inventory_entry &entry ) -> bool
 {
+    // Per DDA inventory_ui.cpp:575-585: collated entries are hidden while their header is collapsed.
+    if( entry.is_collation_entry() && entry.collation_meta->collapsed ) {
+        return true;
+    }
     // Per DDA inventory_ui.cpp:575-600: hierarchy rows under a collapsed pocket of their parents
     if( entry.is_item() && entry.topmost_parent != nullptr ) {
         const item *it = entry.any_item();
@@ -895,6 +903,118 @@ static auto indented_sort_compare( const inventory_entry &lhs, const inventory_e
     return preset.sort_compare( ep_lhs, ep_rhs );
 }
 
+// Per DDA inventory_ui.cpp:1459-1548. CDF: item * instead of item_location; no indent/generation.
+bool inventory_column::collated_sort_compare( inventory_entry const &lhs,
+        inventory_entry const &rhs )
+{
+    if( lhs.is_collated() && lhs.collation_meta == rhs.collation_meta ) {
+        if( lhs.is_collation_header() ) {
+            return true;
+        }
+        if( rhs.is_collation_header() ) {
+            return false;
+        }
+        return preset.sort_compare( lhs, rhs );
+    }
+
+    item *p_lhs = lhs.is_collated() ? lhs.collation_meta->tip : lhs.any_item();
+    item *p_rhs = rhs.is_collated() ? rhs.collation_meta->tip : rhs.any_item();
+
+    // CDF: the entry constructor has no indent/generation parameters.
+    inventory_entry ep_lhs( { p_lhs }, nullptr,
+                            lhs.is_collated() ? lhs.collation_meta->enabled : lhs.is_selectable() );
+    inventory_entry ep_rhs( { p_rhs }, nullptr,
+                            rhs.is_collated() ? rhs.collation_meta->enabled : rhs.is_selectable() );
+    ep_lhs.update_cache();
+    ep_rhs.update_cache();
+    if( hierarchy ) {
+        return indented_sort_compare( ep_lhs, ep_rhs, preset );
+    }
+    return preset.sort_compare( ep_lhs, ep_rhs );
+}
+
+// Per DDA inventory_ui.cpp:1489-1527.
+void inventory_column::collate()
+{
+    for( auto outer = entries.begin(); outer != entries.end(); ++outer ) {
+        if( !outer->is_item() || outer->is_collated() || outer->chevron ) {
+            continue;
+        }
+        for( auto e = std::next( outer ); e != entries.end(); ) {
+            if( e->is_item() && e->get_category_ptr() == outer->get_category_ptr() &&
+                e->any_item()->is_favorite == outer->any_item()->is_favorite &&
+                e->any_item()->typeId() == outer->any_item()->typeId() &&
+                // CDF: link_length/is_same_relic not in CDF
+                ( !hierarchy || e->any_item()->parent_item() == outer->any_item()->parent_item() ) &&
+                ( e->is_collation_header() || !e->chevron ) ) {
+
+                if( !outer->is_collated() ) {
+                    outer->collation_meta = std::make_shared<collation_meta_t>(
+                                                collation_meta_t{ outer->any_item(), true, outer->is_selectable() } );
+
+                    entries_hidden.emplace_back( *outer );
+
+                    outer->chevron = true;
+                    set_collapsed( *outer, true );
+                    // CDF: no cell cache
+                }
+                e->collation_meta = outer->collation_meta;
+                std::copy( e->locations.begin(), e->locations.end(),
+                           std::back_inserter( outer->locations ) );
+                entries_hidden.emplace_back( std::move( *e ) );
+                e = entries.erase( e );
+            } else {
+                ++e;
+            }
+        }
+    }
+    _collated = true;
+}
+
+// Per DDA inventory_ui.cpp:1529-1539.
+void inventory_column::_reset_collation( std::vector<inventory_entry> &entries )
+{
+    for( auto iter = entries.begin(); iter != entries.end(); ) {
+        if( iter->is_collation_header() ) {
+            iter = entries.erase( iter );
+        } else {
+            iter->reset_collation();
+            ++iter;
+        }
+    }
+}
+
+// Per DDA inventory_ui.cpp:1541-1548.
+void inventory_column::uncollate()
+{
+    if( _collated ) {
+        _reset_collation( entries );
+        _reset_collation( entries_hidden );
+        _collated = false;
+    }
+}
+
+// Per DDA inventory_ui.cpp:1294-1316. CDF: no per-entry cell cache.
+void inventory_column::set_collapsed( inventory_entry &entry, bool collapse )
+{
+    bool collapsed = false;
+    if( entry.is_collation_header() ) {
+        entry.collation_meta->collapsed = collapse;
+        collapsed = true;
+    } else {
+        for( item *const loc : entry.locations ) {
+            for( item_pocket *pocket : loc->get_standard_pockets() ) {
+                pocket->settings.set_collapse( collapse );
+                collapsed = true;
+            }
+        }
+    }
+
+    if( collapsed ) {
+        paging_is_valid = false;
+    }
+}
+
 void inventory_column::prepare_paging( const std::string &filter )
 {
     if( paging_is_valid ) {
@@ -931,6 +1051,8 @@ void inventory_column::prepare_paging( const std::string &filter )
     auto sort_function = [this]( const inventory_entry & lhs, const inventory_entry & rhs ) {
         if( *lhs.get_category_ptr() != *rhs.get_category_ptr() ) {
             return *lhs.get_category_ptr() < *rhs.get_category_ptr();
+        } else if( _collated ) {
+            return collated_sort_compare( lhs, rhs );
         } else if( hierarchy ) {
             return indented_sort_compare( lhs, rhs, preset );
         } else {
@@ -938,6 +1060,11 @@ void inventory_column::prepare_paging( const std::string &filter )
         }
     };
     std::ranges::stable_sort( entries, sort_function );
+
+    // Per DDA inventory_ui.cpp:1592-1594.
+    if( !_collated && collate_entries() ) {
+        collate();
+    }
 
     // Recover categories
     const item_category *current_category = nullptr;

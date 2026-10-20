@@ -340,6 +340,108 @@ TEST_CASE("inventory selector preset does not collate by default", "[inventory][
     CHECK_FALSE(preset.collate_entries());
 }
 
+namespace {
+struct collating_preset : inventory_selector_preset {
+    bool collate_entries() const override {
+        return true;
+    }
+};
+
+auto find_collation_header(inventory_column& col) -> inventory_entry* {
+    for (inventory_entry& entry : col.entries) {
+        if (entry.is_collation_header()) {
+            return &entry;
+        }
+    }
+    return nullptr;
+}
+
+// Two identical bandages and one different item.
+struct collation_fixture {
+    detached_ptr<item> bandage_a = item::spawn("bandages");
+    detached_ptr<item> bandage_b = item::spawn("bandages");
+    detached_ptr<item> rock = item::spawn("rock");
+    collating_preset preset;
+    inventory_column column{preset};
+
+    collation_fixture() {
+        column.add_entry(inventory_entry({bandage_a.get()}));
+        column.add_entry(inventory_entry({bandage_b.get()}));
+        column.add_entry(inventory_entry({rock.get()}));
+        column.invalidate_paging();
+    }
+};
+} // namespace
+
+TEST_CASE(
+    "inventory column collates identical items under one collapsed header",
+    "[inventory][p3][ui]") {
+    clear_avatar();
+    collation_fixture fixture;
+    fixture.column.prepare_paging();
+
+    const std::vector<const inventory_entry*> rows = item_rows(fixture.column);
+    REQUIRE(rows.size() == 2);
+
+    const inventory_entry* header = find_collation_header(fixture.column);
+    REQUIRE(header != nullptr);
+    CHECK(header->chevron);
+    CHECK(header->collation_meta->collapsed);
+    CHECK(header->locations.size() == 2);
+
+    // The other visible row is the rock.
+    bool rock_visible = (rows[0]->any_item() == fixture.rock.get()) || (rows[1]->any_item() == fixture.rock.get());
+    CHECK(rock_visible);
+
+    REQUIRE(fixture.column.entries_hidden.size() == 2);
+    for (const inventory_entry& hidden : fixture.column.entries_hidden) {
+        CHECK(hidden.is_collation_entry());
+    }
+}
+
+TEST_CASE(
+    "expanding a collated header shows its entries and uncollate restores the original list",
+    "[inventory][p3][ui]") {
+    clear_avatar();
+    collation_fixture fixture;
+    fixture.column.prepare_paging();
+
+    inventory_entry* header = find_collation_header(fixture.column);
+    REQUIRE(header != nullptr);
+    fixture.column.set_collapsed(*header, false);
+    fixture.column.prepare_paging();
+
+    const std::vector<const inventory_entry*> expanded = item_rows(fixture.column);
+    REQUIRE(expanded.size() == 4);
+
+    fixture.column.uncollate();
+    fixture.column.prepare_paging();
+
+    const std::vector<const inventory_entry*> restored = item_rows(fixture.column);
+    REQUIRE(restored.size() == 3);
+    for (const inventory_entry* entry : restored) {
+        CHECK_FALSE(entry->chevron);
+        CHECK_FALSE(entry->collation_meta);
+    }
+}
+
+TEST_CASE(
+    "collated_sort_compare keeps a header before its entries", "[inventory][p3][ui]") {
+    clear_avatar();
+    collation_fixture fixture;
+    fixture.column.prepare_paging();
+
+    inventory_entry* header = find_collation_header(fixture.column);
+    REQUIRE(header != nullptr);
+    REQUIRE(fixture.column.entries_hidden.size() == 2);
+    inventory_entry* entry = &fixture.column.entries_hidden.front();
+    REQUIRE(entry->is_collation_entry());
+    REQUIRE(entry->collation_meta == header->collation_meta);
+
+    CHECK(fixture.column.collated_sort_compare(*header, *entry));
+    CHECK_FALSE(fixture.column.collated_sort_compare(*entry, *header));
+}
+
 TEST_CASE("inventory entry custom category replaces the natural category", "[inventory][p3][ui]") {
     auto bandages = item::spawn("bandages");
     const std::vector<item*> locations{bandages.get()};
