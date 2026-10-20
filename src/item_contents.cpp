@@ -305,7 +305,7 @@ auto mod_needs_rebuild( const item &it ) -> bool
 }
 } // namespace
 
-std::vector<pocket_data> item_contents::adapted_layout() const
+std::vector<pocket_data> item_contents::adapted_layout( const item *skip ) const
 {
     if( owner == nullptr || owner->type == nullptr ) {
         return {};
@@ -320,7 +320,8 @@ std::vector<pocket_data> item_contents::adapted_layout() const
             continue;
         }
         for( const item *it : pocket.items() ) {
-            if( !it->type->mod ) {
+            // CDF: the item skip is left out of the layout (removal dry run)
+            if( it == skip || !it->type->mod ) {
                 continue;
             }
             adds.insert( adds.end(), it->type->mod->add_pockets.begin(),
@@ -364,7 +365,8 @@ std::vector<pocket_data> item_contents::adapted_layout() const
             continue;
         }
         for( const item *it : pocket.items() ) {
-            if( it->type->mod && !it->type->mod->ammo_modifier.empty() ) {
+            // CDF: the item skip is left out of the layout (removal dry run)
+            if( it != skip && it->type->mod && !it->type->mod->ammo_modifier.empty() ) {
                 ammo = &it->type->mod->ammo_modifier;
                 break;
             }
@@ -468,6 +470,42 @@ auto match_pockets( const std::vector<const pocket_data *> &old_data,
     return result;
 }
 } // namespace
+
+// CDF: the removal guard (ADV-9, ADV-10). Mirrors what rebuild_pockets would do after the mod
+// leaves: an old pocket whose data is not kept by the new layout loses its place (its items would be
+// re-homed), so a non-empty one blocks the removal.
+bool item_contents::mod_pockets_in_use( const item &mod ) const
+{
+    if( owner == nullptr || owner->type->armor || !mod.type->mod || mod.type->mod->add_pockets.empty() ) {
+        return false;
+    }
+    ensure_pockets();
+    std::vector<pocket_data> without = adapted_layout( &mod );
+    if( without.empty() ) {
+        without = owner->type->pockets;
+    }
+    // the pockets of attached pouches are not part of the layout
+    auto old_end = end_of_real_pockets();
+    for( size_t i = 0, n = added_pocket_count(); i < n && old_end != pockets.begin(); ++i ) {
+        --old_end;
+    }
+    std::vector<const item_pocket *> old_pockets;
+    std::vector<const pocket_data *> old;
+    for( auto it = pockets.begin(); it != old_end; ++it ) {
+        old_pockets.push_back( &*it );
+        old.push_back( it->get_pocket_data() );
+    }
+    const std::vector<int> m = match_pockets( old, without );
+    for( size_t i = 0; i < old.size(); ++i ) {
+        const item_pocket &pocket = *old_pockets[i];
+        if( m[i] == -1 && ( pocket.is_type( pocket_type::CONTAINER ) ||
+                            pocket.is_type( pocket_type::MAGAZINE ) ||
+                            pocket.is_type( pocket_type::MAGAZINE_WELL ) ) && !pocket.empty() ) {
+            return true;
+        }
+    }
+    return false;
+}
 
 void item_contents::rebuild_pockets()
 {

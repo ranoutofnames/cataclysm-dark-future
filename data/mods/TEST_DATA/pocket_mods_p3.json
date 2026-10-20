@@ -44,5 +44,27 @@
         "pocket_type": "MOD"
       }
     ]
+  },
+  {
+    "id": "p3_mod_y",
+    "type": "GUNMOD",
+    "name": { "str": "P3 sights mod with a pocket" },
+    "description": "Fixture for the P3 removal guard: a sights gunmod that adds a 1 L container pocket.",
+    "weight": "100 g",
+    "volume": "200 ml",
+    "longest_side": "100 mm",
+    "price": "10 USD",
+    "material": [ "steel" ],
+    "symbol": ":",
+    "color": "green",
+    "location": "sights",
+    "mod_targets": [ "ar15" ],
+    "install_time": "1 m",
+    "pocket_mods": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1 L"
+      }
+    ]
   }
 ]

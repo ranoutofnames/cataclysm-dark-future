@@ -1661,7 +1661,8 @@ int iuse::remove_all_mods( player *p, item *, bool, const tripoint_bub_ms & )
 
     item *loc = g->inv_map_splice( []( const item & e ) {
         for( const item *it : e.toolmods() ) {
-            if( !it->is_irremovable() ) {
+            // CDF: a toolmod whose pocket still holds items does not count (ADV-9)
+            if( !it->is_irremovable() && !e.contents.mod_pockets_in_use( *it ) ) {
                 return true;
             }
         }
@@ -1681,7 +1682,15 @@ int iuse::remove_all_mods( player *p, item *, bool, const tripoint_bub_ms & )
     if( !loc->ammo_remaining() || avatar_funcs::unload_item( *p->as_avatar(), *loc ) ) {
         bool done = false;
         loc->contents.remove_top_items_with(
-        [&p, &done]( detached_ptr<item> &&e ) {
+        [&p, &done, &loc]( detached_ptr<item> &&e ) {
+            // CDF: a blocked toolmod stays, the next removable one is still taken (ADV-9)
+            if( !done && e->is_toolmod() && !e->is_irremovable() &&
+                loc->contents.mod_pockets_in_use( *e ) ) {
+                add_msg( m_info,
+                         _( "You need to empty the pocket that the %1$s adds to your %2$s before you can remove it." ),
+                         e->tname(), loc->tname() );
+                return std::move( e );
+            }
             if( !done && e->is_toolmod() && !e->is_irremovable() ) {
                 done = true;
                 add_msg( m_info, _( "You remove the %s from the tool." ), e->tname() );

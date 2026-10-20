@@ -1,3 +1,5 @@
+#include "avatar.h"
+#include "avatar_functions.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "debug.h"
@@ -6,6 +8,7 @@
 #include "item_pocket.h"
 #include "itype.h"
 #include "json.h"
+#include "player_helpers.h"
 #include "test_data.h"
 
 #include <algorithm>
@@ -349,4 +352,98 @@ TEST_CASE( "a copy of a gun with a capacity mod keeps the boosted capacity", "[p
     const item_pocket *ammo = copy->pocket_by_id( "ammo" );
     REQUIRE( ammo != nullptr );
     CHECK( ammo->ammo_capacity( at ) == 2 );
+}
+
+// ---- 3-7c: removal guard for pocket mods (ADV-9) with the gunmod cascade dry run (ADV-10) ----
+// CDF: CDF-only tests; the fixtures are data/mods/TEST_DATA/pocket_mods_test.json and pocket_mods_p3.json.
+
+namespace
+{
+const itype_id guard_gun( "debug_gun_no_mag_well" );
+const itype_id guard_mod_x( "debug_retool_mag_well" );
+const itype_id guard_mod_y( "p3_mod_y" );
+const itype_id guard_mag( "stanag30" );
+
+auto guard_gun_with( const std::vector<itype_id> &mods, std::vector<item *> &mod_ptrs ) -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( guard_gun );
+    for( const itype_id &id : mods ) {
+        detached_ptr<item> mod = item::spawn( id );
+        mod_ptrs.push_back( &*mod );
+        REQUIRE( gun->put_in( std::move( mod ), pocket_type::MOD ).success() );
+    }
+    return gun;
+}
+} // namespace
+
+TEST_CASE( "a gunmod whose magazine well holds a magazine cannot be removed", "[p3][pocket]" )
+{
+    clear_avatar();
+    std::vector<item *> mods;
+    detached_ptr<item> gun = guard_gun_with( { guard_mod_x }, mods );
+    REQUIRE( count_of( *gun, pocket_type::MAGAZINE_WELL ) == 1 );
+    REQUIRE( gun->put_in( item::spawn( guard_mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun->gunmods().size() == 1 );
+
+    SECTION( "R-1: refused while the well holds a magazine" ) {
+        CHECK_FALSE( avatar_funcs::gunmod_remove( get_avatar(), *gun, *mods[0] ) );
+        CHECK( gun->gunmods().size() == 1 );
+        CHECK( count_of( *gun, pocket_type::MAGAZINE_WELL ) == 1 );
+        const std::vector<item_pocket *> wells = gun->get_contents().get_pockets( pocket_type::MAGAZINE_WELL );
+        REQUIRE( wells.size() == 1 );
+        CHECK( holds( *wells[0], guard_mag ) );
+    }
+
+    SECTION( "R-2: removed once the well is empty" ) {
+        const std::vector<item_pocket *> wells = gun->get_contents().get_pockets( pocket_type::MAGAZINE_WELL );
+        REQUIRE( wells.size() == 1 );
+        detached_ptr<item> mag = wells[0]->remove_item( wells[0]->items().as_vector().front() );
+        REQUIRE( mag );
+        CHECK( avatar_funcs::gunmod_remove( get_avatar(), *gun, *mods[0] ) );
+        CHECK( gun->gunmods().empty() );
+        CHECK( count_of( *gun, pocket_type::MAGAZINE_WELL ) == 0 );
+    }
+}
+
+TEST_CASE( "mod_pockets_in_use reports a toolmod whose pocket holds an item", "[p3][pocket]" )
+{
+    std::vector<item *> mods;
+    detached_ptr<item> tool = modbay_with( itype_id( "p3_tool_modbay" ), 1, mods );
+    REQUIRE( count_of( *tool, pocket_type::CONTAINER ) == 1 );
+    // R-3: false when empty, true with the jack inside; nothing is modified by the question
+    CHECK_FALSE( tool->get_contents().mod_pockets_in_use( *mods[0] ) );
+    tool->get_contents().get_pockets( pocket_type::CONTAINER )[0]->insert( item::spawn( jack ) );
+    CHECK( tool->get_contents().mod_pockets_in_use( *mods[0] ) );
+    CHECK( tool->get_contents().mod_pockets_in_use( *mods[0] ) );
+    CHECK( count_of( *tool, pocket_type::CONTAINER ) == 1 );
+    // a mod that adds no pocket is never blocking
+    detached_ptr<item> plain = item::spawn( itype_id( "test_jack_small" ) );
+    CHECK_FALSE( tool->get_contents().mod_pockets_in_use( *plain ) );
+}
+
+TEST_CASE( "a cascade that would drop a filled pocket refuses the whole gunmod removal",
+           "[p3][pocket]" )
+{
+    clear_avatar();
+    std::vector<item *> mods;
+    // X (debug_retool_mag_well) adds the sights slot that Y (p3_mod_y) sits in
+    detached_ptr<item> gun = guard_gun_with( { guard_mod_x, guard_mod_y }, mods );
+    REQUIRE( gun->gunmods().size() == 2 );
+    REQUIRE( count_of( *gun, pocket_type::CONTAINER ) == 1 );
+
+    SECTION( "R-4: Y's pocket holds an item, X and Y both stay" ) {
+        gun->get_contents().get_pockets( pocket_type::CONTAINER )[0]->insert( item::spawn( jack ) );
+        const size_t carried = get_avatar().all_items_loc().size();
+        CHECK_FALSE( avatar_funcs::gunmod_remove( get_avatar(), *gun, *mods[0] ) );
+        CHECK( gun->gunmods().size() == 2 );
+        const std::vector<item_pocket *> containers = gun->get_contents().get_pockets( pocket_type::CONTAINER );
+        REQUIRE( containers.size() == 1 );
+        CHECK( holds( *containers[0], jack ) );
+        CHECK( get_avatar().all_items_loc().size() == carried );
+    }
+
+    SECTION( "R-5: Y's pocket is empty, Y goes with X" ) {
+        CHECK( avatar_funcs::gunmod_remove( get_avatar(), *gun, *mods[0] ) );
+        CHECK( gun->gunmods().empty() );
+    }
 }

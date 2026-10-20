@@ -1,5 +1,9 @@
 #include "avatar_functions.h"
 
+#include <algorithm>
+#include <map>
+#include <vector>
+
 #include "activity_handlers.h"
 #include "avatar.h"
 #include "character_functions.h"
@@ -463,7 +467,63 @@ void gunmod_add( avatar &you, item &gun, item &mod )
     you.activity->values.push_back( qty ); // tool charges
 }
 
-bool gunmod_remove( avatar &you, item &gun, item &mod )
+// CDF: read-only simulation of the cascade of gunmod_remove_impl (the same removals in the same
+// order, nothing mutated). Returns the first member of the removal (the outer mod first, then in
+// cascade order) that adds a pocket still holding items, or nullptr.
+static const item *gunmod_cascade_blocked( const item &gun, const item &outer )
+{
+    std::vector<const item *> remaining = gun.gunmods();
+    std::vector<const item *> order;
+    const auto still_installed = [&remaining]( const item * m ) {
+        return std::ranges::find( remaining, m ) != remaining.end();
+    };
+    const auto sim_remove = [&]( const auto &self, const item * m ) -> void {
+        order.push_back( m );
+        std::erase( remaining, m );
+        if( m->type->gunmod->add_mod.empty() ) {
+            return;
+        }
+        // item::get_mod_locations over what is left
+        std::map<gunmod_location, int> locs = gun.type->gun->valid_mod_locations;
+        for( const item *left : remaining ) {
+            for( const std::pair<const gunmod_location, int> &add : left->type->gunmod->add_mod ) {
+                locs[add.first] += add.second;
+            }
+        }
+        for( const auto &slot : locs ) {
+            // item::get_free_mod_locations over what is left, taken once per slot as in the real loop
+            int free_slots = slot.second;
+            for( const item *left : remaining ) {
+                if( left->type->gunmod->location == slot.first ) {
+                    free_slots--;
+                }
+            }
+            const std::vector<const item *> snapshot = remaining;
+            for( const item *the_mod : snapshot ) {
+                if( the_mod->type->gunmod->location == slot.first && free_slots < 0 ) {
+                    if( still_installed( the_mod ) ) {
+                        self( self, the_mod );
+                    }
+                    free_slots++;
+                } else if( !locs.contains( the_mod->type->gunmod->location ) &&
+                           still_installed( the_mod ) ) {
+                    self( self, the_mod );
+                }
+            }
+        }
+    };
+    sim_remove( sim_remove, &outer );
+    for( const item *member : order ) {
+        if( gun.contents.mod_pockets_in_use( *member ) ) {
+            return member;
+        }
+    }
+    return nullptr;
+}
+
+// CDF: the removal itself, with the DDA-style cascade. The cascade recurses into this function, so the
+// dry run in gunmod_remove never runs again on the real pass.
+static bool gunmod_remove_impl( avatar &you, item &gun, item &mod )
 {
     if( !has_mod( gun, mod ) ) {
         debugmsg( "Cannot remove non-existent gunmod" );
@@ -500,10 +560,10 @@ bool gunmod_remove( avatar &you, item &gun, item &mod )
 
             for( auto the_mod : gun.gunmods() ) {
                 if( the_mod->type->gunmod->location == slot.first && free_slots < 0 ) {
-                    gunmod_remove( you, gun, *the_mod );
+                    gunmod_remove_impl( you, gun, *the_mod );
                     free_slots++;
                 } else if( !mod_locations.contains( the_mod->type->gunmod->location ) ) {
-                    gunmod_remove( you, gun, *the_mod );
+                    gunmod_remove_impl( you, gun, *the_mod );
                 }
             }
         }
@@ -516,6 +576,21 @@ bool gunmod_remove( avatar &you, item &gun, item &mod )
     );
 
     return true;
+}
+
+bool gunmod_remove( avatar &you, item &gun, item &mod )
+{
+    // CDF: ADV-9/ADV-10: refuse the whole removal, before anything is changed, if the mod or a
+    // mod that its removal would take with it (the cascade) holds items in a pocket it adds
+    if( has_mod( gun, mod ) ) {
+        if( const item *blocked = gunmod_cascade_blocked( gun, mod ) ) {
+            you.add_msg_if_player( m_info,
+                                   _( "You need to empty the pocket that the %1$s adds to your %2$s before you can remove it." ),
+                                   blocked->tname(), gun.tname() );
+            return false;
+        }
+    }
+    return gunmod_remove_impl( you, gun, mod );
 }
 
 std::pair<int, int> gunmod_installation_odds( const avatar &you, const item &gun,

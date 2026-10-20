@@ -440,6 +440,13 @@ class item_contents
         std::vector<const item *> mods() const;
 
         /**
+         * CDF: true if removing @p mod would drop a pocket that still holds items: some pocket of
+         * the three matchable types (CONTAINER, MAGAZINE, MAGAZINE_WELL) is not kept by the layout
+         * the owner would have without @p mod, and is not empty. Modifies nothing.
+         */
+        bool mod_pockets_in_use( const item &mod ) const;
+
+        /**
          * Restamps every pocket's capacity_mult from the installed mods' capacity_mods: reset to 1,
          * then the product over mods, MAGAZINE pockets only (DDA item_container.cpp 181-200).
          * Not serialized: rebuild_pockets and copy_from re-derive it.
@@ -509,8 +516,9 @@ class item_contents
         void check_overflow();
         /*@}*/
     private:
-        /** The type's pockets with an installed magazine_adaptor applied; empty if none is. */
-        std::vector<pocket_data> adapted_layout() const;
+        /** The type's pockets with an installed magazine_adaptor applied; empty if none is.
+         *  CDF: @p skip is an installed mod to leave out of the layout (a removal dry run). */
+        std::vector<pocket_data> adapted_layout( const item *skip = nullptr ) const;
         /** Number of pockets the attached pouches contributed. */
         size_t added_pocket_count() const;
         /** Number of pockets in the attached pouch @p index. */
