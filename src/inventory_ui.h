@@ -354,6 +354,8 @@ class inventory_column
 
         /** Selects the specified location. */
         bool select( const item *loc );
+        /// Per DDA inventory_ui.cpp:1636-1675 (highlight). CDF: item * instead of item_location.
+        bool select( const item *loc, bool front_only );
         auto select_position_if_item_type( size_t new_index, const itype_id &type ) -> bool;
 
         /**
@@ -742,6 +744,10 @@ class inventory_selector
          * @return true on success.
          */
         bool select( const item *loc );
+        /// Per DDA inventory_ui.cpp:2408-2460. Reveals a collapsed collation entry first.
+        bool select( const item *loc, bool hidden, bool front_only );
+        /// Per DDA inventory_ui.cpp:447-466. Returns the sibling collated item, or nullptr.
+        item *get_collation_next() const;
         auto select_item_type( const itype_id &type ) -> bool;
         auto select_item_type( const itype_id &type, size_t preferred_column ) -> bool;
         auto select_position_if_item_type( std::pair<size_t, size_t> position,

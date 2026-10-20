@@ -304,10 +304,16 @@ std::function<bool( const inventory_entry & )> inventory_selector_preset::get_fi
 
 std::string inventory_selector_preset::get_caption( const inventory_entry &entry ) const
 {
-    const size_t count = entry.get_stack_size();
+    size_t count = entry.get_stack_size();
     std::string disp_name;
     if( entry.any_item()->is_money() ) {
         disp_name = entry.any_item()->display_money( count, entry.get_total_charges() );
+    } else if( entry.is_collation_header() && entry.any_item()->count_by_charges() ) {
+        // Per DDA inventory_ui.cpp:786-796. CDF: display_name has no with_prefix parameter.
+        item temp( *entry.any_item() );
+        temp.charges = entry.get_total_charges();
+        disp_name = temp.display_name( 1 );
+        count = 1;
     } else {
         disp_name = entry.any_item()->display_name( count );
     }
@@ -1109,8 +1115,26 @@ void inventory_column::clear()
 
 bool inventory_column::select( const item *loc )
 {
+    return select( loc, false );
+}
+
+// Per DDA inventory_ui.cpp:1636-1675 (highlight). CDF: item * instead of item_location.
+bool inventory_column::select( const item *loc, bool front_only )
+{
     for( size_t index = 0; index < entries.size(); ++index ) {
-        if( entries[index].is_selectable() && entries[index].any_item() == loc ) {
+        inventory_entry &ent = entries[index];
+        // CDF: DDA extract line 362 has no is_selectable gate; base 6d202a1ce8 required it
+        // for the default path.
+        if( !ent.is_item() || ( !front_only && !ent.is_selectable() ) ) {
+            continue;
+        }
+        // CDF: guard, entries can have no locations.
+        const bool front_matches = !ent.is_collation_header() && !ent.locations.empty() &&
+                                   ent.locations.front() == loc;
+        if( ( !front_only &&
+              std::find( ent.locations.begin(), ent.locations.end(), loc ) !=
+              ent.locations.end() ) ||
+            front_matches ) {
             select( index, scroll_direction::FORWARD );
             return true;
         }
@@ -1143,6 +1167,10 @@ size_t inventory_column::get_entry_indent( const inventory_entry &entry ) const
         res += 2;
     }
     if( allows_selecting() && activatable() && multiselect ) {
+        res += 2;
+    }
+    // Per DDA inventory_ui.cpp:383-386.
+    if( collate_entries() && entry.is_collation_entry() ) {
         res += 2;
     }
     return res;
@@ -1240,8 +1268,13 @@ void inventory_column::draw( const catacurses::window &win, point pos ) const
 
                 // Per DDA inventory_ui.cpp:1800: chevron before an entry that has visible contents
                 if( cell_index == 0 && entry.chevron && entry.is_item() ) {
-                    trim_and_print( win, point( text_x - 1, yy ), 1, c_dark_gray,
-                                    entry.any_item()->is_collapsed() ? "▶" : "▼" );
+                    const nc_color chevron_color = entry.is_collation_header() ? c_light_blue :
+                                                   c_dark_gray;
+                    const bool collapsed = entry.is_collation_header() ?
+                                           entry.collation_meta->collapsed :
+                                           entry.any_item()->is_collapsed();
+                    trim_and_print( win, point( text_x - 1, yy ), 1, chevron_color,
+                                    collapsed ? "▶" : "▼" );
                 }
                 if( entry.is_item() && ( selected || !entry.is_selectable() ) ) {
                     trim_and_print( win, point( text_x, yy ), text_width, selected ? h_white : c_dark_gray,
@@ -1779,6 +1812,9 @@ void inventory_selector::toggle_categorize_contained()
     _uimode = _uimode == uimode::hierarchy ? uimode::categories : uimode::hierarchy;
     clear_items();
     for( inventory_column *col : columns ) {
+        // Per DDA inventory_ui.cpp:3783-3822 (_categorize/_uncategorize tails): drop the
+        // collation before regrouping the entries.
+        col->uncollate();
         col->set_hierarchy( _uimode == uimode::hierarchy );
     }
     add_character_items( u );
@@ -1809,21 +1845,117 @@ void inventory_selector::clear_items()
     map_column.clear();
 }
 
+namespace
+{
+/// CDF: DDA uses inventory_column::find_by_location; this searches visible and hidden rows.
+auto find_entry_by_item( inventory_column &column, const item *target,
+                         bool front_only ) -> inventory_entry * // *NOPAD*
+{
+    const auto find_in = [&]( std::vector<inventory_entry> &entries ) -> inventory_entry * {
+        for( inventory_entry &entry : entries ) {
+            // CDF: DDA has no is_selectable gate here; the default path requires it.
+            if( !entry.is_item() || ( !front_only && !entry.is_selectable() ) ) {
+                continue;
+            }
+            // CDF: guard, entries can have no locations.
+            const bool front_matches = !entry.is_collation_header() &&
+                                       !entry.locations.empty() &&
+                                       entry.locations.front() == target;
+            if( ( !front_only &&
+                  std::find( entry.locations.begin(), entry.locations.end(),
+                             target ) != entry.locations.end() ) ||
+                front_matches ) {
+                return &entry;
+            }
+        }
+        return nullptr;
+    };
+    if( inventory_entry *found = find_in( column.entries ) ) {
+        return found;
+    }
+    return find_in( column.entries_hidden );
+}
+} // namespace
+
 bool inventory_selector::select( const item *loc )
+{
+    return select( loc, false, false );
+}
+
+// Per DDA inventory_ui.cpp:2408-2460. CDF: item * instead of item_location and no
+// inventory_column::find_by_location, so find_entry_by_item() is used.
+bool inventory_selector::select( const item *loc, bool hidden, bool front_only )
 {
     bool res = false;
 
     for( size_t i = 0; i < columns.size(); ++i ) {
-        auto elem = columns[i];
-        if( elem->visible() && elem->select( loc ) ) {
-            if( !res && elem->activatable() ) {
-                set_active_column( i );
-                res = true;
+        inventory_column *elem = columns[i];
+        if( !elem->visible() ) {
+            continue;
+        }
+        bool found = false;
+        if( hidden ) {
+            if( inventory_entry *ent = find_entry_by_item( *elem, loc, true ) ) {
+                const item *parent = ent->is_collation_entry() ? ent->collation_meta->tip :
+                                     ent->topmost_parent;
+                if( parent == nullptr ) {
+                    continue;
+                }
+                inventory_entry *pent = find_entry_by_item( *elem, parent, false );
+                // CDF: DDA checks elem here; pent can be null.
+                if( pent != nullptr ) {
+                    elem->set_collapsed( *pent, false );
+                    prepare_layout();
+                    found = elem->select( loc, true );
+                }
             }
+        } else {
+            found = elem->select( loc, front_only );
+        }
+        if( found && !res && elem->activatable() ) {
+            set_active_column( i );
+            res = true;
         }
     }
 
     return res;
+}
+
+// Per DDA inventory_ui.cpp:447-466. CDF: item * instead of item_location and no
+// inventory_column::find_by_location.
+item *inventory_selector::get_collation_next() const
+{
+    inventory_column &col = get_active_column();
+    const inventory_entry &ent = col.get_selected();
+    if( !ent.is_collated() ) {
+        return nullptr;
+    }
+    // CDF: guard, entries can have no locations.
+    if( ent.locations.empty() ) {
+        return nullptr;
+    }
+    if( ent.is_collation_header() ) {
+        return ent.locations.front();
+    }
+
+    item *const loc_cur = ent.locations.front();
+    const auto p_iter = std::ranges::find_if( col.entries, [&ent]( const inventory_entry & entry ) {
+        return entry.is_collation_header() && entry.collation_meta == ent.collation_meta;
+    } );
+    // CDF: DDA dereferences find_by_location unconditionally.
+    if( p_iter == col.entries.end() ) {
+        return nullptr;
+    }
+    const std::vector<item *> &locations = p_iter->locations;
+    auto iter = std::find( locations.begin(), locations.end(), loc_cur );
+    if( iter == locations.end() ) {
+        return nullptr;
+    }
+    if( iter == std::prev( locations.end() ) ) {
+        return *std::prev( iter );
+    }
+
+    return *std::next( iter );
 }
 
 auto inventory_selector::select_item_type( const itype_id &type ) -> bool

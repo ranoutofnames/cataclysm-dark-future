@@ -474,3 +474,98 @@ TEST_CASE("inventory selector reports its only choice", "[inventory][p3][ui]") {
     // A plain selector never sets chosen_count, so the whole stack is implied.
     CHECK(only_choice.count == 0);
 }
+
+TEST_CASE("default selector preset shows no collation rows", "[inventory][p3][ui]") {
+    clear_avatar();
+    auto& dummy = get_avatar();
+
+    auto bandage_a = item::spawn("bandages");
+    auto bandage_b = item::spawn("bandages");
+
+    inventory_selector selector(dummy);
+    selector.add_item(selector.own_inv_column, bandage_a.get());
+    selector.add_item(selector.own_inv_column, bandage_b.get());
+    selector.own_inv_column.prepare_paging();
+
+    const std::vector<const inventory_entry*> rows = item_rows(selector.own_inv_column);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows[0]->any_item() == bandage_a.get());
+    CHECK(rows[1]->any_item() == bandage_b.get());
+    for (const inventory_entry* row : rows) {
+        CHECK_FALSE(row->chevron);
+        CHECK_FALSE(row->collation_meta);
+    }
+}
+
+TEST_CASE("default selector select keeps base behaviour", "[inventory][p3][ui]") {
+    clear_avatar();
+    auto& dummy = get_avatar();
+
+    auto first = item::spawn("bandages");
+    auto second = item::spawn("bandages");
+
+    inventory_selector selector(dummy);
+    selector.add_item(selector.own_inv_column, first.get());
+    selector.add_item(selector.own_inv_column, second.get());
+    selector.own_inv_column.prepare_paging();
+
+    const std::vector<const inventory_entry*> rows = item_rows(selector.own_inv_column);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows[0]->any_item() == first.get());
+    CHECK(rows[1]->any_item() == second.get());
+    for (const inventory_entry* row : rows) {
+        CHECK_FALSE(row->chevron);
+        CHECK_FALSE(row->collation_meta);
+    }
+
+    REQUIRE(selector.select(second.get()));
+    CHECK(selector.get_selected().any_item() == second.get());
+
+    struct denying_preset : inventory_selector_preset {
+        const item* denied = nullptr;
+        std::string get_denial(const item* it) const override {
+            return it == denied ? "denied" : std::string();
+        }
+    };
+    denying_preset preset;
+    preset.denied = first.get();
+
+    inventory_selector denied_selector(dummy, preset);
+    denied_selector.add_item(denied_selector.own_inv_column, first.get());
+    denied_selector.add_item(denied_selector.own_inv_column, second.get());
+    denied_selector.own_inv_column.prepare_paging();
+
+    CHECK_FALSE(denied_selector.select(first.get()));
+    CHECK(denied_selector.get_selected().any_item() != first.get());
+}
+
+TEST_CASE("collated header caption and sibling navigation", "[inventory][p3][ui]") {
+    clear_avatar();
+    auto& dummy = get_avatar();
+
+    auto bandage_a = item::spawn("bandages");
+    auto bandage_b = item::spawn("bandages");
+
+    collating_preset preset;
+    inventory_selector selector(dummy, preset);
+    selector.add_item(selector.own_inv_column, bandage_a.get());
+    selector.add_item(selector.own_inv_column, bandage_b.get());
+    REQUIRE(selector.select_item_type(bandage_a->typeId()));
+
+    inventory_column& col = selector.own_inv_column;
+    inventory_entry* header = find_collation_header(col);
+    REQUIRE(header != nullptr);
+    REQUIRE(header->locations.size() == 2);
+    CHECK_FALSE(preset.get_cell_text(*header, 0).empty());
+
+    col.set_collapsed(*header, false);
+    REQUIRE(selector.select_item_type(bandage_a->typeId()));
+
+    REQUIRE(selector.select(bandage_b.get(), false, true));
+    REQUIRE(selector.get_selected().is_collation_entry());
+    CHECK(selector.get_collation_next() == bandage_a.get());
+
+    REQUIRE(selector.select(bandage_a.get()));
+    REQUIRE(selector.get_selected().is_collation_header());
+    CHECK(selector.get_collation_next() == bandage_a.get());
+}
