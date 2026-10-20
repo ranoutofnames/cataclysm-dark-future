@@ -110,8 +110,14 @@ static bool cdf_legacy_direct_charges( const item &it )
         return false;
     }
     const item_contents &c = it.get_contents();
+    // CDF: a loaded magazine wins and the item's own `charges` are ignored (BN
+    // item::ammo_remaining: `if( mag ) return mag->ammo_remaining();`). magazine_current() also
+    // sees a magazine parked in MIGRATION: a smartphone has magazine_well but no `magazines`
+    // list, so it gets no well pocket and its battery lands in MIGRATION, while max_charges and
+    // initial_charges keep it magazine_integral().
     return !c.has_pocket_type( pocket_type::MAGAZINE ) &&
-           ( !c.has_pocket_type( pocket_type::MAGAZINE_WELL ) || it.magazine_integral() );
+           ( !c.has_pocket_type( pocket_type::MAGAZINE_WELL ) || it.magazine_integral() ) &&
+           it.magazine_current() == nullptr;
 }
 
 int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const Character *carrier,
@@ -129,6 +135,13 @@ int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const
     // TODO(multimag): aggregate; per-well callers use the indexed overload.
     for( const item *mag : magazines_current() ) {
         ret += mag->ammo_remaining( );
+    }
+    // CDF: a magazine parked outside a well (MIGRATION, see cdf_legacy_direct_charges) still counts,
+    // as in BN's `if( mag ) return mag->ammo_remaining();`.
+    if( ( is_tool() || is_gun() ) && magazines_current().empty() ) {
+        if( const item *parked = magazine_current() ) {
+            ret += parked->ammo_remaining( );
+        }
     }
 
     // Integral MAGAZINE pockets sitting alongside wells (multimag).
@@ -650,6 +663,13 @@ int item::ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Characte
         // CDF: carrier->invalidate_weight_carried_cache() (DDA 1875-1877) cut:
         // CDF has no such method (cached_weight_carried() has no invalidate).
         // Unblock: name the CDF weight-cache call in 4-b2 if one is needed.
+    }
+
+    // CDF: a magazine parked outside a well is drained like a loaded one (matches ammo_remaining).
+    if( ( is_tool() || is_gun() ) && contents.magazines_current().empty() ) {
+        if( item *parked = magazine_current() ) {
+            qty -= parked->ammo_consume( qty, here, pos, carrier );
+        }
     }
 
     // CDF: legacy direct charges (D14, same helper as ammo_remaining). Remove with cdf_legacy_direct_charges.

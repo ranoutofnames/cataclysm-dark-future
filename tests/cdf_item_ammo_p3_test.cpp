@@ -540,3 +540,34 @@ TEST_CASE( "a nullptr carrier counts no bionic power", "[p3][ammo]" ) {
     CHECK_FALSE( toolset->ammo_sufficient( nullptr ) );
     CHECK( toolset->ammo_sufficient( &get_avatar() ) );
 }
+
+// 3-4b-d3 R-14: a legacy tool (direct `charges`, magazine_well but no `magazines` list) with a
+// magazine loaded in its well counts that magazine only; the old BN ammo_remaining() returned
+// the loaded magazine's count and ignored the tool's own `charges`.
+TEST_CASE( "a legacy tool with a loaded magazine counts the magazine only", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> tool = item::spawn( itype_id( "smart_phone_music" ) );
+    detached_ptr<item> battery = item::spawn( itype_id( "light_battery_cell" ) );
+    battery->ammo_unset();
+    REQUIRE( battery->ammo_remaining() == 0 );
+    REQUIRE( tool->charges > 0 );
+
+    item *bat = &*battery;
+    tool->put_in( std::move( battery ) );
+    REQUIRE( tool->magazine_current() == bat );
+    CHECK( tool->ammo_remaining() == 0 );
+
+    bat->ammo_set( itype_id( "battery" ), 10 );
+    CHECK( tool->ammo_remaining() == 10 );
+}
+
+// 3-4b-d3 R-15: ammo_set on a gun with a magazine_well and a `magazines` list spawns the default
+// magazine, puts it in the well and fills it (vehicle_part::ammo_set for a turret relies on it).
+TEST_CASE( "a mounted-gun ammo_set loads the belt", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = item::spawn( itype_id( "m2browning" ) );
+    gun->ammo_set( itype_id( "50bmg" ) );
+    CHECK( gun->magazine_current() != nullptr );
+    CHECK( gun->ammo_remaining() > 0 );
+    CHECK( gun->ammo_sufficient( nullptr ) );
+}
