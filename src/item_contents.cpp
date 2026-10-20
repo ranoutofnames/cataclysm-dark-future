@@ -1927,9 +1927,7 @@ int item_contents::ammo_consume( int qty, map *here, const tripoint_bub_ms &pos,
             if( mag == nullptr ) {
                 continue;
             }
-            // CDF: no 4-arg item::ammo_consume( int, map&, pos, carrier ); the BN 2-arg
-            // one consumes straight from the magazine's own contents.
-            const int res = mag->ammo_consume( qty, pos );
+            const int res = mag->ammo_consume( qty, *here, pos, nullptr );
             if( res && mag->ammo_remaining() == 0 ) {
                 if( mag->has_flag( flag_MAG_DESTROY ) ) {
                     pocket.remove_item( mag );
@@ -1986,8 +1984,7 @@ int item_contents::ammo_consume_in_pocket( const std::string &id, int qty, map *
             if( mag == nullptr ) {
                 return 0;
             }
-            // CDF: no 4-arg item::ammo_consume( int, map&, pos, carrier ); use the BN 2-arg one.
-            const int res = mag->ammo_consume( qty, pos );
+            const int res = mag->ammo_consume( qty, *here, pos, nullptr );
             if( res && mag->ammo_remaining() == 0 ) {
                 if( mag->has_flag( flag_MAG_DESTROY ) ) {
                     pocket.remove_item( mag );

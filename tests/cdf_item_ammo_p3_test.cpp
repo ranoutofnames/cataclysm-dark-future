@@ -5,6 +5,8 @@
 #include "item_pocket.h"
 #include "itype.h"
 #include "json.h"
+#include "map/map.h"
+#include "map_helpers.h"
 
 #include <sstream>
 #include <string>
@@ -332,4 +334,107 @@ TEST_CASE( "remaining_ammo_capacity of a loaded gun is the magazine's free space
 
     detached_ptr<item> full = loaded_m4a1( 30 );
     CHECK( full->remaining_ammo_capacity() == 0 );
+}
+
+// DDA item_gun_tool_ammo.cpp:1830-1916: the carrier overload drains the loaded
+// magazine (R-1).
+TEST_CASE( "ammo_consume with a carrier drains a loaded gun", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+
+    CHECK( gun->ammo_consume( 5, pos, nullptr ) == 5 );
+    CHECK( gun->ammo_remaining() == 25 );
+}
+
+// DDA item_gun_tool_ammo.cpp:1825-1828: the map overload forwards the map
+// through the magazine recursion, which ejects the spent magazine (R-2).
+TEST_CASE( "ammo_consume with a map overload ejects a MAG_EJECT magazine", "[p3][ammo]" ) {
+    // CDF: garandclip is MAG_EJECT (data/json/items/magazine/3006.json) and the
+    // garand is its host gun.
+    clear_map();
+    map &here = get_map();
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+
+    detached_ptr<item> gun = item::spawn( itype_id( "garand" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "garandclip" ) );
+    mag->put_in( item::spawn( itype_id( "3006" ), calendar::turn, 8 ) );
+    gun->put_in( std::move( mag ) );
+    REQUIRE( gun->magazine_current() != nullptr );
+
+    CHECK( gun->ammo_consume( 8, here, pos, nullptr ) == 8 );
+    CHECK( gun->magazine_current() == nullptr );
+    REQUIRE( here.i_at( pos ).size() == 1 );
+    CHECK( here.i_at( pos ).only_item().typeId() == itype_id( "garandclip" ) );
+}
+
+// DDA item_gun_tool_ammo.cpp:1800-1813: the carrier overload counts rounds (R-3).
+TEST_CASE( "ammo_sufficient with a carrier counts rounds", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+
+    CHECK( gun->ammo_sufficient( nullptr, 30 ) );
+    CHECK_FALSE( gun->ammo_sufficient( nullptr, 31 ) );
+}
+
+// DDA item_gun_tool_ammo.cpp:1790-1798: first_ammo reaches the loaded round (R-4).
+TEST_CASE( "first_ammo of a loaded magazine is its round", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 10 );
+    const ammotype round = item::spawn( itype_id( "556" ) )->ammo_type();
+
+    REQUIRE_FALSE( gun->first_ammo().is_null() );
+    CHECK( gun->first_ammo().is_ammo() );
+    CHECK( gun->first_ammo().ammo_type() == round );
+
+    const item &const_gun = *gun;
+    CHECK( const_gun.first_ammo().typeId() == itype_id( "556" ) );
+}
+
+// DDA item_gun_tool_ammo.cpp:2258-2261: uses_magazine is the MAGAZINE_WELL test (R-5).
+TEST_CASE( "uses_magazine is true for a gun with a magazine well", "[p3][ammo]" ) {
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    CHECK( gun->uses_magazine() );
+
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    CHECK_FALSE( mag->uses_magazine() );
+
+    detached_ptr<item> backpack = item::spawn( itype_id( "backpack" ) );
+    CHECK_FALSE( backpack->uses_magazine() );
+}
+
+// O1/D14 gate: a tool carrying an ammo type but no magazine pocket keeps its
+// direct charges, and ammo_consume must drain them (G-6, OD-3).
+TEST_CASE( "ammo_consume drains a legacy tool's direct charges", "[p3][ammo]" ) {
+    clear_map();
+    detached_ptr<item> lantern = item::spawn( itype_id( "gasoline_lantern" ) );
+    REQUIRE( lantern->is_tool() );
+    REQUIRE_FALSE( lantern->ammo_types().empty() );
+    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE ) );
+    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
+
+    lantern->charges = 5;
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+    CHECK( lantern->ammo_consume( 3, pos, nullptr ) == 3 );
+    CHECK( lantern->charges == 2 );
+}
+
+// DDA item_gun_tool_ammo.cpp:1911-1915: the return is clamped to the loaded
+// rounds (G-7).
+TEST_CASE( "ammo_consume clamps to the loaded rounds", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 10 );
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+
+    CHECK( gun->ammo_consume( 40, pos, nullptr ) == 10 );
+    CHECK( gun->ammo_remaining() == 0 );
+}
+
+// DDA item_gun_tool_ammo.cpp:1771-1788 with the CDF gate (OD-10): a gun reports
+// ammo_to_fire, a non-tool non-gun reports zero (G-8).
+TEST_CASE( "ammo_required of a gun is its ammo_to_fire, of a magazine zero", "[p3][ammo]" ) {
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    // CDF: m4a1 inherits rifle_base (data/json/items/classes/gun.json), which
+    // sets no ammo_to_fire, so the default is 1 (src/itype.h:730); no gunmods.
+    REQUIRE( gun->type->gun->ammo_to_fire == 1 );
+    CHECK( gun->ammo_required() == 1 );
+
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    CHECK( mag->ammo_required() == 0 );
 }

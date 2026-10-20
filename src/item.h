@@ -2337,27 +2337,39 @@ class item : public location_visitable<item>, public game_object<item>
         int remaining_ammo_capacity() const;
         /** Quantity of ammunition consumed per usage of tool or with each shot of gun */
         int ammo_required() const;
+        item &first_ammo();
+        const item &first_ammo() const;
 
         /**
-         * Check if sufficient ammo is loaded for given number of uses.
+         * Check if sufficient ammo is loaded for given number of uses
+         * or given number of gun shots.
+         * UPS and bionic may be also used as ammo if carrier provides it.
          *
-         * Check if there is enough ammo loaded in a tool for the given number of uses
-         * or given number of gun shots.  Using this function for this check is preferred
+         * Using this function for this check is preferred
          * because we expect to add support for items consuming multiple ammo types in
          * the future.  Users of this function will not need to be refactored when this
          * happens.
          *
-         * @param[in] qty Number of uses
+         * @param carrier holder of the item, used for getting UPS and bionic power
+         * @param qty Number of uses
          * @returns true if ammo sufficient for number of uses is loaded, false otherwise
          */
+        bool ammo_sufficient( const Character *carrier, int qty = 1 ) const;
+        // CDF: BN-compatible forwarder (OD-2)
         bool ammo_sufficient( int qty = 1 ) const;
 
         /**
          * Consume ammo (if available) and return the amount of ammo that was consumed
+         * Consume order: loaded items, UPS, bionic
          * @param qty maximum amount of ammo that should be consumed
          * @param pos current location of item, used for ejecting magazines and similar effects
+         * @param carrier holder of the item, used for getting UPS and bionic power
+         * @param fuel_efficiency if this is a generator of some kind the efficiency at which it consumes fuel
          * @return amount of ammo consumed which will be between 0 and qty
          */
+        int ammo_consume( int qty, const tripoint_bub_ms &pos, Character *carrier );
+        int ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Character *carrier );
+        // CDF: BN-compatible forwarder (OD-2)
         int ammo_consume( int qty, const tripoint_bub_ms &pos );
 
         /** Specific ammo data, returns nullptr if item is neither ammo nor loaded with any */
@@ -2470,6 +2482,9 @@ class item : public location_visitable<item>, public game_object<item>
         bool gun_set_mode( const gun_mode_id &mode );
 
         bool uses_firing_requirements() const;
+
+        /** Does item have magazine well */
+        bool uses_magazine() const;
 
         /**
          * Get currently loaded ammo, if any.

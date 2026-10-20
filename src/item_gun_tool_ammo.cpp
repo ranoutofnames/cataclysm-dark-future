@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "character.h"
+// CDF: get_avatar() for the OD-2 transitional forwarders (declared in avatar.h).
+#include "avatar.h"
 #include "enums.h"
 #include "flag.h"
 #include "item_contents.h"
@@ -554,4 +556,168 @@ const item &item::loaded_ammo() const
         return contents.first_ammo();
     }
     return null_item_reference();
+}
+
+int item::ammo_required() const
+{
+    // CDF: BN gate kept; itype::charges_to_use() returns 1 for every non-tool
+    // in CDF (DDA returns 0), see OD-10.
+    if( !is_tool() && !is_gun() ) {
+        return 0;
+    }
+
+    if( is_gun() ) {
+        // CDF: BN gun test (DDA uses type->gun->ammo.empty()); OD-10.
+        if( ammo_types().empty() ) {
+            return 0;
+        // CDF: BN's FIRE_100/50/20 branch kept; data-driven and still used by
+        // CDF data (OD-10).
+        } else if( has_flag( flag_FIRE_100 ) ) {
+            return 100;
+        } else if( has_flag( flag_FIRE_50 ) ) {
+            return 50;
+        } else if( has_flag( flag_FIRE_20 ) ) {
+            return 20;
+        } else {
+            int modifier = 0;
+            float multiplier = 1.0f;
+            for( const item *mod : gunmods() ) {
+                modifier += mod->type->gunmod->ammo_to_fire_modifier;
+                multiplier *= mod->type->gunmod->ammo_to_fire_multiplier;
+            }
+            return ( type->gun->ammo_to_fire * multiplier ) + modifier;
+        }
+    }
+
+    return type->charges_to_use();
+}
+
+item &item::first_ammo()
+{
+    return contents.first_ammo();
+}
+
+const item &item::first_ammo() const
+{
+    return contents.first_ammo();
+}
+
+bool item::ammo_sufficient( const Character *carrier, int qty ) const
+{
+    map &here = get_map();
+
+    if( count_by_charges() ) {
+        return ammo_remaining_linked( here, carrier ) >= qty;
+    }
+
+    if( is_comestible() ) {
+        return true;
+    }
+
+    // CDF: until 3-4d (OD-5): shots_remaining( here, carrier ) is absent;
+    // this interim matches DDA for guns with no energy drain.
+    return ammo_required() == 0 || ammo_remaining( carrier ) >= ammo_required() * qty;
+}
+
+// CDF: BN-compatible forwarder (OD-2)
+bool item::ammo_sufficient( int qty ) const
+{
+    // CDF: transitional, deleted by 3-4b-d
+    return ammo_sufficient( &get_avatar(), qty );
+}
+
+int item::ammo_consume( int qty, const tripoint_bub_ms &pos, Character *carrier )
+{
+    return item::ammo_consume( qty, get_map(), pos, carrier );
+}
+
+int item::ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Character *carrier )
+{
+    if( qty < 0 ) {
+        debugmsg( "Cannot consume negative quantity of ammo for %s", tname() );
+        return 0;
+    }
+    if( uses_firing_requirements() ) {
+        debugmsg( "ammo_consume(%d) called on multimag item %s; caller must use "
+                  "consume_shots / consume_tool_uses instead", qty, tname() );
+        return 0;
+    }
+    const int wanted_qty = qty;
+    const bool is_tool_with_carrier = carrier != nullptr && is_tool();
+
+    // CDF: NEARBY_AMMO block (DDA 1844-1858) deferred: flag_USES_NEARBY_AMMO is
+    // absent from CDF (flag.h/cpp, flags.json) and Character::crafting_inventory()
+    // is non-const here. Unblock: 7-R4/R5.
+
+    // CDF: cable link discharge (DDA 1861-1870) deferred: CDF has no link API
+    // (has_link_data()/link() absent). Unblock: 4-b2 (cable tail) or an owner
+    // decision on a cable port.
+
+    // Consume charges loaded in the item or its magazines
+    if( is_magazine() || uses_magazine() ) {
+        qty -= contents.ammo_consume( qty, &here, pos );
+        // CDF: carrier->invalidate_weight_carried_cache() (DDA 1875-1877) cut:
+        // CDF has no such method (cached_weight_carried() has no invalidate).
+        // Unblock: name the CDF weight-cache call in 4-b2 if one is needed.
+    }
+
+    // CDF: legacy direct charges (D14, same helper as ammo_remaining). Remove with cdf_legacy_direct_charges.
+    if( cdf_legacy_direct_charges( *this ) ) {
+        int used = std::min( qty, charges );
+        qty -= used;
+        charges -= used;   // BN: charges is the ammo for legacy tools/guns
+        if( charges == 0 ) {
+            curammo = nullptr;
+        }
+    }
+
+    // Dirty fix: activating a container of meds leads here, and used to use up all of the charges.
+    if( is_medication() && charges > 1 ) {
+        int charg_used = std::min( charges, qty );
+        charges -= charg_used;
+        qty -= charg_used;
+    }
+
+    // Some weird internal non-item charges (used by grenades)
+    if( is_tool() && type->tool->ammo_id.empty() ) {
+        int charg_used = std::min( charges, qty );
+        charges -= charg_used;
+        qty -= charg_used;
+    }
+
+    bool is_off_grid_powered = has_flag( flag_USE_UPS ) || has_flag( flag_USES_BIONIC_POWER );
+
+    // Modded tools can consume UPS/bionic energy instead of ammo.
+    // Guns handle energy in energy_consume()
+    if( is_tool_with_carrier && is_off_grid_powered ) {
+        units::energy wanted_energy = units::from_kilojoule( static_cast<std::int64_t>( qty ) );
+
+        // CDF: UPS branch (DDA 1901-1903) deferred: Character::consume_ups() is
+        // absent; use_charges( itype_UPS, n ) is the substitute. Unblock: 4-b2 (OD-6).
+
+        // CDF: OD-4: the bionic tail runs after the legacy branch and only for a
+        // non-null carrier (DDA behaviour); no avatar fallback inside the body.
+        if( has_flag( flag_USES_BIONIC_POWER ) ) {
+            units::energy bio_used = std::min( carrier->get_power_level(), wanted_energy );
+            carrier->mod_power_level( -bio_used );
+            wanted_energy -= bio_used;
+        }
+
+        // It is possible for this to cause rounding error due to different precision of energy
+        // But that can happen only if there was not enough ammo and you shouldn't be able to use without sufficient ammo
+        qty = units::to_kilojoule( wanted_energy );
+    }
+    return wanted_qty - qty;
+}
+
+// CDF: BN-compatible forwarder (OD-2)
+int item::ammo_consume( int qty, const tripoint_bub_ms &pos )
+{
+    // CDF: transitional, deleted by 3-4b-d
+    return ammo_consume( qty, pos, &get_avatar() );
+}
+
+bool item::uses_magazine() const
+{
+    return contents.has_pocket_type( pocket_type::MAGAZINE_WELL );
 }
