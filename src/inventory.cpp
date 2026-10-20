@@ -558,7 +558,8 @@ void inventory::form_from_map( map &m, std::vector<tripoint_bub_ms> pts, const C
             for( itype_id id : crafterpart->info().craftertools() ) {
                 if( !found_tools.contains( id.str() ) ) {
                     item &tool = *item::spawn_temporary( id, bday );
-                    tool.charges = veh->fuel_left( itype_battery, true );
+                    // CDF: 4-b1: vehicle battery charge goes into the tool's magazine pocket, not direct charges
+                    tool.ammo_set( tool.ammo_default(), veh->fuel_left( itype_battery, true ) );
                     tool.item_tags.insert( flag_PSEUDO );
                     if( id == itype_hotplate ) {
                         tool.item_tags.insert( flag_HEATS_FOOD );
@@ -582,7 +583,8 @@ void inventory::form_from_map( map &m, std::vector<tripoint_bub_ms> pts, const C
 
         if( autoclavepart && !has_autodoc ) {
             item &autoclave = *item::spawn_temporary( "autoclave", bday );
-            autoclave.charges = veh->fuel_left( itype_battery, true );
+            // CDF: 4-b1: as above, pocket model instead of direct charges
+            autoclave.ammo_set( autoclave.ammo_default(), veh->fuel_left( itype_battery, true ) );
             autoclave.item_tags.insert( flag_PSEUDO );
             add_item_by_items_type_cache( autoclave, false );
             has_autodoc = true;

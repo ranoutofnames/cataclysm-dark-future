@@ -383,8 +383,16 @@ item::item( const itype *type, time_point turn, int qty ) : type( type ),
         last_rot_check = bday;
 
     } else if( type->tool ) {
-        if( ammo_remaining() && !ammo_types().empty() ) {
-            ammo_set( ammo_default(), ammo_remaining() );
+        // CDF: read the spawn quantity from `charges` (4-b1). ammo_remaining() is 0 for a tool with a
+        // default magazine (it is not magazine_integral, so the direct-charges guard does not apply),
+        // so its spawn charges were lost. Integral tools behave as before (ammo_set keeps `charges`).
+        if( charges > 0 && !ammo_types().empty() ) {
+            const int spawn_charges = charges;
+            ammo_set( ammo_default(), spawn_charges );
+            if( !magazine_integral() ) {
+                // the rounds now live in the magazine pocket, not in direct charges
+                charges = 0;
+            }
         }
     }
 
