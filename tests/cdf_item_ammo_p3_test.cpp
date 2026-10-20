@@ -646,9 +646,9 @@ TEST_CASE( "multimag_loaded_ammo_does_not_borrow_sibling_pocket", "[p3][ammo]" )
 
     CHECK_FALSE( gun->has_ammo() );
     CHECK_FALSE( gun->has_ammo_data() );
-    // CDF: the ammo_data() / ammo_current() assertions are cut (ledger row): CDF item::ammo_data
-    // still reads magazine_current() and returns the battery here; it needs ammo_identity_mag().
+    CHECK( gun->ammo_data() == nullptr );
     CHECK( gun->loaded_ammo().is_null() );
+    CHECK( gun->ammo_current() == itype_id::NULL_ID() );
 
     // After loading the slug pocket, identity is anchored to the projectile
     // and loaded_ammo() must resolve to the slug, not null.
@@ -656,6 +656,8 @@ TEST_CASE( "multimag_loaded_ammo_does_not_borrow_sibling_pocket", "[p3][ammo]" )
                           pocket_type::MAGAZINE ).success() );
     CHECK( gun->has_ammo() );
     CHECK( gun->has_ammo_data() );
+    REQUIRE( gun->ammo_data() != nullptr );
+    CHECK( gun->ammo_current() == itype_id( "9mm" ) );
     const item &loaded = gun->loaded_ammo();
     CHECK_FALSE( loaded.is_null() );
     CHECK( loaded.typeId() == itype_id( "9mm" ) );
@@ -677,7 +679,7 @@ TEST_CASE( "multimag_integral_pocket_skips_casings", "[p3][ammo]" ) {
     gun->force_insert_item( std::move( casing ), pocket_type::MAGAZINE );
     CHECK_FALSE( gun->has_ammo() );
     CHECK_FALSE( gun->has_ammo_data() );
-    // CDF: ammo_data() == nullptr cut (ledger row), see the sibling-pocket case above.
+    CHECK( gun->ammo_data() == nullptr );
     CHECK( gun->ammo_remaining() == 56 );
 
     // Live slug alongside the casing: identity resolves to slug, count is 1.
@@ -686,6 +688,22 @@ TEST_CASE( "multimag_integral_pocket_skips_casings", "[p3][ammo]" ) {
     CHECK( gun->has_ammo() );
     CHECK( gun->has_ammo_data() );
     CHECK( gun->ammo_remaining() == 57 );
+}
+
+TEST_CASE( "ammo_data on a plain magazine and on ammo", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> round = item::spawn( itype_id( "9mm" ) );
+    REQUIRE( round->ammo_data() != nullptr );
+    CHECK( round->ammo_data()->get_id() == itype_id( "9mm" ) );
+
+    detached_ptr<item> empty_mag = item::spawn( itype_id( "glockmag" ) );
+    CHECK( empty_mag->ammo_data() == nullptr );
+
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    REQUIRE( mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 1 ),
+                          pocket_type::MAGAZINE ).success() );
+    REQUIRE( mag->ammo_data() != nullptr );
+    CHECK( mag->ammo_data()->get_id() == itype_id( "9mm" ) );
 }
 
 TEST_CASE( "battery_energy_test", "[p3][ammo]" ) {

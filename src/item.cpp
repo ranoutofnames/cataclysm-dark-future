@@ -8893,38 +8893,6 @@ int item::ammo_capacity( bool potential_capacity ) const
     return res;
 }
 
-const itype *item::ammo_data() const
-{
-    const item *mag = magazine_current();
-    if( mag ) {
-        return mag->ammo_data();
-    }
-
-    if( is_ammo() ) {
-        return type;
-    }
-
-    if( is_magazine() ) {
-        return !contents.empty() ? contents.front().ammo_data() : nullptr;
-    }
-
-    auto mods = is_gun() ? gunmods() : toolmods();
-    for( const item *e : mods ) {
-        if( !e->type->mod->ammo_modifier.empty() && e->ammo_current() &&
-            e->ammo_current().is_valid() ) {
-            return &*e->ammo_current();
-        }
-    }
-
-    return curammo;
-}
-
-itype_id item::ammo_current() const
-{
-    const itype *ammo = ammo_data();
-    return ammo ? ammo->get_id() : itype_id::NULL_ID();
-}
-
 std::set<ammotype> item::ammo_types( bool conversion ) const
 {
     if( conversion ) {

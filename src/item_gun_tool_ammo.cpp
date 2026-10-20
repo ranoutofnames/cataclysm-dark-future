@@ -542,6 +542,48 @@ const item *item::ammo_identity_mag() const
     return magazine_current();
 }
 
+const itype *item::ammo_data() const
+{
+    const item *mag = ammo_identity_mag();
+    if( mag ) {
+        return mag->ammo_data();
+    }
+    if( uses_firing_requirements() && is_gun() ) {
+        return nullptr;
+    }
+
+    if( is_ammo() ) {
+        return type;
+    }
+
+    if( is_magazine() ) {
+        return !contents.empty() ? contents.first_ammo().ammo_data() : nullptr;
+    }
+
+    auto mods = is_gun() ? gunmods() : toolmods();
+    for( const item *e : mods ) {
+        // CDF: keeps the BN loop (same result as DDA's has_template/find_template, no extra include)
+        if( !e->type->mod->ammo_modifier.empty() && e->ammo_current() &&
+            e->ammo_current().is_valid() ) {
+            return &*e->ammo_current();
+        }
+    }
+
+    // CDF: legacy curammo until 4-b2 (DDA returns nullptr)
+    return curammo;
+}
+
+itype_id item::ammo_current() const
+{
+    const itype *ammo = ammo_data();
+    if( ammo ) {
+        return ammo->get_id();
+    }
+    // CDF: USES_NEARBY_AMMO absent (7-R4/R5)
+
+    return itype_id::NULL_ID();
+}
+
 // CDF: file-static here; the item.cpp copy is not visible
 static const ammotype ammo_battery( "battery" );
 
