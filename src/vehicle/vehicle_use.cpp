@@ -2096,13 +2096,20 @@ void vehicle::interact_with(const tripoint_bub_ms& pos, int interact_part) {
             item& fake_item =
                 *item::spawn_temporary(usable_item_types.at(tool_index), calendar::turn, 0);
             fake_item.item_tags.insert(flag_PSEUDO);
-            fake_item.charges = fuel_left(itype_battery, true);
-            int original_charges = fake_item.charges;
+            // CDF: DDA feeds the battery with ammo_set; a tool with no ammo field (toolbox_workshop, pot, pan) keeps the direct write
+            if (fake_item.ammo_types().empty()) {
+                fake_item.charges = fuel_left(itype_battery, true);
+            } else {
+                fake_item.ammo_set(itype_battery, fuel_left(itype_battery, true));
+            }
+            // CDF: DDA 2017 reads the start quantity with ammo_remaining_in_pocket
+            int original_charges = fake_item.ammo_remaining(&you);
             you.invoke_item(&fake_item, pos);
             // HACK: Evil hack incoming
             activity_handlers::repair_activity_hack::patch_activity_for_vehicle(
                 *you.activity, pos, *this, interact_part, fake_item.typeId());
-            const int discharged = original_charges - fake_item.charges;
+            // CDF: DDA 2031 reads the remaining quantity with ammo_remaining_in_pocket
+            const int discharged = original_charges - fake_item.ammo_remaining(&you);
             drain(itype_battery, discharged);
             return;
         }
