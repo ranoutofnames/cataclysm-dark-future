@@ -411,7 +411,7 @@ bool avatar_action::move( avatar &you, map &m, const tripoint_rel_ms &d )
         !is_riding ) {
         item &digging_tool = you.primary_weapon();
         if( digging_tool.has_flag( flag_DIG_TOOL ) ) {
-            if( digging_tool.type->can_use( "JACKHAMMER" ) && digging_tool.ammo_sufficient() ) {
+            if( digging_tool.type->can_use( "JACKHAMMER" ) && digging_tool.ammo_sufficient( &you ) ) {
                 you.invoke_item( &digging_tool, "JACKHAMMER", dest_loc );
                 // don't move into the tile until done mining
                 you.defer_move( dest_loc );

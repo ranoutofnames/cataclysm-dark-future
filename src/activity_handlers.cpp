@@ -1819,7 +1819,7 @@ void activity_handlers::game_do_turn( player_activity *act, player *p )
     // Consume battery charges for every minute spent playing
     if( action_time_scale::once_every_this_tick( 1_minutes ) ) {
         int energy = game_item.ammo_required();
-        energy -= game_item.ammo_consume( energy, p->bub_pos() );
+        energy -= game_item.ammo_consume( energy, p->bub_pos(), p );
         if( energy > 0 && game_item.has_flag( flag_USE_UPS ) ) {
             if( p->use_charges_if_avail( itype_UPS, energy ) ) {
                 energy = 0;
@@ -2429,7 +2429,7 @@ void activity_handlers::vibe_do_turn( player_activity *act, player *p )
     if( action_time_scale::once_every_this_tick( 1_minutes ) ) {
         p->mod_fatigue( 1 );
         if( vibrator_item.ammo_remaining() > 0 ) {
-            vibrator_item.ammo_consume( 1, p->bub_pos() );
+            vibrator_item.ammo_consume( 1, p->bub_pos(), p );
             p->add_morale( MORALE_FEELING_GOOD, 3, 40 );
             if( vibrator_item.ammo_remaining() == 0 ) {
                 add_msg( m_info, _( "The %s runs out of batteries." ), vibrator_item.tname() );
@@ -2799,7 +2799,7 @@ void activity_handlers::train_skill_do_turn( player_activity *act, player *p )
         p->mod_fatigue( training_skill_fatigue );
         p->mod_stamina( -training_skill_fatigue * 36 );
         if( skill_training_item.ammo_remaining() > 0 ) {
-            skill_training_item.ammo_consume( 1, p->bub_pos() );
+            skill_training_item.ammo_consume( 1, p->bub_pos(), p );
             if( hack_type.has_value() ) {
                 hack::discharge_real_power_source(
                     hack_type.value(),
@@ -2902,7 +2902,7 @@ void activity_handlers::repair_item_finish( player_activity *act, player *p )
         const repair_item_actor::attempt_hint attempt = actor->repair( *p, *used_tool, *fix_location );
         if( attempt != repair_item_actor::AS_CANT ) {
             if( ploc && ploc->where() == item_location_type::map ) {
-                used_tool->ammo_consume( used_tool->ammo_required(), ploc->bub_pos() );
+                used_tool->ammo_consume( used_tool->ammo_required(), ploc->bub_pos(), p );
             } else {
                 p->consume_charges( *used_tool, used_tool->ammo_required() );
             }

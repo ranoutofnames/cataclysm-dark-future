@@ -1257,8 +1257,8 @@ void hacksaw_activity_actor::do_turn( player_activity &/* act */, Character &who
         progress.pop();
         return;
     }
-    if( tool->ammo_sufficient() ) {
-        tool->ammo_consume( tool->ammo_required(), tool->bub_pos() );
+    if( tool->ammo_sufficient( &who ) ) {
+        tool->ammo_consume( tool->ammo_required(), tool->bub_pos(), &who );
         sfx::play_activity_sound( "tool", "hacksaw", sfx::get_heard_volume( target, 80 ) );
         if( action_time_scale::once_every_this_tick( 1_minutes ) ) {
             //~ Sound of a metal sawing tool at work!
@@ -1422,8 +1422,8 @@ void boltcutting_activity_actor::do_turn( player_activity &/* act */, Character 
         progress.pop();
         return;
     }
-    if( tool->ammo_sufficient() ) {
-        tool->ammo_consume( tool->ammo_required(), tool->bub_pos() );
+    if( tool->ammo_sufficient( &who ) ) {
+        tool->ammo_consume( tool->ammo_required(), tool->bub_pos(), &who );
     } else {
         if( who.is_avatar() ) {
             who.add_msg_if_player( m_bad, _( "Your %1$s ran out of charges." ), tool->tname() );
@@ -1845,8 +1845,8 @@ void oxytorch_activity_actor::start( player_activity &act, Character &/*who*/ )
 void oxytorch_activity_actor::do_turn( player_activity &/*act*/, Character &who )
 {
     // We check available charges when first starting the cut, but this prevents abnormal behavior if torch status changes mid-activity.
-    if( tool->ammo_sufficient() ) {
-        tool->ammo_consume( tool->ammo_required(), tool->bub_pos() );
+    if( tool->ammo_sufficient( &who ) ) {
+        tool->ammo_consume( tool->ammo_required(), tool->bub_pos(), &who );
         sfx::play_activity_sound( "tool", "oxytorch", sfx::get_heard_volume( target, 65 ) );
         if( action_time_scale::once_every_this_tick( 2_turns ) ) {
             sound_event se;

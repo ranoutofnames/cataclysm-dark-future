@@ -9052,7 +9052,7 @@ bool Character::has_enough_charges( const item &it, bool show_msg ) const
         if( ( character_funcs::can_interface_armor( *this ) &&
               has_charges( itype_bio_armor, it.ammo_required() ) ) ||
             ( it.has_flag( flag_USE_UPS ) && has_charges( itype_UPS, it.ammo_required() ) ) ||
-            it.ammo_sufficient() ) {
+            it.ammo_sufficient( this ) ) {
             return true;
         }
 
@@ -9074,7 +9074,7 @@ bool Character::has_enough_charges( const item &it, bool show_msg ) const
         return false;
     }
     if( it.has_flag( flag_USE_UPS ) ) {
-        if( has_charges( itype_UPS, it.ammo_required() ) || it.ammo_sufficient() ) {
+        if( has_charges( itype_UPS, it.ammo_required() ) || it.ammo_sufficient( this ) ) {
             return true;
         }
         if( show_msg ) {
@@ -9085,13 +9085,13 @@ bool Character::has_enough_charges( const item &it, bool show_msg ) const
                                it.tname(), it.ammo_required() );
         }
         return false;
-    } else if( !it.ammo_sufficient() ) {
+    } else if( !it.ammo_sufficient( this ) ) {
         if( show_msg ) {
             add_msg_if_player( m_info,
                                vgettext( "Your %s has %d charge but needs %d.",
                                          "Your %s has %d charges but needs %d.",
-                                         it.ammo_remaining() ),
-                               it.tname(), it.ammo_remaining(), it.ammo_required() );
+                                         it.ammo_remaining( this ) ),
+                               it.tname(), it.ammo_remaining( this ), it.ammo_required() );
         }
         return false;
     }
@@ -9133,7 +9133,7 @@ bool Character::consume_charges( item &used, int qty )
 
     if( used.is_power_armor() ) {
         if( used.charges >= qty ) {
-            used.ammo_consume( qty, bub_pos() );
+            used.ammo_consume( qty, bub_pos(), this );
         } else if( character_funcs::can_interface_armor( *this ) && has_charges( itype_bio_armor, qty ) ) {
             use_charges( itype_bio_armor, qty );
         } else {
@@ -9147,12 +9147,12 @@ bool Character::consume_charges( item &used, int qty )
         // With the new UPS system, we'll want to use any charges built up in the tool before pulling from the UPS
         // The usage of the item was already approved, so drain item if possible, otherwise use UPS
         if( used.charges >= qty ) {
-            used.ammo_consume( qty, bub_pos() );
+            used.ammo_consume( qty, bub_pos(), this );
         } else {
             use_charges( itype_UPS, qty );
         }
     } else {
-        used.ammo_consume( std::min( qty, used.ammo_remaining() ), bub_pos() );
+        used.ammo_consume( std::min( qty, used.ammo_remaining( this ) ), bub_pos(), this );
     }
     return false;
 }
@@ -11746,7 +11746,7 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
                 qty -= used;
                 int rand_increase = x_in_y( used % ups_eff_mult, ups_eff_mult );
                 int really_used = ( used / ups_eff_mult ) + rand_increase;
-                e->ammo_consume( really_used, bub_pos() );
+                e->ammo_consume( really_used, bub_pos(), this );
                 res.push_back( std::move( split ) );
             }
             return qty != 0 ? VisitResponse::NEXT : VisitResponse::ABORT;
@@ -11758,7 +11758,7 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
 
     bool has_tool_with_UPS = false;
     const auto p = bub_pos();
-    remove_items_with( [&qty, filter, &has_tool_with_UPS, &what, &res, &p]( detached_ptr<item> &&e ) {
+    remove_items_with( [this, &qty, filter, &has_tool_with_UPS, &what, &res, &p]( detached_ptr<item> &&e ) {
         if( qty == 0 ) {
             // found sufficient charges
             return VisitResponse::ABORT;
@@ -11776,11 +11776,11 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
 
                 if( n == e->ammo_remaining() ) {
                     res.push_back( item::spawn( *e ) );
-                    e->ammo_consume( n, p );
+                    e->ammo_consume( n, p, this );
                 } else {
                     detached_ptr<item> split = item::spawn( *e );
                     split->ammo_set( e->ammo_current(), n );
-                    e->ammo_consume( n, p );
+                    e->ammo_consume( n, p, this );
                     res.push_back( std::move( split ) );
                 }
             }

@@ -1,5 +1,7 @@
+#include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "flag.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_pocket.h"
@@ -7,6 +9,9 @@
 #include "json.h"
 #include "map/map.h"
 #include "map_helpers.h"
+#include "npc.h"
+#include "state_helpers.h"
+#include "units.h"
 
 #include <sstream>
 #include <string>
@@ -428,6 +433,66 @@ TEST_CASE( "ammo_consume clamps to the loaded rounds", "[p3][ammo]" ) {
 
 // DDA item_gun_tool_ammo.cpp:1771-1788 with the CDF gate (OD-10): a gun reports
 // ammo_to_fire, a non-tool non-gun reports zero (G-8).
+// R-12 (lookup 9): has_enough_charges counts the carrier's bionic power. A
+// nullptr carrier means no bionic power (ADV-7 / OD-4): there is no avatar
+// fallback in the bodies.
+TEST_CASE( "has_enough_charges counts the carrier's bionic power", "[p3][ammo]" ) {
+    clear_all_state();
+    // CDF: toolset is the USES_BIONIC_POWER tool with no ammo type and no
+    // magazine pocket (data/json/items/fake.json:31-39); it spawns with 0 charges.
+    detached_ptr<item> toolset = item::spawn( itype_id( "toolset" ) );
+    REQUIRE( toolset->is_tool() );
+    REQUIRE( toolset->has_flag( flag_USES_BIONIC_POWER ) );
+    toolset->charges = 0;
+
+    get_avatar().set_max_power_level( 100_kJ );
+    get_avatar().set_power_level( 0_kJ );
+
+    standard_npc who( "carrier" );
+    who.set_max_power_level( 100_kJ );
+    who.set_power_level( 50_kJ );
+
+    CHECK( who.has_enough_charges( *toolset, false ) );
+}
+
+// R-12b (guard): an NPC with no power and a charged avatar still reports false
+// after the edit; the no-arg forwarder is not consulted.
+TEST_CASE( "has_enough_charges does not fall back to the avatar's power", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> toolset = item::spawn( itype_id( "toolset" ) );
+    REQUIRE( toolset->is_tool() );
+    toolset->charges = 0;
+
+    get_avatar().set_max_power_level( 100_kJ );
+    get_avatar().set_power_level( 50_kJ );
+
+    standard_npc who( "carrier" );
+    who.set_max_power_level( 100_kJ );
+    who.set_power_level( 0_kJ );
+
+    CHECK_FALSE( who.has_enough_charges( *toolset, false ) );
+}
+
+// R-11: consume_charges drains the carrier's bionic power, not the item's
+// charges or the avatar's power.
+TEST_CASE( "consume_charges drains the carrier's bionic power", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> toolset = item::spawn( itype_id( "toolset" ) );
+    REQUIRE( toolset->is_tool() );
+    toolset->charges = 0;
+
+    get_avatar().set_max_power_level( 100_kJ );
+    get_avatar().set_power_level( 0_kJ );
+
+    standard_npc who( "carrier" );
+    who.set_max_power_level( 100_kJ );
+    who.set_power_level( 50_kJ );
+
+    who.consume_charges( *toolset, 3 );
+    CHECK( who.get_power_level() == 47_kJ );
+    CHECK( toolset->charges == 0 );
+}
+
 TEST_CASE( "ammo_required of a gun is its ammo_to_fire, of a magazine zero", "[p3][ammo]" ) {
     detached_ptr<item> gun = loaded_m4a1( 30 );
     // CDF: m4a1 inherits rifle_base (data/json/items/classes/gun.json), which
