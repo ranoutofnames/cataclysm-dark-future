@@ -3867,7 +3867,8 @@ int iuse::tazer2( player *p, item *it, bool b, const tripoint_bub_ms &pos )
         // Instead of having a ctrl+c+v of the function above, spawn a fake tazer and use it
         // Ugly, but less so than copied blocks
         item *fake = item::spawn_temporary( "tazer", calendar::start_of_cataclysm );
-        fake->charges = 100;
+        // CDF: DDA has no tazer2; the fake tazer's power is set as ammo
+        fake->ammo_set( itype_battery, 100 );
         return tazer( p, fake, b, pos );
     } else {
         p->add_msg_if_player( m_info, _( "Insufficient power" ) );
@@ -4101,7 +4102,8 @@ int iuse::gasmask( player *p, item *it, bool t, const tripoint_bub_ms &pos )
                 it->ammo_consume( 1, p->bub_pos(), p );
                 it->set_var( "gas_absorbed", 0 );
             }
-            if( it->charges == 0 ) {
+            // CDF: DDA gasmask reads the filter count as ammo_remaining()
+            if( it->ammo_remaining( p ) == 0 ) {
                 p->add_msg_player_or_npc(
                     m_bad,
                     _( "Your %s requires new filter!" ),
@@ -4110,7 +4112,8 @@ int iuse::gasmask( player *p, item *it, bool t, const tripoint_bub_ms &pos )
             }
         }
     } else { // activate
-        if( it->charges == 0 ) {
+        // CDF: DDA gasmask reads the filter count as ammo_remaining()
+        if( it->ammo_remaining( p ) == 0 ) {
             p->add_msg_if_player( _( "Your %s don't have a filter." ), it->tname() );
         } else {
             p->add_msg_if_player( _( "You prepared your %s." ), it->tname() );
@@ -4118,7 +4121,8 @@ int iuse::gasmask( player *p, item *it, bool t, const tripoint_bub_ms &pos )
             it->set_var( "overwrite_env_resist", it->get_base_env_resist_w_filter() );
         }
     }
-    if( it->charges == 0 ) {
+    // CDF: DDA gasmask reads the filter count as ammo_remaining()
+    if( it->ammo_remaining( p ) == 0 ) {
         it->set_var( "overwrite_env_resist", 0 );
         it->deactivate();
     }

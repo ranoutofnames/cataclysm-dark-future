@@ -904,3 +904,23 @@ TEST_CASE( "a tool with ammo does not fit a magazine well",
     REQUIRE( cell_pocket != nullptr );
     CHECK( cell_pocket->is_type( pocket_type::MAGAZINE_WELL ) );
 }
+
+// 4-c-3 R-1: item::price counts the rounds of an integral magazine. The pocket's rounds are read
+// with ammo_remaining(); the old read of `charges` gave 0 rounds for a tool with a pocket.
+TEST_CASE( "item::price counts an integral magazine's rounds", "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> loaded = item::spawn( itype_id( "gasoline_lantern" ) );
+    detached_ptr<item> empty = item::spawn( itype_id( "gasoline_lantern" ) );
+    REQUIRE( loaded->magazine_integral() );
+    loaded->ammo_set( itype_id( "gasoline" ), 120 );
+    empty->ammo_unset();
+    REQUIRE( loaded->ammo_remaining() == 120 );
+    REQUIRE( empty->ammo_remaining() == 0 );
+    REQUIRE( loaded->ammo_data() != nullptr );
+
+    detached_ptr<item> fuel = item::spawn( itype_id( "gasoline" ), calendar::turn, 120 );
+    const float fuel_price = fuel->price( true );
+    REQUIRE( fuel_price > 0.0f );
+    // The fuel item in the pocket is priced by the visit; the integral term adds the rounds again.
+    CHECK( loaded->price( true ) - empty->price( true ) > fuel_price * 1.5f );
+}

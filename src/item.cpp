@@ -5881,7 +5881,8 @@ auto item::price( bool practical ) const -> float
 
         } else if( e->magazine_integral() && e->ammo_remaining() && e->ammo_data() ) {
             // items with integral magazines may contain ammunition which can affect the price
-            child += item( e->ammo_data(), calendar::turn, e->charges ).price( practical );
+            // CDF: DDA price() has no integral magazine term; the rounds are read as ammo
+            child += item( e->ammo_data(), calendar::turn, e->ammo_remaining() ).price( practical );
 
         } else if( e->is_tool() && e->ammo_types().empty() && e->ammo_capacity() ) {
             // if tool has no ammo (e.g. spray can) reduce price proportional to remaining charges
