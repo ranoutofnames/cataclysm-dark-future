@@ -430,6 +430,12 @@ std::vector<const item_pocket *> item::all_magazine_well_pockets() const
     } );
 }
 
+// CDF: host wells only; mod-supplied wells are folded in by 3-7
+std::vector<itype_id> item::magazines_default() const
+{
+    return contents.magazines_default();
+}
+
 std::vector<item *> item::magazines_current()
 {
     return contents.magazines_current();
@@ -444,6 +450,56 @@ int item::ammo_consume_in_pocket( const std::string &id, int qty, map &here,
                                   const tripoint_bub_ms &pos )
 {
     return contents.ammo_consume_in_pocket( id, qty, &here, pos );
+}
+
+item_pocket *item::pocket_by_id( const std::string &id )
+{
+    if( id.empty() ) {
+        return nullptr;
+    }
+    std::vector<item_pocket *> hits = get_pockets(
+    [&id]( const item_pocket & p ) {
+        return p.get_pocket_data() && p.get_pocket_data()->pocket_id == id;
+    } );
+    return hits.empty() ? nullptr : hits.front();
+}
+
+const item_pocket *item::pocket_by_id( const std::string &id ) const
+{
+    if( id.empty() ) {
+        return nullptr;
+    }
+    std::vector<const item_pocket *> hits = get_pockets(
+    [&id]( const item_pocket & p ) {
+        return p.get_pocket_data() && p.get_pocket_data()->pocket_id == id;
+    } );
+    return hits.empty() ? nullptr : hits.front();
+}
+
+int item::ammo_remaining_in_pocket( const std::string &id ) const
+{
+    const item_pocket *p = pocket_by_id( id );
+    if( p == nullptr ) {
+        return 0;
+    }
+    if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+        const item *mag = p->magazine_current();
+        return mag ? mag->ammo_remaining( ) : 0;
+    }
+    if( p->is_type( pocket_type::MAGAZINE ) ) {
+        // Exclude spent casings - cycle_action force-inserts them into
+        // the integral pocket after a shot, and they shouldn't count as
+        // loaded ammo for feasibility / display.
+        int total = 0;
+        for( const item *e : p->all_items_top() ) {
+            if( e->has_flag( flag_CASING ) ) {
+                continue;
+            }
+            total += e->charges;
+        }
+        return total;
+    }
+    return 0;
 }
 
 bool item::uses_firing_requirements() const

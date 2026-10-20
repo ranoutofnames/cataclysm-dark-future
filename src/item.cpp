@@ -373,7 +373,9 @@ item::item( const itype *type, time_point turn, int qty ) : type( type ),
 
     } else if( type->magazine ) {
         if( type->magazine->count > 0 ) {
-            put_in( item::spawn( type->magazine->default_ammo, calendar::turn, type->magazine->count ) );
+            // CDF: spawn() form; pocket type as DDA item.cpp:254
+            put_in( item::spawn( type->magazine->default_ammo, calendar::turn, type->magazine->count ),
+                    pocket_type::MAGAZINE );
         }
 
     } else if( goes_bad() ) {
@@ -8990,6 +8992,7 @@ std::string item::ammo_sort_name() const
     return "";
 }
 
+// CDF: BN body kept: the DDA pocket test is wrong until integral MAGAZINE pockets are synthesized by the data port
 bool item::magazine_integral() const
 {
     // If it has a default magazine, it can't have an integral magazine.
