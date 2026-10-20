@@ -263,18 +263,44 @@ TEST_CASE( "ammo_remaining returns charges for a charges-only tool", "[p3][ammo]
     CHECK( candle->ammo_remaining() == 37 );
 }
 
-// O1 gate: a tool carrying an ammo type but no magazine pocket keeps its
-// direct charges (the // CDF: guard until 4-b2 converts tool ammo).
-TEST_CASE( "ammo_remaining keeps direct charges on an ammo tool with no magazine pocket",
+// O1 gate: a gun carrying an ammo type but no magazine pocket keeps its direct charges (the
+// // CDF: guard, D14; tools left it in 4-b2 and own an integral MAGAZINE pocket instead).
+TEST_CASE( "ammo_remaining keeps direct charges on an ammo gun with no magazine pocket",
            "[p3][ammo]" ) {
+    detached_ptr<item> gun = item::spawn( itype_id( "pipe_pistol" ) );
+    REQUIRE( gun->is_gun() );
+    REQUIRE_FALSE( gun->ammo_types().empty() );
+    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
+    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
+
+    gun->charges = 5;
+    CHECK( gun->ammo_remaining() == 5 );
+}
+
+// 4-b2: a tool with an ammo type and max_charges gets an integral MAGAZINE pocket from the loader;
+// ammo_set puts the rounds there, ammo_remaining reads them, `charges` stays 0.
+TEST_CASE( "ammo_set puts an integral tool's rounds in its magazine pocket", "[p3][ammo]" ) {
+    clear_all_state();
     detached_ptr<item> lantern = item::spawn( itype_id( "gasoline_lantern" ) );
     REQUIRE( lantern->is_tool() );
     REQUIRE_FALSE( lantern->ammo_types().empty() );
-    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE ) );
-    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
+    REQUIRE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE ) );
+    REQUIRE( lantern->magazine_integral() );
+    // spawned full from initial_charges, in the pocket
+    CHECK( lantern->charges == 0 );
+    CHECK( lantern->ammo_remaining() == 500 );
 
-    lantern->charges = 5;
-    CHECK( lantern->ammo_remaining() == 5 );
+    lantern->ammo_set( itype_id( "gasoline" ), 120 );
+    CHECK( lantern->charges == 0 );
+    CHECK( lantern->ammo_remaining() == 120 );
+    CHECK( lantern->ammo_capacity( ammotype( "gasoline" ) ) == 500 );
+
+    lantern->ammo_set( itype_id( "gasoline" ), -1 );
+    CHECK( lantern->ammo_remaining() == 500 );
+
+    lantern->ammo_unset();
+    CHECK( lantern->ammo_remaining() == 0 );
+    CHECK( lantern->contents.has_pocket_type( pocket_type::MAGAZINE ) );
 }
 
 // DDA item_gun_tool_ammo.cpp:2342-2350: the item-level magazines_current pair
@@ -406,20 +432,32 @@ TEST_CASE( "uses_magazine is true for a gun with a magazine well", "[p3][ammo]" 
     CHECK_FALSE( backpack->uses_magazine() );
 }
 
-// O1/D14 gate: a tool carrying an ammo type but no magazine pocket keeps its
-// direct charges, and ammo_consume must drain them (G-6, OD-3).
-TEST_CASE( "ammo_consume drains a legacy tool's direct charges", "[p3][ammo]" ) {
+// O1/D14 gate: a gun carrying an ammo type but no magazine pocket keeps its direct charges, and
+// ammo_consume must drain them (G-6, OD-3).
+TEST_CASE( "ammo_consume drains a legacy gun's direct charges", "[p3][ammo]" ) {
+    clear_map();
+    detached_ptr<item> gun = item::spawn( itype_id( "pipe_pistol" ) );
+    REQUIRE( gun->is_gun() );
+    REQUIRE_FALSE( gun->ammo_types().empty() );
+    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
+    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
+
+    gun->charges = 5;
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+    CHECK( gun->ammo_consume( 3, pos, nullptr ) == 3 );
+    CHECK( gun->charges == 2 );
+}
+
+// 4-b2: an integral tool drains the rounds in its MAGAZINE pocket; `charges` is not touched.
+TEST_CASE( "ammo_consume drains an integral tool's magazine pocket", "[p3][ammo]" ) {
     clear_map();
     detached_ptr<item> lantern = item::spawn( itype_id( "gasoline_lantern" ) );
-    REQUIRE( lantern->is_tool() );
-    REQUIRE_FALSE( lantern->ammo_types().empty() );
-    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE ) );
-    REQUIRE_FALSE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
-
-    lantern->charges = 5;
+    REQUIRE( lantern->contents.has_pocket_type( pocket_type::MAGAZINE ) );
+    lantern->ammo_set( itype_id( "gasoline" ), 5 );
     const tripoint_bub_ms pos = tripoint_bub_ms::zero();
     CHECK( lantern->ammo_consume( 3, pos, nullptr ) == 3 );
-    CHECK( lantern->charges == 2 );
+    CHECK( lantern->ammo_remaining() == 2 );
+    CHECK( lantern->charges == 0 );
 }
 
 // DDA item_gun_tool_ammo.cpp:1911-1915: the return is clamped to the loaded
@@ -550,7 +588,8 @@ TEST_CASE( "a legacy tool with a loaded magazine counts the magazine only", "[p3
     detached_ptr<item> battery = item::spawn( itype_id( "light_battery_cell" ) );
     battery->ammo_unset();
     REQUIRE( battery->ammo_remaining() == 0 );
-    REQUIRE( tool->charges > 0 );
+    // 4-b2: the phone's own rounds live in its integral MAGAZINE pocket; the parked battery wins.
+    REQUIRE( tool->ammo_remaining() > 0 );
 
     item *bat = &*battery;
     tool->put_in( std::move( battery ) );

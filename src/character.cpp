@@ -9132,7 +9132,8 @@ bool Character::consume_charges( item &used, int qty )
     }
 
     if( used.is_power_armor() ) {
-        if( used.charges >= qty ) {
+        // CDF: 4-b2: the power armor's rounds live in its magazine pocket, not in `charges`.
+        if( used.ammo_remaining() >= qty ) {
             used.ammo_consume( qty, bub_pos(), this );
         } else if( character_funcs::can_interface_armor( *this ) && has_charges( itype_bio_armor, qty ) ) {
             use_charges( itype_bio_armor, qty );
@@ -9146,7 +9147,8 @@ bool Character::consume_charges( item &used, int qty )
     if( used.has_flag( flag_USE_UPS ) ) {
         // With the new UPS system, we'll want to use any charges built up in the tool before pulling from the UPS
         // The usage of the item was already approved, so drain item if possible, otherwise use UPS
-        if( used.charges >= qty ) {
+        // CDF: 4-b2: ammo_remaining() instead of `charges` (the tool's rounds live in its pocket).
+        if( used.ammo_remaining() >= qty ) {
             used.ammo_consume( qty, bub_pos(), this );
         } else {
             use_charges( itype_UPS, qty );

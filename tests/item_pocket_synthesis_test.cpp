@@ -28,6 +28,11 @@ auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
     // attach_molle is no longer a pocket: MOLLE is DDA additional_pockets (J5, owner decision)
     if (containers > 0) { ret[pocket_type::CONTAINER] = containers; }
     if (t.magazine) { ret[pocket_type::MAGAZINE] = 1; }
+    // 4-b2: a tool with an ammo type and max_charges gets an integral MAGAZINE pocket (money keeps charges)
+    if (t.tool && !t.tool->ammo_id.empty() && t.tool->max_charges > 0 && t.magazines.empty() &&
+        !t.tool->ammo_id.contains(ammotype("money"))) {
+        ret[pocket_type::MAGAZINE] = 1;
+    }
     if ((t.gun || t.tool) && !t.magazines.empty()) { ret[pocket_type::MAGAZINE_WELL] = 1; }
     if (t.gun || (t.tool && (!t.tool->ammo_id.empty() || !t.magazines.empty()))) {
         ret[pocket_type::MOD] = 1;

@@ -867,7 +867,11 @@ void Item_factory::finalize_pre( itype &obj )
 // here: DDA returns at :4052 for a gun without magazines (decision AUTO-20).
 bool needs_integral_magazine( const itype &def )
 {
+    // CDF: money (cash cards) keeps its balance in direct `charges` (item::is_money special cases,
+    // wallet and iexamine code), so it gets no pocket.
+    // CDF: guns get no synthesized pocket here until P3-7 (AUTO-20, ADV-15 #1); see the 9-4 checklist.
     return def.tool && !def.tool->ammo_id.empty() && def.tool->max_charges > 0 &&
+           !def.tool->ammo_id.contains( ammotype( "money" ) ) &&
            def.magazines.empty() && !def.explicit_pockets;
 }
 
@@ -907,8 +911,9 @@ std::string add_integral_magazine_pocket( itype &def )
 namespace
 {
 
-// CDF: P3-7 turns this on after the data port and the reader move.
-constexpr bool kSynthesizeIntegralMagazine = false;
+// CDF: on since 4-b2 (tools only): the readers and writers of tool ammo now use the pocket model
+// (D14: tools leave cdf_legacy_direct_charges). Guns are not synthesized (AUTO-20).
+constexpr bool kSynthesizeIntegralMagazine = true;
 
 } // namespace
 
@@ -995,12 +1000,10 @@ void Item_factory::synthesize_pockets( itype &obj ) const
     }
 
     // CDF: integral magazine tool pocket (DDA check_and_create_magazine_pockets tool branch).
-    // Off until P3-7, so the pocket list stays identical to today.
+    // DDA debugmsgs "needs pocket definitions" for every such tool; CDF keeps the JSON max_charges
+    // as the data (functionality port, D2), so the message is dropped.
     if( kSynthesizeIntegralMagazine ) {
-        const std::string msg = add_integral_magazine_pocket( obj );
-        if( !msg.empty() ) {
-            debugmsg( "%s", msg );
-        }
+        static_cast<void>( add_integral_magazine_pocket( obj ) );
     }
 
     // Guns and tools that take magazines get a magazine well.

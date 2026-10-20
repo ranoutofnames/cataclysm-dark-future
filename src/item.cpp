@@ -385,11 +385,12 @@ item::item( const itype *type, time_point turn, int qty ) : type( type ),
     } else if( type->tool ) {
         // CDF: read the spawn quantity from `charges` (4-b1). ammo_remaining() is 0 for a tool with a
         // default magazine (it is not magazine_integral, so the direct-charges guard does not apply),
-        // so its spawn charges were lost. Integral tools behave as before (ammo_set keeps `charges`).
+        // so its spawn charges were lost. 4-b2: integral tools own a MAGAZINE pocket too (loader), so
+        // the rounds go there; a tool without any pocket keeps its direct `charges` (ammo_set).
         if( charges > 0 && !ammo_types().empty() ) {
             const int spawn_charges = charges;
             ammo_set( ammo_default(), spawn_charges );
-            if( !magazine_integral() ) {
+            if( contents.has_pocket_type( pocket_type::MAGAZINE ) || magazine_current() ) {
                 // the rounds now live in the magazine pocket, not in direct charges
                 charges = 0;
             }
@@ -698,12 +699,24 @@ units::energy item::mod_energy( const units::energy &qty )
     return 0_J;
 }
 
+// CDF: DDA item_gun_tool_ammo.cpp:261-377 (4-b2, AUTO-26 O3). Adaptations are marked `// CDF:`.
 void item::ammo_set( const itype_id &ammo, int qty )
 {
+    // CDF: BN callers pass a null ammo for ammo-less tools and money; DDA debugmsgs on it. The
+    // direct-charges case stays first.
+    const bool no_ammo_type = ( ammo.is_null() && ammo_types().empty() ) || is_money();
+    if( !no_ammo_type && !ammo->ammo ) {
+        if( !has_flag( flag_USES_BIONIC_POWER ) ) {
+            debugmsg( "Tried to set invalid ammo %s[%d] for %s", ammo.str(), qty, typeId() );
+        }
+        return;
+    }
+    // CDF: a legacy gun (no MAGAZINE pocket, D14) or an ammo-less item has no pocket to size from.
+    const bool pocket_model = contents.has_pocket_type( pocket_type::MAGAZINE ) || magazine_current();
     if( qty < 0 ) {
         // completely fill an integral or existing magazine
         if( magazine_integral() || magazine_current() ) {
-            qty = ammo_capacity();
+            qty = ( pocket_model && !no_ammo_type ) ? ammo_capacity( ammo->ammo->type ) : ammo_capacity();
 
             // else try to add a magazine using default ammo count property if set
         } else if( !magazine_default().is_null() ) {
@@ -722,7 +735,7 @@ void item::ammo_set( const itype_id &ammo, int qty )
     }
 
     // handle reloadable tools and guns with no specific ammo type as special case
-    if( ( ammo.is_null() && ammo_types().empty() ) || is_money() ) {
+    if( no_ammo_type ) {
         if( ( is_tool() || is_gun() ) && magazine_integral() ) {
             curammo = nullptr;
             charges = std::min( qty, ammo_capacity() );
@@ -732,7 +745,13 @@ void item::ammo_set( const itype_id &ammo, int qty )
 
     // check ammo is valid for the item
     const itype *atype = &*ammo;
-    if( !atype->ammo || !ammo_types().contains( atype->ammo->type ) ) {
+    const ammotype &ammo_type = atype->ammo->type;
+    const std::set<itype_id> mags = magazine_compatible();
+    if( !ammo_types().contains( ammo_type ) &&
+        !( magazine_current() && magazine_current()->ammo_types().contains( ammo_type ) ) &&
+    !std::any_of( mags.begin(), mags.end(), [&ammo_type]( const itype_id & mag ) {
+    return mag->magazine->type.contains( ammo_type );
+    } ) ) {
         debugmsg( "Tried to set invalid ammo %s[%d] for %s", atype->get_id(), qty, typeId() );
         return;
     }
@@ -740,14 +759,15 @@ void item::ammo_set( const itype_id &ammo, int qty )
     if( is_magazine() ) {
         ammo_unset();
         detached_ptr<item> set_ammo = item::spawn( ammo, calendar::turn, std::min( qty,
-                                      ammo_capacity() ) );
+                                      ammo_capacity( ammo_type ) ) );
         if( has_flag( flag_NO_UNLOAD ) ) {
             set_ammo->set_flag( flag_NO_DROP );
             set_ammo->set_flag( flag_IRREMOVABLE );
         }
-        put_in( std::move( set_ammo ) );
+        put_in( std::move( set_ammo ), pocket_type::MAGAZINE );
 
     } else if( magazine_integral() ) {
+        // CDF: legacy gun without a MAGAZINE pocket (D14): the rounds stay in direct charges.
         curammo = atype;
         charges = std::min( qty, ammo_capacity() );
 
@@ -763,7 +783,7 @@ void item::ammo_set( const itype_id &ammo, int qty )
             // if default magazine too small fetch instead closest available match
             if( mag->magazine->capacity < qty ) {
                 // as above call to magazine_default successful can infer minimum one option exists
-                auto iter = type->magazines.find( atype->ammo->type );
+                auto iter = type->magazines.find( ammo_type );
                 if( iter == type->magazines.end() ) {
                     debugmsg( "%s doesn't have a magazine for %s",
                               typeId(), ammo );
@@ -781,11 +801,17 @@ void item::ammo_set( const itype_id &ammo, int qty )
                     }
                 }
             }
-            put_in( item::spawn( mag ) );
+            // CDF: the checked insert into the well; an item the well refuses still goes to MIGRATION
+            // as the BN put_in did.
+            detached_ptr<item> mag_item = item::spawn( mag );
+            if( !put_in( std::move( mag_item ), pocket_type::MAGAZINE_WELL, false, nullptr, true ).success() ) {
+                put_in( std::move( mag_item ) );
+            }
         }
-        magazine_current()->ammo_set( ammo, qty );
+        if( item *mag_cur = magazine_current() ) {
+            mag_cur->ammo_set( ammo, qty );
+        }
     }
-
 }
 
 void item::ammo_unset()
@@ -793,7 +819,13 @@ void item::ammo_unset()
     if( !is_tool() && !is_gun() && !is_magazine() ) {
         // do nothing
     } else if( is_magazine() ) {
-        contents.clear_items();
+        // CDF: DDA contents.clear_magazines(); a tool with an integral pocket is a magazine too, so
+        // the mods and other pockets must stay. A plain magazine item keeps clear_items().
+        if( type->magazine ) {
+            contents.clear_items();
+        } else {
+            contents.clear_magazines();
+        }
     } else if( magazine_integral() ) {
         curammo = nullptr;
         charges = 0;
@@ -2380,7 +2412,8 @@ void item::food_info( const item *food_item, std::vector<iteminfo> &info,
 void item::magazine_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int /*batch*/,
                           bool /*debug*/ ) const
 {
-    if( !is_magazine() || has_flag( flag_NO_RELOAD ) ) {
+    // CDF: `|| is_tool()` as DDA item_info.cpp:792: a tool with an integral MAGAZINE pocket is_magazine().
+    if( !is_magazine() || has_flag( flag_NO_RELOAD ) || is_tool() ) {
         return;
     }
 
@@ -5935,7 +5968,8 @@ units::mass item::weight( bool include_contents, bool integral ) const
     }
 
     // if this is an ammo belt add the weight of any implicitly contained linkages
-    if( is_magazine() ) {
+    // CDF: type->magazine guard as DDA item.cpp:2080 (a tool with an integral MAGAZINE pocket has none).
+    if( type->magazine ) {
         const auto &linkage = type->magazine->linkage;
         if( linkage ) {
             item links( *linkage );
@@ -6033,7 +6067,10 @@ units::length item::length() const
     static const flag_id flag_REMOVED_STOCK( "REMOVED_STOCK" );
     static const flag_id flag_COLLAPSED_STOCK( "COLLAPSED_STOCK" );
     static const flag_id flag_FOLDED_STOCK( "FOLDED_STOCK" );
-    if( is_null() || made_of( LIQUID ) || ( is_soft() && is_container_empty() ) ) {
+    // CDF: 4-b2: the rounds of a tool's integral MAGAZINE pocket do not make a soft tool (a mask with
+    // its filter) a loaded container, so only its container pockets count.
+    if( is_null() || made_of( LIQUID ) ||
+        ( is_soft() && ( is_tool() ? contents.empty_container() : is_container_empty() ) ) ) {
         return 0_mm;
     }
 
@@ -7933,6 +7970,10 @@ int item::get_reload_time() const
         return 0;
     }
 
+    // CDF: DDA item_gun_tool_ammo.cpp:957-960: a tool with an integral MAGAZINE pocket has no type->magazine.
+    if( !is_gun() && !type->magazine ) {
+        return 0;
+    }
     int reload_time = is_gun() ? type->gun->reload_time : type->magazine->reload_time;
     for( const item *mod : gunmods() ) {
         reload_time = ( reload_time * ( 100 + mod->type->gunmod->reload_modifier ) / 100 );
@@ -8882,7 +8923,8 @@ int item::ammo_capacity( bool potential_capacity ) const
         }
     }
 
-    if( is_magazine() ) {
+    // CDF: 4-b2: a tool with an integral MAGAZINE pocket is_magazine() but has no type->magazine.
+    if( is_magazine() && type->magazine ) {
         res = type->magazine->capacity;
     }
 
@@ -8936,7 +8978,8 @@ ammotype item::ammo_type() const
 
 itype_id item::ammo_default( bool conversion ) const
 {
-    if( is_magazine() ) {
+    // CDF: type->magazine instead of is_magazine(): a tool with an integral MAGAZINE pocket has none.
+    if( type->magazine ) {
         return type->magazine->default_ammo;
     } else if( is_tool() && type->tool->default_ammo != itype_id::NULL_ID() ) {
         return type->tool->default_ammo;
@@ -9988,7 +10031,7 @@ bool item::will_explode_in_fire() const
     }
 
     // Most containers do nothing to protect the contents from fire
-    if( !is_magazine() || !type->magazine->protects_contents ) {
+    if( !type->magazine || !type->magazine->protects_contents ) {
         return has_item_with( [&]( const item & it ) {
             return this != &it && it.will_explode_in_fire();
         } );

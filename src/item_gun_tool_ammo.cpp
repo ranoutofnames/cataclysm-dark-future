@@ -78,7 +78,7 @@ bool item::is_reloadable() const
         return false;
     }
 
-    // CDF: legacy direct-charges tools and guns (D14) have no MAGAZINE pocket, so DDA's pocket loop
+    // CDF: legacy direct-charges guns (D14) have no MAGAZINE pocket, so DDA's pocket loop
     // would skip them; keep BN's answer for them. Remove with cdf_legacy_direct_charges.
     if( cdf_legacy_direct_charges( *this ) && !ammo_types().empty() ) {
         return true;
@@ -150,13 +150,15 @@ bool item::is_toolmod() const
 
 // CDF: single removal point for the AUTO-26 O1 / REPLAN D14 legacy-charges guard. BN kept ammo
 // in direct `charges` for tools and guns without a MAGAZINE pocket; DDA counts only magazines.
-// Tools leave this in 4-b2, guns at the last 7-R2 group; 9-4 checks that no item still uses it.
+// Tools left this in 4-b2 (integral tools now get a MAGAZINE pocket from the loader); guns leave it
+// at the last 7-R2 group; 9-4 checks that no item still uses it.
 // A MAGAZINE_WELL pocket alone does not end the legacy path: BN guns with an optional `magazines`
 // list (e.g. sw_619 with a speedloader) get a well yet still store loaded rounds in `charges`
 // while magazine_integral() holds.
 static bool cdf_legacy_direct_charges( const item &it )
 {
-    if( !it.is_tool() && !it.is_gun() ) {
+    // CDF: tools are out since 4-b2; only guns without a MAGAZINE pocket still keep direct charges.
+    if( !it.is_gun() ) {
         return false;
     }
     const item_contents &c = it.get_contents();
@@ -187,7 +189,11 @@ int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const
         ret += mag->ammo_remaining( );
     }
     // CDF: a magazine parked outside a well (MIGRATION, see cdf_legacy_direct_charges) still counts,
-    // as in BN's `if( mag ) return mag->ammo_remaining();`.
+    // as in BN's `if( mag ) return mag->ammo_remaining();`. For a tool that also owns an integral
+    // MAGAZINE pocket (smart_phone_music: a magazine_well without a `magazines` list) the parked
+    // magazine wins and the integral rounds are ignored, as BN ignored the tool's own charges.
+    // CDF: interim precedence (ADV-15 #3); revisit when phone data follows DDA's battery-well model (9-4).
+    const bool parked_mag_wins = is_tool() && magazines_current().empty() && magazine_current();
     if( ( is_tool() || is_gun() ) && magazines_current().empty() ) {
         if( const item *parked = magazine_current() ) {
             ret += parked->ammo_remaining( );
@@ -229,7 +235,7 @@ int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const
     }
 
     // Magazines and integral magazines on their own
-    if( is_magazine() ) {
+    if( is_magazine() && !parked_mag_wins ) {
         for( const item *e : contents.all_items_top( pocket_type::MAGAZINE ) ) {
             if( e->is_ammo() ) {
                 ret += e->charges;
@@ -951,7 +957,10 @@ int item::ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Characte
     // decision on a cable port.
 
     // Consume charges loaded in the item or its magazines
-    if( is_magazine() || uses_magazine() ) {
+    // CDF: a tool with a parked magazine drains that magazine only (see ammo_remaining).
+    // CDF: interim precedence (ADV-15 #3), same rule as ammo_remaining; see 9-4.
+    const bool parked_mag_wins = is_tool() && contents.magazines_current().empty() && magazine_current();
+    if( ( is_magazine() || uses_magazine() ) && !parked_mag_wins ) {
         qty -= contents.ammo_consume( qty, &here, pos );
         // CDF: carrier->invalidate_weight_carried_cache() (DDA 1875-1877) cut:
         // CDF has no such method (cached_weight_carried() has no invalidate).
