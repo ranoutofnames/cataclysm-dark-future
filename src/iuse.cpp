@@ -1888,7 +1888,7 @@ int iuse::fish_trap( player *p, item *it, bool t, const tripoint_bub_ms &pos )
 
 int iuse::extinguisher( player *p, item *it, bool, const tripoint_bub_ms & )
 {
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         return 0;
     }
     // If anyone other than the player wants to use one of these,
@@ -2226,7 +2226,7 @@ int iuse::note_bionics( player *p, item *it, bool t, const tripoint_bub_ms &pos 
                     | ranges::to<std::vector>();
 
         auto charges = std::max( 1, static_cast<int>( cbms.size() ) );
-        charges -= it->ammo_consume( charges, pos );
+        charges -= it->ammo_consume( charges, pos, p );
         if( possess && it->has_flag( flag_USE_UPS ) ) {
             if( p->use_charges_if_avail( itype_UPS, charges ) ) {
                 charges = 0;
@@ -3162,7 +3162,7 @@ int iuse::teleport( player *p, item *it, bool, const tripoint_bub_ms & )
         p->add_msg_if_player( m_info, _( "You cannot do that while mounted." ) );
         return 0;
     }
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         return 0;
     }
     p->moves -= to_moves<int>( 1_seconds );
@@ -3725,7 +3725,7 @@ int iuse::mininuke( player *p, item *it, bool, const tripoint_bub_ms & )
 
 int iuse::pheromone( player *p, item *it, bool, const tripoint_bub_ms &pos )
 {
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         return 0;
     }
     if( p->is_underwater() ) {
@@ -3770,7 +3770,7 @@ int iuse::pheromone( player *p, item *it, bool, const tripoint_bub_ms &pos )
 
 int iuse::portal( player *p, item *it, bool, const tripoint_bub_ms & )
 {
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         return 0;
     }
     if( p->is_mounted() ) {
@@ -4089,7 +4089,7 @@ int iuse::gasmask( player *p, item *it, bool t, const tripoint_bub_ms &pos )
                 }
             }
             if( it->get_var( "gas_absorbed", 0 ) >= 100 ) {
-                it->ammo_consume( 1, p->bub_pos() );
+                it->ammo_consume( 1, p->bub_pos(), p );
                 it->set_var( "gas_absorbed", 0 );
             }
             if( it->charges == 0 ) {
@@ -5364,7 +5364,7 @@ int iuse::adrenaline_injector( player *p, item *it, bool, const tripoint_bub_ms 
 
 int iuse::jet_injector( player *p, item *it, bool, const tripoint_bub_ms & )
 {
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         p->add_msg_if_player( m_info, _( "The jet injector is empty." ) );
         return 0;
     } else {
@@ -5392,7 +5392,7 @@ int iuse::stimpack( player *p, item *it, bool, const tripoint_bub_ms & )
         return 0;
     }
 
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         p->add_msg_if_player( m_info, _( "The stimulant delivery system is empty." ) );
         return 0;
     } else {
@@ -6104,7 +6104,7 @@ int iuse::einktabletpc( player *p, item *it, bool t, const tripoint_bub_ms &pos 
     if( t ) {
         if( !it->get_var( "EIPC_MUSIC_ON" ).empty() && ( it->ammo_remaining() > 0 ) ) {
             if( action_time_scale::once_every_this_tick( 5_minutes ) ) {
-                it->ammo_consume( 1, p->bub_pos() );
+                it->ammo_consume( 1, p->bub_pos(), p );
             }
 
             //the more varied music, the better max mood.
@@ -7752,7 +7752,7 @@ int iuse::radiocar( player *p, item *it, bool, const tripoint_bub_ms & )
     }
 
     if( choice == 0 ) { //Turn car ON
-        if( !it->ammo_sufficient() ) {
+        if( !it->ammo_sufficient( p ) ) {
             p->add_msg_if_player( _( "The RC car's batteries seem to be dead." ) );
             return 0;
         }
@@ -7826,7 +7826,7 @@ int iuse::radiocaron( player *p, item *it, bool t, const tripoint_bub_ms &pos )
         sounds::sound( se );
 
         return it->type->charges_to_use();
-    } else if( !it->ammo_sufficient() ) {
+    } else if( !it->ammo_sufficient( p ) ) {
         // Deactivate since other mode has an iuse too.
         it->deactivate();
         return 0;
@@ -8635,7 +8635,7 @@ int iuse::shavekit( player *p, item *it, bool, const tripoint_bub_ms & )
         p->add_msg_if_player( m_info, _( "You cannot do that while mounted." ) );
         return 0;
     }
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         p->add_msg_if_player( _( "You need soap to use this." ) );
     } else {
         const int moves = to_moves<int>( 5_minutes );
@@ -9431,9 +9431,9 @@ auto iuse::modify_fluid_grid_connections( player *p, item *it, bool,
     return 0;
 }
 
-int iuse::amputate( player *, item *it, bool, const tripoint_bub_ms &pos )
+int iuse::amputate( player *p, item *it, bool, const tripoint_bub_ms &pos )
 {
-    if( !it->ammo_sufficient() ) {
+    if( !it->ammo_sufficient( p ) ) {
         return 0;
     }
 

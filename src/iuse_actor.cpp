@@ -5887,7 +5887,7 @@ int multicooker_iuse::use( player &p, item &it, bool t, const tripoint_bub_ms &p
             return 0;
         } else {
             if( action_time_scale::once_every_this_tick( 1_minutes ) ) {
-                it.ammo_consume( charges_per_minute, pos );
+                it.ammo_consume( charges_per_minute, pos, &p );
             }
             it.set_var( "COOKTIME", cooktime );
             return 0;

@@ -1,6 +1,7 @@
 #include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "examine_item_menu.h"
 #include "flag.h"
 #include "item.h"
 #include "item_contents.h"
@@ -502,4 +503,25 @@ TEST_CASE( "ammo_required of a gun is its ammo_to_fire, of a magazine zero", "[p
 
     detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
     CHECK( mag->ammo_required() == 0 );
+}
+
+// 3-4b-c1 guard (passes before and after the caller edit; the avatar was the
+// implicit carrier through the transitional forwarder): rate_action_use passes
+// its avatar as the carrier, so a USES_BIONIC_POWER tool is usable with power.
+TEST_CASE( "rate_action_use of a charged bionic tool is good for the avatar with power",
+           "[p3][ammo]" ) {
+    clear_all_state();
+    detached_ptr<item> toolset = item::spawn( itype_id( "toolset" ) );
+    REQUIRE( toolset->is_tool() );
+    REQUIRE( toolset->has_flag( flag_USES_BIONIC_POWER ) );
+    toolset->charges = 0;
+
+    get_avatar().set_max_power_level( 100_kJ );
+    get_avatar().set_power_level( 50_kJ );
+    CHECK( examine_item_menu::rate_action_use( get_avatar(), *toolset ) ==
+          examine_item_menu::hint_rating::good );
+
+    get_avatar().set_power_level( 0_kJ );
+    CHECK( examine_item_menu::rate_action_use( get_avatar(), *toolset ) ==
+          examine_item_menu::hint_rating::iffy );
 }

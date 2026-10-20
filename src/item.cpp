@@ -9547,7 +9547,7 @@ bool item::reload( Character &who, item &loc, int qty )
         if( ammo->has_flag( flag_SPEEDLOADER ) ) {
             curammo = ammo->contents.front().type;
             qty = std::min( qty, ammo->ammo_remaining() );
-            ammo->ammo_consume( qty, tripoint_bub_ms::zero() );
+            ammo->ammo_consume( qty, tripoint_bub_ms::zero(), &who );
             charges += qty;
         } else if( ammo->ammo_type() == ammo_plutonium ) {
             curammo = ammo->type;
@@ -9877,11 +9877,11 @@ detached_ptr<item> item::use_charges( detached_ptr<item> &&self, const itype_id 
 
                 if( n == e->ammo_remaining() ) {
                     used.push_back( item::spawn( *e ) );
-                    e->ammo_consume( really_used, pos );
+                    e->ammo_consume( really_used, pos, nullptr ); // CDF: no carrier here (OD-9)
                 } else {
                     detached_ptr<item> split = item::spawn( *e );
                     split->ammo_set( e->ammo_current(), really_used );
-                    e->ammo_consume( really_used, pos );
+                    e->ammo_consume( really_used, pos, nullptr ); // CDF: no carrier here (OD-9)
                     used.push_back( std::move( split ) );
                 }
             }
@@ -11034,7 +11034,7 @@ detached_ptr<item> item::process_tool( detached_ptr<item> &&self, player *carrie
     if( energy || self->ammo_required() > 0 ) {
         // No need to look for charges if energy is 0
         if( energy ) {
-            energy -= self->ammo_consume( energy, pos );
+            energy -= self->ammo_consume( energy, pos, carrier );
 
             // for power armor pieces, try to use power armor interface first.
             if( carrier && self->is_power_armor() && character_funcs::can_interface_armor( *carrier ) ) {
@@ -11054,7 +11054,8 @@ detached_ptr<item> item::process_tool( detached_ptr<item> &&self, player *carrie
         // HACK: this means that UPS items will last one more check longer than they should since they don't trigger when
         // their ammo_remaining is 0, since that doesn't check the UPS "stock" available (which is an expensive check)
         // It's done like this cause grenades must be destroyed when charge reaches 0, or it will linger an extra turn.
-        if( ( self->ammo_remaining() == 0 && !uses_UPS ) || energy > 0 ) {
+        // CDF: count the carrier's bionic power (the no-arg overload is nullptr since 3-4a-a)
+        if( ( self->ammo_remaining( carrier ) == 0 && !uses_UPS ) || energy > 0 ) {
             revert_destroy = true;
             if( carrier ) {
                 if( self->is_power_armor() ) {
