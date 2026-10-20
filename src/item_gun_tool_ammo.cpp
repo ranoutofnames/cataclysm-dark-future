@@ -5,8 +5,6 @@
 #include <vector>
 
 #include "character.h"
-// CDF: get_avatar() for the OD-2 transitional forwarders (declared in avatar.h).
-#include "avatar.h"
 #include "enums.h"
 #include "flag.h"
 #include "item_contents.h"
@@ -619,13 +617,6 @@ bool item::ammo_sufficient( const Character *carrier, int qty ) const
     return ammo_required() == 0 || ammo_remaining( carrier ) >= ammo_required() * qty;
 }
 
-// CDF: BN-compatible forwarder (OD-2)
-bool item::ammo_sufficient( int qty ) const
-{
-    // CDF: transitional, deleted by 3-4b-d
-    return ammo_sufficient( &get_avatar(), qty );
-}
-
 int item::ammo_consume( int qty, const tripoint_bub_ms &pos, Character *carrier )
 {
     return item::ammo_consume( qty, get_map(), pos, carrier );
@@ -708,13 +699,6 @@ int item::ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Characte
         qty = units::to_kilojoule( wanted_energy );
     }
     return wanted_qty - qty;
-}
-
-// CDF: BN-compatible forwarder (OD-2)
-int item::ammo_consume( int qty, const tripoint_bub_ms &pos )
-{
-    // CDF: transitional, deleted by 3-4b-d
-    return ammo_consume( qty, pos, &get_avatar() );
 }
 
 bool item::uses_magazine() const

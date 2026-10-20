@@ -2355,8 +2355,6 @@ class item : public location_visitable<item>, public game_object<item>
          * @returns true if ammo sufficient for number of uses is loaded, false otherwise
          */
         bool ammo_sufficient( const Character *carrier, int qty = 1 ) const;
-        // CDF: BN-compatible forwarder (OD-2)
-        bool ammo_sufficient( int qty = 1 ) const;
 
         /**
          * Consume ammo (if available) and return the amount of ammo that was consumed
@@ -2369,8 +2367,6 @@ class item : public location_visitable<item>, public game_object<item>
          */
         int ammo_consume( int qty, const tripoint_bub_ms &pos, Character *carrier );
         int ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Character *carrier );
-        // CDF: BN-compatible forwarder (OD-2)
-        int ammo_consume( int qty, const tripoint_bub_ms &pos );
 
         /** Specific ammo data, returns nullptr if item is neither ammo nor loaded with any */
         const itype *ammo_data() const;

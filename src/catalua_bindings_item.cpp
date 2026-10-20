@@ -627,8 +627,10 @@ void reg_item( sol::state &lua )
         SET_FX( ammo_required );
         SET_FX( ammo_current );
 
-        // CDF: disambiguate the ammo_consume overloads (D10); Lua keeps the 2-arg signature.
-        SET_FX_T( ammo_consume, int( int, const tripoint_bub_ms & ) );
+        // CDF: Lua keeps the 2-arg signature (D10); no carrier (ADV-7), the 3-arg overload is not bound
+        luna::set_fx( ut, "ammo_consume", []( item & it, int qty, const tripoint_bub_ms & pos ) {
+            return it.ammo_consume( qty, pos, nullptr );
+        } );
         SET_FX( ammo_set );
         SET_FX( ammo_unset );
 
