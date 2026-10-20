@@ -692,7 +692,8 @@ item_pocket *item_contents::fitting_pocket( const item &it, bool allow_ablative 
         dest = best_fitting( pocket_type::MAGAZINE );
     } else if( it.is_gunmod() || it.is_toolmod() ) {
         dest = best_fitting( pocket_type::MOD );
-    } else if( it.is_magazine() ) {
+    } else if( it.is_magazine() && !it.is_gun() && !it.is_tool() ) {
+        // CDF: CDF-only routing (no DDA call); D13 guard, lookup R4 (extends 3-8a row 42 / OD-4 to tools)
         dest = best_fitting( pocket_type::MAGAZINE_WELL );
     } else if( it.is_ammo() ) {
         dest = best_fitting( pocket_type::MAGAZINE );

@@ -499,7 +499,8 @@ static VisitResponse visit_internal( const std::function<VisitResponse( item *, 
             return VisitResponse::ABORT;
 
         case VisitResponse::NEXT:
-            if( node->is_gun() || node->is_magazine() ) {
+            // CDF: DDA visitable.cpp has no skip; a tool with ammo is is_magazine() (D13), lookup R2/R3
+            if( node->is_gun() || ( node->is_magazine() && !node->is_tool() ) ) {
                 // Content of guns and magazines are accessible only via their specific accessors
                 return VisitResponse::NEXT;
             }
@@ -604,7 +605,8 @@ VisitResponse visitable<Character>::visit_items(
             case VisitResponse::ABORT:
                 return VisitResponse::ABORT;
             case VisitResponse::NEXT:
-                if( !e->is_gun() && !e->is_magazine() &&
+                // CDF: DDA visitable.cpp has no skip; a tool with ammo is is_magazine() (D13), lookup R2/R3
+                if( !e->is_gun() && !( e->is_magazine() && !e->is_tool() ) &&
                     e->contents.visit_contents( func, e, true ) == VisitResponse::ABORT ) {
                     return VisitResponse::ABORT;
                 }

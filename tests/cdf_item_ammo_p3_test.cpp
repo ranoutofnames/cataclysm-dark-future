@@ -827,3 +827,80 @@ TEST_CASE( "needs_charges_to_use true for a loaded m4a1, false for a plain non-g
     REQUIRE( rock->get_gun_ups_drain() == 0 );
     CHECK_FALSE( rock->needs_charges_to_use() );
 }
+
+// 3-8t: tools with ammo and max_charges get an integral MAGAZINE pocket, so is_magazine() is
+// true for them (D13). The flashlight named in the brief has only a MAGAZINE_WELL
+// (data/json/items/tool/lighting.json:183), so these cases use oil_lamp (lamp_oil, 750) and
+// mp3 (battery, 200), which carry an integral pocket and no type->magazine.
+// CDF: every base MAGAZINE_WELL has an item_id_restriction (smart_phone_music's "magazine_well"
+// is only a volume offset, not a well pocket), so the R4 case uses the TEST_DATA test_flashlight
+// (data/mods/TEST_DATA/dda_pocket_items.json:998), whose MAGAZINE_WELL has no restriction.
+TEST_CASE( "item_reload_cost does not dereference a null magazine for a tool",
+           "[p3][ammo][magazine]" ) {
+    clear_all_state();
+    detached_ptr<item> lamp = item::spawn( itype_id( "oil_lamp" ) );
+    REQUIRE( lamp->is_tool() );
+    REQUIRE( lamp->is_magazine() );
+    REQUIRE( lamp->type->magazine == nullptr );
+    detached_ptr<item> oil = item::spawn( itype_id( "lamp_oil" ), calendar::turn, 100 );
+    // CDF: DDA character_ammo.cpp:216 obtain_cost( ammo ) path; the crash was the null deref
+    CHECK( get_avatar().item_reload_cost( *lamp, *oil, 1 ) > 0 );
+
+    // The gun branch is unchanged.
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    CHECK( get_avatar().item_reload_cost( *gun, *mag, 1 ) > 0 );
+}
+
+TEST_CASE( "visit_items sees ammo inside a tool but not inside a gun",
+           "[p3][ammo][magazine]" ) {
+    clear_all_state();
+    avatar &u = get_avatar();
+    u.worn.clear();
+    u.inv_clear();
+    u.remove_primary_weapon();
+    u.wear_item( item::spawn( "backpack" ) );
+
+    detached_ptr<item> lamp = item::spawn( itype_id( "oil_lamp" ) );
+    REQUIRE( lamp->put_in( item::spawn( itype_id( "lamp_oil" ), calendar::turn, 100 ),
+                           pocket_type::MAGAZINE ).success() );
+    u.i_add( std::move( lamp ) );
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    u.i_add( std::move( gun ) );
+
+    int oil_seen = 0;
+    int rounds_seen = 0;
+    int mags_seen = 0;
+    u.visit_items( [&]( item * it ) -> VisitResponse {
+        if( it->typeId() == itype_id( "lamp_oil" ) ) {
+            ++oil_seen;
+        } else if( it->typeId() == itype_id( "556" ) ) {
+            ++rounds_seen;
+        } else if( it->typeId() == itype_id( "stanag30" ) ) {
+            ++mags_seen;
+        }
+        return VisitResponse::NEXT;
+    } );
+    CHECK( oil_seen == 1 ); // tool contents are visible (DDA recurses everywhere)
+    CHECK( mags_seen == 0 ); // gun contents stay hidden (BN rule kept)
+    CHECK( rounds_seen == 0 );
+}
+
+TEST_CASE( "a tool with ammo does not fit a magazine well",
+           "[p3][ammo][magazine][pocket]" ) {
+    clear_all_state();
+    detached_ptr<item> phone = item::spawn( itype_id( "test_flashlight" ) );
+    REQUIRE( pocket_index( *phone, true ) >= 0 );
+    detached_ptr<item> player_tool = item::spawn( itype_id( "mp3" ) );
+    REQUIRE( player_tool->is_tool() );
+    REQUIRE( player_tool->is_magazine() );
+    item_pocket *pocket = phone->contents.fitting_pocket( *player_tool, false );
+    CHECK( ( pocket == nullptr || !pocket->is_type( pocket_type::MAGAZINE_WELL ) ) );
+
+    // A plain battery magazine still reaches the MAGAZINE_WELL.
+    detached_ptr<item> cell = item::spawn( itype_id( "light_battery_cell" ) );
+    REQUIRE( cell->is_magazine() );
+    item_pocket *cell_pocket = phone->contents.fitting_pocket( *cell, false );
+    REQUIRE( cell_pocket != nullptr );
+    CHECK( cell_pocket->is_type( pocket_type::MAGAZINE_WELL ) );
+}

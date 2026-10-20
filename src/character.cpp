@@ -13303,8 +13303,15 @@ int Character::item_reload_cost( const item &it, item &ammo, int qty ) const
     /** @EFFECT_LAUNCHER decreases time taken to reload a launcher */
 
     // If we're topping off an internal magazine in a gun, only use base reload time, magazines use time per round.
-    int cost = ( it.is_gun() ? it.get_reload_time() : it.type->magazine->reload_time ) *
-               ( it.is_gun() ? 1 : qty );
+    int cost = 0;
+    if( it.is_gun() ) { // CDF: DDA character_ammo.cpp:211, 4-b2 tool magazine (lookup R1)
+        cost = it.get_reload_time(); // CDF: DDA character_ammo.cpp:212, 4-b2 tool magazine (lookup R1)
+    } else if( it.type->magazine ) { // CDF: DDA character_ammo.cpp:213, 4-b2 tool magazine (lookup R1)
+        cost = it.type->magazine->reload_time * qty; // CDF: DDA character_ammo.cpp:214, 4-b2 tool magazine (lookup R1)
+    } else { // CDF: DDA character_ammo.cpp:215, 4-b2 tool magazine (lookup R1)
+        // CDF: DDA character_ammo.cpp:216, 4-b2 tool magazine (lookup R1): a tool with an integral pocket has no type->magazine
+        cost = it.obtain_cost( ammo );
+    }
 
     skill_id sk = it.is_gun() ? it.type->gun->skill_used : skill_gun;
     mv += cost / ( 1.0f + std::min( get_skill_level( sk ) * 0.1f, 1.0f ) );

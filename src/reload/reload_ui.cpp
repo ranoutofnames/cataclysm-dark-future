@@ -98,7 +98,8 @@ auto query_menu(const player& who, item& base, std::vector<item_reload_option> o
                          ? colorize(name, c_dark_gray)
                          : name;
             };
-            if (option.ammo->is_magazine() && option.ammo->ammo_data()) {
+            // CDF: lookup R5 (tool with ammo is is_magazine(), D13)
+            if (option.ammo->is_magazine() && !option.ammo->is_tool() && option.ammo->ammo_data()) {
                 if (option.ammo->ammo_current() == itype_battery) {
                     // This battery ammunition is a pseudo-object representing stored charge.
                     //~ battery storage (charges)
@@ -162,7 +163,8 @@ auto query_menu(const player& who, item& base, std::vector<item_reload_option> o
     menu.text += _("| Amount  ");
     menu.text += _("| Moves   ");
     // Only show ammunition statistics for guns and magazines.
-    if (base.is_gun() || base.is_magazine()) { menu.text += _("| Damage   | Pierce   "); }
+    // CDF: lookup R5 (tool with ammo is is_magazine(), D13)
+    if (base.is_gun() || (base.is_magazine() && !base.is_tool())) { menu.text += _("| Damage   | Pierce   "); }
 
     const auto draw_row = [&](int index) {
         const auto& selected = options[index];
@@ -174,7 +176,8 @@ auto query_menu(const player& who, item& base, std::vector<item_reload_option> o
             selected.qty());
         row += string_format(" %-7d ", selected.moves());
 
-        if (base.is_gun() || base.is_magazine()) {
+        // CDF: lookup R5 (tool with ammo is is_magazine(), D13)
+        if (base.is_gun() || (base.is_magazine() && !base.is_tool())) {
             const auto* ammo =
                 selected.ammo->is_ammo_container()
                     ? selected.ammo->contents.front().ammo_data()
