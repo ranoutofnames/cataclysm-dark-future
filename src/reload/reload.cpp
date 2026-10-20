@@ -21,10 +21,11 @@ item_reload_option::item_reload_option(const item_reload_option&) = default;
 auto item_reload_option::operator=(const item_reload_option&) -> item_reload_option& = default;
 
 item_reload_option::item_reload_option(
-    const player* who, item* target, const item* parent, item& ammo)
+    const player* who, item* target, const item* parent, item& ammo, int pocket_index)
     : who(who),
       target(target),
       ammo(&ammo),
+      pocket_index(pocket_index),
       parent(parent) {
     if (this->target->is_ammo_belt()) {
         const auto& linkage = this->target->type->magazine->linkage;

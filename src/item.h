@@ -586,8 +586,12 @@ class item : public location_visitable<item>, public game_object<item>
          * @param u Player doing the reloading
          * @param loc Location of ammo to be reloaded
          * @param qty caps reloading to this (or fewer) units
+         * @param pocket_index if >= 0, the index (in get_pockets order) of the specific
+         *        MAGAZINE_WELL or integral MAGAZINE pocket to load; -1 keeps the untargeted behaviour
          */
-        bool reload( Character &who, item &loc, int qty );
+        bool reload( Character &who, item &loc, int qty, int pocket_index = -1 );
+        // CDF: P3-3-6 targeted path (DDA item::reload 3400-3486)
+        bool reload_targeted( Character &who, item &loc, int qty, int pocket_index );
 
         // CDF: P3-3-0 declarations only; defined by later P3 sub-jobs (3-1..3-7, 4-*, 8-*)
         // is this speedloader compatible with this item?

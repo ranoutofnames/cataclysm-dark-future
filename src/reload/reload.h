@@ -24,8 +24,13 @@ public:
      * @param target Item that receives the ammunition
      * @param parent Base item the reload was requested for; may equal @p target
      * @param ammo Source item
+     * @param pocket_index Pocket to load (get_pockets order), or POCKET_FALLBACK
      */
-    item_reload_option(const player* who, item* target, const item* parent, item& ammo);
+    item_reload_option(const player* who, item* target, const item* parent, item& ammo,
+                       int pocket_index = POCKET_FALLBACK);
+
+    // CDF: P3-3-6 (DDA item.h:621-632); "no specific pocket", the untargeted reload path.
+    static constexpr int POCKET_FALLBACK = -1;
 
     /** Character who performs the reload. */
     const player* who = nullptr;
@@ -33,6 +38,9 @@ public:
     item* target = nullptr;
     /** Source item: loose ammunition, a magazine, a speedloader, or a container. */
     item* ammo;
+    // CDF: P3-3-6 (DDA item::reload_option::pocket_index); index in get_pockets order of the
+    // pocket to load, or POCKET_FALLBACK.
+    int pocket_index = POCKET_FALLBACK;
 
     /** Amount of ammunition this option transfers. */
     auto qty() const -> int { return qty_; }

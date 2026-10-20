@@ -1027,3 +1027,101 @@ units::energy item::energy_consume( units::energy qty, map *here, const tripoint
 
     return wanted_energy - qty;
 }
+
+// CDF: P3-3-6; DDA item::reload (item_gun_tool_ammo.cpp:3400-3486), targeted path only. The null
+// and qty guards live in item::reload, which dispatches here. DDA's item_location becomes
+// item &loc, the source is detached (D1) and the weight-cache calls become on_contents_changed().
+bool item::reload_targeted( Character &u, item &loc, int qty, int pocket_index )
+{
+    // Targeted reload: MAGAZINE_WELL swap, or loose ammo into integral MAGAZINE.
+    std::vector<item_pocket *> all_pockets = get_pockets(
+    []( const item_pocket & ) {
+        return true;
+    } );
+    if( pocket_index >= static_cast<int>( all_pockets.size() ) ) {
+        debugmsg( "reload: pocket_index %d out of range on %s", pocket_index, tname() );
+        return false;
+    }
+    item_pocket *target_pocket = all_pockets[pocket_index];
+    const bool integral_magazine = target_pocket->is_type( pocket_type::MAGAZINE );
+    if( !target_pocket->is_type( pocket_type::MAGAZINE_WELL ) && !integral_magazine ) {
+        debugmsg( "reload: pocket_index %d on %s is not a MAGAZINE_WELL or MAGAZINE",
+                  pocket_index, tname() );
+        return false;
+    }
+    item *src = &loc; // CDF: DDA re-points an item_location; here a plain pointer
+    if( integral_magazine ) {
+        // Eject casings before the compatibility gate; a spent shell
+        // fills the pocket and would make can_reload_with refuse.
+        // CDF: BN casings_handle lambda form (detached_ptr), as in item::reload
+        casings_handle( [&u]( detached_ptr<item> &&e ) {
+            return u.i_add_or_drop( std::move( e ) );
+        } );
+    }
+    if( !target_pocket->can_reload_with( *src, true ) ) {
+        return false;
+    }
+
+    // CDF: DDA ammo_from_map / held_by dropped; CDF has no carried-weight cache
+    if( src->has_flag( flag_SPEEDLOADER ) || src->has_flag( flag_SPEEDLOADER_CLIP ) ) {
+        src = &src->first_ammo();
+    }
+
+    if( integral_magazine ) {
+        const ammotype loose_type = src->ammo_type();
+        const int limit = target_pocket->remaining_ammo_capacity( loose_type );
+        if( limit <= 0 ) {
+            return false;
+        }
+        const int take = std::min( { qty, src->charges, limit } );
+        if( take <= 0 ) {
+            return false;
+        }
+        // CDF: D1, the pocket takes a detached_ptr; the copy is made with item::spawn( const item & )
+        detached_ptr<item> item_copy = item::spawn( *src );
+        item_copy->charges = take;
+        ret_val<item *> ins = target_pocket->insert_item( std::move( item_copy ) );
+        if( !ins.success() ) {
+            return false;
+        }
+        src->charges -= take;
+        if( src->charges == 0 ) {
+            // CDF: D1, detach() replaces DDA remove_item(); the result is discarded (destroys the empty source)
+            src->detach();
+        }
+        // CDF: replaces DDA invalidate_weight_carried_cache()
+        on_contents_changed();
+        return true;
+    }
+
+    detached_ptr<item> old; // CDF: DDA item magazine_removed
+    bool allow_wield = false;
+    if( !target_pocket->empty() ) {
+        item *existing = target_pocket->magazine_current();
+        if( existing != nullptr ) {
+            allow_wield = ( !u.is_wielding( *src ) && !u.is_wielding( *this ) );
+            old = target_pocket->remove_item( existing );
+        }
+    }
+
+    detached_ptr<item> incoming = src->detach(); // CDF: D1, DDA copies *ammo then remove_item()
+    ret_val<item *> ins = target_pocket->insert_item( std::move( incoming ) );
+    if( !ins.success() ) {
+        // Restore the ejected magazine on failure.
+        if( old ) {
+            target_pocket->insert_item( std::move( old ) );
+            if( old ) {
+                u.i_add( std::move( old ) );
+            }
+        }
+        // CDF: DDA leaves the ammo in place; here it is returned to the carrier
+        u.i_add( std::move( incoming ), false );
+        return false;
+    }
+    // CDF: replaces DDA invalidate_weight_carried_cache()
+    on_contents_changed();
+    if( old ) {
+        u.i_add( std::move( old ), true, nullptr, nullptr, true, allow_wield );
+    }
+    return true;
+}

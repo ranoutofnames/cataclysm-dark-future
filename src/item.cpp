@@ -9416,7 +9416,7 @@ void item::casings_handle( const std::function < detached_ptr<item>( detached_pt
     contents.casings_handle( func );
 }
 
-bool item::reload( Character &who, item &loc, int qty )
+bool item::reload( Character &who, item &loc, int qty, int pocket_index )
 {
     if( qty <= 0 ) {
         debugmsg( "Tried to reload zero or less charges" );
@@ -9426,6 +9426,11 @@ bool item::reload( Character &who, item &loc, int qty )
     if( ammo->is_null() ) {
         debugmsg( "Tried to reload using non-existent ammo" );
         return false;
+    }
+
+    // CDF: P3-3-6 dispatch
+    if( pocket_index >= 0 ) {
+        return reload_targeted( who, loc, qty, pocket_index );
     }
 
     item *container = nullptr;
