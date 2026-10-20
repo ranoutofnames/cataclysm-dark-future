@@ -777,6 +777,8 @@ void item_contents::remove_items_with( const std::function < VisitResponse(
         detached_ptr<item> && ) > &filter )
 {
     const auto old_size = num_item_stacks();
+    // CDF: removing a mod that changes the layout rebuilds it, as remove_top does
+    const bool had_layout_mod = has_adaptor_mod();
     auto last = VisitResponse::NEXT;
     auto processing_changed = false;
     for( item_pocket &pocket : pockets ) {
@@ -784,6 +786,9 @@ void item_contents::remove_items_with( const std::function < VisitResponse(
             break;
         }
         processing_changed |= visit_internal( filter, pocket.items(), last );
+    }
+    if( had_layout_mod ) {
+        rebuild_pockets();
     }
     if( num_item_stacks() == old_size && !processing_changed ) {
         return;

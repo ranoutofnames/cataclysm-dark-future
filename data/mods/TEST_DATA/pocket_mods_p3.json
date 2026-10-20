@@ -1,0 +1,48 @@
+[
+  {
+    "id": "p3_tool_modbay",
+    "type": "TOOL",
+    "name": "P3 tool with a mod bay",
+    "description": "Fixture for the P3 pocket_mods tests: a tool that takes toolmods and no storage of its own.",
+    "weight": "181 g",
+    "volume": "1 L",
+    "price": "10 USD",
+    "material": "iron",
+    "symbol": ",",
+    "color": "light_gray",
+    "ammo": "battery",
+    "charges_per_use": 1
+  },
+  {
+    "id": "p3_tool_modbay_one_pocket",
+    "type": "TOOL",
+    "name": "P3 tool with a mod bay and one pocket",
+    "copy-from": "p3_tool_modbay",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "2 L"
+      },
+      {
+        "pocket_type": "MOD"
+      }
+    ]
+  },
+  {
+    "id": "p3_gun_with_mag_well",
+    "type": "GUN",
+    "name": "P3 gun with a magazine well",
+    "copy-from": "debug_gun_with_mag_well",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "ammo_restriction": {
+          "223": 20
+        }
+      },
+      {
+        "pocket_type": "MOD"
+      }
+    ]
+  }
+]

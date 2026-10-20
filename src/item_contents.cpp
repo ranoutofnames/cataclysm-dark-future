@@ -282,6 +282,16 @@ void item_contents::ensure_pockets() const
     const_cast<item_contents *>( this )->rebuild_pockets();
 }
 
+namespace
+{
+// CDF: a mod changes the pocket layout when it adapts magazines or adds pockets (pocket_mods)
+auto mod_changes_layout( const item &it ) -> bool
+{
+    return it.type->mod && ( !it.type->mod->magazine_adaptor.empty() ||
+                             !it.type->mod->add_pockets.empty() );
+}
+} // namespace
+
 std::vector<pocket_data> item_contents::adapted_layout() const
 {
     if( owner == nullptr || owner->type == nullptr ) {
@@ -289,23 +299,48 @@ std::vector<pocket_data> item_contents::adapted_layout() const
     }
     // The first mod with a magazine_adaptor replaces the magazines the item takes
     // (as item::magazine_compatible does). Look at our own pockets: this runs mid-rebuild.
+    // CDF: the pockets the mods add are collected on the same pass (DDA item_container.cpp:156-165)
     const itype *adaptor = nullptr;
+    std::vector<pocket_data> adds;
     for( const item_pocket &pocket : pockets ) {
         if( !pocket.is_type( pocket_type::MOD ) && !pocket.is_type( pocket_type::MIGRATION ) ) {
             continue;
         }
         for( const item *it : pocket.items() ) {
-            if( it->type->mod && !it->type->mod->magazine_adaptor.empty() ) {
+            if( !it->type->mod ) {
+                continue;
+            }
+            adds.insert( adds.end(), it->type->mod->add_pockets.begin(),
+                         it->type->mod->add_pockets.end() );
+            if( adaptor == nullptr && !it->type->mod->magazine_adaptor.empty() ) {
                 adaptor = it->type;
-                break;
             }
         }
-        if( adaptor != nullptr ) {
-            break;
+    }
+    if( adaptor == nullptr && adds.empty() ) {
+        return {};
+    }
+
+    // CDF: the layout the mods' pockets build on, instead of the bare type's. As DDA
+    // item_container.cpp:113-134, a mod's MAGAZINE or MAGAZINE_WELL replaces the base ones.
+    std::vector<pocket_data> layout = owner->type->pockets;
+    if( !adds.empty() ) {
+        const bool adds_magazine = std::ranges::any_of( adds, []( const pocket_data & d ) {
+            return d.type == pocket_type::MAGAZINE || d.type == pocket_type::MAGAZINE_WELL;
+        } );
+        if( adds_magazine ) {
+            std::erase_if( layout, []( const pocket_data & d ) {
+                return d.type == pocket_type::MAGAZINE || d.type == pocket_type::MAGAZINE_WELL;
+            } );
         }
+        // before the MOD pocket, at the end if the type has none
+        auto at = std::ranges::find_if( layout, []( const pocket_data & d ) {
+            return d.type == pocket_type::MOD;
+        } );
+        layout.insert( at, adds.begin(), adds.end() );
     }
     if( adaptor == nullptr ) {
-        return {};
+        return layout;
     }
 
     // Only the magazines for the ammo the item can fire count, as in item::magazine_compatible.
@@ -333,7 +368,7 @@ std::vector<pocket_data> item_contents::adapted_layout() const
         }
     }
     if( ammo == nullptr ) {
-        return {};
+        return adds.empty() ? std::vector<pocket_data>() : layout;
     }
 
     std::set<itype_id> mags;
@@ -350,10 +385,9 @@ std::vector<pocket_data> item_contents::adapted_layout() const
         }
     }
     if( mags.empty() ) {
-        return {};
+        return adds.empty() ? std::vector<pocket_data>() : layout;
     }
 
-    std::vector<pocket_data> layout = owner->type->pockets;
     pocket_data *well = nullptr;
     for( pocket_data &data : layout ) {
         if( data.type == pocket_type::MAGAZINE_WELL ) {
@@ -381,13 +415,46 @@ bool item_contents::has_adaptor_mod() const
             continue;
         }
         for( const item *it : pocket.items() ) {
-            if( it->type->mod && !it->type->mod->magazine_adaptor.empty() ) {
+            if( mod_changes_layout( *it ) ) {
                 return true;
             }
         }
     }
     return false;
 }
+
+namespace
+{
+// CDF: which layout entry each old pocket of a mod-driven rebuild keeps its items in.
+// Entry i of the result is the index into `layout` taken by old_data[i], or -1. Only CONTAINER,
+// MAGAZINE and MAGAZINE_WELL pockets match. Each is matched by value, in order, to the first
+// layout entry that is not yet taken (ADV-8 condition 1; DDA matches pocket_data pointers,
+// item_contents.cpp:2173, which do not survive CDF's layout copies).
+auto match_pockets( const std::vector<const pocket_data *> &old_data,
+                    const std::vector<pocket_data> &layout ) -> std::vector<int>
+{
+    const auto matchable = []( pocket_type t ) {
+        return t == pocket_type::CONTAINER || t == pocket_type::MAGAZINE ||
+               t == pocket_type::MAGAZINE_WELL;
+    };
+    std::vector<bool> taken( layout.size(), false );
+    std::vector<int> result;
+    for( const pocket_data *old : old_data ) {
+        int found = -1;
+        if( matchable( old->type ) ) {
+            for( size_t j = 0; j < layout.size(); ++j ) {
+                if( !taken[j] && matchable( layout[j].type ) && layout[j] == *old ) {
+                    taken[j] = true;
+                    found = static_cast<int>( j );
+                    break;
+                }
+            }
+        }
+        result.push_back( found );
+    }
+    return result;
+}
+} // namespace
 
 void item_contents::rebuild_pockets()
 {
@@ -461,12 +528,42 @@ void item_contents::rebuild_pockets()
         item_pocket::favorite_settings settings;
     };
     std::vector<kept_settings> old_settings;
+    // CDF: when the mods changed the layout (not the type), a pocket whose data is still in the
+    // layout keeps its items and settings; the rest is re-routed below (ADV-8, ADV-9)
+    const bool by_value = pockets_type == owner->type;
+    std::vector<int> matched;
+    if( by_value ) {
+        std::vector<const pocket_data *> old_data;
+        for( const item_pocket &pocket : pockets ) {
+            if( pocket.is_type( pocket_type::CONTAINER ) || pocket.is_type( pocket_type::MAGAZINE ) ||
+                pocket.is_type( pocket_type::MAGAZINE_WELL ) ) {
+                old_data.push_back( pocket.get_pocket_data() );
+            }
+        }
+        matched = match_pockets( old_data, new_data );
+    }
+    std::vector<std::vector<detached_ptr<item>>> kept_items( new_data.size() );
+    std::vector<std::optional<item_pocket::favorite_settings>> matched_settings( new_data.size() );
+    size_t matched_idx = 0;
     for( item_pocket &pocket : pockets ) {
         if( !pocket.is_type( pocket_type::MIGRATION ) ) {
             old_settings.push_back( { pocket.get_type(), pocket.settings } );
         }
+        int slot = -1;
+        if( by_value && ( pocket.is_type( pocket_type::CONTAINER ) ||
+                          pocket.is_type( pocket_type::MAGAZINE ) ||
+                          pocket.is_type( pocket_type::MAGAZINE_WELL ) ) ) {
+            slot = matched[matched_idx++];
+        }
+        if( slot >= 0 ) {
+            matched_settings[slot] = pocket.settings;
+        }
         for( detached_ptr<item> &it : pocket.items().clear() ) {
-            held.push_back( std::move( it ) );
+            if( slot >= 0 ) {
+                kept_items[slot].push_back( std::move( it ) );
+            } else {
+                held.push_back( std::move( it ) );
+            }
         }
     }
     pockets.clear();
@@ -476,8 +573,15 @@ void item_contents::rebuild_pockets()
     size_t settings_idx = 0;
     for( const pocket_data &data : layout ) {
         pockets.emplace_back( owner, &data );
-        if( settings_idx < old_settings.size() && old_settings[settings_idx].type == data.type ) {
+        if( matched_settings[settings_idx] ) {
+            // CDF: a matched pocket keeps its own settings and items
+            pockets.back().settings = *matched_settings[settings_idx];
+        } else if( settings_idx < old_settings.size() &&
+                   old_settings[settings_idx].type == data.type ) {
             pockets.back().settings = old_settings[settings_idx].settings;
+        }
+        for( detached_ptr<item> &it : kept_items[settings_idx] ) {
+            pockets.back().insert( std::move( it ) );
         }
         settings_idx++;
     }
@@ -734,7 +838,7 @@ void item_contents::insert_into( item_pocket &pocket, detached_ptr<item> &&it )
     if( !it ) {
         return;
     }
-    const bool adaptor = it->type->mod && !it->type->mod->magazine_adaptor.empty();
+    const bool adaptor = mod_changes_layout( *it );
     pocket.insert( std::move( it ) );
     contents_changed();
     if( adaptor ) {
@@ -747,7 +851,7 @@ ret_val<bool> item_contents::insert_item( detached_ptr<item> &&it )
     if( !it ) {
         return ret_val<bool>::make_failure();
     }
-    const bool adaptor = it->type->mod && !it->type->mod->magazine_adaptor.empty();
+    const bool adaptor = mod_changes_layout( *it );
     item_pocket *dest = route( *it );
     dest->insert( std::move( it ) );
     contents_changed();
@@ -763,7 +867,7 @@ void item_contents::insert_copies( const item &proto, int n )
     if( n <= 0 ) {
         return;
     }
-    const bool adaptor = proto.type->mod && !proto.type->mod->magazine_adaptor.empty();
+    const bool adaptor = mod_changes_layout( proto );
     if( adaptor ) {
         // changes the layout with every copy: nothing to share
         for( int i = 0; i < n; i++ ) {
@@ -1010,7 +1114,7 @@ detached_ptr<item> item_contents::remove_top( item *it )
         }
     }
     contents_changed();
-    if( ret && ret->type->mod && !ret->type->mod->magazine_adaptor.empty() ) {
+    if( ret && mod_changes_layout( *ret ) ) {
         rebuild_pockets();
     }
     return ret;
@@ -1446,7 +1550,7 @@ ret_val<item *> item_contents::insert_item( detached_ptr<item> &&it, pocket_type
         return ret_val<item *>::make_failure( nullptr, pocket.str() );
     }
 
-    const bool adaptor = it->type->mod && !it->type->mod->magazine_adaptor.empty();
+    const bool adaptor = mod_changes_layout( *it );
     ret_val<item *> inserted = pocket.value()->insert_item( std::move( it ), false, true,
                                ignore_contents );
     if( inserted.success() ) {
