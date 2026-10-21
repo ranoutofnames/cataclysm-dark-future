@@ -20,6 +20,7 @@
 
 class Creature;
 class vehicle;
+class item_reload_option;
 struct partial_con;
 
 class aim_activity_actor : public activity_actor
@@ -652,6 +653,44 @@ class insert_item_activity_actor : public activity_actor
 
         void serialize( JsonOut &jsout ) const override;
         static std::unique_ptr<activity_actor> deserialize( JsonIn &jsin );
+};
+
+// CDF: P3-6-1a-1 (DDA activity_actor_definitions.h:2332-2371); targets are
+// safe_reference<item> (D1, insert-actor pattern), no clone() (the CDF base has none);
+// deserialize and the registration are job 6-1b.
+class reload_activity_actor : public activity_actor
+{
+    public:
+        explicit reload_activity_actor( item_reload_option &&opt, int extra_moves = 0 );
+
+        activity_id get_type() const override {
+            return activity_id( "ACT_RELOAD" );
+        }
+
+        void start( player_activity &act, Character &who ) override;
+        void do_turn( player_activity &act, Character &who ) override;
+        void finish( player_activity &act, Character &who ) override;
+        void canceled( player_activity &act, Character &who ) override;
+
+        void reload_msg( Character &who, bool finished = false );
+        void reload( player_activity &act, Character &who, int load_qty = 1 );
+
+        void serialize( JsonOut &jsout ) const override;
+
+    private:
+        int moves_total = 0;
+        int quantity = 0;
+        int seconds_per_round = 0;
+        int already_loaded = 0;
+        // MAGAZINE_WELL pocket index in target_loc->contents. Negative =
+        // first-compatible-well fallback.
+        int pocket_index = -1;
+        // cache ammo because reloading deletes the location
+        itype_id ammo_id; // NOLINT(cata-serialize)
+        safe_reference<item> target_loc;
+        safe_reference<item> ammo_loc;
+
+        bool can_reload() const;
 };
 
 class throw_activity_actor : public activity_actor

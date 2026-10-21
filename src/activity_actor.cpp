@@ -2317,6 +2317,155 @@ std::unique_ptr<activity_actor> insert_item_activity_actor::deserialize( JsonIn 
     return actor;
 }
 
+// ---- reload_activity_actor ----
+// Transplanted from DDA activity_actor.cpp:8283-8533 (reload_activity_actor), adapted to CDF
+// ownership: targets are safe_references and the actor's moves live in its progress counter.
+
+reload_activity_actor::reload_activity_actor( item_reload_option &&opt, int extra_moves )
+{
+    moves_total = opt.moves() + extra_moves;
+    quantity = opt.qty();
+    pocket_index = opt.pocket_index;
+    // CDF: the option holds item *, not item_location (D1).
+    target_loc = safe_reference<item>( opt.target );
+    ammo_loc = safe_reference<item>( opt.ammo );
+    seconds_per_round = opt.qty() ? std::min( 1, moves_total / quantity ) : 0;
+    // CDF: itype::id is protected; item::typeId() is the accessor.
+    ammo_id = ammo_loc->typeId();
+}
+
+bool reload_activity_actor::can_reload() const
+{
+    if( quantity <= 0 ) {
+        debugmsg( "invalid arguments to ACT_RELOAD" );
+        return false;
+    }
+
+    if( !target_loc ) {
+        return false;
+    }
+
+    if( !ammo_loc ) {
+        return false;
+    }
+
+    return true;
+}
+
+void reload_activity_actor::start( player_activity &/*act*/, Character &/*who*/ )
+{
+    // CDF: the actor's progress counter carries the moves (as hacksaw_activity_actor::start does)
+    progress.emplace( target_loc ? target_loc->tname() : std::string( "reload" ), moves_total );
+}
+
+void reload_activity_actor::reload_msg( Character &/*who*/, bool finished )
+{
+    // Item may have been dropped from inventory between turns (e.g. pocket
+    // overflow after the reload increased its size); the location is then
+    // stale and dereferencing it would crash.
+    if( !target_loc ) {
+        return;
+    }
+    item &reloadable = *target_loc;
+    const std::string reloadable_name = reloadable.tname();
+
+    const int qty = finished ? quantity : already_loaded;
+    const std::string ammo_name = ammo_id->nname( qty );
+
+    const bool ammo_uses_speedloader = ammo_id->has_flag( flag_SPEEDLOADER );
+    const bool ammo_uses_speedloader_clip = ammo_id->has_flag( flag_SPEEDLOADER_CLIP );
+
+    if( reloadable.is_gun() ) {
+        if( reloadable.has_flag( flag_RELOAD_ONE ) && !ammo_uses_speedloader &&
+            !ammo_uses_speedloader_clip ) {
+
+            add_msg( m_neutral, _( "You insert %dx %s into the %s." ), qty, ammo_name, reloadable_name );
+        }
+        // CDF: reload noise is job 6-1b (sounds::ambient_sound absent)
+    } else if( reloadable.is_watertight_container() ) {
+        add_msg( m_neutral, _( "You refill the %s." ), reloadable_name );
+    } else {
+        add_msg( m_neutral, _( "You reload the %1$s with %2$s." ), reloadable_name, ammo_name );
+    }
+}
+
+void reload_activity_actor::reload( player_activity &act, Character &who, int load_qty )
+{
+    if( load_qty == 0 ) {
+        return;
+    }
+
+    if( !can_reload() ) {
+        act.set_to_null();
+        return;
+    }
+
+    item &reloadable = *target_loc;
+
+    int qty = load_qty ? load_qty : quantity;
+
+    const std::string reloadable_name = reloadable.tname();
+
+    // CDF: is_filthy / flag_FILTHY absent in CDF, filth transfer not ported.
+    if( !reloadable.reload( who, *ammo_loc, qty, pocket_index ) ) {
+        return;
+    }
+
+    if( reloadable.get_var( "dirt", 0 ) > 7800 ) {
+        add_msg( m_neutral, _( "You manage to loosen some debris and make your %s somewhat operational." ),
+                 reloadable_name );
+        reloadable.set_var( "dirt", ( reloadable.get_var( "dirt", 0 ) - rng( 790, 2750 ) ) );
+    }
+
+    who.recoil = MAX_RECOIL;
+    // CDF: capacity guard and overflow tail (DDA 8389-8439) are job 6-1a-2.
+}
+
+void reload_activity_actor::do_turn( player_activity &act, Character &who )
+{
+    // CDF: progress counter.
+    if( seconds_per_round != 0
+        && already_loaded < quantity
+        && ( progress.get_moves_left() / 100 ) % seconds_per_round == 0 ) {
+        reload( act, who );
+        already_loaded++;
+    }
+}
+
+void reload_activity_actor::finish( player_activity &act, Character &who )
+{
+    reload( act, who, quantity - already_loaded );
+    already_loaded += quantity - already_loaded;
+    reload_msg( who, true );
+    act.set_to_null();
+    // CDF: sibling-well chain (DDA 8467-8509) is job 6-1b.
+}
+
+void reload_activity_actor::canceled( player_activity &act, Character &who )
+{
+    who.recoil = MAX_RECOIL;
+    act.moves_total = 0;
+    act.moves_left = 0;
+    reload_msg( who );
+}
+
+void reload_activity_actor::serialize( JsonOut &jsout ) const
+{
+    jsout.start_object();
+
+    // CDF: every CDF actor writes its progress counter, as the insert actor does.
+    jsout.member( "progress", progress );
+    jsout.member( "moves_total", moves_total );
+    jsout.member( "qty", quantity );
+    jsout.member( "pocket_index", pocket_index );
+    jsout.member( "target_loc", target_loc );
+    jsout.member( "ammo_loc", ammo_loc );
+    jsout.member( "seconds_per_round", seconds_per_round );
+    jsout.member( "already_loaded", already_loaded );
+
+    jsout.end_object();
+}
+
 void throw_activity_actor::do_turn( player_activity &act, Character &who )
 {
     // Make copies of relevant values since the class would

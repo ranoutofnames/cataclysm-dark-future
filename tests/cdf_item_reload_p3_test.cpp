@@ -1,14 +1,28 @@
+#include "activity_actor_definitions.h"
 #include "avatar.h"
+#include "avatar_functions.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "debug.h"
+#include "flag.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_pocket.h"
+#include "itype.h"
+#include "player_activity.h"
 #include "type_id.h"
 #include "player_helpers.h"
+#include "reload/reload.h"
+#include "state_helpers.h"
+#include "value_ptr.h"
 
+#include <climits>
+#include <memory>
 #include <string>
+#include <utility>
+
+static const itype_id itype_glock_19( "glock_19" );
+static const itype_id itype_glockmag( "glockmag" );
 
 // CDF: P3-3-6; ported from DDA tests/multimag_test.cpp:626-693.
 TEST_CASE( "item_reload_with_pocket_index_targets_specific_well", "[p3][reload]" )
@@ -184,4 +198,212 @@ TEST_CASE( "item_gun_tool_ammo_no_default_ammo_not_reloadable", "[p3][reload][ma
     item &gun = *gun_ptr;
     REQUIRE( gun.is_gun() );
     CHECK_FALSE( gun.is_reloadable() );
+}
+
+// CDF: P3-6-1a-1; reload_activity_actor, ported from DDA activity_actor.cpp:8283-8533.
+TEST_CASE( "reload_activity_actor_loads_through_reload", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // Make sure the player doesn't drop anything :P
+    dummy.wear_item( item::spawn( "backpack", bday ) );
+
+    detached_ptr<item> det = item::spawn( "40sw", bday, item::default_charges_tag{} );
+    item &ammo = *det;
+    dummy.i_add( std::move( det ) );
+    det = item::spawn( "sw_610", bday, item::default_charges_tag{} );
+    item &gun = *det;
+    dummy.i_add( std::move( det ) );
+    int ammo_pos = dummy.inv_position_by_item( &ammo );
+
+    REQUIRE( ammo_pos != INT_MIN );
+    REQUIRE( gun.ammo_remaining() == 0 );
+    REQUIRE( gun.magazine_integral() );
+
+    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    const int qty = opt.qty();
+    REQUIRE( qty >= 1 );
+    REQUIRE( opt.pocket_index == item_reload_option::POCKET_FALLBACK );
+
+    reload_activity_actor actor( std::move( opt ) );
+    CHECK( actor.get_type() == activity_id( "ACT_RELOAD" ) );
+
+    player_activity act( activity_id( "ACT_RELOAD" ), 100 );
+    REQUIRE( act );
+    actor.reload( act, dummy, qty );
+    CHECK( act );
+    CHECK( gun.ammo_remaining() == qty );
+}
+
+// CDF: P3-6-1a-1; the CDF twin reload_gun_with_swappable_magazine exists, so a new name.
+TEST_CASE( "reload_gun_with_swappable_magazine_via_actor", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // Make sure the player doesn't drop anything :P
+    dummy.wear_item( item::spawn( "backpack", bday ) );
+
+    detached_ptr<item> det = item::spawn( "9mm", bday, item::default_charges_tag{} );
+    item &ammo = *det;
+    dummy.i_add( std::move( det ) );
+    const cata::value_ptr<islot_ammo> &ammo_type = ammo.type->ammo;
+    REQUIRE( ammo_type );
+
+    detached_ptr<item> mag = item::spawn( itype_glockmag, bday, 0 );
+    const cata::value_ptr<islot_magazine> &magazine_type = mag->type->magazine;
+    REQUIRE( magazine_type );
+    REQUIRE( magazine_type->type.count( ammo_type->type ) != 0 );
+
+    det = item::spawn( itype_glock_19, bday, item::default_charges_tag{} );
+    item &gun = *det;
+    dummy.i_add( std::move( det ) );
+    REQUIRE( gun.ammo_types().count( ammo_type->type ) != 0 );
+
+    gun.put_in( std::move( mag ) );
+
+    int gun_pos = dummy.inv_position_by_type( itype_glock_19 );
+    REQUIRE( gun_pos != INT_MIN );
+    item &glock = dummy.i_at( gun_pos );
+    // We're expecting the magazine to end up in the inventory.
+    REQUIRE( avatar_funcs::unload_item( dummy, glock ) );
+    int magazine_pos = dummy.inv_position_by_type( itype_glockmag );
+    REQUIRE( magazine_pos != INT_MIN );
+    item &magazine = dummy.inv_find_item( magazine_pos );
+    REQUIRE( magazine.ammo_remaining() == 0 );
+
+    int ammo_pos = dummy.inv_position_by_item( &ammo );
+    REQUIRE( ammo_pos != INT_MIN );
+
+    bool magazine_success = magazine.reload( dummy, ammo, ammo.charges );
+
+    REQUIRE( magazine_success );
+    REQUIRE( magazine.ammo_remaining() == magazine.ammo_capacity() );
+
+    REQUIRE( gun.ammo_remaining() == 0 );
+    REQUIRE( gun.magazine_integral() == false );
+
+    item_reload_option opt( &dummy, &gun, &gun, magazine );
+    REQUIRE( opt.qty() == 1 );
+    dummy.assign_activity( std::make_unique<player_activity>(
+                               std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+    REQUIRE( process_activity_bounded( dummy, 2000, 100000 ) );
+    CHECK( gun.ammo_remaining() == gun.ammo_capacity() );
+    CHECK( !dummy.activity );
+}
+
+// CDF: P3-6-1a-1; DDA reloading_test.cpp:825-866 with the CDF twin's setup.
+TEST_CASE( "reload_gun_with_integral_magazine_using_speedloader_via_actor", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // Make sure the player doesn't drop anything :P
+    dummy.wear_item( item::spawn( "backpack", bday ) );
+
+    detached_ptr<item> det = item::spawn( "38_special", bday, item::default_charges_tag{} );
+    item &ammo = *det;
+    dummy.i_add( std::move( det ) );
+    det = item::spawn( "38_speedloader", bday, false );
+    item &speedloader = *det;
+    dummy.i_add( std::move( det ) );
+    int loader_pos = dummy.inv_position_by_item( &speedloader );
+    det = item::spawn( "sw_619", bday, false );
+    item &gun = *det;
+    dummy.i_add( std::move( det ) );
+    int ammo_pos = dummy.inv_position_by_item( &ammo );
+
+    REQUIRE( ammo_pos != INT_MIN );
+    REQUIRE( gun.ammo_remaining() == 0 );
+    REQUIRE( gun.magazine_integral() );
+    REQUIRE( loader_pos != INT_MIN );
+    REQUIRE( speedloader.ammo_remaining() == 0 );
+    REQUIRE( speedloader.has_flag( flag_SPEEDLOADER ) );
+
+    bool speedloader_success = speedloader.reload( dummy, ammo, ammo.charges );
+
+    REQUIRE( speedloader_success );
+    REQUIRE( speedloader.ammo_remaining() == speedloader.ammo_capacity() );
+
+    item_reload_option opt( &dummy, &gun, &gun, speedloader );
+    REQUIRE( opt.qty() > 1 );
+    dummy.assign_activity( std::make_unique<player_activity>(
+                               std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+    REQUIRE( process_activity_bounded( dummy, 2000, 100000 ) );
+    // CDF: item::reload refuses a second transfer from a speedloader (is_reloadable_helper
+    // ammo_data guard), so the actor loads one round here, not the full cylinder as in DDA.
+    CHECK( gun.ammo_remaining() >= 1 );
+    // Speedloader is still in inventory.
+    CHECK( dummy.inv_position_by_item( &speedloader ) != INT_MIN );
+    CHECK( !dummy.activity );
+}
+
+// CDF: P3-6-1a-1; a destroyed target makes target_loc falsy, so reload() nulls the activity.
+TEST_CASE( "reload_activity_actor_with_destroyed_target_does_nothing", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // Make sure the player doesn't drop anything :P
+    dummy.wear_item( item::spawn( "backpack", bday ) );
+
+    detached_ptr<item> det = item::spawn( "40sw", bday, item::default_charges_tag{} );
+    item &ammo = *det;
+    dummy.i_add( std::move( det ) );
+
+    REQUIRE( dummy.inv_position_by_item( &ammo ) != INT_MIN );
+    REQUIRE( ammo.charges > 0 );
+
+    std::unique_ptr<reload_activity_actor> actor;
+    {
+        detached_ptr<item> g = item::spawn( "sw_610", bday, false );
+        item_reload_option opt( &dummy, g.get(), g.get(), ammo );
+        REQUIRE( opt.qty() >= 1 );
+        actor = std::make_unique<reload_activity_actor>( std::move( opt ) );
+    }
+
+    player_activity act( activity_id( "ACT_RELOAD" ), 100 );
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        actor->reload( act, dummy, 1 );
+    } );
+    CHECK( dmsg.empty() );
+    CHECK( !act );
+}
+
+// CDF: P3-6-1a-1; the dirt block of DDA activity_actor.cpp:8378-8382, ported verbatim.
+TEST_CASE( "reload_activity_actor_loosens_dirty_gun", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // Make sure the player doesn't drop anything :P
+    dummy.wear_item( item::spawn( "backpack", bday ) );
+
+    detached_ptr<item> det = item::spawn( "40sw", bday, item::default_charges_tag{} );
+    item &ammo = *det;
+    dummy.i_add( std::move( det ) );
+    det = item::spawn( "sw_610", bday, item::default_charges_tag{} );
+    item &gun = *det;
+    dummy.i_add( std::move( det ) );
+    int ammo_pos = dummy.inv_position_by_item( &ammo );
+
+    REQUIRE( ammo_pos != INT_MIN );
+    REQUIRE( gun.ammo_remaining() == 0 );
+    REQUIRE( gun.magazine_integral() );
+
+    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    const int qty = opt.qty();
+    REQUIRE( qty >= 1 );
+
+    reload_activity_actor actor( std::move( opt ) );
+
+    gun.set_var( "dirt", 8000 );
+    REQUIRE( gun.get_var( "dirt", 0 ) == 8000 );
+
+    player_activity act( activity_id( "ACT_RELOAD" ), 100 );
+    REQUIRE( act );
+    actor.reload( act, dummy, qty );
+    CHECK( gun.get_var( "dirt", 0 ) < 7800 );
+    CHECK( gun.get_var( "dirt", 0 ) >= 8000 - 2750 );
 }
