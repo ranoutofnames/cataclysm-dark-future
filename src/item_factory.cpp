@@ -2753,6 +2753,7 @@ void Item_factory::load( islot_gun &slot, const JsonObject &jo, const std::strin
     assign( jo, "recoil", slot.recoil, strict, 0 );
     assign( jo, "handling", slot.handling, strict );
     assign( jo, "durability", slot.durability, strict, 0, 10 );
+    assign( jo, "gun_jam_mult", slot.gun_jam_mult, strict, 0.0 ); // CDF: assign() in place of DDA's not_negative_float (minimum 0.0, no maximum)
     assign( jo, "burst", slot.burst, strict, 1 );
     assign( jo, "loudness", slot.loudness, strict );
     assign( jo, "clip_size", slot.clip, strict, 0 );

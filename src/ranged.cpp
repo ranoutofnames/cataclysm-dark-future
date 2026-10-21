@@ -125,6 +125,7 @@ static const ammo_effect_str_id ammo_effect_NO_ITEM_DAMAGE( "NO_ITEM_DAMAGE" );
 static const ammo_effect_str_id ammo_effect_NON_FOULING( "NON_FOULING" );
 static const ammo_effect_str_id ammo_effect_PLASMA( "PLASMA" );
 static const ammo_effect_str_id ammo_effect_RECYCLED( "RECYCLED" );
+static const ammo_effect_str_id ammo_effect_MATCHHEAD( "MATCHHEAD" );
 static const ammo_effect_str_id ammo_effect_DRAW_AS_LINE( "DRAW_AS_LINE" );
 static const ammo_effect_str_id ammo_effect_SHATTER_SELF( "SHATTER_SELF" );
 static const ammo_effect_str_id ammo_effect_SHOT( "SHOT" );
@@ -938,6 +939,55 @@ bool ranged::handle_gun_damage( Character &shooter, item &it )
         return false;
     }
 
+    // i am bad at math, so we will use vibes instead
+    double gun_jam_chance = 0;
+    // CDF: parent.damage(): CDF takes firing from the USE_PARENT_GUN host, DDA reads it.damage()
+    int gun_damage = parent.damage() / 1000.0;
+    switch( gun_damage ) {
+        case 0:
+            gun_jam_chance = 0.0005 * firing.gun_jam_mult;
+            break;
+        case 1:
+            gun_jam_chance = 0.03 * firing.gun_jam_mult;
+            break;
+        case 2:
+            gun_jam_chance = 0.15 * firing.gun_jam_mult;
+            break;
+        case 3:
+            gun_jam_chance = 0.45 * firing.gun_jam_mult;
+            break;
+        case 4:
+            gun_jam_chance = 0.8 * firing.gun_jam_mult;
+            break;
+    }
+
+    int mag_damage = 0;
+    double mag_jam_chance = 0;
+    if( it.magazine_current() ) {
+        mag_damage = it.magazine_current()->damage() / 1000.0;
+        switch( mag_damage ) {
+            case 0:
+                mag_jam_chance = 0.00027 * it.magazine_current()->type->magazine->mag_jam_mult;
+                break;
+            case 1:
+                mag_jam_chance = 0.05 * it.magazine_current()->type->magazine->mag_jam_mult;
+                break;
+            case 2:
+                mag_jam_chance = 0.24 * it.magazine_current()->type->magazine->mag_jam_mult;
+                break;
+            case 3:
+                mag_jam_chance = 0.96 * it.magazine_current()->type->magazine->mag_jam_mult;
+                break;
+            case 4:
+                mag_jam_chance = 2.5 * it.magazine_current()->type->magazine->mag_jam_mult;
+                break;
+        }
+    }
+
+    const double jam_chance = gun_jam_chance + mag_jam_chance;
+
+    // CDF: DDA debug message dropped (add_msg_debug / DF_RANGED absent)
+
     // Here we check if we're underwater and whether we should misfire.
     // As a result this causes no damage to the firearm, note that some guns are waterproof
     // and so are immune to this effect, note also that WATERPROOF_GUN status does not
@@ -959,6 +1009,16 @@ bool ranged::handle_gun_damage( Character &shooter, item &it )
                                        _( "<npcname>'s %s malfunctions!" ),
                                        it.tname() );
         return false;
+
+        // Chance for the weapon to suffer a failure, caused by the magazine size, quality, or condition
+    } else if( x_in_y( jam_chance, 1 ) && !it.has_flag( flag_NEVER_JAMS ) ) {
+        // CDF: u_know_round_in_chamber never set in CDF (8-8b revisits it)
+        shooter.add_msg_player_or_npc( m_bad, _( "Your %s malfunctions!" ),
+                                       _( "<npcname>'s %s malfunctions!" ),
+                                       it.tname() );
+        // CDF: fault set deferred to 8-8b (set_random_fault_of_type and gun_mechanical_simple absent)
+        return false;
+
         // Here we check for a chance for the weapon to suffer a misfire due to
         // using player-made 'RECYCLED' bullets. Note that not all forms of
         // player-made ammunition have this effect.
@@ -1057,9 +1117,10 @@ bool ranged::handle_gun_damage( Character &shooter, item &it )
         }
     }
     // chance to damage gun due to high levels of dirt. Very unlikely, especially at lower levels and impossible below 5,000. Lower than the chance of a jam at the same levels. 555555... is an arbitrary number that I came up with after playing with the formula in excel. It makes sense at low, medium, and high levels of dirt.
-    if( dirt_dbl > 5000 &&
-        x_in_y( dirt_dbl * dirt_dbl * dirt_dbl,
-                5555555555555 ) ) {
+    // if you have a bullet loaded with match head powder this can happen randomly at any time. The chances are about the same as a recycled ammo jamming the gun
+    // CDF: contains() rather than DDA's count(): BN's ammo_effects set type provides contains()
+    if( ( dirt_dbl > 5000 && x_in_y( dirt_dbl * dirt_dbl * dirt_dbl, 5555555555555 ) ) ||
+        ( curammo_effects.contains( ammo_effect_MATCHHEAD ) && one_in( 256 ) ) ) {
         shooter.add_msg_player_or_npc( m_bad, _( "Your %s is damaged by the high pressure!" ),
                                        _( "<npcname>'s %s is damaged by the high pressure!" ),
                                        it.tname() );

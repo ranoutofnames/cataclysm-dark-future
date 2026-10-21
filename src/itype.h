@@ -648,6 +648,10 @@ struct islot_gun : common_ranged_data {
      */
     int durability = 0;
     /**
+    *  Multiplier of the chance for the gun to jam.
+    */
+    double gun_jam_mult = 1.0;
+    /**
      * For guns with an integral magazine what is the capacity?
      */
     int clip = 0;

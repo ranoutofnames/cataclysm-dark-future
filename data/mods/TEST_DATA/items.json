@@ -2350,5 +2350,23 @@
     ]
   },
   {"id":"test_energy_gun","type":"GUN","name":{"str":"test energy gun"},"description":"Test gun: energy_drain 5 kJ, one battery well, no ammo type.","weight":"1000 g","volume":"1 L","longest_side":"300 mm","material":["steel"],"symbol":"(","color":"light_gray","skill":"pistol","range":10,"ranged_damage":{"damage_type":"bullet","amount":10},"dispersion":480,"durability":10,"modes":[["DEFAULT","default",1]],"valid_mod_locations":[["sights",1]],"energy_drain":"5 kJ","pocket_data":[{"id":"power","magazine_well":"500 ml","pocket_type":"MAGAZINE_WELL","max_item_length":"2 km","item_restriction":["battery_test","heavy_battery_cell"]},{"pocket_type":"MOD"}]},
-  {"id":"test_energy_gunmod","type":"GUNMOD","name":{"str":"test energy gunmod"},"description":"Test gunmod: doubles the energy drain and adds 1 kJ.","weight":"100 g","volume":"100 ml","longest_side":"50 mm","material":["steel"],"symbol":":","color":"light_gray","location":"sights","mod_targets":["pipe_pistol"],"install_time":"5 s","energy_drain_multiplier":2.0,"energy_drain_modifier":"1 kJ"}
+  {"id":"test_energy_gunmod","type":"GUNMOD","name":{"str":"test energy gunmod"},"description":"Test gunmod: doubles the energy drain and adds 1 kJ.","weight":"100 g","volume":"100 ml","longest_side":"50 mm","material":["steel"],"symbol":":","color":"light_gray","location":"sights","mod_targets":["pipe_pistol"],"install_time":"5 s","energy_drain_multiplier":2.0,"energy_drain_modifier":"1 kJ"},
+  {
+    "id": "test_jam_gun_mult_high",
+    "copy-from": "m4a1",
+    "type": "GUN",
+    "name": {
+      "str": "test jam gun mult high"
+    },
+    "gun_jam_mult": 2000
+  },
+  {
+    "id": "test_jam_gun_mult_zero",
+    "copy-from": "m4a1",
+    "type": "GUN",
+    "name": {
+      "str": "test jam gun mult zero"
+    },
+    "gun_jam_mult": 0
+  }
 ]
