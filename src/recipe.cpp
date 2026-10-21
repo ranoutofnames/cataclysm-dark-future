@@ -404,6 +404,15 @@ detached_ptr<item> recipe::create_result() const
         newit->item_tags.insert( flag_FIT );
     }
 
+    // CDF: item::ammotype_of absent; DDA 5139-5148 guards inlined; detached_ptr result
+    // If the recipe has a `FULL_MAGAZINE` flag, fill it with ammo
+    if( newit->is_magazine() && has_flag( "FULL_MAGAZINE" ) ) {
+        const itype_id ammo_id = newit->ammo_default();
+        if( !ammo_id.is_null() && ammo_id->ammo ) {
+            newit->ammo_set( ammo_id, newit->ammo_capacity( ammo_id->ammo->type ) );
+        }
+    }
+
     if( contained ) {
         const bool is_liquid = newit->made_of( LIQUID );
         newit = item::in_container( container, std::move( newit ) );
@@ -595,9 +604,15 @@ std::function<bool( const item & )> recipe::get_component_filter(
     // Disallow usage of non-full magazines as components
     // This is primarily used to require a fully charged battery, but works for any magazine.
     std::function<bool( const item & )> magazine_filter = return_true<item>;
-    if( has_flag( "FULL_MAGAZINE" ) ) {
+    if( has_flag( "NEED_FULL_MAGAZINE" ) ) {
         magazine_filter = []( const item & component ) {
-            return !component.is_magazine() || ( component.ammo_remaining() >= component.ammo_capacity() );
+            if( !component.is_magazine() ) {
+                return true;
+            }
+            if( component.ammo_remaining( ) == 0 ) {
+                return false;
+            }
+            return component.ammo_remaining() >= component.ammo_capacity( component.ammo_data()->ammo->type );
         };
     }
 

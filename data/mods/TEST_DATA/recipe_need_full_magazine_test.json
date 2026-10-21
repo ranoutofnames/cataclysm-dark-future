@@ -1,0 +1,64 @@
+[
+  {
+    "type": "recipe",
+    "result": "test_rock",
+    "id_suffix": "ordinary_stick_and_battery",
+    "category": "CC_OTHER",
+    "subcategory": "CSC_OTHER_OTHER",
+    "skill_used": "fabrication",
+    "difficulty": 0,
+    "time": "1 s",
+    "autolearn": true,
+    "components": [ [ [ "stick", 1 ] ], [ [ "medium_battery_cell", 1 ] ] ]
+  },
+  {
+    "type": "recipe",
+    "result": "test_rock",
+    "id_suffix": "ordinary_stick_and_rock",
+    "category": "CC_OTHER",
+    "subcategory": "CSC_OTHER_OTHER",
+    "skill_used": "fabrication",
+    "difficulty": 0,
+    "time": "1 s",
+    "autolearn": true,
+    "components": [ [ [ "stick", 1 ] ], [ [ "rock", 1 ] ] ]
+  },
+  {
+    "type": "recipe",
+    "result": "test_rock",
+    "id_suffix": "need_full_magazine_mixed",
+    "category": "CC_OTHER",
+    "subcategory": "CSC_OTHER_OTHER",
+    "skill_used": "fabrication",
+    "difficulty": 0,
+    "time": "1 s",
+    "autolearn": true,
+    "flags": [ "NEED_FULL_MAGAZINE" ],
+    "components": [ [ [ "rock", 1 ] ], [ [ "medium_battery_cell", 1 ] ] ]
+  },
+  {
+    "type": "recipe",
+    "result": "medium_battery_cell",
+    "id_suffix": "full_magazine_output",
+    "category": "CC_OTHER",
+    "subcategory": "CSC_OTHER_OTHER",
+    "skill_used": "fabrication",
+    "difficulty": 0,
+    "time": "1 s",
+    "autolearn": true,
+    "flags": [ "FULL_MAGAZINE" ],
+    "components": [ [ [ "rock", 1 ] ] ]
+  },
+  {
+    "type": "recipe",
+    "result": "medium_battery_cell",
+    "id_suffix": "empty_magazine_output",
+    "category": "CC_OTHER",
+    "subcategory": "CSC_OTHER_OTHER",
+    "skill_used": "fabrication",
+    "difficulty": 0,
+    "time": "1 s",
+    "autolearn": true,
+    "components": [ [ [ "rock", 1 ] ] ]
+  }
+]

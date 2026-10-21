@@ -1425,8 +1425,8 @@ These branches are also the valid entries for the categories of `dreams` in `dre
 - `BLIND_HARD` Possible to craft with little to no light, but difficult.
 - `SECRET` Not automatically learned at character creation time based on high skill levels.
 - `UNCRAFT_LIQUIDS_CONTAINED` Spawn liquid items in its default container.
-- `FULL_MAGAZINE` If this recipe requires magazines, it needs one that is full. For deconstruction
-  recipes, it will spawn a full magazine when deconstructed.
+- `FULL_MAGAZINE` For recipe results that are magazines (and deconstruction recipes), it spawns a full magazine.
+- `NEED_FULL_MAGAZINE` If this recipe requires magazines, each magazine component must be full; an empty or partly filled magazine does not qualify. Components that are not magazines are not affected.
 
 ## Scenarios
 
