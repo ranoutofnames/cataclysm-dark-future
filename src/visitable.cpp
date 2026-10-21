@@ -52,7 +52,6 @@ static const flag_id flag_IS_UPS( "IS_UPS" );
 static const flag_id flag_BIONIC_TOOLS( "BIONIC_TOOLS" );
 static const flag_id flag_ENCHANTMENT_TOOLS( "ENCHANTMENT_TOOLS" );
 static const flag_id flag_USES_BIONIC_POWER( "USES_BIONIC_POWER" );
-static const flag_id flag_USE_UPS( "USE_UPS" );
 
 /** @relates visitable */
 template <typename T>
@@ -1143,53 +1142,29 @@ static int charges_of_ups( const T &self, int limit,
     return std::min( qty, limit );
 }
 
-namespace
+template <typename T, typename M>
+static int charges_of_internal( const T &self, const M &main, const itype_id &id, int limit,
+                                const std::function<bool( const item & )> &filter,
+                                std::function<void( int )> visitor )
 {
-// Per-tool stock for charges_of dedup. Legacy contributes local charges.
-// CDF: MULTIMAG and battery arrive in 8-3b
-struct tool_stock_entry {
-    enum class kind_t { LEGACY, MULTIMAG };
-    kind_t kind = kind_t::LEGACY;
-    bool uses_ups = false;
-    bool uses_bionic = false;
-    int local_charges = 0;
-    const item *src = nullptr;
-};
-} // namespace
-
-// CDF: scan takes a const item * visitor, not item_location (REPLAN D1); the filter is std::function<bool( const item & )>, not item_filter
-template <typename T>
-static void scan_tool_charges( const T &self, const itype_id &id,
-                               const std::function<bool( const item & )> &filter, int limit,
-                               std::vector<tool_stock_entry> &entries )
-{
-    // CDF: in_tools and the raw IS_UPS sum are not ported (8-4f, 8-3 OD-8)
-    map &here = get_map();
     int qty = 0;
-    self.visit_items( [&]( const item *e ) {
-        // CDF: !is_broken() filter dropped, BN has no broken state (8-3 OD-6)
+
+    bool found_tool_with_UPS = false;
+    self.visit_items( [&]( const item * e ) {
         if( filter( *e ) ) {
             if( e->is_tool() ) {
                 if( e->typeId() == id ) {
-                    // CDF: until 8-3b a uses_firing_requirements() tool is counted as LEGACY here (DDA 1118-1119 builds a multimag entry)
-                    tool_stock_entry entry;
-                    entry.kind = tool_stock_entry::kind_t::LEGACY;
-                    entry.local_charges = e->ammo_remaining_linked( here, nullptr );
-                    entry.uses_ups = e->has_flag( flag_USE_UPS );
-                    entry.uses_bionic = e->has_flag( flag_USES_BIONIC_POWER );
-                    entry.src = e;
-                    qty = sum_no_wrap( qty, entry.local_charges );
-                    entries.push_back( entry );
+                    // includes charges from any included magazine.
+                    qty = sum_no_wrap( qty, e->ammo_remaining() );
+                    if( e->has_flag( STATIC( flag_id( "USE_UPS" ) ) ) ) {
+                        found_tool_with_UPS = true;
+                    }
                 }
                 return qty < limit ? VisitResponse::SKIP : VisitResponse::ABORT;
 
             } else if( e->count_by_charges() ) {
                 if( e->typeId() == id ) {
-                    tool_stock_entry entry;
-                    entry.kind = tool_stock_entry::kind_t::LEGACY;
-                    entry.local_charges = e->charges;
-                    qty = sum_no_wrap( qty, entry.local_charges );
-                    entries.push_back( entry );
+                    qty = sum_no_wrap( qty, e->charges );
                 }
                 // items counted by charges are not themselves expected to be containers
                 return qty < limit ? VisitResponse::SKIP : VisitResponse::ABORT;
@@ -1198,45 +1173,15 @@ static void scan_tool_charges( const T &self, const itype_id &id,
         // recurse through any nested containers
         return qty < limit ? VisitResponse::NEXT : VisitResponse::ABORT;
     } );
-}
 
-template <typename M>
-static int apply_external_pools_legacy( const M &main,
-                                        const std::vector<tool_stock_entry> &entries, int limit,
-                                        const std::function<void( int )> &visitor )
-{
-    int qty = 0;
-    bool any_ups = false;
-    bool any_bionic = false;
-    for( const tool_stock_entry &e : entries ) {
-        qty = sum_no_wrap( qty, e.local_charges );
-        any_ups = any_ups || e.uses_ups;
-        any_bionic = any_bionic || e.uses_bionic;
-    }
-    // CDF: bio_ups power is already counted by main.charges_of( itype_UPS ) for a Character (visitable<Character>::charges_of, bio_ups branch); DDA 1185-1189 would count it twice
-    if( any_bionic ) {
-        qty = sum_no_wrap( qty, static_cast<int>( units::to_kilojoule(
-                               get_player_character().get_power_level() ) ) );
-    }
-    if( qty < limit && any_ups ) {
+    if( qty < limit && found_tool_with_UPS ) {
         qty += main.charges_of( itype_UPS, limit - qty );
         if( visitor ) {
-            // CDF: visitor receives the running total, BN; DDA 1197 passes used_ups
             visitor( qty );
         }
     }
-    return std::min( qty, limit );
-}
 
-template <typename T, typename M>
-static int charges_of_internal( const T &self, const M &main, const itype_id &id, int limit,
-                                const std::function<bool( const item & )> &filter,
-                                std::function<void( int )> visitor )
-{
-    std::vector<tool_stock_entry> entries;
-    // CDF: DDA's dispatcher (1291-1300), in_tools and the raw IS_UPS sum are not ported (8-4f, 8-3 OD-8); scan then bill is the only path
-    scan_tool_charges( self, id, filter, limit, entries );
-    return apply_external_pools_legacy( main, entries, limit, visitor );
+    return std::min( qty, limit );
 }
 
 /** @relates visitable */
