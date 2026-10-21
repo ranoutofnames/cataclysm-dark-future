@@ -407,3 +407,108 @@ TEST_CASE( "reload_activity_actor_loosens_dirty_gun", "[p3][reload]" )
     CHECK( gun.get_var( "dirt", 0 ) < 7800 );
     CHECK( gun.get_var( "dirt", 0 ) >= 8000 - 2750 );
 }
+
+// CDF: P3-6-1a-3; ported from DDA tests/multimag_test.cpp:697-739. DDA's make_dual_well_gun
+// loads both wells; CDF spawns test_multimag_gun and puts an empty glockmag into the glock well,
+// so ammo_capacity() is the magazine capacity and the untargeted math gives more than 1.
+TEST_CASE( "reload_option_qty_forces_1_for_pocket_targeted_reloads", "[p3][reload]" )
+{
+    clear_all_state();
+    avatar &dummy = get_avatar();
+    dummy.wear_item( item::spawn( itype_id( "backpack" ), calendar::start_of_cataclysm ), false );
+
+    detached_ptr<item> det = item::spawn( itype_id( "test_multimag_gun" ) );
+    item &gun = *det;
+    dummy.i_add( std::move( det ) );
+
+    detached_ptr<item> empty_mag = item::spawn( itype_glockmag );
+    REQUIRE( gun.put_in( std::move( empty_mag ), pocket_type::MAGAZINE_WELL ).success() );
+
+    // A whole stack of replacement glock magazines so available_ammo > 1.
+    detached_ptr<item> glock_extra = item::spawn( itype_glockmag );
+    glock_extra->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+    item &ammo = dummy.i_add( std::move( glock_extra ) );
+    for( int i = 0; i < 2; ++i ) {
+        detached_ptr<item> more = item::spawn( itype_glockmag );
+        more->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+        dummy.i_add( std::move( more ) );
+    }
+
+    int glock_idx = -1;
+    {
+        int idx = 0;
+        for( const item_pocket *p : gun.get_pockets( []( const item_pocket & ) {
+        return true;
+    } ) ) {
+            if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                if( const item *mag = p->magazine_current() ) {
+                    if( mag->typeId() == itype_glockmag ) {
+                        glock_idx = idx;
+                        break;
+                    }
+                }
+            }
+            ++idx;
+        }
+    }
+    REQUIRE( glock_idx >= 0 );
+
+    item_reload_option untargeted( &dummy, &gun, &gun, ammo );
+    untargeted.qty( 1000 );
+    REQUIRE( untargeted.qty() > 1 );
+
+    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    opt.pocket_index = glock_idx;
+    opt.qty( 1000 );
+    CHECK( opt.qty() == 1 );
+}
+
+// CDF: P3-6-1a-3; CDF-only, no DDA test. Covers the integral-pocket capacity arm of
+// item_reload_option::qty (DDA item_gun_tool_ammo.cpp:3335-3340).
+TEST_CASE( "reload_option_qty_integral_pocket_is_scoped_to_that_pocket", "[p3][reload]" )
+{
+    clear_all_state();
+    avatar &dummy = get_avatar();
+    dummy.wear_item( item::spawn( itype_id( "backpack" ), calendar::start_of_cataclysm ), false );
+
+    detached_ptr<item> det = item::spawn( itype_id( "test_multimag_gun_integral_ammo" ) );
+    item &gun = *det;
+    // CDF: the gun stays detached (not in the inventory): carrying an empty test_multimag_gun_integral_ammo
+    // crashes in item::weight during i_add (see report).
+
+    detached_ptr<item> ammo_det = item::spawn( itype_id( "9mm" ), calendar::turn, 50 );
+    item &ammo = *ammo_det;
+    dummy.i_add( std::move( ammo_det ) );
+
+    detached_ptr<item> empty_cell = item::spawn( itype_id( "heavy_battery_cell" ) );
+    REQUIRE( gun.put_in( std::move( empty_cell ), pocket_type::MAGAZINE_WELL ).success() );
+
+    int idx = -1;
+    {
+        int i = 0;
+        for( const item_pocket *p : gun.get_pockets( []( const item_pocket & ) {
+        return true;
+    } ) ) {
+            if( p->is_type( pocket_type::MAGAZINE ) ) {
+                idx = i;
+                break;
+            }
+            ++i;
+        }
+    }
+    REQUIRE( idx >= 0 );
+
+    item_reload_option untargeted( &dummy, &gun, &gun, ammo );
+    untargeted.qty( 1000 );
+    REQUIRE( untargeted.qty() > 1 );
+
+    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    opt.pocket_index = idx;
+    opt.qty( 1000 );
+    CHECK( opt.qty() == 1 );
+
+    // A full integral pocket clamps to 1, never 0 or a negative.
+    REQUIRE( gun.reload( dummy, ammo, 1, idx ) );
+    opt.qty( 1000 );
+    CHECK( opt.qty() == 1 );
+}

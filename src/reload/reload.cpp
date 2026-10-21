@@ -7,6 +7,7 @@
 #include "flag.h"
 #include "game_constants.h"
 #include "item.h"
+#include "item_pocket.h"
 #include "itype.h"
 #include "player.h"
 
@@ -47,6 +48,24 @@ auto item_reload_option::moves() const -> int {
 }
 
 void item_reload_option::qty(int val) {
+    // CDF: DDA item::reload_option::qty integral branch (AUTO-30 OD-2); pocket_index is the 3-6 member
+    item_pocket* integral_pocket = nullptr;
+    if (pocket_index >= 0) {
+        // MAGAZINE_WELL targeted reload swaps one magazine. Integral
+        // MAGAZINE targeted reload loads loose ammo and follows the
+        // general capacity math below, scoped to that pocket so sibling
+        // wells do not poison the count on multimag hosts.
+        const std::vector<item_pocket*> pockets =
+            target->get_pockets([](const item_pocket&) { return true; });
+        if (pocket_index < static_cast<int>(pockets.size()) &&
+            pockets[pocket_index]->is_type(pocket_type::MAGAZINE)) {
+            integral_pocket = pockets[pocket_index];
+        } else {
+            qty_ = 1;
+            return;
+        }
+    }
+
     const auto ammo_in_ammo_container = ammo->is_ammo_container();
     const auto ammo_in_container = ammo->is_container();
     auto& ammo_obj = (ammo_in_ammo_container || ammo_in_container) ? ammo->contents.front() : *ammo;
@@ -59,7 +78,11 @@ void item_reload_option::qty(int val) {
     // Checking ammo capacity implicitly limits guns with removable magazines to capacity 0.
     // This gets rounded up to 1 later.
     auto remaining_capacity = 0;
-    if (target->is_watertight_container() && ammo_obj.made_of(LIQUID)) {
+    // CDF: DDA 3335-3340 integral arm, added as the first arm of CDF's capacity chain (ammo_obj is CDF's contents.front() form)
+    if (integral_pocket != nullptr) {
+        remaining_capacity =
+            ammo_obj.is_ammo() ? integral_pocket->remaining_ammo_capacity(ammo_obj.ammo_type()) : 0;
+    } else if (target->is_watertight_container() && ammo_obj.made_of(LIQUID)) {
         remaining_capacity = target->get_remaining_capacity_for_liquid(ammo_obj, true);
     } else if (target->is_container() && (ammo_obj.is_ammo() || ammo_obj.is_comestible())) {
         remaining_capacity = ammo_obj.charges_per_volume(target->get_container_capacity());
