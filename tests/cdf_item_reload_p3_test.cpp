@@ -3,6 +3,7 @@
 #include "avatar_functions.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "coordinates.h"
 #include "debug.h"
 #include "flag.h"
 #include "item.h"
@@ -14,6 +15,7 @@
 #include "player_helpers.h"
 #include "reload/reload.h"
 #include "state_helpers.h"
+#include "units.h"
 #include "value_ptr.h"
 
 #include <climits>
@@ -511,4 +513,215 @@ TEST_CASE( "reload_option_qty_integral_pocket_is_scoped_to_that_pocket", "[p3][r
     REQUIRE( gun.reload( dummy, ammo, 1, idx ) );
     opt.qty( 1000 );
     CHECK( opt.qty() == 1 );
+}
+
+// CDF: P3-6-1a-2 (ADV-18 A/B). CDF's sw_610 is a legacy gun with no pocket, so loaded rounds add
+// nothing to volume (plans/P3/6-1a-2/lookup-volume.md), but item::weight() counts the direct
+// charges (item.cpp:5957): weight is the growth source of the overflow cases below.
+// R5 stop: a growth of 0 g means the fixture proves nothing. Do not invent a source and do not
+// switch guns; stop and report "blocked".
+static units::mass sw610_reload_growth()
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    dummy.wear_item( item::spawn( "backpack", bday ) );
+
+    detached_ptr<item> det = item::spawn( "sw_610", bday, item::default_charges_tag{} );
+    item &gun = *det;
+    dummy.i_add( std::move( det ) );
+    det = item::spawn( "40sw", bday, item::default_charges_tag{} );
+    item &ammo = *det;
+    dummy.i_add( std::move( det ) );
+
+    const units::mass before = gun.weight();
+    if( !gun.reload( dummy, ammo, ammo.charges ) ) {
+        return 0_gram;
+    }
+    return gun.weight() - before;
+}
+
+// CDF: P3-6-1a-2; the G1 setup. 40_speedloader6 (SPEEDLOADER, data/json/items/magazine/40.json:3)
+// holding 6 x 40sw, so the RELOAD_ONE clamp of reload.cpp:93 does not apply and qty() is 6.
+static detached_ptr<item> loaded_40_speedloader( const time_point &bday )
+{
+    detached_ptr<item> loader = item::spawn( "40_speedloader6", bday );
+    REQUIRE( loader->put_in( item::spawn( "40sw", bday, 6 ), pocket_type::MAGAZINE ).success() );
+    REQUIRE( loader->ammo_remaining() == 6 );
+    return loader;
+}
+
+// CDF: P3-6-1a-2 (ADV-18 C). Fills the pocket of bag with single 40sw rounds until it refuses the
+// next one for weight; the bag then holds the gun before a reload but not after it.
+static void fill_bag_tight_by_weight( item &bag, const time_point &bday )
+{
+    int passes = 0;
+    bool refused = false;
+    std::string refuse_msg;
+    while( passes < 100 && !refused ) {
+        detached_ptr<item> f = item::spawn( "40sw", bday, item::default_charges_tag{} );
+        f->charges = 1;
+        bool ok = false;
+        refuse_msg = capture_debugmsg_during( [&]() {
+            ok = bag.put_in( std::move( f ), pocket_type::CONTAINER ).success();
+        } );
+        if( ok ) {
+            ++passes;
+        } else {
+            refused = true;
+        }
+    }
+    REQUIRE( refused );
+    REQUIRE( passes > 0 );
+    CHECK( refuse_msg.find( "weight" ) != std::string::npos );
+}
+
+// CDF: P3-6-1a-2 (ADV-19 T1). Green probe of the growth source; the grams go into the report.
+TEST_CASE( "reload_growth_probe_sw_610", "[p3][reload]" )
+{
+    const units::mass growth = sw610_reload_growth();
+    WARN( "sw_610 reload growth = " << units::to_gram( growth ) << " g" );
+    REQUIRE( growth > 0_gram );
+}
+
+// CDF: P3-6-1a-2 (ADV-19 T2, O-1). No DDA test names the overflow. The bag is
+// test_tool_belt_pocket_mix: pocket P1 is 1 L / 1500 g / 40 cm
+// (data/mods/TEST_DATA/dda_pocket_items.json:1309-1316), long enough for sw_610, tight by weight.
+TEST_CASE( "reload_overflow_moves_item_to_other_pocket_via_actor", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // CDF: clear_all_state gives the avatar DEBUG_STORAGE, an unlimited body storage that would
+    // take the gun and make the case prove nothing (pattern of reloadables_test.cpp:24-26).
+    dummy.unset_mutation( trait_id( "DEBUG_STORAGE" ) );
+    dummy.update_body_storage();
+
+    detached_ptr<item> b = item::spawn( "test_tool_belt_pocket_mix", bday );
+    item &bag = *b;
+    REQUIRE( !dummy.wear_item( std::move( b ) ) );
+
+    detached_ptr<item> g = item::spawn( "sw_610", bday, item::default_charges_tag{} );
+    item &gun = *g;
+    REQUIRE( bag.put_in( std::move( g ), pocket_type::CONTAINER ).success() );
+    REQUIRE( gun.parent_item() == &bag );
+    const units::mass gun_weight_before = gun.weight();
+
+    fill_bag_tight_by_weight( bag, bday );
+
+    // Worn BEFORE the ammo is added, so the ammo lands in the backpack, which can take the gun later.
+    REQUIRE( !dummy.wear_item( item::spawn( "backpack", bday ) ) );
+    detached_ptr<item> ammo_det = loaded_40_speedloader( bday );
+    item &ammo = dummy.i_add( std::move( ammo_det ) );
+    REQUIRE( ammo.parent_item() != &bag );
+
+    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    const int qty = opt.qty();
+    REQUIRE( qty >= 3 );
+    reload_activity_actor actor( std::move( opt ) );
+    player_activity act( activity_id( "ACT_RELOAD" ), 100 );
+    REQUIRE( act );
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        actor.reload( act, dummy, qty );
+    } );
+
+    REQUIRE( gun.ammo_remaining() == qty );
+    REQUIRE( gun.weight() > gun_weight_before );
+    CHECK( dmsg.empty() );
+    CHECK( !bag.has_item( gun ) );
+    CHECK( dummy.has_item( gun ) );
+    // CDF: game_object::is_detached() returns !!loc (game_object.cpp:141-143), the inverse of its
+    // name; has_position() is the intended "the item was not lost".
+    CHECK( gun.has_position() );
+}
+
+// CDF: P3-6-1a-2 (ADV-19 T3, O-2). No second container: the grown gun has nowhere to go, and
+// the uilist of the prompt answers UILIST_ERROR in test mode, which takes the drop branch.
+TEST_CASE( "reload_overflow_drops_item_when_no_room_via_actor", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // CDF: no body storage, so try_add has no pocket for the gun (pattern of
+    // reloadables_test.cpp:24-26; DEBUG_STORAGE is test-only unlimited storage).
+    dummy.unset_mutation( trait_id( "DEBUG_STORAGE" ) );
+    dummy.update_body_storage();
+
+    detached_ptr<item> b = item::spawn( "test_tool_belt_pocket_mix", bday );
+    item &bag = *b;
+    REQUIRE( !dummy.wear_item( std::move( b ) ) );
+
+    detached_ptr<item> g = item::spawn( "sw_610", bday, item::default_charges_tag{} );
+    item &gun = *g;
+    REQUIRE( bag.put_in( std::move( g ), pocket_type::CONTAINER ).success() );
+    REQUIRE( gun.parent_item() == &bag );
+    const units::mass gun_weight_before = gun.weight();
+
+    fill_bag_tight_by_weight( bag, bday );
+
+    detached_ptr<item> ammo_det = loaded_40_speedloader( bday );
+    item &ammo = *ammo_det;
+    REQUIRE( !dummy.wield( std::move( ammo_det ) ) );
+
+    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    const int qty = opt.qty();
+    REQUIRE( qty >= 3 );
+    reload_activity_actor actor( std::move( opt ) );
+    player_activity act( activity_id( "ACT_RELOAD" ), 100 );
+    REQUIRE( act );
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        actor.reload( act, dummy, qty );
+    } );
+
+    REQUIRE( gun.ammo_remaining() == qty );
+    REQUIRE( gun.weight() > gun_weight_before );
+    CHECK( dmsg.find( "test mode" ) != std::string::npos );
+    CHECK( !dummy.has_item( gun ) );
+    CHECK( gun.has_position() );
+    CHECK( gun.bub_pos() == dummy.bub_pos() );
+}
+
+// CDF: P3-6-1a-2 (ADV-19 T4, O-3, G3). Regression guard, green before and after the tail: a
+// reload that does not overfill the container leaves the item where it is. Occupancy is counted
+// before and after, with no parent_it and no can_contain call.
+TEST_CASE( "reload_inside_roomy_container_keeps_item_in_place_via_actor", "[p3][reload]" )
+{
+    clear_all_state();
+    const time_point bday = calendar::start_of_cataclysm;
+    avatar &dummy = get_avatar();
+    // CDF: see the O-1 case; DEBUG_STORAGE body storage removed.
+    dummy.unset_mutation( trait_id( "DEBUG_STORAGE" ) );
+    dummy.update_body_storage();
+
+    detached_ptr<item> b = item::spawn( "test_tool_belt_pocket_mix", bday );
+    item &bag = *b;
+    REQUIRE( !dummy.wear_item( std::move( b ) ) );
+
+    detached_ptr<item> g = item::spawn( "sw_610", bday, item::default_charges_tag{} );
+    item &gun = *g;
+    REQUIRE( bag.put_in( std::move( g ), pocket_type::CONTAINER ).success() );
+    REQUIRE( gun.parent_item() == &bag );
+    const size_t occupied_before = bag.all_items_top().size();
+    REQUIRE( occupied_before == 1 );
+
+    REQUIRE( !dummy.wear_item( item::spawn( "backpack", bday ) ) );
+    detached_ptr<item> ammo_det = loaded_40_speedloader( bday );
+    item &ammo = dummy.i_add( std::move( ammo_det ) );
+    REQUIRE( ammo.parent_item() != &bag );
+
+    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    const int qty = opt.qty();
+    REQUIRE( qty >= 3 );
+    reload_activity_actor actor( std::move( opt ) );
+    player_activity act( activity_id( "ACT_RELOAD" ), 100 );
+    REQUIRE( act );
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        actor.reload( act, dummy, qty );
+    } );
+
+    REQUIRE( gun.ammo_remaining() == qty );
+    CHECK( bag.all_items_top().size() == occupied_before );
+    CHECK( bag.all_items_top().front() == &gun );
+    CHECK( gun.parent_item() == &bag );
+    CHECK( dmsg.empty() );
 }

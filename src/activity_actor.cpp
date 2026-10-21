@@ -57,6 +57,7 @@
 #include "sounds.h"
 #include "timed_event.h"
 #include "translations.h"
+#include "ui.h"
 #include "uistate.h"
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
@@ -2418,7 +2419,78 @@ void reload_activity_actor::reload( player_activity &act, Character &who, int lo
     }
 
     who.recoil = MAX_RECOIL;
-    // CDF: capacity guard and overflow tail (DDA 8389-8439) are job 6-1a-2.
+
+    // Reload may have caused the item to increase in size more than the pocket/location can contain.
+    // We want to avoid this because items will be deleted on a save/load.
+    // CDF: check_parent_capacity_recursive is absent; "the grown item still fits its parents"
+    // is ported as a walk of parent_item() that keeps the outermost ancestor with an overfull
+    // pocket. A can_contain( .., parent_it ) walk cannot be used: it rejects every ancestor with
+    // "can't put a container into itself" (item_container.cpp:406), also when the pocket has room.
+    reloadable.invalidate_pocket_caches_upwards();
+    const item *overfull_parent = nullptr;
+    for( const item *p = reloadable.parent_item(); p; p = p->parent_item() ) {
+        for( const item_pocket *pkt : p->get_pockets( []( const item_pocket & ) {
+        return true;
+    } ) ) {
+            if( pkt->is_overfull() ) {
+                overfull_parent = p;
+                break;
+            }
+        }
+    }
+    if( overfull_parent == nullptr ) {
+        return;
+    }
+
+    // CDF: CDF owns items through detached_ptr (D1); DDA copies through item_location.
+    map &here = get_map();
+    const tripoint_bub_ms pos = reloadable.bub_pos();
+    detached_ptr<item> d = target_loc->detach();
+
+    // Attempt to put item in another pocket before prompting
+    // CDF: try_add leaves d untouched on failure; the item keeps its identity, so target_loc
+    // follows it and needs no update (DDA's target_loc = new_loc and loc.remove_item()).
+    ret_val<item *> res = who.try_add( std::move( d ), nullptr, nullptr, false );
+    if( res.success() ) {
+        return;
+    }
+
+    // Build prompt
+    uilist reload_query;
+    const bool wield_check = who.can_wield( *d ).success();
+    reload_query.text = string_format( _( "The %s no longer fits in your inventory" ),
+                                       reloadable_name );
+    if( who.has_wield_conflicts( *d ) ) {
+        // CDF: used_weapon() replaces DDA's get_wielded_item().
+        reload_query.addentry( 1, wield_check, 'w',
+                               _( "Dispose of %s and wield %s" ), who.used_weapon().display_name(),
+                               reloadable_name );
+    } else {
+        reload_query.addentry( 1, wield_check, 'w', _( "Wield %s" ), reloadable_name );
+    }
+    reload_query.addentry( 2, true, 'd', _( "Drop %s" ), reloadable_name );
+    reload_query.query();
+
+    if( reload_query.ret == 1 ) {
+        // This case is only reachable if wield_check is true
+        // CDF: wield() hands the item back when it was refused, which falls through to the drop.
+        d = who.wield( std::move( d ) );
+        if( !d ) {
+            add_msg( m_neutral, _( "The %s no longer fits in your inventory so you wield it instead." ),
+                     reloadable_name );
+            return;
+        }
+    }
+    // In player inventory and player is wielding something.
+    // CDF: the message goes to who (DDA: loc.carrier()); add_item_or_charges_ret_loc is absent and
+    // its location result is unused here; a leftover goes to map::add_item so the item is never lost.
+    who.add_msg_if_player( m_neutral,
+                           _( "The %s no longer fits in your inventory so you drop it instead." ),
+                           reloadable_name );
+    d = here.add_item_or_charges( pos, std::move( d ) );
+    if( d ) {
+        here.add_item( pos, std::move( d ) );
+    }
 }
 
 void reload_activity_actor::do_turn( player_activity &act, Character &who )
