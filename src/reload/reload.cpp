@@ -138,6 +138,12 @@ auto discover_ammo(const Character& who, item& base, discovery_options options)
                 (ammo->is_ammo_container() || ammo->is_container())
                     ? ammo->contents.front().typeId()
                     : ammo->typeId();
+            // CDF: find_ammo hands back the container for contained ammo, where DDA's
+            // item_location is the ammo itself, so unwrap it for the item-pointer can_reload.
+            const item* reload_ammo =
+                (ammo->is_ammo_container() || ammo->is_container())
+                    ? &ammo->contents.front()
+                    : ammo;
             const auto can_reload_with = target->can_reload_with(id);
             if (can_reload_with) {
                 // Skip if the magazine is inside a gun/mod that can't fire its ammunition.
@@ -161,7 +167,7 @@ auto discover_ammo(const Character& who, item& base, discovery_options options)
                 }
             }
             if ((options.include_potential && can_reload_with)
-                || who.as_player()->can_reload(*target, id)
+                || who.as_player()->can_reload(*target, reload_ammo)
                 || target->has_flag(flag_RELOAD_AND_SHOOT)) {
                 result.options.emplace_back(who.as_player(), target, &base, *ammo);
             }

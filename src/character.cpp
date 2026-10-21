@@ -13252,17 +13252,19 @@ int Character::hp_percentage() const
     return ( 100 * total_cur ) / total_max;
 }
 
-bool Character::can_reload( const item &it, const itype_id &ammo ) const
+bool Character::can_reload( const item &it, const item *ammo ) const
 {
+    // CDF: BN holster kinds
     if( it.is_holster() ) {
         return it.has_free_holster_pocket();
     }
-    if( !it.is_reloadable_with( ammo ) ) {
+
+    if( ammo && !it.can_reload_with( *ammo, false ) ) {
         return false;
     }
 
     if( it.is_ammo_belt() ) {
-        const auto &linkage = it.type->magazine->linkage;
+        const std::optional<itype_id> &linkage = it.type->magazine->linkage;
         if( linkage && !has_charges( *linkage, 1 ) ) {
             return false;
         }
@@ -13271,29 +13273,30 @@ bool Character::can_reload( const item &it, const itype_id &ammo ) const
     return true;
 }
 
-int Character::item_reload_cost( const item &it, item &ammo, int qty ) const
+int Character::item_reload_cost( const item &it, const item &ammo, int qty ) const
 {
-    if( ammo.is_ammo() ) {
+    if( ammo.is_ammo() || ammo.is_frozen_liquid() || ammo.made_of_from_type( phase_id::LIQUID ) ) {
         qty = std::max( std::min( ammo.charges, qty ), 1 );
-    } else if( ammo.is_ammo_container() || ammo.is_container() ) {
-        qty = clamp( qty, ammo.contents.front().charges, 1 );
-    } else if( ammo.is_magazine() ) {
-        qty = 1;
-        // Disallow stackable generic to avoid issues with damage melding
-    } else if( ammo.is_ammo() || ammo.is_comestible() ) {
-        qty = std::max( std::min( qty, ammo.charges ), 1 );
+    } else if( ammo.is_ammo_container() ) {
+        int min_clamp = 0;
+        // find the first ammo in the container to get its charges
+        ammo.visit_items( [&min_clamp]( const item * it, const item * ) {
+            if( it->is_ammo() ) {
+                min_clamp = it->charges;
+                return VisitResponse::ABORT;
+            }
+            return VisitResponse::NEXT;
+        } );
+
+        qty = clamp( qty, min_clamp, 1 );
     } else {
-        debugmsg( "cannot determine reload cost as %s is neither ammo or magazine", ammo.tname() );
-        return 0;
+        // Handle everything else as magazines
+        qty = 1;
     }
 
-    //Save the quantity so we can change it for item_handling_cost and reset it after
-    int saved_quantity = ammo.charges;
-    ammo.charges = qty;
     // No base cost for handling ammo - that's already included in obtain cost
     // We have the ammo in our hands right now
-    int mv = item_handling_cost( ammo, true, 0 );
-    ammo.charges = saved_quantity;
+    int mv = item_handling_cost( ammo, true, 0, qty );
 
     if( ammo.has_flag( flag_MAG_BULKY ) ) {
         mv *= 1.5; // bulky magazines take longer to insert
@@ -13310,14 +13313,12 @@ int Character::item_reload_cost( const item &it, item &ammo, int qty ) const
     /** @EFFECT_SHOTGUN decreases time taken to reload a shotgun */
     /** @EFFECT_LAUNCHER decreases time taken to reload a launcher */
 
-    // If we're topping off an internal magazine in a gun, only use base reload time, magazines use time per round.
     int cost = 0;
-    if( it.is_gun() ) { // CDF: DDA character_ammo.cpp:211, 4-b2 tool magazine (lookup R1)
-        cost = it.get_reload_time(); // CDF: DDA character_ammo.cpp:212, 4-b2 tool magazine (lookup R1)
-    } else if( it.type->magazine ) { // CDF: DDA character_ammo.cpp:213, 4-b2 tool magazine (lookup R1)
-        cost = it.type->magazine->reload_time * qty; // CDF: DDA character_ammo.cpp:214, 4-b2 tool magazine (lookup R1)
-    } else { // CDF: DDA character_ammo.cpp:215, 4-b2 tool magazine (lookup R1)
-        // CDF: DDA character_ammo.cpp:216, 4-b2 tool magazine (lookup R1): a tool with an integral pocket has no type->magazine
+    if( it.is_gun() ) {
+        cost = it.get_reload_time() * qty;
+    } else if( it.type->magazine ) {
+        cost = it.type->magazine->reload_time * qty;
+    } else {
         cost = it.obtain_cost( ammo );
     }
 
@@ -13330,6 +13331,8 @@ int Character::item_reload_cost( const item &it, item &ammo, int qty ) const
         mv *= std::max<float>( 10.0f / std::max<float>( 10.0f, get_str() ), 0.25f );
     }
 
+    // CDF: DDA character_ammo.cpp:227-230 (character_modifier_reloading_move_mod and
+    // calculate_by_enchantment( ..., RELOADING_SPEED )) not ported: no CDF counterpart value.
     return std::max( mv, 25 );
 }
 

@@ -156,7 +156,7 @@ TEST_CASE("reload_loaded_revolver_rejects_speedloader", "[reload][reload_selecti
         item::spawn("38_special", calendar::start_of_cataclysm, gun.ammo_capacity()));
     auto& speedloader = who.i_add(std::move(speedloader_owner));
     REQUIRE(gun.can_reload_with(speedloader.typeId()));
-    REQUIRE_FALSE(who.can_reload(gun, speedloader.typeId()));
+    REQUIRE_FALSE(who.can_reload(gun, &speedloader));
 
     const auto discovery = reload::discover_ammo(who, gun);
 
@@ -168,6 +168,16 @@ TEST_CASE("reload_loaded_revolver_rejects_speedloader", "[reload][reload_selecti
     REQUIRE(potential.options.size() == 1);
     CHECK(potential.options.front().ammo == &speedloader);
     CHECK(potential.options.front().target == &gun);
+}
+
+TEST_CASE("reload_cost_gun_scales_with_qty", "[p3][reload]") {
+    clear_all_state();
+    auto& who = get_avatar();
+    auto& gun = who.i_add(item::spawn("test_compbow", calendar::start_of_cataclysm, 0));
+    auto ammo = item::spawn("test_arrow", calendar::start_of_cataclysm, 3);
+    const int one = who.item_reload_cost(gun, *ammo, 1);
+    const int three = who.item_reload_cost(gun, *ammo, 3);
+    CHECK(three - one >= gun.get_reload_time());
 }
 
 TEST_CASE("reload_stable_ordering", "[reload][reload_selection]") {

@@ -13,6 +13,9 @@
 // CDF: needed for the free get_map() used as the dummy map argument below.
 #include "map/map.h"
 
+// CDF: defined below (AUTO-26 O1 / D14 legacy direct-charges guard).
+static bool cdf_legacy_direct_charges( const item &it );
+
 bool item::allows_speedloader( const itype_id &speedloader_id ) const
 {
     return contents.allows_speedloader( speedloader_id );
@@ -62,12 +65,16 @@ bool item::can_reload_with( const item &ammo, bool now ) const
         }
     }
 
+    // CDF: legacy direct-charges guns (D14) have no MAGAZINE pocket, so the pocket check below
+    // would reject them; keep BN's answer for them. Remove with cdf_legacy_direct_charges.
+    if( cdf_legacy_direct_charges( *this ) ) {
+        // CDF: BN's is_reloadable_with() always evaluated "now" (rejects a full/loaded gun).
+        return is_reloadable_helper( ammo.typeId(), true );
+    }
+
     // Check if the item is in general compatible with any reloadable pocket.
     return contents.can_reload_with( ammo, now );
 }
-
-// CDF: defined below (AUTO-26 O1 / D14 legacy direct-charges guard).
-static bool cdf_legacy_direct_charges( const item &it );
 
 bool item::is_reloadable() const
 {

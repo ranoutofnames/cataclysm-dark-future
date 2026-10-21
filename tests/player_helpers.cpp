@@ -256,7 +256,7 @@ void arm_character(
         item& ammo = *det;
         shooter.i_add(std::move(det));
         REQUIRE(gun.is_reloadable_with(ammo_id));
-        REQUIRE(shooter.can_reload(gun, ammo_id));
+        REQUIRE(shooter.can_reload(gun, &ammo));
         gun.reload(shooter, ammo, gun.ammo_capacity());
     } else {
         const itype_id magazine_id = gun.magazine_default();
@@ -267,7 +267,7 @@ void arm_character(
         item& ammo = *det;
         shooter.i_add(std::move(det));
         REQUIRE(magazine.is_reloadable_with(ammo_id));
-        REQUIRE(shooter.can_reload(magazine, ammo_id));
+        REQUIRE(shooter.can_reload(magazine, &ammo));
         magazine.reload(shooter, ammo, magazine.ammo_capacity());
         gun.reload(shooter, magazine, magazine.ammo_capacity());
     }
