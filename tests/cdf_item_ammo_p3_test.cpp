@@ -924,3 +924,21 @@ TEST_CASE( "item::price counts an integral magazine's rounds", "[p3][ammo]" ) {
     // The fuel item in the pocket is priced by the visit; the integral term adds the rounds again.
     CHECK( loaded->price( true ) - empty->price( true ) > fuel_price * 1.5f );
 }
+
+TEST_CASE( "ammo_scale_loads_from_use_action_object_and_array", "[p3][ammo]" )
+{
+    const itype &t = itype_id( "test_ammo_scale_tool" ).obj();
+    CHECK( t.ammo_scale.at( "transform" ) == 3 );
+    CHECK( t.ammo_scale.at( "CROWBAR" ) == 2 );
+    CHECK( t.ammo_scale.at( "HAMMER" ) == 0 );
+    CHECK( t.ammo_scale.count( "HEAT_FOOD" ) == 0 );
+}
+
+TEST_CASE( "ammo_scale_defaults_are_zero_for_quality_and_attach_methods", "[p3][ammo]" )
+{
+    CHECK( itype_id( "hacksaw" ).obj().ammo_scale.at( "HACKSAW" ) == 0 );
+    CHECK( itype_id( "test_multimag_consume_gunmod" ).obj().ammo_scale.at( "GUNMOD_ATTACH" ) == 0 );
+    CHECK( itype_id( "test_multimag_consume_toolmod" ).obj().ammo_scale.at( "TOOLMOD_ATTACH" ) == 0 );
+    CHECK( itype_id( "glock_19" ).obj().ammo_scale.at( "detach_gunmods" ) == 0 );
+    CHECK( itype_id( "rock" ).obj().ammo_scale.empty() );
+}

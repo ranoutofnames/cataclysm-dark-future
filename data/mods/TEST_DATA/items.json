@@ -2336,5 +2336,17 @@
         }
       }
     ]
+  },
+  {
+    "id": "test_ammo_scale_tool",
+    "copy-from": "smart_phone_music",
+    "type": "TOOL",
+    "name": { "str": "test ammo scale tool" },
+    "use_action": [
+      { "type": "transform", "target": "rag", "msg": "x", "ammo_scale": 3 },
+      [ "CROWBAR", 2 ],
+      [ "HAMMER", 0 ],
+      "HEAT_FOOD"
+    ]
   }
 ]

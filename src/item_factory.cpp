@@ -435,6 +435,9 @@ void Item_factory::finalize_pre( itype &obj )
         for( const auto &u : q.first.obj().usages ) {
             if( q.second >= u.first ) {
                 emplace_usage( obj.use_methods, u.second );
+                // CDF: DDA comment (412-415): all actions provided by quality level do not consume
+                // ammo, so it is safe to default them to 0; kept here as the ammo_scale default.
+                obj.ammo_scale.emplace( u.second, 0 );
             }
         }
     }
@@ -442,9 +445,12 @@ void Item_factory::finalize_pre( itype &obj )
     if( obj.mod ) {
         std::string func = obj.gunmod ? "GUNMOD_ATTACH" : "TOOLMOD_ATTACH";
         emplace_usage( obj.use_methods, func );
+        obj.ammo_scale.emplace( func, 0 );
     } else if( obj.gun ) {
         const std::string func = "detach_gunmods";
         emplace_usage( obj.use_methods, func );
+        obj.ammo_scale.emplace( func, 0 );
+        // CDF: modify_gunmods use action absent (0 hits in src and data/json)
     }
 
     if( get_option<bool>( "NO_FAULTS" ) ) {
@@ -3852,11 +3858,12 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
 
     assign( jo, "techniques", def.techniques );
 
-    set_use_methods_from_json( jo, "use_action", def.use_methods );
+    set_use_methods_from_json( jo, "use_action", def.use_methods, def.ammo_scale );
 
     assign( jo, "countdown_interval", def.countdown_interval );
     assign( jo, "countdown_destroy", def.countdown_destroy );
 
+    // CDF: ammo_scale not recorded for countdown/drop actions (DDA 4539-4540); no method-form caller reads them
     if( jo.has_string( "countdown_action" ) ) {
         def.countdown_action = usage_from_string( jo.get_string( "countdown_action" ) );
 
@@ -4567,7 +4574,8 @@ void Item_factory::load_item_group( const JsonObject &jsobj, const item_group_id
 
 
 void Item_factory::set_use_methods_from_json( const JsonObject &jo, const std::string &member,
-        std::map<std::string, use_function> &use_methods )
+        std::map<std::string, use_function> &use_methods,
+        std::map<std::string, int> &ammo_scale )
 {
     bool has_member = jo.has_member( member );
     auto extend_use_action = extend_has_member( jo, member );
@@ -4578,7 +4586,7 @@ void Item_factory::set_use_methods_from_json( const JsonObject &jo, const std::s
     if( has_member ) {
         use_methods.clear();
         if( jo.has_array( member ) ) {
-            set_use_methods_from_array( jo.get_array( member ), use_methods ) ;
+            set_use_methods_from_array( jo.get_array( member ), use_methods, ammo_scale );
         } else if( jo.has_string( member ) ) {
             std::string type = jo.get_string( member );
             emplace_usage( use_methods, type );
@@ -4587,18 +4595,23 @@ void Item_factory::set_use_methods_from_json( const JsonObject &jo, const std::s
             std::pair<std::string, use_function> fun = usage_from_object( obj );
             if( fun.second ) {
                 use_methods.insert( fun );
+                // CDF: read here, keyed by the use_methods key (internal_name or type); DDA reads it in read_use_function keyed by type
+                if( obj.has_int( "ammo_scale" ) ) {
+                    ammo_scale.emplace( fun.first, static_cast<int>( obj.get_float( "ammo_scale" ) ) );
+                }
             }
         } else {
             jo.throw_error( "member 'use_action' is neither string nor object." );
         }
     } else if( extend_use_action ) {
-        set_use_methods_from_array( *extend_use_action, use_methods );
+        set_use_methods_from_array( *extend_use_action, use_methods, ammo_scale );
     }
 
 }
 
 void Item_factory::set_use_methods_from_array( const JsonArray &array,
-        std::map<std::string, use_function> &use_methods )
+        std::map<std::string, use_function> &use_methods,
+        std::map<std::string, int> &ammo_scale )
 {
     for( const JsonValue entry : array ) {
         if( entry.test_string() ) {
@@ -4609,9 +4622,20 @@ void Item_factory::set_use_methods_from_array( const JsonArray &array,
             std::pair<std::string, use_function> fun = usage_from_object( obj );
             if( fun.second ) {
                 use_methods.insert( fun );
+                // CDF: see above
+                if( obj.has_int( "ammo_scale" ) ) {
+                    ammo_scale.emplace( fun.first, static_cast<int>( obj.get_float( "ammo_scale" ) ) );
+                }
             }
+        } else if( entry.test_array() ) {
+            JsonArray use_arr = entry.get_array();
+            const std::string type = use_arr.get_string( 0 );
+            if( use_arr.has_int( 1 ) ) {
+                ammo_scale.emplace( type, static_cast<int>( use_arr.get_float( 1 ) ) );
+            }
+            emplace_usage( use_methods, type );
         } else {
-            entry.throw_error( "array element is neither string nor object." );
+            entry.throw_error( "array element is neither string, array nor object." );
         }
     }
 }
