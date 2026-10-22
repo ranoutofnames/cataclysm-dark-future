@@ -5,6 +5,7 @@
 #include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "debug.h"
 #include "examine_item_menu.h"
 #include "flag.h"
 #include "item.h"
@@ -23,7 +24,12 @@
 #include <vector>
 
 static const itype_id itype_glock_19( "glock_19" );
+static const itype_id itype_p3_multimag_gun_consume( "p3_multimag_gun_consume" );
+static const itype_id itype_test_multimag_aux_gun( "test_multimag_aux_gun" );
+static const itype_id itype_test_multimag_consume_gunmod( "test_multimag_consume_gunmod" );
+static const itype_id itype_test_multimag_consume_gunmod_mult( "test_multimag_consume_gunmod_mult" );
 static const itype_id itype_test_multimag_gun_consume( "test_multimag_gun_consume" );
+static const itype_id itype_test_multimag_tool_gunmod( "test_multimag_tool_gunmod" );
 
 // DDA tests/multimag_test.cpp:106-113.
 static item make_loaded_glock()
@@ -41,6 +47,23 @@ static item make_loaded_glock()
 static item make_multimag_consume_gun( int bb_count = 15, int batt = 100 )
 {
     item gun( itype_id( "test_multimag_gun_consume" ) );
+    item bb_mag( itype_id( "glockmag" ) );
+    bb_mag.put_in( item( itype_id( "9mm" ), calendar::turn, bb_count ), pocket_type::MAGAZINE );
+    item batt_mag( itype_id( "heavy_battery_cell" ) );
+    batt_mag.put_in( item( itype_id( "battery" ), calendar::turn, batt ),
+                     pocket_type::MAGAZINE );
+    REQUIRE( gun.put_in( bb_mag, pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun.put_in( batt_mag, pocket_type::MAGAZINE_WELL ).success() );
+    return item( gun ); // CDF: item move ctor deleted
+}
+
+// CDF: test_multimag_gun_consume has explicit pocket_data, which suppresses the
+// generated MOD pocket; cases that install mods use the p3_ copy adding a mod
+// bay (data/mods/TEST_DATA/multimag_p3.json), as in
+// tests/cdf_item_pocket_p3_test.cpp. Stats and firing_requirements are inherited.
+static item make_multimag_consume_gun_with_mod_bay( int bb_count = 15, int batt = 100 )
+{
+    item gun( itype_p3_multimag_gun_consume );
     item bb_mag( itype_id( "glockmag" ) );
     bb_mag.put_in( item( itype_id( "9mm" ), calendar::turn, bb_count ), pocket_type::MAGAZINE );
     item batt_mag( itype_id( "heavy_battery_cell" ) );
@@ -113,6 +136,37 @@ TEST_CASE( "gunmod_added_modes_inherit_DEFAULT_format", "[p3][firing]" )
     CHECK( s.find( '5' ) != std::string::npos );
 }
 
+// DDA tests/multimag_test.cpp:1905-1921 and 1933-1940 (the format SECTION,
+// 1923-1931, is gunmod_added_modes_inherit_DEFAULT_format above).
+TEST_CASE( "gunmod_added_modes_inherit_DEFAULT_firing_requirements", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    tripoint_bub_ms pos( tripoint_bub_ms::zero() ); // CDF: zero is a function here
+
+    SECTION( "consume_shots on an unlisted mode falls back to DEFAULT" ) {
+        item gun = make_multimag_consume_gun();
+        REQUIRE( gun.uses_firing_requirements() ); // CDF
+        // "AUTO" is not in test_multimag_gun_consume's modes [DEFAULT, BURST].
+        // It's also not in firing_requirements; treated as gunmod-added.
+        const int got = gun.consume_shots( gun_mode_id( "AUTO" ), 2, here, pos, nullptr );
+        // DEFAULT entries: ammo qty=1, power qty=5; 2 shots -> 2 ammo, 10 power.
+        CHECK( got == 2 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 13 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 90 );
+    }
+
+    SECTION( "BURST mode uses its own firing_requirements, not DEFAULT" ) {
+        item gun = make_multimag_consume_gun();
+        REQUIRE( gun.uses_firing_requirements() ); // CDF
+        const int got = gun.consume_shots( gun_mode_id( "BURST" ), 1, here, pos, nullptr );
+        // BURST entries: ammo qty=3, power qty=15.
+        CHECK( got == 1 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 12 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 85 );
+    }
+}
+
 // DDA tests/multimag_test.cpp:1943-1956.
 TEST_CASE( "format_consumption_requirements_legacy_item", "[p3][firing]" )
 {
@@ -153,4 +207,180 @@ TEST_CASE( "tool_uses_remaining_vs_local", "[p3][firing]" )
     item tool = make_multimag_consume_tool( 12, 30 );
     // No carrier, no UPS, no cable: external pool is zero.
     CHECK( tool.tool_uses_remaining_local() == tool.tool_uses_remaining( here, nullptr ) );
+}
+
+// DDA tests/multimag_test.cpp:1381-1402. Tool and welder SECTIONs (1404-1433)
+// are not ported here (owned by the tool-consumption job).
+// CDF: gun_mode_id constants absent
+TEST_CASE( "consume_shots_and_consume_tool_uses_drain_per_pocket", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    tripoint_bub_ms pos( tripoint_bub_ms::zero() ); // CDF: zero is a function here
+
+    SECTION( "gun DEFAULT mode drains 1 ammo + 5 power per shot" ) {
+        item gun = make_multimag_consume_gun( 15, 100 );
+        REQUIRE( gun.uses_firing_requirements() );
+        const int got = gun.consume_shots( gun_mode_id( "DEFAULT" ), 3, here, pos, nullptr );
+        CHECK( got == 3 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 12 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 85 );
+    }
+
+    SECTION( "gun BURST mode drains 3 ammo + 15 power per shot" ) {
+        item gun = make_multimag_consume_gun( 15, 100 );
+        REQUIRE( gun.uses_firing_requirements() );
+        const int got = gun.consume_shots( gun_mode_id( "BURST" ), 2, here, pos, nullptr );
+        CHECK( got == 2 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 9 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 70 );
+    }
+}
+
+// DDA tests/multimag_test.cpp:1607-1621, gunmod SECTION only: the toolmod
+// multiply SECTION (1623-1632) is not ported here.
+TEST_CASE( "mod_consumption_mods_override_per_pocket", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+
+    SECTION( "gunmod set overrides a pocket's per-shot cost" ) {
+        item gun = make_multimag_consume_gun_with_mod_bay( 15, 100 );  // DEFAULT: ammo 1, power 5
+        REQUIRE( gun.uses_firing_requirements() );
+        REQUIRE( gun.put_in( item( itype_test_multimag_consume_gunmod ),
+                             pocket_type::MOD ).success() );
+        const int got = gun.consume_shots( gun_mode_id( "DEFAULT" ), 2, here, pos, nullptr );
+        CHECK( got == 2 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 13 );   // 1/shot untouched
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 96 );  // set 2/shot -> 100 - 2*2
+    }
+}
+
+// DDA tests/multimag_test.cpp:1646-1676.
+TEST_CASE( "consumption_mods_combine_order_independent", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+
+    // Two mods on the power pocket: set 2 and multiply 0.5 -> 2*0.5 = 1 per shot,
+    // independent of install order.
+    auto power_drained = [&]( bool set_first ) -> int {
+        item gun = make_multimag_consume_gun_with_mod_bay( 15, 100 );
+        REQUIRE( gun.uses_firing_requirements() );
+        if( set_first )
+        {
+            REQUIRE( gun.put_in( item( itype_test_multimag_consume_gunmod ), pocket_type::MOD ).success() );
+            REQUIRE( gun.put_in( item( itype_test_multimag_consume_gunmod_mult ),
+                                 pocket_type::MOD ).success() );
+        } else
+        {
+            REQUIRE( gun.put_in( item( itype_test_multimag_consume_gunmod_mult ),
+                                 pocket_type::MOD ).success() );
+            REQUIRE( gun.put_in( item( itype_test_multimag_consume_gunmod ), pocket_type::MOD ).success() );
+        }
+        REQUIRE( gun.consume_shots( gun_mode_id( "DEFAULT" ), 1, here, pos, nullptr ) == 1 );
+        return 100 - gun.ammo_remaining_in_pocket( "power" );
+    };
+
+    const int set_first = power_drained( true );
+    const int mult_first = power_drained( false );
+    CAPTURE( set_first, mult_first );
+    CHECK( set_first == 1 );
+    CHECK( mult_first == 1 );
+}
+
+// DDA tests/multimag_test.cpp:1678-1701.
+TEST_CASE( "tool_gunmod_firing_requirements_is_not_own_consumption", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+
+    // A TOOL+GUNMOD's mode_firing_requirements is the cost it imposes on its gun
+    // host, not its own tool consumption: the bare item is not a multimag host.
+    item tg( itype_test_multimag_tool_gunmod );
+    REQUIRE( tg.is_tool() );
+    REQUIRE( tg.is_gunmod() );
+    CHECK_FALSE( tg.uses_firing_requirements() );
+
+    SECTION( "installed on a gun, its mode draws the mod's per-pocket cost" ) {
+        item gun = make_multimag_consume_gun_with_mod_bay( 15, 100 );
+        REQUIRE( gun.uses_firing_requirements() );
+        REQUIRE( gun.put_in( item( itype_test_multimag_tool_gunmod ),
+                             pocket_type::MOD ).success() );
+        // CDF: gun_mode_TGMODE absent
+        REQUIRE( gun.gun_all_modes().count( gun_mode_id( "TGMODE" ) ) == 1 );
+        const int got = gun.consume_shots( gun_mode_id( "TGMODE" ), 2, here, pos, nullptr );
+        CHECK( got == 2 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 13 );   // 15 - 2*1
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 98 );  // 100 - 2*1 (DEFAULT would be 5)
+    }
+}
+
+// DDA tests/multimag_test.cpp:1703-1735.
+TEST_CASE( "aux_gunmod_mode_blocked_on_multimag_host", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+
+    item gun = make_multimag_consume_gun_with_mod_bay( 15, 100 );
+    REQUIRE( gun.uses_firing_requirements() );
+    REQUIRE( gun.put_in( item( itype_test_multimag_aux_gun ), pocket_type::MOD ).success() );
+
+    // The aux gun-gunmod contributes a mode whose gun_mode target is the aux item.
+    gun_mode_id aux_mode;
+    for( const std::pair<const gun_mode_id, gun_mode> &m : gun.gun_all_modes() ) {
+        if( m.second.target != &gun ) {
+            aux_mode = m.first;
+        }
+    }
+    REQUIRE_FALSE( aux_mode.is_empty() );
+
+    WHEN( "the aux mode is selected on the multimag host" ) {
+        THEN( "it is blocked: not fireable, host pockets untouched" ) {
+            CHECK( gun.firing_mode_blocked( aux_mode ) );
+            int consumed = -1;
+            // consume_shots intentionally debugmsgs once when refusing an aux mode.
+            const std::string dmsg = capture_debugmsg_during( [&]() {
+                consumed = gun.consume_shots( aux_mode, 1, here, pos, nullptr );
+            } );
+            CHECK( consumed == 0 );
+            CHECK( dmsg.find( "aux-gunmod" ) != std::string::npos );
+            CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 15 );
+            CHECK( gun.ammo_remaining_in_pocket( "power" ) == 100 );
+        }
+    }
+}
+
+// DDA tests/multimag_test.cpp:1746-1763. Passes before the edit: the 4-arg
+// ammo_consume guard for multimag items is already present (src/item_gun_tool_ammo.cpp).
+TEST_CASE( "ammo_consume_qty_hard_guard_for_multimag", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    tripoint_bub_ms pos( tripoint_bub_ms::zero() ); // CDF: zero is a function here
+
+    item gun = make_multimag_consume_gun();
+    REQUIRE( gun.uses_firing_requirements() );
+    int consumed = 0;
+    const std::string captured = capture_debugmsg_during( [&]() {
+        consumed = gun.ammo_consume( 5, here, pos, nullptr );
+    } );
+    CHECK( consumed == 0 );
+    CHECK( captured.find( "multimag" ) != std::string::npos );
+    // Stocks unchanged.
+    CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 15 );
+    CHECK( gun.ammo_remaining_in_pocket( "power" ) == 100 );
+}
+
+// NEW (8-1b): a non-gun is never blocked. The "gun with no modes is true"
+// sub-case needs a TEST_DATA gun with empty modes; none exists, so it is not
+// written (listed under Blocked in the report).
+TEST_CASE( "firing_mode_blocked_guard", "[p3][firing]" )
+{
+    item tool_gm( itype_test_multimag_tool_gunmod );
+    CHECK_FALSE( tool_gm.firing_mode_blocked( gun_mode_id( "DEFAULT" ) ) );
 }

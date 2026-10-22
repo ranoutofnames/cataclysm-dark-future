@@ -1526,3 +1526,133 @@ int item::feasible_tool_uses( int external_pool ) const
     }
     return feasible_uses( *this, *entries, INT_MAX, std::max( 0, external_pool ) );
 }
+
+namespace
+{
+// Multimag drain in cable -> local -> UPS -> bionic order; applies
+// external deltas exactly once. Returns shots / uses actually consumed.
+// TODO(multimag): cable-before-local order can misallocate when 2+ battery
+// pockets share cable and have mixed local stocks. Drain local first per
+// pocket, then bill external for the residual.
+int multimag_drain( item &host, const std::vector<pocket_consumption_entry> &entries,
+                    int requested, map &here, const tripoint_bub_ms &pos,
+                    Character *carrier )
+{
+    const int cable_initial = host.available_cable_charges( here );
+    const int ups_initial = host.available_ups_charges( carrier );
+    const int bionic_initial = host.available_bionic_charges( carrier );
+    const int pool = cable_initial + ups_initial + bionic_initial;
+
+    const int allowed = feasible_uses( host, entries, requested, pool );
+    if( allowed <= 0 ) {
+        return 0;
+    }
+
+    int cable_left = cable_initial;
+    int ups_left = ups_initial;
+    int bionic_left = bionic_initial;
+
+    for( const pocket_consumption_entry &e : entries ) {
+        int qty = host.effective_qty( e ) * allowed;
+        if( qty <= 0 ) {
+            continue;
+        }
+        const item_pocket *p = host.pocket_by_id( e.pocket );
+        const bool battery = host.pocket_accepts_battery( p );
+        if( battery ) {
+            const int from_cable = std::min( qty, cable_left );
+            cable_left -= from_cable;
+            qty        -= from_cable;
+        }
+        if( qty > 0 ) {
+            const int from_local = host.ammo_consume_in_pocket( e.pocket, qty, here, pos );
+            qty -= from_local;
+        }
+        if( battery && qty > 0 ) {
+            const int from_ups = std::min( qty, ups_left );
+            ups_left -= from_ups;
+            qty      -= from_ups;
+            const int from_bionic = std::min( qty, bionic_left );
+            bionic_left -= from_bionic;
+            qty         -= from_bionic;
+        }
+        if( qty > 0 ) {
+            debugmsg( "consume_shots: shortfall on pocket %s after feasibility check (%s)",
+                      e.pocket, host.tname() );
+        }
+    }
+
+    const int bionic_used = bionic_initial - bionic_left;
+    // CDF: cable link API absent (AUTO-26 O2)
+    if( carrier ) {
+        // CDF: Character::consume_ups absent, job 4-b2 (AUTO-30 OD-4)
+        if( bionic_used > 0 ) {
+            carrier->mod_power_level(
+                -units::from_kilojoule( static_cast<int64_t>( bionic_used ) ) );
+        }
+    }
+    return allowed;
+}
+} // namespace
+
+int item::consume_shots( const gun_mode_id &mode, int shots, map &here,
+                         const tripoint_bub_ms &pos, Character *carrier )
+{
+    if( shots <= 0 ) {
+        return 0;
+    }
+    if( firing_mode_blocked( mode ) ) {
+        const gun_mode gm = gun_get_mode( mode );
+        if( gm && gm.target != this ) {
+            debugmsg( "multimag: aux-gunmod mode %s fired on host %s is unsupported "
+                      "(would mis-bill parent pockets)", mode.str(), tname() );
+        }
+        return 0;
+    }
+    if( uses_firing_requirements() ) {
+        const std::vector<pocket_consumption_entry> *entries =
+            resolve_firing_entries( *this, mode );
+        if( entries == nullptr || entries->empty() ) {
+            debugmsg( "consume_shots: %s has no firing_requirements entries for mode %s",
+                      tname(), mode.str() );
+            return 0;
+        }
+        return multimag_drain( *this, *entries, shots, here, pos, carrier );
+    }
+    // Legacy path: ammo_consume + energy_consume per shot.
+    const int required_ammo = ammo_required() * shots;
+    if( required_ammo > 0 ) {
+        const int consumed_ammo = ammo_consume( required_ammo, here, pos, carrier );
+        if( consumed_ammo != required_ammo ) {
+            return 0;
+        }
+    }
+    // CDF: energy tail, job 8-1d (get_gun_energy_drain absent)
+    return shots;
+}
+
+int item::consume_one_shot( map &here, const tripoint_bub_ms &pos, Character *carrier )
+{
+    // CDF: gun_mode_DEFAULT absent
+    const gun_mode_id mode = is_gun() ? gun_get_mode_id() : gun_mode_id( "DEFAULT" );
+    return consume_shots( mode, 1, here, pos, carrier );
+}
+
+bool item::firing_mode_blocked( const gun_mode_id &mode ) const
+{
+    if( !is_gun() ) {
+        return false;
+    }
+    // CDF: hide_modes loop dropped (islot_gunmod::hide_modes absent, 3-7 OD-7)
+    const std::map<gun_mode_id, gun_mode> modes = gun_all_modes();
+    if( modes.empty() ) {
+        return true; // every mode hidden by a gunmod: gun is unfireable
+    }
+    // Aux gunmod modes target the aux item, not this host; billing them here
+    // would drain the parent's pockets, so block.
+    const auto it = modes.find( mode );
+    if( it != modes.end() && it->second.target != this && uses_firing_requirements() ) {
+        return true;
+    }
+    return false;
+}
