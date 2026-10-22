@@ -127,3 +127,30 @@ TEST_CASE( "format_consumption_requirements_legacy_item", "[p3][firing]" )
                                     /*method=*/"", gun_mode_id( "DEFAULT" ), /*uses=*/3 );
     CHECK( s_three.find( '3' ) != std::string::npos );
 }
+
+// DDA tests/multimag_test.cpp:1364-1379.
+TEST_CASE( "tool_uses_remaining_feasibility", "[p3][firing]" )
+{
+    SECTION( "non-fungible local stock; pocket B empty caps capacity" ) {
+        // tool_a qty=2, tool_b qty=1. well_a 12 charges, well_b 0 charges.
+        item tool = make_multimag_consume_tool( 12, 0 );
+        CHECK( tool.tool_uses_remaining_local() == 0 );
+    }
+
+    SECTION( "abundant local in both wells supports min-uses computation" ) {
+        // qty 2 from well_a, qty 1 from well_b.
+        // well_a 12 / 2 = 6, well_b 30 / 1 = 30 -> min 6 uses.
+        item tool = make_multimag_consume_tool( 12, 30 );
+        CHECK( tool.tool_uses_remaining_local() == 6 );
+    }
+}
+
+// DDA tests/multimag_test.cpp:1895-1903.
+TEST_CASE( "tool_uses_remaining_vs_local", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    item tool = make_multimag_consume_tool( 12, 30 );
+    // No carrier, no UPS, no cable: external pool is zero.
+    CHECK( tool.tool_uses_remaining_local() == tool.tool_uses_remaining( here, nullptr ) );
+}

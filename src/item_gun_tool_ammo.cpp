@@ -1386,3 +1386,143 @@ bool item::reload_targeted( Character &u, item &loc, int qty, int pocket_index )
     }
     return true;
 }
+
+// Per-mode feasibility for multimag. Local pocket stock is non-fungible
+// across pocket ids; only the external pool (cable + UPS + bionic) is
+// shared, and it's usable only by battery-flavored entries.
+static int feasible_uses( const item &host,
+                          const std::vector<pocket_consumption_entry> &entries,
+                          int requested, int external_pool )
+{
+    int n_max = INT_MAX;
+    struct battery_entry {
+        int qty;
+        int stock;
+    };
+    std::vector<battery_entry> battery;
+    for( const pocket_consumption_entry &e : entries ) {
+        const int q = host.effective_qty( e );
+        if( q <= 0 ) {
+            continue;
+        }
+        const int local = host.ammo_remaining_in_pocket( e.pocket );
+        const item_pocket *p = host.pocket_by_id( e.pocket );
+        if( host.pocket_accepts_battery( p ) ) {
+            battery.push_back( { q, local } );
+        } else {
+            n_max = std::min( n_max, local / q );
+        }
+    }
+
+    if( battery.empty() ) {
+        return std::min( requested, n_max );
+    }
+
+    // Pool need(n) = sum_{i past breakpoint} (n*qty_i - stock_i) is
+    // piecewise linear; walk breakpoints in ascending stock_i / qty_i order.
+    std::sort( battery.begin(), battery.end(),
+    []( const battery_entry & a, const battery_entry & b ) {
+        return static_cast<int64_t>( a.stock ) * b.qty <
+               static_cast<int64_t>( b.stock ) * a.qty;
+    } );
+
+    int qty_sum_past = 0;
+    int stock_sum_past = 0;
+    int n = 0;
+    bool exhausted = false;
+    for( const battery_entry &b : battery ) {
+        const int n_break = b.stock / b.qty;
+        if( qty_sum_past > 0 ) {
+            const int n_max_segment =
+                ( external_pool + stock_sum_past ) / qty_sum_past;
+            if( n_max_segment < n_break ) {
+                n = std::max( n, n_max_segment );
+                exhausted = true;
+                break;
+            }
+            n = std::max( n, n_break );
+        } else {
+            n = std::max( n, n_break );
+        }
+        qty_sum_past += b.qty;
+        stock_sum_past += b.stock;
+    }
+    if( !exhausted && qty_sum_past > 0 ) {
+        const int n_after = ( external_pool + stock_sum_past ) / qty_sum_past;
+        n = std::max( n, n_after );
+    }
+    return std::min( { requested, n_max, n } );
+}
+
+int item::available_cable_charges( map & /* here */ ) const
+{
+    // CDF: cable link API absent (no has_link_data, link or battery_left); stub until the cable owner rules (AUTO-26 O2)
+    return 0;
+}
+
+int item::available_ups_charges( const Character * /* carrier */ ) const
+{
+    // CDF: Character::available_ups() absent until 4-b2
+    return 0;
+}
+
+int item::available_bionic_charges( const Character *carrier ) const
+{
+    if( !carrier || !has_flag( flag_USES_BIONIC_POWER ) ) {
+        return 0;
+    }
+    return units::to_kilojoule( carrier->get_power_level() );
+}
+
+// CDF: until 3-4d, legacy ammo part of DDA shots_remaining 1424-1427 only (energy part 1428-1430 dropped)
+static int legacy_shots_interim( const item &it, map &here, const Character *carrier )
+{
+    int ret = 1000;
+    if( it.ammo_required() ) {
+        ret = std::min( it.ammo_remaining_linked( here, carrier ) / it.ammo_required(), ret );
+    }
+    return ret;
+}
+
+int item::tool_uses_remaining( map &here, const Character *carrier ) const
+{
+    if( !uses_firing_requirements() ) {
+        // CDF: until 3-4d
+        return legacy_shots_interim( *this, here, carrier );
+    }
+    const std::vector<pocket_consumption_entry> *entries =
+        type->firing_requirements.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
+    if( entries == nullptr || entries->empty() ) {
+        return 0;
+    }
+    const int pool = available_cable_charges( here )
+                     + available_ups_charges( carrier )
+                     + available_bionic_charges( carrier );
+    return feasible_uses( *this, *entries, INT_MAX, pool );
+}
+
+int item::tool_uses_remaining_local() const
+{
+    if( !uses_firing_requirements() ) {
+        return 0;
+    }
+    const std::vector<pocket_consumption_entry> *entries =
+        type->firing_requirements.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
+    if( entries == nullptr || entries->empty() ) {
+        return 0;
+    }
+    return feasible_uses( *this, *entries, INT_MAX, /*external_pool=*/0 );
+}
+
+int item::feasible_tool_uses( int external_pool ) const
+{
+    if( !uses_firing_requirements() ) {
+        return 0;
+    }
+    const std::vector<pocket_consumption_entry> *entries =
+        type->firing_requirements.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
+    if( entries == nullptr || entries->empty() ) {
+        return 0;
+    }
+    return feasible_uses( *this, *entries, INT_MAX, std::max( 0, external_pool ) );
+}
