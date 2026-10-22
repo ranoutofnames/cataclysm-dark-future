@@ -384,3 +384,93 @@ TEST_CASE( "firing_mode_blocked_guard", "[p3][firing]" )
     item tool_gm( itype_test_multimag_tool_gunmod );
     CHECK_FALSE( tool_gm.firing_mode_blocked( gun_mode_id( "DEFAULT" ) ) );
 }
+
+// DDA tests/multimag_test.cpp:1765-1783. The name says "non_divisible" but the
+// DDA body has only the divisible SECTION, so both are kept as written.
+// CDF: test_multimag_tool_factor has no legacy_charges_per_use_factor field, so
+// this case covers the multimag consumption path only.
+TEST_CASE( "legacy_charges_per_use_factor_non_divisible_request", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    tripoint_bub_ms pos( tripoint_bub_ms::zero() ); // CDF: zero is a function here
+
+    // Tool with factor=5 + one well @ qty=1.
+    item tool( itype_id( "test_multimag_tool_factor" ) );
+    item mag_a( itype_id( "glockmag" ) );
+    mag_a.put_in( item( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+    REQUIRE( tool.put_in( mag_a, pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( tool.uses_firing_requirements() );
+
+    SECTION( "divisible qty: 10 charges -> 2 uses -> 2 from well" ) {
+        const int got = tool.consume_tool_uses( 2, here, pos, nullptr );
+        CHECK( got == 2 );
+        CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 13 );
+    }
+}
+
+// DDA tests/multimag_test.cpp:1381, tool SECTIONs only (1404-1420). The welder
+// SECTION (1421-1432) is cut: Ledger row 2.
+// CDF: new TEST_CASE name; the DDA name is already used by 8-1b above.
+TEST_CASE( "consume_tool_uses_drain_per_pocket", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    tripoint_bub_ms pos( tripoint_bub_ms::zero() ); // CDF: zero is a function here
+
+    SECTION( "tool consume drains both wells linearly" ) {
+        item tool = make_multimag_consume_tool( 12, 30 );
+        REQUIRE( tool.uses_firing_requirements() );
+        const int got = tool.consume_tool_uses( 3, here, pos, nullptr );
+        CHECK( got == 3 );
+        CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 6 );
+        CHECK( tool.ammo_remaining_in_pocket( "well_b" ) == 27 );
+    }
+
+    SECTION( "shortfall in one well caps consumption" ) {
+        // well_b has 1 charge. qty=1 means only 1 use possible.
+        item tool = make_multimag_consume_tool( 12, 1 );
+        REQUIRE( tool.uses_firing_requirements() );
+        const int got = tool.consume_tool_uses( 5, here, pos, nullptr );
+        CHECK( got == 1 );
+        CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 10 );
+        CHECK( tool.ammo_remaining_in_pocket( "well_b" ) == 0 );
+    }
+}
+
+// NEW (8-1c): a legacy tool with no firing requirements drains qty * ammo_required().
+TEST_CASE( "activation_consume_legacy_tool_drains_qty_times_ammo_required", "[p3][firing]" )
+{
+    clear_map();
+    item tool( itype_id( "test_soldering_iron" ) );
+    tool.ammo_set( itype_id( "battery" ), 10 );
+    REQUIRE_FALSE( tool.uses_firing_requirements() );
+    REQUIRE( tool.ammo_required() == 1 );
+    CHECK( tool.activation_consume( 2, tripoint_bub_ms::zero(), nullptr ) == 2 );
+    CHECK( tool.ammo_remaining() == 8 );
+}
+
+// NEW (8-1c): firing-requirement tools route activation_consume through consume_tool_uses.
+TEST_CASE( "activation_consume_firing_requirements_tool_uses_consume_tool_uses", "[p3][firing]" )
+{
+    clear_map();
+    item tool = make_multimag_consume_tool( 12, 30 );
+    REQUIRE( tool.uses_firing_requirements() );
+    CHECK( tool.activation_consume( 3, tripoint_bub_ms::zero(), nullptr ) == 3 );
+    CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 6 );
+    CHECK( tool.ammo_remaining_in_pocket( "well_b" ) == 27 );
+}
+
+// NEW (8-1c): guard of Decision 2b. A non-tool with no firing requirements
+// returns uses and drains nothing.
+TEST_CASE( "consume_tool_uses_non_tool_gate", "[p3][firing]" )
+{
+    clear_map();
+    map &here = get_map();
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero();
+    item gun = make_loaded_glock();
+    REQUIRE_FALSE( gun.uses_firing_requirements() );
+    const int before = gun.ammo_remaining();
+    CHECK( gun.consume_tool_uses( 2, here, pos, nullptr ) == 2 );
+    CHECK( gun.ammo_remaining() == before );
+}

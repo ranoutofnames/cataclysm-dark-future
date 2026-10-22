@@ -1656,3 +1656,44 @@ bool item::firing_mode_blocked( const gun_mode_id &mode ) const
     }
     return false;
 }
+
+int item::consume_tool_uses( int uses, map &here, const tripoint_bub_ms &pos,
+                             Character *carrier )
+{
+    if( uses <= 0 ) {
+        return 0;
+    }
+    if( uses_firing_requirements() ) {
+        const std::vector<pocket_consumption_entry> *entries =
+            type->firing_requirements.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
+        if( entries == nullptr || entries->empty() ) {
+            debugmsg( "consume_tool_uses: %s has no DEFAULT firing_requirements entries",
+                      tname() );
+            return 0;
+        }
+        return multimag_drain( *this, *entries, uses, here, pos, carrier );
+    }
+    // Legacy path: ammo_consume(charges_to_use * uses).
+    // CDF: charges_to_use() is 1 for non-tools (3-4b OD-10 precedent)
+    if( !is_tool() ) {
+        return uses;
+    }
+    const int per_use = type ? type->charges_to_use() : 0;
+    if( per_use <= 0 ) {
+        return uses;
+    }
+    const int required = per_use * uses;
+    const int consumed = ammo_consume( required, here, pos, carrier );
+    if( consumed != required ) {
+        return consumed / per_use;
+    }
+    return uses;
+}
+
+int item::activation_consume( int qty, const tripoint_bub_ms &pos, Character *carrier )
+{
+    if( uses_firing_requirements() ) {
+        return consume_tool_uses( qty, get_map(), pos, carrier );
+    }
+    return ammo_consume( qty * ammo_required(), pos, carrier );
+}

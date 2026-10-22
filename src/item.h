@@ -2565,6 +2565,9 @@ class item : public location_visitable<item>, public game_object<item>
                                Character *carrier );
         int consume_one_shot( map &here, const tripoint_bub_ms &pos, Character *carrier );
 
+        /** Spend qty activations of this item: its firing requirements when it has them, else its legacy ammo. */
+        int activation_consume( int qty, const tripoint_bub_ms &pos, Character *carrier );
+
         // True if mode cannot be fired: not live (all modes hidden), or an aux gunmod mode targeting the aux item on a multimag gun.
         bool firing_mode_blocked( const gun_mode_id &mode ) const;
 
