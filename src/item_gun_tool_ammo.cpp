@@ -1032,8 +1032,6 @@ bool item::uses_magazine() const
 // explicit entries (see Item_factory::check_definitions), so a missing
 // entry here means the mode came from a gunmod (mode_modifier) and
 // inherits DEFAULT cost.
-// CDF: unused until 8-1a-c, which removes this marker
-[[maybe_unused]]
 static const std::vector<pocket_consumption_entry> *resolve_firing_entries(
     const item &host, const gun_mode_id &mode )
 {
@@ -1136,6 +1134,80 @@ int item::effective_qty( const pocket_consumption_entry &e ) const
         return 1;
     }
     return static_cast<int>( scaled );
+}
+
+static std::string format_entry_name( const item &host, const pocket_consumption_entry &e,
+                                      int qty )
+{
+    const item_pocket *p = host.pocket_by_id( e.pocket );
+    if( p == nullptr ) {
+        return e.pocket;
+    }
+    if( const item *mag = p->magazine_current() ) {
+        if( const itype *adata = mag->ammo_data() ) {
+            return adata->nname( qty );
+        }
+    }
+    const pocket_data *pd = p->get_pocket_data();
+    if( pd ) {
+        const std::string display = pd->pocket_name.translated();
+        if( !display.empty() ) {
+            return display;
+        }
+        // is_null compares to NULL_ID ("null"); the generic optional()
+        // JSON loader resets string_id fields to default-constructed
+        // empty string when the JSON field is absent, which slips past
+        // is_null. Treat empty the same as null so we don't deref a
+        // missing itype.
+        if( !pd->default_magazine.is_null() && !pd->default_magazine.is_empty() &&
+            pd->default_magazine->magazine ) {
+            const itype_id &default_ammo = pd->default_magazine->magazine->default_ammo;
+            if( !default_ammo.is_null() && !default_ammo.is_empty() && default_ammo->ammo ) {
+                return default_ammo->nname( qty );
+            }
+        }
+    }
+    std::string fallback = e.pocket;
+    std::replace( fallback.begin(), fallback.end(), '_', ' ' );
+    return fallback;
+}
+
+std::string item::format_consumption_requirements(
+    const std::string &method, const gun_mode_id &mode, int uses ) const
+{
+    const int scale = method_scale( type, method );
+    if( !uses_firing_requirements() ) {
+        // CDF: DDA get_gun_energy_drain() kJ text dropped (no CDF energy API); charges text kept
+        const int qty = ammo_required() * scale * uses;
+        return string_format( _( "%d charges" ), qty );
+    }
+
+    const std::vector<pocket_consumption_entry> *entries =
+        resolve_firing_entries( *this, mode );
+    if( entries == nullptr || entries->empty() ) {
+        return std::string();
+    }
+    std::vector<std::string> parts;
+    for( const pocket_consumption_entry &e : *entries ) {
+        const int qty = effective_qty( e ) * scale * uses;
+        if( qty <= 0 ) {
+            continue;
+        }
+        parts.emplace_back( string_format( "%d %s", qty, format_entry_name( *this, e, qty ) ) );
+    }
+    if( parts.empty() ) {
+        return std::string();
+    }
+    std::string joined;
+    bool first = true;
+    for( const std::string &part : parts ) {
+        if( !first ) {
+            joined += " + ";
+        }
+        first = false;
+        joined += part;
+    }
+    return joined;
 }
 
 int item::expected_cost_per_use( const std::string &method ) const
