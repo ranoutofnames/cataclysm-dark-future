@@ -614,14 +614,21 @@ void reg_item( sol::state &lua )
         luna::set_fx( ut, "current_magazine",
                       sol::resolve<const item*() const> ( &item::magazine_current ) );
 
+        DOC( "Gets the magazines currently loaded in this item (magazine wells and magazine pockets) as a list of items; empty when none is loaded" );
+        luna::set_fx( ut, "magazines", []( item & it ) -> std::vector<item *> {
+            return it.magazines_current();
+        } );
+
         DOC( "Gets the maximum capacity of a magazine" );
         luna::set_fx( ut, "ammo_capacity",
                       sol::resolve<int( const bool ) const>
                       ( &item::ammo_capacity ) );
 
-        DOC( "Get remaining ammo, works with batteries & stuff too" );
-        // CDF: disambiguate the new ammo_remaining( int ) overload
-        SET_FX_T( ammo_remaining, int() const );
+        DOC( "Get remaining ammo, works with batteries & stuff too. ammo_remaining( idx ) reads one pocket: idx is 0-based and counts every pocket of this item in the order of get_pockets() (not only magazine wells); it returns 0 for an out-of-range idx or a pocket that is not a magazine well." );
+        luna::set_fx( ut, "ammo_remaining", sol::overload(
+                          sol::resolve<int() const>( &item::ammo_remaining ),
+                          sol::resolve<int( int ) const>( &item::ammo_remaining )
+                      ) );
 
         SET_FX( ammo_data );
         SET_FX( ammo_required );

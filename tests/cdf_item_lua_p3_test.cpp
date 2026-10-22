@@ -1,0 +1,202 @@
+// CDF: P3-4-f-a; Lua tests for the P3 item ammo bindings (ammo_remaining( idx ),
+// magazines()). DDA has no Lua test for these bindings (4-f lookup section 8), so
+// these cases are CDF-only. The Lua scripts are inline; only the position
+// coordinate of the ammo_consume case is built on the Lua side.
+//
+// Patterns: tests/ablative_lua_test.cpp (includes, make_lua_state()) and
+// tests/catalua_test.cpp (inline safe_script with sol::script_pass_on_error,
+// an item pointer handed to Lua).
+
+#include "catalua_impl.h"
+#include "catalua_sol.h"
+#include "catch/catch.hpp"
+#include "calendar.h"
+#include "coordinates.h"
+#include "item.h"
+#include "item_contents.h"
+#include "item_pocket.h"
+#include "map_helpers.h"
+#include "state_helpers.h"
+#include "type_id.h"
+
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace {
+
+// CDF: copied from cdf_item_ammo_p3_test.cpp
+// Index of the MAGAZINE_WELL pocket in the order well_pocket_at uses: every
+// pocket returned by item::get_pockets( all ), wells included.
+auto pocket_index( const item &it, bool want_well ) -> int {
+    int idx = 0;
+    for( const item_pocket *p : it.get_pockets( []( const item_pocket & ) {
+    return true;
+} ) ) {
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) == want_well ) {
+            return idx;
+        }
+        ++idx;
+    }
+    return -1;
+}
+
+// CDF: copied from cdf_item_ammo_p3_test.cpp
+auto loaded_m4a1( int rounds ) -> detached_ptr<item> {
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    mag->put_in( item::spawn( itype_id( "556" ), calendar::turn, rounds ) );
+    gun->put_in( std::move( mag ) );
+    return gun;
+}
+
+// TEST_DATA test_multimag_gun (data/mods/TEST_DATA/items.json): a glockmag with
+// `glock_rounds` 9mm rounds and a stanag30 with `stanag_rounds` 556 rounds, one
+// per MAGAZINE_WELL pocket.
+auto loaded_multimag_gun( int glock_rounds, int stanag_rounds ) -> detached_ptr<item> {
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun" ) );
+    detached_ptr<item> glock = item::spawn( itype_id( "glockmag" ) );
+    glock->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, glock_rounds ) );
+    detached_ptr<item> stanag = item::spawn( itype_id( "stanag30" ) );
+    stanag->put_in( item::spawn( itype_id( "556" ), calendar::turn, stanag_rounds ) );
+    REQUIRE( gun->put_in( std::move( glock ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun->put_in( std::move( stanag ), pocket_type::MAGAZINE_WELL ).success() );
+    return gun;
+}
+
+} // namespace
+
+// ammo_remaining( idx ) is the new 4-f-a overload: idx is 0-based and counts every
+// pocket in get_pockets() order, and reads the magazine in that pocket (0 when the
+// pocket is not a magazine well or idx is out of range).
+TEST_CASE( "lua_item_ammo_remaining_index", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = loaded_multimag_gun( 15, 7 );
+
+    // Walk every pocket in well_pocket_at order and record where each loaded well is.
+    int glock_well = -1;
+    int stanag_well = -1;
+    int pocket_count = 0;
+    for( const item_pocket *p : gun->get_pockets( []( const item_pocket & ) {
+    return true;
+} ) ) {
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            const item *mag = p->magazine_current();
+            if( mag != nullptr && mag->typeId() == itype_id( "glockmag" ) ) {
+                glock_well = pocket_count;
+            } else if( mag != nullptr && mag->typeId() == itype_id( "stanag30" ) ) {
+                stanag_well = pocket_count;
+            }
+        }
+        ++pocket_count;
+    }
+    REQUIRE( glock_well >= 0 );
+    REQUIRE( stanag_well >= 0 );
+    // The fixture has two MAGAZINE_WELL pockets and nothing else, so index 2 is out of range.
+    REQUIRE( pocket_count == 2 );
+
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    lua.globals()["glock_well"] = glock_well;
+    lua.globals()["stanag_well"] = stanag_well;
+    const auto res = lua.safe_script( R"(
+        return {
+            glock = gun:ammo_remaining(glock_well),
+            stanag = gun:ammo_remaining(stanag_well),
+            out_of_range = gun:ammo_remaining(2),
+            negative = gun:ammo_remaining(-1)
+        }
+    )", sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    const auto out = res.get<sol::table>();
+    CHECK( out.get<int>( "glock" ) == 15 );
+    CHECK( out.get<int>( "stanag" ) == 7 );
+    CHECK( out.get<int>( "out_of_range" ) == 0 );
+    CHECK( out.get<int>( "negative" ) == 0 );
+
+    // The index counts every pocket, not only the wells: the m4a1 well is one pocket
+    // and its gunmod (MOD) pocket is another, so the MOD pocket's index reads 0.
+    detached_ptr<item> m4 = loaded_m4a1( 30 );
+    const int m4_well = pocket_index( *m4, true );
+    const int m4_other = pocket_index( *m4, false );
+    REQUIRE( m4_well >= 0 );
+    REQUIRE( m4_other >= 0 );
+    lua.globals()["m4"] = &*m4;
+    lua.globals()["m4_well"] = m4_well;
+    lua.globals()["m4_other"] = m4_other;
+    const auto res2 = lua.safe_script( R"(
+        return {
+            well = m4:ammo_remaining(m4_well),
+            other = m4:ammo_remaining(m4_other)
+        }
+    )", sol::script_pass_on_error );
+    REQUIRE( res2.valid() );
+    const auto out2 = res2.get<sol::table>();
+    CHECK( out2.get<int>( "well" ) == 30 );
+    CHECK( out2.get<int>( "other" ) == 0 );
+}
+
+// Regression guard for the no-argument ammo_remaining(): it is unchanged by 4-f-a.
+// Green before and after the change.
+TEST_CASE( "lua_item_ammo_remaining_total_unchanged", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    const auto res = lua.safe_script( R"(
+        return { total = gun:ammo_remaining() }
+    )", sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    CHECK( res.get<sol::table>().get<int>( "total" ) == 30 );
+}
+
+// The new magazines() binding lists the loaded magazines as item handles.
+TEST_CASE( "lua_item_magazines_binding", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = loaded_multimag_gun( 15, 7 );
+    detached_ptr<item> unloaded = item::spawn( itype_id( "test_multimag_gun" ) );
+
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    lua.globals()["empty_gun"] = &*unloaded;
+    const auto res = lua.safe_script( R"(
+        local list = gun:magazines()
+        local types = {}
+        for i, m in ipairs(list) do
+            types[i] = m:get_type():str()
+        end
+        return {
+            count = #list,
+            first = types[1],
+            second = types[2],
+            empty_count = #empty_gun:magazines()
+        }
+    )", sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    const auto out = res.get<sol::table>();
+    CHECK( out.get<int>( "count" ) == 2 );
+    CHECK( out.get<std::string>( "first" ) == "glockmag" );
+    CHECK( out.get<std::string>( "second" ) == "stanag30" );
+    CHECK( out.get<int>( "empty_count" ) == 0 );
+}
+
+// The 2-argument ammo_consume( qty, pos ) binding is unchanged (ADV-13 2g): the
+// carrier stays hidden, and the position is built on the Lua side. Green before
+// and after the change.
+TEST_CASE( "lua_item_ammo_consume_two_arg_unchanged", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    const auto res = lua.safe_script( R"(
+        local pos = TripointBubMs.new(0, 0, 0)
+        local consumed = gun:ammo_consume(3, pos)
+        return { consumed = consumed, left = gun:ammo_remaining() }
+    )", sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    const auto out = res.get<sol::table>();
+    CHECK( out.get<int>( "consumed" ) == 3 );
+    CHECK( out.get<int>( "left" ) == 27 );
+}
