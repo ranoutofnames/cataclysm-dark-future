@@ -1028,6 +1028,136 @@ bool item::uses_magazine() const
     return contents.has_pocket_type( pocket_type::MAGAZINE_WELL );
 }
 
+// Resolve firing entries for a mode. Base-gun modes are required to have
+// explicit entries (see Item_factory::check_definitions), so a missing
+// entry here means the mode came from a gunmod (mode_modifier) and
+// inherits DEFAULT cost.
+// CDF: unused until 8-1a-c, which removes this marker
+[[maybe_unused]]
+static const std::vector<pocket_consumption_entry> *resolve_firing_entries(
+    const item &host, const gun_mode_id &mode )
+{
+    const firing_requirement_set &set = host.type->firing_requirements;
+    // Cost comes from the item owning the winning mode-def: a gunmod owning a
+    // mode supplies its cost, else inherits host DEFAULT. host[M] is read only
+    // for host-owned modes, so a same-id override never splits def from cost.
+    bool mod_owns = false;
+    if( host.is_gun() ) {
+        for( const item *mod : host.gunmods() ) {
+            if( mod->type == nullptr || !mod->type->gunmod ) {
+                continue;
+            }
+            if( !mod->type->gunmod->mode_modifier.count( mode ) ) {
+                continue;
+            }
+            // mode_modifier owns the mode; gunmod->firing_requirements (key
+            // "mode_firing_requirements") carries its per-pocket cost.
+            const firing_requirement_set &ms = mod->type->gunmod->firing_requirements;
+            const std::vector<pocket_consumption_entry> *me = ms.for_mode( mode );
+            if( me != nullptr && !me->empty() ) {
+                return me;
+            }
+            mod_owns = true; // owns the mode but gave no cost: inherit host DEFAULT
+            break;
+        }
+    }
+    if( !mod_owns ) {
+        const std::vector<pocket_consumption_entry> *entries = set.for_mode( mode );
+        if( entries != nullptr && !entries->empty() ) {
+            return entries;
+        }
+        if( host.type->gun && host.type->gun->modes.count( mode ) ) {
+            return nullptr; // base gun mode without explicit entry: validation failure
+        }
+    }
+    return set.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
+}
+
+// CDF: itype::ammo_scale is absent; method scale is 1 (lookup OD-3)
+static int method_scale( const itype * /* type */, const std::string & /* method */ )
+{
+    return 1;
+}
+
+int item::effective_qty( const pocket_consumption_entry &e ) const
+{
+    const item_pocket *p = pocket_by_id( e.pocket );
+    const bool is_primary = pocket_is_primary_ammo( p );
+
+    float multiplier = 1.0f;
+    int modifier_int = 0;
+    // CDF: DDA energy_drain_modifier / energy_drain_multiplier (pocket-battery branch) dropped: no CDF field
+    if( is_gun() ) {
+        for( const item *mod : gunmods() ) {
+            if( !mod->type || !mod->type->gunmod ) {
+                continue;
+            }
+            if( is_primary ) {
+                multiplier *= mod->type->gunmod->ammo_to_fire_multiplier;
+                modifier_int += mod->type->gunmod->ammo_to_fire_modifier;
+            }
+        }
+    }
+
+    double scaled = static_cast<double>( e.qty ) * multiplier
+                    + static_cast<double>( modifier_int );
+
+    // Explicit per-pocket overrides from installed mods (gunmod or toolmod, both
+    // through the mod slot). Order-independent: the smallest `set` replaces the
+    // resolved value, then the product of all `multiply` scales it.
+    bool has_set = false;
+    int min_set = 0;
+    float mod_multiply = 1.0f;
+    // CDF: item::mods() is contents.mods()
+    for( const item *mod : contents.mods() ) {
+        if( !mod->type || !mod->type->mod ) {
+            continue;
+        }
+        for( const pocket_consumption_mod &cm : mod->type->mod->consumption_mods ) {
+            if( cm.pocket != e.pocket ) {
+                continue;
+            }
+            if( cm.set ) {
+                min_set = has_set ? std::min( min_set, *cm.set ) : *cm.set;
+                has_set = true;
+            }
+            mod_multiply *= cm.multiply;
+        }
+    }
+    if( has_set ) {
+        scaled = min_set;
+    }
+    scaled *= mod_multiply;
+
+    if( scaled <= 0.0 ) {
+        return 0;
+    }
+    if( scaled < 1.0 ) {
+        return 1;
+    }
+    return static_cast<int>( scaled );
+}
+
+int item::expected_cost_per_use( const std::string &method ) const
+{
+    const int scale = method_scale( type, method );
+    if( !uses_firing_requirements() ) {
+        // ammo_required() already routes guns to ammo_to_fire and tools to
+        // charges_per_use, so it's the right scalar for both legacy paths.
+        return ammo_required() * scale;
+    }
+    const std::vector<pocket_consumption_entry> *entries =
+        type->firing_requirements.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
+    if( entries == nullptr ) {
+        return 0;
+    }
+    int total = 0;
+    for( const pocket_consumption_entry &e : *entries ) {
+        total += effective_qty( e );
+    }
+    return total * scale;
+}
+
 units::energy item::energy_consume( units::energy qty, const tripoint_bub_ms &pos,
                                     Character *carrier,
                                     float fuel_efficiency )
