@@ -9110,10 +9110,13 @@ std::set<itype_id> item::magazine_compatible( bool conversion ) const
 
 item *item::magazine_current()
 {
-    // the MAGAZINE_WELL pocket; a magazine parked in MIGRATION still counts
+    // DDA item::magazine_current: the first loaded MAGAZINE_WELL, no is_magazine() filter
+    if( item *mag = contents.magazine_current() ) {
+        return mag;
+    }
+    // CDF: MIGRATION pocket fallback kept (not in DDA; open question 2)
     for( item_pocket &pocket : contents.get_pockets() ) {
-        if( !pocket.is_type( pocket_type::MAGAZINE_WELL ) &&
-            !pocket.is_type( pocket_type::MIGRATION ) ) {
+        if( !pocket.is_type( pocket_type::MIGRATION ) ) {
             continue;
         }
         for( item *it : pocket.items() ) {

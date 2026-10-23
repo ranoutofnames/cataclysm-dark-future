@@ -1267,7 +1267,9 @@ units::energy item::energy_consume( units::energy qty, map *here, const tripoint
     const units::energy wanted_energy = qty;
 
     // Consume battery(ammo) and other fuel (if allowed)
-    if( is_battery() || fuel_efficiency >= 0 ) {
+    // CDF: DDA item::is_battery() body (magazine with battery capacity) inlined here; CDF is_battery() (item.cpp ~8004) stays type-only (open question 1)
+    const bool battery_cell = is_magazine() && ammo_capacity( ammo_battery ) > 0;
+    if( is_battery() || battery_cell || fuel_efficiency >= 0 ) {
         int consumed_kj = contents.ammo_consume( units::to_kilojoule( qty ), here, pos, fuel_efficiency );
         qty -= units::from_kilojoule( static_cast<std::int64_t>( consumed_kj ) );
         // Either we're out of juice or truncating the value above means we didn't drain quite enough.

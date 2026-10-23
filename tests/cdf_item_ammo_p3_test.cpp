@@ -1080,3 +1080,55 @@ TEST_CASE( "tool_uses_remaining_legacy_branch_uses_shots_remaining", "[p3][ammo]
     Character &c = get_avatar();
     CHECK( tool->tool_uses_remaining( get_map(), &c ) == tool->shots_remaining( get_map(), &c ) );
 }
+
+// 8-1d-0: magazine_current and energy_consume to the DDA shape (ADV-16 Q-15-1).
+TEST_CASE( "heavy_cell_in_power_well_drains_through_gun", "[p3][ammo][8-1d-0]" ) {
+    clear_all_state();
+    item *cell = nullptr;
+    detached_ptr<item> gun = make_energy_block_gun( cell, 100 );
+    REQUIRE( gun->energy_remaining( nullptr ) == 100_kJ );
+    units::energy used = gun->energy_consume( 20_kJ, tripoint_bub_ms::zero(), nullptr );
+    CHECK( used == 20_kJ );
+    CHECK( gun->energy_remaining( nullptr ) == 80_kJ );
+}
+
+TEST_CASE( "heavy_cell_over_drain_stops_at_empty", "[p3][ammo][8-1d-0]" ) {
+    clear_all_state();
+    item *cell = nullptr;
+    detached_ptr<item> gun = make_energy_block_gun( cell, 100 );
+    REQUIRE( gun->energy_remaining( nullptr ) == 100_kJ );
+    units::energy used = gun->energy_consume( 500_kJ, tripoint_bub_ms::zero(), nullptr );
+    CHECK( used == 100_kJ );
+    CHECK( gun->energy_remaining( nullptr ) == 0_kJ );
+}
+
+TEST_CASE( "empty_power_well_consumes_nothing", "[p3][ammo][8-1d-0]" ) {
+    clear_all_state();
+    item *cell = nullptr;
+    detached_ptr<item> gun = make_energy_block_gun( cell, 0 );
+    units::energy used = gun->energy_consume( 5_kJ, tripoint_bub_ms::zero(), nullptr );
+    CHECK( used == 0_kJ );
+}
+
+TEST_CASE( "loaded_plain_magazine_is_not_drained", "[p3][ammo][8-1d-0]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_consume" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+    item *mag_ptr = &*mag;
+    REQUIRE( gun->put_in( std::move( mag ), pocket_type::MAGAZINE_WELL ).success() );
+    units::energy used = gun->energy_consume( 5_kJ, tripoint_bub_ms::zero(), nullptr );
+    CHECK( used == 0_kJ );
+    CHECK( mag_ptr->ammo_remaining() == 15 );
+}
+
+// CDF: pins DDA's first-loaded-well behaviour (energy_consume drains the first loaded well only, while energy_remaining sums all wells); delete if that DDA quirk is changed.
+TEST_CASE( "magazine_current_returns_first_loaded_well", "[p3][ammo][8-1d-0]" ) {
+    clear_all_state();
+    item *cell = nullptr;
+    detached_ptr<item> gun = make_energy_block_gun( cell, 100 );
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    REQUIRE( gun->put_in( std::move( mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun->magazine_current() != nullptr );
+    CHECK( gun->magazine_current()->typeId() == itype_id( "glockmag" ) );
+}
