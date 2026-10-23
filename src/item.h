@@ -2359,6 +2359,7 @@ class item : public location_visitable<item>, public game_object<item>
          * @returns true if ammo sufficient for number of uses is loaded, false otherwise
          */
         bool ammo_sufficient( const Character *carrier, int qty = 1 ) const;
+        bool ammo_sufficient( const Character *carrier, const std::string &method, int qty = 1 ) const;
 
         /**
          * Consume ammo (if available) and return the amount of ammo that was consumed

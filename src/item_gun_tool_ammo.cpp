@@ -929,6 +929,16 @@ bool item::ammo_sufficient( const Character *carrier, int qty ) const
     return ammo_required() == 0 || ammo_remaining( carrier ) >= ammo_required() * qty;
 }
 
+bool item::ammo_sufficient( const Character *carrier, const std::string &method, int qty ) const
+{
+    auto iter = type->ammo_scale.find( method );
+    if( iter != type->ammo_scale.end() ) {
+        qty *= iter->second;
+    }
+
+    return ammo_sufficient( carrier, qty );
+}
+
 int item::ammo_consume( int qty, const tripoint_bub_ms &pos, Character *carrier )
 {
     return item::ammo_consume( qty, get_map(), pos, carrier );
@@ -1071,10 +1081,13 @@ static const std::vector<pocket_consumption_entry> *resolve_firing_entries(
     return set.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
 }
 
-// CDF: itype::ammo_scale is absent; method scale is 1 (lookup OD-3)
-static int method_scale( const itype * /* type */, const std::string & /* method */ )
+static int method_scale( const itype *type, const std::string &method )
 {
-    return 1;
+    if( !type || method.empty() ) {
+        return 1;
+    }
+    auto it = type->ammo_scale.find( method );
+    return it == type->ammo_scale.end() ? 1 : it->second;
 }
 
 int item::effective_qty( const pocket_consumption_entry &e ) const

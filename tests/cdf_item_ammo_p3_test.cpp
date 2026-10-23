@@ -407,6 +407,32 @@ TEST_CASE( "ammo_sufficient with a carrier counts rounds", "[p3][ammo]" ) {
     CHECK_FALSE( gun->ammo_sufficient( nullptr, 31 ) );
 }
 
+// DDA item_gun_tool_ammo.cpp:1815-1823 and 2598-2604: the method form scales
+// the quantity by itype::ammo_scale (8-4b).
+TEST_CASE( "ammo_sufficient_method_applies_ammo_scale", "[p3][ammo][8-4b]" ) {
+    clear_all_state();
+    detached_ptr<item> tool = item::spawn( itype_id( "test_ammo_scale_tool" ) );
+    const int req = tool->ammo_required();
+    REQUIRE( req > 0 );
+    detached_ptr<item> battery = item::spawn( itype_id( "light_battery_cell" ) );
+    battery->ammo_unset();
+    item *bat = &*battery;
+    tool->put_in( std::move( battery ) );
+    bat->ammo_set( itype_id( "battery" ), 2 * req );
+    Character &c = get_avatar();
+
+    CHECK( tool->ammo_sufficient( &c ) );
+    CHECK( tool->ammo_sufficient( &c, "no_such_method" ) );
+    CHECK( tool->ammo_sufficient( &c, "CROWBAR" ) );
+    CHECK_FALSE( tool->ammo_sufficient( &c, "transform" ) );
+    CHECK_FALSE( tool->ammo_sufficient( &c, "CROWBAR", 2 ) );
+    CHECK( tool->expected_cost_per_use( "transform" ) == 3 * req );
+
+    bat->ammo_set( itype_id( "battery" ), 0 );
+    CHECK( tool->ammo_sufficient( &c, "HAMMER" ) );
+    CHECK_FALSE( tool->ammo_sufficient( &c, "no_such_method" ) );
+}
+
 // DDA item_gun_tool_ammo.cpp:1790-1798: first_ammo reaches the loaded round (R-4).
 TEST_CASE( "first_ammo of a loaded magazine is its round", "[p3][ammo]" ) {
     detached_ptr<item> gun = loaded_m4a1( 10 );
