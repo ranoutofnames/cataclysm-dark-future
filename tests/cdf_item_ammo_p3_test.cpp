@@ -1007,3 +1007,76 @@ TEST_CASE( "Character_consume_charges_hard_guards_multimag_tools", "[p3][ammo][8
     CHECK( carried.ammo_remaining_in_pocket( "well_a" ) == 12 );
     CHECK( carried.ammo_remaining_in_pocket( "well_b" ) == 30 );
 }
+
+// 3-4d: DDA multimag_test.cpp uses_energy / is_chargeable / energy_remaining( carrier ) on a
+// gun with an ammo well and a power well.
+static auto make_energy_block_gun( item *&cell_out, int battery_charges ) -> detached_ptr<item> {
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_consume" ) );
+    detached_ptr<item> cell = item::spawn( itype_id( "heavy_battery_cell" ) );
+    cell->ammo_set( itype_id( "battery" ), battery_charges );
+    cell_out = &*cell;
+    REQUIRE( gun->put_in( std::move( cell ), pocket_type::MAGAZINE_WELL ).success() );
+    return gun;
+}
+
+TEST_CASE( "energy_block_uses_energy_follows_loaded_battery_well", "[p3][ammo][3-4d]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_consume" ) );
+    CHECK_FALSE( gun->uses_energy() );
+    detached_ptr<item> cell = item::spawn( itype_id( "heavy_battery_cell" ) );
+    cell->ammo_set( itype_id( "battery" ), 100 );
+    REQUIRE( gun->put_in( std::move( cell ), pocket_type::MAGAZINE_WELL ).success() );
+    CHECK( gun->uses_energy() );
+}
+
+TEST_CASE( "energy_block_is_chargeable_below_capacity_only", "[p3][ammo][3-4d]" ) {
+    clear_all_state();
+    item *cell = nullptr;
+    detached_ptr<item> gun = make_energy_block_gun( cell, 1 );
+    REQUIRE( cell != nullptr );
+    const int cap = cell->ammo_capacity( ammotype( "battery" ) );
+    REQUIRE( cap > 1 );
+    cell->ammo_set( itype_id( "battery" ), cap );
+    CHECK_FALSE( gun->is_chargeable() );
+    cell->ammo_set( itype_id( "battery" ), cap - 1 );
+    CHECK( gun->is_chargeable() );
+}
+
+TEST_CASE( "energy_block_energy_remaining_sums_well_with_nullptr_carrier", "[p3][ammo][3-4d]" ) {
+    clear_all_state();
+    item *cell = nullptr;
+    detached_ptr<item> gun = make_energy_block_gun( cell, 100 );
+    CHECK( gun->energy_remaining( nullptr ) == units::from_kilojoule( 100 ) );
+}
+
+TEST_CASE( "shots_remaining_ammo_part_divides_ammo_by_required", "[p3][ammo][3-4d]" ) {
+    clear_all_state();
+    detached_ptr<item> g = loaded_m4a1( 30 );
+    REQUIRE( g->ammo_required() > 0 );
+    Character &c = get_avatar();
+    CHECK( g->shots_remaining( get_map(), &c ) ==
+           g->ammo_remaining_linked( get_map(), &c ) / g->ammo_required() );
+}
+
+TEST_CASE( "ammo_sufficient_follows_shots_remaining", "[p3][ammo][3-4d]" ) {
+    clear_all_state();
+    detached_ptr<item> g = loaded_m4a1( 30 );
+    REQUIRE( g->ammo_required() > 0 );
+    Character &c = get_avatar();
+    CHECK( g->ammo_sufficient( &c, 3 ) == ( g->shots_remaining( get_map(), &c ) >= 3 ) );
+    g->ammo_set( itype_id( "556" ), 0 );
+    CHECK_FALSE( g->ammo_sufficient( &c ) );
+}
+
+TEST_CASE( "tool_uses_remaining_legacy_branch_uses_shots_remaining", "[p3][ammo][3-4d]" ) {
+    clear_all_state();
+    detached_ptr<item> tool = item::spawn( itype_id( "smart_phone_music" ) );
+    detached_ptr<item> battery = item::spawn( itype_id( "light_battery_cell" ) );
+    battery->ammo_unset();
+    item *bat = &*battery;
+    tool->put_in( std::move( battery ) );
+    REQUIRE( tool->magazine_current() == bat );
+    bat->ammo_set( itype_id( "battery" ), 10 );
+    Character &c = get_avatar();
+    CHECK( tool->tool_uses_remaining( get_map(), &c ) == tool->shots_remaining( get_map(), &c ) );
+}

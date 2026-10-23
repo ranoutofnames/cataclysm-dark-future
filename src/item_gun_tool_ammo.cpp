@@ -931,9 +931,7 @@ bool item::ammo_sufficient( const Character *carrier, int qty ) const
         return true;
     }
 
-    // CDF: until 3-4d (OD-5): shots_remaining( here, carrier ) is absent;
-    // this interim matches DDA for guns with no energy drain.
-    return ammo_required() == 0 || ammo_remaining( carrier ) >= ammo_required() * qty;
+    return shots_remaining( here, carrier ) >= qty;
 }
 
 bool item::ammo_sufficient( const Character *carrier, const std::string &method, int qty ) const
@@ -1494,21 +1492,10 @@ int item::available_bionic_charges( const Character *carrier ) const
     return units::to_kilojoule( carrier->get_power_level() );
 }
 
-// CDF: until 3-4d, legacy ammo part of DDA shots_remaining 1424-1427 only (energy part 1428-1430 dropped)
-static int legacy_shots_interim( const item &it, map &here, const Character *carrier )
-{
-    int ret = 1000;
-    if( it.ammo_required() ) {
-        ret = std::min( it.ammo_remaining_linked( here, carrier ) / it.ammo_required(), ret );
-    }
-    return ret;
-}
-
 int item::tool_uses_remaining( map &here, const Character *carrier ) const
 {
     if( !uses_firing_requirements() ) {
-        // CDF: until 3-4d
-        return legacy_shots_interim( *this, here, carrier );
+        return shots_remaining( here, carrier );
     }
     const std::vector<pocket_consumption_entry> *entries =
         type->firing_requirements.for_mode( gun_mode_id( "DEFAULT" ) ); // CDF: gun_mode_DEFAULT absent
@@ -1519,6 +1506,121 @@ int item::tool_uses_remaining( map &here, const Character *carrier ) const
                      + available_ups_charges( carrier )
                      + available_bionic_charges( carrier );
     return feasible_uses( *this, *entries, INT_MAX, pool );
+}
+
+int item::shots_remaining( const map &here, const Character *carrier ) const
+{
+    if( uses_firing_requirements() ) {
+        const gun_mode_id mode = is_gun() ? gun_get_mode_id() :
+                                 gun_mode_id( "DEFAULT" ); // CDF: gun_mode_DEFAULT absent
+        if( firing_mode_blocked( mode ) ) {
+            return 0;
+        }
+        const std::vector<pocket_consumption_entry> *entries =
+            resolve_firing_entries( *this, mode );
+        if( entries == nullptr || entries->empty() ) {
+            return 0;
+        }
+        map &mut_here = const_cast<map &>( here );
+        const int pool = available_cable_charges( mut_here )
+                         + available_ups_charges( carrier )
+                         + available_bionic_charges( carrier );
+        return feasible_uses( *this, *entries, INT_MAX, pool );
+    }
+    int ret = 1000; // Arbitrary large number for things that do not require ammo.
+    if( ammo_required() ) {
+        ret = std::min( ammo_remaining_linked( here,  carrier ) / ammo_required(), ret );
+    }
+    // CDF: energy part, job 8-1d (get_gun_energy_drain absent; 8-1d replaces this marker, lookup OD-5)
+    return ret;
+}
+
+bool item::uses_energy() const
+{
+    if( is_vehicle_battery() ) {
+        return true;
+    }
+    for( const item *mag : magazines_current() ) {
+        if( mag && mag->uses_energy() ) {
+            return true;
+        }
+    }
+    return has_flag( flag_USES_BIONIC_POWER ) ||
+           has_flag( flag_USE_UPS ) ||
+           ( is_magazine() && ammo_capacity( ammo_battery ) > 0 );
+}
+
+bool item::is_chargeable() const
+{
+    if( !uses_energy() ) {
+        return false;
+    }
+    // Bionic-powered items have ammo_capacity tied to player bionic storage,
+    // so they can't actually receive charge unless they also carry a magazine.
+    if( has_flag( flag_USES_BIONIC_POWER ) && magazines_current().empty() ) {
+        return false;
+    }
+    // Compare battery-flavored stock vs battery-flavored capacity so a
+    // mixed projectile + battery multimag tool doesn't read full just
+    // because its non-battery wells are loaded.
+    int battery_charges = 0;
+    int battery_capacity = 0;
+    for( const item *mag : magazines_current() ) {
+        if( mag && mag->ammo_capacity( ammo_battery ) > 0 ) {
+            battery_charges += mag->ammo_remaining();
+            battery_capacity += mag->ammo_capacity( ammo_battery );
+        }
+    }
+    if( battery_capacity == 0 ) {
+        battery_capacity = ammo_capacity( ammo_battery );
+        battery_charges = ammo_remaining();
+    }
+    return battery_charges < battery_capacity;
+}
+
+units::energy item::energy_remaining( const Character *carrier ) const
+{
+    return energy_remaining( carrier, false );
+}
+
+units::energy item::energy_remaining( const Character *carrier, bool ignoreExternalSources ) const
+{
+    units::energy ret = 0_kJ;
+
+    // Sum across every loaded MAGAZINE_WELL; mixed projectile+battery
+    // multimag items would otherwise read only the first well's energy.
+    for( const item *mag : magazines_current() ) {
+        if( mag ) {
+            ret += mag->energy_remaining( carrier );
+        }
+    }
+
+    if( !ignoreExternalSources ) {
+
+        // Future energy based batteries
+        if( is_vehicle_battery() ) {
+            ret += energy;
+        }
+
+        // Power from bionic
+        if( carrier != nullptr && has_flag( flag_USES_BIONIC_POWER ) ) {
+            ret += carrier->get_power_level();
+        }
+
+        // CDF: UPS tail deferred to 4-b2 (Character::available_ups absent)
+    };
+
+    // Battery(ammo) contained within
+    if( is_magazine() ) {
+        ret += energy;
+        for( const item *e : contents.all_items_top( pocket_type::MAGAZINE ) ) {
+            if( e->ammo_type() == ammo_battery ) {
+                ret += units::from_kilojoule( static_cast<std::int64_t>( e->charges ) );
+            }
+        }
+    }
+
+    return ret;
 }
 
 int item::tool_uses_remaining_local() const

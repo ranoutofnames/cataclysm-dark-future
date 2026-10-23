@@ -509,7 +509,7 @@ void reg_item( sol::state &lua )
 
         luna::set( ut, "charges", &item::charges );
 
-        SET_FX( energy_remaining );
+        SET_FX_T( energy_remaining, units::energy() const );
 
         SET_FX( has_infinite_charges );
 

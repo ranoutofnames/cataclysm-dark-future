@@ -2316,6 +2316,10 @@ class item : public location_visitable<item>, public game_object<item>
 
         /** Quantity of energy currently loaded in tool or battery */
         units::energy energy_remaining() const;
+        bool uses_energy() const;
+        bool is_chargeable() const;
+        units::energy energy_remaining( const Character *carrier ) const;
+        units::energy energy_remaining( const Character *carrier, bool ignoreExternalSources ) const;
 
         /** Quantity of ammunition currently loaded in tool, gun or auxiliary gunmod */
         int ammo_remaining() const;
@@ -2551,6 +2555,7 @@ class item : public location_visitable<item>, public game_object<item>
 
         // _local excludes external pool so inventory aggregation does not sum the same UPS/bionic/cable once per matching item.
         int tool_uses_remaining( map &here, const Character *carrier ) const;
+        int shots_remaining( const map &here, const Character *carrier ) const;
         int tool_uses_remaining_local() const;
 
         // Multimag uses given an arbitrary external (cable / UPS / bionic) budget.
