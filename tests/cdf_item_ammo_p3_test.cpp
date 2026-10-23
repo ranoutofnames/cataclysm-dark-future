@@ -1,6 +1,7 @@
 #include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "debug.h"
 #include "examine_item_menu.h"
 #include "flag.h"
 #include "item.h"
@@ -11,6 +12,7 @@
 #include "map/map.h"
 #include "map_helpers.h"
 #include "npc.h"
+#include "player_helpers.h"
 #include "state_helpers.h"
 #include "units.h"
 
@@ -68,6 +70,20 @@ auto loaded_speedloader( int rounds ) -> detached_ptr<item> {
         speedloader->put_in( item::spawn( itype_id( "40sw" ), calendar::turn, rounds ) );
     }
     return speedloader;
+}
+
+// CDF: copied from DDA multimag_test.cpp:1279-1290; detached_ptr instead of a value item
+auto make_multimag_consume_tool( int well_a_charges = 12, int well_b_charges = 30 ) -> detached_ptr<item> {
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_tool_consume" ) );
+    detached_ptr<item> mag_a = item::spawn( itype_id( "glockmag" ) );
+    mag_a->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, well_a_charges ),
+                   pocket_type::MAGAZINE );
+    detached_ptr<item> mag_b = item::spawn( itype_id( "stanag30" ) );
+    mag_b->put_in( item::spawn( itype_id( "556" ), calendar::turn, well_b_charges ),
+                   pocket_type::MAGAZINE );
+    REQUIRE( tool->put_in( std::move( mag_a ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( tool->put_in( std::move( mag_b ), pocket_type::MAGAZINE_WELL ).success() );
+    return tool;
 }
 
 } // namespace
@@ -967,4 +983,27 @@ TEST_CASE( "ammo_scale_defaults_are_zero_for_quality_and_attach_methods", "[p3][
     CHECK( itype_id( "test_multimag_consume_toolmod" ).obj().ammo_scale.at( "TOOLMOD_ATTACH" ) == 0 );
     CHECK( itype_id( "glock_19" ).obj().ammo_scale.at( "detach_gunmods" ) == 0 );
     CHECK( itype_id( "rock" ).obj().ammo_scale.empty() );
+}
+
+// DDA tests/multimag_test.cpp:1825-1846
+// CDF: extra tag [8-4d] so this case can be run alone; DDA uses [multimag][consume]
+TEST_CASE( "Character_consume_charges_hard_guards_multimag_tools", "[p3][ammo][8-4d]" ) {
+    clear_avatar();
+    // CDF: get_player_character() used instead of DDA get_avatar()
+    Character &chr = get_player_character();
+    // CDF: i_add returns item &, not item_location
+    item &carried = chr.i_add( make_multimag_consume_tool( 12, 30 ) );
+    REQUIRE( carried.uses_firing_requirements() );
+
+    bool destroyed = false;
+    const std::string captured = capture_debugmsg_during( [&]() {
+        destroyed = chr.consume_charges( carried, 1 );
+    } );
+    CHECK_FALSE( destroyed );
+    CHECK( captured.find( "multimag" ) != std::string::npos );
+    // CDF: the 4-arg ammo_consume guard already prints "multimag", so the DDA check alone passes before the edit
+    CHECK( captured.find( "consume_charges called on multimag tool" ) != std::string::npos );
+    CHECK( captured.find( "ammo_consume(" ) == std::string::npos );
+    CHECK( carried.ammo_remaining_in_pocket( "well_a" ) == 12 );
+    CHECK( carried.ammo_remaining_in_pocket( "well_b" ) == 30 );
 }

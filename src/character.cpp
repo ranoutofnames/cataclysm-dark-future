@@ -9109,6 +9109,14 @@ bool Character::consume_charges( item &used, int qty )
         return false;
     }
 
+    // CDF: placed above the DESTROY_ON_DECHARGE branch (BN, absent in DDA) so a multimag tool never reaches detach()
+    // CDF: guard runs before the non-tool/food debugmsg check, unlike DDA where it follows that check; effect is negligible
+    if( used.uses_firing_requirements() ) {
+        debugmsg( "consume_charges called on multimag tool %s; caller must use "
+                  "consume_tool_uses instead", used.tname() );
+        return false;
+    }
+
     //Destroy items with specific flag
     if( used.has_flag( flag_DESTROY_ON_DECHARGE ) || used.get_use( "place_monster" ) != nullptr ||
         used.get_use( "place_npc" ) != nullptr ) {
