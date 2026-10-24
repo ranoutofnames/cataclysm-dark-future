@@ -8897,22 +8897,73 @@ bool Character::invoke_item( item *used, const std::string &method )
 
 bool Character::invoke_item( item *used, const std::string &method, const tripoint_bub_ms &pt )
 {
-    if( method != iuse_TOGGLE_UPS_CHARGING && !has_enough_charges( *used, true ) ) {
-        return false;
+    // CDF: DDA has only the 4-arg form; this 3-arg overload forwards with the current moves, so no refund happens (8-4e addendum row 1)
+    return invoke_item( used, method, pt, get_moves() );
+}
+
+bool Character::invoke_item( item *used, const std::string &method, const tripoint_bub_ms &pt,
+                             int pre_obtain_moves )
+{
+    if( method.empty() ) {
+        // CDF: position-only overload has no pre_obtain_moves parameter (DDA 4495-4496 forward)
+        return invoke_item( used, pt );
     }
+    // CDF: DDA item::is_broken check (DDA character.cpp 4499-4502) not ported: no CDF item::is_broken
     if( method == iuse_TOGGLE_UPS_CHARGING ) {
+        // CDF: toggle runs before the ammo check, as in the previous CDF body (8-4e open question 2)
         iuse::toggle_ups_charging( this->as_player(), used, false, pt );
         return true;
+    }
+    // CDF: replaces has_enough_charges( *used, true ) with DDA's ammo_sufficient( method ) plus DDA's messages
+    if( !used->ammo_sufficient( this, method ) ) {
+        // CDF: BN spells DDA n_gettext as vgettext
+        std::string it_name = used->tname();
+        if( used->uses_firing_requirements() ) {
+            const std::string req = used->format_consumption_requirements( method );
+            add_msg_if_player( m_info, _( "Your %s needs: %s." ), it_name, req );
+        } else {
+            int ammo_req = used->ammo_required();
+            if( used->has_flag( flag_USE_UPS ) ) {
+                add_msg_if_player( m_info,
+                                   vgettext( "Your %s needs %d charge from some UPS.",
+                                              "Your %s needs %d charges from some UPS.",
+                                              ammo_req ),
+                                   it_name, ammo_req );
+            } else if( used->has_flag( flag_USES_BIONIC_POWER ) ) {
+                add_msg_if_player( m_info,
+                                   vgettext( "Your %s needs %d kJ of bionic power.",
+                                              "Your %s needs %d kJ of bionic power.",
+                                              ammo_req ),
+                                   it_name, ammo_req );
+            } else {
+                int ammo_rem = used->ammo_remaining();
+                add_msg_if_player( m_info,
+                                   vgettext( "Your %s has %d charge, but needs %d.",
+                                              "Your %s has %d charges, but needs %d.",
+                                              ammo_rem ),
+                                   it_name, ammo_rem, ammo_req );
+            }
+        }
+        set_moves( pre_obtain_moves );
+        return false;
     }
     item *actually_used = used->get_usable_item( method );
     if( actually_used == nullptr ) {
         debugmsg( "Tried to invoke a method %s on item %s, which doesn't have this method",
                   method.c_str(), used->tname() );
+        // CDF: DDA refunds the moves here
+        set_moves( pre_obtain_moves );
         return false;
     }
 
+    // CDF: itype::invoke returns int here (addendum OD-E3), so DDA's nullopt branch (set_moves) cannot be expressed
     int charges_used = actually_used->type->invoke( *this->as_player(), *actually_used, pt, method );
     if( charges_used == 0 ) {
+        return false;
+    }
+    if( actually_used->uses_firing_requirements() ) {
+        // CDF: return value follows DDA (false) for firing-requirement tools; see open question 1
+        actually_used->activation_consume( charges_used, pt, this );
         return false;
     }
     // Prevent accessing the item as it may have been deleted by the invoked iuse function.
@@ -9137,6 +9188,12 @@ bool Character::consume_charges( item &used, int qty )
             return true;
         }
         return false;
+    }
+
+    // CDF: DDA 4598-4611 needs-charges gate; DDA's i_rem / map-stack erase becomes detach() (CDF i_rem takes an int position)
+    if( used.is_tool() && !used.needs_charges_to_use() ) {
+        used.detach();
+        return true;
     }
 
     if( used.is_power_armor() ) {
@@ -11848,8 +11905,11 @@ bool Character::has_fire( const int quantity ) const
                 if( actor->can_use( *this->as_character(), *i, false, tripoint_bub_ms::zero() ).success() ) {
                     return true;
                 }
-            } else if( has_charges( i->typeId(), quantity ) ) {
-                return true;
+            } else {
+                // CDF: DDA character_inventory.cpp 2354 predicate (find_firestarter_with_charges is inlined here, not ported)
+                if( i->ammo_sufficient( this, quantity ) ) {
+                    return true;
+                }
             }
         }
     } else if( has_active_bionic( bio_tools ) && get_power_level() >= quantity * 5_kJ ) {

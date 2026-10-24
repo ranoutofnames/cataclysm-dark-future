@@ -1272,6 +1272,8 @@ class Character : public Creature, public location_visitable<Character>
         virtual bool invoke_item( item *, const tripoint_bub_ms &pt );
         /** As above, but with a pre-selected method. Debugmsg if this item doesn't have this method. */
         virtual bool invoke_item( item *, const std::string &, const tripoint_bub_ms &pt );
+        // CDF: DDA 4-arg overload (pre_obtain_moves refund on failed method use); no default argument (8-4e open question 4)
+        virtual bool invoke_item( item *, const std::string &, const tripoint_bub_ms &pt, int pre_obtain_moves );
         /** As above two, but with position equal to current position */
         virtual bool invoke_item( item * );
         virtual bool invoke_item( item *, const std::string & );

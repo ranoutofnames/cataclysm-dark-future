@@ -1132,3 +1132,98 @@ TEST_CASE( "magazine_current_returns_first_loaded_well", "[p3][ammo][8-1d-0]" ) 
     REQUIRE( gun->magazine_current() != nullptr );
     CHECK( gun->magazine_current()->typeId() == itype_id( "glockmag" ) );
 }
+
+// 8-4e: Character::invoke_item method path (4-arg overload), consume_charges needs-charges gate
+// and the has_fire firestarter predicate. DDA test names for the invoke path are not in the
+// packet (brief open question 6); the names below are CDF proposals.
+TEST_CASE( "Character_invoke_item_method_checks_method_ammo", "[p3][ammo][8-4e]" ) {
+    clear_all_state();
+    // CDF: toolset is the USES_BIONIC_POWER tool (data/json/items/fake.json:32-40), first use_action HAMMER
+    detached_ptr<item> toolset = item::spawn( itype_id( "toolset" ) );
+    REQUIRE( toolset->is_tool() );
+    REQUIRE( toolset->has_flag( flag_USES_BIONIC_POWER ) );
+    toolset->charges = 0;
+
+    standard_npc who( "carrier" );
+    who.set_max_power_level( 100_kJ );
+    who.set_power_level( 0_kJ );
+    who.set_moves( 50 );
+
+    const bool used = who.invoke_item( &*toolset, "HAMMER", who.bub_pos(), 123 );
+    CHECK_FALSE( used );
+    CHECK( who.get_moves() == 123 );
+}
+
+namespace
+{
+// CDF: test-only use_function so a multimag tool (no use_action in TEST_DATA) has a method
+// that reports one charge used.
+auto test_8_4e_use( player *, item *, bool, const tripoint_bub_ms & ) -> int {
+    return 1;
+}
+} // namespace
+
+TEST_CASE( "Character_invoke_item_multimag_routes_to_activation_consume", "[p3][ammo][8-4e]" ) {
+    clear_all_state();
+    Character &chr = get_player_character();
+    item &carried = chr.i_add( make_multimag_consume_tool( 12, 30 ) );
+    REQUIRE( carried.uses_firing_requirements() );
+
+    // CDF: inject a method on the shared itype for this case only; removed again by the guard
+    itype &ity = const_cast<itype &>( *carried.type );
+    const std::string method = "TEST_8_4E_USE";
+    ity.use_methods.emplace( method, use_function( method, test_8_4e_use ) );
+    struct method_guard {
+        itype &t;
+        std::string m;
+        ~method_guard() {
+            t.use_methods.erase( m );
+        }
+    } guard{ ity, method };
+
+    REQUIRE( carried.ammo_sufficient( &chr, method ) );
+    const bool result = chr.invoke_item( &carried, method, chr.bub_pos(), chr.get_moves() );
+    // DDA returns false on the firing-requirements route (brief open question 1)
+    CHECK_FALSE( result );
+    // consumption_per_use: well_a 2, well_b 1, one charge used
+    CHECK( carried.ammo_remaining_in_pocket( "well_a" ) == 10 );
+    CHECK( carried.ammo_remaining_in_pocket( "well_b" ) == 29 );
+}
+
+TEST_CASE( "Character_consume_charges_gate_detaches_tool_without_charge_need", "[p3][ammo][8-4e]" ) {
+    clear_all_state();
+    clear_avatar();
+    Character &chr = get_player_character();
+    // CDF: horn_bicycle is a TOOL with no ammo, no charges_per_use and no firing requirements
+    const itype_id tool_id( "horn_bicycle" );
+    item &it = chr.i_add( item::spawn( tool_id ) );
+    REQUIRE( it.is_tool() );
+    CHECK( !it.needs_charges_to_use() );
+    REQUIRE( chr.has_amount( tool_id, 1 ) );
+
+    const bool destroyed = chr.consume_charges( it, 1 );
+    CHECK( destroyed );
+    CHECK_FALSE( chr.has_amount( tool_id, 1 ) );
+}
+
+TEST_CASE( "Character_has_fire_counts_firestarter_ammo_sufficient", "[p3][ammo][8-4e]" ) {
+    clear_all_state();
+    clear_avatar();
+    Character &chr = get_player_character();
+    // CDF: lighter is a FIRESTARTER tool (data/json/items/tool/fire.json:82-99) taking the
+    // "lighter_fluid" ammotype. "lighter_fluid" is an ammotype, not an item: the item is chem_butane
+    // (fuel.json), and passing the ammotype to ammo_set made item_factory register a bogus
+    // empty itype that leaked into item_length_sanity_check.
+    item &lighter = chr.i_add( item::spawn( itype_id( "lighter" ) ) );
+    REQUIRE( lighter.has_flag( flag_FIRESTARTER ) );
+
+    // no fuel: not sufficient, so no fire
+    lighter.ammo_set( itype_id( "chem_butane" ), 0 );
+    REQUIRE_FALSE( lighter.ammo_sufficient( &chr, 1 ) );
+    CHECK_FALSE( chr.has_fire( 1 ) );
+
+    // fuelled: sufficient, so fire
+    lighter.ammo_set( itype_id( "chem_butane" ), 5 );
+    REQUIRE( lighter.ammo_sufficient( &chr, 1 ) );
+    CHECK( chr.has_fire( 1 ) );
+}
