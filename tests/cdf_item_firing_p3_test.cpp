@@ -10,12 +10,14 @@
 #include "flag.h"
 #include "item.h"
 #include "item_contents.h"
+#include "item_factory.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "json.h"
 #include "map/map.h"
 #include "map_helpers.h"
 #include "npc.h"
+#include "relic.h"
 #include "state_helpers.h"
 #include "units.h"
 
@@ -473,4 +475,153 @@ TEST_CASE( "consume_tool_uses_non_tool_gate", "[p3][firing]" )
     const int before = gun.ammo_remaining();
     CHECK( gun.consume_tool_uses( 2, here, pos, nullptr ) == 2 );
     CHECK( gun.ammo_remaining() == before );
+}
+
+// P3-8-1d energy tail. Test numbers follow the brief (test 7 dropped, HD-8).
+static const itype_id itype_test_energy_gun( "test_energy_gun" );
+static const itype_id itype_test_energy_gunmod( "test_energy_gunmod" );
+
+// CDF: CDF-only test (no DDA counterpart).
+TEST_CASE( "get_gun_energy_drain_zero_without_energy_drain", "[p3][firing][energy][8-1d]" )
+{
+    item gun( itype_test_multimag_gun_consume );
+    CHECK( gun.get_gun_energy_drain() == 0_kJ );
+    item rock( itype_id( "rock" ) );
+    CHECK( rock.get_gun_energy_drain() == 0_kJ );
+}
+
+// CDF: CDF-only test (no DDA counterpart).
+TEST_CASE( "get_gun_energy_drain_sums_gunmod_multiplier_and_modifier",
+           "[p3][firing][energy][8-1d]" )
+{
+    item gun( itype_test_energy_gun );
+    REQUIRE( gun.get_gun_energy_drain() == 5_kJ );
+    REQUIRE( gun.put_in( item( itype_test_energy_gunmod ), pocket_type::MOD ).success() );
+    // 5 kJ * 2.0 + 1 kJ
+    CHECK( gun.get_gun_energy_drain() == 11_kJ );
+}
+
+// CDF: CDF-only test (no DDA counterpart). Uses p3_multimag_gun_consume: the
+// TEST_DATA gun has explicit pocket_data and so no MOD pocket for the gunmod.
+TEST_CASE( "effective_qty_battery_well_energy_modifier", "[p3][firing][energy][8-1d]" )
+{
+    item gun( itype_p3_multimag_gun_consume );
+    REQUIRE( gun.put_in( item( itype_test_energy_gunmod ), pocket_type::MOD ).success() );
+    REQUIRE( gun.pocket_accepts_battery( gun.pocket_by_id( "power" ) ) );
+    REQUIRE_FALSE( gun.pocket_accepts_battery( gun.pocket_by_id( "ammo" ) ) );
+
+    pocket_consumption_entry e;
+    e.pocket = "power";
+    e.qty = 5;
+    // 5 * 2.0 + 1 kJ
+    CHECK( gun.effective_qty( e ) == 11 );
+
+    e.pocket = "ammo";
+    e.qty = 1;
+    // The energy fields skip the primary pocket.
+    CHECK( gun.effective_qty( e ) == 1 );
+}
+
+// CDF: CDF-only test (no DDA counterpart).
+TEST_CASE( "format_consumption_requirements_energy_part", "[p3][firing][energy][8-1d]" )
+{
+    item gun( itype_test_energy_gun );
+    REQUIRE_FALSE( gun.uses_firing_requirements() );
+    const std::string one = gun.format_consumption_requirements( "", gun_mode_id( "DEFAULT" ), 1 );
+    CHECK( one.find( ", 5 kJ" ) != std::string::npos );
+    const std::string three = gun.format_consumption_requirements( "", gun_mode_id( "DEFAULT" ), 3 );
+    CHECK( three.find( ", 15 kJ" ) != std::string::npos );
+
+    item glock = make_loaded_glock();
+    const std::string g = glock.format_consumption_requirements( "", gun_mode_id( "DEFAULT" ), 1 );
+    CHECK( g.find( "kJ" ) == std::string::npos );
+}
+
+// CDF: CDF-only test (no DDA counterpart). No "enough energy" section (open question 1).
+TEST_CASE( "consume_shots_legacy_energy_half", "[p3][firing][energy][8-1d]" )
+{
+    clear_map();
+    map &here = get_map();
+    const tripoint_bub_ms pos = tripoint_bub_ms::zero(); // CDF: zero is a function here
+    item gun( itype_test_energy_gun );
+
+    SECTION( "short energy returns 0" ) {
+        item battery( itype_id( "battery_test" ) );
+        REQUIRE( battery.mod_energy( 30_kJ ) == 0_J );
+        REQUIRE( gun.put_in( battery, pocket_type::MAGAZINE_WELL ).success() );
+        REQUIRE( gun.energy_remaining( nullptr ) == 30_kJ );
+        CHECK( gun.consume_shots( gun_mode_id( "DEFAULT" ), 7, here, pos, nullptr ) == 0 );
+    }
+
+    SECTION( "empty well returns 0" ) {
+        CHECK( gun.consume_shots( gun_mode_id( "DEFAULT" ), 1, here, pos, nullptr ) == 0 );
+    }
+}
+
+// CDF: CDF-only test (no DDA counterpart).
+TEST_CASE( "needs_charges_to_use_true_for_energy_only_gun", "[p3][firing][energy][8-1d]" )
+{
+    item gun( itype_test_energy_gun );
+    REQUIRE( gun.ammo_required() == 0 );
+    REQUIRE( gun.get_gun_ups_drain() == 0 );
+    REQUIRE_FALSE( gun.uses_firing_requirements() );
+    CHECK( gun.needs_charges_to_use() );
+}
+
+static itype energy_p3_gun( const std::vector<std::string> &modes )
+{
+    itype t;
+    t.gun = cata::make_value<islot_gun>();
+    for( const std::string &m : modes ) {
+        t.gun->modes.emplace( gun_mode_id( m ), gun_modifier_data( m, 1, {} ) );
+    }
+    return t;
+}
+
+static void energy_add_requirement( firing_requirement_set &fr, const std::string &mode,
+                                    const std::string &pocket, int qty )
+{
+    pocket_consumption_entry entry;
+    entry.pocket = pocket;
+    entry.qty = qty;
+    fr.per_mode[gun_mode_id( mode )].push_back( entry );
+}
+
+// CDF: CDF-only test (no DDA counterpart).
+TEST_CASE( "check_firing_requirements_rejects_energy_drain_with_firing_requirements",
+           "[p3][firing][energy][8-1d]" )
+{
+    itype t = energy_p3_gun( { "DEFAULT" } );
+    energy_add_requirement( t.firing_requirements, "DEFAULT", "power", 1 );
+
+    t.gun->energy_drain = 5_kJ;
+    CHECK( check_firing_requirements( t ).find(
+               "firing_requirements and non-zero energy_drain are mutually exclusive" )
+           != std::string::npos );
+
+    t.gun->energy_drain = 0_kJ;
+    CHECK( check_firing_requirements( t ).find( "energy_drain" ) == std::string::npos );
+}
+
+// DDA tests/multimag_test.cpp:1872-1893.
+TEST_CASE( "uses_energy_and_is_chargeable_across_multiple_wells", "[multimag][consume][8-1d]" )
+{
+    SECTION( "multimag tool with battery + non-battery wells reports energy use" ) {
+        // test_multimag_gun_consume has glockmag (9mm) + heavy_battery_cell
+        // wells; verify uses_energy detects the battery-flavored well.
+        item gun = make_multimag_consume_gun();
+        CHECK( gun.uses_energy() );
+    }
+
+    SECTION( "is_chargeable considers only the battery-flavored capacity" ) {
+        // Battery well empty, projectile well full. Aggregate ammo_remaining
+        // would include the projectile count and falsely match capacity.
+        item gun( itype_test_multimag_gun_consume );
+        item bb_mag( itype_id( "glockmag" ) );
+        bb_mag.put_in( item( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+        item batt_mag( itype_id( "heavy_battery_cell" ) );
+        REQUIRE( gun.put_in( bb_mag, pocket_type::MAGAZINE_WELL ).success() );
+        REQUIRE( gun.put_in( batt_mag, pocket_type::MAGAZINE_WELL ).success() );
+        CHECK( gun.is_chargeable() );
+    }
 }

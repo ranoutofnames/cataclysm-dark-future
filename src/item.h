@@ -2765,7 +2765,9 @@ class item : public location_visitable<item>, public game_object<item>
         time_point birthday() const;
         void set_birthday( const time_point &bday );
         void handle_pickup_ownership( Character &c );
+        // CDF: get_gun_ups_drain() stays an int count of UPS charges (1 charge = 1 kJ); no get_gun_bionic_drain (AUTO-26 O2)
         int get_gun_ups_drain() const;
+        units::energy get_gun_energy_drain() const;
         void validate_ownership() const;
         inline void set_old_owner( const faction_id &temp_owner ) {
             old_owner = temp_owner;

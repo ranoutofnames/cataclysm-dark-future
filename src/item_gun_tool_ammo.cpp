@@ -605,8 +605,23 @@ bool item::uses_firing_requirements() const
 
 bool item::needs_charges_to_use() const
 {
-    // CDF: get_gun_ups_drain() is an int in UPS charges, not kJ; DDA get_gun_energy_drain() > 0_kJ is not ported
-    return ammo_required() > 0 || get_gun_ups_drain() > 0 || uses_firing_requirements();
+    // CDF: DDA's single energy term is split: get_gun_ups_drain() is an int count of UPS charges (AUTO-30 OD-2), get_gun_energy_drain() is DDA's
+    return ammo_required() > 0 || get_gun_energy_drain() > 0_kJ || get_gun_ups_drain() > 0 || uses_firing_requirements();
+}
+
+units::energy item::get_gun_energy_drain() const
+{
+    units::energy draincount = 0_kJ;
+    if( type->gun ) {
+        units::energy modifier = 0_kJ;
+        float multiplier = 1.0f;
+        for( const item *mod : gunmods() ) {
+            modifier += mod->type->gunmod->energy_drain_modifier;
+            multiplier *= mod->type->gunmod->energy_drain_multiplier;
+        }
+        draincount = ( type->gun->energy_drain * multiplier ) + modifier;
+    }
+    return draincount;
 }
 
 const item_pocket *item::primary_ammo_pocket() const
@@ -1099,10 +1114,11 @@ int item::effective_qty( const pocket_consumption_entry &e ) const
 {
     const item_pocket *p = pocket_by_id( e.pocket );
     const bool is_primary = pocket_is_primary_ammo( p );
+    const bool is_battery = pocket_accepts_battery( p );
 
     float multiplier = 1.0f;
     int modifier_int = 0;
-    // CDF: DDA energy_drain_modifier / energy_drain_multiplier (pocket-battery branch) dropped: no CDF field
+    units::energy modifier_energy = 0_kJ;
     if( is_gun() ) {
         for( const item *mod : gunmods() ) {
             if( !mod->type || !mod->type->gunmod ) {
@@ -1111,12 +1127,16 @@ int item::effective_qty( const pocket_consumption_entry &e ) const
             if( is_primary ) {
                 multiplier *= mod->type->gunmod->ammo_to_fire_multiplier;
                 modifier_int += mod->type->gunmod->ammo_to_fire_modifier;
+            } else if( is_battery ) {
+                multiplier *= mod->type->gunmod->energy_drain_multiplier;
+                modifier_energy += mod->type->gunmod->energy_drain_modifier;
             }
         }
     }
 
     double scaled = static_cast<double>( e.qty ) * multiplier
-                    + static_cast<double>( modifier_int );
+                    + static_cast<double>( modifier_int )
+                    + units::to_kilojoule( modifier_energy );
 
     // Explicit per-pocket overrides from installed mods (gunmod or toolmod, both
     // through the mod slot). Order-independent: the smallest `set` replaces the
@@ -1195,7 +1215,15 @@ std::string item::format_consumption_requirements(
 {
     const int scale = method_scale( type, method );
     if( !uses_firing_requirements() ) {
-        // CDF: DDA get_gun_energy_drain() kJ text dropped (no CDF energy API); charges text kept
+        if( type && type->gun ) {
+            const int qty = ammo_required() * scale * uses;
+            const units::energy energy = get_gun_energy_drain() * scale * uses;
+            std::string out = string_format( _( "%d charges" ), qty );
+            if( energy > 0_kJ ) {
+                out += string_format( _( ", %d kJ" ), units::to_kilojoule( energy ) );
+            }
+            return out;
+        }
         const int qty = ammo_required() * scale * uses;
         return string_format( _( "%d charges" ), qty );
     }
@@ -1533,7 +1561,9 @@ int item::shots_remaining( const map &here, const Character *carrier ) const
     if( ammo_required() ) {
         ret = std::min( ammo_remaining_linked( here,  carrier ) / ammo_required(), ret );
     }
-    // CDF: energy part, job 8-1d (get_gun_energy_drain absent; 8-1d replaces this marker, lookup OD-5)
+    if( get_gun_energy_drain() > 0_kJ ) {
+        ret = std::min( static_cast<int>( energy_remaining( carrier ) / get_gun_energy_drain() ), ret );
+    }
     return ret;
 }
 
@@ -1745,13 +1775,19 @@ int item::consume_shots( const gun_mode_id &mode, int shots, map &here,
     }
     // Legacy path: ammo_consume + energy_consume per shot.
     const int required_ammo = ammo_required() * shots;
+    const units::energy required_energy = get_gun_energy_drain() * shots;
     if( required_ammo > 0 ) {
         const int consumed_ammo = ammo_consume( required_ammo, here, pos, carrier );
         if( consumed_ammo != required_ammo ) {
             return 0;
         }
     }
-    // CDF: energy tail, job 8-1d (get_gun_energy_drain absent)
+    if( required_energy > 0_kJ ) {
+        const units::energy drained = energy_consume( required_energy, &here, pos, carrier );
+        if( drained < required_energy ) {
+            return 0;
+        }
+    }
     return shots;
 }
 

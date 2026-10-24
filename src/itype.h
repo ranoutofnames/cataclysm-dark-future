@@ -681,6 +681,10 @@ struct islot_gun : common_ranged_data {
      */
     int ups_charges = 0;
     /**
+     * If this uses electric energy, how much (per shot).
+     */
+    units::energy energy_drain = 0_kJ;
+    /**
      * One in X chance for gun to require major cleanup after firing blackpowder shot.
      */
     int blackpowder_tolerance = 8;
@@ -766,6 +770,12 @@ struct islot_gunmod : common_ranged_data {
 
     /** Increases base gun UPS consumption by this value per shot */
     int ups_charges_modifier = 0;
+
+    /** Increases base gun energy consumption by this many times per shot */
+    float energy_drain_multiplier = 1.0f;
+
+    /** Increases base gun energy consumption by this value per shot */
+    units::energy energy_drain_modifier = 0_kJ;
 
     /** Increases base gun ammo to fire by this many times per shot */
     float ammo_to_fire_multiplier = 1.0f;
