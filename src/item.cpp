@@ -5789,6 +5789,91 @@ std::string item::display_money( unsigned int quantity, unsigned int total,
     }
 }
 
+namespace
+{
+
+// Per-well segments "amount/max ammo name" of an item with several magazine wells, joined with
+// ", "; the caller puts them in one pair of parentheses. DDA item.cpp 1650-1775 (display_name).
+// CDF: file-static helper instead of inline code; MAGAZINE_WELL pockets only, the integral
+// MAGAZINE pockets of DDA 1654-1661 and 1701-1739 arrive in 5-5b.
+auto multi_well_name_segments( const std::vector<const item_pocket *> &well_pockets ) -> std::string
+{
+    // Distinct ammotypes share the host, so per-pocket ammo names always render regardless of
+    // AMMO_IN_NAMES (DDA 1663-1665).
+    const bool show_ammo_name = true;
+    std::vector<std::string> segments;
+    for( const item_pocket *p : well_pockets ) {
+        int well_amount = 0;
+        int well_max = 0;
+        const itype *ammo_for_name = nullptr;
+        itype_id ammo_id_for_name;
+        const item *mag = p->magazine_current();
+        if( mag != nullptr ) {
+            well_amount = mag->ammo_remaining();
+            const itype *adata = mag->ammo_data();
+            if( adata ) {
+                well_max = mag->ammo_capacity( adata->ammo->type );
+            } else if( !mag->ammo_default().is_null() ) {
+                // CDF: Item_factory::find_template is private (item_factory.h 232);
+                // itype_id::operator-> resolves the same template through the global factory.
+                const itype &tmpl = *mag->ammo_default();
+                if( tmpl.ammo ) {
+                    well_max = mag->ammo_capacity( tmpl.ammo->type );
+                }
+            }
+            ammo_for_name = adata;
+            ammo_id_for_name = mag->ammo_current();
+            if( ammo_id_for_name.is_null() ) {
+                ammo_id_for_name = mag->ammo_default();
+            }
+        } else {
+            const itype_id default_mag = p->magazine_default();
+            if( !default_mag.is_null() && default_mag->magazine ) {
+                const itype_id &default_ammo = default_mag->magazine->default_ammo;
+                if( !default_ammo.is_null() && default_ammo->ammo ) {
+                    well_max = default_mag->magazine->capacity;
+                    ammo_for_name = &*default_ammo;
+                    ammo_id_for_name = default_ammo;
+                }
+            }
+        }
+        nc_color color = c_white;
+        if( well_amount == 0 ) {
+            color = c_light_red;
+        } else if( well_max > 0 && well_amount < well_max ) {
+            const double ratio = static_cast<double>( well_amount ) / static_cast<double>( well_max );
+            if( ratio < 1.0 / 3.0 ) {
+                color = c_red;
+            } else if( ratio < 2.0 / 3.0 ) {
+                color = c_yellow;
+            } else {
+                color = c_light_green;
+            }
+        }
+        std::string segment = colorize( string_format( "%i/%i", well_amount, well_max ), color );
+        if( show_ammo_name && !ammo_id_for_name.is_null() && !ammo_id_for_name.is_empty() ) {
+            std::string ammoname = ammo_id_for_name->nname( 1 );
+            if( ammoname.empty() && ammo_for_name && ammo_for_name->ammo ) {
+                ammoname = ammo_for_name->ammo->type->name();
+            }
+            if( !ammoname.empty() ) {
+                segment += " " + ammoname;
+            }
+        }
+        segments.emplace_back( segment );
+    }
+    std::string joined;
+    for( size_t i = 0; i < segments.size(); ++i ) {
+        if( i > 0 ) {
+            joined += ", ";
+        }
+        joined += segments[i];
+    }
+    return joined;
+}
+
+} // namespace
+
 std::string item::display_name( unsigned int quantity ) const
 {
     std::string name = tname( quantity );
@@ -5814,6 +5899,8 @@ std::string item::display_name( unsigned int quantity ) const
     bool has_ammo = is_ammo_container() && contents.num_item_stacks() == 1;
     bool contains = has_item || has_ammo;
     bool show_amt = false;
+    bool amt_built_for_multimag = false;
+    const std::vector<const item_pocket *> well_pockets = all_magazine_well_pockets();
     // We should handle infinite charges properly in all cases.
     if( contains ) {
         amount = contents.front().charges;
@@ -5821,6 +5908,12 @@ std::string item::display_name( unsigned int quantity ) const
     } else if( is_book() && get_chapters() > 0 ) {
         // a book which has remaining unread chapters
         amount = get_remaining_chapters( you );
+    } else if( well_pockets.size() > 1 ) {
+        // CDF: DDA 1644-1649 also enters for one loaded well and for a multimag host with one well
+        // plus an integral MAGAZINE pocket. A single well keeps the branch below with BN's colour
+        // bands (ADV-14 ruling 7); the integral MAGAZINE pockets arrive in 5-5b.
+        amt = " (" + multi_well_name_segments( well_pockets ) + ")";
+        amt_built_for_multimag = true;
     } else if( ammo_capacity() > 0 ) {
         // anything that can be reloaded including tools, magazines, guns and auxiliary gunmods
         // but excluding bows etc., which have ammo, but can't be reloaded
@@ -5846,7 +5939,9 @@ std::string item::display_name( unsigned int quantity ) const
         }
     }
 
-    if( amount || show_amt ) {
+    // CDF: DDA wraps the amount block in `if( !amt_built_for_multimag )` (DDA 1844); the two
+    // conditions below are equivalent and leave the block un-indented (BN diff).
+    if( !amt_built_for_multimag && ( amount || show_amt ) ) {
         if( is_money() ) {
             amt = string_format( " $%.2f", amount / 100.0 );
         } else {
@@ -5856,6 +5951,9 @@ std::string item::display_name( unsigned int quantity ) const
 
             if( max_amount != 0 ) {
                 if( !contains ) {
+                    // CDF: single wells and plain items keep BN's percentage colour bands (ADV-14
+                    // ruling 7, REPLAN U7); DDA's ratio thresholds (item.cpp 1853-1876) colour the
+                    // multi-well segments only.
                     int percentage = ( static_cast<float>( amount ) / max_amount ) * 100;
                     nc_color color = c_green;
                     if( percentage >= 100 ) {
@@ -5881,7 +5979,7 @@ std::string item::display_name( unsigned int quantity ) const
                 amt = string_format( " (%i%s)", amount, ammotext );
             }
         }
-    } else if( !ammotext.empty() ) {
+    } else if( !amt_built_for_multimag && !ammotext.empty() ) {
         amt = " (" + ammotext + ")";
     }
 
