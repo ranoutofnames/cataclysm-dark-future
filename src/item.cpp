@@ -2456,7 +2456,9 @@ void item::magazine_info( std::vector<iteminfo> &info, const iteminfo_query *par
                                ammo_capacity() );
         }
     }
-    if( parts->test( iteminfo_parts::MAGAZINE_RELOAD ) ) {
+    // CDF: a gun or tool with an integral MAGAZINE pocket is_magazine() but has no islot_magazine
+    // (type->magazine is null; e.g. test_multimag_gun_integral_ammo), so there is no reload time to print.
+    if( parts->test( iteminfo_parts::MAGAZINE_RELOAD ) && type->magazine ) {
         info.emplace_back( "MAGAZINE", _( "Reload time: " ), _( "<num> moves per round" ),
                            iteminfo::lower_is_better, type->magazine->reload_time );
     }
@@ -2651,37 +2653,82 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
     // many statistics are dependent upon loaded ammo
     // if item is unloaded (or is RELOAD_AND_SHOOT) shows approximate stats using default ammo
     const item *loaded_mod = mod;
-    if( mod->ammo_required() && !mod->ammo_remaining() ) {
+    const itype *curammo = nullptr;
+    // CDF: DDA item_info.cpp:1105 tests !mod->has_ammo_data(). CDF's has_ammo_data() has no legacy `curammo`
+    // branch (item_gun_tool_ammo.cpp 786-812) while ammo_data() ends in `return curammo` (738-739), so a
+    // loaded BN integral gun (clip_size, direct charges, AUTO-20) would read as unloaded. ammo_data() is the
+    // same test for every other gun.
+    if( mod->ammo_required() && mod->ammo_data() == nullptr ) {
         item &tmp = *item::spawn_temporary( *mod );
-        tmp.ammo_set( mod->magazine_current() ? tmp.common_ammo_default() : tmp.ammo_default() );
-        if( tmp.ammo_data() == nullptr ) {
-            insert_separation_line( info );
-            info.emplace_back( "GUN",
-                               _( "Weapon <bad>can't be loaded in its current state</bad>." ) );
-            return;
+        // CDF: DDA item_info.cpp:1107-1137 (bore mod branch: default_mods, magazine_adaptor,
+        // GUN_DEFAULT_BORE) is not ported: CDF has no GUN_DEFAULT_BORE part and no data/json gun with an
+        // empty ammo set.
+        const itype_id default_ammo = mod->magazine_current() ? tmp.common_ammo_default() :
+                                      tmp.ammo_default();
+        if( !default_ammo.is_null() ) {
+            tmp.ammo_set( default_ammo );
+        } else if( !tmp.magazine_default().is_null() ) {
+            // clear out empty magazines so put_in below doesn't error
+            // CDF: DDA item_info.cpp:1143-1149 removes through an item_location; CDF detaches the
+            // magazines from the temporary copy (item_contents::remove_top).
+            const std::vector<item *> top_items = tmp.contents.all_items_top();
+            for( item *i : top_items ) {
+                if( i->is_magazine() ) {
+                    tmp.contents.remove_top( i );
+                }
+            }
+            tmp.on_contents_changed();
+
+            // CDF: DDA item_info.cpp:1151-1153 with item::spawn (items are detached_ptr in CDF).
+            detached_ptr<item> tmp_mag = item::spawn( tmp.magazine_default() );
+            tmp_mag->ammo_set( tmp_mag->ammo_default() );
+            tmp.put_in( std::move( tmp_mag ), pocket_type::MAGAZINE_WELL );
         }
         loaded_mod = &tmp;
+        curammo = loaded_mod->ammo_data();
+        // TODO: Should this be .is_null(), rather than comparing to "none"?
+        if( loaded_mod->typeId().str() == "none" || curammo == nullptr ) {
+            if( magazine_current() ) {
+                const itype_id mag_default = magazine_current()->ammo_default();
+                if( mag_default.is_null() ) {
+                    debugmsg( "gun %s has magazine %s with no default ammo",
+                              typeId().str(), magazine_current()->typeId().str() );
+                    return;
+                }
+                curammo = &mag_default.obj();
+            } else {
+                // CDF: DDA item_info.cpp:1169-1170 is debugmsg( "loaded a nun or ammo_data() is nullptr" ) and
+                // return. A gun that cannot be loaded in its current state (wells from explicit pocket_data
+                // and no `magazines` key, AUTO-53) keeps BN's message instead of a debugmsg.
+                insert_separation_line( info );
+                info.emplace_back( "GUN",
+                                   _( "Weapon <bad>can't be loaded in its current state</bad>." ) );
+                return;
+            }
+        }
         if( parts->test( iteminfo_parts::GUN_DEFAULT_AMMO ) ) {
             insert_separation_line( info );
             info.emplace_back( "GUN",
                                _( "Weapon is <bad>not loaded</bad>, so stats below assume the default ammo: " ),
                                string_format( "<stat>%s</stat>",
-                                              loaded_mod->ammo_data()->nname( 1 ) ) );
+                                              curammo->nname( 1 ) ) );
         }
+    } else {
+        // CDF: DDA item_info.cpp:1181-1185 returns here when curammo is null. That would also end gun_info
+        // for a gun that needs no ammo (ammo_required() 0, e.g. test_energy_gun) and hide its other lines;
+        // the code below already null-checks curammo and ammo_required().
+        curammo = loaded_mod->ammo_data();
     }
 
-    const itype *curammo = loaded_mod->ammo_data();
-    if( mod->ammo_required() && !curammo ) {
-        debugmsg( "curammo is nullptr in item::gun_info()" );
-        return;
-    }
     damage_unit gun_du = gun_damage( false ).damage_units.front();
 
     gun_du.damage_multiplier *= ranged::str_draw_damage_modifier( *mod, viewer );
 
     damage_unit thrown_du = damage_unit( DT_STAB, 0 );
 
-    damage_unit ammo_du = curammo != nullptr
+    // CDF: the DDA head can leave a loaded magazine's default ammo (a battery) as curammo, and its
+    // damage instance is empty: front() on it is undefined. A BN gun with ammo damage is unchanged.
+    damage_unit ammo_du = curammo != nullptr && !curammo->ammo->damage.empty()
                           ? curammo->ammo->damage.damage_units.front()
                           : damage_unit( DT_STAB, 0 );
 
@@ -3070,7 +3117,10 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
                 info.emplace_back( "AMMO", _( "Ammunition: " ),
                                    string_format( "<stat>%s</stat>", joined ) );
             }
-        } else if( mod->has_ammo_data() ) {
+        } else if( mod->ammo_data() != nullptr ) {
+            // CDF: DDA item_info.cpp:1445 tests mod->has_ammo_data(); ammo_data() is the CDF test because a
+            // loaded BN integral gun keeps its round in curammo (see the head of gun_info). The line is the
+            // one CDF printed before 9-1a-b.
             info.emplace_back( "AMMO", _( "Ammunition: " ), string_format( "<stat>%s</stat>",
                                mod->ammo_data()->nname( mod->ammo_remaining( ) ) ) );
         }
@@ -3079,6 +3129,31 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
     if( mod->ammo_required() > 1 && parts->test( iteminfo_parts::AMMO_TO_FIRE ) ) {
         info.emplace_back( "AMMO",  _( "Ammunition consumed per shot: " ), "",
                            iteminfo::lower_is_better, mod->ammo_required() );
+    }
+
+    if( mod->get_gun_energy_drain() > 0_kJ && parts->test( iteminfo_parts::AMMO_UPSCOST ) ) {
+        info.emplace_back( "AMMO", _( "Energy per shot: " ), string_format( "<stat>%s</stat>",
+                           units::display( mod->get_gun_energy_drain() ) ) );
+    }
+
+    if( mod->uses_firing_requirements() && parts->test( iteminfo_parts::AMMO_TO_FIRE ) ) {
+        // Per-mode draw shows the player which wells fire together.
+        const std::map<gun_mode_id, gun_mode> modes = mod->gun_all_modes();
+        std::set<gun_mode_id> printed;
+        for( const std::pair<const gun_mode_id, gun_mode> &m : modes ) {
+            if( !printed.insert( m.first ).second ) {
+                continue;
+            }
+            const std::string per_shot =
+                mod->format_consumption_requirements( std::string(), m.first, 1 );
+            if( per_shot.empty() ) {
+                continue;
+            }
+            info.emplace_back( "AMMO",
+                               string_format( _( "Per-shot consumption (%s): " ),
+                                              m.second.tname() ),
+                               string_format( "<stat>%s</stat>", per_shot ) );
+        }
     }
 
     if( mod->get_gun_ups_drain() && parts->test( iteminfo_parts::AMMO_UPSCOST ) ) {

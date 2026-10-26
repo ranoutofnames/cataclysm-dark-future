@@ -12,6 +12,7 @@
 #include "ammo.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "debug.h"
 #include "item.h"
 #include "iteminfo_query.h"
 #include "itype.h"
@@ -408,5 +409,240 @@ TEST_CASE( "gun_info_ammunition_consumed_per_shot", "[p3][iteminfo]" )
         const std::string s = iteminfo_p3_plain( gun, { iteminfo_parts::AMMO_TO_FIRE } );
         CAPTURE( s );
         CHECK( s.find( "per shot" ) == std::string::npos );
+    }
+}
+
+namespace
+{
+// DDA tests/iteminfo_test.cpp 1989-1994.
+auto iteminfo_p3_battery_only_gun() -> item
+{
+    item gun( itype_id( "test_multimag_gun_integral_ammo" ) );
+    item battery( itype_id( "heavy_battery_cell" ) );
+    battery.ammo_set( itype_id( "battery" ), 100 );
+    REQUIRE( gun.put_in( battery, pocket_type::MAGAZINE_WELL ).success() );
+    return item( gun );
+}
+
+// CDF-only: an empty battery cell in the `power` well and nothing else loaded.
+auto iteminfo_p3_empty_battery_gun() -> item
+{
+    item gun( itype_id( "test_multimag_gun_consume" ) );
+    item battery( itype_id( "heavy_battery_cell" ) );
+    REQUIRE( battery.ammo_remaining() == 0 );
+    REQUIRE( gun.put_in( battery, pocket_type::MAGAZINE_WELL ).success() );
+    return item( gun );
+}
+
+// Every info part, as the item info window asks for them.
+auto iteminfo_p3_all( const item &it ) -> std::string
+{
+    return remove_color_tags( it.info_string( iteminfo_query::all, 1 ) );
+}
+} // namespace
+
+// DDA tests/iteminfo_test.cpp 1983-2007, name kept (D11); clear_all_state() for clear_avatar(), literals for
+// the itype_* statics. The `Capacity (ammo)` check is CDF-only (the pocket id is `ammo`, items.json 1864).
+TEST_CASE( "multimag_gun_info_with_battery_only_loaded", "[p3][iteminfo][gun][multimag]" )
+{
+    clear_all_state();
+
+    item gun( itype_id( "test_multimag_gun_integral_ammo" ) );
+    REQUIRE( gun.uses_firing_requirements() );
+
+    item battery( itype_id( "heavy_battery_cell" ) );
+    battery.ammo_set( itype_id( "battery" ), 100 );
+    REQUIRE( gun.put_in( battery, pocket_type::MAGAZINE_WELL ).success() );
+
+    const std::vector<iteminfo_parts> capacity_parts = { iteminfo_parts::GUN_CAPACITY };
+    const std::string capacity = iteminfo_p3_str( gun, capacity_parts );
+    CAPTURE( capacity );
+    CHECK( capacity.find( "Capacity" ) != std::string::npos );
+    CHECK( capacity.find( ">1</color> round of " ) != std::string::npos );
+    CHECK( capacity.find( ">0</color> round" ) == std::string::npos );
+    // CDF: the projectile pocket is the integral `ammo` MAGAZINE pocket restricted to 9mm 1.
+    CHECK( remove_color_tags( capacity ).find( "Capacity (ammo): 1 round of " ) != std::string::npos );
+
+    const std::vector<iteminfo_parts> per_shot_parts = { iteminfo_parts::AMMO_TO_FIRE };
+    const std::string per_shot = iteminfo_p3_str( gun, per_shot_parts );
+    CAPTURE( per_shot );
+    CHECK( per_shot.find( "Per-shot consumption" ) != std::string::npos );
+}
+
+// CDF-only (ADVISOR-1 of 9-1a-b, corrected): the DDA head must not debugmsg for a loaded magazine that holds
+// no projectile ammo, and the unloaded explicit-pocket gun keeps BN's message.
+TEST_CASE( "gun_info_head_loaded_magazine_without_projectile_ammo", "[p3][iteminfo][multimag]" )
+{
+    clear_all_state();
+
+    SECTION( "empty battery cell only: no debugmsg" ) {
+        const item gun = iteminfo_p3_empty_battery_gun();
+        REQUIRE( gun.uses_firing_requirements() );
+        REQUIRE( gun.magazine_current() != nullptr );
+        std::string s;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            s = iteminfo_p3_all( gun );
+        } );
+        CAPTURE( dmsg );
+        CAPTURE( s );
+        CHECK( dmsg.empty() );
+        CHECK( s.find( "Weapon is not loaded, so stats below assume the default ammo: " ) !=
+               std::string::npos );
+    }
+
+    SECTION( "unloaded explicit-pocket gun without magazines: BN message, no debugmsg" ) {
+        // CDF: test_multimag_gun_consume has wells from pocket_data and no `magazines` key, so there is no
+        // default magazine to build (AUTO-53).
+        const item gun( itype_id( "test_multimag_gun_consume" ) );
+        REQUIRE( gun.magazine_current() == nullptr );
+        REQUIRE( gun.magazine_default().is_null() );
+        std::string s;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            s = iteminfo_p3_all( gun );
+        } );
+        CAPTURE( dmsg );
+        CAPTURE( s );
+        CHECK( dmsg.empty() );
+        CHECK( s.find( "Weapon can't be loaded in its current state." ) != std::string::npos );
+    }
+
+    // CDF: kept last. test_multimag_gun_integral_ammo has an integral MAGAZINE pocket but no islot_magazine, so
+    // item::magazine_info (MAGAZINE_RELOAD) dereferences a null type->magazine; a crash here must not hide the
+    // sections above.
+    SECTION( "battery-only loaded gun: every part renders without a debugmsg" ) {
+        const item gun = iteminfo_p3_battery_only_gun();
+        std::string s;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            s = iteminfo_p3_all( gun );
+        } );
+        CAPTURE( dmsg );
+        CAPTURE( s );
+        CHECK( dmsg.empty() );
+        // DDA 1160-1167 and 1173-1179: the loaded battery's default ammo stands in for the projectile ammo.
+        CHECK( s.find( "Weapon is not loaded, so stats below assume the default ammo: " +
+                       itype_id( "battery" )->nname( 1 ) ) != std::string::npos );
+        CHECK( s.find( "Capacity (ammo): 1 round of " ) != std::string::npos );
+    }
+}
+
+// DDA item_info.cpp 1456-1459. CDF-only test (DDA has no direct test for the line).
+TEST_CASE( "gun_info_energy_per_shot", "[p3][iteminfo]" )
+{
+    clear_all_state();
+    const std::vector<iteminfo_parts> upscost = { iteminfo_parts::AMMO_UPSCOST };
+
+    SECTION( "energy gun prints the drain with its unit" ) {
+        const item gun( itype_id( "test_energy_gun" ) );
+        REQUIRE( units::to_kilojoule( gun.get_gun_energy_drain() ) == 5 );
+        const std::string s = iteminfo_p3_plain( gun, upscost );
+        CAPTURE( s );
+        // CDF: energy_drain "5 kJ" (items.json 2352); units::display( 5 kJ ) is "5 kJ".
+        CHECK( s.find( "Energy per shot: 5 kJ" ) != std::string::npos );
+    }
+
+    SECTION( "gunmod multiplier and modifier are included" ) {
+        item gun( itype_id( "test_energy_gun" ) );
+        item mod( itype_id( "test_energy_gunmod" ) );
+        REQUIRE( gun.put_in( mod, pocket_type::MOD ).success() );
+        REQUIRE( units::to_kilojoule( gun.get_gun_energy_drain() ) == 11 );
+        const std::string s = iteminfo_p3_plain( gun, upscost );
+        CAPTURE( s );
+        // CDF: 5 kJ * 2.0 + 1 kJ (items.json 2353).
+        CHECK( s.find( "Energy per shot: 11 kJ" ) != std::string::npos );
+    }
+
+    SECTION( "gun without energy drain prints nothing" ) {
+        const item gun = iteminfo_p3_loaded_glock();
+        REQUIRE( units::to_kilojoule( gun.get_gun_energy_drain() ) == 0 );
+        const std::string s = iteminfo_p3_plain( gun, upscost );
+        CAPTURE( s );
+        CHECK( s.find( "Energy per shot" ) == std::string::npos );
+    }
+
+    SECTION( "part off prints nothing" ) {
+        const item gun( itype_id( "test_energy_gun" ) );
+        const std::string s = iteminfo_p3_plain( gun, { iteminfo_parts::AMMO_REMAINING } );
+        CAPTURE( s );
+        CHECK( s.find( "Energy per shot" ) == std::string::npos );
+    }
+
+    SECTION( "UPS-charge gun keeps its own line, no energy line" ) {
+        // CDF: plasma_gun has ups_charges 15 and no energy_drain (plasma.json 3); the UPS line is BN's and
+        // stays (separate drains, ADV-12 OD-2).
+        const item gun = iteminfo_p3_loaded_plasma();
+        REQUIRE( gun.get_gun_ups_drain() == 15 );
+        const std::string s = iteminfo_p3_plain( gun, upscost );
+        CAPTURE( s );
+        CHECK( s.find( "Uses 15 charges of UPS per shot" ) != std::string::npos );
+        CHECK( s.find( "Energy per shot" ) == std::string::npos );
+    }
+}
+
+// DDA item_info.cpp 1461-1479. CDF-only test (DDA 2003-2006 asserts only the heading, in
+// multimag_gun_info_with_battery_only_loaded above).
+TEST_CASE( "gun_info_per_shot_consumption", "[p3][iteminfo][multimag]" )
+{
+    clear_all_state();
+    const std::vector<iteminfo_parts> to_fire = { iteminfo_parts::AMMO_TO_FIRE };
+
+    SECTION( "two modes: one line per mode" ) {
+        const item gun = iteminfo_p3_consume_gun();
+        REQUIRE( gun.uses_firing_requirements() );
+        const std::string s = iteminfo_p3_plain( gun, to_fire );
+        CAPTURE( s );
+        // CDF: modes DEFAULT "default" (1) and BURST "burst" (3) (items.json 1624); firing_requirements
+        // DEFAULT ammo 1 + power 5, BURST ammo 3 + power 15 (1636-1639); the ammo well holds 9mm, the power
+        // well battery, so the entry names are the loaded ammo's names (format_consumption_requirements).
+        const std::string bb = "9mm";
+        CHECK( s.find( "Per-shot consumption (default): 1 " + itype_id( bb )->nname( 1 ) + " + 5 " +
+                       itype_id( "battery" )->nname( 5 ) ) != std::string::npos );
+        CHECK( s.find( "Per-shot consumption (burst): 3 " + itype_id( bb )->nname( 3 ) + " + 15 " +
+                       itype_id( "battery" )->nname( 15 ) ) != std::string::npos );
+        int lines = 0;
+        for( size_t at = s.find( "Per-shot consumption (" ); at != std::string::npos;
+             at = s.find( "Per-shot consumption (", at + 1 ) ) {
+            lines++;
+        }
+        CHECK( lines == 2 );
+    }
+
+    SECTION( "legacy gun prints nothing" ) {
+        const item gun = iteminfo_p3_loaded_glock();
+        REQUIRE_FALSE( gun.uses_firing_requirements() );
+        const std::string s = iteminfo_p3_plain( gun, to_fire );
+        CAPTURE( s );
+        CHECK( s.find( "Per-shot consumption" ) == std::string::npos );
+    }
+
+    SECTION( "part off prints nothing" ) {
+        const item gun = iteminfo_p3_consume_gun();
+        const std::string s = iteminfo_p3_plain( gun, { iteminfo_parts::AMMO_REMAINING } );
+        CAPTURE( s );
+        CHECK( s.find( "Per-shot consumption" ) == std::string::npos );
+    }
+}
+
+// CDF-only (Fact 4): a loaded BN integral gun keeps its round in curammo; has_ammo_data() is false for it,
+// ammo_data() is not.
+TEST_CASE( "gun_info_loaded_bn_integral_gun", "[p3][iteminfo]" )
+{
+    clear_all_state();
+
+    SECTION( "Ammunition line is printed" ) {
+        const item gun = iteminfo_p3_loaded_plasma();
+        REQUIRE( gun.magazine_integral() );
+        REQUIRE_FALSE( gun.uses_firing_requirements() );
+        REQUIRE( gun.ammo_data() != nullptr );
+        const std::string s = iteminfo_p3_plain( gun, { iteminfo_parts::AMMO_REMAINING } );
+        CAPTURE( s );
+        // CDF: iteminfo_p3_loaded_plasma loads 30 plasma (plasma.json 3, clip_size 30).
+        CHECK( s.find( "Ammunition: " + itype_id( "plasma" )->nname( 30 ) ) != std::string::npos );
+    }
+
+    SECTION( "is not reported as unloaded" ) {
+        const item gun = iteminfo_p3_loaded_plasma();
+        const std::string s = iteminfo_p3_plain( gun, { iteminfo_parts::GUN_DEFAULT_AMMO } );
+        CAPTURE( s );
+        CHECK( s.find( "not loaded" ) == std::string::npos );
     }
 }
