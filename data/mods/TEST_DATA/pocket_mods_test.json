@@ -90,7 +90,6 @@
     "pocket_data": [
       {
         "pocket_type": "MAGAZINE_WELL",
-        "max_item_length": "2 km",
         "ammo_restriction": {
           "223": 20
         }
