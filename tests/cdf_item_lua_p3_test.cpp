@@ -200,3 +200,91 @@ TEST_CASE( "lua_item_ammo_consume_two_arg_unchanged", "[p3][lua]" ) {
     CHECK( out.get<int>( "consumed" ) == 3 );
     CHECK( out.get<int>( "left" ) == 27 );
 }
+
+namespace {
+
+// CDF: P3-4-f-b; test_multimag_gun_consume (wells "ammo" and "power") with only the "ammo" well loaded (glockmag, 15 9mm).
+auto ammo_well_loaded_gun() -> detached_ptr<item> {
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_consume" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    mag->ammo_set( itype_id( "9mm" ), 15 );
+    REQUIRE( gun->put_in( std::move( mag ), pocket_type::MAGAZINE_WELL ).success() );
+    return gun;
+}
+
+} // namespace
+
+// pocket_by_id( id ) returns the pocket whose pocket_data id matches, nil for "" and
+// unknown ids.
+TEST_CASE( "lua_item_pocket_by_id_resolves_the_named_pocket", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = ammo_well_loaded_gun();
+
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    const auto res = lua.safe_script( R"(
+        return {
+            a_valid = gun:pocket_by_id("ammo"):is_valid(),
+            a_items = #gun:pocket_by_id("ammo"):items(),
+            p_items = #gun:pocket_by_id("power"):items(),
+            first = gun:pocket_by_id("ammo"):items()[1]:get_type():str(),
+            empty_nil = gun:pocket_by_id("") == nil,
+            unknown_nil = gun:pocket_by_id("nope") == nil
+        }
+    )", sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    const auto out = res.get<sol::table>();
+    // CDF: re-derived from TEST_DATA items.json:1608
+    CHECK( out.get<bool>( "a_valid" ) == true );
+    CHECK( out.get<int>( "a_items" ) == 1 );
+    CHECK( out.get<int>( "p_items" ) == 0 );
+    CHECK( out.get<std::string>( "first" ) == "glockmag" );
+    CHECK( out.get<bool>( "empty_nil" ) == true );
+    CHECK( out.get<bool>( "unknown_nil" ) == true );
+}
+
+// The handle pocket_by_id returns is the same pocket get_pockets() lists.
+TEST_CASE( "lua_item_pocket_by_id_same_pocket_as_get_pockets", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = ammo_well_loaded_gun();
+    // The first well is get_pockets()[1] in Lua.
+    REQUIRE( pocket_index( *gun, true ) == 0 );
+
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    const auto res = lua.safe_script( R"(
+        return {
+            list_first = #gun:get_pockets()[1]:items(),
+            list_second = #gun:get_pockets()[2]:items(),
+            by_ammo = #gun:pocket_by_id("ammo"):items(),
+            by_power = #gun:pocket_by_id("power"):items()
+        }
+    )", sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    const auto out = res.get<sol::table>();
+    CHECK( out.get<int>( "list_first" ) == 1 );
+    CHECK( out.get<int>( "list_second" ) == 0 );
+    CHECK( out.get<int>( "by_ammo" ) == 1 );
+    CHECK( out.get<int>( "by_power" ) == 0 );
+}
+
+// A handle from pocket_by_id goes stale like a get_pockets() handle when its item dies.
+TEST_CASE( "lua_item_pocket_by_id_handle_goes_stale", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = ammo_well_loaded_gun();
+
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    const auto before = lua.safe_script( R"(
+        h = gun:pocket_by_id("ammo")
+        return h:is_valid()
+    )", sol::script_pass_on_error );
+    REQUIRE( before.valid() );
+    CHECK( before.get<bool>() == true );
+
+    gun = detached_ptr<item>();
+
+    const auto after = lua.safe_script( "return h:is_valid()", sol::script_pass_on_error );
+    REQUIRE( after.valid() );
+    CHECK( after.get<bool>() == false );
+}

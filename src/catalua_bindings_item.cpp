@@ -640,6 +640,22 @@ void reg_item( sol::state &lua )
         } );
         SET_FX( ammo_set );
         SET_FX( ammo_unset );
+        DOC( "The pocket of this item whose pocket id (the \"id\" of its pocket_data entry in JSON, e.g. \"ammo\" or \"power\") matches, or nil when the id is empty or no pocket has it. If several pockets share the id, the first in get_pockets() order is returned. The handle is the same kind get_pockets() returns." );
+        luna::set_fx( ut, "pocket_by_id", []( item & it, const std::string & id ) -> sol::optional<lua_item_pocket>
+        {
+            const item_pocket *found = it.pocket_by_id( id );
+            if( found == nullptr ) {
+                return sol::nullopt;
+            }
+            size_t index = 0;
+            for( const item_pocket &pocket : it.contents.get_pockets() ) {
+                if( &pocket == found ) {
+                    return lua_item_pocket( &it, index );
+                }
+                index++;
+            }
+            return sol::nullopt;
+        } );
 
         SET_FX( get_reload_time );
 
