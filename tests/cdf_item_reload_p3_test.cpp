@@ -1009,3 +1009,105 @@ TEST_CASE( "character_list_ammo_per_well_targets_flag", "[p3][reload][4-d-b]" )
         CHECK( saw_empty );
     }
 }
+
+// CDF: P3-4-d-c; DDA character_ammo.cpp:233-244 predicate is item::is_reloadable().
+TEST_CASE( "find_reloadables_uses_is_reloadable_predicate", "[p3][reload]" )
+{
+    clear_avatar();
+    avatar &guy = get_avatar();
+    item &jug = guy.i_add(
+                    item::spawn( itype_id( "test_watertight_open_sealed_container_1L" ) ) );
+    REQUIRE( jug.is_reloadable() );
+    // CDF: the old BN predicate only considered guns and magazines, so an empty
+    // watertight container was never returned.
+    CHECK( result_contains( character_funcs::find_reloadables( guy ), jug ) );
+    // CDF: negative control, a plain non-reloadable item must not be returned.
+    item &rock = guy.i_add( item::spawn( itype_id( "rock" ) ) );
+    REQUIRE( !rock.is_reloadable() );
+    CHECK( !result_contains( character_funcs::find_reloadables( guy ), rock ) );
+}
+
+// CDF: P3-4-d-c; DDA character_ammo.cpp:30-69 ammo_count_for counting loop.
+// CDF: uses test_hybrid_ammo_gun (data/mods/TEST_DATA/items.json), a fixture added for this test:
+// test_multimag_gun only accepts glockmag/stanag30 in its wells, so find_ammo_items_or_mags never
+// returned loose ammo for it and the loose-ammo path was unreachable.
+TEST_CASE( "ammo_count_for_counts_loaded_and_loose", "[p3][reload][ammo]" )
+{
+    clear_avatar();
+    avatar &guy = get_avatar();
+    item &gun = guy.i_add( item::spawn( itype_id( "test_hybrid_ammo_gun" ) ) );
+    REQUIRE( gun.ammo_required() == 1 );
+    REQUIRE( gun.ammo_remaining() == 0 );
+    REQUIRE( !gun.magazine_integral() );
+
+    SECTION( "magazine only" ) {
+        item &mag = guy.i_add( loaded_mag( itype_id( "glockmag" ), itype_id( "9mm" ), 15 ) );
+        const auto found = character_funcs::find_ammo_items_or_mags( guy, gun, true, -1 );
+        REQUIRE( result_contains( found, mag ) );
+        // CDF: glockmag capacity 15, data/json/items/magazine/9mm.json:72.
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 15 );
+    }
+
+    SECTION( "no magazine, loose only" ) {
+        item &loose = guy.i_add( item::spawn( itype_id( "9mm" ), calendar::turn, 5 ) );
+        const auto found = character_funcs::find_ammo_items_or_mags( guy, gun, true, -1 );
+        // The loose stack IS found (so the 0 below comes from the has_mag gate, not the finder).
+        REQUIRE( result_contains( found, loose ) );
+        // CDF: no magazine in play, so loose ammo is not available (DDA 56-58).
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 0 );
+    }
+
+    SECTION( "magazine then loose" ) {
+        item &mag = guy.i_add( loaded_mag( itype_id( "glockmag" ), itype_id( "9mm" ), 15 ) );
+        item &loose = guy.i_add( item::spawn( itype_id( "9mm" ), calendar::turn, 5 ) );
+        const auto found = character_funcs::find_ammo_items_or_mags( guy, gun, true, -1 );
+        REQUIRE( result_contains( found, mag ) );
+        REQUIRE( result_contains( found, loose ) );
+        // CDF: 15 in the glockmag (9mm.json:72) + 5 loose 9mm charges.
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 20 );
+    }
+
+    SECTION( "loose then magazine" ) {
+        item &loose = guy.i_add( item::spawn( itype_id( "9mm" ), calendar::turn, 5 ) );
+        item &mag = guy.i_add( loaded_mag( itype_id( "glockmag" ), itype_id( "9mm" ), 15 ) );
+        const auto found = character_funcs::find_ammo_items_or_mags( guy, gun, true, -1 );
+        REQUIRE( result_contains( found, mag ) );
+        REQUIRE( result_contains( found, loose ) );
+        // CDF: same total regardless of inventory order (DDA sums loose after the loop).
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 20 );
+    }
+}
+
+// CDF: P3-4-d-c / 8-1d Decision 10 (test 7): DDA character_ammo.cpp:63-66 energy term.
+TEST_CASE( "ammo_count_for_energy_term", "[p3][ammo][energy]" )
+{
+    clear_avatar();
+    avatar &guy = get_avatar();
+    // data/mods/TEST_DATA/items.json:2352: energy_drain 5 kJ, one battery well.
+    item gun( itype_id( "test_energy_gun" ) );
+    item battery( itype_id( "battery_test" ) );
+
+    SECTION( "loaded" ) {
+        REQUIRE( battery.mod_energy( 30_kJ ) == 0_J );
+        REQUIRE( gun.put_in( battery, pocket_type::MAGAZINE_WELL ).success() );
+        REQUIRE( gun.energy_remaining( &guy ) == 30_kJ );
+        REQUIRE( gun.ammo_required() == 0 );
+        REQUIRE( gun.get_gun_ups_drain() == 0 );
+        // CDF: 30 kJ / 5 kJ drain.
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 6 );
+    }
+
+    SECTION( "with gunmod" ) {
+        REQUIRE( battery.mod_energy( 30_kJ ) == 0_J );
+        REQUIRE( gun.put_in( battery, pocket_type::MAGAZINE_WELL ).success() );
+        // data/mods/TEST_DATA/items.json:2353: multiplier 2.0, modifier 1 kJ.
+        REQUIRE( gun.put_in( item( itype_id( "test_energy_gunmod" ) ), pocket_type::MOD ).success() );
+        REQUIRE( gun.get_gun_energy_drain() == 11_kJ );
+        // CDF: 30 kJ / 11 kJ integer division.
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 2 );
+    }
+
+    SECTION( "empty well" ) {
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 0 );
+    }
+}

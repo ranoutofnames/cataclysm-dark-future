@@ -1018,15 +1018,8 @@ std::vector<item *> find_reloadables( Character &who )
     std::vector<item *> reloadables;
 
     who.visit_items( [&]( item * node ) {
-        bool reloadable = false;
-        if( node->is_gun() && !node->magazine_compatible().empty() ) {
-            reloadable = node->magazine_current() == nullptr ||
-                         node->ammo_remaining() < node->ammo_capacity();
-        } else {
-            reloadable = ( node->is_magazine() || ( node->is_gun() && node->magazine_integral() ) ) &&
-                         node->ammo_remaining() < node->ammo_capacity();
-        }
-        if( reloadable ) {
+        // CDF: node is item *, DDA uses item_location (D1)
+        if( node->is_reloadable() ) {
             reloadables.push_back( node );
         }
         // per DDA character_ammo.cpp:233-246: descend into everything, so a gun or magazine in a
@@ -1050,28 +1043,38 @@ int ammo_count_for( const Character &who, const item &gun )
 
     bool has_mag = gun.magazine_integral();
 
+    int loose_ammo = 0;
     for( const item * const &it : inv_ammo ) {
         if( it->is_magazine() ) {
+            has_mag = true;
             total_ammo += it->ammo_remaining();
-        } else if( has_mag && it->is_ammo() ) {
-            // In combat, NPCs will only consider ammo "available" if it's in an applicable magazine
-            // or if the gun has an integral magazine (whereupon the "mags" are usually speedloaders)
-            total_ammo += it->count();
+        } else if( it->is_ammo() ) {
+            // CDF: count() is charges for count_by_charges() items (loose ammo), else 1; DDA uses ->charges
+            loose_ammo += it->count();
         }
     }
+    if( has_mag ) {
+        // In combat, NPCs only consider loose ammo "available" if a magazine is in play (DDA 56-58)
+        total_ammo += loose_ammo;
+    }
 
+    int ret = item::INFINITE_CHARGES; // CDF: DDA's required <= 0 path; effectively infinite ammo
     if( ammo_drain > 0 && energy_drain > 0 ) {
         // Both UPS and ammo, lower is limiting.
-        return std::min( total_ammo / ammo_drain, power / units::from_kilojoule( energy_drain ) );
+        ret = std::min( total_ammo / ammo_drain, power / units::from_kilojoule( energy_drain ) );
     } else if( energy_drain > 0 ) {
         //Only one of the two, it is limiting.
-        return power / units::from_kilojoule( energy_drain );
+        ret = power / units::from_kilojoule( energy_drain );
     } else if( ammo_drain > 0 ) {
-        return total_ammo / ammo_drain;
-    } else {
-        // Effectively infinite ammo.
-        return item::INFINITE_CHARGES;
+        ret = total_ammo / ammo_drain;
     }
+    // CDF: UPS tail above kept (4-b2), DDA has none; energy_remaining has no UPS part yet.
+    // DDA character_ammo.cpp 63-66: the new local avoids the clash with the UPS-charges int `energy_drain`.
+    const units::energy gun_energy_drain = gun.get_gun_energy_drain();
+    if( gun_energy_drain > 0_kJ ) {
+        ret = std::min( ret, static_cast<int>( gun.energy_remaining( &who ) / gun_energy_drain ) );
+    }
+    return ret;
 }
 
 void show_skill_capped_notice( const Character &who, const skill_id &id )

@@ -1843,6 +1843,28 @@
     "capacity_mods": [ { "pocket": "power", "multiply": 2.0 } ]
   },
   {
+    "id": "test_hybrid_ammo_gun",
+    "type": "GUN",
+    "name": { "str": "test hybrid ammo gun" },
+    "description": "Test gun: one glockmag MAGAZINE_WELL plus a loose-9mm MAGAZINE pocket and no integral clip, so ammo_count_for finds both a carried magazine and carried loose ammo.",
+    "weight": "1000 g",
+    "volume": "1500 ml",
+    "longest_side": "400 mm",
+    "material": [ "steel" ],
+    "symbol": "(",
+    "color": "light_gray",
+    "ammo": [ "9mm" ],
+    "skill": "pistol",
+    "range": 10,
+    "ranged_damage": { "damage_type": "bullet", "amount": 10 },
+    "dispersion": 480,
+    "durability": 10,
+    "pocket_data": [
+      { "id": "ammo", "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 1 } },
+      { "max_item_length": "2 km", "magazine_well": "250 ml", "pocket_type": "MAGAZINE_WELL", "item_restriction": [ "glockmag" ] }
+    ]
+  },
+  {
     "id": "test_multimag_gun_integral_ammo",
     "type": "GUN",
     "name": { "str": "test integral-mag multimag gun" },
