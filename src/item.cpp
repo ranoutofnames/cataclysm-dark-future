@@ -2963,19 +2963,49 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
                            "<info>" + skill.name() + "</info>" );
     }
 
-    if( mod->magazine_integral() || mod->magazine_current() ) {
-        if( mod->magazine_current() && parts->test( iteminfo_parts::GUN_MAGAZINE ) ) {
-            info.emplace_back( "GUN", _( "Magazine: " ),
-                               string_format( "<stat>%s</stat>",
-                                              mod->magazine_current()->tname() ) );
+    if( mod->magazine_integral() || !mod->magazines_current().empty() ) {
+        const std::vector<const item *> loaded_mags = mod->magazines_current();
+        if( !loaded_mags.empty() && parts->test( iteminfo_parts::GUN_MAGAZINE ) ) {
+            std::string mag_names;
+            for( size_t i = 0; i < loaded_mags.size(); ++i ) {
+                if( i > 0 ) {
+                    mag_names += ", ";
+                }
+                mag_names += loaded_mags[i]->tname();
+            }
+            // CDF: DDA item_info.cpp:1349-1351 with vgettext instead of n_gettext (CDF has no n_gettext)
+            info.emplace_back( "GUN",
+                               std::string( vgettext( "Magazine: ", "Magazines: ", loaded_mags.size() ) ),
+                               string_format( "<stat>%s</stat>", mag_names ) );
         }
-        if( mod->ammo_capacity() && parts->test( iteminfo_parts::GUN_CAPACITY ) ) {
+        if( !mod->ammo_types().empty() && parts->test( iteminfo_parts::GUN_CAPACITY ) ) {
+            const bool annotate_wells = mod->uses_firing_requirements();
             for( const ammotype &at : mod->ammo_types() ) {
+                std::string label = _( "Capacity: " );
+                if( annotate_wells ) {
+                    if( const item_pocket *p = mod->pocket_for_ammo( at ) ) {
+                        const pocket_data *pd = p->get_pocket_data();
+                        if( pd != nullptr ) {
+                            const std::string display = pd->pocket_name.translated();
+                            if( !display.empty() ) {
+                                label = string_format( _( "Capacity (%s): " ), display );
+                            } else if( !pd->pocket_id.empty() ) {
+                                label = string_format( _( "Capacity (%s): " ), pd->pocket_id );
+                            }
+                        }
+                    }
+                }
+                // CDF: DDA item_info.cpp:1370-1374 calls mod->ammo_capacity( at ) always. In CDF that is
+                // pocket based and returns 0 for a BN-style integral gun (clip_size, no MAGAZINE pocket;
+                // guns are not synthesized, AUTO-20), so integral guns keep the zero-argument capacity
+                // (pinned by tests/iteminfo_test.cpp "ranged weapon attributes"). vgettext as above.
+                const int capacity = mod->magazine_integral() ? mod->ammo_capacity() :
+                                     mod->ammo_capacity( at );
                 const std::string fmt = string_format( vgettext( "<num> round of %s",
                                                        "<num> rounds of %s",
-                                                       mod->ammo_capacity() ), at->name() );
-                info.emplace_back( "GUN", _( "Capacity: " ), fmt, iteminfo::no_flags,
-                                   mod->ammo_capacity() );
+                                                       capacity ), at->name() );
+                info.emplace_back( "GUN", label, fmt, iteminfo::no_flags, capacity );
+                // CDF: DDA item_info.cpp:1375-1378 (print_ammo, "Variants: ") is job 9-1c, not ported here
             }
         }
     } else if( parts->test( iteminfo_parts::GUN_TYPE ) ) {
@@ -2986,14 +3016,69 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
         }, enumeration_conjunction::none ) );
     }
 
-    if( mod->ammo_data() && parts->test( iteminfo_parts::AMMO_REMAINING ) ) {
-        info.emplace_back( "AMMO", _( "Ammunition: " ), string_format( "<stat>%s</stat>",
-                           mod->ammo_data()->nname( mod->ammo_remaining() ) ) );
+    if( parts->test( iteminfo_parts::AMMO_REMAINING ) ) {
+        if( mod->uses_firing_requirements() ) {
+            // One Ammunition entry per loaded pocket so multimag siblings
+            // do not collapse into a single misleading line.
+            std::vector<std::string> loaded_lines;
+            for( const item_pocket *p : mod->get_pockets(
+            []( const item_pocket & q ) {
+            return q.is_type( pocket_type::MAGAZINE_WELL ) ||
+                       q.is_type( pocket_type::MAGAZINE );
+            } ) ) {
+                int amount = 0;
+                const itype *adata = nullptr;
+                if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                    if( const item *m = p->magazine_current() ) {
+                        amount = m->ammo_remaining();
+                        adata = m->ammo_data();
+                    }
+                } else {
+                    for( const item *e : p->all_items_top() ) {
+                        if( e->has_flag( flag_CASING ) ) {
+                            continue;
+                        }
+                        amount += e->charges > 0 ? e->charges : 1;
+                        if( adata == nullptr && e->is_ammo() ) {
+                            adata = e->type;
+                        }
+                    }
+                }
+                if( adata == nullptr || amount == 0 ) {
+                    continue;
+                }
+                std::string entry = adata->nname( amount );
+                const pocket_data *pd = p->get_pocket_data();
+                if( pd != nullptr ) {
+                    const std::string display = pd->pocket_name.translated();
+                    if( !display.empty() ) {
+                        entry = string_format( "%s: %s", display, entry );
+                    } else if( !pd->pocket_id.empty() ) {
+                        entry = string_format( "%s: %s", pd->pocket_id, entry );
+                    }
+                }
+                loaded_lines.emplace_back( entry );
+            }
+            if( !loaded_lines.empty() ) {
+                std::string joined;
+                for( size_t i = 0; i < loaded_lines.size(); ++i ) {
+                    if( i > 0 ) {
+                        joined += ", ";
+                    }
+                    joined += loaded_lines[i];
+                }
+                info.emplace_back( "AMMO", _( "Ammunition: " ),
+                                   string_format( "<stat>%s</stat>", joined ) );
+            }
+        } else if( mod->has_ammo_data() ) {
+            info.emplace_back( "AMMO", _( "Ammunition: " ), string_format( "<stat>%s</stat>",
+                               mod->ammo_data()->nname( mod->ammo_remaining( ) ) ) );
+        }
     }
 
-    if( mod->ammo_required() > 1 ) {
-        info.emplace_back( "AMMO", string_format( "Uses <stat>%i</stat> ammo per shot",
-                           mod->ammo_required() ) );
+    if( mod->ammo_required() > 1 && parts->test( iteminfo_parts::AMMO_TO_FIRE ) ) {
+        info.emplace_back( "AMMO",  _( "Ammunition consumed per shot: " ), "",
+                           iteminfo::lower_is_better, mod->ammo_required() );
     }
 
     if( mod->get_gun_ups_drain() && parts->test( iteminfo_parts::AMMO_UPSCOST ) ) {
@@ -3675,16 +3760,27 @@ void item::tool_info( std::vector<iteminfo> &info, const iteminfo_query *parts, 
     }
 
     if( !magazine_integral() ) {
-        if( magazine_current() && parts->test( iteminfo_parts::TOOL_MAGAZINE_CURRENT ) ) {
-            info.emplace_back( "TOOL", _( "Magazine: " ),
-                               string_format( "<stat>%s</stat>", magazine_current()->tname() ) );
+        const std::vector<const item *> loaded_mags = magazines_current();
+        if( !loaded_mags.empty() && parts->test( iteminfo_parts::TOOL_MAGAZINE_CURRENT ) ) {
+            std::string mag_names;
+            for( size_t i = 0; i < loaded_mags.size(); ++i ) {
+                if( i > 0 ) {
+                    mag_names += ", ";
+                }
+                mag_names += loaded_mags[i]->tname();
+            }
+            // CDF: vgettext instead of DDA's n_gettext (item_info.cpp:2865-2867)
+            info.emplace_back( "TOOL",
+                               std::string( vgettext( "Magazine: ", "Magazines: ", loaded_mags.size() ) ),
+                               string_format( "<stat>%s</stat>", mag_names ) );
         }
 
+        // CDF: as DDA item_info.cpp:2870-2874. uses_magazine() is "has a MAGAZINE_WELL pocket" but
+        // magazine_compatible() is the BN body over type->magazines (3-5a OD-3), so a tool whose wells
+        // come only from explicit pocket_data and has no `magazines` key prints the header line alone.
         if( parts->test( iteminfo_parts::TOOL_MAGAZINE_COMPATIBLE ) ) {
-            const auto &compat = magazine_compatible();
-            if( !compat.empty() ) {
-                info.emplace_back( "TOOL", _( "Compatible magazines: " )
-                                   + enumerate_as_string( compat, ::nname ) );
+            if( uses_magazine() ) {
+                info.emplace_back( "DESCRIPTION", print_compatible_mags_or_flags( *this ) );
             }
         }
     } else if( ammo_capacity() != 0 && parts->test( iteminfo_parts::TOOL_CAPACITY ) ) {
