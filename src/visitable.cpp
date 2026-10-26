@@ -29,6 +29,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <memory>
@@ -1145,8 +1146,16 @@ static int charges_of_ups( const T &self, int limit,
 
 namespace
 {
-// Per-tool stock for charges_of dedup. Legacy contributes local charges.
-// CDF: MULTIMAG and battery arrive in 8-3b
+// One battery pocket of a MULTIMAG tool: local stock and per-use cost.
+// CDF: named struct instead of DDA's std::pair<int, int> (AGENT_RULES: no std::pair)
+struct battery_stock {
+    int local;
+    int per_use;
+};
+
+// Per-tool stock for charges_of dedup. Legacy contributes local charges;
+// multimag records per-battery-pocket so shared-pool greedy can bill K uses
+// without re-solving firing_requirements.
 struct tool_stock_entry {
     enum class kind_t { LEGACY, MULTIMAG };
     kind_t kind = kind_t::LEGACY;
@@ -1154,8 +1163,36 @@ struct tool_stock_entry {
     bool uses_bionic = false;
     int local_charges = 0;
     const item *src = nullptr;
+    std::vector<battery_stock> battery;
 };
 } // namespace
+
+// CDF: flag_USE_UPS / flag_USES_BIONIC_POWER statics (json_flag_* absent); gun_mode_DEFAULT absent, so gun_mode_id( "DEFAULT" )
+static tool_stock_entry build_multimag_entry( const item &e )
+{
+    tool_stock_entry out;
+    out.kind = tool_stock_entry::kind_t::MULTIMAG;
+    out.uses_ups = e.has_flag( flag_USE_UPS );
+    out.uses_bionic = e.has_flag( flag_USES_BIONIC_POWER );
+    out.src = &e;
+
+    // Tools lower consumption_per_use into firing_requirements per_mode[DEFAULT].
+    const std::vector<pocket_consumption_entry> *entries =
+        e.type->firing_requirements.for_mode( gun_mode_id( "DEFAULT" ) );
+    if( entries == nullptr ) {
+        return out;
+    }
+    for( const pocket_consumption_entry &pce : *entries ) {
+        const item_pocket *pkt = e.pocket_by_id( pce.pocket );
+        if( pkt == nullptr || pce.qty < 1 ) {
+            continue;
+        }
+        if( e.pocket_accepts_battery( pkt ) ) {
+            out.battery.push_back( { e.ammo_remaining_in_pocket( pce.pocket ), pce.qty } );
+        }
+    }
+    return out;
+}
 
 // CDF: scan takes a const item * visitor, not item_location (REPLAN D1); the filter is std::function<bool( const item & )>, not item_filter
 template <typename T>
@@ -1171,15 +1208,18 @@ static void scan_tool_charges( const T &self, const itype_id &id,
         if( filter( *e ) ) {
             if( e->is_tool() ) {
                 if( e->typeId() == id ) {
-                    // CDF: until 8-3b a uses_firing_requirements() tool is counted as LEGACY here (DDA 1118-1119 builds a multimag entry)
-                    tool_stock_entry entry;
-                    entry.kind = tool_stock_entry::kind_t::LEGACY;
-                    entry.local_charges = e->ammo_remaining_linked( here, nullptr );
-                    entry.uses_ups = e->has_flag( flag_USE_UPS );
-                    entry.uses_bionic = e->has_flag( flag_USES_BIONIC_POWER );
-                    entry.src = e;
-                    qty = sum_no_wrap( qty, entry.local_charges );
-                    entries.push_back( entry );
+                    if( e->uses_firing_requirements() ) {
+                        entries.push_back( build_multimag_entry( *e ) );
+                    } else {
+                        tool_stock_entry entry;
+                        entry.kind = tool_stock_entry::kind_t::LEGACY;
+                        entry.local_charges = e->ammo_remaining_linked( here, nullptr );
+                        entry.uses_ups = e->has_flag( flag_USE_UPS );
+                        entry.uses_bionic = e->has_flag( flag_USES_BIONIC_POWER );
+                        entry.src = e;
+                        qty = sum_no_wrap( qty, entry.local_charges );
+                        entries.push_back( entry );
+                    }
                 }
                 return qty < limit ? VisitResponse::SKIP : VisitResponse::ABORT;
 
@@ -1228,15 +1268,97 @@ static int apply_external_pools_legacy( const M &main,
     return std::min( qty, limit );
 }
 
+template <typename M>
+static int apply_external_pools_multimag( const M &main,
+        const std::vector<tool_stock_entry> &entries, int limit )
+{
+    bool any_ups = false;
+    bool any_bionic = false;
+    for( const tool_stock_entry &e : entries ) {
+        any_ups = any_ups || e.uses_ups;
+        any_bionic = any_bionic || e.uses_bionic;
+    }
+    // UPS goes through main so ground UPS in crafting_inventory is seen.
+    // CDF: DDA 1215 and 1222-1225 add active bio_ups power back because DDA's Character::charges_of( itype_UPS ) strips it; CDF's visitable<Character>::charges_of( itype_UPS ) already counts it (bio_ups branch), so the add-back would count it twice (AUTO-43)
+    int external = 0;
+    if( any_bionic ) {
+        external = sum_no_wrap( external, static_cast<int>( units::to_kilojoule(
+                                    get_player_character().get_power_level() ) ) );
+    }
+    if( any_ups ) {
+        external = sum_no_wrap( external, main.charges_of( itype_UPS, INT_MAX ) );
+    }
+
+    int total = 0;
+    int external_remaining = external;
+    map &here = get_map();
+    for( const tool_stock_entry &e : entries ) {
+        if( e.src == nullptr ) {
+            continue;
+        }
+        // Cable to a linked vehicle battery is per-tool, not shared, so it
+        // adds to this tool's budget without affecting the shared external.
+        // CDF: available_cable_charges is a stub that returns 0 (AUTO-26 O2); the call stays so the cable pool arrives with its owner
+        const int cable_pool = e.src->available_cable_charges( here );
+        const int budget = sum_no_wrap( external_remaining, cable_pool );
+        const int uses = e.src->feasible_tool_uses( budget );
+        // Battery consumed for K uses is sum max(0, K * per_use - local) over
+        // battery pockets. Drain cable first (matches firing-loop order), then
+        // bill the remainder to the shared external pool.
+        int64_t consumed = 0;
+        for( const battery_stock &b : e.battery ) {
+            const int64_t per = b.per_use;
+            const int64_t local = b.local;
+            consumed += std::max<int64_t>( 0, static_cast<int64_t>( uses ) * per - local );
+        }
+        const int64_t cable_used = std::min<int64_t>( consumed, cable_pool );
+        const int64_t shared_used = consumed - cable_used;
+        external_remaining -= static_cast<int>(
+                                  std::min<int64_t>( shared_used, external_remaining ) );
+        total = sum_no_wrap( total, uses );
+        if( total >= limit ) {
+            break;
+        }
+    }
+    return std::min( total, limit );
+}
+
+template <typename M>
+static int apply_external_pools( const M &main,
+                                 const std::vector<tool_stock_entry> &entries, int limit,
+                                 const std::function<void( int )> &visitor )
+{
+    // CDF: the raw UPS shortcut (DDA 1267-1268) is not ported (8-4f, 8-3 OD-8)
+    std::vector<tool_stock_entry> legacy;
+    std::vector<tool_stock_entry> multi;
+    legacy.reserve( entries.size() );
+    multi.reserve( entries.size() );
+    for( const tool_stock_entry &e : entries ) {
+        if( e.kind == tool_stock_entry::kind_t::MULTIMAG ) {
+            multi.push_back( e );
+        } else {
+            legacy.push_back( e );
+        }
+    }
+    int total = 0;
+    if( !legacy.empty() ) {
+        total = sum_no_wrap( total, apply_external_pools_legacy( main, legacy, limit, visitor ) );
+    }
+    if( !multi.empty() && total < limit ) {
+        total = sum_no_wrap( total, apply_external_pools_multimag( main, multi, limit - total ) );
+    }
+    return std::min( total, limit );
+}
+
 template <typename T, typename M>
 static int charges_of_internal( const T &self, const M &main, const itype_id &id, int limit,
                                 const std::function<bool( const item & )> &filter,
                                 std::function<void( int )> visitor )
 {
     std::vector<tool_stock_entry> entries;
-    // CDF: DDA's dispatcher (1291-1300), in_tools and the raw IS_UPS sum are not ported (8-4f, 8-3 OD-8); scan then bill is the only path
+    // CDF: in_tools and the raw IS_UPS sum are not ported (8-4f, 8-3 OD-8)
     scan_tool_charges( self, id, filter, limit, entries );
-    return apply_external_pools_legacy( main, entries, limit, visitor );
+    return apply_external_pools( main, entries, limit, visitor );
 }
 
 /** @relates visitable */
