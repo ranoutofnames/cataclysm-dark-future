@@ -61,7 +61,8 @@ end
 ---@type fun(item: Item, ui: UiList): void
 mod.ui_coloring = function(item, ui)
   --This is percentage of charges! Lua has no math.round, so I used math.floor with a trick.
-  local charge_p = math.floor(item.charges / item:ammo_capacity(false) * 100 + 0.5)
+  -- CDF: battery is the magazine pocket since 4-b2, not the charges field
+  local charge_p = math.floor(item:ammo_remaining() / item:ammo_capacity(false) * 100 + 0.5)
   local color = 0
   ui:title(string.format("%s( %d%%): E-Book mod", item:tname(1, false, 0), charge_p))
   if charge_p == 100 then
@@ -158,7 +159,7 @@ mod.ebook_scan = function(user, device)
     )
 
     local ui_limit = 20
-    local dev_limit = math.floor(device.charges / 10)
+    local dev_limit = math.floor(device:ammo_remaining() / 10)
     local hit_end = num_found > dev_limit
 
     local ui_scan = UiList.new()
@@ -240,7 +241,7 @@ mod.ebook_load = function(reader, device)
   local u_input_too_big_minute = false
   local puip_str = PopupInputStr.new()
   puip_str:desc(locale.gettext("How long time do you need?(Digits only)"))
-  puip_str:title(string.format(locale.gettext("Input the minute( up to %d ): "), device.charges - 10))
+  puip_str:title(string.format(locale.gettext("Input the minute( up to %d ): "), device:ammo_remaining() - 10))
   -- Repeat when getting minute more than 0 AND less than charges-10.
   -- If you cancel to input number, minute is 0, and it will get back and show you data select menu.
   while true do
@@ -254,7 +255,7 @@ mod.ebook_load = function(reader, device)
       if minute <= 0 then
         --You canceled to input minute.
         --Go back to select book menu.
-      elseif minute > device.charges - 10 then
+      elseif minute > device:ammo_remaining() - 10 then
         --You input too big. Try again.
         ui.query_any_key(locale.gettext("Input value is over than available charges.\nPlease check your input."))
         u_input_too_big_minute = true
@@ -351,7 +352,7 @@ mod.ebook_return = function(reader, device)
     local it = virtual_books[sel_return]
     if not it then return -1 end
     local ammo_type = device:ammo_current()
-    device:ammo_set(ammo_type, device.charges + math.floor(it:get_var_num("ethereal", 0) / 60))
+    device:ammo_set(ammo_type, device:ammo_remaining() + math.floor(it:get_var_num("ethereal", 0) / 60))
     local the_when = math.floor(it:get_var_num("its_fate_time", 0))
     storage.hook_assuarance[the_when] = nil
     it:set_var_num("ethereal", 0)
