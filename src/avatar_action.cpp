@@ -40,6 +40,7 @@
 #include "npc.h"
 #include "options.h"
 #include "output.h"
+#include "pickup.h"
 #include "player_activity.h"
 #include "profile.h"
 #include "projectile.h"
@@ -1510,14 +1511,16 @@ void avatar_action::wield( item &loc )
 static item_reload_option favorite_ammo_or_select(
     const player &u, item &it, bool empty, bool prompt )
 {
+    // CDF: DDA TODO(multimag), game.cpp:7039-7041: favorite-ammo fast path uses list_ammo() with the legacy first-compatible-well fallback. A second well that accepts the same ammo type is not offered without an explicit menu step.
     if( u.ammo_location ) {
+        // CDF: reload::discover_ammo stands in for DDA's u.list_ammo (4-d-b not landed, 6-3 OD-10); include_empty_mags is false as in DDA 7044
         const auto discovery = reload::discover_ammo( u, it, {
-            .include_empty_mags = empty,
+            .include_empty_mags = false,
             .include_potential = false
         } );
         if( discovery.ammo_match_found ) {
             const auto is_favorite_and_compatible = [&it, &u]( const item_reload_option & opt ) {
-                return opt.ammo == &*u.ammo_location && it.can_reload_with( opt.ammo->typeId() );
+                return opt.ammo == &*u.ammo_location && it.can_reload_with( *opt.ammo, false );
             };
             const auto iter = std::ranges::find_if( discovery.options, is_favorite_and_compatible );
             if( iter != discovery.options.end() ) {
@@ -1525,6 +1528,7 @@ static item_reload_option favorite_ammo_or_select(
             }
         }
     }
+    // CDF: DDA 7053-7055 resets an empty ammo_location; nothing to reset on a safe_reference
     return reload_ui::select_ammo( u, it, {
         .prompt = prompt,
         .discovery = {
@@ -1544,6 +1548,29 @@ static bool can_reload_item_or_mods( const avatar &you, const item &itm )
     return itm.is_reloadable() && you.can_reload( itm );
 }
 
+// CDF: DDA activity_actor.cpp:10004-10024 (static check_stealing). DDA's avatar_action::check_stealing wrapper (10026-10028) is not ported: no header edit.
+static auto check_stealing( Character &who, item &it ) -> bool
+{
+    if( !it.is_owned_by( who, true ) ) {
+        // CDF: THIEF_MODE_KEEP is BN's "keep the answer" flag: a one-time answer (KEEP != YES) falls back to THIEF_ASK
+        // before the mode is read, as consumption.cpp query_consume_ownership does. DDA has no such flag.
+        if( who.get_value( "THIEF_MODE_KEEP" ) != "YES" ) {
+            who.set_value( "THIEF_MODE", "THIEF_ASK" );
+        }
+        const auto thief_mode = who.get_value( "THIEF_MODE" );
+        if( thief_mode == "THIEF_HONEST" ) {
+            return false;
+        } else if( thief_mode != "THIEF_STEAL" ) {
+            // Default (THIEF_ASK)
+            // CDF: DDA 10011-10017 checks the owner faction's steal_persist here; CDF has no steal_persist
+            // (grep: none in src). pickup::query_thief() takes no item and records the answer in THIEF_MODE itself.
+            if( !pickup::query_thief() ) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 void avatar_action::reload( item &loc, bool prompt, bool empty )
 {
@@ -1557,8 +1584,9 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
     }
 
     if( !can_reload_item_or_mods( u, *it ) ) {
+        // CDF: DDA TODO(multimag), game.cpp:7080-7082: remaining_ammo_capacity() is a first-loaded-mag fallback; multi-well items will report "already fully loaded" when only the first well is full.
         if( ( it->is_ammo_container() || it->is_magazine() ) && it->ammo_remaining() > 0 &&
-            it->ammo_remaining() == it->ammo_capacity() ) {
+            it->remaining_ammo_capacity() == 0 ) {
             add_msg( m_info, _( "The %s is already fully loaded!" ), it->tname() );
             return;
         }
@@ -1570,7 +1598,7 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
                 return;
             }
         }
-        if( it->is_container() && it->is_container_full() ) {
+        if( it->is_watertight_container() && it->is_container_full() ) {
             add_msg( m_info, _( "The %s is already full!" ), it->tname() );
             return;
         }
@@ -1580,8 +1608,14 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
 
     bool use_loc = true;
     if( !it->has_flag( flag_ALLOWS_REMOTE_USE ) ) {
-        loc.obtain( u );
-
+        // per DDA game.cpp:7111-7120: only an item the avatar does not already hold is checked and fetched
+        if( !u.has_item( *it ) ) {
+            if( !check_stealing( u, *it ) ) {
+                return;
+            }
+            // CDF: item::obtain returns the fetched item and is never null, so DDA's "Never mind." branch (7116-7119) has no counterpart
+            it = &loc.obtain( u );
+        }
         use_loc = false;
     }
 
@@ -1592,6 +1626,7 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
 
     item_reload_option opt = favorite_ammo_or_select( u, *it, empty, prompt );
 
+    // CDF: DDA game.cpp:7129-7132 also returns when the chosen ammo is a frozen liquid that u.crush_frozen_liquid() fails to crush. Deferred (cut-tests.md "frozen-liquid crush", ADV-17 Q-16-5 (b)): item::is_frozen_liquid() is false for every CDF item (item.cpp:1205).
     if( opt.ammo == nullptr ) {
         return;
     }
@@ -1630,14 +1665,14 @@ void avatar_action::reload_item()
 void avatar_action::reload_wielded( bool prompt )
 {
     avatar &u = get_avatar();
-    for( item *it : u.wielded_items() ) {
-        if( it->is_reloadable() ) {
-            reload( *it, prompt );
-            return;
-        }
+    // CDF: wielded_items() stands in for DDA's get_wielded_item() (at most one item, melee.cpp:1197-1209)
+    const auto wielded = u.wielded_items();
+    item *weapon = wielded.empty() ? nullptr : wielded.front();
+    if( weapon == nullptr || !weapon->is_reloadable() ) {
+        add_msg( _( "You aren't holding something you can reload." ) );
+        return;
     }
-
-    add_msg( _( "You aren't holding something you can reload." ) );
+    reload( *weapon, prompt );
 }
 
 void avatar_action::reload_weapon( bool try_everything )
