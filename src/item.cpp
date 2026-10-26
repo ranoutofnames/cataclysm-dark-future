@@ -2417,6 +2417,36 @@ void item::magazine_info( std::vector<iteminfo> &info, const iteminfo_query *par
         return;
     }
 
+    if( parts->test( iteminfo_parts::MAGAZINE_COMPATIBLE_GUNS ) ) {
+        // CDF: DDA reads the static islot_magazine::compatible_guns (itype.h:1127, filled at
+        // item_factory.cpp:719-729); computed here on demand from every itype's MAGAZINE_WELL
+        // pockets with DDA's blacklist rule (ADV-14 ruling 6). DDA's SHOW_GUN_VARIANTS branch
+        // (item_info.cpp:805-813) is not ported: no such option and no gun variants in CDF.
+        const auto compare = []( const auto & lhs, const auto & rhs ) {
+            return localized_compare( lhs, rhs );
+        };
+        std::set<std::string, decltype( compare )> compatible_guns( compare );
+
+        for( const itype *gun_type : item_controller->all() ) {
+            if( item_is_blacklisted( typeId() ) || item_is_blacklisted( gun_type->get_id() ) ) {
+                continue;
+            }
+            for( const pocket_data &pocket : gun_type->pockets ) {
+                if( pocket.type == pocket_type::MAGAZINE_WELL &&
+                    pocket.item_id_restriction.contains( typeId() ) ) {
+                    compatible_guns.insert( gun_type->nname( 1 ) );
+                    break;
+                }
+            }
+        }
+
+        if( !compatible_guns.empty() ) {
+            const std::string mag_names = enumerate_as_string( compatible_guns );
+            info.emplace_back( "MAGAZINE", _( "<bold>Compatible guns</bold>: " ) + mag_names );
+            insert_separation_line( info );
+        }
+    }
+
     if( parts->test( iteminfo_parts::MAGAZINE_CAPACITY ) ) {
         for( const ammotype &at : ammo_types() ) {
             const std::string fmt = string_format( vgettext( "<num> round of %s",
@@ -2584,6 +2614,30 @@ namespace
 auto nname( const itype_id &id ) -> std::string
 {
     return item::nname( id );
+}
+
+// CDF: DDA item_info.cpp:1042-1090 (item::print_compatible_mags_or_flags); a file-static function
+// here instead of an item member (no item.h edit). DDA's SHOW_GUN_VARIANTS branch (1053-1067) is
+// not ported: no such option and no variants in CDF, only DDA's else branch remains.
+auto print_compatible_mags_or_flags( const item &it ) -> std::string
+{
+    std::string display = _( "<bold>Compatible magazines</bold>:" );
+
+    // check magazines
+    const std::set<itype_id> mag_compatible = it.magazine_compatible();
+    if( !mag_compatible.empty() ) {
+        // print just item names
+        const std::vector<itype_id> compat_sorted = sorted_lex( mag_compatible );
+        const std::string mag_names = enumerate_as_string( compat_sorted,
+        []( const itype_id & id ) {
+            return item::nname( id );
+        } );
+        display += _( "\n<bold>Types</bold>: " ) + mag_names;
+    }
+
+    // CDF: DDA "Form factors" (item_info.cpp 1079-1087) not ported: json_flag::name() absent; see plans/P3/9-1a-a/brief.md ADVISOR-1
+
+    return display;
 }
 } // namespace
 
@@ -3009,12 +3063,13 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
         }
     }
 
+    // CDF: as DDA item_info.cpp:1515-1520. uses_magazine() is "has a MAGAZINE_WELL pocket" but
+    // magazine_compatible() is the BN body over type->magazines (3-5a OD-3), so a gun whose wells
+    // come only from explicit pocket_data and has no `magazines` key prints the header line alone.
     if( !magazine_integral() && parts->test( iteminfo_parts::GUN_ALLOWED_MAGAZINES ) ) {
-        const auto &compat = magazine_compatible();
-        if( !compat.empty() ) {
-            insert_separation_line( info );
-            info.emplace_back( "DESCRIPTION", _( "<bold>Compatible magazines</bold>: " )
-                               + enumerate_as_string( compat, ::nname ) );
+        insert_separation_line( info );
+        if( uses_magazine() ) {
+            info.emplace_back( "DESCRIPTION", print_compatible_mags_or_flags( *this ) );
         }
     }
 

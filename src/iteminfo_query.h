@@ -46,6 +46,7 @@ enum class iteminfo_parts : size_t {
     FOOD_ROT,
     FOOD_ROT_STORAGE,
 
+    MAGAZINE_COMPATIBLE_GUNS,
     MAGAZINE_CAPACITY,
     MAGAZINE_RELOAD,
 
@@ -72,6 +73,7 @@ enum class iteminfo_parts : size_t {
 
     AMMO_REMAINING,
     AMMO_UPSCOST,
+    AMMO_TO_FIRE,
 
     GUN_DEFAULT_AMMO,
     GUN_MAX_RANGE,
