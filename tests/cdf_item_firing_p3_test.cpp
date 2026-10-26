@@ -91,15 +91,42 @@ static item make_multimag_consume_tool( int well_a_charges = 12, int well_b_char
     return item( tool ); // CDF: item move ctor deleted
 }
 
-// DDA tests/multimag_test.cpp:1799-1809. The DDA literal 1 for the legacy gun
-// is replaced by ammo_required(), because the CDF value is read from data.
+// DDA tests/multimag_test.cpp:1290-1309. Multimag USE_UPS welder fixture: power
+// well = heavy_battery_cell mag, oxygen and rod are direct MAGAZINE pockets with
+// ammo_restriction. per_use: power=5, oxygen=2, rod=1.
+// CDF: test_multimag_vehicle_welder (data/mods/TEST_DATA/items.json:1983) and
+// AMMO welding_wire_steel_tests_dupe (same file:1962) are CDF fixture names.
+static item make_multimag_welder( int batt_charges, int oxygen_qty, int rod_qty )
+{
+    item tool( itype_id( "test_multimag_vehicle_welder" ) );
+    item batt_mag( itype_id( "heavy_battery_cell" ) );
+    batt_mag.put_in( item( itype_id( "battery" ), calendar::turn, batt_charges ),
+                     pocket_type::MAGAZINE );
+    REQUIRE( tool.put_in( batt_mag, pocket_type::MAGAZINE_WELL ).success() );
+    if( oxygen_qty > 0 ) {
+        REQUIRE( tool.put_in( item( itype_id( "oxygen" ), calendar::turn, oxygen_qty ),
+                              pocket_type::MAGAZINE ).success() );
+    }
+    if( rod_qty > 0 ) {
+        REQUIRE( tool.put_in( item( itype_id( "welding_wire_steel_tests_dupe" ),
+                                    calendar::turn, rod_qty ),
+                              pocket_type::MAGAZINE ).success() );
+    }
+    return item( tool ); // CDF: item move ctor deleted
+}
+
+// DDA tests/multimag_test.cpp:1799-1809. CDF: the legacy gun's cost per use is
+// the DDA literal 1, not ammo_required(); glock_19 has no ammo_to_fire
+// (data/json/items/gun/9mm.json:73, copy-from pistol_base) and the default is 1
+// (src/itype.h:738).
 TEST_CASE( "expected_cost_per_use_sums_effective_qty", "[p3][firing]" )
 {
     item gun( itype_test_multimag_gun_consume );
     CHECK( gun.expected_cost_per_use() == 6 );
 
     item legacy( itype_glock_19 );
-    CHECK( legacy.expected_cost_per_use() == legacy.ammo_required() );
+    // CDF: glock_19 has no ammo_to_fire (9mm.json:73, pistol_base), itype.h:738 default 1
+    CHECK( legacy.expected_cost_per_use() == 1 );
 }
 
 // Decision 3: itype::ammo_scale is absent, so method_scale is neutral and any
@@ -110,7 +137,8 @@ TEST_CASE( "expected_cost_per_use_method_string_is_neutral", "[p3][firing]" )
     CHECK( gun.expected_cost_per_use( "no_such_method" ) == 6 );
 
     item legacy( itype_glock_19 );
-    CHECK( legacy.expected_cost_per_use( "no_such_method" ) == legacy.ammo_required() );
+    // CDF: glock_19 has no ammo_to_fire (9mm.json:73, pistol_base), itype.h:738 default 1
+    CHECK( legacy.expected_cost_per_use( "no_such_method" ) == 1 );
 }
 
 // DDA tests/multimag_test.cpp:1785-1797.
@@ -411,8 +439,8 @@ TEST_CASE( "legacy_charges_per_use_factor_non_divisible_request", "[p3][firing]"
     }
 }
 
-// DDA tests/multimag_test.cpp:1381, tool SECTIONs only (1404-1420). The welder
-// SECTION (1421-1432) is cut: Ledger row 2.
+// DDA tests/multimag_test.cpp:1381, all three tool SECTIONs (1404-1420 and the
+// welder SECTION 1421-1432, restored here: Ledger row 2).
 // CDF: new TEST_CASE name; the DDA name is already used by 8-1b above.
 TEST_CASE( "consume_tool_uses_drain_per_pocket", "[p3][firing]" )
 {
@@ -437,6 +465,19 @@ TEST_CASE( "consume_tool_uses_drain_per_pocket", "[p3][firing]" )
         CHECK( got == 1 );
         CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 10 );
         CHECK( tool.ammo_remaining_in_pocket( "well_b" ) == 0 );
+    }
+
+    SECTION( "direct MAGAZINE oxygen pocket drains alongside MAGAZINE_WELL battery" ) {
+        // Welder per_use: power=5, oxygen=2, rod=1. Single use drains all three.
+        item welder = make_multimag_welder( 100, 20, 5 );
+        REQUIRE( welder.ammo_remaining_in_pocket( "power" ) == 100 );
+        REQUIRE( welder.ammo_remaining_in_pocket( "oxygen" ) == 20 );
+        REQUIRE( welder.ammo_remaining_in_pocket( "rod" ) == 5 );
+        const int got = welder.consume_tool_uses( 1, here, pos, nullptr );
+        CHECK( got == 1 );
+        CHECK( welder.ammo_remaining_in_pocket( "power" ) == 95 );
+        CHECK( welder.ammo_remaining_in_pocket( "oxygen" ) == 18 );
+        CHECK( welder.ammo_remaining_in_pocket( "rod" ) == 4 );
     }
 }
 

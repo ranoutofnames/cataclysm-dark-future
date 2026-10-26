@@ -1051,11 +1051,22 @@ TEST_CASE( "energy_block_energy_remaining_sums_well_with_nullptr_carrier", "[p3]
 
 TEST_CASE( "shots_remaining_ammo_part_divides_ammo_by_required", "[p3][ammo][3-4d]" ) {
     clear_all_state();
-    detached_ptr<item> g = loaded_m4a1( 30 );
-    REQUIRE( g->ammo_required() > 0 );
+    // CDF: m4a1 has no ammo_to_fire (data/json/items/gun/223.json:332, copy-from
+    // rifle_auto), so ammo_required() is the itype.h:738 default 1.
+    detached_ptr<item> g = loaded_m4a1( 17 );
+    REQUIRE( g->ammo_required() == 1 );
     Character &c = get_avatar();
-    CHECK( g->shots_remaining( get_map(), &c ) ==
-           g->ammo_remaining_linked( get_map(), &c ) / g->ammo_required() );
+    CHECK( g->shots_remaining( get_map(), &c ) == 17 );
+    g->ammo_set( itype_id( "556" ), 0 );
+    CHECK( g->shots_remaining( get_map(), &c ) == 0 );
+
+    // CDF: a gun with ammo_to_fire > 1, so the ammo part must divide: 41
+    // gasoline charges are 2 shots, not 820.
+    // CDF: flamethrower_simple ammo_to_fire 20 (data/json/items/gun/flammable.json:94).
+    detached_ptr<item> flamer = item::spawn( itype_id( "flamethrower_simple" ) );
+    flamer->ammo_set( itype_id( "gasoline" ), 41 );
+    REQUIRE( flamer->ammo_required() == 20 );
+    CHECK( flamer->shots_remaining( get_map(), &c ) == 2 );
 }
 
 TEST_CASE( "ammo_sufficient_follows_shots_remaining", "[p3][ammo][3-4d]" ) {
@@ -1078,7 +1089,25 @@ TEST_CASE( "tool_uses_remaining_legacy_branch_uses_shots_remaining", "[p3][ammo]
     REQUIRE( tool->magazine_current() == bat );
     bat->ammo_set( itype_id( "battery" ), 10 );
     Character &c = get_avatar();
-    CHECK( tool->tool_uses_remaining( get_map(), &c ) == tool->shots_remaining( get_map(), &c ) );
+    // CDF: smart_phone_music copies smart_phone, charges_per_use 1
+    // (data/json/items/tool/electronics.json:763).
+    REQUIRE( tool->ammo_required() == 1 );
+    CHECK( tool->tool_uses_remaining( get_map(), &c ) == 10 );
+    bat->ammo_set( itype_id( "battery" ), 0 );
+    CHECK( tool->tool_uses_remaining( get_map(), &c ) == 0 );
+
+    // CDF: a legacy tool needing more than 1 charge per use, so the legacy
+    // branch must divide: 10 charges are 2 uses of crude_firestarter, not 50.
+    // CDF: crude_firestarter charges_per_use 5 (data/json/items/tool/fire.json:3).
+    detached_ptr<item> starter = item::spawn( itype_id( "crude_firestarter" ) );
+    detached_ptr<item> starter_cell = item::spawn( itype_id( "light_battery_cell" ) );
+    starter_cell->ammo_unset();
+    item *starter_bat = &*starter_cell;
+    starter->put_in( std::move( starter_cell ) );
+    REQUIRE( starter->magazine_current() == starter_bat );
+    starter_bat->ammo_set( itype_id( "battery" ), 10 );
+    REQUIRE( starter->ammo_required() == 5 );
+    CHECK( starter->tool_uses_remaining( get_map(), &c ) == 2 );
 }
 
 // 8-1d-0: magazine_current and energy_consume to the DDA shape (ADV-16 Q-15-1).
@@ -1225,5 +1254,32 @@ TEST_CASE( "Character_has_fire_counts_firestarter_ammo_sufficient", "[p3][ammo][
     // fuelled: sufficient, so fire
     lighter.ammo_set( itype_id( "chem_butane" ), 5 );
     REQUIRE( lighter.ammo_sufficient( &chr, 1 ) );
+    CHECK( chr.has_fire( 1 ) );
+}
+
+// 8-4e: the firestarter branch of Character::has_fire must ask ammo_sufficient,
+// not has_charges: 3 charges is a true has_charges( 1 ) but not one use of a
+// tool needing 5 charges per use, so it must not count as fire.
+TEST_CASE( "Character_has_fire_firestarter_needs_charges_per_use", "[p3][ammo][8-4e]" ) {
+    clear_all_state();
+    clear_avatar();
+    Character &chr = get_player_character();
+    // CDF: crude_firestarter charges_per_use 5, magazines light_battery_cell,
+    // flags FIRESTARTER CAN_HAVE_CHARGES (data/json/items/tool/fire.json:3).
+    detached_ptr<item> tool = item::spawn( itype_id( "crude_firestarter" ) );
+    detached_ptr<item> battery = item::spawn( itype_id( "light_battery_cell" ) );
+    battery->ammo_unset();
+    item *cell = &*battery;
+    tool->put_in( std::move( battery ) );
+    REQUIRE( tool->magazine_current() == cell );
+    cell->ammo_set( itype_id( "battery" ), 3 );
+    item &carried = chr.i_add( std::move( tool ) );
+    REQUIRE( carried.ammo_required() == 5 );
+    // 3 < 5: not enough for a single use.
+    REQUIRE_FALSE( carried.ammo_sufficient( &chr, 1 ) );
+    CHECK_FALSE( chr.has_fire( 1 ) );
+
+    cell->ammo_set( itype_id( "battery" ), 5 );
+    REQUIRE( carried.ammo_sufficient( &chr, 1 ) );
     CHECK( chr.has_fire( 1 ) );
 }
