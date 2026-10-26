@@ -5235,9 +5235,11 @@ nc_color item::color_in_inventory( const player &p ) const
         for( const ammotype &at : ammo_types() ) {
             // get_ammo finds uncontained ammo, find_ammo finds ammo in magazines
             bool has_ammo = !character_funcs::get_ammo_items( p, at ).empty() ||
-                            !character_funcs::find_ammo_items_or_mags( p, *this, false, -1 ).empty();
+                            !character_funcs::find_ammo_items_or_mags( p, *this, false, -1,
+                                    false ).empty();
             bool has_mag = magazine_integral() ||
-                           !character_funcs::find_ammo_items_or_mags( p, *this, true, -1 ).empty();
+                           !character_funcs::find_ammo_items_or_mags( p, *this, true, -1,
+                                   false ).empty();
             if( has_ammo && has_mag ) {
                 ret = c_green;
                 break;
@@ -5268,7 +5270,8 @@ nc_color item::color_in_inventory( const player &p ) const
         bool has_gun = p.has_item_with( [this]( const item & it ) {
             return it.is_gun() && it.magazine_compatible().contains( typeId() );
         } );
-        bool has_ammo = !character_funcs::find_ammo_items_or_mags( p, *this, false, -1 ).empty();
+        bool has_ammo = !character_funcs::find_ammo_items_or_mags( p, *this, false, -1,
+                         false ).empty();
         if( has_gun && has_ammo ) {
             ret = c_green;
         } else if( has_gun || has_ammo ) {

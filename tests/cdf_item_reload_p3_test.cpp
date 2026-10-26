@@ -3,6 +3,7 @@
 #include "avatar_functions.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "character_functions.h"
 #include "coordinates.h"
 #include "debug.h"
 #include "flag.h"
@@ -18,6 +19,7 @@
 #include "units.h"
 #include "value_ptr.h"
 
+#include <algorithm>
 #include <climits>
 #include <memory>
 #include <string>
@@ -724,4 +726,95 @@ TEST_CASE( "reload_inside_roomy_container_keeps_item_in_place_via_actor", "[p3][
     CHECK( bag.all_items_top().front() == &gun );
     CHECK( gun.parent_item() == &bag );
     CHECK( dmsg.empty() );
+}
+
+// CDF: P3-4-d-b; DDA tests/multimag_test.cpp:470-565 has no direct find_ammo case,
+// and CDF has no Character::find_ammo, so these call character_funcs directly.
+namespace
+{
+
+auto loaded_mag( const itype_id &mag_id, const itype_id &ammo_id, int count ) -> detached_ptr<item>
+{
+    auto mag = item::spawn( mag_id );
+    mag->put_in( item::spawn( ammo_id, calendar::turn, count ), pocket_type::MAGAZINE );
+    return mag;
+}
+
+auto result_contains( const std::vector<item *> &items, const item &needle ) -> bool
+{
+    return std::ranges::find( items, &needle ) != items.end();
+}
+
+} // namespace
+
+TEST_CASE( "find_ammo_items_or_mags_finds_spare_mags_through_wells", "[p3][reload]" )
+{
+    clear_avatar();
+    Character &you = get_player_character();
+    you.wear_item( item::spawn( itype_id( "backpack" ) ), false );
+
+    item &gun = you.i_add( item::spawn( itype_id( "test_multimag_gun" ) ) );
+    item &glock = you.i_add( loaded_mag( itype_id( "glockmag" ), itype_id( "9mm" ), 15 ) );
+    item &stanag = you.i_add( loaded_mag( itype_id( "stanag30" ), itype_id( "556" ), 30 ) );
+
+    const std::vector<item *> found = character_funcs::find_ammo_items_or_mags( you, gun, false, -1 );
+    CHECK( result_contains( found, glock ) );
+    CHECK( result_contains( found, stanag ) );
+    CHECK( found.size() == 2 );
+}
+
+TEST_CASE( "find_ammo_items_or_mags_now_flag_for_full_well", "[p3][reload]" )
+{
+    clear_avatar();
+    Character &you = get_player_character();
+    you.wear_item( item::spawn( itype_id( "backpack" ) ), false );
+
+    auto gun_ptr = item::spawn( itype_id( "test_multimag_gun" ) );
+    auto glock_in_gun = loaded_mag( itype_id( "glockmag" ), itype_id( "9mm" ), 15 );
+    item *in_gun = glock_in_gun.get();
+    gun_ptr->put_in( std::move( glock_in_gun ), pocket_type::MAGAZINE_WELL );
+    item &gun = you.i_add( std::move( gun_ptr ) );
+    REQUIRE( in_gun->parent_item() == &gun );
+
+    item &spare_glock = you.i_add( loaded_mag( itype_id( "glockmag" ), itype_id( "9mm" ), 15 ) );
+    item &spare_stanag = you.i_add( loaded_mag( itype_id( "stanag30" ), itype_id( "556" ), 30 ) );
+
+    // CDF: expectation derived from the item data: TEST_DATA/items.json:1484-1485
+    // restricts well 1 to glockmag (250 ml) and well 2 to stanag30 (500 ml); the
+    // glockmag well is already taken, so only the stanag30 spare fits right now.
+    const std::vector<item *> now_true =
+        character_funcs::find_ammo_items_or_mags( you, gun, false, -1, true );
+    CHECK( now_true.size() == 1 );
+    CHECK( result_contains( now_true, spare_stanag ) );
+    CHECK( !result_contains( now_true, spare_glock ) );
+    CHECK( !result_contains( now_true, *in_gun ) );
+
+    const std::vector<item *> now_false =
+        character_funcs::find_ammo_items_or_mags( you, gun, false, -1, false );
+    CHECK( now_false.size() == 2 );
+    CHECK( result_contains( now_false, spare_stanag ) );
+    CHECK( result_contains( now_false, spare_glock ) );
+    CHECK( !result_contains( now_false, *in_gun ) );
+}
+
+TEST_CASE( "find_ammo_items_or_mags_skips_empty_mags_and_foreign_ammo", "[p3][reload]" )
+{
+    clear_avatar();
+    Character &you = get_player_character();
+    you.wear_item( item::spawn( itype_id( "backpack" ) ), false );
+
+    item &gun = you.i_add( item::spawn( itype_id( "test_multimag_gun" ) ) );
+    item &empty_glock = you.i_add( item::spawn( itype_id( "glockmag" ) ) );
+    // CDF: 308 is not in the gun's ammo list (9mm, 223), so it never matches.
+    item &foreign = you.i_add( item::spawn( itype_id( "308" ), calendar::turn, 6 ) );
+
+    const std::vector<item *> no_empty =
+        character_funcs::find_ammo_items_or_mags( you, gun, false, -1, true );
+    CHECK( !result_contains( no_empty, empty_glock ) );
+    CHECK( !result_contains( no_empty, foreign ) );
+
+    const std::vector<item *> with_empty =
+        character_funcs::find_ammo_items_or_mags( you, gun, true, -1, true );
+    CHECK( result_contains( with_empty, empty_glock ) );
+    CHECK( !result_contains( with_empty, foreign ) );
 }

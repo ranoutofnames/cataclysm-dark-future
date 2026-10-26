@@ -128,7 +128,14 @@ auto discover_ammo(const Character& who, item& base, discovery_options options)
     const auto ammo_search_range = who.is_mounted() ? -1 : 1;
     for (item* target : targets) {
         for (item* ammo : character_funcs::find_ammo_items_or_mags(
-                 who, *target, options.include_empty_mags, ammo_search_range)) {
+                 who, *target, options.include_empty_mags, ammo_search_range,
+                 // CDF: now = false. DDA list_ammo (character_ammo.cpp:87-167) calls find_ammo with
+                 // now = true but documents ammo_match_found as set "even if something is
+                 // preventing reloading at the moment", and game::reload (game.cpp:7078-7089)
+                 // handles full guns before listing. CDF has no such pre-check: prepare() maps
+                 // ammo_match_found to nothing_to_reload and include_potential (ranged.cpp) needs
+                 // ammo for a full target, so the now-filter is applied by can_reload below.
+                 false)) {
             // Don't try to unload frozen liquids.
             if (ammo->is_watertight_container() && ammo->contents_normally_made_of(LIQUID)
                 && ammo->contents_made_of(SOLID)) {

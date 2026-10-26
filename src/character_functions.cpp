@@ -870,9 +870,12 @@ std::vector<item *> get_ammo_items( const Character &who, const ammotype &at )
     } );
 }
 
+// CDF: no item cache, Character is walked by find_ammo_helper( nested = true )
 template <typename T, typename Output>
-void find_ammo_helper( T &src, const item &obj, bool empty, Output out, bool nested )
+void find_ammo_helper( T &src, const item &obj, bool empty, Output out, bool nested,
+                       bool now = true )
 {
+    // CDF: BN liquid-container reload search kept, DDA find_ammo has none.
     if( obj.is_container() ) {
         if( !obj.is_container_empty() ) {
             auto contents_id = obj.contents.front().typeId();
@@ -906,85 +909,104 @@ void find_ammo_helper( T &src, const item &obj, bool empty, Output out, bool nes
             } );
         }
     }
-    if( obj.magazine_integral() ) {
-        // find suitable ammo excluding that already loaded in magazines
-        const std::set<ammotype> &ammo = obj.ammo_types();
-        const auto mags = obj.magazine_compatible();
+    // CDF: the old BN helper's `node->is_gun() || node->is_tool()` SKIP and its
+    // `node->is_ammo_container() && !node->contents.empty() && !node->contents_made_of( SOLID )`
+    // branch are removed in favour of DDA's can_reload_with filter (4-d-b-0, AUTO-48);
+    // can_reload_with covers those cases per DDA.
+    src.visit_items( [&nested, &out, &obj, empty, now]( item * node ) {
+        // CDF: item* + parent_item() in place of item_location + has_parent()
+        item *parent = node->parent_item();
 
-        src.visit_items( [&nested, &out, &mags, ammo]( item * node ) {
-            if( node->is_gun() || node->is_tool() ) {
-                // guns/tools never contain usable ammo so most efficient to skip them now
+        // CDF: DDA's item::can_reload_with( ammo, false ) answers compatibility only. CDF's legacy
+        // direct-charges guns (D14) answer "now" whatever `now` is (item_gun_tool_ammo.cpp:70-73),
+        // which drops the ammo of a full gun and the speedloader of a loaded revolver from a
+        // now == false search; their compatibility-only answer is the itype overload.
+        const auto reloadable = [&obj, now]( const item & it ) {
+            return obj.can_reload_with( it, now ) ||
+                   ( !now && ( obj.is_gun() || obj.is_tool() ) && obj.can_reload_with( it.typeId() ) );
+        };
+        // CDF: reload options carry the container of a contained liquid, not the liquid inside it
+        // (DDA's item_location is the liquid); the old BN helper returned the container too.
+        const auto emit = [&out, parent]( item * it ) {
+            out = ( parent && parent->is_container() && it->made_of( phase_id::LIQUID ) ) ? parent : it;
+        };
+
+        // This stops containers and magazines counting *themselves* as ammo sources
+        if( node == &obj ) {
+            return VisitResponse::SKIP;
+        }
+
+        // Spills are not valid. spilled liquids have no parent.
+        if( !parent && node->made_of_from_type( phase_id::LIQUID ) ) {
+            return VisitResponse::SKIP;
+        }
+
+        // Frozen liquids can't be loaded
+        if( node->is_frozen_liquid() ) {
+            return VisitResponse::SKIP;
+        }
+
+        // CDF: the liquid-container block above already yields the container holding the liquid
+        // (CDF reload options carry the container, not the liquid inside it); letting the
+        // generic walk add the inner liquid too gives a second, duplicate option.
+        if( obj.is_container() && parent && parent->is_container() &&
+            node->made_of( phase_id::LIQUID ) ) {
+            return VisitResponse::SKIP;
+        }
+
+        // Do not steal ammo from magazines
+        if( parent && parent->is_magazine() ) {
+            return VisitResponse::SKIP;
+        }
+
+        // Do not steal magazines from other items
+        if( parent && node == parent->magazine_current() ) {
+            return VisitResponse::SKIP;
+        }
+
+        // Do not consider empty mags unless specified
+        if( node->is_magazine() && !node->ammo_remaining() && !empty ) {
+            return VisitResponse::SKIP;
+        }
+
+        if( node->has_flag( flag_SPEEDLOADER ) && obj.magazine_integral() ) {
+            // Can't reload with empty speedloaders
+            if( !node->ammo_remaining() ) {
                 return VisitResponse::SKIP;
             }
-            if( !node->made_of( SOLID ) ) {
-                // some liquids are ammo but we can't reload with them unless within a container or frozen
-                return VisitResponse::SKIP;
+            // All speedloaders are accepted.
+            // Ammo check is done somewhere else
+            // Ammo check should probably happen here...
+            if( reloadable( *node ) ) {
+                out = node;
             }
-            if( node->is_ammo_container() && !node->contents.empty() &&
-                !node->contents_made_of( SOLID ) ) {
-                for( const ammotype &at : ammo ) {
-                    if( node->contents.front().ammo_type() == at ) {
-                        out = node;
-                    }
-                }
-                return VisitResponse::SKIP;
-            }
+            return VisitResponse::SKIP;
+        }
 
-            for( const ammotype &at : ammo ) {
-                if( node->ammo_type() == at ) {
-                    out = node;
-                }
-            }
-            if( node->is_magazine() && node->has_flag( flag_SPEEDLOADER ) ) {
-                if( mags.contains( node->typeId() ) && node->ammo_remaining() ) {
-                    out = node;
-                }
-            }
-            return nested ? VisitResponse::NEXT : VisitResponse::SKIP;
-        } );
-    } else {
-        // find compatible magazines excluding those already loaded in tools/guns
-        const auto mags = obj.magazine_compatible();
-        const std::set<ammotype> &ammo = obj.ammo_types();
+        if( reloadable( *node ) ) {
+            emit( node );
+        }
 
-        src.visit_items( [&nested, &out, mags, empty, &ammo]( item * node ) {
-            if( node->is_gun() || node->is_tool() ) {
-                return VisitResponse::SKIP;
-            }
-            if( node->is_magazine() ) {
+        // Not-nested checks only top level containers and their immediate contents.
+        return !parent || nested ? VisitResponse::NEXT : VisitResponse::SKIP;
 
-                if( !node->contents.empty() ) {
-                    const bool match = std::ranges::any_of( ammo, [&]( const ammotype & at ) {
-                        return node->contents.front().ammo_type() == at;
-                    } );
-                    if( !match ) {
-                        return VisitResponse::SKIP;
-                    }
-                }
-
-                if( mags.contains( node->typeId() ) && ( node->ammo_remaining() || empty ) ) {
-                    out = node;
-                }
-                return VisitResponse::SKIP;
-            }
-            return nested ? VisitResponse::NEXT : VisitResponse::SKIP;
-        } );
-    }
+    } );
 }
 
 std::vector<item *> find_ammo_items_or_mags( const Character &who, const item &obj,
-        bool empty, int radius )
+        bool empty, int radius, bool now )
 {
     std::vector<item *> res;
 
-    find_ammo_helper( const_cast<Character &>( who ), obj, empty, std::back_inserter( res ), true );
+    find_ammo_helper( const_cast<Character &>( who ), obj, empty, std::back_inserter( res ), true,
+                      now );
 
     if( radius >= 0 ) {
         for( auto &cursor : map_selector( who.bub_pos(), radius ) ) {
-            find_ammo_helper( cursor, obj, empty, std::back_inserter( res ), false );
+            find_ammo_helper( cursor, obj, empty, std::back_inserter( res ), false, now );
         }
         for( auto &cursor : vehicle_selector( who.bub_pos(), radius ) ) {
-            find_ammo_helper( cursor, obj, empty, std::back_inserter( res ), false );
+            find_ammo_helper( cursor, obj, empty, std::back_inserter( res ), false, now );
         }
     }
 

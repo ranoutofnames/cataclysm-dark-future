@@ -202,9 +202,10 @@ std::vector<item *> get_ammo_items( const Character &who, const ammotype &at );
  * @param obj item to be reloaded. By design any currently loaded ammunition or magazine is ignored
  * @param empty whether empty magazines should be considered as possible ammo
  * @param radius adjacent map/vehicle tiles to search. 0 for only character tile, -1 for only inventory
+ * @param now whether the currently contained ammo/magazine is taken into account
  */
 std::vector<item *> find_ammo_items_or_mags( const Character &who, const item &obj,
-        bool empty = true, int radius = 1 );
+        bool empty = true, int radius = 1, bool now = true );
 
 /** Searches for weapons and magazines that can be reloaded. */
 std::vector<item *> find_reloadables( Character &who );
