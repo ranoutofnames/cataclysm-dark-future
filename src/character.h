@@ -61,6 +61,7 @@ class SkillLevelMap;
 class bionic_collection;
 class character_martial_arts;
 class faction;
+class item_reload_option;
 class ma_technique;
 class known_magic;
 class player;
@@ -1787,6 +1788,22 @@ class Character : public Creature, public location_visitable<Character>
          * @note items with integral magazines are reloadable if free capacity permits (+/- ammo matches)
          */
         bool can_reload( const item &it, const item *ammo = nullptr ) const;
+
+        /**
+         * Build the list of reload_option entries for selecting reload ammo
+         * for `base`. With `per_well_targets` false the function emits one
+         * option per item (base and each gunmod) plus one per loaded
+         * magazine, all carrying item_reload_option::pocket_index = -1, which
+         * routes execution through the first-compatible-well selection
+         * inside item::reload. With `per_well_targets` true it additionally
+         * walks every MAGAZINE_WELL pocket on the base item and on each
+         * gunmod, emitting per-well reload targets whose pocket_index
+         * identifies the specific well in target->contents.
+         */
+        // CDF: DDA character.h:1980 takes item_location; CDF has no item_location handle and
+        // item_reload_option::target is item *, so the base is passed by const reference.
+        bool list_ammo( const item &base, std::vector<item_reload_option> &ammo_list,
+                        bool empty = true, bool per_well_targets = false ) const;
 
         /**
          * Calculate (but do not deduct) the number of moves required to reload an item with specified quantity of ammo

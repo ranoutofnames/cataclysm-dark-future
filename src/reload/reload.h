@@ -89,6 +89,12 @@ struct discovery_options {
      * An example is a speedloader for a revolver that still holds rounds.
      */
     bool include_potential = false;
+    /**
+     * Emit one target per MAGAZINE_WELL of @p base and of each gunmod, plus the loaded
+     * magazines, in DDA order. `include_potential` is ignored in this mode.
+     */
+    // CDF: P3-4-d-b. Appended last so the designated-initializer callers stay valid.
+    bool per_well_targets = false;
 };
 
 struct discovery_result {
@@ -116,6 +122,13 @@ struct discovery_result {
  *     carried items -> ground within one tile -> vehicle cargo within one tile
  *
  * A mounted character searches carried items only.
+ *
+ * With `per_well_targets` set, discovery instead visits the base item and then each of
+ * its gunmods in DDA order. For each owner it visits the owner itself, then every
+ * MAGAZINE_WELL pocket in get_pockets order, then the magazine currently in that well.
+ * Each option carries the well's get_pockets index in `item_reload_option::pocket_index`,
+ * or `item_reload_option::POCKET_FALLBACK` for the owner and magazine entries.
+ * `include_potential` is ignored in this mode.
  *
  * @param who Character who looks for ammunition
  * @param base Item to find ammunition for

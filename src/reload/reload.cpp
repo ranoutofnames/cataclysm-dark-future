@@ -15,6 +15,87 @@
 
 namespace {
 const auto ammo_plutonium = ammotype("plutonium");
+
+// CDF: P3-4-d-b (DDA character_ammo.cpp:96-167). Per-well targets: one option per
+// MAGAZINE_WELL of base and of each gunmod, plus one per loaded magazine, in DDA order.
+// DDA carries item_location through the loop; CDF has no item_location handle, so the
+// entries are item pointers, `parent` is always the base item, and the well index rides
+// in item_reload_option::pocket_index. DDA also skips frozen liquids, skips magazines
+// whose parent gun cannot fire them, and honours RELOAD_AND_SHOOT; none of those exist
+// in this path here.
+auto discover_per_well(const Character& who, item& base, const reload::discovery_options& options)
+    -> reload::discovery_result {
+    // pocket_index < 0 -> first-compatible-well fallback in item::reload.
+    struct opt_entry {
+        item* target;
+        int pocket_index;
+    };
+    std::vector<opt_entry> opts;
+
+    auto append_owner_options = [&opts](item* owner) {
+        opts.push_back({owner, item_reload_option::POCKET_FALLBACK});
+        int idx = 0;
+        for (item_pocket* p :
+             owner->get_pockets([](const item_pocket&) { return true; })) {
+            if (p->is_type(pocket_type::MAGAZINE_WELL)) {
+                opts.push_back({owner, idx});
+                if (item* mag = p->magazine_current()) {
+                    opts.push_back({mag, item_reload_option::POCKET_FALLBACK});
+                }
+            }
+            ++idx;
+        }
+    };
+
+    append_owner_options(&base);
+    for (item* mod : base.gunmods()) {
+        append_owner_options(mod);
+    }
+
+    auto result = reload::discovery_result{};
+    bool ammo_match_found = false;
+    const auto ammo_search_range = who.is_mounted() ? -1 : 1;
+    for (opt_entry& entry : opts) {
+        item* const target = entry.target;
+        // For per-well entries, filter compatibility against that specific pocket so
+        // magazines that fit a sibling well do not leak through.
+        const item_pocket* targeted_well = nullptr;
+        if (entry.pocket_index >= 0) {
+            const auto pockets =
+                target->get_pockets([](const item_pocket&) { return true; });
+            if (entry.pocket_index < static_cast<int>(pockets.size()) &&
+                pockets[entry.pocket_index]->is_type(pocket_type::MAGAZINE_WELL)) {
+                targeted_well = pockets[entry.pocket_index];
+            }
+        }
+        for (item* ammo : character_funcs::find_ammo_items_or_mags(
+                 who, *target, options.include_empty_mags, ammo_search_range)) {
+            const auto well_accepts = targeted_well != nullptr
+                                          ? targeted_well->can_reload_with(*ammo, false)
+                                          : target->can_reload_with(*ammo, false);
+            if (well_accepts) {
+                // Record that there's a matching ammo type, even if something is
+                // preventing reloading at the moment.
+                ammo_match_found = true;
+            } else if ((ammo->has_flag(flag_SPEEDLOADER) || ammo->has_flag(flag_SPEEDLOADER_CLIP)) &&
+                       target->allows_speedloader(ammo->typeId()) && ammo->ammo_remaining() > 1 &&
+                       target->ammo_remaining() < 1) {
+                // Again, this is "are they compatible", the later check handles "can we do
+                // it now".
+                ammo_match_found = target->can_reload_with(*ammo, false);
+            }
+            const auto emit = targeted_well != nullptr
+                                  ? targeted_well->can_reload_with(*ammo, true)
+                                  : who.as_player()->can_reload(*target, ammo);
+            if (emit) {
+                result.options.emplace_back(
+                    who.as_player(), target, &base, *ammo, entry.pocket_index);
+            }
+        }
+    }
+    result.ammo_match_found = ammo_match_found;
+    return result;
+}
 } // namespace
 
 item_reload_option::item_reload_option(const item_reload_option&) = default;
@@ -115,6 +196,7 @@ void item_reload_option::qty(int val) {
 namespace reload {
 auto discover_ammo(const Character& who, item& base, discovery_options options)
     -> discovery_result {
+    if (options.per_well_targets) { return discover_per_well(who, base, options); }
     auto result = discovery_result{};
     auto targets = base.gunmods();
     targets.push_back(&base);
@@ -183,3 +265,16 @@ auto discover_ammo(const Character& who, item& base, discovery_options options)
     return result;
 }
 } // namespace reload
+
+// CDF: P3-4-d-b (DDA character_ammo.cpp:87-168 list_ammo body). The default path keeps CDF
+// discovery order and rules and every option carries POCKET_FALLBACK.
+auto Character::list_ammo(const item& base, std::vector<item_reload_option>& ammo_list, bool empty,
+                          bool per_well_targets) const -> bool {
+    // CDF: discover_ammo takes item&; the list built here is read-only.
+    auto r = reload::discover_ammo(*this, const_cast<item&>(base),
+                                   {.include_empty_mags = empty,
+                                    .include_potential = false,
+                                    .per_well_targets = per_well_targets});
+    ammo_list.insert(ammo_list.end(), r.options.begin(), r.options.end());
+    return r.ammo_match_found;
+}

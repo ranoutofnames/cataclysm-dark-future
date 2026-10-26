@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <climits>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -817,4 +818,194 @@ TEST_CASE( "find_ammo_items_or_mags_skips_empty_mags_and_foreign_ammo", "[p3][re
         character_funcs::find_ammo_items_or_mags( you, gun, true, -1, true );
     CHECK( result_contains( with_empty, empty_glock ) );
     CHECK( !result_contains( with_empty, foreign ) );
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-4-d-b; ported from DDA tests/multimag_test.cpp:106-130 (helpers) and
+// 468-624 (character_list_ammo_per_well_targets_flag).
+// ---------------------------------------------------------------------------
+
+static const itype_id itype_556( "556" );
+static const itype_id itype_9mm( "9mm" );
+static const itype_id itype_stanag30( "stanag30" );
+static const itype_id itype_test_multimag_gun( "test_multimag_gun" );
+
+// CDF: item's move constructor is deleted (src/item.h:241), so the DDA helpers return a
+// detached_ptr instead of an item by value.
+static detached_ptr<item> make_loaded_stanag()
+{
+    detached_ptr<item> mag = item::spawn( itype_stanag30 );
+    mag->put_in( item::spawn( itype_556, calendar::turn, 30 ), pocket_type::MAGAZINE );
+    return mag;
+}
+
+static detached_ptr<item> make_dual_well_gun()
+{
+    detached_ptr<item> gun = item::spawn( itype_test_multimag_gun );
+    detached_ptr<item> glock_mag = item::spawn( itype_glockmag );
+    glock_mag->put_in( item::spawn( itype_9mm, calendar::turn, 15 ), pocket_type::MAGAZINE );
+    gun->put_in( std::move( glock_mag ), pocket_type::MAGAZINE_WELL );
+    gun->put_in( make_loaded_stanag(), pocket_type::MAGAZINE_WELL );
+    return gun;
+}
+
+// CDF: DDA tag is [multimag][reload]; [4-d-b] is added so the build filter selects only
+// the cases from this job.
+TEST_CASE( "character_list_ammo_per_well_targets_flag", "[p3][reload][4-d-b]" )
+{
+    clear_all_state();
+    Character &you = get_avatar();
+    // Without storage, i_add silently drops items on the ground and the ammo search
+    // would not see them.
+    you.wear_item( item::spawn( "backpack" ), false );
+
+    SECTION( "default flag emits one option per item plus one per loaded magazine" ) {
+        item &gun = you.i_add( make_dual_well_gun() );
+        // Loose ammo so list_ammo has something beyond the loaded mags.
+        you.i_add( item::spawn( itype_9mm, calendar::turn, 15 ) );
+        you.i_add( item::spawn( itype_556, calendar::turn, 30 ) );
+
+        std::vector<item_reload_option> ammo_list;
+        // CDF: DDA passes an item_location; CDF passes the item by reference.
+        you.list_ammo( gun, ammo_list, /*empty=*/true );
+        // Every emitted option must carry the first-compatible-well sentinel
+        // when the per_well_targets flag is unset.
+        for( const item_reload_option &opt : ammo_list ) {
+            CHECK( opt.pocket_index < 0 );
+        }
+    }
+
+    SECTION( "per_well_targets=true emits per-well options with stable pocket_index" ) {
+        // Use an empty multi-well gun so the ammo search will accept the spare
+        // magazines as valid reload candidates (it rejects spares when the well
+        // is already full and now=true).
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun ) );
+        detached_ptr<item> glock_extra = item::spawn( itype_glockmag );
+        glock_extra->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                             pocket_type::MAGAZINE );
+        detached_ptr<item> stanag_extra = item::spawn( itype_stanag30 );
+        stanag_extra->put_in( item::spawn( itype_556, calendar::turn, 30 ),
+                              pocket_type::MAGAZINE );
+        you.i_add( std::move( glock_extra ) );
+        you.i_add( std::move( stanag_extra ) );
+
+        // Collect the two well indices in the gun's pocket list.
+        std::vector<int> well_indices;
+        {
+            int idx = 0;
+            for( const item_pocket *p : gun.get_pockets(
+            []( const item_pocket & ) {
+            return true;
+        } ) ) {
+                if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                    well_indices.push_back( idx );
+                }
+                ++idx;
+            }
+        }
+        REQUIRE( well_indices.size() == 2 );
+
+        std::vector<item_reload_option> ammo_list;
+        you.list_ammo( gun, ammo_list, /*empty=*/true, /*per_well_targets=*/true );
+
+        std::set<int> emitted_pocket_indices;
+        for( const item_reload_option &opt : ammo_list ) {
+            emitted_pocket_indices.insert( opt.pocket_index );
+        }
+        // Both wells emit at their contents index.
+        for( int idx : well_indices ) {
+            CHECK( emitted_pocket_indices.count( idx ) == 1 );
+        }
+
+        // No cross-well leak: a glockmag option must not target the stanag well.
+        const item_pocket *first_well = nullptr;
+        const item_pocket *second_well = nullptr;
+        {
+            int idx = 0;
+            for( const item_pocket *p : gun.get_pockets(
+            []( const item_pocket & ) {
+            return true;
+        } ) ) {
+                if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                    if( idx == well_indices[0] ) {
+                        first_well = p;
+                    } else if( idx == well_indices[1] ) {
+                        second_well = p;
+                    }
+                }
+                ++idx;
+            }
+        }
+        REQUIRE( first_well != nullptr );
+        REQUIRE( second_well != nullptr );
+        for( const item_reload_option &opt : ammo_list ) {
+            if( opt.pocket_index < 0 ) {
+                continue;
+            }
+            const item_pocket *picked =
+                opt.pocket_index == well_indices[0] ? first_well : second_well;
+            CAPTURE( opt.pocket_index );
+            CAPTURE( opt.ammo->tname() );
+            CHECK( picked->can_reload_with( *opt.ammo, true ) );
+        }
+
+        // Class-(a) entries swap one magazine: qty() == 1.
+        for( const item_reload_option &opt : ammo_list ) {
+            if( opt.pocket_index >= 0 ) {
+                CHECK( opt.qty() == 1 );
+            }
+        }
+    }
+
+    SECTION( "empty-well pocket_index is the position in contents, not a "
+             "magazines_current() position" ) {
+        // Indices must match contents, not magazines_current().
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun );
+        gun_ptr->put_in( make_loaded_stanag(), pocket_type::MAGAZINE_WELL );
+        item &gun = you.i_add( std::move( gun_ptr ) );
+
+        detached_ptr<item> glock_extra = item::spawn( itype_glockmag );
+        glock_extra->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                             pocket_type::MAGAZINE );
+        detached_ptr<item> stanag_extra = item::spawn( itype_stanag30 );
+        stanag_extra->put_in( item::spawn( itype_556, calendar::turn, 30 ),
+                              pocket_type::MAGAZINE );
+        you.i_add( std::move( glock_extra ) );
+        you.i_add( std::move( stanag_extra ) );
+
+        // Locate each well in the gun's pocket list.
+        int empty_well_idx = -1;
+        int loaded_well_idx = -1;
+        {
+            int idx = 0;
+            for( const item_pocket *p : gun.get_pockets(
+            []( const item_pocket & ) {
+            return true;
+        } ) ) {
+                if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                    if( p->magazine_current() == nullptr ) {
+                        empty_well_idx = idx;
+                    } else {
+                        loaded_well_idx = idx;
+                    }
+                }
+                ++idx;
+            }
+        }
+        REQUIRE( empty_well_idx >= 0 );
+        REQUIRE( loaded_well_idx >= 0 );
+        REQUIRE( empty_well_idx != loaded_well_idx );
+
+        std::vector<item_reload_option> ammo_list;
+        you.list_ammo( gun, ammo_list, /*empty=*/true, /*per_well_targets=*/true );
+
+        // Empty well still addressable by its stable contents index.
+        bool saw_empty = false;
+        for( const item_reload_option &opt : ammo_list ) {
+            if( opt.pocket_index == empty_well_idx ) {
+                saw_empty = true;
+            }
+        }
+        CHECK( saw_empty );
+    }
 }
