@@ -3694,7 +3694,8 @@ void target_ui::update_status()
         // None of the turrets are in range
         status = Status::OutOfRange;
     } else if( mode == TargetMode::Fire &&
-               ( !ranged::gunmode_checks_common( *you, get_map(), msgbuf, relevant->gun_current_mode() ) ||
+               ( relevant->firing_mode_blocked( relevant->gun_get_mode_id() ) ||
+                 !ranged::gunmode_checks_common( *you, get_map(), msgbuf, relevant->gun_current_mode() ) ||
                  !ranged::gunmode_checks_weapon( *you, get_map(), msgbuf, relevant->gun_current_mode() ) ) ) {
         // Selected gun mode is empty
         // TODO: it might be some other error, but that's highly unlikely to happen, so a catch-all 'Out of ammo' is fine
@@ -4692,6 +4693,11 @@ auto ranged::gunmode_checks_weapon( avatar &you, const map &m, std::vector<std::
     if( !gmode->ammo_sufficient( &you ) && !gmode->has_flag( flag_RELOAD_AND_SHOOT ) ) {
         if( !gmode->ammo_remaining() ) {
             messages.push_back( string_format( _( "Your %s is empty!" ), gmode->tname() ) );
+        } else if( gmode->uses_firing_requirements() ) {
+            messages.push_back( string_format( _( "Your %s needs to fire: %s." ),
+                                               gmode->tname(),
+                                               gmode->format_consumption_requirements(
+                                                       /*method=*/"", gmode->gun_get_mode_id() ) ) );
         } else {
             messages.push_back( string_format( _( "Your %s needs %i charges to fire!" ),
                                                gmode->tname(), gmode->ammo_required() ) );
@@ -4723,6 +4729,37 @@ auto ranged::gunmode_checks_weapon( avatar &you, const map &m, std::vector<std::
                 messages.push_back( string_format( _( "Your mech has an empty battery, its %s will not fire." ),
                                                    gmode->tname() ) );
                 result = false;
+            }
+        }
+    }
+
+    // CDF: DDA 4634-4659 (commit 6768e73568d) replaced its UPS block with this one, because DDA turned ups_charges into
+    // energy_drain. CDF keeps ups_charges as an int (8-1d Decision 2 and 11, ADV-12 5c), so the BN UPS block above stays
+    // and this one is added for energy_drain guns (none in live data yet). energy_remaining( &you ) has no UPS term
+    // until 4-b2, so a USE_UPS energy gun counts its own cell only.
+    if( gmode->get_gun_energy_drain() > 0_kJ ) {
+        const units::energy energy_drain = gmode->get_gun_energy_drain();
+        bool is_mech_weapon = false;
+        if( you.is_mounted() ) {
+            monster *mons = get_player_character().mounted_creature.get();
+            if( !mons->type->mech_weapon.is_empty() ) {
+                is_mech_weapon = true;
+            }
+        }
+
+        if( gmode->energy_remaining( &you ) < energy_drain ) {
+            result = false;
+            if( is_mech_weapon ) {
+                messages.push_back( string_format( _( "Your mech has an empty battery, its %s will not fire." ),
+                                                   gmode->tname() ) );
+            } else if( gmode->has_flag( flag_USES_BIONIC_POWER ) ) {
+                messages.push_back( string_format(
+                                        _( "You need at least %2$d kJ of bionic power to fire the %1$s!" ),
+                                        gmode->tname(), units::to_kilojoule( energy_drain ) ) );
+            } else if( gmode->has_flag( flag_USE_UPS ) ) {
+                messages.push_back( string_format(
+                                        _( "You need a UPS with at least %2$d kJ to fire the %1$s!" ),
+                                        gmode->tname(), units::to_kilojoule( energy_drain ) ) );
             }
         }
     }

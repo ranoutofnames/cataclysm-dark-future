@@ -5,6 +5,7 @@
 #include "character.h"
 #include "debug.h"
 #include "flag.h"
+#include "gun_mode.h"
 #include "item.h"
 #include "itype.h"
 #include "map/map.h"
@@ -16,9 +17,11 @@
 #include "rng.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "units.h"
 
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -317,4 +320,194 @@ TEST_CASE( "cdf_ranged_legacy_gun_fire_path_unchanged", "[p3][ranged]" )
     CHECK( dmsg.empty() );
     CHECK( fired == 1 );
     CHECK( gun.ammo_remaining() == 29 );
+}
+
+namespace
+{
+
+// CDF: the outcome of one ranged::gunmode_checks_weapon call; a named struct (no std::pair), the messages
+// also joined with a newline so a CHECK can search them without indexing.
+struct weapon_check {
+    bool usable = false;
+    std::vector<std::string> messages;
+    std::string all;
+};
+
+auto run_weapon_check( avatar &you, item &gun ) -> weapon_check
+{
+    weapon_check out;
+    out.usable = ranged::gunmode_checks_weapon( you, get_map(), out.messages, gun.gun_current_mode() );
+    for( const std::string &msg : out.messages ) {
+        out.all += msg + "\n";
+    }
+    return out;
+}
+
+// CDF: test_energy_gun (8-1d fixture): energy_drain 5 kJ, one battery well, no ammo type.
+auto make_energy_gun() -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( itype_id( "test_energy_gun" ) );
+    REQUIRE( gun->get_gun_energy_drain() == 5_kJ );
+    REQUIRE( !gun->uses_firing_requirements() );
+    return gun;
+}
+
+} // namespace
+
+// CDF-only (no DDA test; DDA ranged.cpp 4622-4626, commit 91f07695e8a): the multimag message of the weapon checks.
+TEST_CASE( "cdf_ranged_multimag_gunmode_weapon_message", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+
+    SECTION( "slug only: the message names the firing requirements" ) {
+        detached_ptr<item> held = make_integral_multimag_gun( 1, 0 );
+        REQUIRE( held->shots_remaining( get_map(), &you ) == 0 );
+        REQUIRE( held->ammo_remaining() == 1 );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK_FALSE( res.usable );
+        CHECK( res.messages.size() == 1 );
+        // CDF: [UNSURE] tail derived by reading (format_entry_name falls back to the pocket id for the empty well);
+        // the red run cannot settle it (the old text differs), the green run does: a literal fixed to the actual
+        // output is allowed only for the name part and is named in the report with before and after.
+        // Settled by the green run: the empty `power` well is named by the battery it takes (before: " + 5 power.",
+        // after: " + 5 batteries.", built from the battery nname( 5 ) like the battery-only section below).
+        CHECK( res.all.find( "needs to fire: 1 " + itype_id( "9mm" )->nname( 1 ) + " + 5 " +
+                             itype_id( "battery" )->nname( 5 ) + "." ) != std::string::npos );
+        CHECK( res.all.find( "charges to fire" ) == std::string::npos );
+    }
+
+    SECTION( "battery only: the message names the firing requirements" ) {
+        detached_ptr<item> held = make_integral_multimag_gun( 0, 100 );
+        REQUIRE( held->shots_remaining( get_map(), &you ) == 0 );
+        REQUIRE( held->ammo_remaining() > 0 );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK_FALSE( res.usable );
+        CHECK( res.messages.size() == 1 );
+        // CDF: [UNSURE] tail, same note as above (the empty ammo pocket falls back to its id).
+        CHECK( res.all.find( "needs to fire: 1 ammo + 5 " + itype_id( "battery" )->nname( 5 ) + "." ) !=
+               std::string::npos );
+        CHECK( res.all.find( "charges to fire" ) == std::string::npos );
+    }
+
+    SECTION( "both pockets loaded: usable, no message" ) {
+        // GUARD (passes before and after): the checks say nothing about a gun that can fire
+        detached_ptr<item> held = make_integral_multimag_gun( 1, 100 );
+        REQUIRE( held->shots_remaining( get_map(), &you ) == 1 );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK( res.usable );
+        CHECK( res.messages.empty() );
+    }
+
+    SECTION( "nothing loaded: the unchanged empty message" ) {
+        // GUARD: only a gun with nothing in any pocket says "is empty" (DDA 4620-4621 stays the first arm)
+        detached_ptr<item> held = make_integral_multimag_gun( 0, 0 );
+        REQUIRE( held->ammo_remaining() == 0 );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK_FALSE( res.usable );
+        CHECK( res.messages.size() == 1 );
+        CHECK( res.all.find( "is empty!" ) != std::string::npos );
+        CHECK( res.all.find( "needs to fire" ) == std::string::npos );
+    }
+}
+
+// CDF-only (no DDA test; DDA ranged.cpp 4634-4659, commit 6768e73568d): the energy checks of the weapon checks.
+// The mech wording (DDA 4646-4648) needs a mounted mech monster and has no test (Ledger row B).
+TEST_CASE( "cdf_ranged_gunmode_weapon_energy_checks", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+
+    SECTION( "USE_UPS energy gun with an empty well names the UPS requirement" ) {
+        detached_ptr<item> held = make_energy_gun();
+        held->set_flag( flag_id( "USE_UPS" ) );
+        REQUIRE( held->energy_remaining( &you ) == 0_kJ );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK_FALSE( res.usable );
+        // the empty message (ammo block, unchanged) and the energy message (new)
+        CHECK( res.messages.size() == 2 );
+        CHECK( res.all.find( "is empty!" ) != std::string::npos );
+        CHECK( res.all.find( "You need a UPS with at least 5 kJ to fire the" ) != std::string::npos );
+    }
+
+    SECTION( "USES_BIONIC_POWER below the drain names the bionic requirement" ) {
+        detached_ptr<item> held = make_energy_gun();
+        held->set_flag( flag_id( "USES_BIONIC_POWER" ) );
+        you.set_max_power_level( 100_kJ );
+        you.set_power_level( 4_kJ );
+        REQUIRE( held->energy_remaining( &you ) == 4_kJ );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK_FALSE( res.usable );
+        CHECK( res.messages.size() == 2 );
+        CHECK( res.all.find( "You need at least 5 kJ of bionic power to fire the" ) != std::string::npos );
+        CHECK( res.all.find( "UPS" ) == std::string::npos );
+    }
+
+    SECTION( "USES_BIONIC_POWER at the drain is usable" ) {
+        // GUARD: 5 kJ against a 5 kJ drain passes; the DDA test is `<`, so a `<=` port fails this section
+        detached_ptr<item> held = make_energy_gun();
+        held->set_flag( flag_id( "USES_BIONIC_POWER" ) );
+        you.set_max_power_level( 100_kJ );
+        you.set_power_level( 5_kJ );
+        REQUIRE( held->energy_remaining( &you ) == 5_kJ );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK( res.usable );
+        CHECK( res.messages.empty() );
+    }
+
+    SECTION( "no power flag and an empty well: unusable, no energy message" ) {
+        // GUARD: DDA sets result = false and prints nothing when the gun has neither flag (4644-4657)
+        detached_ptr<item> held = make_energy_gun();
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK_FALSE( res.usable );
+        CHECK( res.messages.size() == 1 );
+        CHECK( res.all.find( "is empty!" ) != std::string::npos );
+    }
+
+    SECTION( "a 30 kJ battery loaded: usable" ) {
+        // GUARD: [UNSURE] settled by the run; 30 kJ / 5 kJ is 6 shots, the energy block passes
+        detached_ptr<item> held = make_energy_gun();
+        detached_ptr<item> cell = item::spawn( itype_id( "battery_test" ) );
+        REQUIRE( cell->mod_energy( 30_kJ ) == 0_J );
+        REQUIRE( held->put_in( std::move( cell ), pocket_type::MAGAZINE_WELL ).success() );
+        REQUIRE( held->energy_remaining( &you ) == 30_kJ );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK( res.usable );
+        CHECK( res.messages.empty() );
+    }
+
+    SECTION( "a UPS-charge BN gun keeps its own UPS message and gets no energy message" ) {
+        // GUARD: plasma_gun has ups_charges 15 and no energy_drain (plasma.json 3); the BN UPS block stays
+        detached_ptr<item> held = item::spawn( itype_id( "plasma_gun" ) );
+        held->ammo_set( itype_id( "plasma" ), 30 );
+        REQUIRE( held->get_gun_ups_drain() == 15 );
+        REQUIRE( held->get_gun_energy_drain() == 0_kJ );
+        REQUIRE( held->ammo_sufficient( &you ) );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK_FALSE( res.usable );
+        CHECK( res.messages.size() == 1 );
+        CHECK( res.all.find( "You need a UPS with at least 15 charges or an advanced UPS with at least 7 charges to fire the" ) !=
+               std::string::npos );
+        CHECK( res.all.find( " kJ " ) == std::string::npos );
+    }
+
+    SECTION( "a loaded legacy gun: usable, no message" ) {
+        // GUARD: a BN gun without energy_drain or ups_charges is untouched by the new block
+        detached_ptr<item> held = loaded_gun( itype_id( "m4a1" ), 0, 0 );
+        REQUIRE( held->get_gun_energy_drain() == 0_kJ );
+        const weapon_check res = run_weapon_check( you, *held );
+        CAPTURE( res.all );
+        CHECK( res.usable );
+        CHECK( res.messages.empty() );
+    }
 }
