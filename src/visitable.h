@@ -82,10 +82,11 @@ class visitable
          * @param limit stop searching after this many charges have been found
          * @param filter only count charges of items that match the filter
          * @param visitor is called when UPS charge is used (parameter is the charge itself)
+         * @param in_tools also count tools whose loaded ammo type is @p what
          */
         int charges_of( const itype_id &what, int limit = INT_MAX,
                         const std::function<bool( const item & )> &filter = return_true<item>,
-                        std::function<void( int )> visitor = nullptr ) const;
+                        std::function<void( int )> visitor = nullptr, bool in_tools = false ) const;
 
         /**
          * Count items matching id including both this instance and any contained items

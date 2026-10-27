@@ -1198,16 +1198,16 @@ static tool_stock_entry build_multimag_entry( const item &e )
 template <typename T>
 static void scan_tool_charges( const T &self, const itype_id &id,
                                const std::function<bool( const item & )> &filter, int limit,
-                               std::vector<tool_stock_entry> &entries )
+                               std::vector<tool_stock_entry> &entries, bool in_tools )
 {
-    // CDF: in_tools and the raw IS_UPS sum are not ported (8-4f, 8-3 OD-8)
+    // CDF: the raw IS_UPS sum is not ported (8-4f, 8-3 OD-8) [S2 pending]
     map &here = get_map();
     int qty = 0;
     self.visit_items( [&]( const item *e ) {
         // CDF: !is_broken() filter dropped, BN has no broken state (8-3 OD-6)
         if( filter( *e ) ) {
             if( e->is_tool() ) {
-                if( e->typeId() == id ) {
+                if( e->typeId() == id || ( in_tools && e->ammo_current() == id ) ) {
                     if( e->uses_firing_requirements() ) {
                         entries.push_back( build_multimag_entry( *e ) );
                     } else {
@@ -1353,11 +1353,11 @@ static int apply_external_pools( const M &main,
 template <typename T, typename M>
 static int charges_of_internal( const T &self, const M &main, const itype_id &id, int limit,
                                 const std::function<bool( const item & )> &filter,
-                                std::function<void( int )> visitor )
+                                std::function<void( int )> visitor, bool in_tools )
 {
     std::vector<tool_stock_entry> entries;
-    // CDF: in_tools and the raw IS_UPS sum are not ported (8-4f, 8-3 OD-8)
-    scan_tool_charges( self, id, filter, limit, entries );
+    // CDF: the raw IS_UPS sum is not ported (8-4f, 8-3 OD-8) [S2 pending]
+    scan_tool_charges( self, id, filter, limit, entries, in_tools );
     return apply_external_pools( main, entries, limit, visitor );
 }
 
@@ -1365,21 +1365,25 @@ static int charges_of_internal( const T &self, const M &main, const itype_id &id
 template <typename T>
 int visitable<T>::charges_of( const itype_id &what, int limit,
                               const std::function<bool( const item & )> &filter,
-                              std::function<void( int )> visitor ) const
+                              std::function<void( int )> visitor, bool in_tools ) const
 {
-    return charges_of_internal( *this, *this, what, limit, filter, visitor );
+    return charges_of_internal( *this, *this, what, limit, filter, visitor, in_tools );
 }
 
 /** @relates visitable */
 template <>
 int visitable<inventory>::charges_of( const itype_id &what, int limit,
                                       const std::function<bool( const item & )> &filter,
-                                      std::function<void( int )> visitor ) const
+                                      std::function<void( int )> visitor, bool in_tools ) const
 {
     if( what == itype_UPS ) {
         int qty = 0;
         qty = charges_of_ups( this, limit, filter, visitor );
         return std::min( qty, limit );
+    }
+    // CDF: a tool holding ammo `what` is not binned under `what`, so in_tools walks the live items (DDA temp_crafting_inventory::charges_of, visitable.cpp:1412-1414; CDF bin index differs)
+    if( in_tools ) {
+        return charges_of_internal( *this, *this, what, limit, filter, std::move( visitor ), in_tools );
     }
     const auto &binned = static_cast<const inventory *>( this )->get_binned_items();
     const auto iter = binned.find( what );
@@ -1389,7 +1393,7 @@ int visitable<inventory>::charges_of( const itype_id &what, int limit,
 
     int res = 0;
     for( const item *it : iter->second ) {
-        res = sum_no_wrap( res, charges_of_internal( *it, *this, what, limit, filter, visitor ) );
+        res = sum_no_wrap( res, charges_of_internal( *it, *this, what, limit, filter, visitor, in_tools ) );
         if( res >= limit ) {
             break;
         }
@@ -1401,29 +1405,29 @@ int visitable<inventory>::charges_of( const itype_id &what, int limit,
 template <>
 int visitable<temp_crafting_inventory>::charges_of( const itype_id &what, int limit,
         const std::function<bool( const item & )> &filter,
-        std::function<void( int )> visitor ) const
+        std::function<void( int )> visitor, bool in_tools ) const
 {
     if( what == itype_UPS ) {
         return std::min( charges_of_ups( this, limit, filter, visitor ), limit );
     }
-    return charges_of_internal( *this, *this, what, limit, filter, std::move( visitor ) );
+    return charges_of_internal( *this, *this, what, limit, filter, std::move( visitor ), in_tools );
 }
 
 template <>
 int visitable<location_inventory>::charges_of( const itype_id &what, int limit,
         const std::function<bool( const item & )> &filter,
-        std::function<void( int )> visitor ) const
+        std::function<void( int )> visitor, bool in_tools ) const
 {
 
     auto inv = static_cast<const location_inventory *>( this );
-    return inv->inv.charges_of( what, limit, filter, std::move( visitor ) );
+    return inv->inv.charges_of( what, limit, filter, std::move( visitor ), in_tools );
 }
 
 /** @relates visitable */
 template <>
 int visitable<Character>::charges_of( const itype_id &what, int limit,
                                       const std::function<bool( const item & )> &filter,
-                                      std::function<void( int )> visitor ) const
+                                      std::function<void( int )> visitor, bool in_tools ) const
 {
     auto self = static_cast<const Character *>( this );
     auto p = dynamic_cast<const player *>( self );
@@ -1477,7 +1481,7 @@ int visitable<Character>::charges_of( const itype_id &what, int limit,
         return std::min( power_charges, limit );
     }
 
-    return charges_of_internal( *this, *this, what, limit, filter, std::move( visitor ) );
+    return charges_of_internal( *this, *this, what, limit, filter, std::move( visitor ), in_tools );
 }
 
 template <typename T>

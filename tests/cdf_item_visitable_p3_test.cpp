@@ -250,3 +250,28 @@ TEST_CASE( "cdf_visitable_multimag_item_self_count", "[p3][visitable]" ) {
     CHECK( tool->charges_of( itype_id( "test_multimag_tool_consume" ) ) == 6 );
     CHECK( tool->charges_of( itype_id( "test_multimag_tool_consume" ), 3 ) == 3 );
 }
+
+// DDA tests/visitable_remove_test.cpp:514-524 (charges_of with in_tools).
+// CDF: lighter ammo is chem_butane here (DDA: butane); backpack via wear_backpack
+TEST_CASE( "charges_of_in_tools_counts_ammo_loaded_in_a_tool", "[p3][visitable]" )
+{
+    clear_all_state();
+    clear_avatar();
+    Character &guy = get_avatar();
+    wear_backpack( guy );
+
+    const itype_id fluid( "chem_butane" );
+    item &lighter = guy.i_add( tool_with_ammo( itype_id( "lighter" ), 10 ) );
+    REQUIRE( lighter.ammo_current() == fluid );
+    REQUIRE( guy.has_amount( itype_id( "lighter" ), 1 ) );
+
+    CHECK( guy.charges_of( fluid, INT_MAX, return_true<item>, nullptr, true ) == 10 );
+    CHECK( guy.charges_of( fluid, INT_MAX, return_true<item>, nullptr, false ) == 0 );
+
+    SECTION( "crafting inventory" ) {
+        guy.invalidate_crafting_inventory();
+        const temp_crafting_inventory &crafting = guy.crafting_inventory();
+        CHECK( crafting.charges_of( fluid, INT_MAX, return_true<item>, nullptr, true ) == 10 );
+        CHECK( crafting.charges_of( fluid, INT_MAX, return_true<item>, nullptr, false ) == 0 );
+    }
+}
