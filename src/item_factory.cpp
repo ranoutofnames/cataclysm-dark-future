@@ -1803,7 +1803,7 @@ std::string check_firing_requirements( const itype &type )
                 msg += "consumption_per_use and power_draw are mutually exclusive\n";
             }
         }
-        // CDF: DDA has no such check; invalid legacy_charges_per_use_factor is a CDF hard-fail on bad data.
+        // CDF: same check as DDA item_factory.cpp:2381, here in check_firing_requirements instead of inline in the tool checks.
         if( type.legacy_charges_per_use_factor < 1 ) {
             msg += string_format( "legacy_charges_per_use_factor must be >= 1, got %d\n",
                                   type.legacy_charges_per_use_factor );
