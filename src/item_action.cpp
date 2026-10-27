@@ -16,6 +16,7 @@
 #include "clone_ptr.h"
 #include "cursesdef.h"
 #include "debug.h"
+#include "flag.h"
 #include "game.h"
 #include "input.h"
 #include "inventory.h"
@@ -26,6 +27,7 @@
 #include "iuse.h"
 #include "json.h"
 #include "make_static.h"
+#include "map/map.h"
 #include "output.h"
 #include "player.h"
 #include "ret_val.h"
@@ -129,11 +131,24 @@ item_action_map item_action_generator::map_actions_to_items( player &p,
             if( found == candidates.end() ) {
                 better = true;
             } else {
-                if( actual_item->ammo_required() > found->second->ammo_required() ) {
+                // CDF: candidates hold the outer item i (BN), DDA stores actual_item
+                if( actual_item->expected_cost_per_use( use ) >
+                    found->second->expected_cost_per_use( use ) ) {
                     continue; // Other item consumes less charges
                 }
 
-                if( found->second->ammo_remaining() > actual_item->ammo_remaining() ) {
+                // For heterogeneous-resource multimag tools, raw ammo_remaining
+                // sums across pocket flavors and isn't a meaningful comparator.
+                map &here = get_map();
+                const int actual_remaining =
+                    actual_item->uses_firing_requirements()
+                    ? actual_item->tool_uses_remaining( here, &p )
+                    : actual_item->ammo_remaining();
+                const int found_remaining =
+                    found->second->uses_firing_requirements()
+                    ? found->second->tool_uses_remaining( here, &p )
+                    : found->second->ammo_remaining();
+                if( found_remaining > actual_remaining ) {
                     better = true; // Items with less charges preferred
                 }
             }
@@ -262,8 +277,16 @@ void game::item_action_menu()
     std::ranges::transform( iactions, std::back_inserter( menu_items ),
     []( const std::pair<item_action_id, item *> &elem ) {
         std::string ss = elem.second->display_name();
-        if( elem.second->ammo_required() ) {
-            ss += string_format( " (%d/%d)", elem.second->ammo_required(), elem.second->ammo_remaining() );
+        if( elem.second->uses_firing_requirements() ) {
+            ss += "(" + elem.second->format_consumption_requirements( elem.first ) + ")";
+        } else if( elem.second->ammo_required() ) {
+            if( elem.second->has_flag( flag_USES_BIONIC_POWER ) ) {
+                ss += string_format( "(%d kJ)", elem.second->ammo_required() );
+            } else {
+                auto iter = elem.second->type->ammo_scale.find( elem.first );
+                ss += string_format( "(-%d)", elem.second->ammo_required() *
+                                     ( iter == elem.second->type->ammo_scale.end() ? 1 : iter->second ) );
+            }
         }
 
         const auto method = elem.second->get_use( elem.first );
