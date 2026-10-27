@@ -193,3 +193,173 @@ TEST_CASE( "display_name_multi_well_per_well_counts", "[p3][name]" )
         }
     }
 }
+
+namespace
+{
+// CDF: DDA multimag_test.cpp:2139-2140 (`item gun( itype_test_multimag_gun_integral_ammo )`);
+// detached_ptr instead of a value item
+auto make_integral_gun() -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_integral_ammo" ) );
+    REQUIRE( gun->uses_firing_requirements() );
+    return gun;
+}
+
+// CDF: DDA multimag_test.cpp:2157-2158 (heavy cell loaded with `battery`); detached_ptr, charge count
+// as a parameter
+auto make_battery_cell( int charges ) -> detached_ptr<item>
+{
+    detached_ptr<item> battery = item::spawn( itype_id( "heavy_battery_cell" ) );
+    battery->ammo_set( itype_id( "battery" ), charges );
+    return battery;
+}
+} // namespace
+
+// DDA tests/multimag_test.cpp 2135-2178, name and section names kept (D11); tag [p3][name] instead of
+// [multimag][display]. The DDA CHECKs are kept as written; the exact-text and raw-colour CHECKs are
+// CDF additions (the DDA substrings alone also hold for the old single-well text).
+TEST_CASE( "display_name_integral_magazine_per_pocket_segments", "[p3][name]" )
+{
+    clear_all_state();
+    detached_ptr<item> gun = make_integral_gun();
+    // CDF: pin the names and the battery capacity the expected strings below are derived from
+    REQUIRE( itype_id( "9mm" )->nname( 1 ) == "9x19mm JHP" );
+    REQUIRE( itype_id( "battery" )->nname( 1 ) == "battery" );
+    REQUIRE( itype_id( "heavy_battery_cell" )->magazine->capacity == 1000 );
+
+    SECTION( "slug only" ) {
+        REQUIRE( gun->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 1 ),
+                              pocket_type::MAGAZINE ).success() );
+        const std::string base = remove_color_tags( gun->tname() );
+        const std::string name = remove_color_tags( gun->display_name() );
+        CAPTURE( base, name );
+        // Slug pocket loaded; battery pocket renders as "0/<cap>".
+        CHECK( name.find( "1/1" ) != std::string::npos );
+        // Per-pocket renderer must not print "1/0" - that is the aggregate
+        // path applying slug count against an empty battery capacity.
+        CHECK( name.find( "1/0" ) == std::string::npos );
+        // CDF: exact text (1 = integral 9mm restriction, 1000 = heavy_battery_cell capacity), the
+        // empty well projects its default magazine and default ammo
+        CHECK( name == base + " (1/1 9x19mm JHP, 0/1000 battery)" );
+        const std::string raw = gun->display_name();
+        CHECK( raw.find( "<color_c_white>1/1</color>" ) != std::string::npos );
+        CHECK( raw.find( "<color_c_light_red>0/1000</color>" ) != std::string::npos );
+    }
+
+    SECTION( "slug + battery does not aggregate" ) {
+        REQUIRE( gun->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 1 ),
+                              pocket_type::MAGAZINE ).success() );
+        REQUIRE( gun->put_in( make_battery_cell( 100 ), pocket_type::MAGAZINE_WELL ).success() );
+
+        const std::string base = remove_color_tags( gun->tname() );
+        const std::string name = remove_color_tags( gun->display_name() );
+        CAPTURE( base, name );
+        // Slug pocket shows 1/1, battery pocket shows 100/<cap>. The
+        // aggregate "101/<cap>" or "1/100" forms must never appear.
+        CHECK( name.find( "1/1" ) != std::string::npos );
+        CHECK( name.find( "100/" ) != std::string::npos );
+        // CDF: the two forbidden aggregate forms of the DDA comment, and the exact text
+        CHECK( name.find( "101/" ) == std::string::npos );
+        CHECK( name.find( "1/100" ) == std::string::npos );
+        CHECK( name == base + " (1/1 9x19mm JHP, 100/1000 battery)" );
+        // CDF: 100/1000 = 0.10 is below 1/3 (c_red, DDA item.cpp 1746)
+        const std::string raw = gun->display_name();
+        CHECK( raw.find( "<color_c_white>1/1</color>" ) != std::string::npos );
+        CHECK( raw.find( "<color_c_red>100/1000</color>" ) != std::string::npos );
+    }
+
+    SECTION( "battery only does not borrow slug count" ) {
+        REQUIRE( gun->put_in( make_battery_cell( 50 ), pocket_type::MAGAZINE_WELL ).success() );
+        const std::string base = remove_color_tags( gun->tname() );
+        const std::string name = remove_color_tags( gun->display_name() );
+        CAPTURE( base, name );
+        CHECK( name.find( "0/1" ) != std::string::npos );
+        CHECK( name.find( "50/" ) != std::string::npos );
+        // CDF: the empty slug pocket projects the 9mm restriction (1) and the default 9mm ammo
+        CHECK( name == base + " (0/1 9x19mm JHP, 50/1000 battery)" );
+        const std::string raw = gun->display_name();
+        CHECK( raw.find( "<color_c_light_red>0/1</color>" ) != std::string::npos );
+        CHECK( raw.find( "<color_c_red>50/1000</color>" ) != std::string::npos );
+    }
+
+    SECTION( "CDF: empty gun shows both pockets at zero" ) {
+        // CDF: DDA enters the per-pocket path with nothing loaded (two ammo pockets on a multimag
+        // host); a spawned gun has an empty well (item::spawn does not dress it).
+        const std::string base = remove_color_tags( gun->tname() );
+        const std::string name = remove_color_tags( gun->display_name() );
+        CAPTURE( base, name );
+        CHECK( name == base + " (0/1 9x19mm JHP, 0/1000 battery)" );
+        const std::string raw = gun->display_name();
+        CHECK( raw.find( "<color_c_light_red>0/1</color>" ) != std::string::npos );
+        CHECK( raw.find( "<color_c_light_red>0/1000</color>" ) != std::string::npos );
+    }
+}
+
+// DDA tests/multimag_test.cpp 1524-1534, name kept (D11); tag [p3][name] instead of [multimag][mod].
+// CDF: p3_multimag_gun_integral_ammo (multimag_p3.json 4) instead of test_multimag_gun_integral_ammo:
+// explicit pocket_data suppresses the generated MOD pocket, so the DDA fixture cannot take the gunmod
+// here (same swap as tests/cdf_item_pocket_p3_test.cpp 132-135).
+TEST_CASE( "capacity_mods_reflected_in_item_name", "[p3][name]" )
+{
+    clear_all_state();
+    detached_ptr<item> gun = item::spawn( itype_id( "p3_multimag_gun_integral_ammo" ) );
+    REQUIRE( gun->uses_firing_requirements() );
+
+    SECTION( "capacity gunmod doubles the integral pocket in the name" ) {
+        REQUIRE( gun->put_in( item::spawn( itype_id( "test_multimag_capacity_gunmod" ) ),
+                              pocket_type::MOD ).success() );
+        const std::string base = remove_color_tags( gun->tname() );
+        const std::string name = remove_color_tags( gun->display_name() );
+        CAPTURE( base, name );
+        // the integral ammo pocket capacity doubles 1 -> 2; empty it shows as 0/2
+        CHECK( name.find( "0/2" ) != std::string::npos );
+        // CDF: exact text (capacity_mods multiply 2.0 on pocket `ammo`, items.json 1827; the empty
+        // power well is unchanged)
+        CHECK( name == base + " (0/2 9x19mm JHP, 0/1000 battery)" );
+    }
+
+    SECTION( "CDF: without the mod the same gun reads 0/1" ) {
+        // CDF: the base of the doubling above, so the "0/2" CHECK is not satisfied by accident
+        const std::string base = remove_color_tags( gun->tname() );
+        const std::string name = remove_color_tags( gun->display_name() );
+        CAPTURE( base, name );
+        CHECK( name == base + " (0/1 9x19mm JHP, 0/1000 battery)" );
+    }
+}
+
+// CDF-only (Step 4, DDA item.cpp 1825-1842): the AMMO_IN_NAMES text chain. Its guarded fallbacks
+// (empty ammo_types()) have no CDF input, so these sections are guards: the loaded and unloaded
+// magazine texts must not change.
+TEST_CASE( "display_name_ammo_in_names_chain", "[p3][name]" )
+{
+    clear_all_state();
+
+    SECTION( "option on: loaded magazine names its ammo variant" ) {
+        const override_option opt( "AMMO_IN_NAMES", "true" );
+        detached_ptr<item> mag = make_loaded_glockmag();
+        const std::string base = remove_color_tags( mag->tname() );
+        const std::string name = remove_color_tags( mag->display_name() );
+        CAPTURE( base, name );
+        // CDF: ammo_current() is 9mm, nname "9x19mm JHP"; 15 = glockmag capacity
+        CHECK( name == base + " (15/15 9x19mm JHP)" );
+    }
+
+    SECTION( "option on: unloaded magazine names its ammotype" ) {
+        const override_option opt( "AMMO_IN_NAMES", "true" );
+        detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+        const std::string base = remove_color_tags( mag->tname() );
+        const std::string name = remove_color_tags( mag->display_name() );
+        CAPTURE( base, name );
+        // CDF: no ammo loaded, so the ammotype name "9x19mm" (ammo_types.json 113) is used
+        CHECK( name == base + " (0/15 9x19mm)" );
+    }
+
+    SECTION( "option off: no ammo text" ) {
+        const override_option opt( "AMMO_IN_NAMES", "false" );
+        detached_ptr<item> mag = make_loaded_glockmag();
+        const std::string base = remove_color_tags( mag->tname() );
+        const std::string name = remove_color_tags( mag->display_name() );
+        CAPTURE( base, name );
+        CHECK( name == base + " (15/15)" );
+    }
+}

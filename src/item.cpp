@@ -5966,48 +5966,88 @@ std::string item::display_money( unsigned int quantity, unsigned int total,
 namespace
 {
 
-// Per-well segments "amount/max ammo name" of an item with several magazine wells, joined with
-// ", "; the caller puts them in one pair of parentheses. DDA item.cpp 1650-1775 (display_name).
-// CDF: file-static helper instead of inline code; MAGAZINE_WELL pockets only, the integral
-// MAGAZINE pockets of DDA 1654-1661 and 1701-1739 arrive in 5-5b.
-auto multi_well_name_segments( const std::vector<const item_pocket *> &well_pockets ) -> std::string
+// Per-pocket segments "amount/max ammo name" of an item with several ammo pockets (the magazine wells
+// and, for a multimag host, the integral MAGAZINE pockets), joined with ", "; the caller puts them in
+// one pair of parentheses. DDA item.cpp 1662-1775 (display_name).
+// CDF: file-static helper instead of inline code (5-5a); the name keeps "well" from 5-5a although it
+// now also covers integral pockets. type_is_defined( id ) of DDA 1734 is is_valid() here (CDF has no
+// item::type_is_defined and item_controller->has_template is private) and the std::pair of DDA 1729
+// is const auto (AGENT_RULES: no std::pair).
+auto multi_well_name_segments( const std::vector<const item_pocket *> &ammo_pockets ) -> std::string
 {
     // Distinct ammotypes share the host, so per-pocket ammo names always render regardless of
     // AMMO_IN_NAMES (DDA 1663-1665).
     const bool show_ammo_name = true;
     std::vector<std::string> segments;
-    for( const item_pocket *p : well_pockets ) {
+    for( const item_pocket *p : ammo_pockets ) {
         int well_amount = 0;
         int well_max = 0;
         const itype *ammo_for_name = nullptr;
         itype_id ammo_id_for_name;
-        const item *mag = p->magazine_current();
-        if( mag != nullptr ) {
-            well_amount = mag->ammo_remaining();
-            const itype *adata = mag->ammo_data();
-            if( adata ) {
-                well_max = mag->ammo_capacity( adata->ammo->type );
-            } else if( !mag->ammo_default().is_null() ) {
-                // CDF: Item_factory::find_template is private (item_factory.h 232);
-                // itype_id::operator-> resolves the same template through the global factory.
-                const itype &tmpl = *mag->ammo_default();
-                if( tmpl.ammo ) {
-                    well_max = mag->ammo_capacity( tmpl.ammo->type );
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            const item *mag = p->magazine_current();
+            if( mag != nullptr ) {
+                well_amount = mag->ammo_remaining();
+                const itype *adata = mag->ammo_data();
+                if( adata ) {
+                    well_max = mag->ammo_capacity( adata->ammo->type );
+                } else if( !mag->ammo_default().is_null() ) {
+                    // CDF: Item_factory::find_template is private (item_factory.h 232);
+                    // itype_id::operator-> resolves the same template through the global factory.
+                    const itype &tmpl = *mag->ammo_default();
+                    if( tmpl.ammo ) {
+                        well_max = mag->ammo_capacity( tmpl.ammo->type );
+                    }
+                }
+                ammo_for_name = adata;
+                ammo_id_for_name = mag->ammo_current();
+                if( ammo_id_for_name.is_null() ) {
+                    ammo_id_for_name = mag->ammo_default();
+                }
+            } else {
+                const itype_id default_mag = p->magazine_default();
+                if( !default_mag.is_null() && default_mag->magazine ) {
+                    const itype_id &default_ammo = default_mag->magazine->default_ammo;
+                    if( !default_ammo.is_null() && default_ammo->ammo ) {
+                        well_max = default_mag->magazine->capacity;
+                        ammo_for_name = &*default_ammo;
+                        ammo_id_for_name = default_ammo;
+                    }
                 }
             }
-            ammo_for_name = adata;
-            ammo_id_for_name = mag->ammo_current();
-            if( ammo_id_for_name.is_null() ) {
-                ammo_id_for_name = mag->ammo_default();
-            }
         } else {
-            const itype_id default_mag = p->magazine_default();
-            if( !default_mag.is_null() && default_mag->magazine ) {
-                const itype_id &default_ammo = default_mag->magazine->default_ammo;
-                if( !default_ammo.is_null() && default_ammo->ammo ) {
-                    well_max = default_mag->magazine->capacity;
-                    ammo_for_name = &*default_ammo;
-                    ammo_id_for_name = default_ammo;
+            // Integral MAGAZINE: capacity is per-ammotype. With alternative-ammo pockets, summing
+            // entries overstates the real cap; pick the loaded ammo's entry instead (DDA 1702-1738).
+            ammotype loaded_ammotype;
+            bool has_loaded_ammo = false;
+            for( const item *e : p->all_items_top() ) {
+                if( e->has_flag( flag_CASING ) ) {
+                    continue;
+                }
+                well_amount += e->charges > 0 ? e->charges : 1;
+                if( ammo_for_name == nullptr && e->is_ammo() ) {
+                    ammo_for_name = e->type;
+                    ammo_id_for_name = e->typeId();
+                    loaded_ammotype = e->ammo_type();
+                    has_loaded_ammo = true;
+                }
+            }
+            if( p->get_pocket_data() != nullptr ) {
+                const std::map<ammotype, int> &restrictions = p->get_pocket_data()->ammo_restriction;
+                if( has_loaded_ammo ) {
+                    const auto it = restrictions.find( loaded_ammotype );
+                    if( it != restrictions.end() ) {
+                        // honor capacity_mods scaling
+                        well_max = p->ammo_capacity( loaded_ammotype );
+                    }
+                } else if( !restrictions.empty() ) {
+                    const auto &first = *restrictions.begin();
+                    well_max = p->ammo_capacity( first.first );
+                    ammo_id_for_name = first.first->default_ammotype();
+                    if( !ammo_id_for_name.is_null() && !ammo_id_for_name.is_empty() &&
+                        ammo_id_for_name.is_valid() ) {
+                        ammo_for_name = &*ammo_id_for_name;
+                    }
                 }
             }
         }
@@ -6074,7 +6114,15 @@ std::string item::display_name( unsigned int quantity ) const
     bool contains = has_item || has_ammo;
     bool show_amt = false;
     bool amt_built_for_multimag = false;
-    const std::vector<const item_pocket *> well_pockets = all_magazine_well_pockets();
+    // CDF: DDA 1650-1661 builds a wells-only list and, for a multimag host, ammo_pockets with a ternary;
+    // CDF needs only the list the segments are built from, written with an if.
+    std::vector<const item_pocket *> ammo_pockets = all_magazine_well_pockets();
+    if( uses_firing_requirements() ) {
+        // Multimag hosts also segment integral MAGAZINE pockets.
+        ammo_pockets = get_pockets( []( const item_pocket & p ) {
+            return p.is_type( pocket_type::MAGAZINE_WELL ) || p.is_type( pocket_type::MAGAZINE );
+        } );
+    }
     // We should handle infinite charges properly in all cases.
     if( contains ) {
         amount = contents.front().charges;
@@ -6082,11 +6130,11 @@ std::string item::display_name( unsigned int quantity ) const
     } else if( is_book() && get_chapters() > 0 ) {
         // a book which has remaining unread chapters
         amount = get_remaining_chapters( you );
-    } else if( well_pockets.size() > 1 ) {
-        // CDF: DDA 1644-1649 also enters for one loaded well and for a multimag host with one well
-        // plus an integral MAGAZINE pocket. A single well keeps the branch below with BN's colour
-        // bands (ADV-14 ruling 7); the integral MAGAZINE pockets arrive in 5-5b.
-        amt = " (" + multi_well_name_segments( well_pockets ) + ")";
+    } else if( ammo_pockets.size() > 1 ) {
+        // CDF: DDA 1644-1649 also enters for one loaded well (magazine_current()); the segmented path of
+        // DDA 1662 is exactly ammo_pockets.size() > 1. A single well keeps the branch below with BN's
+        // colour bands (ADV-14 ruling 7).
+        amt = " (" + multi_well_name_segments( ammo_pockets ) + ")";
         amt_built_for_multimag = true;
     } else if( ammo_capacity() > 0 ) {
         // anything that can be reloaded including tools, magazines, guns and auxiliary gunmods
@@ -6106,10 +6154,22 @@ std::string item::display_name( unsigned int quantity ) const
 
     std::string ammotext;
     if( ( ( is_gun() && ammo_required() ) || is_magazine() ) && get_option<bool>( "AMMO_IN_NAMES" ) ) {
+        // CDF: DDA 1826 gates this block on !is_ammo() && ( ( is_gun() && needs_charges_to_use() ) || is_magazine() );
+        // CDF keeps the BN gate above (3-4c-b brief item 4); the chain below is DDA 1828-1841.
         if( !ammo_current().is_null() ) {
+            // Loaded with ammo
             ammotext = ammo_current()->nname( 1 );
-        } else {
+        } else if( !ammo_types().empty() ) {
+            // Is not loaded but can be loaded
             ammotext = ammotype( *ammo_types().begin() )->name();
+        } else if( magazine_current() ) {
+            // Is not loaded but has magazine that can be loaded
+            ammotext = magazine_current()->ammo_default()->ammo->type->name();
+        } else if( !magazine_default().is_null() ) {
+            // Is not loaded and doesn't have magazine but can use magazines that could be loaded
+            // CDF: item::spawn_temporary instead of the DDA value item tmp_mag.
+            item &tmp_mag = *item::spawn_temporary( magazine_default() );
+            ammotext = tmp_mag.ammo_default()->ammo->type->name();
         }
     }
 
