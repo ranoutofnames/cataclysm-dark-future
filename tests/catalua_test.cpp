@@ -1555,6 +1555,12 @@ TEST_CASE("lua_dimension_cleanup_preserves_portal_load_requests", "[lua]") {
     g->place_player_overmap(tripoint_abs_omt(0, 0, 0));
     auto* const active_world = g->get_active_world();
     REQUIRE(active_world != nullptr);
+    // CDF: world::get_player_db() lazily opens the player sqlite connection and is not
+    // thread-safe.  When this test runs alone, the first save would open it from the overmap
+    // save worker threads concurrently (competing connections -> "database is locked").
+    // In a combined run an earlier test has already opened it.  Open it on this thread first.
+    REQUIRE(active_world->write_player_mm_omt(
+        dim.str(), tripoint_abs_mmr::zero(), [](std::ostream& out) { out << "[]"; }));
     const auto pos = tripoint_abs_sm(32, 32, 0);
     const auto handle = submap_loader.request_load(
         load_request_source::portal_preload, dim, pos.xy(), pos.xy() + point_rel_sm::south_east());
