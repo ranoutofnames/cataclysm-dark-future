@@ -963,7 +963,9 @@ bool ranged::handle_gun_damage( Character &shooter, item &it )
 
     int mag_damage = 0;
     double mag_jam_chance = 0;
-    if( it.magazine_current() ) {
+    // CDF: 8-1d-0 magazine_current() also returns a BATTERY cell in a power well; it has no `magazine` slot, so it adds
+    // no magazine jam chance (DDA dereferences type->magazine unguarded, its batteries are magazines).
+    if( it.magazine_current() && it.magazine_current()->type->magazine ) {
         mag_damage = it.magazine_current()->damage() / 1000.0;
         switch( mag_damage ) {
             case 0:
@@ -1388,10 +1390,11 @@ int ranged::fire_gun( Character &who, const tripoint_bub_ms &target, int max_sho
 
     int shots = max_shots;
     // Number of shots to fire is limited by the amount of remaining ammo
-    // CDF: DDA 1126-1131 applies shots_remaining( here, this ) to every non-VEHICLE gun without `ammo`; it
-    // includes energy and would change BN guns, so only multimag guns take it (ADV-13 2a); BN guns keep
-    // the clamps below. The VEHICLE multimag clamp (DDA 1134-1137) waits for 8-5.
-    if( gun.uses_firing_requirements() && !gun.has_flag( flag_VEHICLE ) && !ammo ) {
+    // CDF: DDA 1126-1128 applies shots_remaining( here, this ) to every non-VEHICLE gun without `ammo`. CDF applies it
+    // to multimag guns (ADV-13 2a) and to energy_drain guns, whose energy the BN ammo clamp below does not count
+    // (8-2d); other BN guns keep the clamps below. The VEHICLE multimag clamp (DDA 1134-1137) waits for 8-5.
+    if( ( gun.uses_firing_requirements() || gun.get_gun_energy_drain() > 0_kJ ) &&
+        !gun.has_flag( flag_VEHICLE ) && !ammo ) {
         shots = std::min( shots, gun.shots_remaining( get_map(), &who ) );
     } else if( gun.ammo_required() ) {
         const int ammo_left = ammo ? ammo->count() : gun.ammo_remaining();
@@ -1598,14 +1601,24 @@ int ranged::fire_gun( Character &who, const tripoint_bub_ms &target, int max_sho
                 break;
             }
         } else {
-            // CDF: DDA's energy block (DDA 1313-1322, energy_consume) is job 8-1d; CDF keeps its UPS drain.
+            // CDF: DDA 1313-1322 (energy_consume, commit 6768e73568d) follows CDF's UPS billing, which DDA no longer has:
+            // ups_charges stays an int charge count billed by use_charges (8-1d Decisions 2 and 11, ADV-12 5c).
+            // energy_consume has no UPS term until 4-b2, so a USE_UPS energy gun bills its own cell only.
             if( gun.ammo_consume( gun.ammo_required(), who.bub_pos(), &who ) != gun.ammo_required() ) {
                 debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname() );
                 break;
             }
 
+            // Vehicle turrets drain vehicle battery and do not care about this
             if( !gun.has_flag( flag_VEHICLE ) ) {
                 who.use_charges( itype_UPS, gun.get_gun_ups_drain() );
+                const units::energy energ_req = gun.get_gun_energy_drain();
+                const units::energy drained = gun.energy_consume( energ_req, &here, who.bub_pos(), &who );
+                if( drained < energ_req ) {
+                    debugmsg( "Unexpected shortage of energy whilst firing %s. Required: %i J, drained: %i J",
+                              gun.tname(), units::to_joule( energ_req ), units::to_joule( drained ) );
+                    break;
+                }
             }
         }
 
@@ -2595,7 +2608,8 @@ static void cycle_action( item &weap, const tripoint_bub_ms &pos )
 
     // some magazines also eject disintegrating linkages
     const auto mag = weap.magazine_current();
-    if( mag && mag->type->magazine->linkage ) {
+    // CDF: a BATTERY cell in a power well (8-1d-0 magazine_current()) has no `magazine` slot and no linkage; DDA is unguarded
+    if( mag && mag->type->magazine && mag->type->magazine->linkage ) {
         detached_ptr<item> linkage = item::spawn( *mag->type->magazine->linkage, calendar::turn, 1 );
         if( gunmod_find_with( parent, []( auto * e ) -> bool { return e->has_flag( flag_BRASS_CATCHER ); } ) ) {
             linkage->set_flag( flag_CASING );

@@ -511,3 +511,191 @@ TEST_CASE( "cdf_ranged_gunmode_weapon_energy_checks", "[p3][ranged]" )
         CHECK( res.messages.empty() );
     }
 }
+
+namespace
+{
+
+// CDF: the outcome of one ranged::fire_gun call; a named struct (no std::pair).
+struct burst_result {
+    int fired = -1;
+    std::string dmsg;
+};
+
+// CDF: test_energy_gun (8-1d fixture: energy_drain 5 kJ, one battery well, no ammo type) with a battery_test
+// cell holding `cell_kj` kJ; 0 means no cell. NEVER_JAMS: the 8-8a jam model is random per shot and these
+// cases are about billing. If `1_kJ * cell_kj` does not compile, use
+// units::from_kilojoule( static_cast<std::int64_t>( cell_kj ) ) (the only allowed compile fix).
+auto make_energy_fire_gun( int cell_kj ) -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( itype_id( "test_energy_gun" ) );
+    REQUIRE( gun->get_gun_energy_drain() == 5_kJ );
+    REQUIRE( !gun->uses_firing_requirements() );
+    REQUIRE( gun->ammo_required() == 0 );
+    gun->set_flag( flag_id( "NEVER_JAMS" ) );
+    if( cell_kj > 0 ) {
+        detached_ptr<item> cell = item::spawn( itype_id( "battery_test" ) );
+        REQUIRE( cell->mod_energy( 1_kJ * cell_kj ) == 0_J );
+        REQUIRE( gun->put_in( std::move( cell ), pocket_type::MAGAZINE_WELL ).success() );
+    }
+    return gun;
+}
+
+auto fire_burst( avatar &you, item &gun, int max_shots ) -> burst_result
+{
+    burst_result out;
+    out.dmsg = capture_debugmsg_during( [&]() {
+        out.fired = ranged::fire_gun( you, you.bub_pos() + tripoint_rel_ms( 5, 0, 0 ), max_shots, gun,
+                                      nullptr );
+    } );
+    return out;
+}
+
+} // namespace
+
+// CDF-only (no DDA test; DDA ranged.cpp 1313-1322 commit 6768e73568d, clamp 1127-1128): the fire loop bills
+// get_gun_energy_drain() per shot and the burst is clamped by the energy left.
+TEST_CASE( "cdf_ranged_energy_gun_fire_bills_energy", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+
+    SECTION( "one shot drains the energy_drain from the battery" ) {
+        item &gun = wield_for_firing( you, make_energy_fire_gun( 12 ) );
+        REQUIRE( gun.energy_remaining( &you ) == 12_kJ );
+        const burst_result res = fire_burst( you, gun, 1 );
+        CAPTURE( res.dmsg );
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        CHECK( res.fired == 1 );
+        CHECK( gun.energy_remaining( &you ) == 7_kJ );
+    }
+
+    SECTION( "a burst of three is clamped to the two shots 12 kJ pays" ) {
+        item &gun = wield_for_firing( you, make_energy_fire_gun( 12 ) );
+        REQUIRE( gun.energy_remaining( &you ) == 12_kJ );
+        const burst_result res = fire_burst( you, gun, 3 );
+        CAPTURE( res.dmsg );
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        CHECK( res.fired == 2 );
+        CHECK( gun.energy_remaining( &you ) == 2_kJ );
+    }
+
+    SECTION( "exactly enough energy for the whole burst" ) {
+        item &gun = wield_for_firing( you, make_energy_fire_gun( 15 ) );
+        REQUIRE( gun.energy_remaining( &you ) == 15_kJ );
+        const burst_result res = fire_burst( you, gun, 3 );
+        CAPTURE( res.dmsg );
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        CHECK( res.fired == 3 );
+        CHECK( gun.energy_remaining( &you ) == 0_kJ );
+    }
+
+    SECTION( "no battery loaded: nothing is fired" ) {
+        item &gun = wield_for_firing( you, make_energy_fire_gun( 0 ) );
+        REQUIRE( gun.energy_remaining( &you ) == 0_kJ );
+        const burst_result res = fire_burst( you, gun, 1 );
+        CAPTURE( res.dmsg );
+        // the clamp reaches 0 before the loop: no shot and no shortage message from the loop
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        CHECK( res.fired == 0 );
+    }
+
+    SECTION( "less than one shot of energy: nothing is fired and nothing is drained" ) {
+        item &gun = wield_for_firing( you, make_energy_fire_gun( 4 ) );
+        REQUIRE( gun.energy_remaining( &you ) == 4_kJ );
+        const burst_result res = fire_burst( you, gun, 1 );
+        CAPTURE( res.dmsg );
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        CHECK( res.fired == 0 );
+        CHECK( gun.energy_remaining( &you ) == 4_kJ );
+    }
+
+    SECTION( "gunmod multiplier and modifier raise the cost per shot" ) {
+        detached_ptr<item> held = make_energy_fire_gun( 30 );
+        REQUIRE( held->put_in( item::spawn( itype_id( "test_energy_gunmod" ) ),
+                               pocket_type::MOD ).success() );
+        // 5 kJ * 2.0 + 1 kJ
+        REQUIRE( held->get_gun_energy_drain() == 11_kJ );
+        item &gun = wield_for_firing( you, std::move( held ) );
+        REQUIRE( gun.energy_remaining( &you ) == 30_kJ );
+        const burst_result res = fire_burst( you, gun, 3 );
+        CAPTURE( res.dmsg );
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        // 30 kJ / 11 kJ truncates to two shots, 22 kJ billed
+        CHECK( res.fired == 2 );
+        CHECK( gun.energy_remaining( &you ) == 8_kJ );
+    }
+
+    SECTION( "USES_BIONIC_POWER bills the carrier's power" ) {
+        detached_ptr<item> held = make_energy_fire_gun( 0 );
+        held->set_flag( flag_id( "USES_BIONIC_POWER" ) );
+        item &gun = wield_for_firing( you, std::move( held ) );
+        you.set_max_power_level( 100_kJ );
+        you.set_power_level( 12_kJ );
+        REQUIRE( gun.energy_remaining( &you ) == 12_kJ );
+        const burst_result res = fire_burst( you, gun, 3 );
+        CAPTURE( res.dmsg );
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        CHECK( res.fired == 2 );
+        CHECK( you.get_power_level() == 2_kJ );
+    }
+
+    SECTION( "GUARD VEHICLE flag: no clamp and no billing" ) {
+        // GUARD (passes before and after): DDA skips the energy clamp (1127) and the energy billing (1313-1314) for a
+        // VEHICLE gun (turrets drain the vehicle battery elsewhere). [UNSURE] whether an avatar can fire a
+        // VEHICLE-flagged gun cleanly; this is the ONLY section the implementer may delete, and only if it
+        // crashes or logs an unrelated debugmsg in the Step 1b run: say so in the report with the log line.
+        detached_ptr<item> held = make_energy_fire_gun( 0 );
+        held->set_flag( flag_id( "VEHICLE" ) );
+        item &gun = wield_for_firing( you, std::move( held ) );
+        REQUIRE( gun.energy_remaining( &you ) == 0_kJ );
+        const burst_result res = fire_burst( you, gun, 1 );
+        CAPTURE( res.dmsg );
+        CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+        CHECK( res.fired == 1 );
+    }
+}
+
+// CDF-only guard (passes before and after the edit): a BN gun keeps the BN ammo clamp over a burst and its
+// ammo_consume + UPS branch; energy_consume( 0 ) bills nothing and logs nothing for it.
+TEST_CASE( "cdf_ranged_legacy_gun_burst_clamp_unchanged", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    // CDF: the loaded_gun shape of the 8-8a block (m4a1 with a stanag30), but with 2 rounds instead of 30
+    detached_ptr<item> held = item::spawn( itype_id( "m4a1" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    mag->put_in( item::spawn( itype_id( "556" ), calendar::turn, 2 ) );
+    held->put_in( std::move( mag ) );
+    held->set_flag( flag_id( "NEVER_JAMS" ) );
+    item &gun = wield_for_firing( you, std::move( held ) );
+    REQUIRE( !gun.uses_firing_requirements() );
+    REQUIRE( gun.get_gun_energy_drain() == 0_kJ );
+    REQUIRE( gun.ammo_remaining() == 2 );
+
+    const burst_result res = fire_burst( you, gun, 5 );
+    CAPTURE( res.dmsg );
+    CHECK( res.dmsg.find( "Unexpected shortage" ) == std::string::npos );
+    // the BN clamp ammo_left / ammo_required: 2 rounds, 2 shots
+    CHECK( res.fired == 2 );
+    CHECK( gun.ammo_remaining() == 0 );
+}
+
+// CDF-only guard: magazine_current() returns a BATTERY cell in a power well (8-1d-0) and a BATTERY item has no
+// `magazine` slot; handle_gun_damage must not read one (it crashed before the null guard). NEVER_JAMS is NOT set.
+TEST_CASE( "cdf_ranged_handle_gun_damage_battery_cell_does_not_crash", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    detached_ptr<item> held = make_energy_fire_gun( 12 );
+    held->unset_flag( flag_id( "NEVER_JAMS" ) );
+    item &gun = wield_for_firing( you, std::move( held ) );
+    REQUIRE( !gun.has_flag( flag_id( "NEVER_JAMS" ) ) );
+    REQUIRE( gun.magazine_current() != nullptr );
+    REQUIRE( gun.magazine_current()->type->magazine == nullptr );
+    for( int shot = 0; shot < 20; ++shot ) {
+        gun.set_var( "dirt", 0 );
+        // the return value is random (the jam model); reaching the next line without a crash is the check
+        static_cast<void>( ranged::handle_gun_damage( you, gun ) );
+    }
+    SUCCEED();
+}
