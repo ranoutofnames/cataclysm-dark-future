@@ -1,12 +1,24 @@
+#include "avatar.h"
+#include "avatar_action.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "character.h"
+#include "debug.h"
 #include "flag.h"
 #include "item.h"
 #include "itype.h"
+#include "map/map.h"
+#include "map_helpers.h"
+#include "messages.h"
+#include "npc.h"
 #include "player_helpers.h"
 #include "ranged.h"
 #include "rng.h"
+#include "state_helpers.h"
+#include "type_id.h"
+
+#include <optional>
+#include <string>
 
 namespace {
 
@@ -88,4 +100,221 @@ TEST_CASE( "gun_jam_mult_loads_with_default_one", "[p3][ranged]" ) {
     CHECK( itype_id( "m4a1" ).obj().gun->gun_jam_mult == Approx( 1.0 ) );
     CHECK( itype_id( "test_jam_gun_mult_high" ).obj().gun->gun_jam_mult == Approx( 2000.0 ) );
     CHECK( itype_id( "test_jam_gun_mult_zero" ).obj().gun->gun_jam_mult == Approx( 0.0 ) );
+}
+
+namespace
+{
+
+// CDF: DDA multimag_test.cpp 2113-2121 (gun, 9mm round and charged heavy cell built as value items);
+// detached_ptr<item>, round and charge counts as parameters. 0 means "do not load that pocket".
+auto make_integral_multimag_gun( int rounds, int battery_charges ) -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_integral_ammo" ) );
+    REQUIRE( gun->uses_firing_requirements() );
+    // CDF: the 8-8a jam model is random per shot; these cases are about consumption
+    gun->set_flag( flag_id( "NEVER_JAMS" ) );
+    if( rounds > 0 ) {
+        REQUIRE( gun->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, rounds ),
+                              pocket_type::MAGAZINE ).success() );
+    }
+    if( battery_charges > 0 ) {
+        detached_ptr<item> cell = item::spawn( itype_id( "heavy_battery_cell" ) );
+        cell->ammo_set( itype_id( "battery" ), battery_charges );
+        REQUIRE( gun->put_in( std::move( cell ), pocket_type::MAGAZINE_WELL ).success() );
+    }
+    return gun;
+}
+
+// CDF: DDA wields with dummy.set_wielded_item( gun ) (multimag_test.cpp 2123); CDF wield() takes the
+// detached item and returns it when the wield is refused (precedent tests/cdf_item_reload_p3_test.cpp 664).
+// The avatar stands at a fixed tile and the target is five tiles east.
+auto wield_for_firing( avatar &who, detached_ptr<item> &&gun ) -> item &
+{
+    who.setpos( tripoint_bub_ms( 60, 60, 0 ) );
+    REQUIRE( !who.wield( std::move( gun ) ) );
+    REQUIRE( who.is_armed() );
+    return who.primary_weapon();
+}
+
+} // namespace
+
+// CDF-only (lookup 8-2 section 7): the fire-loop consume branch. DDA ranged.cpp 1298-1306.
+TEST_CASE( "cdf_ranged_multimag_fire_consumes_one_shot_per_pocket", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    item &gun = wield_for_firing( you, make_integral_multimag_gun( 1, 100 ) );
+    REQUIRE( gun.ammo_remaining_in_pocket( "ammo" ) == 1 );
+    REQUIRE( gun.ammo_remaining_in_pocket( "power" ) == 100 );
+
+    int fired = 0;
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        fired = ranged::fire_gun( you, you.bub_pos() + tripoint_rel_ms( 5, 0, 0 ), 1, gun, nullptr );
+    } );
+    CAPTURE( dmsg );
+    // the old BN branch calls ammo_consume, whose multimag guard debugmsgs (item_gun_tool_ammo.cpp 975)
+    CHECK( dmsg.empty() );
+    CHECK( fired == 1 );
+    // one DEFAULT-mode shot: ammo qty 1 and power qty 5 (items.json 1873)
+    CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 0 );
+    CHECK( gun.ammo_remaining_in_pocket( "power" ) == 95 );
+}
+
+// CDF-only (lookup 8-2 section 7): the burst clamp is shots_remaining, DDA ranged.cpp 1127-1128.
+TEST_CASE( "cdf_ranged_multimag_fire_clamp_by_shots_remaining", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+
+    SECTION( "three requested, one round loaded: one shot is fired" ) {
+        item &gun = wield_for_firing( you, make_integral_multimag_gun( 1, 100 ) );
+        REQUIRE( gun.shots_remaining( get_map(), &you ) == 1 );
+        int fired = 0;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            fired = ranged::fire_gun( you, you.bub_pos() + tripoint_rel_ms( 5, 0, 0 ), 3, gun, nullptr );
+        } );
+        CAPTURE( dmsg );
+        CHECK( dmsg.empty() );
+        CHECK( fired == 1 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 0 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 95 );
+    }
+
+    SECTION( "three requested, battery for one shot only: one shot is fired" ) {
+        // 1 round (the pocket capacity) but only 5 charges: the power pocket limits the burst to one shot,
+        // a second 5-charge shot would need 10
+        item &gun = wield_for_firing( you, make_integral_multimag_gun( 1, 5 ) );
+        REQUIRE( gun.shots_remaining( get_map(), &you ) == 1 );
+        int fired = 0;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            fired = ranged::fire_gun( you, you.bub_pos() + tripoint_rel_ms( 5, 0, 0 ), 3, gun, nullptr );
+        } );
+        CAPTURE( dmsg );
+        CHECK( dmsg.empty() );
+        CHECK( fired == 1 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 0 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 0 );
+    }
+}
+
+// CDF-only (lookup 8-2 section 7): DDA ranged.cpp 1071-1075.
+TEST_CASE( "cdf_ranged_multimag_npc_pretend_fire_consumes", "[p3][ranged]" )
+{
+    clear_all_state();
+    standard_npc who( "carrier" );
+
+    SECTION( "one shot consumes one round and five charges" ) {
+        detached_ptr<item> held = make_integral_multimag_gun( 1, 100 );
+        item &gun = *held;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            who.pretend_fire( &who, 1, gun );
+        } );
+        CAPTURE( dmsg );
+        CHECK( dmsg.empty() );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 0 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 95 );
+    }
+
+    SECTION( "a second shot with an empty pocket stops the burst" ) {
+        detached_ptr<item> held = make_integral_multimag_gun( 1, 100 );
+        item &gun = *held;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            who.pretend_fire( &who, 2, gun );
+        } );
+        CAPTURE( dmsg );
+        // the second consume_one_shot returns 0: DDA's message, and no second drain of the battery
+        CHECK( dmsg.find( "Unexpected shortage of ammo whilst firing" ) != std::string::npos );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 0 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 95 );
+    }
+}
+
+// DDA tests/multimag_test.cpp 2107-2133, name kept (D11); tag [p3][ranged] instead of [multimag][fire].
+// Multimag gun with integral MAGAZINE ammo pocket trips the single-mag "incompatible ammunition" gate in
+// fire_wielded_weapon (DDA commit 387e158bb1b); the gate must skip multimag guns.
+// CDF: GUARD (no red run): CDF's gate compares ammo_data() (the identity round since 3-4c-c) with
+// ammo_types(), so it does not block this fixture before the edit either. Messages are stubs in the test
+// build (tests/fake_messages.cpp 20), so DDA's message loop below is vacuous here; the aim-activity CHECK
+// is the CDF addition that can fail.
+TEST_CASE( "multimag_fire_skips_incompatible_ammo_gate", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &dummy = get_avatar();
+    wield_for_firing( dummy, make_integral_multimag_gun( 1, 100 ) );
+
+    Messages::clear_messages();
+    avatar_action::fire_wielded_weapon( dummy );
+
+    for( const auto &msg : Messages::recent_messages( 0 ) ) {
+        INFO( "message: " << msg.second );
+        CHECK( msg.second.find( "incompatible ammunition" ) == std::string::npos );
+    }
+    // CDF: the gate returns before assign_activity, so the aim activity proves it did not trip
+    CHECK( dummy.has_activity( activity_id( "ACT_AIM" ) ) );
+}
+
+// DDA tests/multimag_test.cpp 2263-2288, name kept (D11); tag [p3][ranged] instead of [multimag][fire].
+// Firing a multimag gun with only the power source loaded must abort cleanly (shots_remaining = 0)
+// without emitting "invalid recipe id" or ammo-shortage debugmsgs anywhere in the fire path.
+TEST_CASE( "multimag_fire_without_projectile_does_not_crash", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &dummy = get_avatar();
+
+    SECTION( "battery only" ) {
+        // CDF: GUARD, see the red-first notes of the brief (the DDA CHECKs are kept as written; DDA builds
+        // the gun and cell as value items, here detached_ptr via make_integral_multimag_gun)
+        item &gun = wield_for_firing( dummy, make_integral_multimag_gun( 0, 100 ) );
+        int fired = -1;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            fired = ranged::fire_gun( dummy, dummy.bub_pos() + tripoint_rel_ms( 5, 0, 0 ), 1, gun,
+                                      nullptr );
+        } );
+        INFO( "debugmsg: " << dmsg );
+        CHECK( dmsg.find( "invalid recipe id" ) == std::string::npos );
+        CHECK( dmsg.find( "Unexpected shortage of ammo" ) == std::string::npos );
+        // CDF: nothing is fired and nothing is drained
+        CHECK( fired == 0 );
+        CHECK( gun.ammo_remaining_in_pocket( "power" ) == 100 );
+    }
+
+    SECTION( "CDF: slug only, no battery, clamps to zero shots" ) {
+        // CDF-only: the clamp (DDA 1127-1128) reaches shots_remaining = 0 because the power pocket is
+        // empty while ammo_remaining() is 1, so the old BN clamp (1 / 1) would fire and hit the guards
+        item &gun = wield_for_firing( dummy, make_integral_multimag_gun( 1, 0 ) );
+        REQUIRE( gun.shots_remaining( get_map(), &dummy ) == 0 );
+        int fired = -1;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            fired = ranged::fire_gun( dummy, dummy.bub_pos() + tripoint_rel_ms( 5, 0, 0 ), 1, gun,
+                                      nullptr );
+        } );
+        CAPTURE( dmsg );
+        CHECK( dmsg.find( "invalid recipe id" ) == std::string::npos );
+        CHECK( dmsg.find( "Unexpected shortage of ammo" ) == std::string::npos );
+        CHECK( dmsg.find( "called on multimag item" ) == std::string::npos );
+        CHECK( fired == 0 );
+        CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 1 );
+    }
+}
+
+// CDF-only guard (pass before and after the edit): a non-multimag gun keeps the BN clamps and the
+// ammo_consume + UPS branch (the `else` of Part C). Reuses loaded_gun from the 8-8a block above.
+TEST_CASE( "cdf_ranged_legacy_gun_fire_path_unchanged", "[p3][ranged]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    detached_ptr<item> held = loaded_gun( itype_id( "m4a1" ), 0, 0 );
+    held->set_flag( flag_id( "NEVER_JAMS" ) );
+    item &gun = wield_for_firing( you, std::move( held ) );
+    REQUIRE( !gun.uses_firing_requirements() );
+    REQUIRE( gun.ammo_remaining() == 30 );
+
+    int fired = 0;
+    const std::string dmsg = capture_debugmsg_during( [&]() {
+        fired = ranged::fire_gun( you, you.bub_pos() + tripoint_rel_ms( 5, 0, 0 ), 1, gun, nullptr );
+    } );
+    CAPTURE( dmsg );
+    CHECK( dmsg.empty() );
+    CHECK( fired == 1 );
+    CHECK( gun.ammo_remaining() == 29 );
 }

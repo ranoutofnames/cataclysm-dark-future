@@ -1137,8 +1137,15 @@ void npc::pretend_fire( npc *source, int shots, item &gun )
     if( you.sees( *source ) && one_in( 50 ) ) {
         add_msg( m_info, _( "%s shoots something." ), source->disp_name() );
     }
+    map &here = get_map();
     while( curshot != shots ) {
-        if( gun.ammo_consume( gun.ammo_required(), bub_pos(), this ) != gun.ammo_required() ) {
+        // CDF: DDA 1071-1082; the else arm is CDF's existing BN consume (bub_pos() form, 3-4b-c2)
+        if( gun.uses_firing_requirements() ) {
+            if( gun.consume_one_shot( here, bub_pos(), this ) != 1 ) {
+                debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname().c_str() );
+                break;
+            }
+        } else if( gun.ammo_consume( gun.ammo_required(), bub_pos(), this ) != gun.ammo_required() ) {
             debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname().c_str() );
             break;
         }
@@ -1381,7 +1388,12 @@ int ranged::fire_gun( Character &who, const tripoint_bub_ms &target, int max_sho
 
     int shots = max_shots;
     // Number of shots to fire is limited by the amount of remaining ammo
-    if( gun.ammo_required() ) {
+    // CDF: DDA 1126-1131 applies shots_remaining( here, this ) to every non-VEHICLE gun without `ammo`; it
+    // includes energy and would change BN guns, so only multimag guns take it (ADV-13 2a); BN guns keep
+    // the clamps below. The VEHICLE multimag clamp (DDA 1134-1137) waits for 8-5.
+    if( gun.uses_firing_requirements() && !gun.has_flag( flag_VEHICLE ) && !ammo ) {
+        shots = std::min( shots, gun.shots_remaining( get_map(), &who ) );
+    } else if( gun.ammo_required() ) {
         const int ammo_left = ammo ? ammo->count() : gun.ammo_remaining();
         shots = std::min( shots, ammo_left / gun.ammo_required() );
     }
@@ -1575,13 +1587,26 @@ int ranged::fire_gun( Character &who, const tripoint_bub_ms &target, int max_sho
             who.rem_morale( MORALE_PYROMANIA_NOFIRE );
         }
 
-        if( gun.ammo_consume( gun.ammo_required(), who.bub_pos(), &who ) != gun.ammo_required() ) {
-            debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname() );
-            break;
-        }
+        if( gun.uses_firing_requirements() ) {
+            // Vehicle turret passes nullptr carrier so multimag_drain skips
+            // player UPS/bionic. Vehicle is billed via drain_back_multimag
+            // in turret_data::post_fire.
+            // CDF: until 8-5 (drain_back_multimag absent): a VEHICLE multimag gun is not billed to the vehicle yet.
+            Character *drain_carrier = gun.has_flag( flag_VEHICLE ) ? nullptr : &who;
+            if( gun.consume_one_shot( here, who.bub_pos(), drain_carrier ) != 1 ) {
+                debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname() );
+                break;
+            }
+        } else {
+            // CDF: DDA's energy block (DDA 1313-1322, energy_consume) is job 8-1d; CDF keeps its UPS drain.
+            if( gun.ammo_consume( gun.ammo_required(), who.bub_pos(), &who ) != gun.ammo_required() ) {
+                debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname() );
+                break;
+            }
 
-        if( !gun.has_flag( flag_VEHICLE ) ) {
-            who.use_charges( itype_UPS, gun.get_gun_ups_drain() );
+            if( !gun.has_flag( flag_VEHICLE ) ) {
+                who.use_charges( itype_UPS, gun.get_gun_ups_drain() );
+            }
         }
 
         if( aoe_attack ) {

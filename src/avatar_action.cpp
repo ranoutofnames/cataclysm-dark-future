@@ -1134,8 +1134,10 @@ void avatar_action::fire_wielded_weapon( avatar &you )
         return;
     } else if( !weapon.is_gun() ) {
         return;
-    } else if( weapon.ammo_data() && weapon.type->gun &&
+    } else if( !weapon.uses_firing_requirements() && weapon.ammo_data() && weapon.type->gun &&
                !weapon.ammo_types().contains( weapon.ammo_data()->ammo->type ) ) {
+        // Multimag guns enforce per-pocket ammo at load time; this gate is for
+        // single-mag guns whose accepted ammo can shift via gunmod conversion.
         std::string ammoname = weapon.ammo_current()->nname( 1 );
         add_msg( m_info, _( "The %s can't be fired while loaded with incompatible ammunition %s" ),
                  weapon.tname(), ammoname );

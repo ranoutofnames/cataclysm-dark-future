@@ -2676,7 +2676,12 @@ bool game::handle_action()
 
             case ACTION_SELECT_DEFAULT_AMMO:
                 if( u.is_armed() && u.primary_weapon().is_gun() && !u.primary_weapon().is_gunmod() ) {
-                    ranged::prompt_select_default_ammo_for( u, u.primary_weapon() );
+                    // DDA handle_action.cpp 2764-2765: only reload-one and reload-and-shoot guns select a default ammo.
+                    // The select_ammo body of DDA 2766-2776 waits for 5-3 (CDF keeps prompt_select_default_ammo_for).
+                    if( u.primary_weapon().has_flag( flag_RELOAD_ONE ) ||
+                        u.primary_weapon().has_flag( flag_RELOAD_AND_SHOOT ) ) {
+                        ranged::prompt_select_default_ammo_for( u, u.primary_weapon() );
+                    }
                 }
                 break;
 
