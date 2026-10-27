@@ -6,6 +6,7 @@
 #include "item.h"
 #include "item_pocket.h"
 #include "map/map.h"
+#include "map/map_selector.h"
 #include "map_helpers.h"
 #include "player_helpers.h"
 #include "state_helpers.h"
@@ -274,4 +275,20 @@ TEST_CASE( "charges_of_in_tools_counts_ammo_loaded_in_a_tool", "[p3][visitable]"
         CHECK( crafting.charges_of( fluid, INT_MAX, return_true<item>, nullptr, true ) == 10 );
         CHECK( crafting.charges_of( fluid, INT_MAX, return_true<item>, nullptr, false ) == 0 );
     }
+}
+
+// DDA visitable.cpp:1111-1118, 1263-1268: the raw IS_UPS sum (no ups_eff_mult) for generic visitables.
+TEST_CASE( "charges_of_ups_counts_raw_is_ups_items_on_the_ground", "[p3][visitable]" )
+{
+    clear_all_state();
+    clear_map();
+    clear_avatar();
+    const tripoint_bub_ms pos = get_avatar().bub_pos();
+    REQUIRE( !get_map().add_item_or_charges( pos, tool_with_ammo( itype_id( "UPS_off" ), 40 ) ) );
+
+    CHECK( map_cursor( pos ).charges_of( itype_id( "UPS" ) ) == 40 );
+    CHECK( map_cursor( pos ).charges_of( itype_id( "UPS" ), 15 ) == 15 );
+    CHECK( map_cursor( pos ).charges_of( itype_id( "UPS" ), INT_MAX, []( const item & ) {
+        return false;
+    } ) == 0 );
 }

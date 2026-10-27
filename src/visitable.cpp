@@ -1198,12 +1198,17 @@ static tool_stock_entry build_multimag_entry( const item &e )
 template <typename T>
 static void scan_tool_charges( const T &self, const itype_id &id,
                                const std::function<bool( const item & )> &filter, int limit,
-                               std::vector<tool_stock_entry> &entries, bool in_tools )
+                               std::vector<tool_stock_entry> &entries, bool in_tools,
+                               int &raw_ups_charges )
 {
-    // CDF: the raw IS_UPS sum is not ported (8-4f, 8-3 OD-8) [S2 pending]
     map &here = get_map();
     int qty = 0;
     self.visit_items( [&]( const item *e ) {
+        // Raw IS_UPS sum, no ups_eff_mult (DDA 1111-1118); charges_of_ups keeps its multiplier
+        if( id == itype_UPS && e->has_flag( flag_IS_UPS ) && filter( *e ) ) {
+            raw_ups_charges = sum_no_wrap( raw_ups_charges, e->ammo_remaining_linked( here, nullptr ) );
+            return raw_ups_charges < limit ? VisitResponse::SKIP : VisitResponse::ABORT;
+        }
         // CDF: !is_broken() filter dropped, BN has no broken state (8-3 OD-6)
         if( filter( *e ) ) {
             if( e->is_tool() ) {
@@ -1326,9 +1331,11 @@ static int apply_external_pools_multimag( const M &main,
 template <typename M>
 static int apply_external_pools( const M &main,
                                  const std::vector<tool_stock_entry> &entries, int limit,
-                                 const std::function<void( int )> &visitor )
+                                 const std::function<void( int )> &visitor, int raw_ups_charges )
 {
-    // CDF: the raw UPS shortcut (DDA 1267-1268) is not ported (8-4f, 8-3 OD-8)
+    if( raw_ups_charges > 0 ) {
+        return std::min( raw_ups_charges, limit );
+    }
     std::vector<tool_stock_entry> legacy;
     std::vector<tool_stock_entry> multi;
     legacy.reserve( entries.size() );
@@ -1356,9 +1363,9 @@ static int charges_of_internal( const T &self, const M &main, const itype_id &id
                                 std::function<void( int )> visitor, bool in_tools )
 {
     std::vector<tool_stock_entry> entries;
-    // CDF: the raw IS_UPS sum is not ported (8-4f, 8-3 OD-8) [S2 pending]
-    scan_tool_charges( self, id, filter, limit, entries, in_tools );
-    return apply_external_pools( main, entries, limit, visitor );
+    int raw_ups_charges = 0;
+    scan_tool_charges( self, id, filter, limit, entries, in_tools, raw_ups_charges );
+    return apply_external_pools( main, entries, limit, visitor, raw_ups_charges );
 }
 
 /** @relates visitable */
