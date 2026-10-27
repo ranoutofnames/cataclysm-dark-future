@@ -1950,7 +1950,8 @@
     "symbol": "&",
     "color": "light_gray",
     "pocket_data": [ { "id": "well_a", "max_item_length": "2 km", "magazine_well": "250 ml", "pocket_type": "MAGAZINE_WELL", "item_restriction": [ "glockmag" ] } ],
-    "consumption_per_use": [ { "pocket": "well_a", "qty": 1 } ]
+    "consumption_per_use": [ { "pocket": "well_a", "qty": 1 } ],
+    "legacy_charges_per_use_factor": 5
   },
   {
     "type": "ammunition_type",

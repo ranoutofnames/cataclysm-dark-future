@@ -417,8 +417,10 @@ TEST_CASE( "firing_mode_blocked_guard", "[p3][firing]" )
 
 // DDA tests/multimag_test.cpp:1765-1783. The name says "non_divisible" but the
 // DDA body has only the divisible SECTION, so both are kept as written.
-// CDF: test_multimag_tool_factor has no legacy_charges_per_use_factor field, so
-// this case covers the multimag consumption path only.
+// CDF: the legacy_charges_per_use_factor field now exists, but CDF use_charges has no
+// firing-requirements branch, so the guard and DDA's hard_fails case
+// (multimag_test.cpp:1847) are Blocked pending the use_charges rewrite (8-4f).
+// This case covers the multimag consumption path only.
 TEST_CASE( "legacy_charges_per_use_factor_non_divisible_request", "[p3][firing]" )
 {
     clear_map();

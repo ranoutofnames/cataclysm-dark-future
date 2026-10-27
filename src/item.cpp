@@ -5234,6 +5234,9 @@ nc_color item::color_in_inventory( const player &p ) const
         // Gun with integrated mag counts as both
         for( const ammotype &at : ammo_types() ) {
             // get_ammo finds uncontained ammo, find_ammo finds ammo in magazines
+            // CDF: DDA item.cpp:1331,1333,1374 pass now = false; CDF's find_ammo_helper additionally
+            // accepts legacy direct-charges guns and tools in a now == false search
+            // (item_gun_tool_ammo.cpp:70-73 ignores `now`).
             bool has_ammo = !character_funcs::get_ammo_items( p, at ).empty() ||
                             !character_funcs::find_ammo_items_or_mags( p, *this, false, -1,
                                     false ).empty();

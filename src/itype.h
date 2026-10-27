@@ -1103,6 +1103,9 @@ struct itype {
         // entries from the JSON map.
         firing_requirement_set firing_requirements;
 
+        /** Raw charges per use for legacy callers of firing-requirement tools; must be >= 1. */
+        int legacy_charges_per_use_factor = 1;
+
     private:
         /** Can item be combined with other identical items? */
         bool stackable_ = false;

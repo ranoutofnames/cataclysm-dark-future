@@ -1803,7 +1803,10 @@ std::string check_firing_requirements( const itype &type )
                 msg += "consumption_per_use and power_draw are mutually exclusive\n";
             }
         }
-        // CDF: Group B (legacy_charges_per_use_factor) skipped: the field does not exist in CDF.
+        if( type.legacy_charges_per_use_factor < 1 ) {
+            msg += string_format( "legacy_charges_per_use_factor must be >= 1, got %d\n",
+                                  type.legacy_charges_per_use_factor );
+        }
         std::set<std::string> referenced;
         for( const auto &mode_pair : type.firing_requirements.per_mode ) {
             if( type.gun && !type.gun->modes.count( mode_pair.first ) ) {
@@ -3929,6 +3932,9 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
     if( jo.has_member( "consumption_per_use" ) ) {
         def.firing_requirements.deserialize_consumption_per_use( jo, "consumption_per_use" );
     }
+    // DDA item_factory.cpp:4641 loads this in itype::load next to firing_requirements.
+    // CDF: assign() instead of optional() so copy-from keeps an inherited value (CDF has no itype::load).
+    assign( jo, "legacy_charges_per_use_factor", def.legacy_charges_per_use_factor );
     load_slot_optional( def.armor, jo, "armor_data", src );
     load_slot_optional( def.pet_armor, jo, "pet_armor_data", src );
     load_slot_optional( def.book, jo, "book_data", src );

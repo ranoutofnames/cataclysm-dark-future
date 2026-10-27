@@ -213,6 +213,24 @@ TEST_CASE("check_firing_requirements ignores empty requirements", "[p3][loader]"
     CHECK( check_firing_requirements( odd ).empty() );
 }
 
+TEST_CASE("legacy_charges_per_use_factor loads from JSON", "[p3][loader]") {
+    // CDF: literals come from data/mods/TEST_DATA/items.json.
+    CHECK( itype_id( "test_multimag_tool_factor" ).obj().legacy_charges_per_use_factor == 5 );
+    CHECK( itype_id( "9mm" ).obj().legacy_charges_per_use_factor == 1 );
+}
+
+TEST_CASE("check_firing_requirements rejects legacy_charges_per_use_factor below 1", "[p3][loader]") {
+    // CDF: hand-built itype with a valid firing_requirements and factor 0.
+    itype tool;
+    tool.tool = cata::make_value<islot_tool>();
+    add_firing_requirement( tool.firing_requirements, "DEFAULT", "mag", 1 );
+    tool.pockets.push_back( p3_magazine( "mag" ) );
+    CHECK( check_firing_requirements( tool ).empty() );
+    tool.legacy_charges_per_use_factor = 0;
+    CHECK_THAT( check_firing_requirements( tool ),
+                Catch::Contains( "legacy_charges_per_use_factor must be >= 1, got 0" ) );
+}
+
 TEST_CASE("check_firing_requirements mutual exclusions", "[p3][loader]") {
     SECTION("gun ups_charges") {
         itype gun = make_p3_gun( { "DEFAULT" } );
