@@ -566,7 +566,7 @@
     "durability": 8,
     "handling": 20,
     "reload": 150,
-    "reload_noise_volume": 10,
+    "reload_noise_volume": "90 dB",
     "bashing": 13
   },
   {
