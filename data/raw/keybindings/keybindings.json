@@ -3120,6 +3120,20 @@
   },
   {
     "type": "keybinding",
+    "id": "INCREASE_COUNT",
+    "category": "INVENTORY",
+    "name": "Increase selected amount for the highlighted item",
+    "bindings": [ { "input_method": "keyboard", "key": "=" }, { "input_method": "keyboard", "key": "+" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "DECREASE_COUNT",
+    "category": "INVENTORY",
+    "name": "Decrease selected amount for the highlighted item",
+    "bindings": [ { "input_method": "keyboard", "key": "-" } ]
+  },
+  {
+    "type": "keybinding",
     "id": "ITEMS_NW",
     "category": "ADVANCED_INVENTORY",
     "name": "Select items @ North-West",

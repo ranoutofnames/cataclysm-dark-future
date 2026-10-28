@@ -41,6 +41,7 @@
 #include "point.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
+#include "reload/reload.h"
 #include "requirements.h"
 #include "ret_val.h"
 #include "salvage.h"
@@ -2572,4 +2573,221 @@ static item *autoclave_internal( player &u,
 item *game_menus::inv::sterilize_cbm( player &p )
 {
     return autoclave_internal( p, bionic_sterilize_preset( p ), 6 );
+}
+
+// CDF: P3-5-3a, DDA game_inventory.cpp 3155-3286 (select_ammo_inventory_preset). Items are item
+// pointers (D1): the cells take const item * or, where they need a mutable item (MOVES), the
+// inventory_entry; `player &` and `item &` for Character & and the item_location target;
+// describe_location( ch ) for item_location::describe( ch ). `_indent_entries = false` has no member
+// here (the CDF column lists by category unless the selector toggles hierarchy) and
+// `_collate_entries = true` is the collate_entries() override. is_shown is
+// game_menus::inv::select_ammo_shows, so a test can reach it.
+namespace
+{
+class select_ammo_inventory_preset : public inventory_selector_preset
+{
+    public:
+        select_ammo_inventory_preset( player &you, item &target, bool empty ) : you( you ),
+            target( target ), empty( empty ) {
+            append_cell( [&you]( const item * loc ) {
+                bool is_ammo_container = loc->is_ammo_container();
+                Character &player_character = get_player_character();
+                if( is_ammo_container || loc->is_container() ) {
+                    if( is_ammo_container && you.is_worn( *loc ) ) {
+                        return loc->type_name();
+                    }
+                    return string_format( _( "%s, %s" ), loc->type_name(),
+                                          loc->describe_location( &player_character ) );
+                }
+                return loc->describe_location( &player_character );
+            }, _( "LOCATION" ) );
+
+            append_cell( [&you, host = &target]( const item * loc ) {
+                const std::vector<reload_target> targets = get_possible_reload_targets( *host );
+                const reload_target *match = find_matching_reload_target( targets, *loc );
+                if( match == nullptr ) {
+                    return std::string();
+                }
+                if( match->target == host ) {
+                    return std::string();
+                }
+                return string_format( _( "%s, %s" ), match->target->type_name(),
+                                      match->target->describe_location( &you ) );
+            }, _( "DESTINATION" ) );
+
+            append_cell( []( const inventory_entry & entry ) {
+                if( entry.any_item()->is_ammo() ) {
+                    return std::to_string( entry.chosen_count );
+                }
+                return std::string();
+            }, _( "AMOUNT" ) );
+
+            append_cell( [&you, host = &target]( const inventory_entry & entry ) {
+                item_reload_option opt( &you, host, host, *entry.any_item(),
+                                        item_reload_option::POCKET_FALLBACK );
+                // propagate entry.chosen_count here somehow?
+                return std::to_string( opt.moves() );
+            }, _( "MOVES" ) );
+
+            append_cell( []( const item * loc ) {
+                const itype *ammo = loc->is_ammo_container() ? loc->first_ammo().ammo_data() :
+                                    loc->ammo_data();
+                if( ammo ) {
+                    const damage_instance &dam = ammo->ammo->damage;
+                    return std::to_string( static_cast<int>( dam.total_damage() ) );
+                }
+                return std::string();
+            }, _( "DAMAGE" ) );
+
+            append_cell( []( const item * loc ) {
+                const itype *ammo = loc->is_ammo_container() ? loc->first_ammo().ammo_data() :
+                                    loc->ammo_data();
+                if( ammo ) {
+                    const damage_instance &dam = ammo->ammo->damage;
+                    return std::to_string( static_cast<int>( dam.empty() ? 0.0f : ( *dam.begin() ).res_pen ) );
+                }
+                return std::string();
+            }, _( "PIERCE" ) );
+        }
+
+        bool collate_entries() const override {
+            return true;
+        }
+
+        bool is_shown( const item *loc ) const override {
+            return game_menus::inv::select_ammo_shows( target, *loc, empty );
+        }
+
+        // sort in order of move cost (ascending), then remaining ammo (descending) with empty magazines always last
+        bool sort_compare( const inventory_entry &lhs, const inventory_entry &rhs ) const override {
+            const item *left = lhs.any_item();
+            const item *right = rhs.any_item();
+
+            if( left->ammo_remaining( ) == 0 || right->ammo_remaining( ) == 0 ) {
+                return ( left->ammo_remaining( ) != 0 ) > ( right->ammo_remaining( ) != 0 );
+            }
+
+            if( left->obtain_cost( you ) != right->obtain_cost( you ) ) {
+                return left->obtain_cost( you ) < right->obtain_cost( you );
+            }
+
+            if( left->ammo_remaining( ) != right->ammo_remaining( ) ) {
+                return left->ammo_remaining( ) > right->ammo_remaining( );
+            }
+
+            return inventory_selector_preset::sort_compare( lhs, rhs );
+        }
+
+    private:
+        player &you;
+        item &target;
+        bool empty;
+};
+} // namespace
+
+// CDF: P3-5-3a, DDA game_inventory.cpp 3226-3259 (select_ammo_inventory_preset::is_shown) as a
+// function on items, for tests/ (G2). `loc.parent_item() == target` is it.parent_item() == &target;
+// the liquid-on-ground test uses item::bub_pos() and item::where() in place of loc.pos_bub( here )
+// and loc.where(); rt.target.can_reload_with( loc, true ) is reload_loc_can_reload_with (P3-5-2a).
+bool game_menus::inv::select_ammo_shows( item &target, const item &it, bool empty )
+{
+    // todo: allow to reload a magazine/magazine well from a container pocket on the same item
+    if( it.parent_item() == &target ) {
+        return false;
+    }
+
+    if( it.made_of( phase_id::LIQUID ) && it.where() == item_location_type::map ) {
+        if( !g->m.has_flag_ter_or_furn( flag_LIQUIDCONT, it.bub_pos() ) ) {
+            return false;
+        }
+    }
+
+    if( it.is_frozen_liquid() ) {
+        return false;
+    }
+
+    if( !empty && it.is_magazine() && !it.ammo_remaining( ) ) {
+        return false;
+    }
+
+    const std::vector<reload_target> targets = get_possible_reload_targets( target );
+    for( const reload_target &rt : targets ) {
+        // Speedloader compatibility is queried on the owner gun, not
+        // on a specific well pocket.
+        if( it.has_flag( flag_SPEEDLOADER ) && rt.target->allows_speedloader( it.typeId() ) &&
+            it.ammo_remaining() > 1 && rt.target->ammo_remaining() < 1 &&
+            reload_loc_can_reload_with( *rt.target, it, true ) ) {
+            return true;
+        }
+    }
+    return find_matching_reload_target( targets, it ) != nullptr;
+}
+
+// CDF: P3-5-3a, DDA game_inventory.cpp 3288-3433 WITHOUT the destination menu (3325-3421, 5-3b).
+// `player &` and `item &` in place of Character & and const item_location &, item_reload_option
+// for item::reload_option, drop_location is { loc, count } here (not first / second), and the
+// trailing include_potential is CDF-only (ADV-14 ruling 4): accepted for the 6-3b and 8-2a-sel
+// callers and not read (DDA has no such argument; 8-2a-sel decides whether it needs it).
+item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool prompt, bool empty,
+        [[maybe_unused]] bool include_potential )
+{
+    const select_ammo_inventory_preset preset( you, loc, empty );
+    ammo_inventory_selector inv_s( you, loc, preset );
+
+    inv_s.set_title( string_format( loc.is_watertight_container() ? _( "Refill %s" ) :
+                                    loc.has_flag( flag_RELOAD_AND_SHOOT ) ? _( "Select ammo for %s" ) : _( "Reload %s" ),
+                                    loc.display_name() ) );
+    inv_s.set_hint( _( "Choose ammo to reload" ) );
+    inv_s.set_display_stats( false );
+
+    inv_s.clear_items();
+    inv_s.add_character_items( you );
+    inv_s.add_nearby_items( 1 );
+    inv_s.set_all_entries_chosen_count();
+
+    if( inv_s.empty() ) {
+        popup( _( "You have nothing to reload." ), PF_GET_KEY );
+        return item_reload_option();
+    }
+
+    drop_location selected;
+    if( !prompt && inv_s.item_entry_count() == 1 ) {
+        selected = inv_s.get_only_choice();
+    } else {
+        selected = inv_s.execute();
+    }
+
+    if( !selected.loc ) {
+        return item_reload_option();
+    }
+
+    // The selector lists one entry per ammo source. When the picked source
+    // matches multiple reload targets (sibling wells, multiple loaded mags
+    // of the same type), disambiguate via a follow-up uilist instead of
+    // duplicating selector entries per (source, target) pair.
+    const std::vector<reload_target> targets = get_possible_reload_targets( loc );
+    const std::vector<const reload_target *> matches =
+        find_all_matching_reload_targets( targets, *selected.loc );
+    if( matches.empty() ) {
+        return item_reload_option();
+    }
+
+    const reload_target *match = matches.front();
+    bool disambiguated = false;
+    if( matches.size() > 1 ) {
+        // CDF: P3-5-3a: 5-3b hook. DDA 3325-3421 asks "Reload which destination on %s?" here,
+        // sets match to the chosen entry of matches and disambiguated to true. Until 5-3b the
+        // first match is used.
+    }
+
+    item_reload_option opt( &you, match->target, &loc, *selected.loc, match->pocket_index );
+    if( disambiguated && !inv_s.last_choice_count_player_adjusted() ) {
+        // Refill to the chosen target's own capacity when the seeded count
+        // (from a sibling match) came back unmodified.
+        opt.qty( INT_MAX );
+    } else {
+        opt.qty( selected.count );
+    }
+
+    return opt;
 }

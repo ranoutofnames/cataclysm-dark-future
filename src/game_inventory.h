@@ -14,6 +14,7 @@ struct tripoint;
 
 class avatar;
 class item;
+class item_reload_option;
 class player;
 class repair_item_actor;
 class Character;
@@ -89,6 +90,17 @@ void insert_items( item &holster );
 void insert_items_again( const drop_locations &targets );
 /** Choose containers to unload; returns their contents (DDA game_inventory.cpp:2119). */
 drop_locations unload_container();
+/** The reload picker (DDA game_inventory.cpp 3288-3433): choose the ammo source for @p loc. */
+// CDF: P3-5-3a, DDA game_inventory.h 203-204. `player &` and `item &` in place of Character & and
+// const item_location & (ADV-14 ruling 4, D1), item_reload_option for item::reload_option, and a
+// CDF-only trailing include_potential (ADV-14 ruling 4, 6-6 addendum item 4): accepted so the
+// callers of 6-3b and 8-2a-sel compile, not read by this job (DDA has no such argument).
+item_reload_option select_ammo( player &you, item &loc, bool prompt = false, bool empty = true,
+                                bool include_potential = false );
+// CDF: P3-5-3a, test hook (precedent: 5-4a unload_selector_shows). The is_shown of the select_ammo
+// preset, DDA game_inventory.cpp 3226-3259, as a function, because the preset class is in an
+// anonymous namespace and tests/ cannot reach it.
+bool select_ammo_shows( item &target, const item &it, bool empty );
 /** The "Select pocket" menu: stores @p source in a pocket of @p dest (DDA inventory_ui.cpp:2050). */
 bool select_pocket_and_store( Character &you, item &source, item &dest );
 /** Choosing a gun to saw down it's barrel. */

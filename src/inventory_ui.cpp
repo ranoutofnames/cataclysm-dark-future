@@ -2999,6 +2999,25 @@ bool inventory_selector::has_available_choices() const
     } );
 }
 
+// CDF: P3-5-3a, DDA inventory_ui.cpp 3517-3525. get_entries( return_item, true ) becomes
+// get_all_entries( is_item_entry ) on the columns that allow selecting (as in 5-2b), and the
+// return type is size_t.
+size_t inventory_selector::item_entry_count() const
+{
+    const auto is_item_entry = []( const inventory_entry & entry ) {
+        return entry.is_item();
+    };
+    size_t count = 0;
+    for( const inventory_column *col : columns ) {
+        if( !col->allows_selecting() ) {
+            continue;
+        }
+        count += col->get_all_entries( is_item_entry ).size();
+    }
+
+    return count;
+}
+
 drop_location inventory_selector::get_only_choice() const
 {
     // CDF: DDA (inventory_ui.cpp:3532) counts item_entry_count() and filters with
@@ -3894,7 +3913,8 @@ inventory_selector::header_stats inventory_pickup_selector::get_raw_stats() cons
 // which DDA's reload_target_accepts reaches through rt.owner / rt.target. CDF has no
 // item_location handle (D1), so the same two guards run on the item, with
 // item::parent_item() for DDA's has_parent() + parent_item().
-static bool reload_loc_can_reload_with( const item &reloadable, const item &ammo, bool now )
+// P3-5-3a: not static any more, declared in inventory_ui.h for the select_ammo preset.
+bool reload_loc_can_reload_with( const item &reloadable, const item &ammo, bool now )
 {
     if( reloadable.is_gun() && !reloadable.ammo_default() ) {
         return false;
@@ -4039,13 +4059,15 @@ std::vector<const reload_target *> find_all_matching_reload_targets(
 }
 
 // CDF: P3-5-2b, DDA inventory_ui.cpp 4018-4026. `player &` and `item &` in place of Character &
-// and const item_location & (ADV-14 ruling 4, D1). The two register_action lines for
-// INCREASE_COUNT and DECREASE_COUNT (DDA 4022-4023) are 5-2c: the ids exist only after its
-// keybindings.json entries.
+// and const item_location & (ADV-14 ruling 4, D1). The register_action lines (DDA 4022-4023)
+// are P3-5-2c; the ids are in keybindings.json since the same job.
 ammo_inventory_selector::ammo_inventory_selector( player &you, item &reload_loc,
         const inventory_selector_preset &preset ) :
     inventory_selector( you, preset ), reload_loc( reload_loc )
 {
+    ctxt.register_action( "INCREASE_COUNT" );
+    ctxt.register_action( "DECREASE_COUNT" );
+
     force_single_column = true;
 }
 
@@ -4180,6 +4202,54 @@ void ammo_inventory_selector::mod_chosen_count( inventory_entry &entry, int valu
         col->update_entry_cell_cache( entry );
     }
     on_change( entry );
+}
+
+// CDF: P3-5-2c, DDA inventory_ui.cpp 4266-4313. Items are item pointers (D1): `chosen` is an
+// item *const and the result is drop_location( *chosen, count ), highlight( loc ) is select( loc ).
+// Cut: the MOUSE_MOVE branch (DDA 4275-4278) and the SELECT action of 4279 (D5 keyboard only; the
+// CDF selector registers neither) and debug_print_timer (4269, no CDF symbol).
+drop_location ammo_inventory_selector::execute()
+{
+    shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+    while( true ) {
+        ui_manager::redraw();
+        const inventory_input input = get_input();
+
+        if( input.entry != nullptr ) {
+            if( input.action == "ANY_INPUT" ) {
+                item *const chosen = input.entry->any_item();
+                last_player_adjusted = std::find( player_adjusted_ammo_locs.begin(),
+                                                  player_adjusted_ammo_locs.end(),
+                                                  chosen ) != player_adjusted_ammo_locs.end();
+                return drop_location( *chosen, static_cast<int>( input.entry->chosen_count ) );
+            } else {
+                if( select( input.entry->any_item() ) ) {
+                    ui_manager::redraw();
+                }
+                on_input( input );
+            }
+        } else if( input.action == "QUIT" ) {
+            last_player_adjusted = false;
+            return drop_location();
+        } else if( input.action == "CONFIRM" ) {
+            const inventory_entry &highlighted = get_active_column().get_highlighted();
+            if( highlighted && highlighted.is_selectable() ) {
+                item *const chosen = highlighted.any_item();
+                last_player_adjusted = std::find( player_adjusted_ammo_locs.begin(),
+                                                  player_adjusted_ammo_locs.end(),
+                                                  chosen ) != player_adjusted_ammo_locs.end();
+                return drop_location( *chosen, static_cast<int>( highlighted.chosen_count ) );
+            }
+        } else if( input.action == "INCREASE_COUNT" ) {
+            inventory_entry &highlighted = get_active_column().get_highlighted();
+            mod_chosen_count( highlighted, 1 );
+        } else if( input.action == "DECREASE_COUNT" ) {
+            inventory_entry &highlighted = get_active_column().get_highlighted();
+            mod_chosen_count( highlighted, -1 );
+        } else {
+            on_input( input );
+        }
+    }
 }
 
 // CDF: P3-5-2b, DDA inventory_ui.cpp 1244-1248 (the non-const twin, same body); the

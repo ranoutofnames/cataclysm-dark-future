@@ -584,6 +584,10 @@ class inventory_selector
         bool has_available_choices() const;
         /** Per DDA inventory_ui.h:687. The single available choice, if there is exactly one. */
         drop_location get_only_choice() const;
+        // CDF: P3-5-3a, DDA inventory_ui.h 686 (uint64_t there). Counts the item entries, hidden ones
+        // included, of the columns that allow selecting; the 5-1 primitives have get_only_choice
+        // with its own count and no item_entry_count.
+        size_t item_entry_count() const;
 
         /** Apply filter string to all columns */
         void set_filter( const std::string &str );
@@ -978,6 +982,11 @@ struct reload_target {
     int ui_well_index = -1;
     kind kind = kind::well;
 };
+
+// CDF: P3-5-3a. DDA's item_location::can_reload_with( ammo, now ) (item_location.cpp 1524-1537)
+// as a free function on items. P3-5-2a defined it file-static in inventory_ui.cpp; the select_ammo
+// preset (game_inventory.cpp, DDA 3250-3257) needs the same two guards, so it is exported.
+bool reload_loc_can_reload_with( const item &reloadable, const item &ammo, bool now );
 
 // CDF: P3-5-2a, DDA inventory_ui.h 1071-1080. item & and const item & in place of DDA's
 // item_location (D1); 5-2b and 5-3 pass *loc.
