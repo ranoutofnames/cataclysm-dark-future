@@ -333,6 +333,15 @@ class inventory_column
         bool is_selected_by_category( const inventory_entry &entry ) const;
 
         const inventory_entry &get_selected() const;
+        // CDF: P3-5-2b, DDA inventory_column::get_highlighted() non-const twin (inventory_ui.h 413).
+        // DDA's highlighted entry is CDF's selected one, so this is the mutable get_selected();
+        // ammo_inventory_selector::execute (5-2c) steps the count of it.
+        inventory_entry &get_highlighted();
+        // CDF: P3-5-2b, in place of DDA inventory_entry::make_entry_cell_cache( preset ) (DDA
+        // inventory_ui.cpp 1072), which refreshes one entry's cached cells. CDF caches the cells in
+        // the column, by index into entries; this recomputes the slot of the given entry, an
+        // element of entries (any other entry is ignored).
+        void update_entry_cell_cache( const inventory_entry &entry );
         std::vector<inventory_entry *> get_all_selected() const;
         std::vector<inventory_entry *> get_entries(
             const std::function<bool( const inventory_entry &entry )> &filter_func ) const;
@@ -982,3 +991,37 @@ const reload_target *find_matching_reload_target(
 // reloads (multiple matching wells / loaded mags) for disambiguation prompts.
 std::vector<const reload_target *> find_all_matching_reload_targets(
     const std::vector<reload_target> &targets, const item &ammo );
+
+// CDF: P3-5-2b, DDA inventory_ui.h 1081-1104. `player &` for DDA's `Character &` (ADV-14 ruling 4,
+// the CDF selector base takes player &) and `item &` for the item_location reload_loc (D1; 5-3
+// passes *loc): the host and every item added to the selector must stay alive and in place while
+// the selector exists. player_adjusted_ammo_locs holds item pointers. The destructor is out of
+// line so that std::list<item_category> (item_category is only forward declared here) stays out
+// of every includer. mod_chosen_count is protected, not private, so a test can drive it through
+// a subclass. execute() is declared here and defined by 5-2c.
+class ammo_inventory_selector : public inventory_selector
+{
+    public:
+        explicit ammo_inventory_selector( player &you, item &reload_loc,
+                                          const inventory_selector_preset &preset = default_preset );
+        ~ammo_inventory_selector() override;
+
+        drop_location execute();
+        void set_all_entries_chosen_count();
+        // True if the user changed the count for the entry returned by
+        // the most recent execute().
+        bool last_choice_count_player_adjusted() const {
+            return last_player_adjusted;
+        }
+    protected:
+        void mod_chosen_count( inventory_entry &entry, int val );
+    private:
+        item &reload_loc;
+        // Keyed on the item so the signal survives column rebuilds
+        // caused by filtering during the menu session.
+        std::vector<const item *> player_adjusted_ammo_locs;
+        bool last_player_adjusted = false;
+        // Per-well synthetic categories. std::list keeps pointers stable for
+        // inventory_entry::custom_category.
+        std::list<item_category> reload_well_categories;
+};

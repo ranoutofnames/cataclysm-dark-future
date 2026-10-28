@@ -25,6 +25,7 @@
 #include "output.h"
 #include "player.h"
 #include "point.h"
+#include "reload/reload.h"
 #include "string_formatter.h"
 #include "string_id.h"
 #include "string_input_popup.h"
@@ -4035,4 +4036,174 @@ std::vector<const reload_target *> find_all_matching_reload_targets(
         }
     }
     return out;
+}
+
+// CDF: P3-5-2b, DDA inventory_ui.cpp 4018-4026. `player &` and `item &` in place of Character &
+// and const item_location & (ADV-14 ruling 4, D1). The two register_action lines for
+// INCREASE_COUNT and DECREASE_COUNT (DDA 4022-4023) are 5-2c: the ids exist only after its
+// keybindings.json entries.
+ammo_inventory_selector::ammo_inventory_selector( player &you, item &reload_loc,
+        const inventory_selector_preset &preset ) :
+    inventory_selector( you, preset ), reload_loc( reload_loc )
+{
+    force_single_column = true;
+}
+
+ammo_inventory_selector::~ammo_inventory_selector() = default;
+
+// CDF: P3-5-2b, DDA inventory_ui.cpp 4153-4242. Items are item pointers (D1): `rt.owner` and
+// `match->owner` are the key, `&reload_loc` replaces `reload_loc`, `get_entries( return_item,
+// true )` becomes get_all_entries( is_item_entry ) over the columns that allow selecting,
+// item_category takes three arguments (the header is its name), and item_reload_option takes the
+// host as its parent argument.
+// todo: this should happen when the entries are created, but that's a different refactoring
+void ammo_inventory_selector::set_all_entries_chosen_count()
+{
+    const std::vector<reload_target> targets = get_possible_reload_targets( reload_loc );
+
+    // One synthetic category per (owner, ui_well_index) renders as a header
+    // between groups. Build once per selector lifetime; clearing would dangle
+    // pointers held by inventory_entry::custom_category.
+    std::map<std::pair<const item *, int>, const item_category *> cat_map;
+    const bool wants_separators = targets.size() > 1;
+    if( wants_separators && reload_well_categories.empty() ) {
+        int sort_rank = 0;
+        for( const reload_target &rt : targets ) {
+            const std::pair<const item *, int> key{ rt.owner, rt.ui_well_index };
+            if( cat_map.count( key ) ) {
+                continue;
+            }
+            std::string label;
+            if( rt.kind == reload_target::kind::well ) {
+                const item_pocket *well = nullptr;
+                int idx = 0;
+                for( const item_pocket *p : rt.owner->get_pockets( []( const item_pocket & ) {
+                return true;
+            } ) ) {
+                    if( idx == rt.pocket_index ) {
+                        well = p;
+                        break;
+                    }
+                    ++idx;
+                }
+                const pocket_data *pd = well ? well->get_pocket_data() : nullptr;
+                const std::string display = pd ? pd->pocket_name.translated() : std::string();
+                if( !display.empty() ) {
+                    label = display;
+                } else if( well != nullptr && !well->magazine_default().is_null() ) {
+                    label = string_format( _( "%s well" ), item::nname( well->magazine_default() ) );
+                } else {
+                    label = _( "magazine well" );
+                }
+            } else if( rt.target ) {
+                label = string_format( _( "top up %s" ), rt.target->tname() );
+            }
+            if( rt.owner != &reload_loc ) {
+                label = string_format( _( "%s: %s" ), rt.owner->tname(), label );
+            }
+            translation header = no_translation( label );
+            reload_well_categories.emplace_back(
+                item_category_id( "RELOAD_WELL_" + std::to_string( reload_well_categories.size() ) ),
+                header, sort_rank++ );
+            cat_map[key] = &reload_well_categories.back();
+        }
+    } else if( wants_separators ) {
+        // Subsequent calls: rebuild the map using existing category pointers.
+        std::set<std::pair<const item *, int>> seen;
+        auto cat_it = reload_well_categories.begin();
+        for( const reload_target &rt : targets ) {
+            const std::pair<const item *, int> key{ rt.owner, rt.ui_well_index };
+            if( !seen.insert( key ).second ) {
+                continue;
+            }
+            if( cat_it == reload_well_categories.end() ) {
+                break;
+            }
+            cat_map[key] = &*cat_it;
+            ++cat_it;
+        }
+    }
+
+    const auto is_item_entry = []( const inventory_entry & candidate ) {
+        return candidate.is_item();
+    };
+    for( inventory_column *col : get_all_columns() ) {
+        if( !col->allows_selecting() ) {
+            continue;
+        }
+        for( inventory_entry *entry : col->get_all_entries( is_item_entry ) ) {
+            item *it = entry->any_item();
+            const reload_target *match = find_matching_reload_target( targets, *it );
+            if( match == nullptr ) {
+                continue;
+            }
+            item_reload_option tmp_opt( &u, match->target, &reload_loc, *it, match->pocket_index );
+            int count = entry->get_available_count();
+            if( it->has_flag( flag_SPEEDLOADER ) || it->has_flag( flag_SPEEDLOADER_CLIP ) ) {
+                count = it->ammo_remaining( );
+            }
+            tmp_opt.qty( count );
+            entry->chosen_count = tmp_opt.qty();
+            const std::pair<const item *, int> key{ match->owner, match->ui_well_index };
+            const auto cit = cat_map.find( key );
+            if( cit != cat_map.end() ) {
+                entry->set_custom_category( cit->second );
+            }
+        }
+    }
+}
+
+// CDF: P3-5-2b, DDA inventory_ui.cpp 4244-4264. Item pointers for item_location (D1), the host
+// as the item_reload_option parent, make_entry_cell_cache( preset ) replaced by
+// update_entry_cell_cache on every column, and a non-item entry (the dummy that
+// get_highlighted() returns when nothing is highlighted) returns early like a non-ammo one.
+void ammo_inventory_selector::mod_chosen_count( inventory_entry &entry, int value )
+{
+    if( !entry.is_item() || !entry.any_item()->is_ammo() ) {
+        return;
+    }
+    const std::vector<reload_target> targets = get_possible_reload_targets( reload_loc );
+    const reload_target *match = find_matching_reload_target( targets, *entry.any_item() );
+    if( match != nullptr ) {
+        item_reload_option tmp_opt( &u, match->target, &reload_loc, *entry.any_item(),
+                                    match->pocket_index );
+        tmp_opt.qty( entry.chosen_count + value );
+        entry.chosen_count = tmp_opt.qty();
+    }
+    const item *loc = entry.any_item();
+    if( std::find( player_adjusted_ammo_locs.begin(), player_adjusted_ammo_locs.end(), loc ) ==
+        player_adjusted_ammo_locs.end() ) {
+        player_adjusted_ammo_locs.push_back( loc );
+    }
+
+    for( inventory_column *col : get_all_columns() ) {
+        col->update_entry_cell_cache( entry );
+    }
+    on_change( entry );
+}
+
+// CDF: P3-5-2b, DDA inventory_ui.cpp 1244-1248 (the non-const twin, same body); the
+// const getter is get_selected() in CDF.
+inventory_entry &inventory_column::get_highlighted()
+{
+    return const_cast<inventory_entry &>( const_cast<const inventory_column *>
+                                          ( this )->get_selected() );
+}
+
+// CDF: P3-5-2b, in place of DDA inventory_entry::make_entry_cell_cache( preset ) (DDA
+// inventory_ui.cpp 1072): recompute the cached cells of one element of entries.
+void inventory_column::update_entry_cell_cache( const inventory_entry &entry )
+{
+    const auto iter = std::find_if( entries.begin(), entries.end(),
+    [&entry]( const inventory_entry & candidate ) {
+        return &candidate == &entry;
+    } );
+    if( iter == entries.end() ) {
+        return;
+    }
+    if( entries_cell_cache.size() < entries.size() ) {
+        entries_cell_cache.resize( entries.size() );
+    }
+    entries_cell_cache[static_cast<size_t>( std::distance( entries.begin(), iter ) )] =
+        make_entry_cell_cache( entry );
 }

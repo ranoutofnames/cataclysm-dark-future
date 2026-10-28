@@ -9,6 +9,7 @@
 #include "flag.h"
 #include "inventory_ui.h"
 #include "item.h"
+#include "item_category.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
@@ -1521,5 +1522,326 @@ TEST_CASE( "cdf_reload_target_gunmod_owner_entries", "[p3][reload][5-2a]" )
         CHECK( match->kind == reload_target::kind::well );
         CHECK( match->owner == &mod );
         CHECK( match->pocket_index == mod_wells.front() );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-5-2b; CDF-only. DDA has no test of ammo_inventory_selector (a grep of DDA tests/ at
+// b4b62254ae2 for ammo_inventory_selector, set_all_entries_chosen_count and mod_chosen_count is
+// empty), so these pin DDA's behaviour (inventory_ui.cpp 4018-4026 and 4153-4264) on CDF data.
+// The selector is built headless: no ui_adaptor and no input. Items are added with add_item(),
+// the model functions are called directly, and the results are read from the column entries.
+// execute() is 5-2c and is not driven. item_location becomes item * (D1). Expected numbers come
+// from the JSON capacities (glockmag 15, stanag30 30) and from the room rules of
+// item_reload_option::qty, not from the code under test.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+
+// CDF: P3-5-2b test access. mod_chosen_count and force_single_column are protected.
+class ammo_selector_probe : public ammo_inventory_selector
+{
+    public:
+        using ammo_inventory_selector::ammo_inventory_selector;
+        using ammo_inventory_selector::mod_chosen_count;
+
+        auto single_column() const -> bool {
+            return force_single_column;
+        }
+};
+
+// CDF: P3-5-2b test access to the per-entry cell cache of a column.
+class ammo_column_probe : public inventory_column
+{
+    public:
+        using inventory_column::inventory_column;
+        using inventory_column::get_entry_cell_cache;
+};
+
+// One cell that shows the chosen count, like the AMOUNT cell of DDA's select_ammo preset.
+class chosen_count_cell_preset : public inventory_selector_preset
+{
+    public:
+        chosen_count_cell_preset() {
+            append_cell( []( const inventory_entry & entry ) {
+                return std::to_string( entry.chosen_count );
+            }, "AMOUNT" );
+        }
+};
+
+auto find_ammo_sel_entry( inventory_column &col, const item *it ) -> inventory_entry *
+{
+    for( inventory_entry &candidate : col.entries ) {
+        if( candidate.is_item() && candidate.any_item() == it ) {
+            return &candidate;
+        }
+    }
+    return nullptr;
+}
+
+// test_multimag_gun with a glockmag holding 5 of 15 in its first well and a stanag30 holding 10
+// of 30 in its second (wells in JSON order: glockmag, stanag30; TEST_DATA items.json 1467).
+auto make_partly_loaded_dual_well_gun() -> detached_ptr<item>
+{
+    auto gun = item::spawn( itype_test_multimag_gun );
+    gun->put_in( loaded_mag( itype_glockmag, itype_9mm, 5 ), pocket_type::MAGAZINE_WELL );
+    gun->put_in( loaded_mag( itype_stanag30, itype_556, 10 ), pocket_type::MAGAZINE_WELL );
+    return gun;
+}
+
+} // namespace
+
+TEST_CASE( "cdf_ammo_selector_constructs_with_single_column", "[p3][reload][ui][5-2b]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    detached_ptr<item> gun_ptr = make_dual_well_gun();
+
+    ammo_selector_probe sel( you, *gun_ptr );
+    // DDA inventory_ui.cpp 4025: the constructor sets force_single_column.
+    CHECK( sel.single_column() );
+    CHECK_FALSE( sel.last_choice_count_player_adjusted() );
+}
+
+TEST_CASE( "cdf_ammo_selector_sets_chosen_counts_and_well_headers", "[p3][reload][ui][5-2b]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+
+    SECTION( "loose ammo gets the room left in its loaded magazine under that well's header" ) {
+        detached_ptr<item> gun_ptr = make_partly_loaded_dual_well_gun();
+        detached_ptr<item> nine = item::spawn( itype_9mm, calendar::turn, 30 );
+        detached_ptr<item> five56 = item::spawn( itype_556, calendar::turn, 40 );
+        detached_ptr<item> special = item::spawn( itype_38_special, calendar::turn, 7 );
+
+        ammo_selector_probe sel( you, *gun_ptr );
+        sel.add_item( sel.own_inv_column, nine.get() );
+        sel.add_item( sel.own_inv_column, five56.get() );
+        sel.add_item( sel.own_inv_column, special.get() );
+        sel.set_all_entries_chosen_count();
+
+        const inventory_entry *nine_entry = find_ammo_sel_entry( sel.own_inv_column, nine.get() );
+        const inventory_entry *five56_entry = find_ammo_sel_entry( sel.own_inv_column, five56.get() );
+        const inventory_entry *special_entry = find_ammo_sel_entry( sel.own_inv_column,
+                                               special.get() );
+        REQUIRE( nine_entry != nullptr );
+        REQUIRE( five56_entry != nullptr );
+        REQUIRE( special_entry != nullptr );
+
+        // glockmag: capacity 15 (9mm.json), 5 loaded: room for 10. The first well in the gun's
+        // pocket list is the glockmag well, so its header is RELOAD_WELL_0.
+        CHECK( nine_entry->chosen_count == 10 );
+        CHECK( nine_entry->get_category_ptr()->id.str() == "RELOAD_WELL_0" );
+        CHECK( nine_entry->get_category_ptr()->name() == item::nname( itype_glockmag ) + " well" );
+        // stanag30: capacity 30 (223.json), 10 loaded: room for 20; second well, RELOAD_WELL_1.
+        CHECK( five56_entry->chosen_count == 20 );
+        CHECK( five56_entry->get_category_ptr()->id.str() == "RELOAD_WELL_1" );
+        CHECK( five56_entry->get_category_ptr()->name() == item::nname( itype_stanag30 ) + " well" );
+        // 38_special fits no target of this gun: count and natural category stay.
+        CHECK( special_entry->chosen_count == 0 );
+        CHECK( special_entry->get_category_ptr() == &special->get_category() );
+    }
+
+    SECTION( "a second call keeps the same category objects and counts" ) {
+        detached_ptr<item> gun_ptr = make_partly_loaded_dual_well_gun();
+        detached_ptr<item> nine = item::spawn( itype_9mm, calendar::turn, 30 );
+
+        ammo_selector_probe sel( you, *gun_ptr );
+        sel.add_item( sel.own_inv_column, nine.get() );
+        const inventory_entry *nine_entry = find_ammo_sel_entry( sel.own_inv_column, nine.get() );
+        REQUIRE( nine_entry != nullptr );
+
+        sel.set_all_entries_chosen_count();
+        const item_category *first = nine_entry->get_category_ptr();
+        CHECK( first->id.str() == "RELOAD_WELL_0" );
+        // DDA 4204-4219: the later calls rebuild the map from the existing list instead of
+        // clearing it, so the pointers held by the entries stay valid and equal.
+        sel.set_all_entries_chosen_count();
+        CHECK( nine_entry->get_category_ptr() == first );
+        CHECK( nine_entry->chosen_count == 10 );
+    }
+
+    SECTION( "a loose magazine as the host has one destination and so no well headers" ) {
+        // Host: a glockmag holding 5 of 15. It has no well and no gunmod, so get_possible_
+        // reload_targets gives it the one owner-level fallback entry (5-2a), targets.size() is 1
+        // and wants_separators is false: the entry keeps its natural category.
+        detached_ptr<item> mag_ptr = loaded_mag( itype_glockmag, itype_9mm, 5 );
+        detached_ptr<item> nine = item::spawn( itype_9mm, calendar::turn, 30 );
+
+        ammo_selector_probe sel( you, *mag_ptr );
+        sel.add_item( sel.own_inv_column, nine.get() );
+        const inventory_entry *nine_entry = find_ammo_sel_entry( sel.own_inv_column, nine.get() );
+        REQUIRE( nine_entry != nullptr );
+
+        sel.set_all_entries_chosen_count();
+        // capacity 15 - 5 loaded = 10 (pocket_index -1: the magazine's own room).
+        CHECK( nine_entry->chosen_count == 10 );
+        CHECK( nine_entry->get_category_ptr() == &nine->get_category() );
+    }
+
+    SECTION( "a magazine goes to its well, counts one, and sits under that well's header" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun );
+        detached_ptr<item> glock = loaded_mag( itype_glockmag, itype_9mm, 15 );
+        detached_ptr<item> stanag = loaded_mag( itype_stanag30, itype_556, 30 );
+
+        // The gun is unloaded: its targets are the two empty wells (2 entries, so headers).
+        ammo_selector_probe sel( you, *gun_ptr );
+        sel.add_item( sel.own_inv_column, glock.get() );
+        sel.add_item( sel.own_inv_column, stanag.get() );
+        sel.set_all_entries_chosen_count();
+
+        const inventory_entry *glock_entry = find_ammo_sel_entry( sel.own_inv_column, glock.get() );
+        const inventory_entry *stanag_entry = find_ammo_sel_entry( sel.own_inv_column, stanag.get() );
+        REQUIRE( glock_entry != nullptr );
+        REQUIRE( stanag_entry != nullptr );
+
+        // A well-targeted reload swaps one magazine: item_reload_option::qty sets 1 (reload.cpp
+        // qty(): pocket_index >= 0 on a MAGAZINE_WELL pocket).
+        CHECK( glock_entry->chosen_count == 1 );
+        CHECK( glock_entry->get_category_ptr()->id.str() == "RELOAD_WELL_0" );
+        CHECK( glock_entry->get_category_ptr()->name() == item::nname( itype_glockmag ) + " well" );
+        CHECK( stanag_entry->chosen_count == 1 );
+        CHECK( stanag_entry->get_category_ptr()->id.str() == "RELOAD_WELL_1" );
+        CHECK( stanag_entry->get_category_ptr()->name() == item::nname( itype_stanag30 ) + " well" );
+    }
+
+    // [UNSURE] the header text of the gunmod's well: tname() of the installed mod is read on
+    // both sides, the well label is the default magazine of the aux well (glockmag, first
+    // item_restriction id). If this section is red while "a magazine goes to its well" above is
+    // green, delete this section only, with a log line in the report and a Blocked line; do not
+    // change the assertions.
+    SECTION( "a gunmod's well gets the owner-prefixed header" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_id( "m4a1" ) );
+        REQUIRE( gun_ptr->put_in( make_loaded_stanag(), pocket_type::MAGAZINE_WELL ).success() );
+        REQUIRE( gun_ptr->put_in( item::spawn( itype_id( "test_multimag_aux_gun" ) ),
+                                  pocket_type::MOD ).success() );
+        item &gun = *gun_ptr;
+        REQUIRE( gun.gunmods().size() == 1 );
+        item &mod = *gun.gunmods().front();
+        detached_ptr<item> glock = loaded_mag( itype_glockmag, itype_9mm, 15 );
+
+        // Targets: the m4a1 well and its loaded stanag (key 0), the empty aux well (key 1).
+        ammo_selector_probe sel( you, gun );
+        sel.add_item( sel.own_inv_column, glock.get() );
+        sel.set_all_entries_chosen_count();
+
+        const inventory_entry *glock_entry = find_ammo_sel_entry( sel.own_inv_column, glock.get() );
+        REQUIRE( glock_entry != nullptr );
+        CHECK( glock_entry->chosen_count == 1 );
+        CHECK( glock_entry->get_category_ptr()->id.str() == "RELOAD_WELL_1" );
+        CHECK( glock_entry->get_category_ptr()->name() ==
+               mod.tname() + ": " + item::nname( itype_glockmag ) + " well" );
+    }
+}
+
+TEST_CASE( "cdf_ammo_selector_mod_chosen_count_steps_within_the_room", "[p3][reload][ui][5-2b]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    detached_ptr<item> gun_ptr = make_partly_loaded_dual_well_gun();
+    detached_ptr<item> nine = item::spawn( itype_9mm, calendar::turn, 30 );
+    detached_ptr<item> spare = loaded_mag( itype_glockmag, itype_9mm, 15 );
+    detached_ptr<item> special = item::spawn( itype_38_special, calendar::turn, 7 );
+
+    ammo_selector_probe sel( you, *gun_ptr );
+    sel.add_item( sel.own_inv_column, nine.get() );
+    sel.add_item( sel.own_inv_column, spare.get() );
+    sel.add_item( sel.own_inv_column, special.get() );
+    inventory_entry *nine_entry = find_ammo_sel_entry( sel.own_inv_column, nine.get() );
+    REQUIRE( nine_entry != nullptr );
+
+    // The glockmag in the gun holds 5 of 15, so the room for loose 9mm is 10. Each section
+    // sets its own starting count directly, so none depends on set_all_entries_chosen_count.
+    SECTION( "a step down and back up" ) {
+        nine_entry->chosen_count = 10;
+        sel.mod_chosen_count( *nine_entry, -3 );
+        CHECK( nine_entry->chosen_count == 7 );
+        sel.mod_chosen_count( *nine_entry, 1 );
+        CHECK( nine_entry->chosen_count == 8 );
+    }
+
+    SECTION( "clamped to the room in the magazine" ) {
+        nine_entry->chosen_count = 4;
+        sel.mod_chosen_count( *nine_entry, 100 );
+        CHECK( nine_entry->chosen_count == 10 );
+    }
+
+    // [UNSURE] relies on DDA's own size_t + int wrap: 10 + -100 reaches qty( int ) as -90, the
+    // smallest limit, and qty() raises the result to 1. If this section is red while the two
+    // above are green, delete this section only, with a log line in the report and a Blocked
+    // line; do not change the assertion.
+    SECTION( "never below one" ) {
+        nine_entry->chosen_count = 10;
+        sel.mod_chosen_count( *nine_entry, -100 );
+        CHECK( nine_entry->chosen_count == 1 );
+    }
+
+    SECTION( "entries that are not loose ammo are left alone" ) {
+        // A magazine is not ammo (early return), 38_special is ammo but no target takes it
+        // (no match: count untouched), and a default entry is not an item (the 5-2b guard).
+        inventory_entry *spare_entry = find_ammo_sel_entry( sel.own_inv_column, spare.get() );
+        inventory_entry *special_entry = find_ammo_sel_entry( sel.own_inv_column, special.get() );
+        REQUIRE( spare_entry != nullptr );
+        REQUIRE( special_entry != nullptr );
+        spare_entry->chosen_count = 1;
+        special_entry->chosen_count = 0;
+        inventory_entry blank;
+
+        sel.mod_chosen_count( *spare_entry, 5 );
+        sel.mod_chosen_count( *special_entry, 3 );
+        sel.mod_chosen_count( blank, 1 );
+        CHECK( spare_entry->chosen_count == 1 );
+        CHECK( special_entry->chosen_count == 0 );
+        CHECK( blank.chosen_count == 0 );
+    }
+}
+
+TEST_CASE( "cdf_inventory_column_update_entry_cell_cache_and_get_highlighted",
+           "[p3][reload][ui][5-2b]" )
+{
+    clear_all_state();
+    chosen_count_cell_preset preset;
+    ammo_column_probe col( preset );
+    detached_ptr<item> ammo = item::spawn( itype_9mm, calendar::turn, 30 );
+
+    SECTION( "an empty column highlights no item" ) {
+        CHECK_FALSE( col.get_highlighted().is_item() );
+    }
+
+    SECTION( "the highlighted entry is the mutable selected entry" ) {
+        col.add_entry( inventory_entry( std::vector<item *> { ammo.get() } ) );
+        REQUIRE( col.entries.size() == 1 );
+
+        inventory_entry &highlighted = col.get_highlighted();
+        CHECK( &highlighted == &col.entries.front() );
+        CHECK( &highlighted == &col.get_selected() );
+        highlighted.chosen_count = 4;
+        CHECK( col.entries.front().chosen_count == 4 );
+    }
+
+    SECTION( "update_entry_cell_cache recomputes one entry's cached cells" ) {
+        col.add_entry( inventory_entry( std::vector<item *> { ammo.get() } ) );
+        REQUIRE( col.entries.size() == 1 );
+
+        CHECK( col.get_entry_cell_cache( 0 ).text[1] == "0" );
+        col.entries.front().chosen_count = 7;
+        // The cache is lazy and keeps the old text until it is refreshed.
+        CHECK( col.get_entry_cell_cache( 0 ).text[1] == "0" );
+        col.update_entry_cell_cache( col.entries.front() );
+        CHECK( col.get_entry_cell_cache( 0 ).text[1] == "7" );
+    }
+
+    SECTION( "an entry that is not in the column is ignored" ) {
+        col.add_entry( inventory_entry( std::vector<item *> { ammo.get() } ) );
+        REQUIRE( col.entries.size() == 1 );
+
+        CHECK( col.get_entry_cell_cache( 0 ).text[1] == "0" );
+        col.entries.front().chosen_count = 5;
+        inventory_entry foreign( std::vector<item *> { ammo.get() } );
+        foreign.chosen_count = 9;
+        col.update_entry_cell_cache( foreign );
+        // Neither the foreign count nor the stale count of the real entry reached the cache.
+        CHECK( col.get_entry_cell_cache( 0 ).text[1] == "0" );
     }
 }
