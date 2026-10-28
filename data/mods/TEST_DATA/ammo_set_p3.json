@@ -1,0 +1,10 @@
+[
+  {
+    "//": "CDF: DDA's cz75 offers cz75mag_10rd/16rd/20rd/26rd (default 10rd); CDF's offers 12rd/20rd/26rd. Overridden so the ported DDA ammo_set WELL tests keep their assertions as written (10rd/16rd exist in TEST_DATA items.json; given a legacy capacity field there because CDF ammo_set sizes from magazine->capacity, not pocket_data).",
+    "id": "cz75",
+    "copy-from": "cz75",
+    "name": { "str": "CZ-75" },
+    "type": "GUN",
+    "magazines": [ [ "9mm", [ "cz75mag_10rd", "cz75mag_16rd", "cz75mag_20rd", "cz75mag_26rd" ] ] ]
+  }
+]

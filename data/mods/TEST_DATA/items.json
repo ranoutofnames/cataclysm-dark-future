@@ -2176,6 +2176,7 @@
     "color": "light_gray",
     "ammo_type": [ "9mm" ],
     "flags": [ "MAG_COMPACT" ],
+    "capacity": 16,
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 16 } } ]
   },
   {
@@ -2185,6 +2186,7 @@
     "name": { "str": "CZ 75 10-round magazine" },
     "description": "A 10-round steel box magazine for use with the CZ 75.",
     "copy-from": "cz75mag_16rd",
+    "capacity": 10,
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 10 } } ]
   },
   {
