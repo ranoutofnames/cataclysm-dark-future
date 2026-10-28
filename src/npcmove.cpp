@@ -1778,6 +1778,7 @@ npc_action npc::method_of_attack()
         }
     }
 
+    // CDF: DDA npc_attack.cpp:458-461 reloads with no can_reload_current() check; kept stricter
     if( !primary_weapon().ammo_sufficient( this ) && can_reload_current() ) {
         add_msg( m_debug, "%s is reloading", disp_name() );
         return npc_reload;
@@ -1836,6 +1837,18 @@ static bool wants_to_reload_with( const item &weap, const item &ammo, bool dange
     return combat_reload || want_swap;
 }
 
+// CDF: DDA npc::select_ammo empty-top rule (DDA npcmove.cpp:2833-2837): when the best source
+// holds nothing, nothing is selected. Order is reload_selection::order_ammo (same as DDA's sort);
+// the first compatible well is used (DDA TODO(multimag), npcmove.cpp:2799).
+static item_reload_option npc_select_ammo( const npc &who, item &weap )
+{
+    item_reload_option opt = reload_selection::prepare( who, weap ).selected;
+    if( opt && opt.ammo->ammo_remaining() == 0 ) {
+        return item_reload_option();
+    }
+    return opt;
+}
+
 void npc::check_or_reload_cbm()
 {
     if( get_npc_ai_info_cache( npc_ai_info::reloadable_cbms ) >= 0.0 ) {
@@ -1848,7 +1861,7 @@ void npc::check_or_reload_cbm()
     if( !checklist.empty() ) {
         for( auto& [bid, itm] : checklist ) {
             bionic &bio = get_bionic_state( bid );
-            const item *it_loc = reload_selection::prepare( *this, *itm ).selected.ammo;
+            const item *it_loc = npc_select_ammo( *this, *itm ).ammo;
             if( it_loc && wants_to_reload_with( *itm, *it_loc, ai_cache.danger > 0 ) ) {
                 do_reload( *itm );
                 bio.ammo_loaded =
@@ -1880,7 +1893,7 @@ item &npc::find_reloadable()
         if( !wants_to_reload( *this, *node ) ) {
             return VisitResponse::NEXT;
         }
-        const auto it_loc = reload_selection::prepare( *this, *node ).selected.ammo;
+        const auto it_loc = npc_select_ammo( *this, *node ).ammo;
         if( it_loc && wants_to_reload_with( *node, *it_loc, ai_cache.danger > 0 ) ) {
             reloadable = node;
             return VisitResponse::ABORT;
@@ -1917,7 +1930,7 @@ item *npc::find_usable_ammo( item &weap )
         return nullptr;
     }
 
-    auto loc = reload_selection::prepare( *this, weap ).selected.ammo;
+    auto loc = npc_select_ammo( *this, weap ).ammo;
     if( !loc || !wants_to_reload_with( weap, *loc, ai_cache.danger > 0 ) ) {
         return nullptr;
     }
@@ -5048,7 +5061,7 @@ void npc::do_reload( item &it )
         move_pause();
         return;
     }
-    auto reload_opt = reload_selection::prepare( *this, it ).selected;
+    auto reload_opt = npc_select_ammo( *this, it );
 
     if( !reload_opt ) {
         debugmsg( "do_reload failed: no usable ammo for %s", it.tname() );

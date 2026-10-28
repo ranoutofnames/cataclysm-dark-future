@@ -2101,6 +2101,7 @@ int npc::value( const item &it, int market_price ) const
         const ammotype &at = it.ammo_type();
         if( primary_weapon().is_gun() && primary_weapon().ammo_types().contains( at ) ) {
             // TODO: magazines - don't count ammo as usable if the weapon isn't.
+            // CDF: DDA uses 0.2 (double); kept at 14, deferred
             ret += 14;
         }
 
