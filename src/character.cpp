@@ -44,6 +44,7 @@
 #include "int_id.h"
 #include "item_contents.h"
 #include "item_factory.h"
+#include "item_functions.h"
 #include "item_pocket.h"
 #include "pocket_data.h"
 #include "item_hauling.h"
@@ -11836,9 +11837,24 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
         if( e->typeId() == what && e->has_flag( flag_USE_UPS ) ) {
             has_tool_with_UPS = true;
         }
-        if( e->is_tool() ) {
+        if( e->is_tool() || e->is_gun() ) {
             // CDF: in_tools matches by loaded ammo too (DDA character.cpp:5778); UPS detection above stays typeId-only
             if( e->typeId() == what || ( in_tools && e->ammo_current() == what ) ) {
+                if( e->uses_firing_requirements() ) {
+                    // DDA character.cpp:5755-5821 + item.cpp:4016-4048. CDF: DDA visits every item and
+                    // calls item::use_charges on each, which descends again; CDF's lambda is the single
+                    // scan and bills the tool here through the shared helper, so a multimag tool is
+                    // billed exactly once (plan 8-4f section 1). UPS tail of multimag_drain is 4-b2.
+                    const int n = item_funcs::use_charges_via_tool_uses( *e, qty, p, this );
+                    if( n > 0 ) {
+                        res.push_back( item::spawn( *e ) );
+                        qty -= n;
+                    }
+                    return VisitResponse::SKIP;
+                }
+                if( !e->is_tool() ) {
+                    return VisitResponse::SKIP;
+                }
                 int n = std::min( e->ammo_remaining(), qty );
                 qty -= n;
 

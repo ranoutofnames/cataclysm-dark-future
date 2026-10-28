@@ -2,6 +2,7 @@
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "character.h"
+#include "debug_log_capture.h"
 #include "flag.h"
 #include "item.h"
 #include "item_pocket.h"
@@ -14,7 +15,9 @@
 #include "type_id.h"
 #include "units.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 // 8-3a (OD-2): a legacy USES_BIONIC_POWER tool pulls the avatar's bionic power
 // into the charges_of count (DDA visitable.cpp:1190-1193).
@@ -332,4 +335,78 @@ TEST_CASE( "item_use_charges_in_tools_matches_ammo_current", "[p3][visitable]" )
                                  true );
     CHECK( qty == 0 );
     CHECK( obj.ammo_remaining() == 6 );
+}
+
+// DDA tests/multimag_test.cpp:1958-1975.
+// CDF: Character::use_charges returns detached_ptrs; DDA calls item::use_charges via item_location.
+TEST_CASE( "Character_use_charges_drains_multimag_tool_via_consume_tool_uses", "[p3][firing]" )
+{
+    clear_all_state();
+    clear_avatar();
+    Character &chr = get_avatar();
+    item &tool = chr.i_add( make_multimag_consume_tool( 12, 30 ) );
+    REQUIRE( tool.uses_firing_requirements() );
+
+    // factor=1, well_a qty=2, well_b qty=1, 1 use -> 2 + 1 drain
+    std::vector<detached_ptr<item>> used = chr.use_charges( itype_id( "test_multimag_tool_consume" ),
+                                           1 );
+    CHECK( used.size() == 1 );
+    CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 10 );
+    CHECK( tool.ammo_remaining_in_pocket( "well_b" ) == 29 );
+}
+
+// CDF-only regression: DDA's Character::use_charges visits every item and calls item::use_charges
+// on each, which itself descends; ported literally that bills a multimag tool more than once.
+// Here a tool at top level and one inside a worn container must be billed exactly one use in total.
+TEST_CASE( "Character_use_charges_bills_each_multimag_tool_once", "[p3][firing]" )
+{
+    clear_all_state();
+    clear_avatar();
+    Character &chr = get_avatar();
+    item &tool_a = chr.i_add( make_multimag_consume_tool( 12, 30 ) );
+    detached_ptr<item> tool_b_owned = make_multimag_consume_tool( 12, 30 );
+    item &tool_b = *tool_b_owned;
+    detached_ptr<item> pack = item::spawn( itype_id( "backpack" ) );
+    REQUIRE( pack->put_in( std::move( tool_b_owned ), pocket_type::CONTAINER ).success() );
+    chr.wear_item( std::move( pack ), false );
+    REQUIRE( chr.amount_of( itype_id( "test_multimag_tool_consume" ) ) == 2 );
+
+    std::vector<detached_ptr<item>> used = chr.use_charges( itype_id( "test_multimag_tool_consume" ),
+                                           1 );
+    CHECK( used.size() == 1 );
+    const int well_a = tool_a.ammo_remaining_in_pocket( "well_a" ) +
+                       tool_b.ammo_remaining_in_pocket( "well_a" );
+    const int well_b = tool_a.ammo_remaining_in_pocket( "well_b" ) +
+                       tool_b.ammo_remaining_in_pocket( "well_b" );
+    CHECK( well_a == 12 + 10 );
+    CHECK( well_b == 30 + 29 );
+}
+
+// Character-path counterpart of legacy_charges_per_use_factor_non_divisible_hard_fails
+// (DDA multimag_test.cpp:1847-1870). CDF-only. The guard message must appear exactly once.
+TEST_CASE( "Character_use_charges_multimag_non_divisible_hard_fails", "[p3][firing]" )
+{
+    clear_all_state();
+    clear_avatar();
+    Character &chr = get_avatar();
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_tool_factor" ) );
+    detached_ptr<item> mag_a = item::spawn( itype_id( "glockmag" ) );
+    mag_a->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+    REQUIRE( tool->put_in( std::move( mag_a ), pocket_type::MAGAZINE_WELL ).success() );
+    item &carried = chr.i_add( std::move( tool ) );
+    REQUIRE( carried.uses_firing_requirements() );
+
+    std::vector<detached_ptr<item>> used;
+    const std::string captured = capture_debugmsg_during( [&]() {
+        used = chr.use_charges( itype_id( "test_multimag_tool_factor" ), 7 ); // factor=5
+    } );
+    size_t count = 0;
+    for( size_t pos = captured.find( "not a multiple" ); pos != std::string::npos;
+         pos = captured.find( "not a multiple", pos + 1 ) ) {
+        count++;
+    }
+    CHECK( captured.find( "factor" ) != std::string::npos );
+    CHECK( count == 1 );
+    CHECK( used.empty() );
+    CHECK( carried.ammo_remaining_in_pocket( "well_a" ) == 15 );
 }
