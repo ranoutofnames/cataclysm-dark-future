@@ -1,0 +1,23 @@
+[
+  {
+    "//": "CDF: P3-5-3b. No shipped item names a magazine pocket, so the pocket_name branches of the reload destination labels (select_ammo) need these two fixtures. Same shapes as test_multimag_gun_same_type and test_multimag_gun_integral_ammo (items.json), with a pocket name added.",
+    "id": "p3_dest_named_wells_gun",
+    "type": "GUN",
+    "name": { "str": "p3 gun with named magazine wells" },
+    "copy-from": "test_multimag_gun_same_type",
+    "pocket_data": [
+      { "name": { "str": "upper well" }, "max_item_length": "2 km", "magazine_well": "250 ml", "pocket_type": "MAGAZINE_WELL", "item_restriction": [ "glockmag" ] },
+      { "name": { "str": "lower well" }, "max_item_length": "2 km", "magazine_well": "250 ml", "pocket_type": "MAGAZINE_WELL", "item_restriction": [ "glockmag" ] }
+    ]
+  },
+  {
+    "id": "p3_dest_named_integral_gun",
+    "type": "GUN",
+    "name": { "str": "p3 gun with a named integral magazine" },
+    "copy-from": "test_multimag_gun_integral_ammo",
+    "pocket_data": [
+      { "id": "ammo", "name": { "str": "chamber" }, "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 1 } },
+      { "id": "power", "magazine_well": "500 ml", "pocket_type": "MAGAZINE_WELL", "max_item_length": "2 km", "item_restriction": [ "heavy_battery_cell" ] }
+    ]
+  }
+]

@@ -2723,7 +2723,102 @@ bool game_menus::inv::select_ammo_shows( item &target, const item &it, bool empt
     return find_matching_reload_target( targets, it ) != nullptr;
 }
 
-// CDF: P3-5-3a, DDA game_inventory.cpp 3288-3433 WITHOUT the destination menu (3325-3421, 5-3b).
+// CDF: P3-5-3b, DDA game_inventory.cpp 3335-3414 (the label loop of the destination menu) as a
+// function, so that tests/cdf_item_ui_p3_test.cpp can read the labels; the uilist stays in
+// select_ammo. Declared here and in that test, not in game_inventory.h (a test hook there would
+// rebuild its 26 includers); keep the two signatures identical.
+namespace game_menus
+{
+namespace inv
+{
+auto reload_destination_labels( const std::vector<const reload_target *> &matches )
+-> std::vector<std::string>;
+} // namespace inv
+} // namespace game_menus
+
+auto game_menus::inv::reload_destination_labels( const std::vector<const reload_target *> &matches )
+-> std::vector<std::string>
+{
+    // Disambiguate: prompt the player, suffixing labels with (well N) when
+    // labels would otherwise collide on the same owner.
+    std::map<const item *, int> wells_per_owner;
+    std::map<std::pair<const item *, itype_id>, int> mags_per_owner_type;
+    for( const reload_target *rt : matches ) {
+        if( rt->kind == reload_target::kind::well ) {
+            wells_per_owner[rt->owner]++;
+        } else {
+            mags_per_owner_type[ {rt->owner, rt->target->typeId()}]++;
+        }
+    }
+    std::map<const item *, int> well_counters;
+    std::map<std::pair<const item *, itype_id>, int> mag_counters;
+    std::vector<std::string> labels;
+    for( const reload_target *match : matches ) {
+        const reload_target &rt = *match;
+        std::string label;
+        if( rt.kind == reload_target::kind::well ) {
+            int idx = 0;
+            std::string well_desc;
+            for( const item_pocket *p : rt.owner->get_pockets( []( const item_pocket & ) {
+            return true;
+        } ) ) {
+                if( idx == rt.pocket_index && p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                    const pocket_data *pd = p->get_pocket_data();
+                    const std::string display = pd ? pd->pocket_name.translated() : std::string();
+                    const itype_id default_mag = p->magazine_default();
+                    if( !display.empty() ) {
+                        well_desc = display;
+                    } else if( !default_mag.is_null() ) {
+                        well_desc = item::nname( default_mag, 1 );
+                    } else {
+                        well_desc = string_format( _( "magazine well %d" ), rt.ui_well_index + 1 );
+                    }
+                    break;
+                }
+                ++idx;
+            }
+            label = string_format( _( "%s: %s" ), rt.owner->tname(), well_desc );
+            if( wells_per_owner[rt.owner] > 1 ) {
+                const int n = ++well_counters[rt.owner];
+                //~ %1$s is owner+well description, %2$d is 1-indexed well number on that owner
+                label = string_format( _( "%1$s (well %2$d)" ), label, n );
+            }
+        } else if( rt.kind == reload_target::kind::integral_magazine ) {
+            int idx = 0;
+            std::string mag_desc;
+            for( const item_pocket *p : rt.owner->get_pockets( []( const item_pocket & ) {
+            return true;
+        } ) ) {
+                if( idx == rt.pocket_index && p->is_type( pocket_type::MAGAZINE ) ) {
+                    const pocket_data *pd = p->get_pocket_data();
+                    const std::string display = pd ? pd->pocket_name.translated() : std::string();
+                    if( !display.empty() ) {
+                        mag_desc = display;
+                    }
+                    break;
+                }
+                ++idx;
+            }
+            label = mag_desc.empty()
+                    ? string_format( _( "%s: integral magazine" ), rt.owner->tname() )
+                    : string_format( _( "%s: %s" ), rt.owner->tname(), mag_desc );
+        } else {
+            //~ %1$s is the gun or gunmod that holds the magazine, %2$s is the magazine's tname
+            label = string_format( _( "%1$s: top up %2$s" ), rt.owner->tname(),
+                                   rt.target->tname() );
+            const std::pair<const item *, itype_id> key { rt.owner, rt.target->typeId() };
+            if( mags_per_owner_type[key] > 1 ) {
+                const int n = ++mag_counters[key];
+                //~ %1$s is "<owner>: top up <mag name>", %2$d is 1-indexed well number on that owner
+                label = string_format( _( "%1$s (well %2$d)" ), label, n );
+            }
+        }
+        labels.push_back( label );
+    }
+    return labels;
+}
+
+// CDF: P3-5-3a, DDA game_inventory.cpp 3288-3433; the destination menu (3334-3421) is P3-5-3b.
 // `player &` and `item &` in place of Character & and const item_location &, item_reload_option
 // for item::reload_option, drop_location is { loc, count } here (not first / second), and the
 // trailing include_potential is CDF-only (ADV-14 ruling 4): accepted for the 6-3b and 8-2a-sel
@@ -2775,9 +2870,22 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
     const reload_target *match = matches.front();
     bool disambiguated = false;
     if( matches.size() > 1 ) {
-        // CDF: P3-5-3a: 5-3b hook. DDA 3325-3421 asks "Reload which destination on %s?" here,
-        // sets match to the chosen entry of matches and disambiguated to true. Until 5-3b the
-        // first match is used.
+        // CDF: P3-5-3b, DDA 3334-3421. The label loop (3335-3414) is reload_destination_labels, so
+        // that a test can read the labels; the uilist, its title, the cancel return and the two
+        // assignments are DDA's.
+        const std::vector<std::string> labels = reload_destination_labels( matches );
+        uilist menu;
+        menu.text = string_format( _( "Reload which destination on %s?" ),
+                                   loc.display_name() );
+        for( size_t i = 0; i < labels.size(); ++i ) {
+            menu.addentry( static_cast<int>( i ), true, MENU_AUTOASSIGN, labels[i] );
+        }
+        menu.query();
+        if( menu.ret < 0 || menu.ret >= static_cast<int>( matches.size() ) ) {
+            return item_reload_option();
+        }
+        match = matches[menu.ret];
+        disambiguated = true;
     }
 
     item_reload_option opt( &you, match->target, &loc, *selected.loc, match->pocket_index );

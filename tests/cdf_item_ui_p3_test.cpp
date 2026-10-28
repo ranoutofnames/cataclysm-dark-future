@@ -2,6 +2,7 @@
 #include "calendar.h"
 #include "carried_stacks.h"
 #include "catch/catch.hpp"
+#include "debug.h"
 #include "game_inventory.h"
 #include "input.h"
 #include "inventory_ui.h"
@@ -323,5 +324,244 @@ TEST_CASE( "select_ammo_returns_the_chosen_source_without_a_menu", "[p3][ui][5-3
 
         const item_reload_option opt = game_menus::inv::select_ammo( you, gun );
         CHECK_FALSE( opt );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-5-3b (the "Reload which destination on %s?" menu of select_ammo); CDF-only. DDA has no
+// test of the menu (a grep of DDA tests/ at b4b62254ae2 for "which destination", "(well ", "top up"
+// and find_all_matching_reload_targets finds only multimag_test.cpp 741-780, get_possible_reload_targets).
+// The labels are tested through reload_destination_labels, the function that builds them. The menu
+// itself is a uilist, which in test mode logs a debugmsg and answers UILIST_ERROR, so the select_ammo
+// case reads that cancel path with capture_debugmsg_during, as cdf_item_reload_p3_test.cpp does for the
+// uilist of reload_overflow_drops_item_when_no_room_via_actor. Choosing an entry, and the INT_MAX
+// refill after it, need input: owner checklist row 38. item_location becomes item * (D1). Expected
+// labels are built from the item names read in the JSON ("Glock magazine" 9mm.json 62, "STANAG
+// 30-round magazine" 223.json 143, "heavy battery" battery.json 244, the pocket names of
+// reload_dest_p3.json) and from tname() of the same items, not from the code under test.
+// ---------------------------------------------------------------------------
+
+namespace game_menus::inv
+{
+// CDF: P3-5-3b. Defined in src/game_inventory.cpp, which declares it itself; it is not in
+// game_inventory.h (a test hook there would rebuild its 26 includers). Keep the signature identical.
+auto reload_destination_labels( const std::vector<const reload_target *> &matches )
+-> std::vector<std::string>;
+} // namespace game_menus::inv
+
+static const itype_id itype_debug_gun_with_mag_well( "debug_gun_with_mag_well" );
+static const itype_id itype_p3_dest_named_integral_gun( "p3_dest_named_integral_gun" );
+static const itype_id itype_p3_dest_named_wells_gun( "p3_dest_named_wells_gun" );
+static const itype_id itype_test_multimag_gun_integral_ammo( "test_multimag_gun_integral_ammo" );
+static const itype_id itype_test_multimag_gun_same_type( "test_multimag_gun_same_type" );
+
+namespace
+{
+
+// The labels of the targets at the given positions of `targets`, in that order.
+auto labels_of( const std::vector<reload_target> &targets, const std::vector<size_t> &which )
+-> std::vector<std::string>
+{
+    std::vector<const reload_target *> matches;
+    for( const size_t i : which ) {
+        matches.push_back( &targets.at( i ) );
+    }
+    return game_menus::inv::reload_destination_labels( matches );
+}
+
+} // namespace
+
+TEST_CASE( "reload_destination_labels_name_the_wells", "[p3][ui][5-3b]" )
+{
+    clear_all_state();
+
+    SECTION( "a single well is named by its default magazine and has no number" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // test_multimag_gun: a glockmag well, then a stanag30 well (TEST_DATA items.json 1467-1488).
+        REQUIRE( targets.size() == 2 );
+        const std::vector<std::string> expected = { gun.tname() + ": Glock magazine" };
+        CHECK( labels_of( targets, { 0 } ) == expected );
+    }
+
+    SECTION( "wells of one gun are numbered in the order of the matches" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun_same_type );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // test_multimag_gun_same_type: two glockmag wells (TEST_DATA items.json 1489-1510).
+        REQUIRE( targets.size() == 2 );
+        const std::string owner = gun.tname();
+        const std::vector<std::string> expected = { owner + ": Glock magazine (well 1)",
+                                                    owner + ": Glock magazine (well 2)"
+                                                  };
+        CHECK( labels_of( targets, { 0, 1 } ) == expected );
+    }
+
+    SECTION( "the number follows the order of the matches, not the pocket" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        REQUIRE( targets.size() == 2 );
+        const std::string owner = gun.tname();
+        // Wells of different magazine types of one owner are numbered too (DDA 3341, 3376).
+        const std::vector<std::string> expected = { owner + ": STANAG 30-round magazine (well 1)",
+                                                    owner + ": Glock magazine (well 2)"
+                                                  };
+        CHECK( labels_of( targets, { 1, 0 } ) == expected );
+    }
+
+    SECTION( "a pocket name is used in place of the default magazine name" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_p3_dest_named_wells_gun );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // reload_dest_p3.json: two glockmag wells named "upper well" and "lower well".
+        REQUIRE( targets.size() == 2 );
+        const std::string owner = gun.tname();
+        const std::vector<std::string> expected = { owner + ": upper well (well 1)",
+                                                    owner + ": lower well (well 2)"
+                                                  };
+        CHECK( labels_of( targets, { 0, 1 } ) == expected );
+    }
+}
+
+TEST_CASE( "reload_destination_labels_name_integral_and_loaded_magazines", "[p3][ui][5-3b]" )
+{
+    clear_all_state();
+
+    SECTION( "an integral magazine without a pocket name" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun_integral_ammo );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // Pocket order of the fixture: the 9mm MAGAZINE pocket, then the battery well (items.json 1868-1896).
+        REQUIRE( targets.size() == 2 );
+        REQUIRE( targets[0].kind == reload_target::kind::integral_magazine );
+        const std::string owner = gun.tname();
+        const std::vector<std::string> expected = { owner + ": integral magazine",
+                                                    owner + ": heavy battery"
+                                                  };
+        CHECK( labels_of( targets, { 0, 1 } ) == expected );
+    }
+
+    SECTION( "an integral magazine with a pocket name" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_p3_dest_named_integral_gun );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        REQUIRE( targets.size() == 2 );
+        REQUIRE( targets[0].kind == reload_target::kind::integral_magazine );
+        const std::string owner = gun.tname();
+        const std::vector<std::string> expected = { owner + ": chamber", owner + ": heavy battery" };
+        CHECK( labels_of( targets, { 0, 1 } ) == expected );
+    }
+
+    SECTION( "a loaded magazine is a top up of that magazine, numbered only among its own type" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun );
+        detached_ptr<item> glock = loaded_mag( itype_glockmag, itype_9mm, 5 );
+        detached_ptr<item> stanag = loaded_mag( itype_stanag30, itype_556, 5 );
+        item &glock_mag = *glock;
+        item &stanag_mag = *stanag;
+        gun_ptr->put_in( std::move( glock ), pocket_type::MAGAZINE_WELL );
+        gun_ptr->put_in( std::move( stanag ), pocket_type::MAGAZINE_WELL );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // Order: well 0, the glockmag in it, well 1, the stanag30 in it.
+        REQUIRE( targets.size() == 4 );
+        REQUIRE( targets[1].kind == reload_target::kind::loaded_mag );
+        REQUIRE( targets[3].kind == reload_target::kind::loaded_mag );
+        const std::string owner = gun.tname();
+        const std::vector<std::string> expected = { owner + ": top up " + glock_mag.tname(),
+                                                    owner + ": top up " + stanag_mag.tname()
+                                                  };
+        CHECK( labels_of( targets, { 1, 3 } ) == expected );
+    }
+
+    SECTION( "two loaded magazines of one type in one gun are numbered" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun_same_type );
+        detached_ptr<item> first = loaded_mag( itype_glockmag, itype_9mm, 5 );
+        detached_ptr<item> second = loaded_mag( itype_glockmag, itype_9mm, 7 );
+        item &first_mag = *first;
+        item &second_mag = *second;
+        // CDF: wells filled one by one, put_in routes both magazines into the first well (see cdf_item_reload_p3_test.cpp ~1300)
+        std::vector<item_pocket *> wells;
+        for( item_pocket *p : gun_ptr->get_pockets( []( const item_pocket & pp ) {
+        return pp.is_type( pocket_type::MAGAZINE_WELL );
+        } ) ) {
+            wells.push_back( p );
+        }
+        REQUIRE( wells.size() == 2 );
+        REQUIRE( wells[0]->insert_item( std::move( first ) ).success() );
+        REQUIRE( wells[1]->insert_item( std::move( second ) ).success() );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        REQUIRE( targets.size() == 4 );
+        REQUIRE( targets[1].kind == reload_target::kind::loaded_mag );
+        REQUIRE( targets[3].kind == reload_target::kind::loaded_mag );
+        const std::string owner = gun.tname();
+        const std::vector<std::string> expected = { owner + ": top up " + targets[1].target->tname() + " (well 1)",
+                                                    owner + ": top up " + targets[3].target->tname() + " (well 2)"
+                                                  };
+        // The two targets are the two magazines, whichever well each went into.
+        REQUIRE( ( targets[1].target == &first_mag || targets[1].target == &second_mag ) );
+        CHECK( labels_of( targets, { 1, 3 } ) == expected );
+    }
+
+    SECTION( "wells and loaded magazines are counted apart" ) {
+        detached_ptr<item> gun_ptr = item::spawn( itype_test_multimag_gun_same_type );
+        detached_ptr<item> loaded = loaded_mag( itype_glockmag, itype_9mm, 5 );
+        item &mag = *loaded;
+        gun_ptr->put_in( std::move( loaded ), pocket_type::MAGAZINE_WELL );
+        item &gun = *gun_ptr;
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // Order: well 0, the glockmag in it, well 1 (empty).
+        REQUIRE( targets.size() == 3 );
+        REQUIRE( targets[1].kind == reload_target::kind::loaded_mag );
+        const std::string owner = gun.tname();
+        // Two wells are numbered; the one magazine is alone of its type and is not.
+        const std::vector<std::string> expected = { owner + ": Glock magazine (well 1)",
+                                                    owner + ": top up " + mag.tname(),
+                                                    owner + ": Glock magazine (well 2)"
+                                                  };
+        CHECK( labels_of( targets, { 0, 1, 2 } ) == expected );
+    }
+}
+
+TEST_CASE( "select_ammo_asks_which_destination_for_a_source_that_fits_several", "[p3][ui][5-3b]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_id( "backpack" ) ), false );
+
+    SECTION( "a source that fits two wells opens the destination menu, and cancelling it gives an empty option" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun_same_type ) );
+        item &glock = you.i_add( loaded_mag( itype_glockmag, itype_9mm, 15 ) );
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // Both glockmag wells take the magazine, so the choice of destination is the player's.
+        REQUIRE( find_all_matching_reload_targets( targets, glock ).size() == 2 );
+        // One listed source and prompt off: select_ammo does not reach execute() (which would spin).
+        REQUIRE( listed_candidates( you, gun ) == 1 );
+
+        bool chose = true;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            chose = static_cast<bool>( game_menus::inv::select_ammo( you, gun ) );
+        } );
+        // The uilist answers UILIST_ERROR in test mode: DDA's cancel branch, an empty option.
+        CHECK_FALSE( chose );
+        CHECK( dmsg.find( "test mode" ) != std::string::npos );
+    }
+
+    // [UNSURE] relies on a normal select_ammo call logging nothing at all (capture_debugmsg_during also
+    // returns the captured log). If this section is red on dmsg while the other section of this case is
+    // green, delete this section only, with a log line in the report and a Blocked line.
+    SECTION( "a source that fits one well takes no menu" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun ) );
+        you.i_add( loaded_mag( itype_glockmag, itype_9mm, 15 ) );
+        REQUIRE( listed_candidates( you, gun ) == 1 );
+
+        bool chose = false;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            chose = static_cast<bool>( game_menus::inv::select_ammo( you, gun ) );
+        } );
+        CHECK( chose );
+        CHECK( dmsg.empty() );
     }
 }
