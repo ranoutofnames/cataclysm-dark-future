@@ -1,8 +1,10 @@
 #include "item_functions.h"
 
 #include "character.h"
+#include "debug.h"
 #include "item.h"
 #include "itype.h"
+#include "map/map.h"
 #include "units.h"
 
 static flag_id flag_NO_UNLOAD( "NO_UNLOAD" );
@@ -65,6 +67,22 @@ int shots_remaining( const Character &who, const item &it )
         // Effectively infinite ammo.
         return item::INFINITE_CHARGES;
     }
+}
+
+// CDF: shared helper, see item_functions.h
+auto use_charges_via_tool_uses( item &it, int qty, const tripoint_bub_ms &pos,
+                                Character *carrier ) -> int
+{
+    const int factor = it.type ? it.type->legacy_charges_per_use_factor : 1;
+    if( factor < 1 || qty % factor != 0 ) {
+        debugmsg( "use_charges: %s requested %d charges with legacy_charges_per_use_factor %d "
+                  "(not a multiple); recipe / caller needs to be re-baselined to uses",
+                  it.tname(), qty, factor );
+        return 0;
+    }
+    const int wanted_uses = qty / factor;
+    const int got_uses = it.consume_tool_uses( wanted_uses, get_map(), pos, carrier );
+    return got_uses * factor;
 }
 
 } // namespace item_funcs

@@ -6,11 +6,13 @@
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "debug.h"
+#include "debug_log_capture.h"
 #include "examine_item_menu.h"
 #include "flag.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_factory.h"
+#include "item_functions.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "json.h"
@@ -666,5 +668,33 @@ TEST_CASE( "uses_energy_and_is_chargeable_across_multiple_wells", "[multimag][co
         REQUIRE( gun.put_in( bb_mag, pocket_type::MAGAZINE_WELL ).success() );
         REQUIRE( gun.put_in( batt_mag, pocket_type::MAGAZINE_WELL ).success() );
         CHECK( gun.is_chargeable() );
+    }
+}
+
+// CDF: tests the shared helper (item_funcs::use_charges_via_tool_uses) used by
+// item::use_charges and Character::use_charges (P3-8-4f S3).
+TEST_CASE( "use_charges_via_tool_uses_bills_whole_uses", "[p3][firing]" )
+{
+    clear_map();
+    tripoint_bub_ms pos( tripoint_bub_ms::zero() );
+
+    item tool( itype_id( "test_multimag_tool_factor" ) );
+    item mag_a( itype_id( "glockmag" ) );
+    mag_a.put_in( item( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+    REQUIRE( tool.put_in( mag_a, pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( tool.uses_firing_requirements() );
+
+    SECTION( "divisible" ) {
+        CHECK( item_funcs::use_charges_via_tool_uses( tool, 10, pos, nullptr ) == 10 );
+        CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 13 );
+    }
+    SECTION( "not a multiple" ) {
+        int got = -1;
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            got = item_funcs::use_charges_via_tool_uses( tool, 7, pos, nullptr );
+        } );
+        CHECK( got == 0 );
+        CHECK( dmsg.find( "factor" ) != std::string::npos );
+        CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 15 );
     }
 }
