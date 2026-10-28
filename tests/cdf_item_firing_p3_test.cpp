@@ -419,10 +419,8 @@ TEST_CASE( "firing_mode_blocked_guard", "[p3][firing]" )
 
 // DDA tests/multimag_test.cpp:1765-1783. The name says "non_divisible" but the
 // DDA body has only the divisible SECTION, so both are kept as written.
-// CDF: the legacy_charges_per_use_factor field now exists, but CDF use_charges has no
-// firing-requirements branch, so the guard and DDA's hard_fails case
-// (multimag_test.cpp:1847) are Blocked pending the use_charges rewrite (8-4f).
-// This case covers the multimag consumption path only.
+// CDF: this case covers the multimag consumption path only; the guard and DDA's
+// hard_fails case (multimag_test.cpp:1847) are the next two test cases (8-4f S5).
 TEST_CASE( "legacy_charges_per_use_factor_non_divisible_request", "[p3][firing]" )
 {
     clear_map();
@@ -697,4 +695,49 @@ TEST_CASE( "use_charges_via_tool_uses_bills_whole_uses", "[p3][firing]" )
         CHECK( dmsg.find( "factor" ) != std::string::npos );
         CHECK( tool.ammo_remaining_in_pocket( "well_a" ) == 15 );
     }
+}
+
+// DDA tests/multimag_test.cpp:1847-1870, same assertions.
+// CDF: item::use_charges is static and takes detached_ptr/vector (no item_location/list).
+TEST_CASE( "legacy_charges_per_use_factor_non_divisible_hard_fails", "[p3][firing]" )
+{
+    clear_all_state();
+    item tool( itype_id( "test_multimag_tool_factor" ) );
+    item mag_a( itype_id( "glockmag" ) );
+    mag_a.put_in( item( itype_id( "9mm" ), calendar::turn, 15 ), pocket_type::MAGAZINE );
+    REQUIRE( tool.put_in( mag_a, pocket_type::MAGAZINE_WELL ).success() );
+    detached_ptr<item> carried = item::spawn( tool );
+    REQUIRE( carried->uses_firing_requirements() );
+
+    std::vector<detached_ptr<item>> used;
+    int qty = 7; // factor=5; 7 % 5 != 0
+    const std::string captured = capture_debugmsg_during( [&]() {
+        carried = item::use_charges( std::move( carried ), itype_id( "test_multimag_tool_factor" ),
+                                     qty, used, tripoint_bub_ms( tripoint_bub_ms::zero() ),
+                                     return_true<item>, /*in_tools=*/false );
+    } );
+    CHECK( captured.find( "factor" ) != std::string::npos );
+    // CDF: extra, not in DDA. The item name contains "factor", so the DDA check alone also
+    // passes on the unrelated pre-S5 multimag debugmsg; this pins the guard message itself.
+    CHECK( captured.find( "not a multiple" ) != std::string::npos );
+    CHECK( carried->ammo_remaining_in_pocket( "well_a" ) == 15 );
+}
+
+// DDA tests/multimag_test.cpp:1958-1975 (item-level body).
+// CDF: static item::use_charges; DDA calls it on the item_location.
+TEST_CASE( "item_use_charges_drains_multimag_tool_via_consume_tool_uses", "[p3][firing]" )
+{
+    clear_all_state();
+    detached_ptr<item> carried = item::spawn( make_multimag_consume_tool( 12, 30 ) );
+    REQUIRE( carried->uses_firing_requirements() );
+
+    int qty = 1; // factor=1, well_a qty=2, well_b qty=1, 1 use -> 2 + 1 drain
+    std::vector<detached_ptr<item>> used;
+    carried = item::use_charges( std::move( carried ), itype_id( "test_multimag_tool_consume" ),
+                                 qty, used, tripoint_bub_ms( tripoint_bub_ms::zero() ),
+                                 return_true<item>, /*in_tools=*/false );
+    CHECK( qty == 0 );
+    CHECK( used.size() == 1 );
+    CHECK( carried->ammo_remaining_in_pocket( "well_a" ) == 10 );
+    CHECK( carried->ammo_remaining_in_pocket( "well_b" ) == 29 );
 }

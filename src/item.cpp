@@ -45,6 +45,7 @@
 #include "inventory.h"
 #include "item_category.h"
 #include "item_factory.h"
+#include "item_functions.h"
 #include "item_group.h"
 #include "iteminfo_format_utils.h"
 #include "iteminfo_query.h"
@@ -10290,9 +10291,25 @@ detached_ptr<item> item::use_charges( detached_ptr<item> &&self, const itype_id 
 
     // CDF: in_tools also matches a tool by the ammo it currently holds (DDA item.cpp:4013)
     auto handle_item = [&qty, &used, &pos, &what, in_tools]( detached_ptr<item> &&e ) {
-        if( e->is_tool() ) {
+        // DDA item.cpp:4012 widens to is_gun(); CDF: guns only take the firing-requirements path
+        if( e->is_tool() || e->is_gun() ) {
             if( e->typeId() == what || ( in_tools && e->ammo_current() == what ) ||
                 ( what == itype_UPS && e->has_flag( flag_IS_UPS ) ) ) {
+                if( e->uses_firing_requirements() ) {
+                    // DDA item.cpp:4016-4048. CDF: carrier is nullptr here (no carrier in
+                    // item::use_charges, same as OD-9 below); guard + billing live in a shared
+                    // helper. DDA returns NEXT on guard failure; CDF returns the item and the
+                    // visit tail SKIPs tools (a tool's contents never match a tool `what`).
+                    const int n = item_funcs::use_charges_via_tool_uses( *e, qty, pos, nullptr );
+                    if( n > 0 ) {
+                        used.push_back( item::spawn( *e ) );
+                        qty -= n;
+                    }
+                    return std::move( e );
+                }
+                if( !e->is_tool() ) {
+                    return std::move( e );
+                }
                 int ups_eff_mult = e->type->tool->ups_eff_mult;
                 int n = std::min( e->ammo_remaining() * ups_eff_mult, qty );
                 int rand_increase = x_in_y( n % ups_eff_mult, ups_eff_mult );
