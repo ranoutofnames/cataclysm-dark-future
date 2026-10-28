@@ -632,6 +632,9 @@ void reg_item( sol::state &lua )
 
         SET_FX( ammo_data );
         SET_FX( ammo_required );
+        // CDF: P3-9-2; true when the item type declares firing_requirements (item-level only, a bare gunmod is false)
+        DOC( "True if this gun or tool consumes ammo through its firing_requirements (per-pocket or per-mode costs). Checks the item type only, so it is false for classic items and for a gun that merely carries a gunmod with requirements." );
+        SET_FX( uses_firing_requirements );
         SET_FX( ammo_current );
 
         // CDF: Lua keeps the 2-arg signature (D10); no carrier (ADV-7), the 3-arg overload is not bound
@@ -1504,6 +1507,10 @@ void reg_islot( sol::state &lua )
 
         DOC( "How long it takes to load each unit of ammo into the magazine" );
         SET_MEMB_RO( reload_time );
+
+        // CDF: P3-9-2
+        DOC( "Multiplier for the chance of this magazine making its gun jam from physical damage (1.0 = standard, never below 1.0)" );
+        SET_MEMB_RO( mag_jam_mult );
 
         DOC( "What type of ammo this magazine can be loaded with" );
         SET_MEMB_N_RO( type, "ammo_type" );

@@ -15,6 +15,7 @@
 #include "item.h"
 #include "item_contents.h"
 #include "item_pocket.h"
+#include "itype.h"
 #include "map_helpers.h"
 #include "state_helpers.h"
 #include "type_id.h"
@@ -333,4 +334,90 @@ TEST_CASE( "ebook_lua_main_lua_has_no_battery_charges", "[p3][lua]" ) {
     auto lua = make_lua_state();
     sol::load_result lr = lua.load( text );
     REQUIRE( lr.valid() );
+}
+
+// CDF: P3-9-2; islot_magazine.mag_jam_mult is a read-only binding of the C++ member
+// (default 1.0). slot_magazine() is nil for an itype without a magazine slot.
+TEST_CASE( "lua_islot_magazine_mag_jam_mult_default", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    auto lua = make_lua_state();
+    lua.globals()["mag"] = &*mag;
+    lua.globals()["gun"] = &*gun;
+    const auto res = lua.safe_script( "return mag:get_type():obj():slot_magazine().mag_jam_mult",
+                                      sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    CHECK( res.get<double>() == Approx( 1.0 ) );
+    const auto nil_res = lua.safe_script( "return gun:get_type():obj():slot_magazine() == nil",
+                                          sol::script_pass_on_error );
+    REQUIRE( nil_res.valid() );
+    CHECK( nil_res.get<bool>() );
+}
+
+TEST_CASE( "lua_islot_magazine_mag_jam_mult_reads_data", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> mag = item::spawn( itype_id( "test_mag_jam_mult_high" ) );
+    auto lua = make_lua_state();
+    lua.globals()["mag"] = &*mag;
+    const auto res = lua.safe_script( "return mag:get_type():obj():slot_magazine().mag_jam_mult",
+                                      sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    CHECK( res.get<double>() == Approx( 2.5 ) );
+}
+
+TEST_CASE( "lua_islot_magazine_mag_jam_mult_readonly", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    auto lua = make_lua_state();
+    lua.globals()["mag"] = &*mag;
+    // The member must be readable first, so a missing binding cannot pass as "read-only".
+    const auto read = lua.safe_script( "return mag:get_type():obj():slot_magazine().mag_jam_mult",
+                                       sol::script_pass_on_error );
+    REQUIRE( read.valid() );
+    const auto res = lua.safe_script( "mag:get_type():obj():slot_magazine().mag_jam_mult = 9",
+                                      sol::script_pass_on_error );
+    CHECK( !res.valid() );
+    CHECK( itype_id( "stanag30" ).obj().magazine->mag_jam_mult == Approx( 1.0 ) );
+}
+
+// CDF: P3-9-2; item:uses_firing_requirements() mirrors the C++ method.
+TEST_CASE( "lua_item_uses_firing_requirements_true", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = ammo_well_loaded_gun();
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    const auto res = lua.safe_script( "return gun:uses_firing_requirements()", sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    CHECK( res.get<bool>() );
+}
+
+TEST_CASE( "lua_item_uses_firing_requirements_false", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> gun = loaded_m4a1( 30 );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    auto lua = make_lua_state();
+    lua.globals()["gun"] = &*gun;
+    lua.globals()["mag"] = &*mag;
+    const auto res = lua.safe_script( "return { gun = gun:uses_firing_requirements(), mag = mag:uses_firing_requirements() }",
+                                      sol::script_pass_on_error );
+    REQUIRE( res.valid() );
+    const auto out = res.get<sol::table>();
+    CHECK( out.get<bool>( "gun" ) == false );
+    CHECK( out.get<bool>( "mag" ) == false );
+}
+
+TEST_CASE( "lua_item_uses_firing_requirements_matches_cpp", "[p3][lua]" ) {
+    clear_all_state();
+    detached_ptr<item> fr = ammo_well_loaded_gun();
+    detached_ptr<item> m4 = loaded_m4a1( 30 );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    auto lua = make_lua_state();
+    lua.globals()["it"] = sol::lua_nil;
+    for( item *it : { &*fr, &*m4, &*mag } ) {
+        lua.globals()["it"] = it;
+        const auto res = lua.safe_script( "return it:uses_firing_requirements()", sol::script_pass_on_error );
+        REQUIRE( res.valid() );
+        CHECK( res.get<bool>() == it->uses_firing_requirements() );
+    }
 }

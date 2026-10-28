@@ -33,5 +33,13 @@
       },
       { "pocket_type": "MOD" }
     ]
+  },
+  {
+    "//": "CDF: P3-9-2; non-default mag_jam_mult fixture for the Lua islot_magazine.mag_jam_mult binding test.",
+    "id": "test_mag_jam_mult_high",
+    "type": "MAGAZINE",
+    "copy-from": "stanag30",
+    "name": { "str": "test mag jam mult high" },
+    "mag_jam_mult": 2.5
   }
 ]
