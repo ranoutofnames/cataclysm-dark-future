@@ -156,6 +156,7 @@ or appearance. See [Field Types](../map/field_type.md) for field properties.
 "default_ammo": "556",           // If specified override the default ammo (optionally set this for ammo belts)
 "reliability" : 8,               // How reliable this this magazine on a range of 0 to 10? (see GAME_BALANCE.md)
 "reload_time" : 100,             // How long it takes to load each unit of ammo into the magazine
+"mag_jam_mult": 1.25,            // Multiplier (1.0 or more, default 1.0) for the chance that the gun jams because the magazine is damaged. Higher is worse: a drum magazine might use 2. The jam chance per shot is roughly 0.027% for an undamaged magazine, 5% at damage 1, 24% at damage 2, 96% at damage 3 and 250% at damage 4, times this value, added to the gun's own chance (see `gun_jam_mult`). A jam costs the shot.
 "linkage" : "ammolink"           // If set one linkage (of given type) is dropped for each unit of ammo consumed (set for disintegrating ammo belts)
 "reloads_like": "light_minus_battery_cell" // If set, anything that takes that itype as a magazine will also take this itype
 ```
@@ -489,6 +490,9 @@ fields, `pocket_data` wins and `--check-mods` warns.
     "flag_restriction": [ "SHEATH_KNIFE" ],      // only items with one of these flags
     "item_restriction": [ "stanag30" ],          // only these item types
     "ammo_restriction": { "223": 30 },           // only this ammo, up to this many rounds per type
+    "id": "ammo",                                // CDF: optional name of the pocket, used by `firing_requirements`, `consumption_per_use` and the mod fields `consumption_mods` / `capacity_mods`
+    "default_magazine": "stanag30",              // MAGAZINE_WELL: the magazine a new item spawns with (default: the first `item_restriction` id)
+    "allowed_speedloaders": [ "speedloader_9mm" ], // ammo items that fill this pocket as a speedloader (see below)
     "skill_restriction": [ "pistol" ],           // CDF: only guns using one of these skills
     "magazine_well": "100 ml",                   // volume of the contents that may stick out of the item
     "description": "A zipped pocket."
@@ -503,6 +507,20 @@ are lengths such as `"30 cm"` (units `mm`, `cm`, `m`, `km`); see "Item length" b
 `pocket_data`; some of them have no consumer yet. `MIGRATION` pockets can't be defined in JSON: every item creates one when something
 doesn't fit in its other pockets, and the game moves such items out (to the parent container, the
 carrier, or the ground) the next time the pocket layout changes.
+
+A `MAGAZINE` pocket is an integral magazine: it takes the ammo named in `ammo_restriction`, up to the
+given count per ammo type, and it is part of the item (a gun or tool with a built-in magazine). A
+`MAGAZINE_WELL` pocket takes magazines instead: `item_restriction` lists the magazine item ids it
+accepts, `flag_restriction` can match a flag such as `BATTERY_MEDIUM`, and `default_magazine` is the
+magazine a new item gets. A gun or tool can have several pockets of both kinds (several wells, or a
+well and an integral magazine); a pocket that other fields refer to needs an `id`, which
+`firing_requirements`, `consumption_per_use` and the `consumption_mods` / `capacity_mods` of mods
+name (see "Gun", "Gunmod" and "Tools"). The size flags `BATTERY_ULTRA_LIGHT`, `BATTERY_LIGHT`,
+`BATTERY_MEDIUM` and `BATTERY_HEAVY` mark which battery wells an item fits in.
+
+`allowed_speedloaders` lists the ammo items that can fill the pocket as a speedloader. An ammo item
+with the flag `SPEEDLOADER` empties its rounds into the pocket only if all of them fit;
+with `SPEEDLOADER_CLIP` the pocket doesn't need room for all of them at once.
 
 When a flag has a `restriction` string in `flags.json`, item info uses it to say what the pocket
 accepts (for example "knives" for `SHEATH_KNIFE`).
@@ -554,12 +572,14 @@ any, takes it. Their coverage and encumbrance count for the carrier.
 | `holster` use action | `multi` holster CONTAINER pockets: max item volume `max_volume`, min `min_volume`, weight `max_weight`, `flags` become `flag_restriction`, `skills` become `skill_restriction`, `draw_cost` becomes `moves` |
 | `bandolier` use action | one CONTAINER pocket with `ammo_restriction` |
 | MAGAZINE | one MAGAZINE pocket with `ammo_restriction` from the magazine's ammo and capacity |
+| tool with `tool_ammo` (or `ammo`) and `max_charges`, and no `magazines` | one integral MAGAZINE pocket, `ammo_restriction` of `max_charges` per ammo type; the game also reports that the item needs `pocket_data` |
 | gun or tool with `magazines` | one MAGAZINE_WELL pocket, `item_restriction` from the magazines |
 | gun or tool that takes mods | one MOD pocket |
 | corpse | one CORPSE pocket |
 | `usb_drive` | one SOFTWARE pocket |
 
-Armor `storage` isn't converted yet. A gunmod with `magazine_adaptor` replaces the magazines the
+A gun's `clip_size` makes no pocket: a gun with an integral magazine defines a MAGAZINE pocket in
+`pocket_data`. Armor `storage` isn't converted yet. A gunmod with `magazine_adaptor` replaces the magazines the
 MAGAZINE_WELL accepts while it is installed.
 
 ### Melee
@@ -647,12 +667,22 @@ Guns can be defined like this:
 "blackpowder_tolerance": 8,// One in X chance to get clogged up (per shot) when firing blackpowder ammunition (higher is better). Optional, default is 8.
 "min_cycle_recoil": 0,     // Minimum ammo recoil for gun to be able to fire more than once per attack.
 "burst": 5,                // Number of shots fired in burst mode
+"modes": [                 // Firing modes on this gun; cannot be combined with `burst`
+  [ "DEFAULT", "semi-auto", 1 ], // Mode id (generally used for NPC choices: AUTO, BURST or DEFAULT), the name shown in the menu, number of rounds fired
+  [ "AUTO", "auto", 4 ]
+],
 "handling": 15,            // Modifier in how quick the gun recovers from recoil. 20 is baseline, below that is worse and above is better. Scales with '2 - 2.0 => 0' by default, for example 15 handling would be '2 - 1.5 => 0.5' increase to recoil and 30 would be '2 - 3.0 => -1' reduction to recoil
 "clip_size": 100,          // Maximum amount of ammo that can be loaded
 "ups_charges": 0,          // Additionally to the normal ammo (if any), a gun can require some charges from an UPS. This also works on mods. Attaching a mod with ups_charges will add/increase ups drain on the weapon.
+"energy_drain": "2 kJ",    // Electric energy a shot uses, additionally to the normal ammo (if any). Gunmods change it with `energy_drain_modifier` and `energy_drain_multiplier`. CDF also keeps `ups_charges` for UPS charges.
+"gun_jam_mult": 1.25,      // Multiplier (0 or more, default 1.0) for the chance that the gun jams because it is damaged. Higher is worse. The jam chance per shot is roughly 0.05% for an undamaged gun, 3% at damage 1, 15% at damage 2, 45% at damage 3 and 80% at damage 4, times this value, added to the magazine's chance (see `mag_jam_mult`). A jam costs the shot. 0 removes the damage-based chance of the gun.
 "ammo_to_fire" 1,          // Amount of ammo used per shot, separate from any UPS cost that may be given to the weapon.
 // The legacy item flags `FIRE_20`, `FIRE_50`, and `FIRE_100` are still permitted and will override `ammo_to_fire` if present.
 "reload": 450,             // Amount of time to reload, 100 = 1 second = 1 "turn". Default 100.
+"firing_requirements": {   // Optional. What each firing mode takes from which pocket (see "Pockets"), for guns with several ammo or power pockets
+  "DEFAULT": [ { "pocket": "ammo", "qty": 1 }, { "pocket": "battery", "qty": 5 } ],
+  "BURST":   [ { "pocket": "ammo", "qty": 3 }, { "pocket": "battery", "qty": 15 } ]
+},                         // `pocket` is a `pocket_data` `id` on a MAGAZINE_WELL pocket or on an integral MAGAZINE pocket with `ammo_restriction`; `qty` is 1 or more. Every mode in `modes` needs an entry, and each key must be one of the modes. Cannot be combined with non-zero `ups_charges` or `energy_drain`, or a non-default `ammo_to_fire`. A mode a gunmod adds with `mode_modifier` uses the gunmod's `mode_firing_requirements`, or the DEFAULT cost if it has none.
 "reload_noise_volume": 6   // [DEPRECIATED] How loud is reloading the gun, in tile distance. This is depreciated, use reload_noise_volume_dB instead. This value will be converted to an appropiate dB volume if provided.
 "reload_noise_volume_dB": 40, // How loud is reloading the gun, in dB spl @1 meter reference. Default 40dB. Normal conversation is ~60dB, deafening sounds are 120dB+
 "built_in_mods": ["m203"], // An array of mods that will be integrated in the weapon using the IRREMOVABLE tag.
@@ -728,7 +758,11 @@ Gun mods can be defined like this:
 "install_time": "30 s",        // Optional time installation takes. Installation is instantaneous if unspecified. An integer will be read as moves or a time string can be used.
 "ammo_modifier": [ "57" ],     // Optional field which if specified modifies parent gun to use these ammo types
 "magazine_adaptor": [ [ "223", [ "stanag30" ] ] ], // Optional. Array of [ammotype, [...magazines]] pairs. Overrides the weapon's compatible magazines for that ammo type.
+"pocket_mods": [ { "pocket_type": "MAGAZINE_WELL", "item_restriction": [ "ai_338mag", "ai_338mag_10" ] } ], // Optional. Changes the pockets of the host: same syntax as `pocket_data`; pockets of type MAGAZINE and MAGAZINE_WELL replace the host's magazine wells, pockets of type CONTAINER are added. For MAGAZINE and MAGAZINE_WELL, give `ammo_modifier` and `magazine_adaptor` too so the ammo type moves along. Also read for `"type": "TOOLMOD"`.
+"consumption_mods": [ { "pocket": "power", "multiply": 0.5 }, { "pocket": "ammo", "set": 2 } ], // Optional (GUNMOD or TOOLMOD). Changes how much the host takes per shot or use from a pocket, by `pocket_data` `id`. `set` (1 or more) replaces the quantity; `multiply` (more than 0) scales it. Of all installed mods the smallest `set` wins, then the product of all `multiply` applies.
+"capacity_mods": [ { "pocket": "ammo", "multiply": 1.5 } ], // Optional (GUNMOD or TOOLMOD). Scales the ammo capacity of an integral MAGAZINE pocket of the host, by `pocket_data` `id`; `multiply` is more than 0. A MAGAZINE_WELL pocket is ignored (its capacity is the loaded magazine's). Several mods on one pocket multiply together.
 "mode_modifier": [ [ "AUTO", "auto", 5 ] ],       // Optional. Array of [mode_id, mode_name, burst_size, [...flags]?] arrays. Adds firing modes to the weapon. Optional flags array can include "MELEE", "REACH_ATTACK", etc.
+"mode_firing_requirements": { "REGULATED": [ { "pocket": "ammo", "qty": 1 }, { "pocket": "power", "qty": 1 } ] }, // Optional. What the modes added by `mode_modifier` take from which pocket of the host gun, keyed by mode id; `pocket` is a `pocket_data` `id` of the host. A mode added without an entry costs the host's DEFAULT. Not the same as the gun's own `firing_requirements`.
 "damage_modifier": -1,         // Optional field increasing or decreasing base gun damage
 "dispersion_modifier": 15,     // Optional field increasing or decreasing base gun dispersion
 "loudness_modifier": 4,        // Optional field increasing or decreasing base ammo loudness, measured in dB spl.
@@ -738,6 +772,8 @@ Gun mods can be defined like this:
 "recoil_modifier": -100,       // Optional field increasing or decreasing base gun recoil
 "ups_charges_modifier": 200,   // Optional field increasing or decreasing base gun UPS consumption (per shot) by adding given value
 "ups_charges_multiplier": 2.5, // Optional field increasing or decreasing base gun UPS consumption (per shot) by multiplying by given value
+"energy_drain_modifier": "200 kJ", // Optional field increasing or decreasing base gun energy consumption (`energy_drain`, per shot) by adding given value. This addition is not multiplied by `energy_drain_multiplier`.
+"energy_drain_multiplier": 2.5,   // Optional field increasing or decreasing base gun energy consumption (`energy_drain`, per shot) by multiplying by given value.
 "ammo_to_fire_modifier": 200,   // Optional field increasing or decreasing amount of main ammo consumed per shot by adding given value
 "ammo_to_fire_multiplier": 2.5, // Optional field increasing or decreasing main ammo consumed per shot by multiplying by given value
 "reload_modifier": -10,        // Optional field increasing or decreasing base gun reload time in percent
@@ -758,6 +794,9 @@ gunmod_data:
     ...
 }
 ```
+
+A `"type": "TOOLMOD"` item reads the fields that are not gun-specific: `ammo_modifier`,
+`acceptable_ammo`, `magazine_adaptor`, `pocket_mods`, `consumption_mods` and `capacity_mods`.
 
 ### Batteries
 
@@ -792,11 +831,13 @@ gunmod_data:
 "sub": "hotplate",    // optional; this tool has the same functions as another tool
 "charge_factor": 5,   // this tool uses charge_factor charges for every charge required in a recipe; intended for tools that have a "sub" field but use a different ammo that the original tool
 "charges_per_use": 1, // Charges consumed per tool use
+"consumption_per_use": [ { "pocket": "oxygen", "qty": 2 }, { "pocket": "fuel", "qty": 1 } ], // Optional. What one use takes from which pocket, for tools with several ammo or power pockets. `pocket` is a `pocket_data` `id` on a MAGAZINE_WELL pocket or on an integral MAGAZINE pocket with `ammo_restriction`; `qty` is 1 or more. Cannot be combined with `charges_per_use` or `power_draw`.
+"legacy_charges_per_use_factor": 1, // Optional, default 1. Integer, 1 or more; a lower value is reported as a definition error by the item check. Set on multimag tools converted from a legacy `charges_per_use=N` (N>1) so existing recipes that pass raw charge counts get translated to uses (uses = qty / factor). Non-divisible requests trigger a debugmsg and consume nothing.
 "turns_per_charge": 20, // Charges consumed over time, deprecated in favor of power_draw
 "power_draw": 50,       // Energy consumption rate in mW
 "ups_eff_mult": 2,       // Multiplier for UPS efficiency
 "ups_recharge_rate": 10,       // The power output for UPS recharging of items
-"ammo": [ "NULL" ],       // Ammo types used for reloading
+"tool_ammo": [ "NULL" ],  // Ammo types used for reloading. CDF: the Bright Nights key "ammo" is still read as an alias for it
 "revert_to": "torch_done", // Transforms into item when charges are expended
 "use_action": "firestarter" // Action performed when tool is used, see special definition below
 ```
