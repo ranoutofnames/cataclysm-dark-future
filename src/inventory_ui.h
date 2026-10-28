@@ -947,4 +947,38 @@ class inventory_pickup_selector : public inventory_multiselector
         header_stats get_raw_stats() const override;
 };
 
+// CDF: P3-5-2a, DDA inventory_ui.h 1052-1069. DDA's item_location fields are plain item
+// pointers here (D1). They own nothing and are valid only while the items stay where they
+// are, as for item_reload_option: keep the target and ammo items alive and in place while a
+// reload_target is in use.
+// One reload destination: either a MAGAZINE_WELL slot (kind::well) or an
+// already-loaded magazine accepting loose ammo (kind::loaded_mag). owner is
+// the gun/gunmod containing the well; ui_well_index groups entries in the UI.
+struct reload_target {
+    enum class kind {
+        well,
+        loaded_mag,
+        // Integral MAGAZINE on a multimag host: target is the host item,
+        // pocket_index points at the MAGAZINE pocket for direct deposit.
+        integral_magazine,
+    };
 
+    item *target = nullptr;
+    item *owner = nullptr;
+    int pocket_index = -1;
+    int ui_well_index = -1;
+    kind kind = kind::well;
+};
+
+// CDF: P3-5-2a, DDA inventory_ui.h 1071-1080. item & and const item & in place of DDA's
+// item_location (D1); 5-2b and 5-3 pass *loc.
+std::vector<reload_target> get_possible_reload_targets( item &target );
+
+// First reload_target accepting the given ammo, or nullptr.
+const reload_target *find_matching_reload_target(
+    const std::vector<reload_target> &targets, const item &ammo );
+
+// Every reload_target accepting the given ammo. Used to detect ambiguous
+// reloads (multiple matching wells / loaded mags) for disambiguation prompts.
+std::vector<const reload_target *> find_all_matching_reload_targets(
+    const std::vector<reload_target> &targets, const item &ammo );

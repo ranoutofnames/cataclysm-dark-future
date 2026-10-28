@@ -3888,3 +3888,151 @@ inventory_selector::header_stats inventory_pickup_selector::get_raw_stats() cons
             volume_carried,
             u.volume_capacity() ) );
 }
+
+// CDF: P3-5-2a, DDA item_location::can_reload_with( ammo, now ) (item_location.cpp 1524-1537),
+// which DDA's reload_target_accepts reaches through rt.owner / rt.target. CDF has no
+// item_location handle (D1), so the same two guards run on the item, with
+// item::parent_item() for DDA's has_parent() + parent_item().
+static bool reload_loc_can_reload_with( const item &reloadable, const item &ammo, bool now )
+{
+    if( reloadable.is_gun() && !reloadable.ammo_default() ) {
+        return false;
+    } else if( reloadable.is_magazine() ) {
+        const item *parent = reloadable.parent_item();
+        if( parent != nullptr ) {
+            if( parent->is_gun() && !parent->ammo_default() ) {
+                return false;
+            }
+        }
+    }
+    return reloadable.can_reload_with( ammo, now );
+}
+
+// CDF: P3-5-2a, DDA inventory_ui.cpp 4028-4100 and 4104-4151. item & / const item & and
+// non-owning item pointers in place of item_location (D1): `owner` is an item, the loaded
+// magazine is the non-const pocket's own item * (no const_cast, no item_location( owner, mag )),
+// and the two can_reload_with calls go through reload_loc_can_reload_with.
+std::vector<reload_target> get_possible_reload_targets( item &target )
+{
+    std::vector<reload_target> opts;
+
+    auto append_owner = [&opts]( item & owner ) {
+        // pocket_index is the position in contents (stable across empty
+        // wells), not the position in magazines_current().
+        const bool multimag = owner.uses_firing_requirements();
+        int idx = 0;
+        for( item_pocket *p : owner.get_pockets( []( const item_pocket & ) {
+        return true;
+    } ) ) {
+            if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                reload_target well;
+                well.target = &owner;
+                well.owner = &owner;
+                well.pocket_index = idx;
+                well.ui_well_index = idx;
+                well.kind = reload_target::kind::well;
+                opts.push_back( well );
+
+                if( item *mag = p->magazine_current() ) {
+                    reload_target mag_target;
+                    mag_target.target = mag;
+                    mag_target.owner = &owner;
+                    mag_target.pocket_index = -1;
+                    mag_target.ui_well_index = idx;
+                    mag_target.kind = reload_target::kind::loaded_mag;
+                    opts.push_back( mag_target );
+                }
+            } else if( multimag && p->is_type( pocket_type::MAGAZINE ) &&
+                       p->get_pocket_data() != nullptr &&
+                       !p->get_pocket_data()->ammo_restriction.empty() ) {
+                // Integral MAGAZINE on a multimag host: surface as its own
+                // target so loose ammo reaches it past sibling wells.
+                reload_target mag_pocket;
+                mag_pocket.target = &owner;
+                mag_pocket.owner = &owner;
+                mag_pocket.pocket_index = idx;
+                mag_pocket.ui_well_index = idx;
+                mag_pocket.kind = reload_target::kind::integral_magazine;
+                opts.push_back( mag_pocket );
+            }
+            ++idx;
+        }
+        // Owner-level fallback for hosts without a pocket-level target
+        // (integral mag, watertight container) so loose ammo discovery
+        // still has a destination.
+        bool has_dest = false;
+        for( const reload_target &rt : opts ) {
+            if( rt.owner == &owner ) {
+                has_dest = true;
+                break;
+            }
+        }
+        if( !has_dest ) {
+            reload_target self;
+            self.target = &owner;
+            self.owner = &owner;
+            self.pocket_index = -1;
+            self.ui_well_index = -1;
+            self.kind = reload_target::kind::loaded_mag;
+            opts.push_back( self );
+        }
+    };
+
+    append_owner( target );
+    for( item *mod : target.gunmods() ) {
+        append_owner( *mod );
+    }
+
+    return opts;
+}
+
+// Well and integral-magazine entries gate on owner-level (gun ammo type) AND
+// pocket-level (item id, fullness) compatibility. Loaded-mag delegates.
+static bool reload_target_accepts( const reload_target &rt, const item &ammo )
+{
+    if( rt.kind == reload_target::kind::well ||
+        rt.kind == reload_target::kind::integral_magazine ) {
+        if( !reload_loc_can_reload_with( *rt.owner, ammo, true ) ) {
+            return false;
+        }
+        int idx = 0;
+        for( const item_pocket *p : rt.owner->get_pockets( []( const item_pocket & ) {
+        return true;
+    } ) ) {
+            if( idx == rt.pocket_index ) {
+                if( rt.kind == reload_target::kind::well ) {
+                    return p->is_type( pocket_type::MAGAZINE_WELL ) &&
+                           p->can_reload_with( ammo, true );
+                }
+                return p->is_type( pocket_type::MAGAZINE ) &&
+                       p->can_reload_with( ammo, true );
+            }
+            ++idx;
+        }
+        return false;
+    }
+    return reload_loc_can_reload_with( *rt.target, ammo, true );
+}
+
+const reload_target *find_matching_reload_target(
+    const std::vector<reload_target> &targets, const item &ammo )
+{
+    for( const reload_target &rt : targets ) {
+        if( reload_target_accepts( rt, ammo ) ) {
+            return &rt;
+        }
+    }
+    return nullptr;
+}
+
+std::vector<const reload_target *> find_all_matching_reload_targets(
+    const std::vector<reload_target> &targets, const item &ammo )
+{
+    std::vector<const reload_target *> out;
+    for( const reload_target &rt : targets ) {
+        if( reload_target_accepts( rt, ammo ) ) {
+            out.push_back( &rt );
+        }
+    }
+    return out;
+}
