@@ -5909,6 +5909,7 @@ static void use_charges_from_furn(
                 item::spawn(itt.get_id(), calendar::start_of_cataclysm, grid.get_resource());
             int initial_quantity = quantity;
             if (filter(*furn_item)) {
+                // CDF: grid call passes return_true<item>, in_tools (no filter/in_tools args before 8-4f); in_tools forwards DDA item.cpp:4013
                 item::use_charges(std::move(furn_item), type, quantity, ret, p, return_true<item>, in_tools);
                 // That quantity math thing is atrocious. Punishment for the int& "argument".
                 grid.mod_resource(quantity - initial_quantity);
@@ -5925,6 +5926,7 @@ static void use_charges_from_furn(
                 (*iter)->attempt_detach(
                     [&filter, &ammo, &quantity, &ret, &p, in_tools](detached_ptr<item>&& it) {
                         if (filter(*it)) {
+                            // CDF: furn call passes return_true<item>, in_tools (no filter/in_tools args before 8-4f); in_tools forwards DDA item.cpp:4013
                             return item::use_charges(std::move(it), ammo, quantity, ret, p, return_true<item>, in_tools);
                         }
                         return std::move(it);

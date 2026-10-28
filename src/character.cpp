@@ -11853,7 +11853,7 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
                     return VisitResponse::SKIP;
                 }
                 if( !e->is_tool() ) {
-                    return VisitResponse::SKIP;
+                    return VisitResponse::NEXT;
                 }
                 int n = std::min( e->ammo_remaining(), qty );
                 qty -= n;
@@ -11868,7 +11868,9 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
                     res.push_back( std::move( split ) );
                 }
             }
-            return VisitResponse::SKIP;
+            // CDF: only tools are SKIPped; guns keep descending (NEXT) so ammo in a gun's magazine is still
+            // drained (base behaviour; DDA item.cpp:4041 returns NEXT for a non-match)
+            return e->is_tool() ? VisitResponse::SKIP : VisitResponse::NEXT;
 
         } else if( e->count_by_charges() ) {
             if( e->typeId() == what ) {

@@ -1229,6 +1229,7 @@ static void scan_tool_charges( const T &self, const itype_id &id,
                 return qty < limit ? VisitResponse::SKIP : VisitResponse::ABORT;
 
             } else if( e->count_by_charges() ) {
+                // CDF: count_by_charges stays typeId()==id; in_tools applies to tools only (DDA item.cpp:4013 gate is tool/gun)
                 if( e->typeId() == id ) {
                     tool_stock_entry entry;
                     entry.kind = tool_stock_entry::kind_t::LEGACY;
