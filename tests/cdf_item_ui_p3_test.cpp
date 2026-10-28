@@ -1,6 +1,7 @@
 #include "avatar.h"
 #include "calendar.h"
 #include "carried_stacks.h"
+#include "cata_utility.h"
 #include "catch/catch.hpp"
 #include "debug.h"
 #include "game_inventory.h"
@@ -10,7 +11,9 @@
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "map/map.h"
+#include "ranged.h"
 #include "reload/reload.h"
+#include "safe_reference.h"
 #include "state_helpers.h"
 #include "type_id.h"
 
@@ -563,5 +566,131 @@ TEST_CASE( "select_ammo_asks_which_destination_for_a_source_that_fits_several", 
         } );
         CHECK( chose );
         CHECK( dmsg.empty() );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-8-2a-sel (ranged::prompt_select_default_ammo_for now asks game_menus::inv::select_ammo, as
+// DDA's select_ammo( weapon, false ) does); CDF-only. DDA has no test of ACTION_SELECT_DEFAULT_AMMO or
+// of the default-ammo branch of game::reload (a grep of DDA tests/ at b4b62254ae2 for ammo_location,
+// select_default_ammo and "keep that ammo" finds only reload_time_test.cpp 57 and 67). The three messages
+// ("Cleared ...", "Selected ...", "You need to keep that ammo on you ...") are not asserted: the test
+// build stubs Messages (tests/fake_messages.cpp), so what is observable is avatar::ammo_location. The
+// texts are owner checklist row 39. A destination menu is a uilist: in test mode it logs a debugmsg and
+// answers UILIST_ERROR (see the 5-3b case), so S1 reads that cancel path with capture_debugmsg_during.
+// item_location becomes item * (D1). Every select_ammo call below has exactly one candidate listed and
+// prompt off, so it never reaches the interactive execute() (which would spin): each section REQUIREs it.
+// ---------------------------------------------------------------------------
+
+static const itype_id itype_arrow_wood( "arrow_wood" );
+static const itype_id itype_longbow( "longbow" );
+
+TEST_CASE( "select_default_ammo_uses_game_menus_select_ammo", "[p3][ui][8-2a-sel]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_id( "backpack" ) ), false );
+    you.ammo_location = nullptr;
+    REQUIRE( you.ammo_location.get_const() == nullptr );
+    // CDF: P3-8-2a-sel fix round. clear_all_state() does not reset avatar::ammo_location, and
+    // "ammo_location = nullptr" builds a safe_reference record keyed on the null pointer that the avatar then
+    // holds (mem_count 1). Another test that calls cleanup_references() (npc_book_activity_safe_reference_cleanup)
+    // would report that live record and free it under the avatar, and a later avatar_action::reload
+    // (reload_on_vehicle_cargo) would fault in safe_reference::operator!. Leave the avatar with an unassigned
+    // reference, which holds no record.
+    const on_out_of_scope clear_default_ammo( [&you]() {
+        you.ammo_location = safe_reference<item>();
+    } );
+
+    SECTION( "a source that fits two wells asks for the destination and sets no default" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun_same_type ) );
+        item &glock = you.i_add( loaded_mag( itype_glockmag, itype_9mm, 15 ) );
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        // Both glockmag wells take the magazine, so the destination is the player's choice (DDA's picker).
+        REQUIRE( find_all_matching_reload_targets( targets, glock ).size() == 2 );
+        REQUIRE( listed_candidates( you, gun ) == 1 );
+
+        const std::string dmsg = capture_debugmsg_during( [&]() {
+            ranged::prompt_select_default_ammo_for( you, gun );
+        } );
+        // The destination uilist answers UILIST_ERROR in test mode: DDA's cancel branch, an empty option,
+        // so nothing is stored. BN's picker took the magazine without asking and stored it.
+        CHECK( dmsg.find( "test mode" ) != std::string::npos );
+        CHECK( you.ammo_location.get_const() == nullptr );
+    }
+
+    SECTION( "ammo that fits one destination and is carried becomes the default" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun ) );
+        item &glock = you.i_add( loaded_mag( itype_glockmag, itype_9mm, 15 ) );
+        const std::vector<reload_target> targets = get_possible_reload_targets( gun );
+        REQUIRE( find_all_matching_reload_targets( targets, glock ).size() == 1 );
+        REQUIRE( listed_candidates( you, gun ) == 1 );
+
+        ranged::prompt_select_default_ammo_for( you, gun );
+        CHECK( you.ammo_location.get_const() == &glock );
+    }
+
+    SECTION( "choosing the same ammo again clears the default" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun ) );
+        item &glock = you.i_add( loaded_mag( itype_glockmag, itype_9mm, 15 ) );
+        REQUIRE( listed_candidates( you, gun ) == 1 );
+
+        ranged::prompt_select_default_ammo_for( you, gun );
+        REQUIRE( you.ammo_location.get_const() == &glock );
+        // The magazine is still the only candidate, so the second call picks it again: DDA clears it.
+        ranged::prompt_select_default_ammo_for( you, gun );
+        CHECK( you.ammo_location.get_const() == nullptr );
+    }
+
+    // [UNSURE] needs add_nearby_items( 1 ) to offer an item lying on the avatar's own square. The premise
+    // is proved by REQUIREing that select_ammo itself returns the floor magazine before the helper is
+    // called. If a REQUIRE of this section fails (or the section hangs), delete this section only, with a
+    // log line in the report and a Blocked line; do not change the assertions.
+    SECTION( "ammo lying on the ground is not kept as the default" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun ) );
+        detached_ptr<item> floor_ptr = loaded_mag( itype_glockmag, itype_9mm, 15 );
+        item &floor_mag = *floor_ptr;
+        get_map().add_item( you.bub_pos(), std::move( floor_ptr ) );
+        REQUIRE( floor_mag.where() == item_location_type::map );
+        // Nothing carried is a candidate, and the floor magazine is: one entry, no execute().
+        REQUIRE( listed_candidates( you, gun ) == 0 );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, floor_mag, true ) );
+        const item_reload_option offered = game_menus::inv::select_ammo( you, gun, false, true, true );
+        REQUIRE( offered );
+        REQUIRE( offered.ammo == &floor_mag );
+
+        // DDA's else branch ("You need to keep that ammo on you ..."): the default stays unset.
+        ranged::prompt_select_default_ammo_for( you, gun );
+        CHECK( you.ammo_location.get_const() == nullptr );
+        CHECK( floor_mag.where() == item_location_type::map );
+    }
+
+    // [UNSURE] needs the legacy integral bow to take arrow_wood through the owner-level target (a BN
+    // integral gun: clip_size 1, no MAGAZINE pocket, answered by cdf_legacy_direct_charges). If a REQUIRE
+    // of this section fails, delete this section only, with a log line in the report and a Blocked line.
+    SECTION( "a bow takes its arrow as the default ammo" ) {
+        item &bow = you.i_add( item::spawn( itype_longbow ) );
+        item &arrow = you.i_add( item::spawn( itype_arrow_wood, calendar::turn, 5 ) );
+        REQUIRE( bow.has_flag( flag_id( "RELOAD_AND_SHOOT" ) ) );
+        REQUIRE( listed_candidates( you, bow ) == 1 );
+
+        ranged::prompt_select_default_ammo_for( you, bow );
+        CHECK( you.ammo_location.get_const() == &arrow );
+    }
+
+    // [UNSURE] DDA parity, the one player-visible loss against BN (Open question 1): select_ammo accepts
+    // include_potential and does not read it, so a gun that is already full lists no ammo (the preset hides
+    // what the target cannot take now, DDA game_inventory.cpp 3226-3259) and no default is stored. BN
+    // listed ammo for a full gun. If a REQUIRE of this section fails, delete this section only, with a log
+    // line in the report and a Blocked line; if the owner rules to keep BN's behaviour, this section is
+    // removed by the job that implements it.
+    SECTION( "a gun that is already full lists no ammo, so no default is set" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 15, in_gun ) );
+        you.i_add( item::spawn( itype_9mm, calendar::turn, 30 ) );
+        REQUIRE( listed_candidates( you, gun ) == 0 );
+
+        ranged::prompt_select_default_ammo_for( you, gun );
+        CHECK( you.ammo_location.get_const() == nullptr );
     }
 }

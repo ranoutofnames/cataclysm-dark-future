@@ -30,6 +30,7 @@
 #include "flag.h"
 #include "game.h"
 #include "game_constants.h"
+#include "game_inventory.h"
 #include "gun_mode.h"
 #include "input.h"
 #include "item.h"
@@ -51,7 +52,6 @@
 #include "player.h"
 #include "player_activity.h"
 #include "reload/reload.h"
-#include "reload/reload_ui.h"
 #include "point.h"
 #include "projectile.h"
 #include "rng.h"
@@ -4795,13 +4795,10 @@ auto ranged::gunmode_checks_weapon( avatar &you, const map &m, std::vector<std::
 
 void ranged::prompt_select_default_ammo_for( avatar &u, item &w )
 {
-    auto opt = reload_ui::select_ammo( u, w, {
-        .prompt = false,
-        .discovery = {
-            .include_empty_mags = true,
-            .include_potential = true
-        }
-    } );
+    // CDF: P3-8-2a-sel, DDA handle_action.cpp 2766 and game.cpp 7063 (select_ammo( weapon, false )):
+    // the picker is game_menus::inv::select_ammo (5-3). The last argument is CDF-only (include_potential,
+    // ADV-14 ruling 4): accepted and not read, so the list is DDA's.
+    auto opt = game_menus::inv::select_ammo( u, w, false, true, true );
     if( opt ) {
         if( u.ammo_location && opt.ammo == &*u.ammo_location ) {
             u.add_msg_if_player( _( "Cleared ammo preferences for %s." ), w.tname() );
@@ -4810,7 +4807,7 @@ void ranged::prompt_select_default_ammo_for( avatar &u, item &w )
             u.add_msg_if_player( _( "Selected %s as default ammo for %s." ), opt.ammo->tname(), w.tname() );
             u.ammo_location = opt.ammo;
         } else {
-            u.add_msg_if_player( _( "You don't have that ammo on you." ) );
+            u.add_msg_if_player( _( "You need to keep that ammo on you to select it as default ammo." ) );
         }
     }
 }
