@@ -800,6 +800,9 @@ struct islot_gunmod : common_ranged_data {
      *  mode_modifier. Loaded from key "mode_firing_requirements". */
     firing_requirement_set firing_requirements;
 
+    /** Modes removed from the final merged mode set when this mod is installed. */
+    std::set<gun_mode_id> hide_modes;
+
     std::set<ammo_effect_str_id> ammo_effects;
 
     /** Relative adjustment to base gun handling */

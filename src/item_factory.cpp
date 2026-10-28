@@ -1866,14 +1866,19 @@ std::string check_firing_requirements( const itype &type )
         }
     }
 
-    // Keys must be modes the mod owns via mode_modifier.
-    // CDF: Group E's hide_modes loop is skipped: islot_gunmod::hide_modes does not exist in CDF.
+    // Keys must be modes the mod owns via mode_modifier; flag add+hide of one mode.
     if( type.gunmod ) {
         for( const auto &mode_pair : type.gunmod->firing_requirements.per_mode ) {
             if( !type.gunmod->mode_modifier.count( mode_pair.first ) ) {
                 msg += string_format(
                            "gunmod mode_firing_requirements mode \"%s\" is not in this mod's mode_modifier\n",
                            mode_pair.first.str() );
+            }
+        }
+        for( const gun_mode_id &h : type.gunmod->hide_modes ) {
+            if( type.gunmod->mode_modifier.count( h ) ) {
+                msg += string_format(
+                           "gunmod both adds and hides mode \"%s\"\n", h.str() );
             }
         }
     }
@@ -3474,6 +3479,7 @@ void Item_factory::load( islot_gunmod &slot, const JsonObject &jo, const std::st
     if( jo.has_member( "mode_firing_requirements" ) ) {
         slot.firing_requirements.deserialize_firing_requirements( jo, "mode_firing_requirements" );
     }
+    assign( jo, "hide_modes", slot.hide_modes );
     assign( jo, "reload_modifier", slot.reload_modifier );
     assign( jo, "min_str_required_mod", slot.min_str_required_mod );
     if( jo.has_array( "add_mod" ) ) {

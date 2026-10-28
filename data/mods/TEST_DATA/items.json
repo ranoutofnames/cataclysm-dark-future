@@ -1653,7 +1653,8 @@
     "mod_targets": [ "pipe_pistol" ],
     "install_time": "5 s",
     "mode_modifier": [ [ "REGULATED", "regulated", 1 ] ],
-    "mode_firing_requirements": { "REGULATED": [ { "pocket": "ammo", "qty": 1 }, { "pocket": "power", "qty": 1 } ] }
+    "mode_firing_requirements": { "REGULATED": [ { "pocket": "ammo", "qty": 1 }, { "pocket": "power", "qty": 1 } ] },
+    "hide_modes": [ "DEFAULT" ]
   },
   {
     "id": "test_multimag_hide_all_mod",
@@ -1668,7 +1669,8 @@
     "color": "light_gray",
     "location": "bore",
     "mod_targets": [ "pipe_pistol" ],
-    "install_time": "5 s"
+    "install_time": "5 s",
+    "hide_modes": [ "DEFAULT", "BURST" ]
   },
   {
     "id": "test_multimag_add_extra_mode_mod",
@@ -1700,7 +1702,8 @@
     "color": "light_gray",
     "location": "bore",
     "mod_targets": [ "pipe_pistol" ],
-    "install_time": "5 s"
+    "install_time": "5 s",
+    "hide_modes": [ "EXTRA" ]
   },
   {
     "id": "test_multimag_tool_gunmod",

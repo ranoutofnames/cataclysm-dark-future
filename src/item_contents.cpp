@@ -512,6 +512,17 @@ void item_contents::rebuild_pockets()
     if( owner == nullptr ) {
         return;
     }
+    // A gunmod's hide_modes can remove the gun's selected mode; reselect a
+    // survivor. All modes hidden leaves no selection, and shot resolution refuses.
+    // (DDA item_container.cpp 172-179; CDF: a local lambda, item_contents.h is not touched)
+    const auto reselect_gun_mode = [this]() {
+        if( owner->is_gun() ) {
+            const std::map<gun_mode_id, gun_mode> modes = owner->gun_all_modes();
+            if( !modes.empty() && modes.count( owner->gun_get_mode_id() ) == 0 ) {
+                owner->gun_cycle_mode();
+            }
+        }
+    };
     // The layout is the type's, with the MAGAZINE_WELL replaced by an installed
     // magazine_adaptor mod (DDA #41917).
     std::vector<pocket_data> fresh = adapted_layout();
@@ -558,7 +569,7 @@ void item_contents::rebuild_pockets()
         }
         pockets_type = owner->type;
         // CDF: DDA restamps and validates at the end of every update (item_container.cpp 181-200)
-        // CDF: no hide_modes, no gun mode reselect (DDA item_container.cpp 172-179)
+        reselect_gun_mode();
         restamp_capacity_mults();
         if( has_adaptor_mod() ) {
             owner->validate_mod_pocket_refs();
@@ -649,6 +660,7 @@ void item_contents::rebuild_pockets()
         dest->insert( std::move( it ) );
     }
     // CDF: DDA restamps and validates at the end of every update (item_container.cpp 181-200)
+    reselect_gun_mode();
     restamp_capacity_mults();
     if( has_adaptor_mod() ) {
         owner->validate_mod_pocket_refs();

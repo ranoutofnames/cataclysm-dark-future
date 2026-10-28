@@ -9692,6 +9692,16 @@ std::map<gun_mode_id, gun_mode> item::gun_all_modes() const
         }
     }
 
+    // hide_modes is a global, id-based kill switch applied to the final merged
+    // set: a hidden id is removed regardless of which item contributed it.
+    for( const item *e : gunmods() ) {
+        if( e->type != nullptr && e->type->gunmod ) {
+            for( const gun_mode_id &h : e->type->gunmod->hide_modes ) {
+                res.erase( h );
+            }
+        }
+    }
+
     return res;
 }
 

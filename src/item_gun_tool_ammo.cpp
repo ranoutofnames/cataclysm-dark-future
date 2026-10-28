@@ -1803,7 +1803,12 @@ bool item::firing_mode_blocked( const gun_mode_id &mode ) const
     if( !is_gun() ) {
         return false;
     }
-    // CDF: hide_modes loop dropped (islot_gunmod::hide_modes absent, 3-7 OD-7)
+    // A mode a gunmod hides must not fire even when other modes survive.
+    for( const item *mod : gunmods() ) {
+        if( mod->type && mod->type->gunmod && mod->type->gunmod->hide_modes.count( mode ) ) {
+            return true;
+        }
+    }
     const std::map<gun_mode_id, gun_mode> modes = gun_all_modes();
     if( modes.empty() ) {
         return true; // every mode hidden by a gunmod: gun is unfireable
