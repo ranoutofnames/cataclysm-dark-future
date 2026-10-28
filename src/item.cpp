@@ -708,7 +708,7 @@ void item::ammo_set( const itype_id &ammo, int qty )
     const bool no_ammo_type = ( ammo.is_null() && ammo_types().empty() ) || is_money();
     if( !no_ammo_type && !ammo->ammo ) {
         if( !has_flag( flag_USES_BIONIC_POWER ) ) {
-            debugmsg( "Tried to set invalid ammo %s[%d] for %s", ammo.str(), qty, typeId() );
+            debugmsg( "Tried to set invalid ammo of %s for %s", ammo.str(), typeId() );
         }
         return;
     }
@@ -753,7 +753,7 @@ void item::ammo_set( const itype_id &ammo, int qty )
     !std::any_of( mags.begin(), mags.end(), [&ammo_type]( const itype_id & mag ) {
     return mag->magazine->type.contains( ammo_type );
     } ) ) {
-        debugmsg( "Tried to set invalid ammo %s[%d] for %s", atype->get_id(), qty, typeId() );
+        debugmsg( "Tried to set invalid ammo of %s for %s", atype->get_id(), typeId() );
         return;
     }
 
