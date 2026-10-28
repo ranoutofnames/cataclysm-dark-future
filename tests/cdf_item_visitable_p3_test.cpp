@@ -292,3 +292,44 @@ TEST_CASE( "charges_of_ups_counts_raw_is_ups_items_on_the_ground", "[p3][visitab
         return false;
     } ) == 0 );
 }
+
+// DDA item.cpp:4013 / character.h:3146 (use_charges with in_tools).
+// CDF: lighter ammo is chem_butane here (DDA: butane); no radius overload in CDF.
+TEST_CASE( "use_charges_in_tools_drains_ammo_loaded_in_a_tool", "[p3][visitable]" )
+{
+    clear_all_state();
+    clear_avatar();
+    Character &guy = get_avatar();
+    wear_backpack( guy );
+
+    const itype_id fluid( "chem_butane" );
+    item &lighter = guy.i_add( tool_with_ammo( itype_id( "lighter" ), 10 ) );
+    REQUIRE( lighter.ammo_current() == fluid );
+
+    CHECK( guy.use_charges( fluid, 4 ).empty() );
+    CHECK( lighter.ammo_remaining() == 10 );
+
+    const auto used = guy.use_charges( fluid, 4, return_true<item>, true );
+    CHECK( used.size() == 1 );
+    CHECK( lighter.ammo_remaining() == 6 );
+}
+
+TEST_CASE( "item_use_charges_in_tools_matches_ammo_current", "[p3][visitable]" )
+{
+    clear_all_state();
+    const itype_id fluid( "chem_butane" );
+    detached_ptr<item> lighter = tool_with_ammo( itype_id( "lighter" ), 10 );
+    item &obj = *lighter;
+    REQUIRE( obj.ammo_current() == fluid );
+
+    int qty = 4;
+    std::vector<detached_ptr<item>> used;
+    const tripoint_bub_ms pos( tripoint_bub_ms::zero() );
+
+    // CDF: without in_tools the static item::use_charges walks into the tool's own ammo
+    // contents, so only the in_tools path is asserted here (plan S4).
+    lighter = item::use_charges( std::move( lighter ), fluid, qty, used, pos, return_true<item>,
+                                 true );
+    CHECK( qty == 0 );
+    CHECK( obj.ammo_remaining() == 6 );
+}

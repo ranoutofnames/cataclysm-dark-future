@@ -10283,13 +10283,16 @@ void item::set_charges( int value )
 
 detached_ptr<item> item::use_charges( detached_ptr<item> &&self, const itype_id &what, int &qty,
                                       std::vector<detached_ptr<item>> &used,
-                                      const tripoint_bub_ms &pos, const std::function<bool( const item & )> &filter )
+                                      const tripoint_bub_ms &pos, const std::function<bool( const item & )> &filter,
+                                      bool in_tools )
 {
 
 
-    auto handle_item = [&qty, &used, &pos, &what]( detached_ptr<item> &&e ) {
+    // CDF: in_tools also matches a tool by the ammo it currently holds (DDA item.cpp:4013)
+    auto handle_item = [&qty, &used, &pos, &what, in_tools]( detached_ptr<item> &&e ) {
         if( e->is_tool() ) {
-            if( e->typeId() == what || ( what == itype_UPS && e->has_flag( flag_IS_UPS ) ) ) {
+            if( e->typeId() == what || ( in_tools && e->ammo_current() == what ) ||
+                ( what == itype_UPS && e->has_flag( flag_IS_UPS ) ) ) {
                 int ups_eff_mult = e->type->tool->ups_eff_mult;
                 int n = std::min( e->ammo_remaining() * ups_eff_mult, qty );
                 int rand_increase = x_in_y( n % ups_eff_mult, ups_eff_mult );
@@ -10326,7 +10329,8 @@ detached_ptr<item> item::use_charges( detached_ptr<item> &&self, const itype_id 
 
     item &obj = *self;
 
-    if( qty > 0 && filter( *self ) && self->typeId() == what ) {
+    if( qty > 0 && filter( *self ) &&
+        ( self->typeId() == what || ( in_tools && self->is_tool() && self->ammo_current() == what ) ) ) {
         self = handle_item( std::move( self ) );
     }
 

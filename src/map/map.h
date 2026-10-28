@@ -1716,7 +1716,8 @@ public:
         -> std::vector<detached_ptr<item>>;
     auto use_charges(
         const tripoint_bub_ms& origin, int range, const itype_id& type, int& quantity,
-        const std::function<bool(const item&)>& filter = return_true<item>)
+        const std::function<bool(const item&)>& filter = return_true<item>,
+        bool in_tools = false)
         -> std::vector<detached_ptr<item>>;
     /*@}*/
 

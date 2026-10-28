@@ -5853,14 +5853,15 @@ auto map::use_amount(
 template <typename Stack>
 auto use_charges_from_stack(
     Stack stack, const itype_id& type, int& quantity, const tripoint_bub_ms& pos,
-    const std::function<bool(const item&)>& filter) -> std::vector<detached_ptr<item>> {
+    const std::function<bool(const item&)>& filter, bool in_tools = false)
+    -> std::vector<detached_ptr<item>> {
 
     std::vector<detached_ptr<item>> ret;
 
-    stack.remove_top_items_with([&quantity, &filter, &type, &pos, &ret](detached_ptr<item>&& it) {
+    stack.remove_top_items_with([&quantity, &filter, &type, &pos, &ret, in_tools](detached_ptr<item>&& it) {
         if (quantity <= 0 || it->made_of(LIQUID)) { return std::move(it); }
         detached_ptr<item> new_it =
-            item::use_charges(std::move(it), type, quantity, ret, pos, filter);
+            item::use_charges(std::move(it), type, quantity, ret, pos, filter, in_tools);
         // NOLINTNEXTLINE(bugprone-use-after-move)
         if (it && !new_it) { ret.push_back(std::move(it)); }
         return new_it;
@@ -5870,7 +5871,8 @@ auto use_charges_from_stack(
 
 static void use_charges_from_furn(
     const furn_t& f, const itype_id& type, int& quantity, map* m, const tripoint_bub_ms& p,
-    std::vector<detached_ptr<item>>& ret, const std::function<bool(const item&)>& filter) {
+    std::vector<detached_ptr<item>>& ret, const std::function<bool(const item&)>& filter,
+    bool in_tools = false) {
     if (m->has_flag("LIQUIDCONT", p)) {
         auto item_list = m->i_at(p);
         auto current_item = item_list.begin();
@@ -5907,7 +5909,7 @@ static void use_charges_from_furn(
                 item::spawn(itt.get_id(), calendar::start_of_cataclysm, grid.get_resource());
             int initial_quantity = quantity;
             if (filter(*furn_item)) {
-                item::use_charges(std::move(furn_item), type, quantity, ret, p);
+                item::use_charges(std::move(furn_item), type, quantity, ret, p, return_true<item>, in_tools);
                 // That quantity math thing is atrocious. Punishment for the int& "argument".
                 grid.mod_resource(quantity - initial_quantity);
             }
@@ -5921,9 +5923,9 @@ static void use_charges_from_furn(
             if (iter != stack.end()) {
 
                 (*iter)->attempt_detach(
-                    [&filter, &ammo, &quantity, &ret, &p](detached_ptr<item>&& it) {
+                    [&filter, &ammo, &quantity, &ret, &p, in_tools](detached_ptr<item>&& it) {
                         if (filter(*it)) {
-                            return item::use_charges(std::move(it), ammo, quantity, ret, p);
+                            return item::use_charges(std::move(it), ammo, quantity, ret, p, return_true<item>, in_tools);
                         }
                         return std::move(it);
                     });
@@ -5934,7 +5936,7 @@ static void use_charges_from_furn(
 
 auto map::use_charges(
     const tripoint_bub_ms& origin, const int range, const itype_id& type, int& quantity,
-    const std::function<bool(const item&)>& filter) -> std::vector<detached_ptr<item>> {
+    const std::function<bool(const item&)>& filter, bool in_tools) -> std::vector<detached_ptr<item>> {
     std::vector<detached_ptr<item>> ret;
 
     // populate a grid of spots that can be reached
@@ -5961,13 +5963,13 @@ auto map::use_charges(
 
     for (const tripoint_bub_ms& p : reachable_pts) {
         if (has_furn(p)) {
-            use_charges_from_furn(furn(p).obj(), type, quantity, this, p, ret, filter);
+            use_charges_from_furn(furn(p).obj(), type, quantity, this, p, ret, filter, in_tools);
             if (quantity <= 0) { return ret; }
         }
 
         if (accessible_items(p)) {
             std::vector<detached_ptr<item>> tmp =
-                use_charges_from_stack(i_at(p), type, quantity, p, filter);
+                use_charges_from_stack(i_at(p), type, quantity, p, filter, in_tools);
             ret.insert(ret.end(), std::make_move_iterator(tmp.begin()),
                        std::make_move_iterator(tmp.end()));
             if (quantity <= 0) { return ret; }
@@ -6017,7 +6019,7 @@ auto map::use_charges(
         if (cargo) {
             std::vector<detached_ptr<item>> tmp = use_charges_from_stack(
                 cargo->vehicle().get_items(cargo->part_index()), type, quantity, tripoint_bub_ms(p),
-                filter);
+                filter, in_tools);
             ret.insert(ret.end(), std::make_move_iterator(tmp.begin()),
                        std::make_move_iterator(tmp.end()));
             if (quantity <= 0) { return ret; }

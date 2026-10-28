@@ -11756,7 +11756,7 @@ bool Character::use_charges_if_avail( const itype_id &it, int quantity )
 }
 
 std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, int qty,
-                             const std::function<bool( const item & )> &filter )
+                             const std::function<bool( const item & )> &filter, bool in_tools )
 {
     std::vector<detached_ptr<item>> res;
     if( qty <= 0 ) {
@@ -11825,7 +11825,7 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
 
     bool has_tool_with_UPS = false;
     const auto p = bub_pos();
-    remove_items_with( [this, &qty, filter, &has_tool_with_UPS, &what, &res, &p]( detached_ptr<item> &&e ) {
+    remove_items_with( [this, &qty, filter, &has_tool_with_UPS, &what, &res, &p, in_tools]( detached_ptr<item> &&e ) {
         if( qty == 0 ) {
             // found sufficient charges
             return VisitResponse::ABORT;
@@ -11837,7 +11837,8 @@ std::vector<detached_ptr<item>> Character::use_charges( const itype_id &what, in
             has_tool_with_UPS = true;
         }
         if( e->is_tool() ) {
-            if( e->typeId() == what ) {
+            // CDF: in_tools matches by loaded ammo too (DDA character.cpp:5778); UPS detection above stays typeId-only
+            if( e->typeId() == what || ( in_tools && e->ammo_current() == what ) ) {
                 int n = std::min( e->ammo_remaining(), qty );
                 qty -= n;
 

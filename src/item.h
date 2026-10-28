@@ -784,7 +784,8 @@ class item : public location_visitable<item>, public game_object<item>
         static detached_ptr<item> use_charges( detached_ptr<item> &&self, const itype_id &what, int &qty,
                                                std::vector<detached_ptr<item>> &used,
                                                const tripoint_bub_ms &pos,
-                                               const std::function<bool( const item & )> &filter = return_true<item> );
+                                               const std::function<bool( const item & )> &filter = return_true<item>,
+                                               bool in_tools = false );
 
         /**
          * Invokes item type's @ref itype::drop_action.

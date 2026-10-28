@@ -2090,7 +2090,8 @@ class Character : public Creature, public location_visitable<Character>
 
         // Uses up charges
         std::vector<detached_ptr<item>> use_charges( const itype_id &what, int qty,
-                                     const std::function<bool( const item & )> &filter = return_true<item> );
+                                     const std::function<bool( const item & )> &filter = return_true<item>,
+                                     bool in_tools = false );
 
         bool has_fire( int quantity ) const;
         void use_fire( int quantity );
