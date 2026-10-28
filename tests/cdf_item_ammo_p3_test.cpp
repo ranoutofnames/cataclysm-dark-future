@@ -7,12 +7,15 @@
 #include "item.h"
 #include "item_contents.h"
 #include "item_pocket.h"
+#include "iuse.h"
+#include "iuse_actor.h"
 #include "itype.h"
 #include "json.h"
 #include "map/map.h"
 #include "map_helpers.h"
 #include "npc.h"
 #include "player_helpers.h"
+#include "ret_val.h"
 #include "state_helpers.h"
 #include "units.h"
 
@@ -983,6 +986,38 @@ TEST_CASE( "ammo_scale_defaults_are_zero_for_quality_and_attach_methods", "[p3][
     CHECK( itype_id( "test_multimag_consume_toolmod" ).obj().ammo_scale.at( "TOOLMOD_ATTACH" ) == 0 );
     CHECK( itype_id( "glock_19" ).obj().ammo_scale.at( "detach_gunmods" ) == 0 );
     CHECK( itype_id( "rock" ).obj().ammo_scale.empty() );
+}
+
+// DDA item_factory.cpp:436-438 (modify_gunmods default on every gun), iuse_actor.cpp:4801-4828 (can_use)
+TEST_CASE( "modify_gunmods_is_a_default_gun_use_with_zero_ammo_scale", "[p3][ammo][8-4f]" )
+{
+    const itype &glock = itype_id( "glock_19" ).obj();
+    CHECK( glock.ammo_scale.at( "modify_gunmods" ) == 0 );
+    CHECK( glock.use_methods.count( "modify_gunmods" ) == 1 );
+    CHECK( itype_id( "rock" ).obj().use_methods.count( "modify_gunmods" ) == 0 );
+}
+
+TEST_CASE( "modify_gunmods_can_use_requires_wielded_and_modded_gun", "[p3][ammo][8-4f]" )
+{
+    clear_avatar();
+    avatar &chr = get_avatar();
+    const tripoint_bub_ms where( 60, 60, 0 );
+    chr.setpos( where );
+    detached_ptr<item> gun = item::spawn( itype_id( "glock_19" ) );
+    item &glock = *gun;
+    const iuse_actor *actor = glock.type->use_methods.at( "modify_gunmods" ).get_actor_ptr();
+    REQUIRE( actor != nullptr );
+    SECTION( "not wielded" ) {
+        const ret_val<bool> r = actor->can_use( chr, glock, false, where );
+        CHECK( !r.success() );
+        CHECK( r.str() == "Need to be wielding." );
+    }
+    SECTION( "wielded but unmodded" ) {
+        REQUIRE( !chr.wield( std::move( gun ) ) );
+        const ret_val<bool> r = actor->can_use( chr, chr.primary_weapon(), false, where );
+        CHECK( !r.success() );
+        CHECK( r.str() == "Doesn't appear to be modded." );
+    }
 }
 
 // DDA tests/multimag_test.cpp:1825-1846

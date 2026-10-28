@@ -1157,6 +1157,20 @@ class detach_gunmods_actor : public iuse_actor
         void finalize( const itype_id &my_item_type ) override;
 };
 
+// DDA iuse_actor.h:1145-1158
+class modify_gunmods_actor : public iuse_actor
+{
+    public:
+        explicit modify_gunmods_actor( const std::string &type = "modify_gunmods" ) : iuse_actor( type ) {}
+
+        void load( const JsonObject & ) override {}
+        int use( player &p, item &it, bool t, const tripoint_bub_ms &pnt ) const override;
+        ret_val<bool> can_use( const Character &, const item &it, bool,
+                               const tripoint_bub_ms & ) const override;
+        std::unique_ptr<iuse_actor> clone() const override;
+        void finalize( const itype_id &my_item_type ) override;
+};
+
 class mutagen_actor : public iuse_actor
 {
     public:

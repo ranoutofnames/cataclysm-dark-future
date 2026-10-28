@@ -450,7 +450,10 @@ void Item_factory::finalize_pre( itype &obj )
         const std::string func = "detach_gunmods";
         emplace_usage( obj.use_methods, func );
         obj.ammo_scale.emplace( func, 0 );
-        // CDF: modify_gunmods use action absent (0 hits in src and data/json)
+        // DDA item_factory.cpp:436-438
+        const std::string func2 = "modify_gunmods";
+        emplace_usage( obj.use_methods, func2 );
+        obj.ammo_scale.emplace( func2, 0 );
     }
 
     if( get_option<bool>( "NO_FAULTS" ) ) {
@@ -1724,6 +1727,7 @@ void Item_factory::init()
     add_actor( std::make_unique<molle_detach_actor>() );
     add_actor( std::make_unique<install_bionic_actor>() );
     add_actor( std::make_unique<detach_gunmods_actor>() );
+    add_actor( std::make_unique<modify_gunmods_actor>() );
     add_actor( std::make_unique<mutagen_actor>() );
     add_actor( std::make_unique<mutagen_iv_actor>() );
     add_actor( std::make_unique<deploy_tent_actor>() );

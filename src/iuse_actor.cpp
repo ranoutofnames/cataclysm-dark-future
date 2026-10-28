@@ -4626,6 +4626,83 @@ void detach_gunmods_actor::finalize( const itype_id &my_item_type )
     }
 }
 
+// DDA iuse_actor.cpp:4767-4840
+// CDF: BN use/can_use signatures (player &, bool, ret_val<bool>); no map argument; cancel returns 0 like detach_gunmods_actor
+int modify_gunmods_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pnt ) const
+{
+    std::vector<item *> mods;
+    for( item *mod : it.gunmods() ) {
+        if( mod->is_transformable() ) {
+            mods.push_back( mod );
+        }
+    }
+
+    uilist prompt;
+    prompt.text = _( "Modify which part" );
+
+    for( size_t i = 0; i != mods.size(); ++i ) {
+        prompt.addentry( i, true, -1, string_format( "%s: %s", mods[i]->tname(),
+                         mods[i]->get_use( "transform" )->get_name() ) );
+    }
+
+    prompt.query();
+
+    if( prompt.ret >= 0 ) {
+        // set gun to default in case this changes anything
+        // CDF: gun_mode_id( "DEFAULT" ) in place of gun_mode_DEFAULT
+        it.gun_set_mode( gun_mode_id( "DEFAULT" ) );
+        // TODO: make 'invoke_item' map aware.
+        p.invoke_item( mods[prompt.ret], "transform", pnt );
+        it.on_contents_changed();
+        return 0;
+    }
+
+    p.add_msg_if_player( _( "Never mind." ) );
+    return 0;
+}
+
+ret_val<bool> modify_gunmods_actor::can_use( const Character &p, const item &it, bool,
+        const tripoint_bub_ms & ) const
+{
+    if( !p.is_wielding( it ) ) {
+        return ret_val<bool>::make_failure( _( "Need to be wielding." ) );
+    }
+    const std::vector<const item *> mods = it.gunmods();
+
+    if( mods.empty() ) {
+        return ret_val<bool>::make_failure( _( "Doesn't appear to be modded." ) );
+    }
+
+    const bool modifiables = std::any_of( mods.begin(), mods.end(),
+    []( const item * mod ) {
+        return mod->is_transformable();
+    } );
+
+    if( !modifiables ) {
+        return ret_val<bool>::make_failure( _( "None of the mods can be modified." ) );
+    }
+
+    if( p.is_worn(
+            it ) ) { // I don't know if modifying really needs this but its for future proofing.
+        return ret_val<bool>::make_failure( _( "Has to be taken off first." ) );
+    }
+
+    return ret_val<bool>::make_success();
+}
+
+std::unique_ptr<iuse_actor> modify_gunmods_actor::clone() const
+{
+    return std::make_unique<modify_gunmods_actor>( *this );
+}
+
+void modify_gunmods_actor::finalize( const itype_id &my_item_type )
+{
+    // CDF: DDA's check is inverted (fires on guns); BN style matches detach_gunmods_actor::finalize, which also warns when it is NOT a gun
+    if( !my_item_type->gun ) {
+        debugmsg( "Item %s has modify_gunmods_actor actor, but it's not a gun.", my_item_type.c_str() );
+    }
+}
+
 std::unique_ptr<iuse_actor> mutagen_actor::clone() const
 {
     return std::make_unique<mutagen_actor>( *this );
