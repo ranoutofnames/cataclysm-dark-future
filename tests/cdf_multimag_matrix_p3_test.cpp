@@ -706,6 +706,61 @@ std::vector<int> mm_mx_magazine_live_charges( const item &host )
 }
 } // namespace
 
+TEST_CASE( "multimag_matrix_gunmod_mode_override_drains_modded_rate",
+           "[p3][multimag][matrix][mod]" )
+{
+    mm_mx_install_all_synth_types();
+    map &here = get_map();
+    for( const mm_mx_synth_spec &spec : mm_mx_synth_registry() ) {
+        if( !spec.is_gun ) {
+            continue;
+        }
+        CAPTURE( spec.id.str() );
+        clear_avatar();
+        Character &chr = get_player_character();
+        const tripoint_bub_ms pos = chr.bub_pos();
+        item &host = chr.i_add( item::spawn( spec.id ) );
+        REQUIRE( !host.is_null() );
+        for( size_t i = 0; i < spec.pockets.size(); ++i ) {
+            std::string api;
+            REQUIRE( mm_mx_load_pocket( host, static_cast<int>( i ), spec.pockets[i],
+                                        mm_mx_pocket_cap_for( spec.pockets[i] ), api ) );
+        }
+
+        // One mod per pocket count: adds MODE_X (qty 1 per pocket) and hides DEFAULT.
+        const itype_id mod_id( "mm_mx_modeover_" + std::to_string( spec.pockets.size() ) );
+        mm_mx_ensure_synth_mod( mod_id, [&]( itype & t ) {
+            t.gunmod = cata::make_value<islot_gunmod>();
+            // CDF: gun_modifier_data has no default constructor, so operator[] becomes emplace.
+            t.gunmod->mode_modifier.emplace( gun_mode_MODE_X,
+                                             gun_modifier_data( "mode x", 1, std::set<std::string> {} ) );
+            for( size_t i = 0; i < spec.pockets.size(); ++i ) {
+                pocket_consumption_entry e;
+                e.pocket = "p" + std::to_string( i );
+                e.qty = 1;
+                t.gunmod->firing_requirements.per_mode[gun_mode_MODE_X].push_back( e );
+            }
+            t.gunmod->hide_modes.insert( gun_mode_DEFAULT );
+        } );
+        // CDF: no item::update_modified_pockets; the mod goes in through item::put_in( MOD ).
+        REQUIRE( host.put_in( item::spawn( mod_id ), pocket_type::MOD ).success() );
+
+        const std::map<gun_mode_id, gun_mode> modes = host.gun_all_modes();
+        CHECK( modes.count( gun_mode_MODE_X ) == 1 );
+        CHECK( modes.count( gun_mode_DEFAULT ) == 0 );
+
+        const std::vector<int> before = mm_mx_magazine_live_charges( host );
+        const int got = host.consume_shots( gun_mode_MODE_X, 1, here, pos, &chr );
+        CHECK( got == 1 );
+        const std::vector<int> after = mm_mx_magazine_live_charges( host );
+        REQUIRE( before.size() == after.size() );
+        for( size_t i = 0; i < before.size(); ++i ) {
+            CAPTURE( i, spec.pockets[i].str(), before[i], after[i] );
+            CHECK( after[i] == before[i] - 1 );  // modded rate: 1 per pocket
+        }
+    }
+}
+
 TEST_CASE( "multimag_matrix_consumption_mods_override_each_pocket",
            "[p3][multimag][matrix][mod]" )
 {
