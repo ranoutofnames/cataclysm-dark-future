@@ -35,6 +35,24 @@
     ]
   },
   {
+    "//": "CDF: P3-9-5a; test_multimag_tool_consume has explicit pocket_data (no generated MOD pocket); this copy adds a mod bay for the toolmod multiply case.",
+    "id": "p3_multimag_tool_consume",
+    "type": "TOOL",
+    "name": { "str": "p3 multimag consume tool with a mod bay" },
+    "copy-from": "test_multimag_tool_consume",
+    "pocket_data": [
+      { "id": "well_a", "max_item_length": "2 km", "magazine_well": "250 ml", "pocket_type": "MAGAZINE_WELL", "item_restriction": [ "glockmag" ] },
+      {
+        "id": "well_b",
+        "magazine_well": "500 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "stanag30" ]
+      },
+      { "pocket_type": "MOD" }
+    ]
+  },
+  {
     "//": "CDF: P3-9-2; non-default mag_jam_mult fixture for the Lua islot_magazine.mag_jam_mult binding test.",
     "id": "test_mag_jam_mult_high",
     "type": "MAGAZINE",
