@@ -620,5 +620,430 @@
         "coverage": 100
       }
     ]
+  },
+  {
+    "id": "robofac_basic_mantle",
+    "type": "ARMOR",
+    "copy-from": "robofac_mantle",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 prototype mantle",
+    "description": "3D printed armor for the upper body, made of thick and pliable polymer with metallic fibers for reinforcement.  Several buckles and straps allow it to be adjusted to fit you comfortably.  Despite its rough finish, it's clear that a lot of thought has gone into the ergonomics and weight.  Designed to clip to the chest and shoulders, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "plastic",
+      "aluminum"
+    ]
+  },
+  {
+    "id": "robofac_basic_skirt",
+    "type": "ARMOR",
+    "copy-from": "robofac_skirt",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 prototype skirt",
+    "description": "3D printed armor for the thighs and knees, consisting of a skirt made of segmented armor plates.  It features a simple integrated belt to let it fit any waist size.  Despite its rough finish, it's clear that a lot of thought has gone into the ergonomics and weight.  Designed to clip to the waist, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "plastic",
+      "aluminum"
+    ]
+  },
+  {
+    "id": "robofac_basic_vambraces",
+    "type": "ARMOR",
+    "copy-from": "robofac_vambraces",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 prototype vambraces (pair)"
+    },
+    "description": "3D printed arm guards, made of large and flexible polymer sheets wrapped around the forearm.  The end of each sheet features a clip and drawstring, to fit the armor to any size.  Despite the rough finish, it fits securely, and feels quite comfortable.",
+    "material": [
+      "plastic",
+      "aluminum"
+    ]
+  },
+  {
+    "id": "robofac_basic_greaves",
+    "type": "ARMOR",
+    "copy-from": "robofac_greaves",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 prototype greaves (pair)"
+    },
+    "description": "3D printed leg guards, consisting of thick knee pads and a pair of large, flexible polymer plates for securing around the calves to protect the tibias of each leg.  Two straps on each plate can be tightened or loosened to fit different leg sizes.  Despite the rough finish, it doesn't impede your movement, and fits comfortably against your body.",
+    "material": [
+      "plastic",
+      "aluminum"
+    ]
+  },
+  {
+    "id": "robofac_basic_helmet",
+    "type": "ARMOR",
+    "copy-from": "robofac_helmet",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 prototype helmet",
+    "description": "3D printed armor for the head, made of thick polymer plates woven with metallic fibers.  Despite its rough finish, it's clear that a lot of thought has gone into the ergonomics and weight.  Designed to clip to some kind of attachment point, its interior reads \"ATTACH TO MODULAR HEADGEAR\".",
+    "material": [
+      "plastic",
+      "aluminum"
+    ]
+  },
+  {
+    "id": "robofac_rubber_mantle",
+    "type": "ARMOR",
+    "copy-from": "robofac_mantle",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 kinetic mantle",
+    "description": "3D printed armor for the upper body, made of thick and pliable polymer with metallic fibers for reinforcement.  This model incorporates a rubber coating that diffuses impacts and provides excellent protection from blunt trauma, even if it does feel a bit like a rain coat.  Designed to clip to the chest and shoulders, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "rubber",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.576
+    }
+  },
+  {
+    "id": "robofac_rubber_skirt",
+    "type": "ARMOR",
+    "copy-from": "robofac_skirt",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 kinetic skirt",
+    "description": "3D printed armor for the thighs and knees, consisting of a skirt made of segmented armor plates.  This model resembles scale armor, and provides excellent protection from blunt trauma.  Designed to clip to the waist, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "rubber",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.576
+    }
+  },
+  {
+    "id": "robofac_rubber_vambraces",
+    "type": "ARMOR",
+    "copy-from": "robofac_vambraces",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 kinetic vambraces (pair)"
+    },
+    "description": "3D printed arm guards, made of large and flexible polymer sheets wrapped around the forearm.  These ones are built in an overlapping pattern that diffuses impacts and provides excellent protection from blunt trauma.",
+    "material": [
+      "rubber",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.576
+    }
+  },
+  {
+    "id": "robofac_rubber_greaves",
+    "type": "ARMOR",
+    "copy-from": "robofac_greaves",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 kinetic greaves (pair)"
+    },
+    "description": "3D printed leg guards, consisting of thick knee pads and a pair of large, flexible polymer plates for securing around the calves to protect the tibias of each leg.  Thick padding and rubber lining provide excellent protection from blunt trauma.",
+    "material": [
+      "rubber",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.576
+    }
+  },
+  {
+    "id": "robofac_rubber_helmet",
+    "type": "ARMOR",
+    "copy-from": "robofac_helmet",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 kinetic helmet",
+    "description": "3D printed armor for the head, made of thick polymer plates woven with metallic fibers.  This model is covered in countless rubber hexagons, and offers superior protection against blunt trauma.  Designed to clip to some kind of attachment point, its interior reads \"ATTACH TO MODULAR HEADGEAR\".",
+    "material": [
+      "rubber",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.576
+    }
+  },
+  {
+    "id": "robofac_nomex_mantle",
+    "type": "ARMOR",
+    "copy-from": "robofac_mantle",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first. The 1.356 weight factor against 1.365 on the other nomex slots is copied from DDA (possible DDA typo).",
+    "name": "Hub 01 turnout mantle",
+    "description": "3D printed armor for the upper body, made of thick and pliable polymer with metallic fibers for reinforcement.  This model features heat-resistant materials in the construction, providing protection from extreme heat without sacrificing its overall performance.  Designed to clip to the chest and shoulders, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "nomex",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.356
+    }
+  },
+  {
+    "id": "robofac_nomex_skirt",
+    "type": "ARMOR",
+    "copy-from": "robofac_skirt",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 turnout skirt",
+    "description": "3D printed armor for the thighs and knees, consisting of a skirt made of segmented armor plates.  This version incorporates tight-fitting leggings that provide some protection from extreme heat.  Designed to clip to the waist, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "nomex",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.365
+    }
+  },
+  {
+    "id": "robofac_nomex_vambraces",
+    "type": "ARMOR",
+    "copy-from": "robofac_vambraces",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 turnout vambraces (pair)"
+    },
+    "description": "3D printed arm guards, made of large and flexible polymer sheets wrapped around the forearm.  These ones include Nomex sleeves to protect your arms from extreme heat.",
+    "material": [
+      "nomex",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.365
+    }
+  },
+  {
+    "id": "robofac_nomex_greaves",
+    "type": "ARMOR",
+    "copy-from": "robofac_greaves",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 turnout greaves (pair)"
+    },
+    "description": "3D printed leg guards, consisting of thick knee pads and a pair of large, flexible polymer plates for securing around the calves to protect the tibias of each leg.  Heat-resistant leg sleeves and a breathable design provide adequate protection from extreme heat without sacrificing your mobility or core protection.",
+    "material": [
+      "nomex",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.365
+    }
+  },
+  {
+    "id": "robofac_nomex_helmet",
+    "type": "ARMOR",
+    "copy-from": "robofac_helmet",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 turnout helmet",
+    "description": "3D printed armor for the head, made of thick polymer plates woven with metallic fibers.  This version incorporates a tight fitting Nomex layer for some protection against heat.  Designed to clip to some kind of attachment point, its interior reads \"ATTACH TO MODULAR HEADGEAR\".",
+    "material": [
+      "nomex",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.365
+    }
+  },
+  {
+    "id": "robofac_kevlar_mantle",
+    "type": "ARMOR",
+    "copy-from": "robofac_mantle",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 ballistic mantle",
+    "description": "3D printed armor for the upper body, made of thick and pliable polymer with metallic fibers for reinforcement.  Thanks to a slim under-layer of synthetic fibers, it provides fantastic defense from small-arms fire, and could take the edge off of a rifle bullet, too.  Designed to clip to the chest and shoulders, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "kevlar_layered",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    }
+  },
+  {
+    "id": "robofac_kevlar_skirt",
+    "type": "ARMOR",
+    "copy-from": "robofac_skirt",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 ballistic skirt",
+    "description": "3D printed armor for the thighs and knees, consisting of a skirt made of segmented armor plates.  It includes a reinforcing layer of aramid fabric in addition to leg sleeves made of high-strength material, protecting your sensitive bits from small-arms fire.  Designed to clip to the waist, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "kevlar_layered",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    }
+  },
+  {
+    "id": "robofac_kevlar_vambraces",
+    "type": "ARMOR",
+    "copy-from": "robofac_vambraces",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 ballistic vambraces (pair)"
+    },
+    "description": "3D printed arm guards, made of large and flexible polymer sheets wrapped around the forearm.  These ones include aramid arm sleeves that do a great job of slowing down bullets and preventing them from shredding your arms.",
+    "material": [
+      "kevlar_layered",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    }
+  },
+  {
+    "id": "robofac_kevlar_greaves",
+    "type": "ARMOR",
+    "copy-from": "robofac_greaves",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 ballistic greaves (pair)"
+    },
+    "description": "3D printed leg guards, consisting of thick knee pads and a pair of large, flexible polymer plates for securing around the calves to protect the tibias of each leg.  This model features leggings made of durable aramid and a reinforced plate design; combined, they do a good job of mitigating damage from small-arms fire.",
+    "material": [
+      "kevlar_layered",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    }
+  },
+  {
+    "id": "robofac_kevlar_helmet",
+    "type": "ARMOR",
+    "copy-from": "robofac_helmet",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 ballistic helmet",
+    "description": "3D printed armor for the head, made of thick polymer plates woven with metallic fibers.  This one has extra Kevlar and steel layering, to provide superior protection against small arms.  Designed to clip to some kind of attachment point, its interior reads \"ATTACH TO MODULAR HEADGEAR\".",
+    "material": [
+      "kevlar_layered",
+      "plastic",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    }
+  },
+  {
+    "id": "robofac_military_mantle",
+    "type": "ARMOR",
+    "copy-from": "robofac_mantle",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 soldier mantle",
+    "description": "3D printed armor for the upper body, sporting a professional finish and stellar ergonomics.  Made of extremely tough UHMW polyethylene combined with treated aramid fabric, it provides military-grade defense against zombies, bullets, zombies with bullets, and plenty of other things that the Cataclysm can throw at you.  Designed to clip to the chest and shoulders, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "kevlar_rigid",
+      "thermo_resin",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    },
+    "extend": {
+      "flags": [
+        "STURDY"
+      ]
+    }
+  },
+  {
+    "id": "robofac_military_skirt",
+    "type": "ARMOR",
+    "copy-from": "robofac_skirt",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 soldier skirt",
+    "description": "3D printed armor for the thighs and knees, sporting a professional finish and stellar ergonomics.  Composed of segmented polyethylene armor plates featuring a dense metal core sandwiched between layers of composite-grade aramid fabric, it provides excellent protection for the upper legs to ensure that you'll stay on your feet when it really matters.  Designed to clip to the waist, its interior reads \"ATTACH TO MODULAR DEFENSE SYSTEM\".",
+    "material": [
+      "kevlar_rigid",
+      "thermo_resin",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    },
+    "extend": {
+      "flags": [
+        "STURDY"
+      ]
+    }
+  },
+  {
+    "id": "robofac_military_vambraces",
+    "type": "ARMOR",
+    "copy-from": "robofac_vambraces",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 soldier vambraces (pair)"
+    },
+    "description": "3D printed arm guards, sporting a professional finish and stellar ergonomics.  With thick bullet-resistant arm sleeves, flexible but extremely tough thermoplastic plates, and special attention given to areas reflexively used to protect the face from attacks, it provides first-rate protection against all the horrors that the apocalypse has brought to bear.",
+    "material": [
+      "kevlar_rigid",
+      "thermo_resin",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    },
+    "extend": {
+      "flags": [
+        "STURDY"
+      ]
+    }
+  },
+  {
+    "id": "robofac_military_greaves",
+    "type": "ARMOR",
+    "copy-from": "robofac_greaves",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": {
+      "str_sp": "Hub 01 soldier greaves (pair)"
+    },
+    "description": "3D printed leg guards, sporting a professional finish and stellar ergonomics.  Layered UHMW thermoplastic plates and bullet-resistant aramid padding combine to keep your lower leg bones protected and unbroken, even when knee-deep in the dead.",
+    "material": [
+      "kevlar_rigid",
+      "thermo_resin",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    },
+    "extend": {
+      "flags": [
+        "STURDY"
+      ]
+    }
+  },
+  {
+    "id": "robofac_military_helmet",
+    "type": "ARMOR",
+    "copy-from": "robofac_helmet",
+    "//": "CDF: DDA robofac_armor.json tier piece; the portioned material list becomes one list, largest portion first.",
+    "name": "Hub 01 soldier helmet",
+    "description": "3D printed armor for the head, sporting a professional finish and stellar ergonomics.  Composed of a dense metal shell sandwiched between layers of composite-grade aramid fabric, it provides excellent protection, ensuring you'll keep your head against whatever the Cataclysm throws at you.  Designed to clip to some kind of attachment point, its interior reads \"ATTACH TO MODULAR HEADGEAR\".",
+    "material": [
+      "kevlar_rigid",
+      "thermo_resin",
+      "qt_steel"
+    ],
+    "proportional": {
+      "weight": 1.5
+    },
+    "extend": {
+      "flags": [
+        "STURDY"
+      ]
+    }
   }
 ]
