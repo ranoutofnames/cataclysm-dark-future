@@ -913,3 +913,88 @@ TEST_CASE("plate tiers order scrap < lc < mc < hc < ch < qt", "[armor][ablative]
         previous = resist;
     }
 }
+
+// AR5-VESTS: DDA vests, plates and EOD jackets ported as plain JSON (data/json/items/armor/
+// cdf_ballistic_vests.json, cdf_ballistic_armor.json). Every literal below is re-derived from
+// that CDF JSON, not from the loaded item.
+TEST_CASE("ar5_level_3_vest_takes_two_large_plates", "[armor][ablative][ar5]") {
+    clear_all_state();
+    const bodypart_id torso("torso");
+    detached_ptr<item> carrier = item::spawn(itype_id("level_3_vest"));
+    REQUIRE(carrier->find_armor_data() != nullptr);
+    CHECK(ablative::has_plate_slots(*carrier));
+    CHECK(ablative::plates(*carrier).empty());
+
+    // the two plate slots are large ones (flag_restriction in the JSON)
+    int large_slots = 0;
+    for (const item_pocket &pocket : carrier->contents.get_pockets()) {
+        if (pocket.get_data().ablative) {
+            CHECK(pocket.get_data().get_flag_restrictions().contains(flag_id("ABLATIVE_LARGE")));
+            ++large_slots;
+        }
+    }
+    CHECK(large_slots == 2);
+
+    CHECK(put_plate(*carrier, "esapi_plate"));
+    CHECK(put_plate(*carrier, "esapi_plate"));
+    CHECK(plate_ids(*carrier) == std::vector<std::string>{"esapi_plate", "esapi_plate"});
+    detached_ptr<item> third = item::spawn(itype_id("esapi_plate"));
+    const ret_val<bool> res = carrier->try_put_in(std::move(third));
+    CHECK_FALSE(res.success());
+    CHECK(std::string(res.c_str()).find("taken") != std::string::npos);
+
+    // a medium plate does not go into a large slot
+    detached_ptr<item> fresh = item::spawn(itype_id("level_3_vest"));
+    CHECK_FALSE(put_plate(*fresh, "esbi_plate"));
+
+    // CDF: coverage 100 on the upper torso and 80 on the lower torso, as in the JSON
+    detached_ptr<item> bare = item::spawn(itype_id("level_3_vest"));
+    CHECK(bare->get_coverage(torso, sub_bodypart_str_id("torso_upper")) == 100);
+    CHECK(bare->get_coverage(torso, sub_bodypart_str_id("torso_lower")) == 80);
+    CHECK_FALSE(bare->covers(bodypart_id("arm_l")));
+    // CDF: weight 2650 g, volume 6 L
+    CHECK(bare->weight() == 2650_gram);
+    CHECK(bare->volume() == 6_liter);
+}
+
+TEST_CASE("ar5_stab_and_eod_plates_fit_large_slots", "[armor][ablative][ar5]") {
+    clear_all_state();
+    for (const std::string id : {"stab_plate", "eod_plate"}) {
+        CAPTURE(id);
+        detached_ptr<item> plate = item::spawn(itype_id(id));
+        REQUIRE(plate->find_armor_data() != nullptr);
+        CHECK(plate->has_flag(flag_id("ABLATIVE_LARGE")));
+        CHECK(plate->has_flag(flag_id("CANT_WEAR")));
+        CHECK(plate->has_flag(flag_id("NO_SALVAGE")));
+        CHECK_FALSE(plate->has_flag(flag_id("ABLATIVE_MEDIUM")));
+        // CDF: both cover 45 of the upper torso, as in the JSON
+        CHECK(plate->get_coverage(bodypart_id("torso"), sub_bodypart_str_id("torso_upper")) == 45);
+        detached_ptr<item> carrier = item::spawn(itype_id("level_3_vest"));
+        CHECK(put_plate(*carrier, id));
+        CHECK(plate_ids(*carrier) == std::vector<std::string>{id});
+    }
+    // CDF: eod_plate covers the lower torso too (JSON: 45), stab_plate does not
+    detached_ptr<item> eod = item::spawn(itype_id("eod_plate"));
+    detached_ptr<item> stab = item::spawn(itype_id("stab_plate"));
+    CHECK(eod->get_coverage(bodypart_id("torso"), sub_bodypart_str_id("torso_lower")) == 45);
+    CHECK(stab->get_coverage(bodypart_id("torso"), sub_bodypart_str_id("torso_lower")) == 0);
+    // CDF: weights and volumes from the JSON
+    CHECK(eod->weight() == 2800_gram);
+    CHECK(eod->volume() == 2950_ml);
+    CHECK(stab->weight() == 500_gram);
+    CHECK(stab->volume() == 300_ml);
+    // neither plate goes into a medium slot
+    detached_ptr<item> carrier = item::spawn(itype_id("test_plate_carrier"));
+    int medium_slots = 0;
+    for (const std::string id : {"stab_plate", "eod_plate"}) {
+        for (const item_pocket &pocket : carrier->contents.get_pockets()) {
+            if (pocket.get_data().ablative &&
+                pocket.get_data().get_flag_restrictions().contains(flag_id("ABLATIVE_MEDIUM"))) {
+                ++medium_slots;
+                detached_ptr<item> p = item::spawn(itype_id(id));
+                CHECK_FALSE(pocket.can_contain(*p).success());
+            }
+        }
+    }
+    CHECK(medium_slots == 4);
+}

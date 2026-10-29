@@ -249,6 +249,84 @@
     ]
   },
   {
+    "id": "level_3_vest",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-3): DDA's hard armor vest (DDA data/json/items/armor/ballistic_armor.json:1273), a slim carrier with two large plate pockets, in BN armor format. Material mapping as ballistic_vest_esapi: DDA's nylon 1.0 + kevlar_layered 4.4 (95%) is kevlar at thickness 7. Weight, volume, price, coverage (upper 100 / lower 80), encumbrance (4 / 0), cover_vitals 90, plate pockets and flags are DDA's; DDA's fema/police/national_guard variants (fema_armor_vest, police_armor_vest, national_guard_armor_vest) are dropped (BN has no item variants); looks_like as the esapi vest.",
+    "name": {
+      "str": "hard armor vest"
+    },
+    "description": "Armored panels give this vest solid defense against small caliber firearms, and front and back pockets for hard armor panels give protection from higher calibers.",
+    "weight": "2650 g",
+    "volume": "6 L",
+    "price": "700 USD",
+    "price_postapoc": "5 USD",
+    "material": [
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "modularvestceramic",
+    "warmth": 15,
+    "material_thickness": 7,
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": 4
+      },
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ],
+        "coverage": 80,
+        "encumbrance": 0
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      }
+    ]
+  },
+  {
     "id": "xl_ballistic_vest",
     "type": "ARMOR",
     "category": "armor",

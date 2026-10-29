@@ -617,6 +617,88 @@
     ]
   },
   {
+    "id": "stab_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-3): DDA's soft stab panel (DDA data/json/items/armor/ballistic_armor.json:275) in BN armor format. Materials kevlar and nylon exist in CDF and are kept; thickness 3 is DDA's top-level material_thickness (DDA's per-material nylon 1.0 / kevlar 2.3 is not used). Size, weight, volume, price, coverage, encumbrance and flags are DDA's.",
+    "name": {
+      "str": "soft stab panel"
+    },
+    "description": "A soft armor insert designed to protect against stab wounds.  While it's not great protection, it incurs no additional encumbrance.  This is intended to be inserted into a ballistic vest, and can't be worn on its own.",
+    "weight": "500 g",
+    "volume": "300 ml",
+    "longest_side": "16 cm",
+    "price": "600 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "kevlar",
+      "nylon"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 3,
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 0,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "eod_plate",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-3): DDA's EOD fragmentation plate (DDA data/json/items/armor/ballistic_armor.json:219) in BN armor format, for the EOD jackets. Material mapping: plastic_pad and thermo_resin -> plastic; qt_steel -> superalloy (as steel_ballistic_plate); kevlar -> kevlar. Thickness 5 is DDA's top-level material_thickness. Size, weight, volume, price, coverage (45 of the upper and lower torso, vitals 100), encumbrance and flags are DDA's. DDA's description says it fragmentation-only: it protects little against firearms.",
+    "name": {
+      "str": "EOD fragmentation plate"
+    },
+    "description": "A polygonal fragmentation plate with a slightly concave profile, made of thin layers of steel, UHMW polyethylene, foam, and Kevlar.  Though certified to provide protection from fragmentation, it will not provide much protection from firearms.  This is intended to be inserted into an EOD suit, and can't be worn on its own.",
+    "weight": "2800 g",
+    "volume": "2950 ml",
+    "longest_side": "46 cm",
+    "price": "3613 USD",
+    "price_postapoc": "20 USD",
+    "material": [
+      "kevlar",
+      "plastic",
+      "superalloy"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 5,
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "NO_SALVAGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 0,
+        "coverage": 45,
+        "cover_vitals": 100,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper",
+          "torso_lower"
+        ]
+      }
+    ]
+  },
+  {
     "id": "steel_ballistic_plate",
     "type": "ARMOR",
     "category": "armor",
