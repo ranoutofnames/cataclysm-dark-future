@@ -381,3 +381,49 @@ TEST_CASE("hub01_container_groups_spawn_loaded_rigs", "[armor][hub01][trade]") {
         CHECK(plate_ids(*carrier) == c.contents);
     }
 }
+
+namespace {
+
+// group_contains_item does not follow nested "group" entries (item_group.cpp:515), so shops that
+// stock a nested group are checked through every_possible_item_from.
+auto group_lists(const item_group_id &group, const itype_id &id) -> bool {
+    for (const itype *t : item_group::every_possible_item_from(group)) {
+        if (t->get_id() == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+} // namespace
+
+TEST_CASE("hub01_shops_stock_the_pieces", "[armor][hub01][trade]") {
+    // CDF: NPC_ROBOFAC_INTERCOM.json NC_ROBOFAC_INTERCOM_trade, ROBOFAC_SURFACE_FREEMERCHANT.json
+    // NC_ROBOFAC_FREE_MERCHANT_misc, NC_ROBOFAC_FIELD_RESEARCHER.json, NC_ROBOFAC_SCIENTIST.json
+    const item_group_id intercom("NC_ROBOFAC_INTERCOM_trade");
+    REQUIRE(item_group::group_is_defined(intercom));
+    CHECK(group_lists(intercom, itype_id("robofac_armor_rig")));
+    CHECK(group_lists(intercom, itype_id("robofac_military_helmet")));
+
+    const item_group_id merchant("NC_ROBOFAC_FREE_MERCHANT_misc");
+    REQUIRE(item_group::group_is_defined(merchant));
+    CHECK(group_lists(merchant, itype_id("robofac_armor_rig")));
+    // the merchant gets the common pieces only, not the military tier
+    CHECK_FALSE(group_lists(merchant, itype_id("robofac_military_helmet")));
+
+    const item_group_id researcher("NC_ROBOFAC_FIELD_RESEARCHER_worn");
+    REQUIRE(item_group::group_is_defined(researcher));
+    CHECK(group_lists(researcher, itype_id("robofac_basic_greaves")));
+    CHECK(group_lists(researcher, itype_id("robofac_basic_vambraces")));
+    CHECK(group_lists(researcher, itype_id("robofac_basic_mantle")));
+
+    const item_group_id scientist("NC_ROBOFAC_SCIENTIST_worn");
+    REQUIRE(item_group::group_is_defined(scientist));
+    // the rig is the container-item of robofac_mantle_prototype, so it is not an entry of the group:
+    // check the spawned worn set instead
+    const std::vector<detached_ptr<item>> worn = item_group::items_from(scientist);
+    CHECK(std::any_of(worn.begin(), worn.end(), [](const detached_ptr<item> &it) {
+        return it->typeId() == itype_id("robofac_armor_rig");
+    }));
+    CHECK(group_lists(scientist, itype_id("robofac_basic_skirt")));
+}

@@ -82,7 +82,8 @@
       { "item": "fungicide", "prob": 20 },
       { "item": "insecticide", "prob": 20 },
       { "item": "antifungal", "prob": 20 },
-      { "item": "antiparasitic", "prob": 20 }
+      { "item": "antiparasitic", "prob": 20 },
+      { "group": "robofac_armor_pieces", "count": [ 1, 2 ], "prob": 20 }
     ]
   },
   {
