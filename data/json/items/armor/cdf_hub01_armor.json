@@ -1,0 +1,624 @@
+[
+  {
+    "abstract": "robofac_mantle",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json abstract robofac_mantle in BN armor format (armor_portion_data for DDA's armor array). DDA gives each tier piece a portioned material list; CDF has one list, so the tier pieces list the ids largest portion first and keep this integer/float material_thickness. Numbers are DDA's.",
+    "category": "armor",
+    "name": {
+      "str": "abstract mantle",
+      "//~": "NO_I18N"
+    },
+    "weight": "6853 g",
+    "volume": "6600 ml",
+    "price": "600 USD",
+    "price_postapoc": "50 USD",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "warmth": 15,
+    "environmental_protection": 5,
+    "material_thickness": 7,
+    "flags": [
+      "ABLATIVE_MANTLE",
+      "CANT_WEAR",
+      "OUTER"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "coverage": 95,
+        "encumbrance": 5
+      },
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ],
+        "coverage": 60,
+        "cover_vitals": 90,
+        "encumbrance": 0
+      },
+      {
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_shoulder_l",
+          "arm_shoulder_r"
+        ],
+        "coverage": 95,
+        "cover_vitals": 90,
+        "encumbrance": 2
+      },
+      {
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_upper_l",
+          "arm_upper_r"
+        ],
+        "coverage": 85,
+        "cover_vitals": 90,
+        "encumbrance": 0
+      }
+    ]
+  },
+  {
+    "abstract": "robofac_skirt",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json abstract robofac_skirt in BN armor format (armor_portion_data for DDA's armor array). DDA gives each tier piece a portioned material list; CDF has one list, so the tier pieces list the ids largest portion first and keep this integer/float material_thickness. Numbers are DDA's.",
+    "category": "armor",
+    "name": {
+      "str": "abstract armored skirt",
+      "//~": "NO_I18N"
+    },
+    "weight": "2454 g",
+    "volume": "3500 ml",
+    "price": "600 USD",
+    "price_postapoc": "50 USD",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "warmth": 15,
+    "environmental_protection": 5,
+    "material_thickness": 7,
+    "flags": [
+      "ABLATIVE_SKIRT",
+      "CANT_WEAR",
+      "OUTER"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_hip_l",
+          "leg_hip_r"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": 2
+      },
+      {
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_upper_l",
+          "leg_upper_r"
+        ],
+        "coverage": 85,
+        "cover_vitals": 90,
+        "encumbrance": 0
+      }
+    ]
+  },
+  {
+    "abstract": "robofac_vambraces",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json abstract robofac_vambraces in BN armor format (armor_portion_data for DDA's armor array). DDA gives each tier piece a portioned material list; CDF has one list, so the tier pieces list the ids largest portion first and keep this integer/float material_thickness. Numbers are DDA's.",
+    "category": "armor",
+    "name": {
+      "str_sp": "abstract armored vambraces (pair)"
+    },
+    "looks_like": "armguard_hard",
+    "weight": "845 g",
+    "volume": "4000 ml",
+    "price": "600 USD",
+    "price_postapoc": "50 USD",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "warmth": 20,
+    "environmental_protection": 5,
+    "material_thickness": 5.25,
+    "flags": [
+      "BLOCK_WHILE_WORN",
+      "OUTER",
+      "PADDED"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_elbow_l",
+          "arm_elbow_r",
+          "arm_lower_l",
+          "arm_lower_r"
+        ],
+        "coverage": 95,
+        "cover_vitals": 90,
+        "encumbrance": 3
+      }
+    ]
+  },
+  {
+    "abstract": "robofac_greaves",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json abstract robofac_greaves in BN armor format (armor_portion_data for DDA's armor array). DDA gives each tier piece a portioned material list; CDF has one list, so the tier pieces list the ids largest portion first and keep this integer/float material_thickness. Numbers are DDA's.",
+    "category": "armor",
+    "name": {
+      "str_sp": "abstract armored greaves (pair)"
+    },
+    "looks_like": "legguard_hard",
+    "weight": "1295 g",
+    "volume": "5000 ml",
+    "price": "600 USD",
+    "price_postapoc": "50 USD",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "warmth": 20,
+    "environmental_protection": 5,
+    "material_thickness": 5.25,
+    "flags": [
+      "OUTER",
+      "PADDED"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_knee_l",
+          "leg_knee_r",
+          "leg_lower_l",
+          "leg_lower_r"
+        ],
+        "coverage": 95,
+        "cover_vitals": 90,
+        "encumbrance": 3
+      }
+    ]
+  },
+  {
+    "abstract": "robofac_helmet",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json abstract robofac_helmet in BN armor format (armor_portion_data for DDA's armor array). DDA gives each tier piece a portioned material list; CDF has one list, so the tier pieces list the ids largest portion first and keep this integer/float material_thickness. Numbers are DDA's.",
+    "category": "armor",
+    "name": {
+      "str": "abstract helmet",
+      "//~": "NO_I18N"
+    },
+    "weight": "1176 g",
+    "volume": "1750 ml",
+    "price": "600 USD",
+    "price_postapoc": "50 USD",
+    "material": [
+      "ceramic"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "warmth": 15,
+    "environmental_protection": 5,
+    "material_thickness": 7,
+    "flags": [
+      "ABLATIVE_HELMET",
+      "CANT_WEAR",
+      "OUTER"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 85,
+        "cover_vitals": 95
+      }
+    ]
+  },
+  {
+    "id": "robofac_armor_rig",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json:3 in BN armor format. BN flags are item-wide, so DDA's torso-only BELTED layer is the BELTED flag on the whole rig. The holster pocket is kept (orchestrator ruling 3) but its item_restriction of seven robofac_gun_* ids is dropped (CDF has none of them); the poncho liner pocket drops the military_poncho_liner id (CDF lacks it) and keeps robofac_poncho_liner. Material portions are DDA's list.",
+    "category": "armor",
+    "name": {
+      "str": "Hub 01 modular defense system"
+    },
+    "looks_like": "poncho",
+    "description": "A custom-designed poncho for the true frontier explorer, made with aramid fibers and robust ripstop nylon.  Striped in brown and blue, the white seal of Hub 01 is emblazoned proudly on the front.  It features several quick access pouches attached to a waist drawstring, and two waterproof dry bags for carrying liquids.  It also features several tight clamps and velcro strips around the waist and shoulders; perhaps something attaches to them.",
+    "weight": "960 g",
+    "volume": "250 ml",
+    "price": "40 USD",
+    "price_postapoc": "7 USD 50 cent",
+    "material": [
+      "nylon",
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "warmth": 5,
+    "material_thickness": 3,
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATERPROOF",
+      "VARSIZE",
+      "RAINPROOF",
+      "HOOD",
+      "SOFT",
+      "BELTED"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": [
+          4,
+          8
+        ]
+      },
+      {
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_shoulder_l",
+          "arm_shoulder_r",
+          "arm_upper_l",
+          "arm_upper_r"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": [
+          4,
+          4
+        ]
+      },
+      {
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_hip_l",
+          "leg_hip_r",
+          "leg_upper_r",
+          "leg_upper_l"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": [
+          4,
+          4
+        ]
+      }
+    ],
+    "pocket_data": [
+      {
+        "description": "Watertight internal reservoir.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1500 ml",
+        "max_item_volume": "32 ml",
+        "watertight": true,
+        "spoil_multiplier": 0.8,
+        "max_contains_weight": "4 kg",
+        "moves": 120
+      },
+      {
+        "description": "Watertight internal reservoir.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1500 ml",
+        "max_item_volume": "32 ml",
+        "watertight": true,
+        "spoil_multiplier": 0.8,
+        "max_contains_weight": "4 kg",
+        "moves": 120
+      },
+      {
+        "description": "Quick access pouches.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "270 mm",
+        "moves": 80
+      },
+      {
+        "description": "Quick access pouches.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "270 mm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "7000 ml",
+        "max_contains_weight": "11 kg",
+        "moves": 200,
+        "description": "Hooks for an armored mantle.",
+        "flag_restriction": [
+          "ABLATIVE_MANTLE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "4000 ml",
+        "max_contains_weight": "4 kg",
+        "moves": 200,
+        "description": "Hooks for an armored skirt.",
+        "flag_restriction": [
+          "ABLATIVE_SKIRT"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "1100 g",
+        "max_item_length": "70 cm",
+        "moves": 200,
+        "holster": true,
+        "description": "Strap for a gun barrel."
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "4000 ml",
+        "max_contains_weight": "900 g",
+        "moves": 200,
+        "description": "Grommets for a poncho liner.",
+        "item_restriction": [
+          "robofac_poncho_liner"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "robofac_armor_anchor",
+    "type": "ARMOR",
+    "copy-from": "robofac_armor_rig",
+    "//": "CDF: DDA robofac_armor.json:127. Plain armor: the TOOL subtype, MAGAZINE_WELL battery pocket, use_action and tool_ammo are dropped (orchestrator 2026-10-29, option a), and the robofac_armor_anchor_on state item is out of scope (the DIMENSIONAL_ANCHOR flag is on that item only), so this does nothing special in play. Per-portion materials (nylon, kevlar, ceramic) become one list; torso encumbrance [6, 10] is DDA's. Pockets are the rig's.",
+    "name": {
+      "str": "Hub 01 modular defense anchor"
+    },
+    "description": "A custom-designed poncho for the true frontier explorer, made with aramid fibers and robust ripstop nylon.  This one features a hardened skeleton of ceramic plates running up and over the shoulders, and a portion of the front has been raised upwards from the rest.  Lifting the fabric reveals a large disc-shaped device installed into the garment, featureless except for a prominent switch and Hub 01's logo in LED.  In addition to the poncho's usual complement of storage, a battery compartment has been added that wires into this device, featuring very specialized connectors and, perhaps a little disconcertingly, radiation shielding.",
+    "weight": "2000 g",
+    "volume": "4250 ml",
+    "material": [
+      "nylon",
+      "kevlar",
+      "ceramic"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": [
+          6,
+          10
+        ]
+      },
+      {
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_shoulder_l",
+          "arm_shoulder_r",
+          "arm_upper_l",
+          "arm_upper_r"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": [
+          4,
+          4
+        ]
+      },
+      {
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_hip_l",
+          "leg_hip_r",
+          "leg_upper_r",
+          "leg_upper_l"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": [
+          4,
+          4
+        ]
+      }
+    ]
+  },
+  {
+    "id": "robofac_head_rig",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json:303 as plain armor (orchestrator 2026-10-29, option a): the TOOL and ARTIFACT subtypes, MAGAZINE_WELL battery pocket, use_action (transform to robofac_head_rig_nv), charges_per_use, tool_ammo, the encumbrance_modifiers NONE entry and the MUNDANE flag (CDF lacks it) are dropped. Technique WBLOCK_1 is kept.",
+    "category": "armor",
+    "name": {
+      "str_sp": "Hub 01 modular recon headgear"
+    },
+    "looks_like": "tac_helmet",
+    "description": "Heavy duty hooded headwear for the true frontier explorer, made with robust Nylon sheeting reinforced with Kevlar fibers.  The top consists of a series of plastic plates with hooks and velcro strips, perhaps for attaching additional parts.  On the forehead of the assembly is a bulky box visor on a mechanism to quickly pull it down over your eyes, with a cover on the side to insert standard batteries.  Activate to lower the visor and use the light amplification functions.",
+    "weight": "1200 g",
+    "volume": "1200 ml",
+    "price": "100 USD",
+    "price_postapoc": "20 USD",
+    "material": [
+      "nylon",
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "warmth": 5,
+    "material_thickness": 3,
+    "flags": [
+      "VARSIZE",
+      "WATERPROOF",
+      "STURDY",
+      "PADDED",
+      "OUTER",
+      "RAINPROOF",
+      "SOFT"
+    ],
+    "techniques": [
+      "WBLOCK_1"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 95
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "5000 ml",
+        "max_contains_weight": "5 kg",
+        "moves": 200,
+        "description": "Hooks for an armored helm plate.",
+        "flag_restriction": [
+          "ABLATIVE_HELMET"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "robofac_poncho_liner",
+    "type": "ARMOR",
+    "//": "CDF: DDA robofac_armor.json:1194. Material portions (plastic 99, aluminum 1) become the list plastic, aluminum.",
+    "category": "clothing",
+    "name": {
+      "str": "Hub 01 MPET poncho liner"
+    },
+    "description": "Often called a \"woobie\" by soldiers, this sleeping bag-like poncho liner can be attached under a poncho or used as a blanket.  This one is made of space-age metallized polyethylene terephthalate, or MPET, the same reflective material used on spacecraft, spacesuits, emergency blankets, and mundane food packaging.  The Hub 01 logo is stamped on one corner.  It folds into a very compact form when not in use.",
+    "weight": "50 g",
+    "volume": "200 ml",
+    "price": "50 USD",
+    "price_postapoc": "50 cent",
+    "material": [
+      "plastic",
+      "aluminum"
+    ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "warmth": 10,
+    "environmental_protection": 4,
+    "material_thickness": 0.01,
+    "flags": [
+      "OVERSIZE",
+      "BELTED"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper",
+          "torso_lower"
+        ],
+        "coverage": 100,
+        "encumbrance": 3
+      },
+      {
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_shoulder_l",
+          "arm_shoulder_r",
+          "arm_upper_r",
+          "arm_upper_l",
+          "arm_elbow_r",
+          "arm_elbow_l"
+        ],
+        "coverage": 100,
+        "encumbrance": 3
+      },
+      {
+        "covers": [
+          "arm_l",
+          "arm_r"
+        ],
+        "specifically_covers": [
+          "arm_lower_l",
+          "arm_lower_r"
+        ],
+        "coverage": 90
+      },
+      {
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_hip_l",
+          "leg_hip_r",
+          "leg_upper_r",
+          "leg_upper_l"
+        ],
+        "coverage": 100
+      }
+    ]
+  }
+]
