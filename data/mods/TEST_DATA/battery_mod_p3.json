@@ -1,0 +1,55 @@
+[
+  {
+    "//": "CDF: P3-9-5f; verbatim copy of DDA b4b6225 data/json/items/tool/lighting.json diving_flashlight_small_hipower(+_on) for battery_mod_test.cpp. Adapted to the CDF schema (flags HELMET_HEAD_ATTACHMENT/HEAD_STRAP_MOUNT/SPAWN_ACTIVE undefined in CDF and dropped, lc_steel->steel, light omitted): type TOOL (no subtypes), ammo instead of tool_ammo, power_draw in mW, explicit MOD pocket.",
+    "id": "diving_flashlight_small_hipower",
+    "type": "TOOL",
+    "name": { "str": "high-power mini diving flashlight (off)", "str_pl": "high-power mini diving flashlights (off)" },
+    "description": "A small waterproof high-power flashlight with an aluminum handle, powered by batteries.  Can be attached to some diving masks and hoods.",
+    "material": [ "plastic", "aluminum", "steel" ],
+    "looks_like": "flashlight",
+    "symbol": ";",
+    "color": "blue",
+    "weight": "40 g",
+    "volume": "38 ml",
+    "longest_side": "10 cm",
+    "price": "5 USD",
+    "price_postapoc": "1 USD",
+    "charges_per_use": 1,
+    "ammo": "battery",
+    "flags": [ "BELT_CLIP" ],
+    "use_action": {
+      "type": "transform",
+      "msg": "You turn the flashlight on.",
+      "target": "diving_flashlight_small_hipower_on",
+      "need_charges": 1,
+      "need_charges_msg": "The batteries are dead."
+    },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
+  },
+  {
+    "id": "diving_flashlight_small_hipower_on",
+    "copy-from": "diving_flashlight_small_hipower",
+    "type": "TOOL",
+    "name": { "str": "high-power mini diving flashlight (on)", "str_pl": "high-power mini diving flashlights (on)" },
+    "looks_like": "flashlight_on",
+    "power_draw": 3000,
+    "revert_to": "diving_flashlight_small_hipower",
+    "use_action": {
+      "menu_text": "Turn off",
+      "type": "transform",
+      "msg": "You turn the flashlight off.",
+      "target": "diving_flashlight_small_hipower",
+      "ammo_scale": 0
+    },
+    "flags": [ "CHARGEDIM", "TRADER_AVOID", "BELT_CLIP" ]
+  }
+]
