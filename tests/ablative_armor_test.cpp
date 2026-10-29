@@ -9,6 +9,7 @@
 #include "item.h"
 #include "item_contents.h"
 #include "item_factory.h"
+#include "item_group.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "map/map.h"
@@ -17,6 +18,7 @@
 #include "options.h"
 #include "options_helpers.h"
 #include "player_helpers.h"
+#include "profession.h"
 #include "pocket_type.h"
 #include "recipe_dictionary.h"
 #include "state_helpers.h"
@@ -1179,4 +1181,25 @@ TEST_CASE("ar5_all_eleven_items_exist", "[armor][ablative][ar5]") {
         CAPTURE(id);
         CHECK_FALSE(itype_id(id).is_valid());
     }
+}
+
+TEST_CASE("ar5_spawn_groups_hold_the_new_ids", "[armor][ablative][ar5]") {
+    clear_all_state();
+    CHECK(item_group::group_contains_item(item_group_id("coats_unisex"), itype_id("soft_3a_vest")));
+    CHECK(item_group::group_contains_item(item_group_id("coats_unisex"), itype_id("stab_vest")));
+    CHECK(item_group::group_contains_item(item_group_id("allsporting"), itype_id("stab_vest")));
+    const auto starts_with = [](const char *prof_id, const char *item_id) {
+        const profession &prof = string_id<profession>(prof_id).obj();
+        for (detached_ptr<item> &it : prof.items(true, {})) {
+            if (it->typeId() == itype_id(item_id)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    CHECK(starts_with("mall_cop", "stab_vest"));
+    CHECK(starts_with("security", "soft_3a_vest"));
+    // each profession gets only its own vest
+    CHECK_FALSE(starts_with("mall_cop", "soft_3a_vest"));
+    CHECK_FALSE(starts_with("security", "stab_vest"));
 }

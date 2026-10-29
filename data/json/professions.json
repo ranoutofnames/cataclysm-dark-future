@@ -2941,6 +2941,7 @@
           "smart_phone",
           "longshirt",
           "jacket_light",
+          "soft_3a_vest",
           "baton",
           "knife_folding",
           "hat_ball",
@@ -6342,7 +6343,7 @@
     "skills": [ { "level": 1, "name": "melee" }, { "level": 1, "name": "bashing" } ],
     "items": {
       "both": {
-        "items": [ "pants", "socks", "boots", "longshirt", "smart_phone", "jacket_light", "baton", "pockknife", "wristwatch" ],
+        "items": [ "pants", "socks", "boots", "longshirt", "smart_phone", "jacket_light", "stab_vest", "baton", "pockknife", "wristwatch" ],
         "entries": [ { "group": "charged_flashlight" }, { "group": "charged_tazer" } ]
       },
       "male": [ "boxer_shorts" ],

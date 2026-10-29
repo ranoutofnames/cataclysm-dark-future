@@ -3485,7 +3485,8 @@
       { "group": "normal_coats", "prob": 80 },
       { "group": "normal_jackets", "prob": 60 },
       { "group": "misc_coats", "prob": 30 },
-      { "group": "vests", "prob": 40 }
+      { "group": "vests", "prob": 40 },
+      { "distribution": [ { "item": "soft_3a_vest", "prob": 50 }, { "item": "stab_vest", "prob": 50 } ], "prob": 5 }
     ]
   },
   {
