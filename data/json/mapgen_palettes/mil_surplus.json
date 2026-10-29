@@ -2,6 +2,7 @@
   {
     "type": "palette",
     "id": "mil_surplus",
+    "//": "AR5B-SPAWN, symbol B (items): the last four entries are DDA mapgen_palettes/mil_surplus.json:202-207 (looted form), weights as written (15/15/10/70). Dropped: variant security_armor_vest on soft_3a_vest (CDF has no item variants). DDA intact form lists contractor_ballistic_vest_light (nested group, next packet: PL-08b) instead of the bare light vest.",
     "terrain": {
       ".": "t_region_groundcover_urban",
       "!": "t_region_groundcover_urban",
@@ -76,7 +77,11 @@
             { "item": "kevlar", "prob": 10 },
             { "item": "kevlar_plate", "count": [ 1, 6 ], "prob": 10 },
             { "item": "ceramic_armor", "count": [ 1, 6 ], "prob": 10 },
-            { "item": "ceramicdisks", "count": [ 2, 12 ], "prob": 1 }
+            { "item": "ceramicdisks", "count": [ 2, 12 ], "prob": 1 },
+            { "item": "ballistic_vest_esapi", "prob": 15 },
+            { "item": "ballistic_vest_light", "prob": 15 },
+            { "item": "soft_3a_vest", "prob": 10 },
+            { "group": "armor_plates", "count": [ 2, 6 ], "prob": 70 }
           ]
         },
         "repeat": [ 1, 3 ],

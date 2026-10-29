@@ -1,5 +1,18 @@
 [
   {
+    "id": "armor_plates",
+    "type": "item_group",
+    "//": "DDA itemgroups/military.json:19-30 (armor_plates, a list of all plates that could be sold in stores), verbatim: five plates, prob 50 each. Stab plate is AR5-4; the other four are in cdf_ballistic_armor.json. Used by the mil_surplus palette.",
+    "subtype": "distribution",
+    "entries": [
+      { "item": "esapi_plate", "prob": 50 },
+      { "item": "stab_plate", "prob": 50 },
+      { "item": "steel_ballistic_plate", "prob": 50 },
+      { "item": "heavy_steel_ballistic_plate", "prob": 50 },
+      { "item": "esbi_plate", "prob": 50 }
+    ]
+  },
+  {
     "id": "bunker_basement_loot",
     "type": "item_group",
     "subtype": "distribution",
