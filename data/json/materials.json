@@ -1926,5 +1926,28 @@
       { "fuel": 0, "smoke": 1, "burn": 1, "volume_per_turn": "250 ml" },
       { "fuel": 1, "smoke": 1, "burn": 2 }
     ]
+  },
+  {
+    "type": "material",
+    "id": "qt_steel",
+    "copy-from": "steel",
+    "name": "Tempered Carbon Steel",
+    "compact_accepts": [  ],
+    "compacts_into": [  ],
+    "//": "CDF: DDA materials.json:2059. copy-from steel with CDF numbers kept (DDA resist bash 11/cut 11/bullet 7.5 not ported); repaired_with/salvaged_into inherited from steel because mc_steel_chunk does not exist in CDF; compacts_into/compact_accepts emptied because the steel chunk items are made of steel, not qt_steel (material check)."
+  },
+  {
+    "type": "material",
+    "id": "kevlar_layered",
+    "copy-from": "kevlar",
+    "name": "Ballistic Kevlar",
+    "//": "CDF: DDA materials.json:1341. copy-from kevlar with CDF numbers kept; repaired_with/salvaged_into inherited from kevlar because sheet_kevlar_layered does not exist in CDF."
+  },
+  {
+    "type": "material",
+    "id": "thermo_resin",
+    "copy-from": "plastic",
+    "name": "Thermoplastic Resin",
+    "//": "CDF: DDA materials.json:18 (copy-from generic_polymer_resin, absent in CDF). copy-from plastic with CDF numbers kept; salvaged_into/repaired_with inherited from plastic because thermo_resin_chunk does not exist in CDF."
   }
 ]

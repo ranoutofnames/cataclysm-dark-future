@@ -2833,5 +2833,32 @@
     "context": [ "GENERIC", "TOOL" ],
     "restriction": "Item must fit in a bow sling",
     "info": "This item can <info>fit in a bow sling</info> of the appropriate size."
+  },
+  {
+    "id": "ABLATIVE_MANTLE",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "restriction": "armored mantles",
+    "info": "This is an <info>armored mantle</info>.  It fits the mantle hook of a Hub 01 modular defense system."
+  },
+  {
+    "id": "ABLATIVE_SKIRT",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "restriction": "armored skirts",
+    "info": "This is an <info>armored skirt</info>.  It fits the skirt hook of a Hub 01 modular defense system."
+  },
+  {
+    "id": "ABLATIVE_HELMET",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "restriction": "armored helm plates",
+    "info": "This is an <info>armored helm plate</info>.  It fits the helm plate hook of a Hub 01 modular recon headgear."
+  },
+  {
+    "id": "PORTAL_PROOF",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "//": "CDF: label only, as in DDA flags.json:1562 (no C++ reads it; DDA reads it from effects-on-condition that CDF lacks)."
   }
 ]
