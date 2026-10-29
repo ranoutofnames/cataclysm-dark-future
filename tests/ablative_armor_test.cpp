@@ -1076,3 +1076,44 @@ TEST_CASE("ar5_light_vest_family_plate_and_magazine_pockets", "[armor][ablative]
     CHECK(radio == 1);
     CHECK(hook == 1);
 }
+
+TEST_CASE("ar5_soft_vests_have_no_plate_slots", "[armor][ablative][ar5]") {
+    clear_all_state();
+    const bodypart_id torso("torso");
+    for (const std::string id : {"soft_3a_vest", "stab_vest", "fbi_armor_vest"}) {
+        CAPTURE(id);
+        detached_ptr<item> carrier = item::spawn(itype_id(id));
+        REQUIRE(carrier->find_armor_data() != nullptr);
+        CHECK_FALSE(ablative::has_plate_slots(*carrier));
+        CHECK_FALSE(put_plate(*carrier, "esapi_plate"));
+        CHECK_FALSE(put_plate(*carrier, "esbi_plate"));
+        // CDF: a 300 ml stab_plate fits an ordinary 500 ml pocket, so only check that no plate slot holds it
+        put_plate(*carrier, "stab_plate");
+        CHECK(ablative::plates(*carrier).empty());
+        std::vector<units::volume> sizes;
+        for (const item_pocket &pocket : carrier->contents.get_pockets()) {
+            if (pocket.get_data().type == pocket_type::CONTAINER) {
+                CHECK_FALSE(pocket.get_data().ablative);
+                sizes.push_back(pocket.volume_capacity());
+            }
+        }
+        // CDF: pockets 500, 500 and 10 ml (JSON)
+        CHECK(sizes == std::vector<units::volume>{500_ml, 500_ml, 10_ml});
+    }
+    // CDF: soft_3a_vest and fbi_armor_vest: 100 of the upper and 80 of the lower torso (JSON);
+    // stab_vest: 100 of the torso
+    for (const std::string id : {"soft_3a_vest", "fbi_armor_vest"}) {
+        CAPTURE(id);
+        detached_ptr<item> carrier = item::spawn(itype_id(id));
+        CHECK(carrier->get_coverage(torso, sub_bodypart_str_id("torso_upper")) == 100);
+        CHECK(carrier->get_coverage(torso, sub_bodypart_str_id("torso_lower")) == 80);
+        // CDF: weight 2650 g, volume 6 L (JSON)
+        CHECK(carrier->weight() == 2650_gram);
+        CHECK(carrier->volume() == 6_liter);
+    }
+    detached_ptr<item> stab = item::spawn(itype_id("stab_vest"));
+    CHECK(stab->get_coverage(torso) == 100);
+    // CDF: weight 1814 g, volume 6 L (JSON)
+    CHECK(stab->weight() == 1814_gram);
+    CHECK(stab->volume() == 6_liter);
+}
