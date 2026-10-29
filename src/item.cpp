@@ -9441,7 +9441,9 @@ std::string item::ammo_sort_name() const
     return "";
 }
 
-// CDF: BN body kept: the DDA pocket test is wrong until integral MAGAZINE pockets are synthesized by the data port
+// CDF: BN body kept for guns (type->gun->clip) and tools (type->tool->max_charges); only the final
+// fall-through follows the live pockets, as DDA item_gun_tool_ammo.cpp:2253-2256 does. The gun branch
+// changes with the integral-magazine gun data conversion (PL-15), guns get no synthesized MAGAZINE pocket.
 bool item::magazine_integral() const
 {
     // If it has a default magazine, it can't have an integral magazine.
@@ -9454,7 +9456,9 @@ bool item::magazine_integral() const
         // Or we are a tool with max_charges defined
         return type->tool->max_charges;
     }
-    return true;
+    // CDF: MAGPOCKET, DDA item_gun_tool_ammo.cpp:2253-2256: other items (mods, armor, food...) are integral
+    // only if they have a MAGAZINE pocket; the BN "return true" made a toolmod or an apple integral.
+    return contents.has_pocket_type( pocket_type::MAGAZINE );
 }
 
 itype_id item::magazine_default( bool conversion ) const
