@@ -6,6 +6,7 @@
 #include "flag.h"
 #include "item.h"
 #include "item_contents.h"
+#include "item_group.h"
 #include "itype.h"
 #include "material.h"
 #include "player_helpers.h"
@@ -17,6 +18,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdlib>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -292,5 +294,90 @@ TEST_CASE("hub01_vambraces_and_greaves_wear_directly", "[armor][ablative][hub01]
         CHECK(greaves->get_coverage(bodypart_id("leg_r"), sub_bodypart_str_id("leg_lower_r")) == 95);
         guy.wear_item(std::move(greaves), false);
         CHECK(guy.is_wearing(itype_id(piece_id(set, "greaves"))));
+    }
+}
+
+// HUB01-GEAR part B. DDA data/json/itemgroups/Locations_MapExtras/robofac_trade.json (b4b62254ae2).
+
+namespace {
+
+auto all_tier_pieces() -> std::vector<std::string> {
+    std::vector<std::string> ids;
+    for (const std::string &set : sets) {
+        for (const std::string &slot : slots) {
+            ids.push_back(piece_id(set, slot));
+        }
+    }
+    return ids;
+}
+
+auto spawn_group_single(const std::string &group) -> detached_ptr<item> {
+    std::vector<detached_ptr<item>> got = item_group::items_from(item_group_id(group));
+    REQUIRE(got.size() == 1);
+    return std::move(got.front());
+}
+
+auto content_ids(const item &it) -> std::vector<std::string> {
+    std::vector<std::string> ids;
+    for (const item *c : it.contents.all_items_top()) {
+        ids.push_back(c->typeId().str());
+    }
+    std::sort(ids.begin(), ids.end());
+    return ids;
+}
+
+} // namespace
+
+TEST_CASE("hub01_gear_group_lists_every_piece", "[armor][hub01][trade]") {
+    const item_group_id gear("NC_ROBOFAC_gear");
+    REQUIRE(item_group::group_is_defined(gear));
+    // Single_item_creator::has_item (item_group.cpp:515) does not follow nested "group" entries, so
+    // group_contains_item only sees direct items; every_possible_item_from walks nested groups.
+    const std::set<const itype *> possible = item_group::every_possible_item_from(gear);
+    std::set<std::string> possible_ids;
+    for (const itype *t : possible) {
+        possible_ids.insert(t->get_id().str());
+    }
+    const auto lists = [&possible_ids](const std::string &id) -> bool {
+        return possible_ids.count(id) > 0;
+    };
+    // CDF: 25 tier pieces (5 sets x 5 slots, cdf_hub01_armor.json) plus rig, head rig, liner, anchor.
+    const std::vector<std::string> pieces = all_tier_pieces();
+    REQUIRE(pieces.size() == 25);
+    for (const std::string &id : pieces) {
+        CAPTURE(id);
+        CHECK(lists(id));
+    }
+    for (const std::string id : { "robofac_armor_rig", "robofac_head_rig", "robofac_poncho_liner",
+                                  "robofac_armor_anchor"
+                                }) {
+        CAPTURE(id);
+        CHECK(lists(id));
+    }
+    // out of scope in CDF (DDA on-state anchor)
+    CHECK_FALSE(lists("robofac_armor_anchor_on"));
+}
+
+TEST_CASE("hub01_container_groups_spawn_loaded_rigs", "[armor][hub01][trade]") {
+    clear_all_state();
+    struct loaded {
+        std::string group;
+        std::string carrier;
+        std::vector<std::string> contents;
+    };
+    // CDF: robofac_trade.json robofac_mantle_prototype / _merc / robofac_helmet_merc (sorted ids)
+    const std::vector<loaded> cases = {
+        { "robofac_mantle_prototype", "robofac_armor_rig", { "robofac_basic_mantle", "robofac_basic_skirt" } },
+        { "robofac_mantle_merc", "robofac_armor_rig", { "robofac_kevlar_mantle", "robofac_kevlar_skirt" } },
+        { "robofac_helmet_merc", "robofac_head_rig", { "robofac_kevlar_helmet" } },
+    };
+    for (const loaded &c : cases) {
+        CAPTURE(c.group);
+        REQUIRE(item_group::group_is_defined(item_group_id(c.group)));
+        detached_ptr<item> carrier = spawn_group_single(c.group);
+        CHECK(carrier->typeId().str() == c.carrier);
+        CHECK(content_ids(*carrier) == c.contents);
+        // the modules sit in the ablative pockets, not in a plain pouch
+        CHECK(plate_ids(*carrier) == c.contents);
     }
 }

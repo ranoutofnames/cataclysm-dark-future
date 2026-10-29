@@ -1,6 +1,96 @@
 [
   {
     "type": "item_group",
+    "id": "NC_ROBOFAC_gear",
+    "//": "Should contain all Hub 01 gear. DDA also lists robofac_gun_mags/_exodii/_kit, robofac_armor_anchor_on, robofac_enviro_suit_casual, robofac_head_rig_nv, hm12 and template_armor; those ids are not defined in CDF and are left out.",
+    "subtype": "collection",
+    "entries": [
+      { "group": "robofac_armor_pieces" },
+      { "group": "robofac_armor_pieces_basic" },
+      { "group": "robofac_armor_pieces_military" },
+      { "item": "robofac_armor_anchor" },
+      { "item": "robofac_armor_rig" },
+      { "item": "robofac_enviro_suit" },
+      { "item": "robofac_head_rig" },
+      { "item": "robofac_poncho_liner" },
+      { "item": "template_photonics" }
+    ]
+  },
+  {
+    "type": "item_group",
+    "id": "robofac_armor_pieces_basic",
+    "subtype": "collection",
+    "entries": [
+      { "item": "robofac_basic_helmet" },
+      { "item": "robofac_basic_greaves" },
+      { "item": "robofac_basic_mantle" },
+      { "item": "robofac_basic_skirt" },
+      { "item": "robofac_basic_vambraces" }
+    ]
+  },
+  {
+    "type": "item_group",
+    "id": "robofac_armor_pieces",
+    "subtype": "distribution",
+    "items": [
+      [ "robofac_rubber_mantle", 25 ],
+      [ "robofac_nomex_mantle", 25 ],
+      [ "robofac_kevlar_mantle", 25 ],
+      [ "robofac_rubber_skirt", 25 ],
+      [ "robofac_nomex_skirt", 25 ],
+      [ "robofac_kevlar_skirt", 25 ],
+      [ "robofac_rubber_vambraces", 25 ],
+      [ "robofac_nomex_vambraces", 25 ],
+      [ "robofac_kevlar_vambraces", 25 ],
+      [ "robofac_rubber_greaves", 25 ],
+      [ "robofac_nomex_greaves", 25 ],
+      [ "robofac_kevlar_greaves", 25 ],
+      [ "robofac_armor_rig", 25 ],
+      [ "robofac_rubber_helmet", 25 ],
+      [ "robofac_nomex_helmet", 25 ],
+      [ "robofac_kevlar_helmet", 25 ],
+      [ "robofac_head_rig", 25 ],
+      [ "robofac_poncho_liner", 25 ]
+    ]
+  },
+  {
+    "type": "item_group",
+    "id": "robofac_armor_pieces_military",
+    "subtype": "distribution",
+    "items": [
+      [ "robofac_military_skirt", 10 ],
+      [ "robofac_military_vambraces", 10 ],
+      [ "robofac_military_greaves", 10 ],
+      [ "robofac_military_mantle", 10 ],
+      [ "robofac_military_helmet", 10 ]
+    ]
+  },
+  {
+    "id": "robofac_mantle_merc",
+    "type": "item_group",
+    "//": "a robofac poncho with a few armored bits. DDA also adds two robofac40 magazines (robofac_merc_mags); robofac40 is not defined in CDF, so that entry is left out.",
+    "container-item": "robofac_armor_rig",
+    "subtype": "collection",
+    "entries": [ { "item": "robofac_kevlar_skirt" }, { "item": "robofac_kevlar_mantle" } ]
+  },
+  {
+    "id": "robofac_helmet_merc",
+    "type": "item_group",
+    "//": "a robofac headrig with kevlar insert",
+    "container-item": "robofac_head_rig",
+    "subtype": "collection",
+    "entries": [ { "item": "robofac_kevlar_helmet" } ]
+  },
+  {
+    "id": "robofac_mantle_prototype",
+    "type": "item_group",
+    "//": "a robofac poncho with a few basic bits",
+    "container-item": "robofac_armor_rig",
+    "subtype": "collection",
+    "entries": [ { "item": "robofac_basic_skirt" }, { "item": "robofac_basic_mantle" } ]
+  },
+  {
+    "type": "item_group",
     "id": "robofac_basic_trade",
     "subtype": "distribution",
     "entries": [
