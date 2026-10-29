@@ -714,5 +714,157 @@
         "type": "detach_molle"
       }
     ]
+  },
+  {
+    "id": "jacket_eod",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-6): DDA's EOD jacket (DDA data/json/items/armor/ballistic_armor.json:111) in BN armor format. DDA's per-layer materials (nylon, kevlar, plastic_pad) are mapped to BN's single list from DDA's top-level material list: kevlar, plastic (plastic_pad -> plastic), nomex; thickness is DDA's top-level material_thickness. DDA's TOOL subtype and max_worn 1 are dropped (BN armor has neither; max_worn is a DDA-only field). Weight, volume, price, warmth, environmental_protection 2, coverage 100, cover_vitals 100, encumbrance range, plate pockets and flags are DDA's.",
+    "name": {
+      "str": "EOD jacket"
+    },
+    "description": "A thick armored jacket constructed from Kevlar, Nomex, and foam padding, for use by explosive ordnance disposal technicians.  It features a central pocket for a large plate, and near complete coverage in fragmentation resistant materials.  Aside from the plate, it offers insufficient protection from ballistic threats.",
+    "weight": "13500 g",
+    "volume": "15 L",
+    "price": "15090 USD",
+    "price_postapoc": "180 USD",
+    "material": [
+      "kevlar",
+      "plastic",
+      "nomex"
+    ],
+    "symbol": "[",
+    "color": "light_green",
+    "looks_like": "modularvestceramic",
+    "warmth": 65,
+    "material_thickness": 15,
+    "environmental_protection": 2,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 15
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "RAINPROOF"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso",
+          "arm_l",
+          "arm_r"
+        ],
+        "coverage": 100,
+        "cover_vitals": 100,
+        "encumbrance": [
+          71,
+          80
+        ]
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "3000 ml",
+        "max_contains_weight": "7 kg",
+        "max_item_length": "46 cm",
+        "moves": 1100,
+        "description": "Pocket for a huge armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "jacket_eod_light",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-6): DDA's tactical EOD jacket (DDA data/json/items/armor/ballistic_armor.json:159) in BN armor format. DDA's per-layer materials (nylon, kevlar, plastic_pad) are mapped to BN's single list from DDA's top-level material list: kevlar, plastic (plastic_pad -> plastic), nomex; thickness is DDA's top-level material_thickness. DDA's TOOL subtype and max_worn 1 are dropped (BN armor has neither; max_worn is a DDA-only field). Weight, volume, price, warmth, environmental_protection 2, coverage 100, cover_vitals 100, encumbrance range, plate pockets and flags are DDA's.",
+    "name": {
+      "str": "tactical EOD jacket"
+    },
+    "description": "An armored jacket constructed from Kevlar, Nomex, and foam padding, for use by explosive ordnance disposal technicians in 'non-permissive environments'.  It is lighter than normal EOD armor to allow for wearing a plate carrier beneath it.  It features two pockets in the arms covering the deltoids for additional optional protection.",
+    "weight": "7000 g",
+    "volume": "15 L",
+    "price": "410160 cent",
+    "price_postapoc": "59 USD",
+    "material": [
+      "kevlar",
+      "plastic",
+      "nomex"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "modularvestceramic",
+    "warmth": 40,
+    "material_thickness": 7,
+    "environmental_protection": 2,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 15
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "RAINPROOF"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso",
+          "arm_l",
+          "arm_r"
+        ],
+        "coverage": 100,
+        "cover_vitals": 100,
+        "encumbrance": [
+          31,
+          55
+        ]
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "3000 ml",
+        "max_contains_weight": "7 kg",
+        "max_item_length": "46 cm",
+        "moves": 1100,
+        "description": "Pocket for a huge armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "1558 ml",
+        "max_contains_weight": "1600 kg",
+        "max_item_length": "21 cm",
+        "min_item_length": "21 cm",
+        "moves": 800,
+        "description": "Pockets for deltoid armor plates.",
+        "flag_restriction": [
+          "ABLATIVE_MEDIUM"
+        ]
+      }
+    ]
   }
 ]

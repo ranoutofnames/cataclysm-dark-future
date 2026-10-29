@@ -1117,3 +1117,66 @@ TEST_CASE("ar5_soft_vests_have_no_plate_slots", "[armor][ablative][ar5]") {
     CHECK(stab->weight() == 1814_gram);
     CHECK(stab->volume() == 6_liter);
 }
+
+TEST_CASE("ar5_eod_jackets_cover_arms_and_take_their_plates", "[armor][ablative][ar5]") {
+    clear_all_state();
+    Character &guy = get_player_character();
+    clear_character(*guy.as_player(), true);
+    const bodypart_id torso("torso");
+
+    detached_ptr<item> jacket = item::spawn(itype_id("jacket_eod"));
+    REQUIRE(jacket->find_armor_data() != nullptr);
+    CHECK(jacket->covers(torso));
+    CHECK(jacket->covers(bodypart_id("arm_l")));
+    CHECK(jacket->covers(bodypart_id("arm_r")));
+    CHECK_FALSE(jacket->covers(bodypart_id("leg_l")));
+    CHECK(ablative::has_plate_slots(*jacket));
+    CHECK(put_plate(*jacket, "eod_plate"));
+    CHECK_FALSE(put_plate(*jacket, "eod_plate"));
+    CHECK(plate_ids(*jacket) == std::vector<std::string>{"eod_plate"});
+    // CDF: encumbrance [71, 80] in the JSON: the empty jacket is 71, the full one 80
+    detached_ptr<item> empty_jacket = item::spawn(itype_id("jacket_eod"));
+    CHECK(empty_jacket->get_avg_encumber(guy) == 71);
+    CHECK(empty_jacket->get_avg_encumber(guy, item::encumber_flags::assume_full) == 80);
+    // CDF: weight 13500 g, volume 15 L (JSON); the DDA max_worn field is dropped
+    CHECK(empty_jacket->weight() == 13500_gram);
+    CHECK(empty_jacket->volume() == 15_liter);
+    // the deltoid plates do not go into the EOD jacket's one large slot
+    CHECK_FALSE(put_plate(*empty_jacket, "deltoid_plates"));
+
+    detached_ptr<item> light = item::spawn(itype_id("jacket_eod_light"));
+    REQUIRE(light->find_armor_data() != nullptr);
+    CHECK(light->covers(torso));
+    CHECK(light->covers(bodypart_id("arm_l")));
+    CHECK(light->covers(bodypart_id("arm_r")));
+    CHECK(put_plate(*light, "esapi_plate"));
+    CHECK(put_plate(*light, "deltoid_plates"));
+    CHECK_FALSE(put_plate(*light, "esapi_plate"));
+    CHECK_FALSE(put_plate(*light, "deltoid_plates"));
+    CHECK(plate_ids(*light).size() == 2);
+    // CDF: encumbrance [31, 55] in the JSON
+    detached_ptr<item> empty_light = item::spawn(itype_id("jacket_eod_light"));
+    CHECK(empty_light->get_avg_encumber(guy) == 31);
+    CHECK(empty_light->get_avg_encumber(guy, item::encumber_flags::assume_full) == 55);
+    // CDF: weight 7000 g, volume 15 L (JSON)
+    CHECK(empty_light->weight() == 7000_gram);
+    CHECK(empty_light->volume() == 15_liter);
+}
+
+TEST_CASE("ar5_all_eleven_items_exist", "[armor][ablative][ar5]") {
+    clear_all_state();
+    for (const std::string id : {"level_3_vest", "stab_plate", "eod_plate", "ballistic_vest_light",
+                                 "ballistic_vest_light_operator", "ballistic_vest_light_pouches",
+                                 "soft_3a_vest", "stab_vest", "fbi_armor_vest", "jacket_eod",
+                                 "jacket_eod_light"}) {
+        CAPTURE(id);
+        REQUIRE(itype_id(id).is_valid());
+        detached_ptr<item> it = item::spawn(itype_id(id));
+        CHECK(it->find_armor_data() != nullptr);
+    }
+    // held (owner Q5 option b) and excluded (Xedra) ids stay undefined
+    for (const std::string id : {"xl_ballistic_vest_lc", "xl_ballistic_vest_qt", "lead_plate_xedra_mark"}) {
+        CAPTURE(id);
+        CHECK_FALSE(itype_id(id).is_valid());
+    }
+}
