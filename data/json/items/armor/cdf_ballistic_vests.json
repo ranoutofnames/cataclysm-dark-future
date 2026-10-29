@@ -363,5 +363,198 @@
         "encumbrance": 8
       }
     ]
+  },
+  {
+    "id": "ballistic_vest_light",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-4): DDA's light ballistic vest (mag pouches) (DDA data/json/items/armor/ballistic_armor.json:800, copy-from ballistic_vest_esapi there), written standalone in BN armor format because CDF's esapi vest carries different portions and pockets. Material mapping as ballistic_vest_esapi: DDA's nylon 1.0 + kevlar_layered 4.4 is kevlar at thickness 7. Weight 900 g, volume 4 L, warmth 0, coverage 90 of torso_upper, encumbrance 1, volume_encumber_modifier 0.3, two large plate pockets and the 900 ml MAG_COMPACT pocket are DDA's; price and flags are what DDA inherits from the esapi vest (1600 USD; ALLOWS_WINGS kept as on the CDF esapi vest); DDA's colour variants (ballistic_vest_light_olive/_tan/_black/_future/_punisher/_meme) are dropped (BN has no item variants).",
+    "name": {
+      "str": "light ballistic vest (mag pouches)"
+    },
+    "description": "A simple plate carrier covering the thorax, with front and back pockets for armor plates.  Designed to keep your organs from being perforated by small-arms fire.  This version has a MOLLE cummerbund that you can tuck a few magazines into.",
+    "weight": "900 g",
+    "volume": "4 L",
+    "price": "1600 USD",
+    "price_postapoc": "10 USD",
+    "material": [
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "modularvestceramic",
+    "warmth": 0,
+    "material_thickness": 7,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 6
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "ALLOWS_WINGS"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "coverage": 90,
+        "volume_encumber_modifier": 0.3,
+        "encumbrance": 1
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "900 ml",
+        "max_contains_weight": "3 kg",
+        "max_item_length": "25 cm",
+        "moves": 50,
+        "description": "Low-profile magazine storage.",
+        "flag_restriction": [
+          "MAG_COMPACT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ballistic_vest_light_pouches",
+    "type": "ARMOR",
+    "copy-from": "ballistic_vest_light",
+    "//": "CDF-only (AR5-4): DDA light ballistic vest (storage pouch) (DDA data/json/items/armor/ballistic_armor.json:910), copy-from ballistic_vest_light as in DDA. pocket_data is written in full here and replaces the parent's list (checked by the ar5 test). Colour variants dropped (BN has no item variants).",
+    "name": {
+      "str": "light ballistic vest (storage pouch)"
+    },
+    "description": "A simple plate carrier covering the thorax, with front and back pockets for armor plates.  Designed to keep your organs from being perforated by small-arms fire.  This version has a small pouch on the front to store stuff.",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "900 ml",
+        "max_contains_weight": "3 kg",
+        "max_item_length": "25 cm",
+        "moves": 50,
+        "description": "Low-profile zipper storage pouch.",
+        "volume_encumber_modifier": 0.4
+      }
+    ]
+  },
+  {
+    "id": "ballistic_vest_light_operator",
+    "type": "ARMOR",
+    "copy-from": "ballistic_vest_light",
+    "//": "CDF-only (AR5-4): DDA light ballistic vest (shoulder pouch) (DDA data/json/items/armor/ballistic_armor.json:1002), copy-from ballistic_vest_light as in DDA. pocket_data is written in full here and replaces the parent's list (checked by the ar5 test). Colour variants dropped (BN has no item variants).",
+    "name": {
+      "str": "light ballistic vest (shoulder pouch)"
+    },
+    "description": "A simple plate carrier covering the thorax, with front and back pockets for armor plates.  Designed to keep your organs from being perforated by small-arms fire.  This version has a shoulder-mounted pouch for a radio and a hook on the front for a glowstick.",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "500 g",
+        "max_item_length": "13 cm",
+        "moves": 40,
+        "description": "Shoulder-mounted radio pouch.",
+        "volume_encumber_modifier": 0.4
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "30 ml",
+        "max_contains_weight": "40 g",
+        "max_item_length": "15 cm",
+        "holster": true,
+        "moves": 20,
+        "description": "Hook for a glowstick.",
+        "volume_encumber_modifier": 0.4
+      }
+    ]
   }
 ]

@@ -17,6 +17,7 @@
 #include "options.h"
 #include "options_helpers.h"
 #include "player_helpers.h"
+#include "pocket_type.h"
 #include "recipe_dictionary.h"
 #include "state_helpers.h"
 #include "subbodypart.h"
@@ -997,4 +998,81 @@ TEST_CASE("ar5_stab_and_eod_plates_fit_large_slots", "[armor][ablative][ar5]") {
         }
     }
     CHECK(medium_slots == 4);
+}
+
+TEST_CASE("ar5_light_vest_family_plate_and_magazine_pockets", "[armor][ablative][ar5]") {
+    clear_all_state();
+    for (const std::string id : {"ballistic_vest_light", "ballistic_vest_light_operator",
+                                 "ballistic_vest_light_pouches"}) {
+        CAPTURE(id);
+        detached_ptr<item> carrier = item::spawn(itype_id(id));
+        REQUIRE(carrier->find_armor_data() != nullptr);
+        CHECK(ablative::has_plate_slots(*carrier));
+        // CDF: the pouches vest's unrestricted 900 ml zipper pouch takes an esbi_plate like any
+        // container, so test that no plate slot took it instead of the put result
+        put_plate(*carrier, "esbi_plate");
+        CHECK(plate_ids(*carrier).empty());
+        CHECK(put_plate(*carrier, "esapi_plate"));
+        CHECK(put_plate(*carrier, "esapi_plate"));
+        CHECK(plate_ids(*carrier).size() == 2);
+        CHECK_FALSE(put_plate(*carrier, "esapi_plate"));
+        // CDF: thorax only, 90 of the upper torso (JSON)
+        detached_ptr<item> bare = item::spawn(itype_id(id));
+        CHECK(bare->get_coverage(bodypart_id("torso"), sub_bodypart_str_id("torso_upper")) == 90);
+        CHECK(bare->get_coverage(bodypart_id("torso"), sub_bodypart_str_id("torso_lower")) == 0);
+        // CDF: weight 900 g, volume 4 L (JSON)
+        CHECK(bare->weight() == 900_gram);
+        CHECK(bare->volume() == 4_liter);
+        int ablative_pockets = 0;
+        int other_pockets = 0;
+        for (const item_pocket &pocket : bare->contents.get_pockets()) {
+            if (pocket.get_data().ablative) {
+                ++ablative_pockets;
+                CHECK_FALSE(pocket.get_data().get_flag_restrictions().contains(flag_id("ABLATIVE_MEDIUM")));
+            } else if (pocket.get_data().type == pocket_type::CONTAINER) {
+                ++other_pockets;
+            }
+        }
+        CHECK(ablative_pockets == 2);
+        // CDF: operator has the radio pouch and the glowstick hook, the others one pouch (JSON)
+        CHECK(other_pockets == (id == "ballistic_vest_light_operator" ? 2 : 1));
+    }
+    const auto container_pockets = [](const item & it) {
+        std::vector<const item_pocket *> res;
+        for (const item_pocket &pocket : it.contents.get_pockets()) {
+            if (!pocket.get_data().ablative && pocket.get_data().type == pocket_type::CONTAINER) {
+                res.push_back(&pocket);
+            }
+        }
+        return res;
+    };
+    detached_ptr<item> mag = item::spawn(itype_id("ballistic_vest_light"));
+    const auto mag_pockets = container_pockets(*mag);
+    REQUIRE(mag_pockets.size() == 1);
+    // CDF: 900 ml MAG_COMPACT pocket (JSON)
+    CHECK(mag_pockets[0]->volume_capacity() == 900_ml);
+    CHECK(mag_pockets[0]->get_data().get_flag_restrictions().contains(flag_id("MAG_COMPACT")));
+    detached_ptr<item> pouches = item::spawn(itype_id("ballistic_vest_light_pouches"));
+    const auto pouch_pockets = container_pockets(*pouches);
+    REQUIRE(pouch_pockets.size() == 1);
+    // CDF: 900 ml zipper pouch, no flag restriction (JSON)
+    CHECK(pouch_pockets[0]->volume_capacity() == 900_ml);
+    CHECK(pouch_pockets[0]->get_data().get_flag_restrictions().empty());
+    detached_ptr<item> op = item::spawn(itype_id("ballistic_vest_light_operator"));
+    const auto op_pockets = container_pockets(*op);
+    REQUIRE(op_pockets.size() == 2);
+    // CDF: radio pouch 500 ml, glowstick hook 30 ml and a holster (JSON)
+    int radio = 0;
+    int hook = 0;
+    for (const item_pocket *pocket : op_pockets) {
+        if (pocket->volume_capacity() == 500_ml) {
+            ++radio;
+            CHECK_FALSE(pocket->get_data().holster);
+        } else if (pocket->volume_capacity() == 30_ml) {
+            ++hook;
+            CHECK(pocket->get_data().holster);
+        }
+    }
+    CHECK(radio == 1);
+    CHECK(hook == 1);
 }
