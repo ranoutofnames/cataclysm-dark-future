@@ -79,6 +79,10 @@ void pocket_data::load( const JsonObject &jo )
     }
     // CDF: the carry flag of worn storage
     optional( jo, was_loaded, "carry", carry, false );
+    // CDF: the loader (item_factory.cpp) defaults carry for worn container pockets only without this
+    if( jo.has_member( "carry" ) ) {
+        carry_given = true;
+    }
     // ammo_restriction is a type of override, making the mandatory members not mandatory and superfluous
     // putting it in an if statement like this should allow for report_unvisited_member to work here
     if( ammo_restriction.empty() ) {

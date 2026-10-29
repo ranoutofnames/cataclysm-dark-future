@@ -2179,9 +2179,9 @@ class item : public location_visitable<item>, public game_object<item>
          * non-rigid storage encumbers in proportion to what is carried (get_encumber).
          */
         units::volume get_encumber_storage() const;
-        /** Sum of the garment carry pockets' capacity (dormant overlay; not yet used by get_storage). */
+        /** Sum of the garment carry pockets' capacity; this is what get_storage returns for armor. */
         units::volume get_pocket_storage_sum() const;
-        /** Pocket-weighted equivalent of get_encumber_storage() for the overlay (dormant). */
+        /** Pocket-weighted equivalent of get_encumber_storage() over the carry pockets. */
         units::volume get_pocket_encumber_storage() const;
         /**
          * Returns the weight capacity modifier (@ref islot_armor::weight_capacity_modifier) that this item provides when worn.

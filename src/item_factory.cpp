@@ -971,6 +971,16 @@ void Item_factory::synthesize_pockets( itype &obj ) const
 
     // Explicit "pocket_data" always wins (CDF P1a step 2).
     if( obj.explicit_pockets ) {
+        // CDF (CARRY1): the container pockets of a worn garment default to carry, unless the
+        // JSON said otherwise. Holster and ablative pockets hold one thing and are no storage.
+        if( obj.armor ) {
+            for( pocket_data &pocket : obj.pockets ) {
+                if( pocket.type == pocket_type::CONTAINER && !pocket.holster && !pocket.ablative &&
+                    !pocket.carry_given ) {
+                    pocket.carry = true;
+                }
+            }
+        }
         add_molle( obj );
         return;
     }
@@ -1072,7 +1082,7 @@ void Item_factory::synthesize_pockets( itype &obj ) const
     }
 
     // Worn storage: the DDA layout from the garment overlay, else one derived from `storage`.
-    // These pockets are tagged `carry` and stay dormant (CDF P1c step 16).
+    // These pockets are tagged `carry`: they form the carried inventory of the wearer.
     if( obj.armor && obj.armor->storage > 0_ml ) {
         const auto layout = overlay_pockets.find( obj.id );
         if( layout != overlay_pockets.end() ) {

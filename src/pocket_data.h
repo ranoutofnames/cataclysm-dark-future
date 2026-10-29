@@ -109,12 +109,16 @@ class pocket_data
         /** Holds one item (or one stack of a count-by-charges item). */
         bool holster = false;
         /**
-         * CDF: personal storage of a worn garment (made from `storage`, a garment layout
-         * overlay or the pocketed clothing mod). Dormant until the carried inventory moves
-         * into pockets (P1c step 20): nothing can be put in, and item_pocket::is_compatible
-         * refuses everything. Never set by JSON `pocket_data`. Ablative pockets are never carry.
+         * CDF: personal storage of a worn garment. The carry pockets of the worn garments (and
+         * the body storage) form the character's carried inventory. Set for the pockets made
+         * from `storage`, a garment layout overlay or the pocketed clothing mod, and by the
+         * loader (CARRY1) for the CONTAINER pockets of an armor item with explicit `pocket_data`
+         * that are not holster or ablative and whose JSON has no `carry` key. JSON `"carry": false`
+         * opts a pocket out. Ablative pockets are never carry.
          */
         bool carry = false;
+        /** CDF: the JSON of this pocket had a `carry` key (the loader default does not override it). */
+        bool carry_given = false;
         /**
          * Holds one armor plate (DDA `ablative`). A plate slot: it only takes items matching
          * its flag/item restriction, is never a carry pocket, and is skipped by best_pocket,
