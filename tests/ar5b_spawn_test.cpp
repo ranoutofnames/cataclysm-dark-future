@@ -161,3 +161,10 @@ TEST_CASE("ar5b_mil_surplus_palette_lists_vests_and_plates", "[armor][ar5b][spaw
                       [](const palette_entry &e) { return e.group == "armor_plates"; }));
 }
 
+TEST_CASE("ar5b_survival_armor_holds_soft_vests", "[armor][ar5b][spawn]") {
+    clear_all_state();
+    // DDA civilian_body_armor (itemgroups/Clothing_Gear/gear.json:422-423); CDF survival_armor
+    CHECK(group_holds("survival_armor", "soft_3a_vest"));
+    CHECK(group_holds("survival_armor", "stab_vest"));
+}
+

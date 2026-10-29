@@ -2297,7 +2297,10 @@
   {
     "type": "item_group",
     "id": "survival_armor",
+    "//": "AR5B-SPAWN E6: soft_3a_vest and stab_vest at 15 each are DDA civilian_body_armor (itemgroups/Clothing_Gear/gear.json:422-423), weights as written. CDF has no civilian_armor/civilian_body_armor (next packet: PL-08b), so the role maps to survival_armor. Group total 1274 -> 1304.",
     "items": [
+      [ "soft_3a_vest", 15 ],
+      [ "stab_vest", 15 ],
       [ "boots_steel", 50 ],
       [ "boots_combat", 50 ],
       [ "boots_hiking", 50 ],
