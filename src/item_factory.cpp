@@ -1943,6 +1943,23 @@ void Item_factory::check_definitions() const
             }
         }
 
+        if( type->explicit_pockets && type->armor ) {
+            // CDF (CARRY1): worn container pockets default to carry, so a garment whose container
+            // pockets hold something but none carries has a pocket opted out with "carry": false
+            units::volume container_total = 0_ml;
+            bool any_carry = false;
+            for( const pocket_data &pd : type->pockets ) {
+                if( pd.type == pocket_type::CONTAINER && !pd.holster && !pd.ablative ) {
+                    container_total += pd.raw_volume_capacity;
+                    any_carry = any_carry || pd.carry;
+                }
+            }
+            if( container_total > 0_ml && !any_carry ) {
+                DebugLog( DL::Warn, DC::Game ) << "item " << type->id.str() <<
+                                               ": armor has container pockets but none is a carry pocket";
+            }
+        }
+
         if( !type->category_force.is_valid() ) {
             msg += "undefined category " + type->category_force.str() + "\n";
         }
