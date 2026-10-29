@@ -934,5 +934,45 @@
         ]
       }
     ]
+  },
+  {
+    "id": "lead_plate_xedra_mark",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-8): DDA's lead plate (DDA data/json/items/armor/ballistic_armor.json:1548), an X-ray protection lead plate on a steel backing, for the large plate pockets. Material mapping: lead -> lead; qt_steel -> superalloy (as steel_ballistic_plate). Thickness 1 is DDA's top-level material_thickness, kept as for stab_plate and eod_plate (lead has no ballistic resistance in CDF, so this plate protects little). Size, weight, volume, price, coverage (45 of the upper and lower torso), encumbrance 6 and flags are DDA's. The Xedra mod it is named for is not in CDF, and nothing spawns or crafts the plate in this packet.",
+    "name": {
+      "str": "lead plate"
+    },
+    "description": "An lead plate like those found in most medical x-ray protection vests, affixed to a steel backing plate.  This is clearly intended to be inserted into the pocket of a protective vest, and can't be worn on its own.",
+    "weight": "10545 g",
+    "volume": "1110 ml",
+    "longest_side": "46 cm",
+    "price": "400 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "lead",
+      "superalloy"
+    ],
+    "symbol": ",",
+    "color": "dark_gray",
+    "material_thickness": 1,
+    "flags": [
+      "ABLATIVE_LARGE",
+      "CANT_WEAR",
+      "STURDY"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 6,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper",
+          "torso_lower"
+        ]
+      }
+    ]
   }
 ]

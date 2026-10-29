@@ -866,5 +866,102 @@
         ]
       }
     ]
+  },
+  {
+    "id": "xl_ballistic_vest_lc",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-8): DDA's XL ballistic vest (mild steel plates) (DDA data/json/items/armor/ballistic_armor.json:1391). DDA's PREFIX_XL flag is replaced by the name (as xl_ballistic_vest). The plates are fixed into the vest, so there are no plate pockets, as in DDA. Weight, volume, warmth 20, coverage 100, cover_vitals 95, encumbrance, volume_encumber_modifier 0.25, flags and the MOLLE actions (size 12) are DDA's. DDA's per-material nylon 1.0 / kevlar_layered 4.4 is kevlar (as the soft xl_ballistic_vest, thickness 7); thickness is scaled by DDA's total material thickness over the soft vest's 5.4 mm (7 x total / 5.4, rounded), as for stab_vest. lc_steel (1.5 mm, 85%) -> steel, total 6.9 mm gives thickness 9. DDA defines no price for it (default), so none is set here.",
+    "name": {
+      "str": "XL ballistic vest (mild steel plates)"
+    },
+    "description": "An enormous handmade ballistic vest built with lots of salvaged ballistic Kevlar panels and homemade \"ballistic inserts\" made of mild steel.  The thin metal isn't the most protective, but it's probably better than just plain Kevlar.",
+    "weight": "12500 g",
+    "volume": "9 L",
+    "price_postapoc": "15 USD",
+    "material": [
+      "kevlar",
+      "steel"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "ballistic_vest_esapi",
+    "warmth": 20,
+    "material_thickness": 9,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 12
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "OVERSIZE"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "coverage": 100,
+        "cover_vitals": 95,
+        "encumbrance": 14,
+        "volume_encumber_modifier": 0.25
+      }
+    ]
+  },
+  {
+    "id": "xl_ballistic_vest_qt",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (AR5-8): DDA's XL ballistic vest (tempered steel plates) (DDA data/json/items/armor/ballistic_armor.json:1423). DDA's PREFIX_XL flag is replaced by the name (as xl_ballistic_vest). The plates are fixed into the vest, so there are no plate pockets, as in DDA. Weight, volume, warmth 20, coverage 100, cover_vitals 95, encumbrance, volume_encumber_modifier 0.25, flags and the MOLLE actions (size 12) are DDA's. DDA's per-material nylon 1.0 / kevlar_layered 4.4 is kevlar (as the soft xl_ballistic_vest, thickness 7); thickness is scaled by DDA's total material thickness over the soft vest's 5.4 mm (7 x total / 5.4, rounded), as for stab_vest. qt_steel (2.5 mm, 90%) -> superalloy (as steel_ballistic_plate), total 7.9 mm gives thickness 10.",
+    "name": {
+      "str": "XL ballistic vest (tempered steel plates)"
+    },
+    "description": "An enormous handmade ballistic vest made of lots of salvaged ballistic Kevlar panels and ten NIJ IIIA plates inserted into custom-made pockets - four each for your front and back and one each for your sides.  Monstrously heavy but extremely protective.",
+    "weight": "18000 g",
+    "volume": "9 L",
+    "price": "1600 USD",
+    "price_postapoc": "30 USD",
+    "material": [
+      "kevlar",
+      "superalloy"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "ballistic_vest_esapi",
+    "warmth": 20,
+    "material_thickness": 10,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 12
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "OVERSIZE"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "coverage": 100,
+        "cover_vitals": 95,
+        "encumbrance": 20,
+        "volume_encumber_modifier": 0.25
+      }
+    ]
   }
 ]

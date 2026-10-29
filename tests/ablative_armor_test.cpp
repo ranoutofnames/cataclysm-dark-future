@@ -1176,11 +1176,87 @@ TEST_CASE("ar5_all_eleven_items_exist", "[armor][ablative][ar5]") {
         detached_ptr<item> it = item::spawn(itype_id(id));
         CHECK(it->find_armor_data() != nullptr);
     }
-    // held (owner Q5 option b) and excluded (Xedra) ids stay undefined
+    // AR5-8 (orchestrator correction 2026-10-29): the two XL vests and the Xedra plate are ported too
     for (const std::string id : {"xl_ballistic_vest_lc", "xl_ballistic_vest_qt", "lead_plate_xedra_mark"}) {
         CAPTURE(id);
-        CHECK_FALSE(itype_id(id).is_valid());
+        REQUIRE(itype_id(id).is_valid());
+        detached_ptr<item> it = item::spawn(itype_id(id));
+        CHECK(it->find_armor_data() != nullptr);
     }
+}
+
+TEST_CASE("ar5_xl_vests_have_fixed_plates_and_no_slots", "[armor][ablative][ar5]") {
+    clear_all_state();
+    const bodypart_id torso("torso");
+    detached_ptr<item> soft = item::spawn(itype_id("xl_ballistic_vest"));
+    detached_ptr<item> lc = item::spawn(itype_id("xl_ballistic_vest_lc"));
+    detached_ptr<item> qt = item::spawn(itype_id("xl_ballistic_vest_qt"));
+    REQUIRE(lc->find_armor_data() != nullptr);
+    REQUIRE(qt->find_armor_data() != nullptr);
+    for (item *vest : {lc.get(), qt.get()}) {
+        // the plates are fixed into the vest: no slot takes another plate
+        CHECK_FALSE(ablative::has_plate_slots(*vest));
+        CHECK_FALSE(put_plate(*vest, "esapi_plate"));
+        CHECK(ablative::plates(*vest).empty());
+        CHECK(vest->has_flag(flag_id("OVERSIZE")));
+        CHECK(vest->has_flag(flag_id("STURDY")));
+        CHECK(vest->get_coverage(torso) == 100);
+        // CDF: 9 L, torso only (JSON)
+        CHECK(vest->volume() == 9_liter);
+        CHECK(vest->covers(torso));
+        CHECK_FALSE(vest->covers(bodypart_id("arm_l")));
+    }
+    // CDF: weights 12500 g and 18000 g, encumbrance 14 and 20 (JSON)
+    CHECK(lc->weight() == 12500_gram);
+    CHECK(qt->weight() == 18000_gram);
+    Character &guy = get_player_character();
+    clear_character(*guy.as_player(), true);
+    CHECK(lc->get_avg_encumber(guy) == 14);
+    CHECK(qt->get_avg_encumber(guy) == 20);
+    // CDF: materials mild steel -> steel, tempered steel -> superalloy, with the kevlar of the soft XL vest
+    CHECK(lc->made_of(material_id("kevlar")));
+    CHECK(lc->made_of(material_id("steel")));
+    CHECK_FALSE(lc->made_of(material_id("superalloy")));
+    CHECK(qt->made_of(material_id("kevlar")));
+    CHECK(qt->made_of(material_id("superalloy")));
+    CHECK_FALSE(qt->made_of(material_id("steel")));
+    // the steel plates make them protect more than the soft XL vest, tempered more than mild
+    CHECK(soft->bullet_resist() < lc->bullet_resist());
+    CHECK(lc->bullet_resist() < qt->bullet_resist());
+}
+
+TEST_CASE("ar5_lead_plate_xedra_mark_fits_large_slots", "[armor][ablative][ar5]") {
+    clear_all_state();
+    detached_ptr<item> plate = item::spawn(itype_id("lead_plate_xedra_mark"));
+    REQUIRE(plate->find_armor_data() != nullptr);
+    CHECK(plate->has_flag(flag_id("ABLATIVE_LARGE")));
+    CHECK(plate->has_flag(flag_id("CANT_WEAR")));
+    CHECK(plate->has_flag(flag_id("STURDY")));
+    CHECK(plate->made_of(material_id("lead")));
+    CHECK(plate->made_of(material_id("superalloy")));
+    // CDF: weight 10545 g, volume 1110 ml, 46 cm (JSON)
+    CHECK(plate->weight() == 10545_gram);
+    CHECK(plate->volume() == 1110_ml);
+    CHECK(plate->length() == 46_cm);
+    CHECK(plate->get_coverage(bodypart_id("torso"), sub_bodypart_str_id("torso_upper")) == 45);
+    CHECK(plate->get_coverage(bodypart_id("torso"), sub_bodypart_str_id("torso_lower")) == 45);
+
+    // CDF: the plate weighs 10545 g, over the 5 kg max_contains_weight of the level_3_vest slots (same
+    // numbers in DDA), so that vest refuses it; the EOD jacket's large slot (JSON) takes it
+    detached_ptr<item> vest = item::spawn(itype_id("level_3_vest"));
+    CHECK_FALSE(put_plate(*vest, "lead_plate_xedra_mark"));
+    CHECK(ablative::plates(*vest).empty());
+    detached_ptr<item> jacket = item::spawn(itype_id("jacket_eod"));
+    CHECK(put_plate(*jacket, "lead_plate_xedra_mark"));
+    CHECK_FALSE(put_plate(*jacket, "lead_plate_xedra_mark"));
+    CHECK(plate_ids(*jacket) == std::vector<std::string>{"lead_plate_xedra_mark"});
+    // a large plate in the light jacket's large slot next to deltoid plates in its medium one
+    detached_ptr<item> deltoid = item::spawn(itype_id("jacket_eod_light"));
+    CHECK(put_plate(*deltoid, "lead_plate_xedra_mark"));
+    CHECK(put_plate(*deltoid, "deltoid_plates"));
+    CHECK(plate_ids(*deltoid).size() == 2);
+    detached_ptr<item> soft = item::spawn(itype_id("soft_3a_vest"));
+    CHECK_FALSE(put_plate(*soft, "lead_plate_xedra_mark"));
 }
 
 TEST_CASE("ar5_spawn_groups_hold_the_new_ids", "[armor][ablative][ar5]") {
