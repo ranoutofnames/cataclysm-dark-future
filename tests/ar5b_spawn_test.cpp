@@ -39,6 +39,51 @@ auto count_spawns(const char *group, const char *id, int draws) -> int {
 
 } // namespace
 
+TEST_CASE("ar5b_survivor_tops_hold_the_vests", "[armor][ar5b][spawn]") {
+    clear_all_state();
+    // DDA survivor_basic_torso (monsterdrops/zombie_survivor.json:382-406); CDF survivorzed_tops.
+    // CDF: ids from data/json/items/armor/cdf_ballistic_vests.json
+    for (const char *id : {"ballistic_vest_light", "ballistic_vest_light_operator",
+                           "ballistic_vest_light_pouches", "stab_vest", "soft_3a_vest", "level_3_vest"}) {
+        INFO(id);
+        CHECK(group_holds("survivorzed_tops", id));
+    }
+}
+
+TEST_CASE("ar5b_cop_gear_holds_the_level_3_vest", "[armor][ar5b][spawn]") {
+    clear_all_state();
+    CHECK(group_holds("cop_gear", "level_3_vest"));
+    // CDF: cop_gear weights sum to 338 with the vest at 75 (22.2%), and mon_zombie_cop_death_drops
+    // takes cop_gear at prob 70, so one draw yields the vest about 15.5% of the time. In 2000
+    // draws a miss is (1 - 0.155)^2000, i.e. impossible.
+    rng_set_engine_seed(4242424242);
+    CHECK(count_spawns("mon_zombie_cop_death_drops", "level_3_vest", 2000) >= 1);
+}
+
+TEST_CASE("ar5b_lab_security_can_drop_a_soft_vest", "[armor][ar5b][spawn]") {
+    clear_all_state();
+    CHECK(group_holds("mon_zombie_labsecurity_death_drops", "soft_3a_vest"));
+    // CDF: the direct entry is prob 50 with damage [0,4] (DDA security_armor, zombie_lab.json:57), so
+    // 400 draws give ~200 vests; each is damaged 0..4 levels and some are damaged at all.
+    rng_set_engine_seed(4242424242);
+    auto vests = 0;
+    auto damaged = 0;
+    for (auto i = 0; i < 400; ++i) {
+        const std::vector<detached_ptr<item>> spawned =
+            item_group::items_from(item_group_id("mon_zombie_labsecurity_death_drops"));
+        for (const detached_ptr<item> &it : spawned) {
+            if (it->typeId() == itype_id("soft_3a_vest")) {
+                ++vests;
+                CHECK(it->damage() >= 0);
+                CHECK(it->damage() <= 4 * itype::damage_scale);
+                damaged += it->damage() > 0 ? 1 : 0;
+            }
+        }
+    }
+    CHECK(vests >= 1);
+    CHECK(damaged >= 1);
+}
+
 TEST_CASE("ar5b_armor_plates_group", "[armor][ar5b][spawn]") {
     clear_all_state();
     // DDA itemgroups/military.json:19-30; CDF: the plate ids are defined in

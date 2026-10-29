@@ -2538,6 +2538,7 @@
   {
     "type": "item_group",
     "id": "survivorzed_tops",
+    "//": "AR5B-SPAWN E1: the last six entries come from DDA survivor_basic_torso (monsterdrops/zombie_survivor.json:382-406), weights as written (15/15/15/15/3/3). Group total 227 -> 293. Used by RNG_SURVIVOR (professions.json:9286), so that start can now carry these vests.",
     "items": [
       [ "trenchcoat_survivor", 5 ],
       [ "sleeveless_trenchcoat_survivor", 2 ],
@@ -2567,7 +2568,13 @@
       [ "armor_lamellar", 6 ],
       [ "chainmail_vest", 2 ],
       [ "cuirass_lightplate", 2 ],
-      [ "carbon_chestguard", 1 ]
+      [ "carbon_chestguard", 1 ],
+      [ "ballistic_vest_light", 15 ],
+      [ "ballistic_vest_light_operator", 15 ],
+      [ "ballistic_vest_light_pouches", 15 ],
+      [ "stab_vest", 15 ],
+      [ "soft_3a_vest", 3 ],
+      [ "level_3_vest", 3 ]
     ]
   },
   {

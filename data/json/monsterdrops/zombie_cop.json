@@ -48,6 +48,7 @@
   {
     "type": "item_group",
     "id": "cop_gear",
+    "//": "AR5B-SPAWN E2: level_3_vest 75 is DDA cop_armor (monsterdrops/zombie_cop.json:43-47), weight as written. Dropped: variant police_armor_vest and contents-group some_steel_front_plates (no item variants, no such group in CDF; next packet: PL-08b). Group total 263 -> 338.",
     "items": [
       { "group": "individual_first_aid_kit", "prob": 24 },
       { "group": "pocket_first_aid_kit", "prob": 6 },
@@ -67,7 +68,8 @@
       [ "rope_30", 5 ],
       [ "sm_extinguisher", 5 ],
       [ "two_way_radio", 25 ],
-      [ "dog_whistle", 5 ]
+      [ "dog_whistle", 5 ],
+      [ "level_3_vest", 75 ]
     ]
   },
   {
