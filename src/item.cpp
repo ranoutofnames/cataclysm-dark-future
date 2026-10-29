@@ -9889,6 +9889,22 @@ bool item::reload( Character &who, item &loc, int qty, int pocket_index )
         return reload_targeted( who, loc, qty, pocket_index );
     }
 
+    // CDF: P3-6-3b, DDA item_gun_tool_ammo.cpp 3488-3496 (the pocket_index < 0 path of item::reload): DDA checks
+    // can_reload_with( *ammo, true ) and unwraps a speedloader to its first ammo. The BN body below does neither
+    // (is_reloadable_with() reads the legacy `magazines` list), so a speedloader that an integral MAGAZINE pocket
+    // allows (pocket_data allowed_speedloaders) goes to the targeted path (reload_targeted, 3-6), which does both.
+    if( ammo->has_flag( flag_SPEEDLOADER ) || ammo->has_flag( flag_SPEEDLOADER_CLIP ) ) {
+        const std::vector<item_pocket *> all_pockets = get_pockets( []( const item_pocket & ) {
+            return true;
+        } );
+        for( size_t idx = 0; idx < all_pockets.size(); ++idx ) {
+            if( all_pockets[idx]->is_type( pocket_type::MAGAZINE ) &&
+                all_pockets[idx]->can_reload_with( *ammo, true ) ) {
+                return reload_targeted( who, loc, qty, static_cast<int>( idx ) );
+            }
+        }
+    }
+
     item *container = nullptr;
     if( ammo->is_ammo_container() || ammo->is_container() ) {
         container = ammo;

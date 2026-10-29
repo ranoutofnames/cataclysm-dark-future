@@ -1,0 +1,19 @@
+[
+  {
+    "//": "CDF: P3-9-5d; DDA sw_610 (b4b6225, obsoletion_and_migration_0.J/guns.json:180) has an integral MAGAZINE pocket, CDF sw_610 uses swappable speedloader magazines. This copy carries DDA's pocket_data.",
+    "id": "p3_sw_610",
+    "type": "GUN",
+    "copy-from": "sw_610",
+    "name": { "str_sp": "p3 S&W 610 with integral cylinder" },
+    "clip_size": 6,
+    "magazines": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "10mm": 6, "40": 6 },
+        "allowed_speedloaders": [ "40_speedloader6" ]
+      }
+    ]
+  }
+]

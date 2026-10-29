@@ -421,7 +421,11 @@ units::volume item_pocket::volume_capacity() const
             if( def.is_null() || !def.is_valid() || def->stack_size <= 0 ) {
                 continue;
             }
-            const units::volume v = def->volume * ammo_res.second / def->stack_size;
+            // CDF: round up like DDA pocket_data::volume_capacity() (item_pocket.cpp:2559-2575). item::volume() of
+            // N charges rounds up, so a pocket filled to its ammo_restriction needs a rounded-up capacity or
+            // overflow() sheds the full stack as too big.
+            const units::volume v = 1_ml * ( ( def->volume * ammo_res.second / 1_ml + def->stack_size - 1 ) /
+                                             def->stack_size );
             best = std::max( best, v );
         }
         return best;

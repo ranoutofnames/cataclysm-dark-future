@@ -4,6 +4,7 @@
 #include "catch/catch.hpp"
 #include "flag.h"
 #include "item.h"
+#include "item_pocket.h"
 #include "map/map.h"
 #include "player_activity.h"
 #include "player_helpers.h"
@@ -13,6 +14,7 @@
 #include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace {
 
@@ -304,4 +306,169 @@ TEST_CASE("reload_liquid_container", "[p3][reload][entry][liquid]") {
             CHECK(wielded().get_contents_volume() == units::volume());
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-6-3b; CDF-only counterpart of DDA tests/reloading_test.cpp 514-635 (speedloader_reloading) and its
+// helper test_reloading (67-101). The whole DDA case is ported by the 9-5 lane (cut-tests.md, 9-5 B9) once this
+// job is merged; this case pins the behaviour that job fixes with checks that can bite here. p3_sw_610
+// (data/mods/TEST_DATA/reload_speedloader_p3.json) is DDA's sw_610: a revolver whose integral MAGAZINE pocket
+// takes the 6-round speedloader (allowed_speedloaders). CDF's own sw_610 uses the legacy `magazines` list and has
+// no MAGAZINE pocket, so it never reaches the code under test. Items are item pointers (D1). The case sets no
+// avatar::ammo_location and finishes every activity it starts, so it leaves no safe_reference state alive
+// (the 8-2a-sel lesson).
+// ---------------------------------------------------------------------------
+
+static detached_ptr<item> speedloader_holding( int rounds )
+{
+    detached_ptr<item> loader = item::spawn( "40_speedloader6", calendar::start_of_cataclysm );
+    if( rounds > 0 ) {
+        REQUIRE( loader->put_in( item::spawn( "40sw", calendar::start_of_cataclysm, rounds ),
+                                 pocket_type::MAGAZINE ).success() );
+    }
+    return loader;
+}
+
+TEST_CASE( "speedloader_reload_resolves_the_integral_magazine_pocket", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    who.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false );
+
+    // Fixture premise: the gun is reloadable, its pocket allows the loader and the loader fits now. Green with
+    // the old body too; a red check here means the fixture is wrong on CDF data.
+    SECTION( "the fixture gun takes its speedloader at pocket level" ) {
+        item &gun = who.i_add( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) );
+        item &loader = who.i_add( speedloader_holding( 3 ) );
+        CHECK( gun.is_reloadable() );
+        CHECK( gun.allows_speedloader( itype_id( "40_speedloader6" ) ) );
+        CHECK( gun.can_reload_with( loader, true ) );
+    }
+
+    SECTION( "item::reload loads a partly filled speedloader into an empty gun" ) {
+        item &gun = who.i_add( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) );
+        item &loader = who.i_add( speedloader_holding( 3 ) );
+        REQUIRE( gun.ammo_remaining() == 0 );
+        REQUIRE( loader.ammo_remaining() == 3 );
+
+        const bool loaded = gun.reload( who, loader, 3 );
+        CHECK( loaded );
+        CHECK( gun.ammo_remaining() == 3 );
+        CHECK( loader.ammo_remaining() == 0 );
+    }
+
+    SECTION( "item::reload loads a full speedloader into an empty gun" ) {
+        item &gun = who.i_add( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) );
+        item &loader = who.i_add( speedloader_holding( 6 ) );
+        REQUIRE( gun.ammo_remaining() == 0 );
+        REQUIRE( loader.ammo_remaining() == 6 );
+
+        const bool loaded = gun.reload( who, loader, 6 );
+        CHECK( loaded );
+        CHECK( gun.ammo_remaining() == 6 );
+        CHECK( loader.ammo_remaining() == 0 );
+    }
+
+    // DDA 526-533 ("empty gun" / "partially empty speedloader"): the wielded gun is reloaded through the
+    // activity, which calls item::reload without a pocket index.
+    SECTION( "reload_wielded loads a partly filled speedloader into the wielded gun" ) {
+        REQUIRE( !who.wield( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) ) );
+        REQUIRE( !who.wielded_items().empty() );
+        item &gun = *who.wielded_items().front();
+        who.i_add( speedloader_holding( 3 ) );
+        REQUIRE( gun.ammo_remaining() == 0 );
+
+        avatar_action::reload_wielded();
+        REQUIRE( who.activity );
+        process_activity( who );
+        CHECK( gun.ammo_remaining() == 3 );
+    }
+
+    // DDA 535-542 ("empty gun" / "full speedloader").
+    SECTION( "reload_wielded loads a full speedloader into the wielded gun" ) {
+        REQUIRE( !who.wield( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) ) );
+        REQUIRE( !who.wielded_items().empty() );
+        item &gun = *who.wielded_items().front();
+        who.i_add( speedloader_holding( 6 ) );
+        REQUIRE( gun.ammo_remaining() == 0 );
+
+        avatar_action::reload_wielded();
+        REQUIRE( who.activity );
+        process_activity( who );
+        CHECK( gun.ammo_remaining() == 6 );
+    }
+
+    // DDA 544-551 ("empty gun" / "speedloader with wrong ammo"): guard, nothing is started or loaded.
+    SECTION( "a speedloader with the wrong ammo is not loaded" ) {
+        REQUIRE( !who.wield( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) ) );
+        REQUIRE( !who.wielded_items().empty() );
+        item &gun = *who.wielded_items().front();
+        detached_ptr<item> wrong = item::spawn( "40_speedloader6", calendar::start_of_cataclysm );
+        wrong->force_insert_item( item::spawn( "9mm", calendar::start_of_cataclysm, 6 ),
+                                  pocket_type::MAGAZINE );
+        item &loader = who.i_add( std::move( wrong ) );
+        REQUIRE( loader.ammo_remaining() == 6 );
+
+        avatar_action::reload_wielded();
+        CHECK_FALSE( who.activity );
+        CHECK( gun.ammo_remaining() == 0 );
+    }
+
+    // DDA 555-594 ("full gun"): guard, a full gun is not reloadable, so reload_wielded starts nothing.
+    SECTION( "a full gun takes no speedloader" ) {
+        REQUIRE( !who.wield( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) ) );
+        REQUIRE( !who.wielded_items().empty() );
+        item &gun = *who.wielded_items().front();
+        REQUIRE( gun.put_in( item::spawn( "40sw", calendar::start_of_cataclysm, 6 ),
+                             pocket_type::MAGAZINE ).success() );
+        who.i_add( speedloader_holding( 6 ) );
+        REQUIRE( gun.ammo_remaining() == 6 );
+
+        avatar_action::reload_wielded();
+        CHECK_FALSE( who.activity );
+        CHECK( gun.ammo_remaining() == 6 );
+    }
+
+    // [UNSURE] DDA 596-635 ("gun full of casings" / "partially empty speedloader"): the casings are ejected
+    // first and the three rounds are loaded. The derivation of the load count (casings_handle inside
+    // reload_targeted, then the pocket gate) is by reading only, and SELF-46 reports this DDA section passes
+    // with the old body for a reason nobody traced. If a REQUIRE of this section fails (or it hangs), delete this
+    // section only, with a log line in the report and a Blocked line; do not change the assertions.
+    SECTION( "a gun full of casings takes a partly filled speedloader" ) {
+        REQUIRE( !who.wield( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) ) );
+        REQUIRE( !who.wielded_items().empty() );
+        item &gun = *who.wielded_items().front();
+        detached_ptr<item> casings = item::spawn( "40_casing", calendar::start_of_cataclysm, 6 );
+        casings->set_flag( flag_CASING );
+        gun.force_insert_item( std::move( casings ), pocket_type::MAGAZINE );
+        who.i_add( speedloader_holding( 3 ) );
+
+        avatar_action::reload_wielded();
+        REQUIRE( who.activity );
+        process_activity( who );
+        CHECK( gun.ammo_remaining() == 3 );
+    }
+}
+
+// CDF: P3-6-3b; root cause of the full-speedloader activity case. A pocket filled exactly to its
+// ammo_restriction must survive overflow(): drop_invalid_inventory() runs it when an activity ends.
+// p3_sw_610 holds 6 x 40sw (250 ml / 40 per stack => 6 rounds are 37.5 ml, item::volume() rounds up to 38 ml).
+TEST_CASE( "full_ammo_restricted_magazine_pocket_survives_overflow", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    who.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false );
+
+    item &gun = who.i_add( item::spawn( "p3_sw_610", calendar::start_of_cataclysm ) );
+    detached_ptr<item> rounds = item::spawn( "40sw", calendar::start_of_cataclysm, 6 );
+    const units::volume stack_volume = rounds->volume();
+    REQUIRE( gun.put_in( std::move( rounds ), pocket_type::MAGAZINE ).success() );
+    REQUIRE( gun.ammo_remaining() == 6 );
+
+    std::vector<item_pocket *> pockets = gun.get_contents().get_pockets( pocket_type::MAGAZINE );
+    REQUIRE( pockets.size() == 1 );
+    CHECK( pockets[0]->volume_capacity() >= stack_volume );
+
+    gun.overflow( who.bub_pos(), &who );
+    CHECK( gun.ammo_remaining() == 6 );
 }
