@@ -37,6 +37,14 @@
     "description": "A battery compartment mod that allows using vehicle and storage batteries in regular tools, up to the size of a large storage battery, as unwieldy as that may be.",
     "color": "light_green",
     "acceptable_ammo": [ "battery" ],
+    "pocket_mods": [
+      {
+        "//": "CDF: max_item_length 2 km, as for the other battery mods (DDA ids; the CDF magazine_adaptor list below is kept)",
+        "pocket_type": "MAGAZINE_WELL",
+        "item_restriction": [ "small_storage_battery", "medium_storage_battery", "battery_car", "battery_motorbike" ],
+        "max_item_length": "2 km"
+      }
+    ],
     "magazine_adaptor": [
       [
         "battery",
@@ -61,7 +69,15 @@
     "description": "A battery compartment mod that allows the use of light batteries in tools that otherwise could not.",
     "color": "light_green",
     "acceptable_ammo": [ "battery" ],
-    "magazine_adaptor": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ]
+    "pocket_mods": [
+      {
+        "//": "CDF: max_item_length 2 km, because a mod well without ammo_restriction would take apply_default_length() instead of the 2 km that wells get elsewhere",
+        "pocket_type": "MAGAZINE_WELL",
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "default_magazine": "light_minus_battery_cell",
+        "max_item_length": "2 km"
+      }
+    ]
   },
   {
     "id": "magazine_battery_medium_mod",
@@ -72,7 +88,15 @@
     "description": "A battery compartment mod that allows the use of medium batteries in tools that otherwise could not.",
     "color": "light_green",
     "acceptable_ammo": [ "battery" ],
-    "magazine_adaptor": [ [ "battery", [ "medium_battery_cell" ] ] ]
+    "pocket_mods": [
+      {
+        "//": "CDF: max_item_length 2 km, because a mod well without ammo_restriction would take apply_default_length() instead of the 2 km that wells get elsewhere",
+        "pocket_type": "MAGAZINE_WELL",
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "default_magazine": "medium_battery_cell",
+        "max_item_length": "2 km"
+      }
+    ]
   },
   {
     "id": "magazine_battery_heavy_mod",
@@ -83,6 +107,14 @@
     "description": "A battery compartment mod that allows the use of heavy batteries in tools that otherwise could not.",
     "color": "light_green",
     "acceptable_ammo": [ "battery" ],
-    "magazine_adaptor": [ [ "battery", [ "heavy_battery_cell" ] ] ]
+    "pocket_mods": [
+      {
+        "//": "CDF: max_item_length 2 km, because a mod well without ammo_restriction would take apply_default_length() instead of the 2 km that wells get elsewhere",
+        "pocket_type": "MAGAZINE_WELL",
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_battery_cell",
+        "max_item_length": "2 km"
+      }
+    ]
   }
 ]

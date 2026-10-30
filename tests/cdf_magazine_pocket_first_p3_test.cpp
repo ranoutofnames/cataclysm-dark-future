@@ -73,7 +73,34 @@ auto has_guard_mod( const item &it ) -> bool
 
 } // namespace
 
+// T1
+TEST_CASE( "magazine_default_follows_the_live_well", "[p3][magazine][pocket]" )
+{
+    detached_ptr<item> tool = item::spawn( flashlight_id );
+    // CDF: the fixture well has default_magazine light_battery_cell (battery_mod_p3.json)
+    CHECK( tool->magazine_default( false ) == light_cell );
 
+    detached_ptr<item> mod = item::spawn( medium_mod );
+    item *mod_ptr = &*mod;
+    tool->put_in( std::move( mod ), pocket_type::MOD );
+    REQUIRE_FALSE( tool->toolmods().empty() );
+    CHECK( tool->magazine_default( false ) == medium_cell );
+
+    tool->remove_item( *mod_ptr );
+    REQUIRE( tool->toolmods().empty() );
+    CHECK( tool->magazine_default( false ) == light_cell );
+}
+
+// T2
+TEST_CASE( "pocket_mod_replaces_the_well", "[p3][magazine][pocket]" )
+{
+    detached_ptr<item> tool = flashlight_with( medium_mod );
+    const std::set<flag_id> expected = { flag_id( "BATTERY_MEDIUM" ) };
+    CHECK( tool->get_contents().magazine_flag_restrictions() == expected );
+    CHECK_FALSE( can_take( *tool, light_cell ) );
+    CHECK( can_take( *tool, medium_cell ) );
+    CHECK( tool->magazine_compatible().count( light_cell ) == 0 );
+}
 
 // T3
 TEST_CASE( "magazine_integral_follows_pockets", "[p3][magazine][pocket]" )
@@ -237,4 +264,40 @@ TEST_CASE( "battery_mod_wells_take_any_length", "[p3][magazine][pocket]" )
     CHECK( tool->put_in( *cell, pocket_type::MAGAZINE_WELL ).success() );
 }
 
+// T8
+TEST_CASE( "battery_mods_exclude_the_other_sizes", "[p3][magazine][pocket]" )
+{
+    struct row {
+        itype_id mod;
+        itype_id own;
+        itype_id dflt; // CDF: the mod's default_magazine (TASK Data table); the light mod defaults to the ultra-light cell
+        std::vector<itype_id> others;
+    };
+    const std::vector<row> rows = {
+        { light_mod, light_cell, light_minus_cell, { medium_cell, heavy_cell } },
+        { medium_mod, medium_cell, medium_cell, { light_cell, heavy_cell } },
+        { heavy_mod, heavy_cell, heavy_cell, { light_cell, medium_cell } },
+    };
+    for( const row &r : rows ) {
+        CAPTURE( r.mod.str() );
+        detached_ptr<item> tool = flashlight_with( r.mod );
+        CHECK( can_take( *tool, r.own ) );
+        for( const itype_id &o : r.others ) {
+            CAPTURE( o.str() );
+            CHECK_FALSE( can_take( *tool, o ) );
+        }
+        CHECK( tool->magazine_default( false ) == r.dflt );
+    }
+    // CDF: the light mod also accepts the ultra-light cell
+    detached_ptr<item> light_tool = flashlight_with( light_mod );
+    CHECK( can_take( *light_tool, light_minus_cell ) );
+}
 
+// T9: documents; passes on unmodified source (the storage mod keeps its magazine_adaptor)
+TEST_CASE( "storage_battery_mod_is_unchanged_in_effect", "[p3][magazine][pocket]" )
+{
+    detached_ptr<item> tool = flashlight_with( storage_mod );
+    CHECK( can_take( *tool, itype_id( "battery_car" ) ) );
+    CHECK( can_take( *tool, itype_id( "small_storage_battery" ) ) );
+    CHECK_FALSE( can_take( *tool, light_cell ) );
+}
