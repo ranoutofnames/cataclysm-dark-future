@@ -21,8 +21,9 @@ Currently generated:
   data/json/items/cdf_overlay_garment_pockets.json   (with --pockets)
       The DDA pocket layout, verbatim, of every CDF garment (ARMOR/TOOL_ARMOR with `storage`)
       whose id exists in DDA with at least one CONTAINER pocket in its `pocket_data`. Each pocket
-      is copied as DDA defines it (no scaling). `ripoff`, `extra_encumbrance` and `activity_noise`
-      are not loaded by CDF; each dropped value is kept in a "//" comment on the pocket so it can
+      is copied as DDA defines it (no scaling), including `extra_encumbrance` (a filled pocket adds
+      that much encumbrance). `ripoff` and `activity_noise` are not loaded from overlays; each
+      dropped value is kept in a "//" comment on the pocket so it can
       be switched on later without regenerating. Ablative pockets are skipped (they belong to
       the ablative armor work), as are non-CONTAINER pockets (magazine wells etc.: CDF builds
       those from BN `magazines`). A per-garment report is printed.
@@ -161,8 +162,9 @@ POCKET_KEYS = [
     "item_restriction", "rigid", "moves", "transparent", "magazine_well", "watertight",
     "airtight", "open_container", "volume_encumber_modifier", "spoil_multiplier",
     "weight_multiplier", "volume_multiplier",
+    "extra_encumbrance",  # CDF: ENC1, read by pocket_data.cpp and item::get_encumber
 ]
-DROPPED_KEYS = ["ripoff", "extra_encumbrance", "activity_noise"]
+DROPPED_KEYS = ["ripoff", "activity_noise"]
 GARMENT_TYPES = {"ARMOR", "TOOL_ARMOR"}
 
 

@@ -14,24 +14,24 @@
   {"type": "item_overlay", "id": "backpack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "25 L", "max_contains_weight": "30 kg", "max_item_length": "40 cm", "moves": 300},
     {"pocket_type": "CONTAINER", "max_contains_volume": "510 ml", "max_contains_weight": "1 kg", "max_item_length": "24 cm", "min_item_length": "18 cm", "holster": true, "moves": 80, "//": "DDA values not loaded by CDF: {\"ripoff\": 2}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 3, \"extra_encumbrance\": 10}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "extra_encumbrance": 10, "//": "DDA values not loaded by CDF: {\"ripoff\": 3}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
   ]},
   {"type": "item_overlay", "id": "backpack_giant", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "80 L", "max_contains_weight": "40 kg", "max_item_length": "96 cm", "moves": 300, "magazine_well": "8750 ml"}
   ]},
   {"type": "item_overlay", "id": "backpack_leather", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "25 L", "max_contains_weight": "30 kg", "max_item_length": "40 cm", "moves": 300},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 3, \"extra_encumbrance\": 10}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "extra_encumbrance": 10, "//": "DDA values not loaded by CDF: {\"ripoff\": 3}"}
   ]},
   {"type": "item_overlay", "id": "backpack_tactical_large", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "55 L", "max_contains_weight": "70 kg", "max_item_length": "70 cm", "moves": 300, "magazine_well": "10 L"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "10 kg", "max_item_length": "40 cm", "moves": 200, "magazine_well": "1 L"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "3 L", "max_contains_weight": "3 kg", "max_item_length": "30 cm", "moves": 120, "magazine_well": "800 ml"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "3 L", "max_contains_weight": "3 kg", "max_item_length": "30 cm", "moves": 120, "magazine_well": "800 ml"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
   ]},
   {"type": "item_overlay", "id": "basket_laundry", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "50 L", "max_contains_weight": "12 kg", "max_item_length": "80 cm", "rigid": true, "moves": 300}
@@ -44,8 +44,8 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "10 kg", "max_item_length": "40 cm", "moves": 200, "magazine_well": "1 L"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "3 L", "max_contains_weight": "3 kg", "max_item_length": "30 cm", "moves": 120, "magazine_well": "800 ml"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "3 L", "max_contains_weight": "3 kg", "max_item_length": "30 cm", "moves": 120, "magazine_well": "800 ml"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"}
   ]},
   {"type": "item_overlay", "id": "bindle", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "15 kg", "moves": 300}
@@ -57,8 +57,8 @@
   ]},
   {"type": "item_overlay", "id": "boxpack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_contains_weight": "60 kg", "max_item_length": "50 cm", "rigid": true, "moves": 300},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 3, \"extra_encumbrance\": 10}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "extra_encumbrance": 10, "//": "DDA values not loaded by CDF: {\"ripoff\": 3}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
   ]},
   {"type": "item_overlay", "id": "briefcase", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_contains_weight": "30 kg", "max_item_length": "50 cm", "rigid": true, "moves": 200}
@@ -110,9 +110,9 @@
   ]},
   {"type": "item_overlay", "id": "daypack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "24 L", "max_contains_weight": "32 kg", "max_item_length": "60 cm", "moves": 300, "magazine_well": "2 L"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 3, \"extra_encumbrance\": 10}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "extra_encumbrance": 10, "//": "DDA values not loaded by CDF: {\"ripoff\": 3}"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "510 ml", "max_contains_weight": "1 kg", "max_item_length": "24 cm", "min_item_length": "18 cm", "holster": true, "moves": 80, "//": "DDA values not loaded by CDF: {\"ripoff\": 2}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
   ]},
   {"type": "item_overlay", "id": "dive_bag", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "30 L", "max_contains_weight": "24 kg", "max_item_length": "70 cm", "moves": 300}
@@ -122,7 +122,7 @@
   ]},
   {"type": "item_overlay", "id": "duffelbag", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "60 L", "max_contains_weight": "60 kg", "max_item_length": "55 cm", "moves": 300, "magazine_well": "5 L"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 80, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 1, \"extra_encumbrance\": 5}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 80, "transparent": true, "extra_encumbrance": 5, "//": "DDA values not loaded by CDF: {\"ripoff\": 1}"}
   ]},
   {"type": "item_overlay", "id": "dump_pouch", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "2 L", "max_contains_weight": "4 kg", "max_item_length": "20 cm", "moves": 80, "magazine_well": "500 ml", "volume_encumber_modifier": 0.3}
@@ -303,7 +303,7 @@
   ]},
   {"type": "item_overlay", "id": "makeshift_knapsack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "10 kg", "max_item_length": "70 cm", "moves": 300},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 3, \"extra_encumbrance\": 10}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "extra_encumbrance": 10, "//": "DDA values not loaded by CDF: {\"ripoff\": 3}"}
   ]},
   {"type": "item_overlay", "id": "makeshift_sling", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "10 L", "max_contains_weight": "15 kg", "max_item_length": "50 cm", "moves": 300, "magazine_well": "2 L"}
@@ -416,10 +416,10 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "3 L", "max_contains_weight": "3 kg", "max_item_length": "30 cm", "moves": 120, "magazine_well": "800 ml"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "3 L", "max_contains_weight": "3 kg", "max_item_length": "30 cm", "moves": 120, "magazine_well": "800 ml"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "3250 ml", "max_contains_weight": "4 kg", "max_item_length": "30 cm", "moves": 500},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 3, \"extra_encumbrance\": 10}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "4 kg", "max_item_length": "150 cm", "min_item_length": "60 cm", "holster": true, "moves": 200, "transparent": true, "extra_encumbrance": 10, "//": "DDA values not loaded by CDF: {\"ripoff\": 3}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 10}}"}
   ]},
   {"type": "item_overlay", "id": "runner_bag", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "7 L", "max_contains_weight": "14 kg", "max_item_length": "40 cm", "moves": 250, "magazine_well": "1 L"}
@@ -563,9 +563,9 @@
   ]},
   {"type": "item_overlay", "id": "survivor_duffel_bag", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "66 L", "max_contains_weight": "60 kg", "max_item_length": "60 cm", "moves": 300, "magazine_well": "7500 ml"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 80, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 1, \"extra_encumbrance\": 5}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 80, "transparent": true, "extra_encumbrance": 5, "//": "DDA values not loaded by CDF: {\"ripoff\": 1}"}
   ]},
   {"type": "item_overlay", "id": "survivor_hiking_backpack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "60 L", "max_item_length": "60 cm", "moves": 100},
@@ -573,11 +573,11 @@
   ]},
   {"type": "item_overlay", "id": "survivor_rucksack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "40 L", "max_contains_weight": "60 kg", "max_item_length": "55 cm", "moves": 300, "magazine_well": "6 L"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 60}}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 60}}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"extra_encumbrance\": 3, \"activity_noise\": {\"volume\": 8, \"chance\": 60}}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 60}}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 60}}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "5 L", "max_contains_weight": "6 kg", "max_item_length": "120 cm", "min_item_length": "20 cm", "holster": true, "moves": 150, "transparent": true, "extra_encumbrance": 3, "//": "DDA values not loaded by CDF: {\"ripoff\": 2, \"activity_noise\": {\"volume\": 8, \"chance\": 60}}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"}
   ]},
   {"type": "item_overlay", "id": "survivor_runner_pack", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "7 L", "max_contains_weight": "16 kg", "max_item_length": "40 cm", "moves": 250, "magazine_well": "4 L"}
@@ -612,8 +612,8 @@
     {"pocket_type": "CONTAINER", "max_contains_volume": "1 L", "max_contains_weight": "2 kg", "max_item_length": "20 cm", "moves": 120, "magazine_well": "200 ml"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "1 L", "max_contains_weight": "2 kg", "max_item_length": "20 cm", "moves": 120, "magazine_well": "200 ml"},
     {"pocket_type": "CONTAINER", "max_contains_volume": "510 ml", "max_contains_weight": "1 kg", "max_item_length": "24 cm", "min_item_length": "18 cm", "holster": true, "moves": 80, "//": "DDA values not loaded by CDF: {\"ripoff\": 2}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"},
-    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "//": "DDA values not loaded by CDF: {\"ripoff\": 5, \"extra_encumbrance\": 1}"}
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"},
+    {"pocket_type": "CONTAINER", "max_contains_volume": "4 L", "max_contains_weight": "6 kg", "max_item_length": "100 cm", "min_item_length": "40 cm", "holster": true, "moves": 300, "transparent": true, "extra_encumbrance": 1, "//": "DDA values not loaded by CDF: {\"ripoff\": 5}"}
   ]},
   {"type": "item_overlay", "id": "trenchcoat", "pocket_data": [
     {"pocket_type": "CONTAINER", "max_contains_volume": "1500 ml", "max_contains_weight": "4 kg", "moves": 80},
