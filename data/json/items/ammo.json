@@ -1295,5 +1295,39 @@
     "price": "20 USD",
     "price_postapoc": "90 cent",
     "dont_recover_one_in": 35
+  },
+  {
+    "type": "AMMO",
+    "//": "CDF: DDA ammo.json:1225-1262 (b4b62254ae2) in CDF form; filler of the rebreather cartridges.",
+    "id": "rebreather_filler_soda_lime",
+    "category": "spare_parts",
+    "price": "13 cent",
+    "price_postapoc": "10 cent",
+    "name": { "str_sp": "rebreather scrubbing filler" },
+    "material": [ "powder_nonflam" ],
+    "symbol": "=",
+    "color": "white",
+    "description": "Granulated mixture of slaked lime, potassium hydroxide and/or sodium hydroxide that is used as CO2 scrubbing agent in rebreathers.",
+    "volume": "33 ml",
+    "weight": "13 g",
+    "ammo_type": "rebreather_filter",
+    "count": 1
+  },
+  {
+    "type": "AMMO",
+    "//": "CDF: WATER_DISSOLVE (DDA flag) does not exist in CDF and is dropped.",
+    "id": "rebreather_filler_ko2",
+    "category": "spare_parts",
+    "price": "24 cent",
+    "price_postapoc": "30 cent",
+    "name": { "str_sp": "rebreather oxygen regenerator filler" },
+    "material": [ "powder" ],
+    "symbol": "=",
+    "color": "white",
+    "description": "Potassium superoxide powder, used as oxygen regenerating agent in rebreathers.  Keep away from water.",
+    "volume": "13 ml",
+    "weight": "6 g",
+    "ammo_type": "rebreather_o2_regenerator",
+    "count": 1
   }
 ]

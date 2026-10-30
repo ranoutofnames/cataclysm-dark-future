@@ -793,5 +793,12 @@
     "id": "spray_paint",
     "name": "Spray Paint",
     "default": "spray_paint"
+  },
+  {
+    "type": "ammunition_type",
+    "//": "CDF: DDA ammo_types.json:660; ammunition for the rebreather oxygen regenerator cartridge.",
+    "id": "rebreather_o2_regenerator",
+    "name": "rebreather O2 regenerator",
+    "default": "rebreather_filler_ko2"
   }
 ]

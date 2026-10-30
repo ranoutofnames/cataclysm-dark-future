@@ -3256,5 +3256,25 @@
     "material_thickness": 8,
     "environmental_protection": 2,
     "flags": [ "VARSIZE", "STURDY", "URBAN_CAMO", "OUTER", "HOOD" ]
+  },
+  {
+    "id": "rm13_battery",
+    "type": "MAGAZINE",
+    "//": "CDF: DDA rm13_combat_armor.json:250-272 (b4b62254ae2) in CDF form: category magazines (tool_magazine does not exist), material list without portions, no pocket_data (built from ammo_type + capacity).",
+    "category": "magazines",
+    "name": "RM13 battery pack",
+    "description": "A simple, heavy, black battery pack labeled \"RM13\".",
+    "weight": "14000 g",
+    "volume": "10000 ml",
+    "longest_side": "300 mm",
+    "price": "10000 USD",
+    "price_postapoc": "50 USD",
+    "material": [ "budget_steel", "plastic" ],
+    "symbol": "=",
+    "color": "yellow",
+    "ammo_type": [ "battery" ],
+    "capacity": 5000,
+    "looks_like": "battery",
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "NO_RELOAD", "RECHARGE" ]
   }
 ]
