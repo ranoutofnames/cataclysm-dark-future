@@ -9502,6 +9502,11 @@ itype_id item::magazine_default( bool conversion ) const
 
 std::set<itype_id> item::magazine_compatible( bool conversion ) const
 {
+    // CDF: MAGPOCKET, DDA item_gun_tool_ammo.cpp:2280-2283: the live MAGAZINE_WELL pockets answer unless guard G holds
+    // (conversion or adaptor mod; legacy `magazines` data keeps the BN body below).
+    if( !has_conversion_or_adaptor_mod( *this ) && contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) ) {
+        return contents.magazine_compatible();
+    }
     std::set<itype_id> mags = {};
     // mods that define magazine_adaptor may override the items usual magazines
     const std::vector<const item *> &mods = is_gun() ? gunmods() : toolmods();
