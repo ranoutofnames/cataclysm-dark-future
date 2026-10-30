@@ -252,6 +252,74 @@ class loot_options : public zone_options, public mark_option
         void deserialize( const JsonObject &jo_zone ) override;
 };
 
+// DDA unload_options (clzones.h): what the UNLOAD_ALL zone takes out of the containers in it
+class unload_options : public zone_options, public mark_option
+{
+    private:
+        // CDF: DDA leaves the bools uninitialised, a new zone starts with every option off
+        std::string mark;
+        bool mods = false;
+        bool molle = false;
+        bool sparse_only = false;
+        int sparse_threshold = 20;
+        bool always_unload = false;
+
+        enum query_unload_result {
+            canceled,
+            successful,
+            changed,
+        };
+
+        query_unload_result query_unload();
+
+    public:
+        std::string get_mark() const override {
+            return mark;
+        }
+
+        // detach the gunmods of weapons
+        bool unload_mods() const {
+            return mods;
+        }
+
+        // detach attached MOLLE pouches
+        bool unload_molle() const {
+            return molle;
+        }
+
+        // leave alone stacks (not charges) bigger than the threshold
+        bool unload_sparse_only() const {
+            return sparse_only;
+        }
+
+        int unload_sparse_threshold() const {
+            return sparse_threshold;
+        }
+
+        // unload even if the item has a destination of its own
+        bool unload_always() const {
+            return always_unload;
+        }
+
+        void set_mark( const std::string &nmark ) {
+            mark = nmark;
+        }
+
+        bool has_options() const override {
+            return true;
+        }
+
+        bool query_at_creation() override;
+        bool query() override;
+
+        std::string get_zone_name_suggestion() const override;
+
+        std::vector<std::pair<std::string, std::string>> get_descriptions() const override;
+
+        void serialize( JsonOut &json ) const override;
+        void deserialize( const JsonObject &jo_zone ) override;
+};
+
 /**
  * These are zones the player can designate.
  */

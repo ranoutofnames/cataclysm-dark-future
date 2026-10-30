@@ -54,6 +54,7 @@ static const zone_type_id zone_CONSTRUCTION_BLUEPRINT( "CONSTRUCTION_BLUEPRINT" 
 static const zone_type_id zone_FARM_PLOT( "FARM_PLOT" );
 static const zone_type_id zone_LOOT_CORPSE( "LOOT_CORPSE" );
 static const zone_type_id zone_LOOT_CUSTOM( "LOOT_CUSTOM" );
+static const zone_type_id zone_UNLOAD_ALL( "UNLOAD_ALL" );
 static const zone_type_id zone_LOOT_DRINK( "LOOT_DRINK" );
 static const zone_type_id zone_LOOT_FOOD( "LOOT_FOOD" );
 static const zone_type_id zone_LOOT_IGNORE( "LOOT_IGNORE" );
@@ -187,6 +188,8 @@ shared_ptr_fast<zone_options> zone_options::create( const zone_type_id &type )
         return make_shared_fast<blueprint_options>();
     } else if( type == zone_LOOT_CUSTOM ) {
         return make_shared_fast<loot_options>();
+    } else if( type == zone_UNLOAD_ALL ) {
+        return make_shared_fast<unload_options>();
     }
 
     return make_shared_fast<zone_options>();
@@ -200,6 +203,8 @@ bool zone_options::is_valid( const zone_type_id &type, const zone_options &optio
         return dynamic_cast<const blueprint_options *>( &options ) != nullptr;
     } else if( type == zone_LOOT_CUSTOM ) {
         return dynamic_cast<const loot_options *>( &options ) != nullptr;
+    } else if( type == zone_UNLOAD_ALL ) {
+        return dynamic_cast<const unload_options *>( &options ) != nullptr;
     }
 
     // ensure options is not derived class for the rest of zone types
@@ -511,6 +516,27 @@ loot_options::query_loot_result loot_options::query_loot()
     return changed;
 }
 
+unload_options::query_unload_result unload_options::query_unload()
+{
+    molle = query_yn( _( "Detach MOLLE attached pouches?" ) );
+    mods = query_yn(
+               _( "Detach mods from weapons?  (Be careful as you may not have the skills to reattach them)" ) );
+    sparse_only = query_yn(
+                      _( "Avoid unloading items stacks (not charges) greater than a certain amount?  (Amount defined in next window)" ) );
+    if( sparse_only ) {
+        int threshold = 20;
+        if( !query_int( threshold, 20,
+                        _( "What is the maximum stack size to unload?" ) ) ) {
+            return canceled;
+        }
+        // CDF: DDA tests the stored value here (a bug), the answer is what has to be positive
+        sparse_threshold = std::max( threshold, 1 );
+    }
+    always_unload = query_yn(
+                        _( "Always unload?  (Unload even if the container has a valid sorting location)" ) );
+    return changed;
+}
+
 plot_options::query_seed_result plot_options::query_seed()
 {
     player &p = g->u;
@@ -602,6 +628,58 @@ void loot_options::serialize( JsonOut &json ) const
 void loot_options::deserialize( const JsonObject &jo_zone )
 {
     jo_zone.read( "mark", mark );
+}
+
+bool unload_options::query_at_creation()
+{
+    return query_unload() != canceled;
+}
+
+bool unload_options::query()
+{
+    return query_unload() == changed;
+}
+
+std::string unload_options::get_zone_name_suggestion() const
+{
+    return string_format( "%s%s%s%s%s", _( "Unload: " ),
+                          mods ? _( "mods, " ) : "",
+                          molle ? _( "MOLLE, " ) : "",
+                          sparse_only ? string_format( _( "ignore stacks over %i, " ), sparse_threshold ) : "",
+                          always_unload ? _( "unload all" ) : _( "unload unmatched" ) );
+}
+
+std::vector<std::pair<std::string, std::string>> unload_options::get_descriptions() const
+{
+    std::vector<std::pair<std::string, std::string>> options;
+    options.emplace_back( _( "Unload: " ),
+                          string_format( "%s%s%s%s",
+                                         mods ? _( "mods " ) : "",
+                                         molle ? _( "MOLLE " ) : "",
+                                         sparse_only ? string_format( _( "ignore stacks over %i, " ), sparse_threshold ) : "",
+                                         always_unload ? _( "unload all" ) : _( "unload unmatched" ) ) );
+
+    return options;
+}
+
+void unload_options::serialize( JsonOut &json ) const
+{
+    json.member( "mark", mark );
+    json.member( "mods", mods );
+    json.member( "molle", molle );
+    json.member( "sparse_only", sparse_only );
+    json.member( "sparse_threshold", sparse_threshold );
+    json.member( "always_unload", always_unload );
+}
+
+void unload_options::deserialize( const JsonObject &jo_zone )
+{
+    jo_zone.read( "mark", mark );
+    jo_zone.read( "mods", mods );
+    jo_zone.read( "molle", molle );
+    jo_zone.read( "sparse_only", sparse_only );
+    jo_zone.read( "sparse_threshold", sparse_threshold );
+    jo_zone.read( "always_unload", always_unload );
 }
 
 bool blueprint_options::query_at_creation()
