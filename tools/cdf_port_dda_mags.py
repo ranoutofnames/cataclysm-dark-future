@@ -1603,6 +1603,13 @@ ALL_CLASSES = ["MAG", "GUN-INT", "TOOL-INT", "WELL", "ADAPTOR", "CHARGES", "DDA-
 
 ACT_KEEP_AMMO = "COPY-TWIN-KEEP-CDF-AMMO"   # twin structure, CDF ammo set and numbers
 ACT_KEEP_INTEGRAL = "AUTHOR-KEEP-CDF-INTEGRAL"   # AUTO-8: DDA well, CDF integral charges kept
+ACT_COPY_WELL = "COPY-DDA-WELL"   # R4 amendment 4b: the DDA well is hand-copied into the CDF item (FILT1); no integral pocket
+COPY_WELL_IDS = frozenset((
+    "control_laptop", "control_laptop_screen_lit", "game_watch", "helmet_scavenger",
+    "mask_filter", "mask_fsurvivor", "mask_gas", "mask_gas_xl", "mask_h20survivor",
+    "mask_h20survivor_on", "mask_hsurvivor", "mask_lsurvivor", "mask_survivor", "plastic_jack_o_lantern", "rebreather",
+    "rebreather_on", "rebreather_xl", "rebreather_xl_on",
+))
 ACT_KEEP_WELL = "AUTHOR-KEEP-CDF-WELL"      # DDA twin has no magazine pocket: CDF's well/pocket kept
 
 
@@ -1638,7 +1645,8 @@ def build_records(ctx, classes, ids):
         if out["action"] == "COPY-TWIN" and out["ammo_diff"] and out["rule"] in ("R1", "R2", "R4"):
             out["action"] = ACT_KEEP_AMMO
         elif out["action"] == "AUTHOR" and "well(dda)" in out["diff"] and cls == "TOOL-INT":
-            out["action"] = ACT_KEEP_INTEGRAL
+            # R4 amendment 4b: the 18 AUTO-8 tools take the DDA well (data written by hand, not --apply)
+            out["action"] = ACT_COPY_WELL if iid in COPY_WELL_IDS else ACT_KEEP_INTEGRAL
         elif out["action"] == "AUTHOR" and "nopocket" in out["diff"] and cls in ("WELL", "TOOL-INT"):
             out["action"] = ACT_KEEP_WELL
         for p in out["pocket_data"]:

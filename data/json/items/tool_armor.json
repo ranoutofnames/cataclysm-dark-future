@@ -261,6 +261,17 @@
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "id": "game_watch",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_ULTRA_LIGHT" ],
+        "default_magazine": "light_minus_battery_cell"
+      }
+    ],
+    "tool_ammo": "battery",
+    "magazines": [ [ "battery", [ "light_minus_battery_cell", "light_minus_atomic_battery_cell", "light_minus_disposable_cell" ] ] ],
     "name": { "str": "smart watch", "str_pl": "smart watches" },
     "volume": "250 ml",
     "description": "A waterproof smart watch, powered by UPS.  It has reliable weather data from its built-in sensors and some pre-installed apps.  Activate to use.",
@@ -291,13 +302,12 @@
     ],
     "coverage": 15,
     "symbol": "[",
-    "ammo": "battery",
     "initial_charges": 80,
-    "max_charges": 120,
     "charges_per_use": 1,
     "use_action": [ "PORTABLE_GAME", "WEATHER_TOOL", "TOGGLE_UPS_CHARGING" ]
   },
   {
+    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; integral pocket until a plutonium magazine item is designed",
     "id": "holo_cloak",
     "type": "TOOL_ARMOR",
     "category": "clothing",
@@ -827,6 +837,7 @@
     }
   },
   {
+    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; integral pocket until a plutonium magazine item is designed",
     "id": "rm13_armor",
     "type": "TOOL_ARMOR",
     "category": "clothing",
@@ -929,6 +940,7 @@
     "hearing_protection": 0
   },
   {
+    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; integral pocket until a plutonium magazine item is designed",
     "id": "dimensional_anchor",
     "type": "TOOL_ARMOR",
     "category": "clothing",
@@ -1078,6 +1090,17 @@
   },
   {
     "id": "rebreather",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "REBREATHER_CART" ],
+        "default_magazine": "rebreather_cartridge_o2"
+      }
+    ],
+    "tool_ammo": [ "rebreather_filter", "rebreather_o2_regenerator" ],
+    "magazines": [ [ "rebreather_filter", [ "rebreather_cartridge_o2", "rebreather_cartridge_air" ] ], [ "rebreather_o2_regenerator", [ "rebreather_cartridge_regen" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "symbol": "[",
@@ -1091,9 +1114,7 @@
     "weight": "720 g",
     "volume": "500 ml",
     "to_hit": -3,
-    "max_charges": 60,
     "initial_charges": 60,
-    "ammo": "rebreather_filter",
     "use_action": {
       "type": "transform",
       "msg": "You activate your %s.",
@@ -1126,6 +1147,17 @@
   },
   {
     "id": "rebreather_xl",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "REBREATHER_CART" ],
+        "default_magazine": "rebreather_cartridge_o2"
+      }
+    ],
+    "tool_ammo": [ "rebreather_filter", "rebreather_o2_regenerator" ],
+    "magazines": [ [ "rebreather_filter", [ "rebreather_cartridge_o2", "rebreather_cartridge_air" ] ], [ "rebreather_o2_regenerator", [ "rebreather_cartridge_regen" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "symbol": "[",
@@ -1139,9 +1171,7 @@
     "weight": "960 g",
     "volume": "1250 ml",
     "to_hit": -3,
-    "max_charges": 60,
     "initial_charges": 60,
-    "ammo": "rebreather_filter",
     "use_action": {
       "type": "transform",
       "msg": "You activate your %s.",
@@ -1175,6 +1205,17 @@
   },
   {
     "id": "mask_filter",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "GASFILTER_SM" ],
+        "default_magazine": "gasfilter_sm"
+      }
+    ],
+    "tool_ammo": "gasfilter_s",
+    "magazines": [ [ "gasfilter_s", [ "gasfilter_sm" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "filter mask" },
@@ -1195,13 +1236,21 @@
     "material_thickness": 2,
     "environmental_protection": 1,
     "environmental_protection_with_filter": 7,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_s",
     "use_action": "GASMASK"
   },
   {
     "id": "mask_gas",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "flag_restriction": [ "GASFILTER_MED" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ],
+    "tool_ammo": "gasfilter_m",
+    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "gas mask" },
@@ -1222,13 +1271,21 @@
     "material_thickness": 2,
     "environmental_protection": 1,
     "environmental_protection_with_filter": 16,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
     "use_action": "GASMASK"
   },
   {
     "id": "mask_gas_xl",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "flag_restriction": [ "GASFILTER_MED" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ],
+    "tool_ammo": "gasfilter_m",
+    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "XL gas mask" },
@@ -1248,14 +1305,23 @@
     "material_thickness": 2,
     "environmental_protection": 1,
     "environmental_protection_with_filter": 16,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "flags": [ "OVERSIZE", "SLEEP_IGNORE" ]
   },
   {
     "id": "mask_fsurvivor",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "GASFILTER_MED" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ],
+    "tool_ammo": "gasfilter_m",
+    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "survivor firemask" },
@@ -1276,9 +1342,7 @@
     "material_thickness": 3,
     "environmental_protection": 1,
     "environmental_protection_with_filter": 15,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ]
   },
@@ -1313,6 +1377,16 @@
   },
   {
     "id": "mask_hsurvivor",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "flag_restriction": [ "GASFILTER_MED" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ],
+    "tool_ammo": "gasfilter_m",
+    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "heavy survivor mask" },
@@ -1322,9 +1396,7 @@
     "price": "240 USD",
     "price_postapoc": "20 USD",
     "to_hit": -3,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "material": [ "kevlar", "steel" ],
     "symbol": "[",
@@ -1352,6 +1424,17 @@
   },
   {
     "id": "mask_lsurvivor",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "GASFILTER_MED" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ],
+    "tool_ammo": "gasfilter_m",
+    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "light survivor mask" },
@@ -1361,9 +1444,7 @@
     "price": "240 USD",
     "price_postapoc": "15 USD",
     "to_hit": -3,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "material": [ "kevlar", "cotton" ],
     "symbol": "[",
@@ -1380,6 +1461,17 @@
   },
   {
     "id": "mask_survivor",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "GASFILTER_MED" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ],
+    "tool_ammo": "gasfilter_m",
+    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "survivor mask" },
@@ -1389,9 +1481,7 @@
     "price": "240 USD",
     "price_postapoc": "1750 cent",
     "to_hit": -3,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "material": [ "kevlar", "leather" ],
     "symbol": "[",
@@ -1646,6 +1736,18 @@
   },
   {
     "id": "mask_h20survivor",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "REBREATHER_CART" ],
+        "default_magazine": "rebreather_cartridge_o2"
+      }
+    ],
+    "tool_ammo": [ "rebreather_filter", "rebreather_o2_regenerator" ],
+    "magazines": [ [ "rebreather_filter", [ "rebreather_cartridge_o2", "rebreather_cartridge_air" ] ], [ "rebreather_o2_regenerator", [ "rebreather_cartridge_regen" ] ] ],
+    "initial_charges": 180,
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "symbol": "[",
@@ -1659,8 +1761,6 @@
     "weight": "982 g",
     "volume": "1500 ml",
     "to_hit": -3,
-    "max_charges": 120,
-    "ammo": "rebreather_filter",
     "use_action": {
       "type": "transform",
       "msg": "You activate your %s.",

@@ -635,6 +635,17 @@
   },
   {
     "id": "helmet_scavenger",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "GASFILTER_SM" ],
+        "default_magazine": "gasfilter_sm"
+      }
+    ],
+    "tool_ammo": "gasfilter_s",
+    "magazines": [ [ "gasfilter_s", [ "gasfilter_sm" ] ] ],
     "type": "TOOL_ARMOR",
     "name": { "str": "scavenger cowl" },
     "description": "A sturdy protective cowl extending down to the neck, fitted with a respirator, helmet, certain level of glare and eye protection.  For dangerous scavenging ventures.",
@@ -652,10 +663,8 @@
     "encumbrance": 23,
     "warmth": 30,
     "material_thickness": 8,
-    "max_charges": 100,
     "initial_charges": 100,
     "charges_per_use": 1,
-    "ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "environmental_protection": 1,
     "environmental_protection_with_filter": 15,

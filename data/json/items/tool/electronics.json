@@ -105,8 +105,26 @@
   },
   {
     "id": "control_laptop",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "default_magazine": "medium_battery_cell"
+      }
+    ],
+    "tool_ammo": "battery",
+    "magazines": [ [ "battery", [ "medium_battery_cell", "medium_plus_battery_cell", "medium_atomic_battery_cell", "medium_disposable_cell" ] ] ],
     "type": "TOOL",
-    "copy-from": "laptop",
+    "//": "CDF: standalone (was copy-from laptop): a copy-from cannot drop the laptop's ammo and max_charges, and this tool now takes a DDA magazine well. Base fields below are the laptop's.",
+    "category": "electronics",
+    "symbol": ",",
+    "color": "dark_gray",
+    "material": [ "plastic", "aluminum" ],
+    "weight": "2721 g",
+    "volume": "2500 ml",
+    "bashing": 6,
     "name": { "str": "control laptop" },
     "description": "A modified laptop, now capable of transmitting in the ultra-high frequencies utilized by robots.  Activate it to command robots from afar, or to toggle charging via UPS.  It will also automatically display any targeting data provided by friendly drones in the area.",
     "price": "100 USD",
@@ -140,27 +158,27 @@
       "PORTABLE_GAME",
       "TOGGLE_UPS_CHARGING"
     ],
-    "ammo": "battery",
     "initial_charges": 500,
-    "max_charges": 700,
     "flags": [ "WATCH", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] }
   },
   {
     "id": "control_laptop_screen_lit",
-    "copy-from": "laptop",
+    "copy-from": "control_laptop",
     "type": "TOOL",
+    "charges_per_use": 1,
     "name": { "str": "control laptop - lit screen", "str_pl": "control laptops - lit screen" },
     "power_draw": 5000,
-    "revert_to": "laptop",
+    "revert_to": "control_laptop",
     "use_action": { "target": "control_laptop", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
     "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] }
   },
   {
     "id": "control_laptop_music",
-    "copy-from": "laptop",
+    "copy-from": "control_laptop",
     "type": "TOOL",
+    "charges_per_use": 1,
     "name": { "str": "control laptop - music", "str_pl": "control laptops - music" },
     "power_draw": 7000,
     "revert_to": "control_laptop",
