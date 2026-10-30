@@ -1,5 +1,6 @@
 #include "activity_actor_definitions.h"
 #include "activity_handlers.h" // IWYU pragma: associated
+#include "activity_item_handling.h"
 #include "avatar.h"
 #include "avatar_action.h"
 #include "calendar.h"
@@ -25,6 +26,7 @@
 #include "inventory.h"
 #include "temp_crafting_inventory.h"
 #include "item.h"
+#include "item_functions.h"
 #include "itype.h"
 #include "iuse.h"
 #include "line.h"
@@ -83,6 +85,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -133,6 +136,7 @@ static const zone_type_id zone_type_FISHING_SPOT( "FISHING_SPOT" );
 static const zone_type_id zone_type_LOOT_CORPSE( "LOOT_CORPSE" );
 static const zone_type_id zone_type_LOOT_IGNORE( "LOOT_IGNORE" );
 static const zone_type_id zone_type_LOOT_IGNORE_FAVORITES( "LOOT_IGNORE_FAVORITES" );
+static const zone_type_id zone_type_UNLOAD_ALL( "UNLOAD_ALL" );
 static const zone_type_id zone_type_MINING( "MINING" );
 static const zone_type_id zone_type_LOOT_UNSORTED( "LOOT_UNSORTED" );
 static const zone_type_id zone_type_LOOT_WOOD( "LOOT_WOOD" );
@@ -2353,6 +2357,69 @@ static bool chop_plank_activity( player &p, const tripoint_bub_ms &src_loc )
     return false;
 }
 
+// CDF: MOLLE2, DDA set_unload_options. CDF has no zone_manager::get_zones_at, so the zones of the
+// UNLOAD_ALL type at the tile come from get_zones (by value).
+unload_sort_options set_unload_options( const Character &/*you*/, const tripoint_abs_ms &src )
+{
+    unload_sort_options zone_sort_options;
+    const std::vector<zone_data> zones = zone_manager::get_manager().get_zones( zone_type_UNLOAD_ALL,
+                                         src );
+    // set rules from all zones in stack
+    for( const zone_data &zone : zones ) {
+        if( !zone.get_enabled() ) {
+            continue;
+        }
+        const unload_options *options = dynamic_cast<const unload_options *>( &zone.get_options() );
+        if( options == nullptr ) {
+            continue;
+        }
+        zone_sort_options.unload_all = true;
+        zone_sort_options.unload_molle |= options->unload_molle();
+        zone_sort_options.unload_mods |= options->unload_mods();
+        zone_sort_options.unload_always |= options->unload_always();
+        zone_sort_options.unload_sparse_only |= options->unload_sparse_only();
+        if( options->unload_sparse_only() &&
+            options->unload_sparse_threshold() > zone_sort_options.unload_sparse_threshold ) {
+            zone_sort_options.unload_sparse_threshold = options->unload_sparse_threshold();
+        }
+    }
+    return zone_sort_options;
+}
+
+// CDF: MOLLE2. The "teleport" of DDA unload_item: a detached item lands on the source tile and
+// costs the moves move_item charges (same cost and drop call, but the item is not on the map yet).
+static void unload_drop( player &p, detached_ptr<item> &&dropped, const tripoint_bub_ms &where )
+{
+    p.mod_moves( -move_cost( *dropped, where, where ) );
+    put_into_vehicle_or_drop( p, item_drop_reason::deliberate, std::move( dropped ), where );
+}
+
+// CDF: MOLLE2. The items in the pockets of @p it that are not the ones of attached pouches. The
+// pouches' pockets sit after the type's own, so they are found by position (pouch contents travel
+// with the pouch, see the molle step).
+static std::vector<item *> unloadable_top_items( item &it, pocket_type type )
+{
+    std::vector<const item_pocket *> all_pockets;
+    it.contents.all_items_top( [&all_pockets]( const item_pocket & pk ) {
+        all_pockets.push_back( &pk );
+        return false;
+    } );
+    std::unordered_set<const item_pocket *> attached;
+    if( const item_pocket *first = it.contents.get_added_pocket( 0 ) ) {
+        size_t count = 0;
+        for( const item *pouch : it.contents.get_added_pockets() ) {
+            count += pouch->contents.get_container_pockets().size();
+        }
+        const auto start = std::ranges::find( all_pockets, first );
+        for( auto pk = start; pk != all_pockets.end() && count > 0; ++pk, --count ) {
+            attached.insert( *pk );
+        }
+    }
+    return it.contents.all_items_top( [&attached, type]( item_pocket & pk ) {
+        return pk.is_type( type ) && !attached.contains( &pk );
+    } );
+}
+
 void activity_on_turn_move_loot( player_activity &act, player &p )
 {
     enum activity_stage : int {
@@ -2522,6 +2589,9 @@ void activity_on_turn_move_loot( player_activity &act, player &p )
             items.emplace_back( it, false );
         }
 
+        const unload_sort_options unload_opts = set_unload_options( p, src );
+        bool revisit_src = false;
+
         //Skip items that have already been processed
         for( auto it = items.begin() + num_processed; it < items.end(); ++it ) {
             ++num_processed;
@@ -2539,6 +2609,77 @@ void activity_on_turn_move_loot( player_activity &act, player &p )
 
             const zone_type_id id = mgr.get_near_zone_type_for_item( thisitem, abspos,
                                     ACTIVITY_SEARCH_DISTANCE );
+
+            // CDF: MOLLE2, DDA unload_item. An item in an UNLOAD_ALL zone that has no loot destination
+            // (or always, if the zone says so) is emptied onto its own tile. Mods: the zone option is
+            // stored, but there is no gunmod removal a Character can call yet (MODS-CHAR1).
+            // CDF: with the MOLLE option on, a PALS pouch is a unit (the zone put it there when it took it
+            // off a garment): it keeps its contents instead of being emptied on the next pass.
+            if( unload_opts.unload_all &&
+                !( unload_opts.unload_molle && thisitem.can_attach_as_pocket() ) &&
+                ( unload_opts.unload_always ||
+                  ( id.is_null() || mgr.get_near( id, abspos, ACTIVITY_SEARCH_DISTANCE, &thisitem ).empty() ) ) ) {
+                bool out_of_moves = false;
+                const auto check_moves = [&]() {
+                    out_of_moves = p.moves <= 0;
+                    return out_of_moves;
+                };
+                if( item_funcs::can_be_unloaded( thisitem ) && !thisitem.any_pockets_sealed() ) {
+                    for( const pocket_type type : { pocket_type::CONTAINER, pocket_type::MAGAZINE,
+                                                    pocket_type::MAGAZINE_WELL } ) {
+                        const std::vector<item *> contained_items = unloadable_top_items( thisitem, type );
+                        // count items by type at top-level
+                        std::unordered_map<itype_id, int> item_counts;
+                        if( unload_opts.unload_sparse_only && type == pocket_type::CONTAINER ) {
+                            for( item *contained : contained_items ) {
+                                if( contained->made_of( SOLID ) ) {
+                                    item_counts[contained->typeId()]++;
+                                }
+                            }
+                        }
+                        for( item *contained : contained_items ) {
+                            if( !contained->made_of( SOLID ) ) {
+                                continue;
+                            }
+                            // if the item count is above the sparse threshold, don't unload
+                            if( unload_opts.unload_sparse_only && type == pocket_type::CONTAINER &&
+                                item_counts[contained->typeId()] > unload_opts.unload_sparse_threshold ) {
+                                continue;
+                            }
+                            unload_drop( p, contained->detach(), src_loc );
+                            revisit_src = true;
+                            if( check_moves() ) {
+                                break;
+                            }
+                        }
+                        if( out_of_moves ) {
+                            break;
+                        }
+                    }
+                }
+                if( unload_opts.unload_molle && !out_of_moves ) {
+                    while( thisitem.contents.has_additional_pockets() ) {
+                        detached_ptr<item> removed = thisitem.contents.remove_pocket( 0 );
+                        if( !removed ) {
+                            break;
+                        }
+                        unload_drop( p, std::move( removed ), src_loc );
+                        if( check_moves() ) {
+                            break;
+                        }
+                    }
+                }
+                // CDF: DDA re-assesses the tile after any unloading. Here only the dumped contents
+                // make it do so (revisit_src, to sort them): detached pouches are left as they are,
+                // with their contents (a revisit would unload them as items of an UNLOAD_ALL tile).
+                if( out_of_moves ) {
+                    // finish this item on the next turn
+                    if( num_processed > 0 ) {
+                        --num_processed;
+                    }
+                    return;
+                }
+            }
 
             // checks whether the item is already on correct loot zone or not
             // if it is, we can skip such item, if not we move the item to correct pile
@@ -2592,6 +2733,9 @@ void activity_on_turn_move_loot( player_activity &act, player &p )
             }
         }
 
+        if( revisit_src ) {
+            act.coord_set.insert( src );
+        }
         //this location is sorted
         stage = THINK;
         return;
