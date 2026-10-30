@@ -2095,6 +2095,12 @@ class item : public location_visitable<item>, public game_object<item>
          * Returns clothing layer for item.
          */
         layer_level get_layer() const;
+        /**
+         * CDF: MOLLE2, DDA item_armor.cpp item::get_layer( bodypart_id ). True if the item is on the
+         * BELTED layer for @p bp: it is BELTED by type, or it is a torso garment with pouches
+         * attached. CDF's layer is one value per item (AL1 folds this into a layer set).
+         */
+        bool has_belted_layer_for( const bodypart_id &bp ) const;
         /** What kind of attack a coverage value is for (DDA `cover_melee`, `cover_ranged`, `cover_vitals`). */
         enum class cover_type : int {
             COVER_DEFAULT,

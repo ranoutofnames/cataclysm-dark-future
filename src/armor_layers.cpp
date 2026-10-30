@@ -72,7 +72,10 @@ item_penalties get_item_penalties( const location_vector<item>::const_iterator &
                                    const Character &c, const bodypart_id & )
 {
     item *const &worn_item = *worn_item_it;
-    layer_level layer = worn_item->get_layer();
+    // CDF: MOLLE2, the layer an item is on for a body part (a torso garment with pouches is BELTED)
+    const auto layer_on = []( const item & i, const bodypart_id & bp ) {
+        return i.has_belted_layer_for( bp ) ? BELTED_LAYER : i.get_layer();
+    };
 
     std::vector<bodypart_id> body_parts_with_stacking_penalty;
     std::vector<bodypart_id> body_parts_with_out_of_order_penalty;
@@ -82,9 +85,10 @@ item_penalties get_item_penalties( const location_vector<item>::const_iterator &
         if( !worn_item->covers( bp ) ) {
             continue;
         }
+        const layer_level layer = layer_on( *worn_item, bp );
         const int num_items = std::count_if( c.worn.begin(), c.worn.end(),
-        [&layer, &bp, &c]( item * const & i ) {
-            return i->get_layer() == layer && i->covers( bp )
+        [&layer, &layer_on, &bp, &c]( item * const & i ) {
+            return layer_on( *i, bp ) == layer && i->covers( bp )
                    && !( i->has_flag( flag_SEMITANGIBLE ) || is_compact( *i, c ) );
         } );
         if( num_items > 1 ) {
@@ -93,7 +97,7 @@ item_penalties get_item_penalties( const location_vector<item>::const_iterator &
 
         std::set<std::string> bad_items_within;
         for( auto it = c.worn.begin(); it != worn_item_it; ++it ) {
-            if( ( *it )->get_layer() > layer && ( *it )->covers( bp ) ) {
+            if( layer_on( **it, bp ) > layer && ( *it )->covers( bp ) ) {
                 bad_items_within.insert( ( *it )->type_name() );
             }
         }

@@ -1,4 +1,7 @@
+#include "avatar.h"
 #include "calendar.h"
+#include "character.h"
+#include "character_encumbrance.h"
 #include "catch/catch.hpp"
 #include "item.h"
 #include "item_contents.h"
@@ -7,6 +10,7 @@
 #include "itype.h"
 #include "iuse_actor.h"
 #include "json.h"
+#include "player_helpers.h"
 #include "state_helpers.h"
 
 #include <algorithm>
@@ -257,4 +261,74 @@ TEST_CASE( "attached pouches survive a copy and a save", "[item][molle]" )
         // and saving it again gives the same thing
         CHECK( save_item( *loaded ) == saved );
     }
+}
+
+// MOLLE2 N3 (DDA item_armor.cpp:655-678 item::get_layer( bodypart_id )): a torso garment with
+// attached pouches counts as BELTED for the layering code. CDF's layer is one value per item, so
+// the rule is a helper used where the code asks "which layer is this on".
+TEST_CASE( "belted_layer_changes_wear_order", "[molle]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    clear_character( you, true );
+    detached_ptr<item> vest_holder = item::spawn( itype_id( "ballistic_vest_esapi" ), calendar::turn );
+    item &vest = *vest_holder;
+    // CDF: the vest has the OUTER flag (cdf_ballistic_vests.json) and covers the torso only
+    REQUIRE( vest.get_layer() == layer_level::OUTER_LAYER );
+    REQUIRE( !you.wear_item( std::move( vest_holder ), false ) );
+
+    const bodypart_str_id torso( "torso" );
+    const auto torso_layers = [&you, &torso]() {
+        you.reset_encumbrance();
+        return you.get_encumbrance().elems.at( torso );
+    };
+    const size_t outer = static_cast<size_t>( layer_level::OUTER_LAYER );
+    const size_t belted = static_cast<size_t>( layer_level::BELTED_LAYER );
+
+    SECTION( "layer penalty: without pouches the vest is on the OUTER layer only" ) {
+        const encumbrance_data data = torso_layers();
+        CHECK( data.layer_penalty_details[outer].pieces.size() == 1 );
+        CHECK( data.layer_penalty_details[belted].pieces.empty() );
+    }
+
+    SECTION( "layer penalty: with a pouch the vest is on the BELTED layer instead" ) {
+        vest.contents.add_pocket( item::spawn( itype_id( "chestpouch" ), calendar::turn ) );
+        REQUIRE( vest.contents.has_additional_pockets() );
+        const encumbrance_data data = torso_layers();
+        // the layering value of an item is its encumbrance, kept between 2 and 10
+        const int expected = std::min( 10, std::max( 2, vest.get_encumber( you, bodypart_id( "torso" ) ) ) );
+        REQUIRE( data.layer_penalty_details[belted].pieces.size() == 1 );
+        CHECK( data.layer_penalty_details[belted].pieces.front() == expected );
+        CHECK( data.layer_penalty_details[outer].pieces.empty() );
+    }
+}
+
+TEST_CASE( "torso_with_pouches_is_belted", "[molle]" )
+{
+    clear_all_state();
+    detached_ptr<item> vest = item::spawn( itype_id( "ballistic_vest_esapi" ), calendar::turn );
+    const bodypart_id torso( "torso" );
+    const bodypart_id arm_l( "arm_l" );
+    const bodypart_id leg_l( "leg_l" );
+
+    CHECK_FALSE( vest->has_belted_layer_for( torso ) );
+    CHECK_FALSE( vest->has_belted_layer_for( arm_l ) );
+    CHECK_FALSE( vest->has_belted_layer_for( leg_l ) );
+    vest->contents.add_pocket( item::spawn( itype_id( "chestpouch" ), calendar::turn ) );
+    CHECK( vest->has_belted_layer_for( torso ) );
+    CHECK_FALSE( vest->has_belted_layer_for( arm_l ) );
+    CHECK_FALSE( vest->has_belted_layer_for( leg_l ) );
+
+    // CDF: 2byarm_guard has the BELTED flag and covers both arms (arm_l, arm_r)
+    // CDF: a garment that is BELTED by type is belted on every part it covers
+    detached_ptr<item> belt = item::spawn( itype_id( "2byarm_guard" ), calendar::turn );
+    REQUIRE( belt->get_layer() == layer_level::BELTED_LAYER );
+    int covered = 0;
+    for( const bodypart_id &bp : get_avatar().get_all_body_parts() ) {
+        if( belt->covers( bp ) ) {
+            ++covered;
+            CHECK( belt->has_belted_layer_for( bp ) );
+        }
+    }
+    CHECK( covered > 0 );
 }

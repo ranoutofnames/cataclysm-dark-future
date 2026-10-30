@@ -7646,6 +7646,12 @@ layer_level item::get_layer() const
     }
 }
 
+bool item::has_belted_layer_for( const bodypart_id &bp ) const
+{
+    return get_layer() == BELTED_LAYER ||
+           ( bp == bodypart_id( "torso" ) && contents.has_additional_pockets() );
+}
+
 int item::get_avg_coverage() const
 {
     const islot_armor *armor = find_armor_data();

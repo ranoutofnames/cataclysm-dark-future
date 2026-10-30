@@ -4951,7 +4951,8 @@ static void layer_item( char_encumbrance_data &vals,
             continue;
         }
 
-        const auto item_layer = it.get_layer();
+        // CDF: MOLLE2, a torso garment with pouches attached is on the BELTED layer
+        const layer_level item_layer = it.has_belted_layer_for( bp ) ? BELTED_LAYER : it.get_layer();
         int encumber_val = it.get_encumber( c, bp );
         // For the purposes of layering penalty, set a min of 2 and a max of 10 per item.
         int layering_encumbrance = std::min( 10, std::max( 2, encumber_val ) );

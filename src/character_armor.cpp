@@ -74,7 +74,9 @@ auto rigid_test( const item &clothing, const item &worn_item,
         // skip if either item cares only about its layer and they don't match up
         // CDF: items have one layer, so the layers overlap when they are equal
         if( ( worn_item.is_bp_rigid_selective( sbp ) || clothing.is_bp_rigid_selective( sbp ) ) &&
-            worn_item.get_layer() != clothing.get_layer() ) {
+            // CDF: MOLLE2, the layer of each item on this body part
+            ( worn_item.has_belted_layer_for( sbp->parent.id() ) ? BELTED_LAYER : worn_item.get_layer() ) !=
+            ( clothing.has_belted_layer_for( sbp->parent.id() ) ? BELTED_LAYER : clothing.get_layer() ) ) {
             continue;
         }
 
