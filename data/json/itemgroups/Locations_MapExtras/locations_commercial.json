@@ -502,7 +502,7 @@
       [ "m_fishspear", 8 ],
       [ "c_fishspear", 8 ],
       [ "rebreather", 5 ],
-      [ "rebreather_filter", 5 ],
+      [ "rebreather_cartridge_air", 5 ],
       [ "diveknife", 10 ],
       [ "fishing_rod_professional", 3 ],
       [ "alarmclock", 5 ],

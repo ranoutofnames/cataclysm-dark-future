@@ -830,22 +830,6 @@
   },
   {
     "type": "AMMO",
-    "id": "rebreather_filter",
-    "category": "spare_parts",
-    "price": "25 USD",
-    "price_postapoc": "30 USD",
-    "name": { "str": "rebreather filter cartridge" },
-    "symbol": "=",
-    "color": "light_gray",
-    "description": "A replacement filter cartridge for a rebreather.",
-    "material": "aluminum",
-    "volume": "250 ml",
-    "weight": "12 g",
-    "ammo_type": "rebreather_filter",
-    "count": 30
-  },
-  {
-    "type": "AMMO",
     "id": "gasfilter_s",
     "category": "spare_parts",
     "price": "25 USD",

@@ -482,7 +482,7 @@
           { "u_sell_item": "RobofacCoin", "count": 2 },
           { "u_buy_item": "mask_gas" },
           { "u_buy_item": "robofac_enviro_suit" },
-          { "u_buy_item": "gasfilter_m", "count": 100 },
+          { "u_buy_item": "gasfilter_med", "count": 1 },
           { "npc_add_var": "npc_bought_protective_gear", "type": "dialogue", "context": "intercom", "value": "yes" }
         ],
         "topic": "TALK_ROBOFAC_INTERCOM"

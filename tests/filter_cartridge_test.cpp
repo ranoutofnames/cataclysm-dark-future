@@ -120,3 +120,113 @@ TEST_CASE( "filt1_rm13_battery", "[filt1][magazine]" )
     CHECK( to_milliliter( bat->type->volume ) == 10000 ); // DDA :259
     CHECK( bat->has_flag( flag_id( "RECHARGE" ) ) );
 }
+
+TEST_CASE( "filt1_no_loose_filters_in_groups", "[filt1][magazine]" )
+{
+    clear_all_state();
+    // group id -> cartridge that replaces the loose filter it held at the base (see FILT1 anchors)
+    const std::map<std::string, std::string> groups = {
+        { "portal_room_gear", "gasfilter_med" },
+        { "SUS_scuba_gear", "rebreather_cartridge_air" },
+        { "fishing_items", "rebreather_cartridge_air" },
+        { "pawn", "rebreather_cartridge_air" },
+        { "sports", "rebreather_cartridge_air" },
+        { "camping", "rebreather_cartridge_air" },
+        { "tools_science", "gasfilter_sm" },
+        { "npc_misc", "rebreather_cartridge_air" },
+    };
+    const std::set<std::string> loose = { "gasfilter_s", "gasfilter_m", "rebreather_filter" };
+    for( const auto &g : groups ) {
+        CAPTURE( g.first );
+        const item_group_id gid( g.first );
+        Item_spawn_data *data = item_controller->get_group( gid );
+        REQUIRE( data != nullptr );
+        // the group can hand out the cartridge and no loose filter
+        CHECK( data->has_item( itype_id( g.second ) ) );
+        for( const std::string &l : loose ) {
+            CHECK_FALSE( data->has_item( itype_id( l ) ) );
+        }
+        for( int i = 0; i < 300; ++i ) {
+            for( const detached_ptr<item> &it : item_group::items_from( gid ) ) {
+                CHECK( loose.count( it->typeId().str() ) == 0 );
+                if( it->is_magazine() && ( it->typeId().str().find( "gasfilter_s" ) == 0 ||
+                                           it->typeId().str().find( "rebreather_cartridge" ) == 0 ) ) {
+                    CHECK( it->ammo_remaining() >= 0 );
+                    CHECK( it->ammo_remaining() <= it->ammo_capacity() );
+                }
+            }
+        }
+    }
+    // vehicle part item lists are not item groups: read the data files (CDF: vehicles/boats.json,
+    // vehicles/helicopters.json held loose filters)
+    for( const std::string &file : { "data/json/vehicles/boats.json", "data/json/vehicles/helicopters.json",
+                                      "data/json/mapgen/nested/residential_personal_items.json" } ) {
+        CAPTURE( file );
+        const std::string text = read_text( file );
+        REQUIRE_FALSE( text.empty() );
+        CHECK( text.find( "\"rebreather_filter\"" ) == std::string::npos );
+        CHECK( text.find( "\"gasfilter_m\"" ) == std::string::npos );
+    }
+    // charges survive: gear.json portal_room_gear spawns the canister with a [0, -1] charges range
+    int max_seen = -1;
+    for( int i = 0; i < 300; ++i ) {
+        for( const detached_ptr<item> &it : item_group::items_from( item_group_id( "portal_room_gear" ) ) ) {
+            if( it->typeId() == itype_id( "gasfilter_med" ) ) {
+                max_seen = std::max( max_seen, it->ammo_remaining() );
+            }
+        }
+    }
+    CHECK( max_seen >= 0 );
+}
+
+TEST_CASE( "filt1_migration_and_recipe", "[filt1][magazine]" )
+{
+    clear_all_state();
+    detached_ptr<item> migrated = item_controller->spawn_migrated( itype_id( "rebreather_filter" ),
+                                  calendar::turn );
+    REQUIRE( migrated );
+    CHECK( migrated->typeId() == itype_id( "rebreather_cartridge_air" ) );
+
+    int with_cartridge = 0;
+    int with_loose = 0;
+    for( const auto &r : recipe_dict ) {
+        const recipe &rec = r.first.obj();
+        if( rec.result() == itype_id( "rebreather_filter" ) ) {
+            ++with_loose;
+        }
+        if( rec.result() == itype_id( "rebreather_cartridge_air" ) ) {
+            ++with_cartridge;
+            for( const auto &group : rec.simple_requirements().get_components() ) {
+                for( const item_comp &c : group ) {
+                    CAPTURE( c.type.str() );
+                    CHECK( has_itype( c.type ) );
+                }
+            }
+        }
+    }
+    CHECK( with_loose == 0 );
+    CHECK( with_cartridge == 1 );
+}
+
+TEST_CASE( "filt1_npc_and_trade_ids_resolve", "[filt1][magazine]" )
+{
+    clear_all_state();
+    const std::string talk = read_text( "data/json/npcs/robofac/NPC_ROBOFAC_INTERCOM.json" );
+    REQUIRE_FALSE( talk.empty() );
+    const std::regex buy( R"re("u_buy_item"\s*:\s*"(\w+)"(?:\s*,\s*"count"\s*:\s*(\d+))?)re" );
+    std::map<std::string, int> bought; // id -> count (0 if no count)
+    for( auto it = std::sregex_iterator( talk.begin(), talk.end(), buy ); it != std::sregex_iterator(); ++it ) {
+        const std::string id = ( *it )[1];
+        CAPTURE( id );
+        CHECK( has_itype( itype_id( id ) ) );
+        bought[id] = ( *it )[2].matched ? std::stoi( ( *it )[2] ) : 0;
+    }
+    CHECK( bought.count( "gasfilter_m" ) == 0 );
+    REQUIRE( bought.count( "gasfilter_med" ) == 1 );
+    CHECK( bought["gasfilter_med"] == 1 ); // 100 charges of carbon = one full canister
+
+    Item_spawn_data *npc_misc = item_controller->get_group( item_group_id( "npc_misc" ) );
+    REQUIRE( npc_misc != nullptr );
+    CHECK( npc_misc->has_item( itype_id( "rebreather_cartridge_air" ) ) );
+    CHECK_FALSE( npc_misc->has_item( itype_id( "rebreather_filter" ) ) );
+}

@@ -248,7 +248,7 @@
     "components": [ [ [ "leather", 2 ] ], [ [ "scrap", 1 ] ] ]
   },
   {
-    "result": "rebreather_filter",
+    "result": "rebreather_cartridge_air",
     "type": "recipe",
     "category": "CC_OTHER",
     "subcategory": "CSC_OTHER_OTHER",

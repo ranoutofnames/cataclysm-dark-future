@@ -1825,7 +1825,7 @@
       { "x": 1, "y": -1, "chance": 50, "items": [ "flotation_vest", "waterwaymap" ], "item_groups": [ "SUS_scuba_gear" ] },
       { "x": 1, "y": -1, "chance": 33, "items": [ "scuba_tank", "scuba_tank" ] },
       { "x": 1, "y": -1, "chance": 33, "items": [ "small_scuba_tank", "small_scuba_tank", "small_scuba_tank" ] },
-      { "x": 1, "y": -1, "chance": 33, "items": [ "rebreather", "rebreather_filter", "rebreather_filter" ] },
+      { "x": 1, "y": -1, "chance": 33, "items": [ "rebreather", "rebreather_cartridge_air", "rebreather_cartridge_air" ] },
       { "x": -1, "y": -1, "chance": 75, "item_groups": [ "SUS_scuba_gear" ] },
       { "x": -2, "y": -1, "chance": 75, "item_groups": [ "SUS_scuba_gear" ] },
       { "x": -3, "y": -1, "chance": 75, "item_groups": [ "SUS_scuba_gear" ] }

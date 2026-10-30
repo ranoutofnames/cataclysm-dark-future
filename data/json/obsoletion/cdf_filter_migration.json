@@ -1,0 +1,8 @@
+[
+  {
+    "type": "MIGRATION",
+    "//": "CDF FILT1: DDA has no loose rebreather filter item; the scrubber is the cartridge. gasfilter_s / gasfilter_m stay valid (ammo inside the cartridges), so they are not migrated.",
+    "id": "rebreather_filter",
+    "replace": "rebreather_cartridge_air"
+  }
+]

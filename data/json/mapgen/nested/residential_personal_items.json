@@ -72,7 +72,7 @@
         { "item": "wetsuit_gloves", "x": 0, "y": 0, "chance": 5 },
         { "item": "wetsuit_booties", "x": 0, "y": 0, "chance": 5 },
         { "item": "rebreather", "x": 0, "y": 0, "chance": 5 },
-        { "item": "rebreather_filter", "x": 0, "y": 0, "chance": 5 }
+        { "item": "rebreather_cartridge_air", "x": 0, "y": 0, "chance": 5 }
       ]
     }
   },

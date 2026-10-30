@@ -454,7 +454,7 @@
     "type": "ammunition_type",
     "id": "rebreather_filter",
     "name": "rebreather filter",
-    "default": "rebreather_filter"
+    "default": "rebreather_filler_soda_lime"
   },
   {
     "type": "ammunition_type",
