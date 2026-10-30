@@ -14,6 +14,9 @@
 #include "state_helpers.h"
 
 #include <algorithm>
+#include <functional>
+#include <utility>
+#include <vector>
 
 #include <sstream>
 #include <string>
@@ -331,4 +334,54 @@ TEST_CASE( "torso_with_pouches_is_belted", "[molle]" )
         }
     }
     CHECK( covered > 0 );
+}
+
+// CDF: dispose_item's "Store in" options are built by this non-header helper of character.cpp
+// (character.h is P3-open and not in the MOLLE2 file lock): prompt and action per entry.
+using dispose_store_entries = std::vector<std::pair<std::string, std::function<detached_ptr<item>()>>>;
+dispose_store_entries dispose_store_options( Character &who, detached_ptr<item> &obj );
+
+TEST_CASE( "store_in_menu_lists_attached_pouches", "[molle]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    clear_character( you, true );
+    detached_ptr<item> vest_holder = item::spawn( itype_id( "ballistic_vest_esapi" ), calendar::turn );
+    item &vest = *vest_holder;
+    detached_ptr<item> pouch = item::spawn( itype_id( "chestpouch" ), calendar::turn );
+    const item *pouch_ptr = pouch.get();
+    vest.contents.add_pocket( std::move( pouch ) );
+    REQUIRE( !you.wear_item( std::move( vest_holder ), false ) );
+
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag20" ), calendar::turn );
+    const item *mag_ptr = mag.get();
+    REQUIRE( vest.contents.get_added_pocket( 0 ) != nullptr );
+    // CDF: chestpouch holds a stanag20 (see "PALS pouches attach with their contents" above)
+    REQUIRE( vest.contents.get_added_pocket( 0 )->can_contain( *mag ).success() );
+
+    auto opts = dispose_store_options( you, mag );
+    const auto find_option = [&opts]( const std::string & prefix ) {
+        return std::ranges::find_if( opts, [&prefix]( const auto & o ) {
+            return o.first.rfind( prefix, 0 ) == 0;
+        } );
+    };
+    CHECK( find_option( "Store in " + vest.tname() ) != opts.end() );
+    const auto pouch_entry = find_option( "  >" + pouch_ptr->tname() );
+    REQUIRE( pouch_entry != opts.end() );
+    // choosing the pouch entry puts the magazine in the pouch's pocket
+    CHECK_FALSE( pouch_entry->second() );
+    CHECK( vest.contents.get_added_pocket( 0 )->has_item( *mag_ptr ) );
+
+    // an object the pouch cannot take (CDF: chestpouch only takes MAG_COMPACT magazines) but the
+    // vest's own plate pocket can (CDF: ABLATIVE_LARGE esapi_plate) has the vest entry and no pouch entry
+    detached_ptr<item> tool = item::spawn( itype_id( "esapi_plate" ), calendar::turn );
+    REQUIRE_FALSE( vest.contents.get_added_pocket( 0 )->can_contain( *tool ).success() );
+    REQUIRE( vest.can_contain( *tool ).success() );
+    const auto tool_opts = dispose_store_options( you, tool );
+    CHECK( std::ranges::any_of( tool_opts, [&vest]( const auto & o ) {
+        return o.first.rfind( "Store in " + vest.tname(), 0 ) == 0;
+    } ) );
+    CHECK( std::ranges::none_of( tool_opts, []( const auto & o ) {
+        return o.first.rfind( "  >", 0 ) == 0;
+    } ) );
 }

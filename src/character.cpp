@@ -8986,6 +8986,98 @@ bool Character::invoke_item( item *used, const std::string &method, const tripoi
     return false;
 }
 
+namespace
+{
+struct dispose_option {
+    std::string prompt;
+    bool enabled;
+    char invlet;
+    int moves;
+    std::function<detached_ptr<item>()> action;
+};
+
+// CDF: DDA outfit::holster_opts (character_inventory.cpp:803), split out of dispose_item
+std::vector<dispose_option> dispose_store_opts( Character &who, detached_ptr<item> &obj )
+{
+    std::vector<dispose_option> opts;
+    for( auto &e : who.worn ) {
+        // check for attachable subpockets first (the parent item may be defined as a holster)
+        // CDF: DDA e.get_contents().has_additional_pockets() && e.can_contain( *obj )
+        if( e->contents.has_additional_pockets() && e->can_contain( *obj ).success() ) {
+            opts.emplace_back( dispose_option{
+                string_format( _( "Store in %s" ), e->tname() ), true, e->invlet,
+                who.item_store_cost( *obj, *e, false, e->insert_cost( *obj ) ),
+                [&who, &e, &obj] {
+                    // CDF: obj is detached here, so this mirrors Character::store( container, ... )
+                    who.mod_moves( -who.item_store_cost( *obj, *e, false, e->insert_cost( *obj ) ) );
+                    e->put_in( std::move( obj ), pocket_type::CONTAINER, false, &who );
+                    if( obj ) {
+                        who.i_add( std::move( obj ), true, nullptr, nullptr, true, false );
+                    }
+                    who.on_carried_contents_changed();
+                    who.reset_encumbrance();
+                    return detached_ptr<item>();
+                }
+            } );
+            int pkt_idx = 0;
+            for( const item *it : e->contents.get_added_pockets() ) {
+                item_pocket *con = const_cast<item_pocket *>( e->contents.get_added_pocket( pkt_idx++ ) );
+                if( !con || !con->can_contain( *obj ).success() ) {
+                    continue;
+                }
+                opts.emplace_back( dispose_option{
+                    string_format( "  >%s", it->tname() ), true, it->invlet,
+                    who.item_store_cost( *obj, *it, false, it->insert_cost( *obj ) ),
+                    [&who, it, con, &obj] {
+                        // CDF: mirrors Character::store( item_pocket *, ... ) for a detached item
+                        who.mod_moves( -std::max( who.item_store_cost( *obj, *it, false,
+                                                  it->insert_cost( *obj ) ), con->obtain_cost( *obj ) ) );
+                        ret_val<item *> result = con->insert_item( std::move( obj ) );
+                        if( result.value() != nullptr ) {
+                            result.value()->on_pickup( who );
+                        } else if( obj ) {
+                            who.i_add( std::move( obj ), true, nullptr, nullptr, true, false );
+                        }
+                        who.on_carried_contents_changed();
+                        who.reset_encumbrance();
+                        return detached_ptr<item>();
+                    }
+                } );
+            }
+        } else if( e->can_holster( *obj ) ) {
+            // A15: a holster that holds through pockets only has no holster use action
+            const use_function *holster_use = e->type->get_use( "holster" );
+            const auto ptr = holster_use == nullptr ? nullptr :
+                             dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
+            if( ptr == nullptr ) {
+                continue;
+            }
+            opts.emplace_back( dispose_option{
+                string_format( _( "Store in %s" ), e->tname() ), true, e->invlet,
+                who.item_store_cost( *obj, *e, false, e->insert_cost( *obj ) ),
+                [&who, ptr, &e, &obj] {
+                    return ptr->store( *who.as_player(), *e, std::move( obj ) );
+                }
+            } );
+        }
+    }
+    return opts;
+}
+} // namespace
+
+// CDF: test hook (no header: character.h is not in the MOLLE2 lock), prompt and action per entry
+std::vector<std::pair<std::string, std::function<detached_ptr<item>()>>>
+        dispose_store_options( Character &who, detached_ptr<item> &obj );
+std::vector<std::pair<std::string, std::function<detached_ptr<item>()>>>
+        dispose_store_options( Character &who, detached_ptr<item> &obj )
+{
+    std::vector<std::pair<std::string, std::function<detached_ptr<item>()>>> ret;
+    for( dispose_option &o : dispose_store_opts( who, obj ) ) {
+        ret.emplace_back( std::move( o.prompt ), std::move( o.action ) );
+    }
+    return ret;
+}
+
 detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std::string &prompt )
 {
     if( test_mode ) {
@@ -8995,14 +9087,6 @@ detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std:
 
     uilist menu;
     menu.text = prompt.empty() ? string_format( _( "Dispose of %s" ), obj->tname() ) : prompt;
-
-    using dispose_option = struct {
-        std::string prompt;
-        bool enabled;
-        char invlet;
-        int moves;
-        std::function<detached_ptr<item>()> action;
-    };
 
     std::vector<dispose_option> opts;
 
@@ -9045,23 +9129,9 @@ detached_ptr<item> Character::dispose_item( detached_ptr<item> &&obj, const std:
         }
     } );
 
-    for( auto &e : worn ) {
-        if( e->can_holster( *obj ) ) {
-            // A15: a holster that holds through pockets only has no holster use action
-            const use_function *holster_use = e->type->get_use( "holster" );
-            const auto ptr = holster_use == nullptr ? nullptr :
-                             dynamic_cast<const holster_actor *>( holster_use->get_actor_ptr() );
-            if( ptr == nullptr ) {
-                continue;
-            }
-            opts.emplace_back( dispose_option{
-                string_format( _( "Store in %s" ), e->tname() ), true, e->invlet,
-                item_store_cost( *obj, *e, false, e->insert_cost( *obj ) ),
-                [this, ptr, &e, &obj] {
-                    return ptr->store( *this->as_player(), *e, std::move( obj ) );
-                }
-            } );
-        }
+    // CDF: the "Store in" options are built by dispose_store_opts, so tests can reach them
+    for( dispose_option &o : dispose_store_opts( *this, obj ) ) {
+        opts.push_back( std::move( o ) );
     }
 
     int w = utf8_width( menu.text, true ) + 4;
