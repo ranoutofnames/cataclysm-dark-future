@@ -9461,8 +9461,25 @@ bool item::magazine_integral() const
     return contents.has_pocket_type( pocket_type::MAGAZINE );
 }
 
+// CDF: MAGPOCKET guard G: an installed gunmod (gun) or toolmod (tool) with an ammo_modifier or a magazine_adaptor
+// is answered by the legacy tables and adapted_layout (BN body), not by the live pockets.
+static bool has_conversion_or_adaptor_mod( const item &it )
+{
+    const std::vector<const item *> &mods = it.is_gun() ? it.gunmods() : it.toolmods();
+    return std::any_of( mods.begin(), mods.end(), []( const item * m ) {
+        return !m->type->mod->ammo_modifier.empty() || !m->type->mod->magazine_adaptor.empty();
+    } );
+}
+
 itype_id item::magazine_default( bool conversion ) const
 {
+    // CDF: MAGPOCKET, DDA item_gun_tool_ammo.cpp:2263-2278: the live MAGAZINE_WELL answers unless guard G holds
+    // (conversion or adaptor mod, legacy `magazines` data keeps the BN answer below).
+    if( !has_conversion_or_adaptor_mod( *this ) ) {
+        if( const itype_id live = contents.magazine_default() ) {
+            return live;
+        }
+    }
     if( !ammo_types( conversion ).empty() ) {
         if( conversion ) {
             for( const item *m : is_gun() ? gunmods() : toolmods() ) {

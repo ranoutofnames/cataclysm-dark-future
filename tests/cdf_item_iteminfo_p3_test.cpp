@@ -491,11 +491,12 @@ TEST_CASE( "gun_info_head_loaded_magazine_without_projectile_ammo", "[p3][itemin
     }
 
     SECTION( "unloaded explicit-pocket gun without magazines: BN message, no debugmsg" ) {
-        // CDF: test_multimag_gun_consume has wells from pocket_data and no `magazines` key, so there is no
-        // default magazine to build (AUTO-53).
+        // CDF: test_multimag_gun_consume has wells from pocket_data and no `magazines` key. MAGPOCKET (DDA rule,
+        // PL-09 Q2 (a)): an explicit-well gun answers its first well's default, glockmag (items.json:1627,
+        // item_restriction [glockmag]).
         const item gun( itype_id( "test_multimag_gun_consume" ) );
         REQUIRE( gun.magazine_current() == nullptr );
-        REQUIRE( gun.magazine_default().is_null() );
+        REQUIRE( gun.magazine_default() == itype_id( "glockmag" ) );
         std::string s;
         const std::string dmsg = capture_debugmsg_during( [&]() {
             s = iteminfo_p3_all( gun );
@@ -503,7 +504,8 @@ TEST_CASE( "gun_info_head_loaded_magazine_without_projectile_ammo", "[p3][itemin
         CAPTURE( dmsg );
         CAPTURE( s );
         CHECK( dmsg.empty() );
-        CHECK( s.find( "Weapon can't be loaded in its current state." ) != std::string::npos );
+        CHECK( s.find( "Weapon is not loaded, so stats below assume the default ammo: " ) !=
+               std::string::npos );
     }
 
     // CDF: kept last. test_multimag_gun_integral_ammo has an integral MAGAZINE pocket but no islot_magazine, so
