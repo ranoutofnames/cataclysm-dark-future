@@ -35,7 +35,6 @@
   {"type": "item_overlay", "id": "armor_larmor", "longest_side": "60 cm"},
   {"type": "item_overlay", "id": "armor_lorica", "longest_side": "60 cm"},
   {"type": "item_overlay", "id": "armor_plarmor", "longest_side": "60 cm"},
-  {"type": "item_overlay", "id": "armor_riot", "longest_side": "60 cm"},
   {"type": "item_overlay", "id": "armor_samurai", "longest_side": "60 cm"},
   {"type": "item_overlay", "id": "armor_scrapsuit", "longest_side": "40 cm"},
   {"type": "item_overlay", "id": "arrow_cf", "longest_side": "76 cm"},

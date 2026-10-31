@@ -18,7 +18,6 @@
   {"type": "item_overlay", "id": "XL_holster", "pals": "large"},
   {"type": "item_overlay", "id": "sheath", "pals": "small"},
   {"type": "item_overlay", "id": "dump_pouch", "pals": "medium"},
-  {"type": "item_overlay", "id": "armor_riot", "molle_capacity": 6},
   {"type": "item_overlay", "id": "webbing_belt", "molle_capacity": 4},
   {"type": "item_overlay", "id": "molle_pack", "molle_capacity": 6}
 ]

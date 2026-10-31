@@ -131,3 +131,24 @@ TEST_CASE("riot1_pieces_stack_without_overlap", "[armor][riot1]") {
     CHECK(guy.is_wearing(itype_id("armor_riot_arm")));
     CHECK(guy.is_wearing(itype_id("armor_riot_leg")));
 }
+
+TEST_CASE("riot1_suit_is_the_dda_suit", "[armor][riot1]") {
+    clear_all_state();
+    Character &guy = get_player_character();
+    detached_ptr<item> suit = spawn_riot("armor_riot");
+    // CDF: 3 kg, 12500 ml (was 4000 g and 7500 ml), MOLLE 6, longest side 60 cm
+    CHECK(suit->weight() == 3000_gram);
+    CHECK(suit->base_volume() == 12500_ml);
+    CHECK(molle_size(*suit) == 6);
+    CHECK(suit->length() == 60_cm);
+    CHECK(suit->get_coverage(bodypart_id("torso")) == 75);
+    CHECK(suit->get_encumber(guy, bodypart_id("torso")) == 6);
+    CHECK(cov(*suit, "arm_l", "arm_lower_l") == 90);
+    CHECK(cov(*suit, "leg_r", "leg_knee_r") == 90);
+    CHECK(cov(*suit, "arm_l", "arm_upper_l") == 65);
+    CHECK(cov(*suit, "leg_l", "leg_hip_l") == 30);
+    CHECK(suit->get_coverage(bodypart_id("foot_l")) == 75);
+    CHECK(suit->made_of(material_id("plastic_pad")));
+    CHECK(suit->made_of(material_id("thermo_resin")));
+    CHECK(suit->has_flag(flag_id("BLOCK_WHILE_WORN")));
+}

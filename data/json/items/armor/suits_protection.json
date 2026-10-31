@@ -280,26 +280,47 @@
   },
   {
     "id": "armor_riot",
-    "repairs_like": "survivor_suit",
     "type": "ARMOR",
-    "name": { "str": "riot armor" },
-    "description": "Black armor used by riot police officers.  The padded layers and hard plastic shoulder guards offer good protection without much encumbrance.  The word POLICE is emblazoned across the front.",
-    "weight": "4000 g",
-    "volume": "7500 ml",
-    "price": "350 USD",
-    "price_postapoc": "15 USD",
-    "to_hit": -3,
-    "bashing": 6,
-    "material": [ "plastic", "cotton" ],
+    "category": "armor",
+    "//": "CDF: DDA suits_protection.json:1331 (b4b62254ae2) in BN armor format; replaces the old BN armor_riot (4000 g, 7500 ml, plastic/cotton, torso/legs/arms 85). One material list, plastic_pad first (largest portion), material_thickness 7 (DDA plastic_pad on the torso). Dropped: the gastropod_foot and tentacle_lower_* portions and the flags ALLOWS_GASTROPOD_FOOT / ALLOWS_LEG_TENTACLES (CDF has no such body parts or flags). DDA portion 3 also lists foot_l/foot_r at 65 without specifically_covers; dropped here because the foot is covered whole by the foot portion at 75 (the loader forbids mixing). Removed old BN fields: to_hit -3, bashing 6, repairs_like survivor_suit (DDA has none). The foot portion has no specifically_covers: CDF: DDA foot_arch/foot_ankle sub-locations do not exist; whole foot until a foot sub-location packet. The item_overlay lines for longest_side and molle_capacity are deleted (cdf_overlay_lengths.json, cdf_overlay_molle.json): the item carries both itself.",
+    "name": { "str": "riot armor suit" },
+    "description": "A full suit of black plastic body armor plates used by riot police.  Cleverly placed velcro straps secure each piece, resulting in slightly less encumbrance than its constituent parts.  MOLLE webbing is attached to the torso and the word POLICE is emblazoned across the front.",
+    "weight": "3 kg",
+    "volume": "12500 ml",
+    "price": "600 USD",
+    "price_postapoc": "40 USD",
+    "material": [ "plastic_pad", "thermo_resin" ],
     "symbol": "[",
     "looks_like": "kevlar",
-    "color": "light_gray",
-    "covers": [ "torso", "legs", "arms" ],
-    "coverage": 85,
-    "encumbrance": 10,
-    "warmth": 10,
-    "material_thickness": 6,
-    "flags": [ "STURDY", "OUTER", "SOFT" ]
+    "color": "dark_gray",
+    "warmth": 20,
+    "longest_side": "60 cm",
+    "material_thickness": 7,
+    "flags": [ "STURDY", "OUTER", "WATER_FRIENDLY", "PADDED", "BLOCK_WHILE_WORN" ],
+    "use_action": [ { "type": "attach_molle", "size": 6 }, { "type": "detach_molle" } ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "coverage": 75, "encumbrance": 6, "volume_encumber_modifier": 0.3 },
+      {
+        "covers": [ "arm_l", "arm_r", "leg_l", "leg_r" ],
+        "coverage": 90,
+        "encumbrance": 4,
+        "volume_encumber_modifier": 0,
+        "specifically_covers": [ "arm_lower_l", "arm_lower_r", "arm_elbow_l", "arm_elbow_r", "leg_knee_l", "leg_knee_r", "leg_lower_l", "leg_lower_r" ]
+      },
+      {
+        "covers": [ "arm_l", "arm_r", "leg_l", "leg_r" ],
+        "coverage": 65,
+        "volume_encumber_modifier": 0,
+        "specifically_covers": [ "arm_shoulder_l", "arm_shoulder_r", "arm_upper_l", "arm_upper_r", "leg_upper_l", "leg_upper_r" ]
+      },
+      { "covers": [ "foot_l", "foot_r" ], "coverage": 75, "encumbrance": 2, "volume_encumber_modifier": 0 },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "coverage": 30,
+        "volume_encumber_modifier": 0,
+        "specifically_covers": [ "leg_hip_l", "leg_hip_r" ]
+      }
+    ]
   },
   {
     "id": "armor_samurai",
