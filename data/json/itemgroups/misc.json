@@ -421,5 +421,17 @@
       { "item": "ruby", "prob": 1, "count": 1 },
       { "item": "garnet", "prob": 1, "count": 1 }
     ]
+  },
+  {
+    "type": "item_group",
+    "id": "armor_riot_arm",
+    "//": "RIOT1: DDA misc.json:327",
+    "items": [ [ "armor_riot_arm", 100 ] ]
+  },
+  {
+    "type": "item_group",
+    "id": "armor_riot_leg",
+    "//": "RIOT1: DDA misc.json:332",
+    "items": [ [ "armor_riot_leg", 100 ] ]
   }
 ]

@@ -1529,7 +1529,12 @@
   {
     "type": "item_group",
     "id": "prison_armor",
+    "//": "RIOT1: DDA locations.json:1487-1490, weights as written",
     "items": [
+      [ "armor_riot", 25 ],
+      [ "armor_riot_arm", 15 ],
+      [ "armor_riot_leg", 15 ],
+      [ "armor_riot_torso", 5 ],
       [ "helmet_riot", 25 ],
       [ "mask_gas", 25 ],
       [ "modularveststeel", 20 ],

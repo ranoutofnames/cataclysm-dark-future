@@ -4,6 +4,7 @@
 #include "character.h"
 #include "flag.h"
 #include "item.h"
+#include "item_group.h"
 #include "itype.h"
 #include "iuse_actor.h"
 #include "material.h"
@@ -39,6 +40,9 @@ auto molle_size(const item &it) -> int {
     return actor != nullptr ? actor->size : 0;
 }
 
+auto group_holds(const char *group, const char *id) -> bool {
+    return item_group::group_contains_item(item_group_id(group), itype_id(id));
+}
 
 } // namespace
 
@@ -151,4 +155,15 @@ TEST_CASE("riot1_suit_is_the_dda_suit", "[armor][riot1]") {
     CHECK(suit->made_of(material_id("plastic_pad")));
     CHECK(suit->made_of(material_id("thermo_resin")));
     CHECK(suit->has_flag(flag_id("BLOCK_WHILE_WORN")));
+}
+
+TEST_CASE("riot1_spawn_groups", "[armor][riot1]") {
+    clear_all_state();
+    // CDF: DDA locations.json:1487-1490 (prison_armor) and misc.json:327-335
+    CHECK(group_holds("prison_armor", "armor_riot_arm"));
+    CHECK(group_holds("prison_armor", "armor_riot_leg"));
+    CHECK(group_holds("prison_armor", "armor_riot_torso"));
+    CHECK(group_holds("prison_armor", "armor_riot"));
+    CHECK(group_holds("armor_riot_arm", "armor_riot_arm"));
+    CHECK(group_holds("armor_riot_leg", "armor_riot_leg"));
 }
