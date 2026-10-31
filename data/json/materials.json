@@ -1949,5 +1949,12 @@
     "copy-from": "plastic",
     "name": "Thermoplastic Resin",
     "//": "CDF: DDA materials.json:18 (copy-from generic_polymer_resin, absent in CDF). copy-from plastic with CDF numbers kept; salvaged_into/repaired_with inherited from plastic because thermo_resin_chunk does not exist in CDF."
+  },
+  {
+    "type": "material",
+    "id": "plastic_pad",
+    "copy-from": "plastic",
+    "name": "Plastic Padding",
+    "//": "CDF: DDA materials.json:1731 (b4b62254ae2). copy-from plastic with CDF numbers kept (DDA: bash 1, cut 0.5, bullet 0.5); salvaged_into/repaired_with inherited from plastic."
   }
 ]

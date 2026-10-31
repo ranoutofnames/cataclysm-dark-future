@@ -1,0 +1,96 @@
+[
+  {
+    "id": "armor_riot_torso",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA torso_armor.json:2437 (b4b62254ae2) in BN armor format (armor_portion_data for DDA's armor array). CDF has one material list: DDA's order thermo_resin, plastic_pad is written plastic_pad first, the material of the largest portion (torso coverage 75), with material_thickness 7 (DDA plastic_pad 7 on that portion). Dropped: the gastropod_foot and tentacle_lower_* portions and the flags ALLOWS_GASTROPOD_FOOT / ALLOWS_LEG_TENTACLES (CDF has no gastropod_foot or tentacle_* body parts, and no flag of those names).",
+    "name": { "str": "riot chest guard" },
+    "description": "A hard chest protector, attached to thigh and upper arm guards.  Used by riot police officers.  MOLLE webbing is attached to the torso and the word POLICE is emblazoned across the front.",
+    "weight": "2 kg",
+    "volume": "10 L",
+    "price": "400 USD",
+    "price_postapoc": "25 USD",
+    "material": [ "plastic_pad", "thermo_resin" ],
+    "symbol": "[",
+    "looks_like": "chestguard_hard",
+    "color": "dark_gray",
+    "warmth": 20,
+    "longest_side": "60 cm",
+    "material_thickness": 7,
+    "flags": [ "STURDY", "OUTER", "WATER_FRIENDLY", "PADDED" ],
+    "use_action": [ { "type": "attach_molle", "size": 6 }, { "type": "detach_molle" } ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "coverage": 75, "encumbrance": 6, "volume_encumber_modifier": 0.3 },
+      {
+        "covers": [ "arm_l", "arm_r", "leg_l", "leg_r" ],
+        "coverage": 65,
+        "encumbrance": 2,
+        "volume_encumber_modifier": 0,
+        "specifically_covers": [ "arm_shoulder_l", "arm_shoulder_r", "arm_upper_l", "arm_upper_r", "leg_upper_l", "leg_upper_r" ]
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "coverage": 30,
+        "volume_encumber_modifier": 0,
+        "specifically_covers": [ "leg_hip_l", "leg_hip_r" ]
+      }
+    ]
+  },
+  {
+    "id": "armor_riot_arm",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA arms_armor.json:1691 (b4b62254ae2) in BN armor format. One material list, plastic_pad first (largest portion), material_thickness 5 (DDA plastic_pad 5).",
+    "name": { "str_sp": "riot arm guards (pair)" },
+    "description": "Hard arm guards used by riot police.",
+    "weight": "500 g",
+    "volume": "2500 ml",
+    "price": "100 USD",
+    "price_postapoc": "7 USD 50 cent",
+    "material": [ "plastic_pad", "thermo_resin" ],
+    "symbol": "[",
+    "looks_like": "armguard_hard",
+    "color": "dark_gray",
+    "warmth": 20,
+    "longest_side": "40 cm",
+    "material_thickness": 5,
+    "flags": [ "STURDY", "OUTER", "WATER_FRIENDLY", "PADDED", "BLOCK_WHILE_WORN" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "arm_l", "arm_r" ],
+        "coverage": 90,
+        "encumbrance": 3,
+        "specifically_covers": [ "arm_lower_l", "arm_lower_r", "arm_elbow_l", "arm_elbow_r" ]
+      }
+    ]
+  },
+  {
+    "id": "armor_riot_leg",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA legs_armor.json:2040 (b4b62254ae2) in BN armor format. One material list, plastic_pad first (largest portion), material_thickness 5 (DDA plastic_pad 5). The foot portion has no specifically_covers: CDF: DDA foot_arch/foot_ankle sub-locations do not exist; whole foot until a foot sub-location packet.",
+    "name": { "str_sp": "riot leg guards (pair)" },
+    "description": "Hard leg guards used by riot police.",
+    "weight": "500 g",
+    "volume": "2500 ml",
+    "price": "100 USD",
+    "price_postapoc": "7 USD 50 cent",
+    "material": [ "plastic_pad", "thermo_resin" ],
+    "symbol": "[",
+    "looks_like": "legguard_hard",
+    "color": "dark_gray",
+    "warmth": 20,
+    "longest_side": "40 cm",
+    "material_thickness": 5,
+    "flags": [ "STURDY", "OUTER", "WATER_FRIENDLY", "PADDED", "BLOCK_WHILE_WORN" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "coverage": 90,
+        "encumbrance": 3,
+        "specifically_covers": [ "leg_knee_l", "leg_knee_r", "leg_lower_l", "leg_lower_r" ]
+      },
+      { "covers": [ "foot_l", "foot_r" ], "coverage": 75, "encumbrance": 2 }
+    ]
+  }
+]
