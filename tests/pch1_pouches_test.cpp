@@ -1,12 +1,15 @@
 #include "catch/catch.hpp"
 
+#include <list>
 #include <string>
 #include <vector>
 
 #include "bodypart.h"
 #include "calendar.h"
 #include "item.h"
+#include "item_contents.h"
 #include "item_factory.h"
+#include "item_pocket.h"
 #include "itype.h"
 #include "material.h"
 #include "iuse.h"
@@ -98,4 +101,54 @@ TEST_CASE( "pch1_breacher_inherits_the_heavy_vest", "[armor][pch1]" )
     CHECK( heavy->weight() == units::from_gram( 2000 ) );
     CHECK( heavy->volume() == breacher->volume() );
     CHECK( heavy->get_coverage( torso, sub_bodypart_str_id( "torso_upper" ) ) == 85 );
+}
+
+namespace
+{
+struct pouch_row {
+    const char *id;
+    const char *pals;    // the one PALS_* flag
+    int size;            // get_pocket_size() of that flag
+    int pockets;         // number of pockets
+    int volume_ml;       // max_contains_volume of pocket 1 in ml, or -1 when DDA gives none
+};
+} // namespace
+
+TEST_CASE( "pch1_pouches_have_pals_size_and_pockets", "[armor][pch1]" )
+{
+    clear_all_state();
+    // CDF: values of data/json/items/armor/cdf_molle_pouches.json (DDA ammo_pouch.json:914-1554)
+    const std::vector<pouch_row> rows = {
+        { "radio_pouch", "PALS_SMALL", 1, 1, 500 },
+        { "gadget_pouch", "PALS_SMALL", 1, 1, 1000 },
+        { "h2o_pouch", "PALS_MEDIUM", 2, 2, 2048 },
+        { "canteen_pouch", "PALS_MEDIUM", 2, 1, 1751 },
+        { "tool_pouch", "PALS_LARGE", 3, 1, 2753 },
+        { "flashlight_pouch", "PALS_SMALL", 1, 1, 500 },
+        { "tactical_holster", "PALS_SMALL", 1, 1, 1000 },
+        { "gas_mask_pouch", "PALS_MEDIUM", 2, 3, 3546 },
+        { "tactical_grenade_pouch", "PALS_SMALL", 1, 1, 750 },
+        { "triple_stacker_pouch", "PALS_LARGE", 3, 6, 300 },
+        { "tactical_shotshell_pouch", "PALS_MEDIUM", 2, 1, -1 },
+        { "sustainment_pouch", "PALS_MEDIUM", 2, 1, 7000 },
+    };
+    const std::vector<std::string> all_flags = { "PALS_SMALL", "PALS_MEDIUM", "PALS_LARGE" };
+    for( const pouch_row &row : rows ) {
+        CAPTURE( row.id );
+        REQUIRE( itype_id( row.id ).is_valid() );
+        detached_ptr<item> it = item::spawn( itype_id( row.id ), calendar::turn );
+        int flag_count = 0;
+        for( const std::string &flag : all_flags ) {
+            flag_count += it->has_flag( flag_id( flag ) ) ? 1 : 0;
+        }
+        CHECK( flag_count == 1 );
+        CHECK( it->has_flag( flag_id( row.pals ) ) );
+        CHECK( it->can_attach_as_pocket() );
+        CHECK( it->get_pocket_size() == row.size );
+        const std::list<item_pocket> &pockets = it->contents.get_pockets();
+        REQUIRE( static_cast<int>( pockets.size() ) == row.pockets );
+        if( row.volume_ml >= 0 ) {
+            CHECK( pockets.front().volume_capacity() == units::from_milliliter( row.volume_ml ) );
+        }
+    }
 }
