@@ -222,9 +222,12 @@ TEST_CASE( "carry1_all_armor_with_container_volume_carries", "[carry1][pocket]" 
     // with "carry": false, so the DDA tests keep their meaning (a waterskin is a container, a
     // liquid pours into the rig's reservoirs). test_quiver (dda_quiver_items.json) is the fixture of
     // display_name_includes_item_contents, which expects the "(10/20)" non-carry display, so it opts
-    // out as well. No game item is listed.
+    // out as well. test_backpack (items.json) is the plain container the ported item spawn and
+    // recipe tests fill as a recipe/group container (an armor item with only carry pockets is not
+    // a container, so in_container leaves the contents outside); it opts out too (the carry
+    // fixture is test_backpack_carry). No game item is listed.
     const std::set<std::string> exceptions = { "dda_test_waterskin", "test_robofac_armor_rig",
-                                               "test_quiver" };
+                                               "test_quiver", "test_backpack" };
     int checked = 0;
     for( const itype *t : item_controller->all() ) {
         if( !t->armor || !t->explicit_pockets ) {

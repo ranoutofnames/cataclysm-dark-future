@@ -545,6 +545,7 @@
     "flags": [ "WAIST", "WATER_FRIENDLY" ]
   },
   {
+    "//": "CDF: the DDA fixture backpack is a plain container (carry: false), so the ported container-spawn and recipe tests keep their meaning; test_backpack_carry is the worn-storage fixture.",
     "id": "test_backpack",
     "type": "ARMOR",
     "name": "TEST backpack",
@@ -562,7 +563,15 @@
     "coverage": 30,
     "encumbrance": 2,
     "max_encumbrance": 15,
-    "pocket_data": [ { "pocket_type": "CONTAINER", "max_contains_volume": "15 L", "max_contains_weight": "30 kg", "moves": 300 } ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "carry": false,
+        "max_contains_volume": "15 L",
+        "max_contains_weight": "30 kg",
+        "moves": 300
+      }
+    ],
     "warmth": 6,
     "material_thickness": 2,
     "flags": [ "BELTED" ]
