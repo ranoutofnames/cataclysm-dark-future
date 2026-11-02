@@ -416,3 +416,41 @@ TEST_CASE("integral magazine synthesis handles two ammotypes", "[p3][loader]") {
     CHECK( pocket.ammo_restriction.at( ammotype( "battery" ) ) == 4 );
     CHECK( pocket.ammo_restriction.at( ammotype( "charcoal" ) ) == 4 );
 }
+
+// CDF: P3-7-PRE. Fixtures in data/mods/TEST_DATA/derive_counts_p3.json.
+TEST_CASE( "derive_capacity_from_magazine_pocket", "[p3][loader]" ) {
+    const itype &mag = itype_id( "p3pre_mag" ).obj();
+    REQUIRE( mag.magazine );
+    // CDF: the fixture has no `capacity` key; its MAGAZINE pocket allows 12 9mm
+    CHECK( mag.magazine->capacity == 12 );
+}
+
+TEST_CASE( "derive_max_charges_from_tool_pocket", "[p3][loader]" ) {
+    const itype &tool = itype_id( "p3pre_tool" ).obj();
+    REQUIRE( tool.tool );
+    // CDF: the fixture has no `max_charges` key; its MAGAZINE pocket allows 30 battery
+    CHECK( tool.tool->max_charges == 30 );
+    CHECK( tool.can_have_charges() );
+    CHECK( tool.tool->ammo_id.contains( ammotype( "battery" ) ) );
+}
+
+TEST_CASE( "derive_keeps_explicit_legacy_values", "[p3][loader]" ) {
+    // CDF: legacy capacity 7 against a pocket of 12, legacy max_charges 9 against 30
+    CHECK( itype_id( "p3pre_mag_legacy" ).obj().magazine->capacity == 7 );
+    CHECK( itype_id( "p3pre_tool_legacy" ).obj().tool->max_charges == 9 );
+}
+
+TEST_CASE( "derive_ammo_types_and_default_magazine_from_well", "[p3][loader]" ) {
+    const itype &tool = itype_id( "p3pre_well_tool" ).obj();
+    REQUIRE( tool.tool );
+    CHECK( tool.tool->ammo_id.contains( ammotype( "9mm" ) ) );
+    CHECK( tool.magazine_default.at( ammotype( "9mm" ) ) == itype_id( "p3pre_mag" ) );
+    item it( "p3pre_well_tool" );
+    REQUIRE( !it.ammo_types().empty() );
+    // the spawned tool gets its default cartridge in the default magazine, from the well
+    item loaded( "p3pre_well_tool", calendar::turn, 5 );
+    const item *mag = loaded.magazine_current();
+    REQUIRE( mag != nullptr );
+    CHECK( mag->typeId() == itype_id( "p3pre_mag" ) );
+    CHECK( loaded.ammo_remaining() == 5 );
+}

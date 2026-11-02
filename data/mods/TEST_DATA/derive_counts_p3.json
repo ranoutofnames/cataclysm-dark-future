@@ -1,0 +1,59 @@
+[
+  {
+    "//": "CDF: P3-7-PRE fixtures. The loader derives magazine capacity, tool max_charges, tool ammo types and the well default magazine from explicit pockets when the legacy keys are absent (tests/cdf_loader_p3_test.cpp, derive_*).",
+    "id": "p3pre_mag",
+    "type": "MAGAZINE",
+    "name": { "str": "p3pre magazine" },
+    "description": "A test magazine with a pocket and no capacity key.",
+    "weight": "93 g",
+    "volume": "53 ml",
+    "material": [ "steel" ],
+    "symbol": "#",
+    "color": "light_gray",
+    "ammo_type": [ "9mm" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 12 } } ]
+  },
+  {
+    "id": "p3pre_mag_legacy",
+    "copy-from": "p3pre_mag",
+    "type": "MAGAZINE",
+    "name": { "str": "p3pre legacy magazine" },
+    "capacity": 7,
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 12 } } ]
+  },
+  {
+    "id": "p3pre_tool",
+    "type": "TOOL",
+    "name": { "str": "p3pre integral tool" },
+    "description": "A test tool with a MAGAZINE pocket and no max_charges or ammo key.",
+    "weight": "100 g",
+    "volume": "100 ml",
+    "material": [ "plastic" ],
+    "symbol": ";",
+    "color": "blue",
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 30 } } ]
+  },
+  {
+    "id": "p3pre_tool_legacy",
+    "copy-from": "p3pre_tool",
+    "type": "TOOL",
+    "name": { "str": "p3pre legacy tool" },
+    "ammo": "battery",
+    "max_charges": 9,
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 30 } } ]
+  },
+  {
+    "id": "p3pre_well_tool",
+    "type": "TOOL",
+    "name": { "str": "p3pre well tool" },
+    "description": "A test tool with a MAGAZINE_WELL pocket and no ammo or magazines key.",
+    "weight": "100 g",
+    "volume": "100 ml",
+    "material": [ "plastic" ],
+    "symbol": ";",
+    "color": "blue",
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE_WELL", "max_item_length": "2 km", "rigid": true, "item_restriction": [ "p3pre_mag" ], "default_magazine": "p3pre_mag" }
+    ]
+  }
+]

@@ -924,6 +924,64 @@ namespace
 // (D14: tools leave cdf_legacy_direct_charges). Guns are not synthesized (AUTO-20).
 constexpr bool kSynthesizeIntegralMagazine = true;
 
+// CDF: P3-7-PRE. DDA deleted `capacity`, `max_charges` and `tool_ammo` from its data; CDF's readers
+// (item.cpp ammo_capacity, ammo_set, ammo_types) still use them. For an item with an explicit
+// MAGAZINE / MAGAZINE_WELL pocket and no legacy value, derive the value from the pocket. Items that
+// carry the legacy keys are untouched. Remove when every reader is pocket-first (P3-9).
+void derive_legacy_counts_from_pockets( itype &obj,
+                                        const std::function<const itype *( const itype_id & )> &find_type )
+{
+    int biggest = 0;
+    std::set<ammotype> mag_pocket_ammo;
+    for( const pocket_data &pocket : obj.pockets ) {
+        if( pocket.type != pocket_type::MAGAZINE ) {
+            continue;
+        }
+        for( const auto &restriction : pocket.ammo_restriction ) {
+            biggest = std::max( biggest, restriction.second );
+            mag_pocket_ammo.insert( restriction.first );
+        }
+    }
+    if( obj.magazine && obj.magazine->capacity == 0 ) {
+        obj.magazine->capacity = biggest;
+    }
+    if( !obj.tool ) {
+        return;
+    }
+    if( obj.tool->max_charges == 0 ) {
+        obj.tool->max_charges = biggest;
+    }
+    if( !obj.tool->ammo_id.empty() ) {
+        return;
+    }
+    obj.tool->ammo_id = mag_pocket_ammo;
+    // CDF: magazine wells: the ammo types are those of the allowed magazines; the well's
+    // default_magazine becomes the type's default magazine for each of them.
+    for( const pocket_data &pocket : obj.pockets ) {
+        if( pocket.type != pocket_type::MAGAZINE_WELL ) {
+            continue;
+        }
+        for( const itype_id &mag : pocket.item_id_restriction ) {
+            const itype *mt = find_type( mag );
+            if( mt == nullptr || !mt->magazine ) {
+                continue;
+            }
+            for( const ammotype &at : mt->magazine->type ) {
+                obj.tool->ammo_id.insert( at );
+                obj.magazines[at].insert( mag );
+            }
+        }
+        const itype *def = pocket.default_magazine.is_null() ? nullptr :
+                           find_type( pocket.default_magazine );
+        if( def == nullptr || !def->magazine ) {
+            continue;
+        }
+        for( const ammotype &at : def->magazine->type ) {
+            obj.magazine_default.emplace( at, pocket.default_magazine );
+        }
+    }
+}
+
 } // namespace
 
 void Item_factory::synthesize_pockets( itype &obj ) const
@@ -971,6 +1029,10 @@ void Item_factory::synthesize_pockets( itype &obj ) const
 
     // Explicit "pocket_data" always wins (CDF P1a step 2).
     if( obj.explicit_pockets ) {
+        derive_legacy_counts_from_pockets( obj, [this]( const itype_id & id ) -> const itype * {
+            const auto found = m_templates.find( id );
+            return found == m_templates.end() ? nullptr : &found->second;
+        } );
         // CDF (CARRY1): the container pockets of a worn garment default to carry, unless the
         // JSON said otherwise. Holster and ablative pockets hold one thing and are no storage.
         if( obj.armor ) {
