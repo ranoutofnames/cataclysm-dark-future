@@ -1,0 +1,522 @@
+[
+  {
+    "id": "light_load_bearing_vest",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:721 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
+    "name": {
+      "str": "light load bearing vest"
+    },
+    "description": "This lightweight harness covered in MOLLE webbing is designed to attach a few pouches, holsters and other PALS compatible accessories.  Preferred by some soldiers over directly attaching accessories to a ballistic vest as they can then be easily separated.",
+    "weight": "500 g",
+    "volume": "500 ml",
+    "looks_like": "vest",
+    "price": "47 USD",
+    "price_postapoc": "20 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "material_thickness": 1.5,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 4
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "WATER_FRIENDLY",
+      "BELTED",
+      "STURDY"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 55,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "volume_encumber_modifier": 0.3
+      }
+    ]
+  },
+  {
+    "id": "load_bearing_vest",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:748 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
+    "name": {
+      "str": "load bearing vest"
+    },
+    "description": "This vest covered in MOLLE webbing is designed to attach pouches, holsters and other PALS compatible accessories.  Preferred by some soldiers over directly attaching accessories to a ballistic vest as they can then be easily separated.",
+    "weight": "1250 g",
+    "volume": "1000 ml",
+    "looks_like": "vest",
+    "price": "74 USD",
+    "price_postapoc": "30 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "material_thickness": 1.5,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 8
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "WATER_FRIENDLY",
+      "BELTED",
+      "STURDY"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 2,
+        "coverage": 85,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "volume_encumber_modifier": 0.25
+      }
+    ]
+  },
+  {
+    "id": "heavy_load_bearing_vest",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:808 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
+    "name": {
+      "str": "heavy load bearing vest"
+    },
+    "description": "This massive vest covered in MOLLE webbing is designed to attach a large number of pouches, holsters and other PALS compatible accessories.  Preferred by some soldiers over directly attaching accessories to a ballistic vest as they can then be easily separated.",
+    "weight": "2000 g",
+    "volume": "1750 ml",
+    "looks_like": "vest",
+    "price": "130 USD",
+    "price_postapoc": "40 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "material_thickness": 1.5,
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 14
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "flags": [
+      "WATER_FRIENDLY",
+      "BELTED",
+      "STURDY"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 4,
+        "coverage": 85,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper",
+          "torso_lower"
+        ],
+        "volume_encumber_modifier": 0.2
+      }
+    ],
+    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+  },
+  {
+    "id": "heavy_load_bearing_vest_breacher",
+    "type": "ARMOR",
+    "copy-from": "heavy_load_bearing_vest",
+    "//": "CDF: DDA ammo_pouch.json:868, copy-from heavy_load_bearing_vest as in DDA; its own holster action, attach_molle size 8 (DDA, not the heavy vest's 14), weight, torso sub-locations and the two holster pockets are DDA's.",
+    "name": {
+      "str": "breacher load bearing vest"
+    },
+    "description": "This massive vest covered in MOLLE webbing is designed to attach a large number of pouches, holsters and other PALS compatible accessories.  This one has a single point sling wrapped around the shoulders using a system to keep your weapon extra secure, as well as a set of strong magnets attached to the torso and waist to hold an extra medium-sized firearm - normally a short-barrel shotgun for breaching.",
+    "use_action": [
+      {
+        "type": "holster"
+      },
+      {
+        "type": "attach_molle",
+        "size": 8
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "weight": "2900 g",
+    "pocket_data": [
+      {
+        "description": "Rifle sling.",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "min_item_volume": "1000 ml",
+        "max_contains_volume": "8 L",
+        "max_contains_weight": "8200 g",
+        "max_item_length": "120 cm",
+        "//": "volume encumber set high since the whole vest is already scaled. This equals .4 overall",
+        "volume_encumber_modifier": 2,
+        "moves": 30
+      },
+      {
+        "description": "Breaching shotgun magnets.",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "min_item_volume": "1 L",
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "8200 g",
+        "min_item_length": "45 cm",
+        "max_item_length": "80 cm",
+        "//": "volume encumber set high since the whole vest is already scaled. This equals .4 overall",
+        "volume_encumber_modifier": 2,
+        "moves": 60
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 4,
+        "coverage": 85,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper",
+          "torso_lower"
+        ],
+        "volume_encumber_modifier": 0.2
+      }
+    ],
+    "category": "armor",
+    "//3": "CDF: sub-locations torso_hanging_front, torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+  },
+  {
+    "id": "molle_medium_rucksack",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA storage.json:2105 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
+    "name": {
+      "str": "MOLLE medium rucksack"
+    },
+    "description": "The Modular Lightweight Load-carrying Equipment is an advanced military medium rucksack.  Covered with straps for modularity, it strikes a fine balance between storage space and encumbrance.  Can attach accessory pockets to the outside rigging.",
+    "weight": "1600 g",
+    "volume": "8000 ml",
+    "price": "81 USD",
+    "price_postapoc": "21 USD",
+    "material": [
+      "nylon",
+      "plastic"
+    ],
+    "symbol": "[",
+    "looks_like": "backpack",
+    "color": "green",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "40 L",
+        "max_contains_weight": "70 kg",
+        "max_item_length": "50 cm",
+        "magazine_well": "5 L",
+        "moves": 300
+      },
+      {
+        "//": "hydration pouch storage",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3250 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "30 cm",
+        "moves": 500,
+        "description": "Pouch sized for a hydration pack."
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": {
+          "volume": 8,
+          "chance": 10
+        },
+        "transparent": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": {
+          "volume": 8,
+          "chance": 10
+        },
+        "transparent": true
+      },
+      {
+        "//": "tucked against back",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "150 cm",
+        "min_item_length": "60 cm",
+        "moves": 200,
+        "extra_encumbrance": 10,
+        "description": "Tucked between your back and the backpack.",
+        "ripoff": 3,
+        "transparent": true
+      }
+    ],
+    "warmth": 10,
+    "material_thickness": 2,
+    "flags": [
+      "BELTED",
+      "WATER_FRIENDLY"
+    ],
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 8
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 6,
+        "volume_encumber_modifier": 0.15,
+        "coverage": 80,
+        "covers": [
+          "torso"
+        ]
+      }
+    ],
+    "//2": "Based upon own service and Wikipedia: https://en.wikipedia.org/wiki/MOLLE",
+    "//3": "CDF: sub-locations torso_hanging_back do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+  },
+  {
+    "id": "molle_large_rucksack",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA storage.json:2197 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
+    "name": {
+      "str": "MOLLE large rucksack"
+    },
+    "description": "The Modular Lightweight Load-carrying Equipment is an advanced military large rucksack.  Covered with straps for modularity, it strikes a fine balance between storage space and encumbrance.  Can attach accessory pockets to the outside rigging.",
+    "weight": "2200 g",
+    "volume": "11000 ml",
+    "price": "90 USD",
+    "price_postapoc": "25 USD",
+    "material": [
+      "nylon",
+      "plastic"
+    ],
+    "symbol": "[",
+    "looks_like": "backpack",
+    "color": "green",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "50 L",
+        "max_contains_weight": "80 kg",
+        "max_item_length": "55 cm",
+        "magazine_well": "8 L",
+        "moves": 300
+      },
+      {
+        "//": "hydration pouch storage",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3250 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "30 cm",
+        "moves": 500,
+        "description": "Pouch sized for a hydration pack."
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": {
+          "volume": 8,
+          "chance": 10
+        },
+        "transparent": true
+      },
+      {
+        "//": "carabiner pocket",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "120 cm",
+        "min_item_length": "20 cm",
+        "moves": 150,
+        "extra_encumbrance": 3,
+        "ripoff": 2,
+        "description": "Attached with a carabiner or strap.",
+        "activity_noise": {
+          "volume": 8,
+          "chance": 10
+        },
+        "transparent": true
+      },
+      {
+        "//": "tucked against back",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "max_contains_volume": "5 L",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "150 cm",
+        "min_item_length": "60 cm",
+        "moves": 200,
+        "extra_encumbrance": 10,
+        "description": "Tucked between your back and the backpack.",
+        "ripoff": 3,
+        "transparent": true
+      }
+    ],
+    "warmth": 12,
+    "material_thickness": 2,
+    "flags": [
+      "BELTED",
+      "WATER_FRIENDLY"
+    ],
+    "use_action": [
+      {
+        "type": "attach_molle",
+        "size": 10
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 8,
+        "volume_encumber_modifier": 0.15,
+        "coverage": 90,
+        "covers": [
+          "torso"
+        ]
+      }
+    ],
+    "//2": "Based upon own service and Wikipedia: https://en.wikipedia.org/wiki/MOLLE",
+    "//3": "CDF: sub-locations torso_hanging_back do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+  },
+  {
+    "id": "deployment_bag",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA storage.json:1005 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
+    "name": {
+      "str": "deployment bag"
+    },
+    "description": "A durable nylon bag marketed towards military personnel.  It has clips on the top and back, making it easy to attach a strap and wear it comfortably as a fanny pack.  MOLLE webbing on the back lets you affix it to body armor or a backpack.",
+    "weight": "480 g",
+    "volume": "300 ml",
+    "price": "35 USD",
+    "price_postapoc": "5 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "looks_like": "fanny",
+    "color": "green",
+    "pocket_data": [
+      {
+        "description": "Center pocket.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "3400 ml",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "25 cm",
+        "moves": 100
+      },
+      {
+        "description": "Front pocket.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1800 ml",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "22 cm",
+        "moves": 100
+      },
+      {
+        "description": "Side pocket.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "600 ml",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "15 cm",
+        "moves": 100
+      },
+      {
+        "description": "Side pocket.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "600 ml",
+        "max_contains_weight": "6 kg",
+        "max_item_length": "15 cm",
+        "moves": 100
+      }
+    ],
+    "material_thickness": 1,
+    "flags": [
+      "WATER_FRIENDLY",
+      "BELTED",
+      "PALS_LARGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 2,
+        "volume_encumber_modifier": 0.3,
+        "coverage": 45,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ]
+      }
+    ],
+    "//2": "based on the condor deployment bag and it's derivatives, holds 6.4L and has dimensions 6in H x 5.5in D x 12in W, max item lengths determined by approximating a little less based on dimensions"
+  }
+]
