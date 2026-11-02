@@ -1,0 +1,653 @@
+[
+  {
+    "id": "xl_chestrig",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:206 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "copy-from": "chestrig",
+    "name": {
+      "str": "chest rig"
+    },
+    "proportional": {
+      "weight": 1.25,
+      "volume": 1.13,
+      "price": 1.25
+    },
+    "extend": {
+      "flags": [
+        "OVERSIZE"
+      ]
+    },
+    "//2": "delete chest rig variants",
+    "//4": "CDF: dropped or converted: 'variants' is not read by CDF (PL-11 plans them); flags PREFIX_XL are not defined in CDF (flags.json) and are dropped; OVERSIZE/UNDERSIZE stay."
+  },
+  {
+    "id": "xs_chestrig",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:217 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "copy-from": "chestrig",
+    "name": {
+      "str": "chest rig"
+    },
+    "proportional": {
+      "weight": 0.75,
+      "volume": 0.75,
+      "price": 0.5
+    },
+    "extend": {
+      "flags": [
+        "UNDERSIZE"
+      ]
+    },
+    "//2": "delete chest rig variants",
+    "//4": "CDF: dropped or converted: 'variants' is not read by CDF (PL-11 plans them); flags PREFIX_XS are not defined in CDF (flags.json) and are dropped; OVERSIZE/UNDERSIZE stay."
+  },
+  {
+    "id": "nylon_quiver",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:413 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "nylon quiver"
+    },
+    "description": "A lighter and more durable quiver made of nylon, with straps to attach to a MOLLE system.",
+    "weight": "230 g",
+    "volume": "500 ml",
+    "price": "65 USD",
+    "price_postapoc": "12 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "looks_like": "bscabbard",
+    "color": "light_gray",
+    "material_thickness": 0.5,
+    "pocket_data": [
+      {
+        "ammo_restriction": {
+          "arrow": 20,
+          "bolt": 20
+        },
+        "moves": 20
+      }
+    ],
+    "flags": [
+      "BELTED",
+      "OVERSIZE",
+      "WATER_FRIENDLY",
+      "PALS_LARGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 2,
+        "coverage": 25,
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_upper_l",
+          "leg_upper_r"
+        ]
+      }
+    ],
+    "bashing": 2,
+    "//4": "CDF: dropped or converted: 'sided' is not read by CDF; DDA 'melee_damage' {bash:2} is written as CDF's flat 'bashing' (as the CDF quiver does)."
+  },
+  {
+    "id": "pipe_quiver",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:469 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "pipe quiver"
+    },
+    "description": "A makeshift quiver fashioned from a pipe, worn at the waist.  Heavier and thinner than a typical quiver, it can only hold 10 arrows or bolts.  Use insert to store arrows or bolts.",
+    "weight": "800 g",
+    "volume": "370 ml",
+    "price": "65 USD",
+    "price_postapoc": "5 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": "[",
+    "looks_like": "quiver",
+    "color": "dark_gray",
+    "material_thickness": 1.5,
+    "pocket_data": [
+      {
+        "ammo_restriction": {
+          "arrow": 10,
+          "bolt": 10
+        },
+        "moves": 20
+      }
+    ],
+    "flags": [
+      "BELTED",
+      "OVERSIZE",
+      "WATER_FRIENDLY"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 10,
+        "coverage": 25,
+        "covers": [
+          "leg_l",
+          "leg_r"
+        ],
+        "specifically_covers": [
+          "leg_upper_l",
+          "leg_upper_r"
+        ]
+      }
+    ],
+    "bashing": 10,
+    "//4": "CDF: dropped or converted: 'sided' is not read by CDF; DDA 'melee_damage' {bash:10} is written as CDF's flat 'bashing' (as the CDF quiver does)."
+  },
+  {
+    "id": "pipe_quiver_large",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:537 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "large pipe quiver"
+    },
+    "description": "A large makeshift quiver fashioned from 3 pipes, worn on the back.  Heavier and thinner than a typical large quiver, it can only hold 30 arrows or bolts.  Use insert to store arrows or bolts.",
+    "weight": "2000 g",
+    "volume": "810 ml",
+    "price": "88 USD",
+    "price_postapoc": "10 USD",
+    "material": [
+      "steel"
+    ],
+    "symbol": "[",
+    "looks_like": "quiver",
+    "color": "dark_gray",
+    "material_thickness": 1.5,
+    "pocket_data": [
+      {
+        "ammo_restriction": {
+          "arrow": 30,
+          "bolt": 30
+        },
+        "moves": 30
+      }
+    ],
+    "flags": [
+      "BELTED",
+      "OVERSIZE",
+      "WATER_FRIENDLY"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 14,
+        "coverage": 30,
+        "covers": [
+          "torso"
+        ]
+      }
+    ],
+    "//3": "CDF: sub-locations torso_hanging_back do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage.",
+    "bashing": 12,
+    "//4": "CDF: dropped or converted: 'sided' is not read by CDF; DDA 'melee_damage' {bash:12} is written as CDF's flat 'bashing' (as the CDF quiver does)."
+  },
+  {
+    "id": "quiver_simple_cloth",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:558 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "simple cloth quiver"
+    },
+    "description": "A simple quiver made out of cloth that can be adjusted to hold various types of arrows, bolts, and spears of different lengths.  Takes slightly longer to pull ammunition from than a regular quiver.  Use insert to store arrows, bolts, fishing spears, or atlatl spears.",
+    "weight": "200 g",
+    "volume": "500 ml",
+    "price": "5 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "looks_like": "quiver",
+    "color": "white",
+    "material_thickness": 1,
+    "pocket_data": [
+      {
+        "ammo_restriction": {
+          "arrow": 30,
+          "bolt": 30,
+          "atlatl": 5,
+          "fishspear": 5
+        },
+        "moves": 30
+      }
+    ],
+    "flags": [
+      "BELTED",
+      "OVERSIZE",
+      "WATER_FRIENDLY"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 6,
+        "coverage": 30,
+        "covers": [
+          "torso"
+        ]
+      }
+    ],
+    "//3": "CDF: sub-locations torso_hanging_back do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage.",
+    "//4": "CDF: dropped or converted: 'sided' is not read by CDF."
+  },
+  {
+    "id": "xl_tacvest",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:703 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "copy-from": "tacvest",
+    "name": {
+      "str": "tac vest"
+    },
+    "proportional": {
+      "weight": 1.25,
+      "volume": 1.13,
+      "price": 1.25
+    },
+    "extend": {
+      "flags": [
+        "OVERSIZE"
+      ]
+    },
+    "//4": "CDF: dropped or converted: flags PREFIX_XL are not defined in CDF (flags.json) and are dropped; OVERSIZE/UNDERSIZE stay."
+  },
+  {
+    "id": "xs_tacvest",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:712 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "copy-from": "tacvest",
+    "name": {
+      "str": "tac vest"
+    },
+    "proportional": {
+      "weight": 0.75,
+      "volume": 0.75,
+      "price": 0.5
+    },
+    "extend": {
+      "flags": [
+        "UNDERSIZE"
+      ]
+    },
+    "//4": "CDF: dropped or converted: flags PREFIX_XS are not defined in CDF (flags.json) and are dropped; OVERSIZE/UNDERSIZE stay."
+  },
+  {
+    "id": "load_bearing_vest_sling",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:775 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "copy-from": "load_bearing_vest",
+    "name": {
+      "str": "load bearing vest with sling",
+      "str_pl": "load bearing vests with slings"
+    },
+    "description": "This vest covered in MOLLE webbing is designed to attach pouches, holsters and other PALS compatible accessories.  Preferred by some soldiers over directly attaching accessories to a ballistic vest as they can then be easily separated.  This one has a single point sling wrapped around the shoulders using a system to keep your weapon extra secure.",
+    "weight": "1500 g",
+    "use_action": [
+      {
+        "type": "holster"
+      },
+      {
+        "type": "attach_molle",
+        "size": 8
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "pocket_data": [
+      {
+        "description": "Rifle sling.",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "min_item_volume": "1000 ml",
+        "max_contains_volume": "8 L",
+        "max_contains_weight": "8200 g",
+        "max_item_length": "120 cm",
+        "//": "volume encumber set high since the whole vest is already scaled. This equals .4 overall",
+        "volume_encumber_modifier": 1.6,
+        "moves": 30
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 2,
+        "coverage": 85,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "volume_encumber_modifier": 0.25
+      }
+    ],
+    "//3": "CDF: sub-locations torso_hanging_front do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+  },
+  {
+    "id": "heavy_load_bearing_vest_sling",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:835 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "copy-from": "heavy_load_bearing_vest",
+    "name": {
+      "str": "heavy load bearing vest with sling",
+      "str_pl": "heavy load bearing vests with slings"
+    },
+    "description": "This massive vest covered in MOLLE webbing is designed to attach a large number of pouches, holsters and other PALS compatible accessories.  Preferred by some soldiers over directly attaching accessories to a ballistic vest as they can then be easily separated.  This one has a single point sling wrapped around the shoulders using a system to keep your weapon extra secure.",
+    "use_action": [
+      {
+        "type": "holster"
+      },
+      {
+        "type": "attach_molle",
+        "size": 14
+      },
+      {
+        "type": "detach_molle"
+      }
+    ],
+    "weight": "2300 g",
+    "pocket_data": [
+      {
+        "description": "Rifle sling.",
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "min_item_volume": "1000 ml",
+        "max_contains_volume": "8 L",
+        "max_contains_weight": "8200 g",
+        "max_item_length": "120 cm",
+        "//": "volume encumber set high since the whole vest is already scaled. This equals .4 overall",
+        "volume_encumber_modifier": 2,
+        "moves": 30
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 4,
+        "coverage": 85,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper",
+          "torso_lower"
+        ],
+        "volume_encumber_modifier": 0.2
+      }
+    ],
+    "//3": "CDF: sub-locations torso_hanging_front, torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+  },
+  {
+    "id": "ammo_satchel_leather",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:1404 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "leather ammo satchel"
+    },
+    "description": "A sturdy leather ammo bag worn at the waist.  It is capable of holding a single large magazine close at hand.",
+    "weight": "590 g",
+    "volume": "500 ml",
+    "price": "20 USD",
+    "price_postapoc": "6 USD",
+    "material": [
+      "leather"
+    ],
+    "symbol": "[",
+    "looks_like": "ragpouch",
+    "color": "brown",
+    "material_thickness": 2,
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_length": "300 mm",
+        "max_contains_volume": "1500 ml",
+        "max_contains_weight": "2 kg",
+        "moves": 40,
+        "flag_restriction": [
+          "MAG_COMPACT",
+          "MAG_BULKY"
+        ],
+        "volume_encumber_modifier": 0.3
+      }
+    ],
+    "use_action": {
+      "type": "holster",
+      "holster_prompt": "Stash ammo",
+      "holster_msg": "You stash your %s."
+    },
+    "flags": [
+      "WATER_FRIENDLY",
+      "OVERSIZE",
+      "BELTED",
+      "PALS_LARGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 1,
+        "coverage": 20,
+        "covers": [
+          "torso"
+        ]
+      }
+    ],
+    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+  },
+  {
+    "id": "chestpouch_leather",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:1434 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "leather chest ammo pouch",
+      "str_pl": "leather chest ammo pouches"
+    },
+    "description": "A leather ammo pouch that can be strapped to your chest and hold a single magazine close at hand.",
+    "weight": "1140 g",
+    "volume": "250 ml",
+    "price": "12 USD 50 cent",
+    "price_postapoc": "2 USD",
+    "material": [
+      "leather"
+    ],
+    "symbol": "[",
+    "looks_like": "ragpouch",
+    "color": "brown",
+    "material_thickness": 2,
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_length": "240 mm",
+        "max_contains_volume": "750 ml",
+        "max_contains_weight": "2 kg",
+        "moves": 40,
+        "flag_restriction": [
+          "MAG_COMPACT"
+        ],
+        "volume_encumber_modifier": 0.3
+      }
+    ],
+    "use_action": {
+      "type": "holster",
+      "holster_prompt": "Stash ammo",
+      "holster_msg": "You stash your %s."
+    },
+    "flags": [
+      "WATER_FRIENDLY",
+      "OVERSIZE",
+      "BELTED",
+      "PALS_SMALL"
+    ],
+    "armor_portion_data": [
+      {
+        "coverage": 25,
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "belt_loop_small",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:1464 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "small belt loop"
+    },
+    "description": "A MOLLE-compatible loop for attaching small tools to a load-bearing vest.",
+    "weight": "25 g",
+    "volume": "25 ml",
+    "price": "10 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "looks_like": "leather_pouch",
+    "color": "brown",
+    "material_thickness": 1,
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "500 g",
+        "max_item_length": "30 cm",
+        "moves": 50,
+        "flag_restriction": [
+          "BELT_CLIP"
+        ],
+        "volume_encumber_modifier": 0.3,
+        "transparent": true
+      }
+    ],
+    "flags": [
+      "CANT_WEAR",
+      "WATER_FRIENDLY",
+      "PALS_SMALL"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 0,
+        "coverage": 0,
+        "covers": [
+          "torso"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "belt_loop_medium",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:1494 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "medium belt loop"
+    },
+    "description": "A MOLLE-compatible loop for attaching tools and some weapons to a load-bearing vest.",
+    "weight": "50 g",
+    "volume": "50 ml",
+    "price": "10 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "looks_like": "leather_pouch",
+    "color": "brown",
+    "material_thickness": 1,
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "1500 ml",
+        "max_contains_weight": "1500 g",
+        "max_item_length": "60 cm",
+        "moves": 50,
+        "flag_restriction": [
+          "BELT_CLIP"
+        ],
+        "volume_encumber_modifier": 0.3,
+        "transparent": true
+      }
+    ],
+    "flags": [
+      "CANT_WEAR",
+      "WATER_FRIENDLY",
+      "PALS_MEDIUM"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 0,
+        "coverage": 0,
+        "covers": [
+          "torso"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "belt_loop_large",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:1524 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
+    "name": {
+      "str": "large belt loop"
+    },
+    "description": "A MOLLE-compatible loop for attaching large tools and weapons to a load-bearing vest.",
+    "weight": "100 g",
+    "volume": "100 ml",
+    "price": "10 USD",
+    "price_postapoc": "1 USD",
+    "material": [
+      "nylon"
+    ],
+    "symbol": "[",
+    "looks_like": "leather_pouch",
+    "color": "brown",
+    "material_thickness": 1,
+    "pocket_data": [
+      {
+        "holster": true,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "6000 g",
+        "max_item_length": "100 cm",
+        "moves": 50,
+        "flag_restriction": [
+          "BELT_CLIP"
+        ],
+        "volume_encumber_modifier": 0.3,
+        "transparent": true
+      }
+    ],
+    "flags": [
+      "CANT_WEAR",
+      "WATER_FRIENDLY",
+      "PALS_LARGE"
+    ],
+    "armor_portion_data": [
+      {
+        "encumbrance": 0,
+        "coverage": 0,
+        "covers": [
+          "torso"
+        ]
+      }
+    ]
+  }
+]

@@ -216,3 +216,83 @@ TEST_CASE( "pch1_oversize_pouch_is_refused", "[armor][pch1]" )
     CHECK_FALSE( attach_pouch( *vest, "radio_pouch" ) );
     CHECK( vest->contents.get_added_pockets().size() == 2 );
 }
+
+namespace
+{
+struct extra_row {
+    const char *id;
+    int pockets;           // pocket count
+    const char *pals;      // the one PALS_* flag, or nullptr
+};
+
+struct belt_loop_row {
+    const char *id;
+    const char *pals;
+    int pals_size;
+    int weight_g;
+    int volume_ml;
+    int pocket_ml; // max_contains_volume of the single holster pocket
+};
+} // namespace
+
+TEST_CASE( "pch1_extra_items_load", "[armor][pch1]" )
+{
+    clear_all_state();
+    // CDF: values of data/json/items/armor/cdf_pouch_extras.json (DDA ammo_pouch.json:206-1524)
+    const std::vector<extra_row> rows = {
+        { "xl_chestrig", -1, nullptr },
+        { "xs_chestrig", -1, nullptr },
+        { "nylon_quiver", 1, "PALS_LARGE" },
+        { "pipe_quiver", 1, nullptr },
+        { "pipe_quiver_large", 1, nullptr },
+        { "quiver_simple_cloth", 1, nullptr },
+        { "xl_tacvest", -1, nullptr },
+        { "xs_tacvest", -1, nullptr },
+        { "load_bearing_vest_sling", 1, nullptr },
+        { "heavy_load_bearing_vest_sling", 1, nullptr },
+        { "ammo_satchel_leather", 1, "PALS_LARGE" },
+        { "chestpouch_leather", 1, "PALS_SMALL" },
+        { "belt_loop_small", 1, "PALS_SMALL" },
+        { "belt_loop_medium", 1, "PALS_MEDIUM" },
+        { "belt_loop_large", 1, "PALS_LARGE" },
+    };
+    for( const extra_row &row : rows ) {
+        CAPTURE( row.id );
+        REQUIRE( itype_id( row.id ).is_valid() );
+        detached_ptr<item> it = item::spawn( itype_id( row.id ), calendar::turn );
+        if( row.pockets >= 0 ) {
+            CHECK( static_cast<int>( it->contents.get_pockets().size() ) == row.pockets );
+        }
+        if( row.pals != nullptr ) {
+            CHECK( it->has_flag( flag_id( row.pals ) ) );
+            CHECK( it->can_attach_as_pocket() );
+        }
+    }
+    // CDF: the sized variants copy-from chestrig/tacvest and add the size flags (DDA ammo_pouch.json:206-217, 703-712; the PREFIX_* flags are not in CDF)
+    CHECK( item::spawn( itype_id( "xl_chestrig" ), calendar::turn )->has_flag( flag_id( "OVERSIZE" ) ) );
+    CHECK( item::spawn( itype_id( "xs_tacvest" ), calendar::turn )->has_flag( flag_id( "UNDERSIZE" ) ) );
+    // CDF: the slings keep the load bearing vests' MOLLE size (DDA ammo_pouch.json:775, 835)
+    CHECK( molle_size( *item::spawn( itype_id( "load_bearing_vest_sling" ), calendar::turn ) ) == 8 );
+    CHECK( molle_size( *item::spawn( itype_id( "heavy_load_bearing_vest_sling" ), calendar::turn ) ) == 14 );
+    // CDF: belt loops hold what cdf_pouch_extras.json says (DDA ammo_pouch.json:1464-1524)
+    const std::vector<belt_loop_row> loops = {
+        { "belt_loop_small", "PALS_SMALL", 1, 25, 25, 500 },
+        { "belt_loop_medium", "PALS_MEDIUM", 2, 50, 50, 1500 },
+        { "belt_loop_large", "PALS_LARGE", 3, 100, 100, 2000 },
+    };
+    for( const belt_loop_row &row : loops ) {
+        CAPTURE( row.id );
+        detached_ptr<item> it = item::spawn( itype_id( row.id ), calendar::turn );
+        CHECK( it->get_pocket_size() == row.pals_size );
+        CHECK( it->weight() == units::from_gram( row.weight_g ) );
+        CHECK( it->volume() == units::from_milliliter( row.volume_ml ) );
+        CHECK( it->has_flag( flag_id( "CANT_WEAR" ) ) );
+        const std::list<item_pocket> &pockets = it->contents.get_pockets();
+        REQUIRE( pockets.size() == 1 );
+        CHECK( pockets.front().volume_capacity() == units::from_milliliter( row.pocket_ml ) );
+    }
+    // CDF: quiver_takedown_bow (item_restriction takedown_recurbow_folded) and modular_papr_strap
+    // (item_restriction molle_papr_blower_off/on) are not shipped: those items do not exist in CDF (blocked.md)
+    CHECK_FALSE( itype_id( "modular_papr_strap" ).is_valid() );
+    CHECK_FALSE( itype_id( "quiver_takedown_bow" ).is_valid() );
+}
