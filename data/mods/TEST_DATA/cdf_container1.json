@@ -1,0 +1,35 @@
+[
+  {
+    "id": "test_container1_breacher",
+    "type": "profession",
+    "//": "CDF: CONTAINER1 S3, the shape of the Fuji mil_breacher shells entry (entry-level container-item naming a carry-only garment).",
+    "items": {
+      "both": { "entries": [ { "item": "shot_00", "charges": 12, "container-item": "bandolier_shotgun" } ] }
+    },
+    "name": "container1 breacher",
+    "description": "container1 breacher",
+    "points": 0
+  },
+  {
+    "id": "test_container1_carry_prof",
+    "type": "profession",
+    "items": {
+      "both": { "entries": [ { "item": "test_item_with_charges", "charges": 7, "container-item": "test_backpack_carry" } ] }
+    },
+    "name": "container1 carry",
+    "description": "container1 carry",
+    "points": 0
+  },
+  {
+    "id": "test_container1_modifier_carry",
+    "type": "item_group",
+    "subtype": "collection",
+    "entries": [ { "item": "test_item_with_charges", "charges": 100000, "container-group": "test_container1_carry_cont" } ]
+  },
+  {
+    "id": "test_container1_carry_cont",
+    "type": "item_group",
+    "subtype": "collection",
+    "entries": [ { "item": "test_backpack_carry" } ]
+  }
+]

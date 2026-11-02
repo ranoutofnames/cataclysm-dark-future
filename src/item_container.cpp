@@ -69,7 +69,8 @@ detached_ptr<item> item::in_container( const itype_id &cont, detached_ptr<item> 
     }
     detached_ptr<item> container = item::spawn( cont, self->birthday() );
     // CDF: BN items have no variants, so the container variant is not applied
-    if( container->is_container() ) {
+    // CDF: any container pocket, carry or not (DDA is_container())
+    if( container->has_pocket_type( pocket_type::CONTAINER ) ) {
         // CDF: BN containers that are sealed by their type (unseals_into) are sealed from the start,
         // so spawning has to be allowed to fill them (DDA seals after filling)
         container->fill_with( *self, qty, false, /*allow_sealed=*/true );
@@ -408,7 +409,8 @@ ret_val<void> item::can_contain( const item &it, int &copies_remaining, const bo
         // or does this already contain it?
         return ret_val<void>::make_failure( "can't put a container into itself" );
     }
-    if( nested && !this->is_container() ) {
+    // CDF: any container pocket, carry or not (DDA is_container())
+    if( nested && !has_pocket_type( pocket_type::CONTAINER ) ) {
         return ret_val<void>::make_failure();
     }
     // disallow putting portable holes into bags of holding
@@ -500,7 +502,8 @@ pocket_choice item::best_pocket( const item &it, const item *avoid, const bool a
 
 bool item::spill_contents( Character &c )
 {
-    if( ( !is_container() && !is_magazine() &&
+    // CDF: any container pocket, carry or not (DDA is_container())
+    if( ( !has_pocket_type( pocket_type::CONTAINER ) && !is_magazine() &&
           !has_pocket_type( pocket_type::MAGAZINE_WELL ) ) ||
         is_container_empty() ) {
         return true;
@@ -518,7 +521,8 @@ bool item::spill_contents( Character &c )
 
 bool item::spill_contents( const tripoint_bub_ms &pos )
 {
-    if( ( !is_container() && !is_magazine() &&
+    // CDF: any container pocket, carry or not (DDA is_container())
+    if( ( !has_pocket_type( pocket_type::CONTAINER ) && !is_magazine() &&
           !has_pocket_type( pocket_type::MAGAZINE_WELL ) ) ||
         is_container_empty() ) {
         return true;

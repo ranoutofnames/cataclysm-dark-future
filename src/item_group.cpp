@@ -648,7 +648,12 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
 
     if( max_capacity == -1 && cont != nullptr && !cont->is_null() && ( new_item->made_of( LIQUID ) ||
             ( !new_item->is_tool() && !new_item->is_gun() && !new_item->is_magazine() ) ) ) {
-        max_capacity = new_item->charges_per_volume( cont->get_container_capacity() );
+        // CDF: a garment with only carry pockets has no get_container_capacity(); use its total capacity
+        units::volume cont_capacity = cont->get_container_capacity();
+        if( cont_capacity == 0_ml ) {
+            cont_capacity = cont->get_total_capacity();
+        }
+        max_capacity = new_item->charges_per_volume( cont_capacity );
     }
 
     const bool charges_not_set = charges.first == -1 && charges.second == -1;
