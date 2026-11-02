@@ -60,6 +60,33 @@ auto well_of( const item &it ) -> const item_pocket *
     return nullptr;
 }
 
+// CDF: the id lists of all live MAGAZINE_WELL pockets, united (DDA item_contents::magazine_compatible,
+// item_gun_tool_ammo.cpp:2280-2283). A well restricted only by flag contributes nothing.
+auto live_well_ids( const item &it ) -> std::set<itype_id>
+{
+    std::set<itype_id> ids;
+    for( const item_pocket &pocket : it.get_contents().get_pockets() ) {
+        if( pocket.is_type( pocket_type::MAGAZINE_WELL ) ) {
+            ids.insert( pocket.get_data().item_id_restriction.begin(),
+                        pocket.get_data().item_id_restriction.end() );
+        }
+    }
+    return ids;
+}
+
+// CDF: a well with a flag restriction comes from the item's own pocket_data (DDA data); the wells the loader builds
+// from `magazines` (item_factory.cpp:1029) carry id lists only.
+auto has_flag_restricted_well( const item &it ) -> bool
+{
+    for( const item_pocket &pocket : it.get_contents().get_pockets() ) {
+        if( pocket.is_type( pocket_type::MAGAZINE_WELL ) &&
+            !pocket.get_data().get_flag_restrictions().empty() ) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // CDF: guard G of MAGPOCKET: an installed mod with ammo_modifier or magazine_adaptor keeps the BN body.
 // Some retool items (hk_ump45_retool_*, ar15_retool_300blk) spawn with such a mod built in; they are
 // covered by T6, not by the legacy loops (reported through the skipped count).
@@ -172,7 +199,9 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
 {
     int checked = 0;
     int skipped = 0;
+    int with_well = 0;
     std::vector<std::string> bad;
+    std::vector<std::string> bad_well;
     std::vector<std::string> unfireable; // magazines naming an ammo the item cannot fire: reported
     for( const itype *t : item_controller->all() ) {
         if( !( t->gun || t->tool ) || t->magazines.empty() ) {
@@ -196,6 +225,17 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
             ++skipped;
             continue;
         }
+        if( has_flag_restricted_well( *it ) ) {
+            // CDF: the loader builds a well with the id lists of `magazines` for every other gun and tool, so the
+            // two answers agree there. A data-authored well restricted by flag (FILT1: rebreather, masks,
+            // game_watch...) answers with its id lists (DDA item_gun_tool_ammo.cpp:2280-2283), not the legacy
+            // table; compared with the well
+            ++with_well;
+            if( it->magazine_compatible() != live_well_ids( *it ) ) {
+                bad_well.push_back( t->get_id().str() );
+            }
+            continue;
+        }
         ++checked;
         if( it->magazine_compatible() != expected ) {
             bad.push_back( t->get_id().str() );
@@ -204,11 +244,50 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
     CHECK( checked > 100 );
     CAPTURE( bad );
     CHECK( bad.empty() );
+    CAPTURE( bad_well );
+    CHECK( bad_well.empty() );
+    WARN( "T5 items with a flag-restricted MAGAZINE_WELL, compared with the well: " << with_well );
     // CDF: the unfireable count and list go to the REPORT
     WARN( "T5 items with a guard-G mod built in, skipped: " << skipped );
     WARN( "magazines naming an ammo the item cannot fire: " << unfireable.size() );
     for( const std::string &u : unfireable ) {
         INFO( "unfireable " << u );
+    }
+}
+
+// T5b
+TEST_CASE( "flag_restricted_wells_answer_from_the_well", "[p3][magazine][pocket]" )
+{
+    // CDF: FILT1 gives these items DDA flag-restricted wells (no id list): the live answer is the union of the
+    // id lists (empty), the legacy `magazines` list is no longer what magazine_compatible() returns.
+    struct expectation {
+        const char *id;
+        const char *flag;
+        const char *default_mag;
+    };
+    const std::vector<expectation> cases = {
+        { "rebreather", "REBREATHER_CART", "rebreather_cartridge_o2" },
+        { "mask_gas", "GASFILTER_MED", "gasfilter_med" },
+        { "game_watch", "BATTERY_ULTRA_LIGHT", "light_minus_battery_cell" },
+    };
+    for( const expectation &c : cases ) {
+        CAPTURE( c.id );
+        detached_ptr<item> it = item::spawn( itype_id( c.id ) );
+        REQUIRE_FALSE( it->type->magazines.empty() );
+        const item_pocket *well = well_of( *it );
+        REQUIRE( well != nullptr );
+        CHECK( well->get_data().get_flag_restrictions().count( flag_id( c.flag ) ) == 1 );
+        CHECK( well->get_data().item_id_restriction.empty() );
+        CHECK( it->magazine_compatible() == live_well_ids( *it ) );
+        CHECK( it->magazine_compatible().empty() );
+        CHECK( it->magazine_default() == itype_id( c.default_mag ) );
+        // the legacy answer would have been the table, which this must differ from
+        std::set<itype_id> legacy;
+        for( const auto &kv : it->type->magazines ) {
+            legacy.insert( kv.second.begin(), kv.second.end() );
+        }
+        REQUIRE_FALSE( legacy.empty() );
+        CHECK( it->magazine_compatible() != legacy );
     }
 }
 
