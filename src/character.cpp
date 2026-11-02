@@ -3528,10 +3528,10 @@ units::volume Character::volume_capacity_reduced_by(
         return units::volume_max;
     }
 
-    // DDA volume_capacity, less what leaves with excluded items
+    // the carried capacity (CAP1: the carry pockets only), less what leaves with excluded items
     // CDF: packmule_modifier scales the worn pockets, so the excluded ones are scaled the same way
     const double packmule = mutation_value( "packmule_modifier" );
-    units::volume ret = volume_capacity();
+    units::volume ret = carried_capacity();
     if( !without.empty() ) {
         for( const item * const &worn_it : worn ) {
             if( !without.contains( const_cast<item *>( worn_it ) ) ) {
@@ -11074,7 +11074,7 @@ void Character::apply_persistent_morale()
 {
     // Hoarders get a morale penalty if they're not carrying a full inventory.
     if( has_trait( trait_HOARDER ) ) {
-        int pen = ( volume_capacity() - carried_volume() ) / 125_ml;
+        int pen = ( carried_capacity() - carried_volume() ) / 125_ml;
         if( pen > 70 ) {
             pen = 70;
         }
@@ -13933,7 +13933,41 @@ units::volume Character::carried_volume() const
 
 units::volume Character::carried_capacity() const
 {
-    return volume_capacity();
+    // CDF: DEBUG_STORAGE has no limit, as in volume_capacity()
+    if( has_trait( trait_DEBUG_STORAGE ) ) {
+        return units::volume_max;
+    }
+    // CAP1: the pair of carried_volume(): the same carry pockets, summed in the three parts of
+    // volume_capacity() (character_inventory.cpp), so holster and plate pockets do not count
+    const auto carry_sum = []( const item_pocket & pocket ) -> units::volume {
+        return pocket.is_forbidden() ? 0_ml : pocket.volume_capacity();
+    };
+    units::volume wielded_capacity = 0_ml;
+    units::volume worn_capacity = 0_ml;
+    units::volume body_capacity = 0_ml;
+    if( const item *weapon = wielded_for_carry( *this ) ) {
+        for( const item_pocket &pocket : weapon->contents.get_pockets() ) {
+            if( is_carried_pocket( pocket ) ) {
+                wielded_capacity += carry_sum( pocket );
+            }
+        }
+    }
+    for_each_carry_pocket( worn, nullptr, [&]( const item_pocket & pocket, bool ) {
+        worn_capacity += carry_sum( pocket );
+    } );
+    // CDF: packmule_modifier scales the worn pockets only, as in volume_capacity()
+    const double packmule = mutation_value( "packmule_modifier" );
+    if( packmule != 1.0 && worn_capacity < units::volume_max / 2 ) {
+        worn_capacity = units::from_milliliter( static_cast<int>( worn_capacity.value() * packmule ) );
+    }
+    if( const item *storage = get_body_storage() ) {
+        for( const item_pocket &pocket : storage->contents.get_pockets() ) {
+            if( pocket.is_type( pocket_type::CONTAINER ) ) {
+                body_capacity += carry_sum( pocket );
+            }
+        }
+    }
+    return wielded_capacity + worn_capacity + body_capacity;
 }
 
 units::volume Character::free_carry_volume() const

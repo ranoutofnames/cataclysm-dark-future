@@ -1446,7 +1446,7 @@ class Character : public Creature, public location_visitable<Character>
         ret_val<bool> stash_refusal( const item &it, const item *avoid = nullptr ) const;
         /** Volume held by the worn `carry` pockets and the body storage. */
         units::volume carried_volume() const;
-        /** Capacity of the worn `carry` pockets (times the multiplier) and the body storage. */
+        /** Capacity of the wielded and worn `carry` pockets (worn ones times the packmule multiplier) and the body storage: the pair of carried_volume(). */
         units::volume carried_capacity() const;
         /** Room left in the single roomiest non-holster pocket: the largest thing that still fits. */
         units::volume free_carry_volume() const;
@@ -1632,7 +1632,7 @@ class Character : public Creature, public location_visitable<Character>
         units::mass weight_carried_reduced_by( const excluded_stacks &without ) const;
         units::volume volume_carried_reduced_by( const excluded_stacks &without ) const;
         units::mass weight_capacity() const override;
-        /** DDA character_inventory.cpp:1860; CDF adds body storage and DEBUG_STORAGE. */
+        /** DDA character_inventory.cpp:1860; CDF adds body storage and DEBUG_STORAGE. The sum of every non-forbidden CONTAINER pocket, holsters and plates included, so it is not the carried bar: use carried_capacity() against carried_volume(). */
         units::volume volume_capacity( const std::function<bool( const item_pocket & )> &include_pocket =
                                            item_pocket::ok_default_containers ) const;
         /** Capacity of nested pockets even if their parents are not included (DDA). */

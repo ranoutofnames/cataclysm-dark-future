@@ -34,9 +34,8 @@ struct volume_id {
 const std::vector<volume_id> &volume_ids()
 {
     static const std::vector<volume_id> ids = {
-        // CDF: storage.json:1143-1180: one 60 L pocket plus two 2500 ml sheath holster pockets. carried_capacity()
-    // sums every CONTAINER pocket (item_pocket::ok_default_containers), carry or not, so it already
-    // rises by 65 L before CARRY1; free_carry_volume() uses the carry pockets only and rises by 60 L. (the sheath holsters are holster pockets)
+        // CDF: storage.json:1143-1180: one 60 L carry pocket plus two 2500 ml sheath holster pockets (holsters,
+        // not counted here; CAP1: carried_capacity() is the carry sum, volume_capacity() the 65 L DDA sum)
         { "survivor_hiking_backpack", 60000, -1 },
         { "jerrypack", 10000, 10000 }, // DDA: table-242 jerrypack
         { "javelin_bag", 6250, 6250 }, // DDA: table-242 javelin_bag
@@ -144,13 +143,15 @@ TEST_CASE( "carry1_backpack_raises_capacity", "[carry1][pocket]" )
     avatar &u = get_avatar();
     clear_character( u, false );
     const units::volume cap0 = u.carried_capacity();
+    const units::volume vcap0 = u.volume_capacity();
     const units::volume free0 = u.free_carry_volume();
 
     u.wear_item( item::spawn( itype_id( "survivor_hiking_backpack" ), calendar::turn ), false );
-    // CDF: storage.json:1143-1180: one 60 L pocket plus two 2500 ml sheath holster pockets. carried_capacity()
-    // sums every CONTAINER pocket (item_pocket::ok_default_containers), carry or not, so it already
-    // rises by 65 L before CARRY1; free_carry_volume() uses the carry pockets only and rises by 60 L.
-    CHECK( u.carried_capacity() == cap0 + 65000_ml );
+    // CDF: storage.json:1143-1180: one 60 L carry pocket plus two 2500 ml sheath holster pockets.
+    // CAP1: carried_capacity() is the carry-pocket sum and rises by 60 L like free_carry_volume();
+    // volume_capacity() is the DDA sum of every CONTAINER pocket (ok_default_containers) and rises by 65 L.
+    CHECK( u.carried_capacity() == cap0 + 60000_ml );
+    CHECK( u.volume_capacity() == vcap0 + 65000_ml );
     CHECK( u.free_carry_volume() == free0 + 60000_ml );
     CHECK( u.carried_volume() == 0_ml );
 
