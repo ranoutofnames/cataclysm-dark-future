@@ -416,7 +416,7 @@ bool do_pickup( std::vector<pick_drop_selection> &targets, bool autopickup )
     bool stash_successful = true;
     Character &u = get_avatar();
     bool weight_was_okay = ( u.weight_carried() <= u.weight_capacity() );
-    bool volume_was_okay = ( u.carried_volume() <= u.volume_capacity() );
+    bool volume_was_okay = ( u.carried_volume() <= u.carried_capacity() );
     bool offered_swap = false;
 
     // Map of items picked up so we can output them all at the end and
@@ -457,7 +457,7 @@ bool do_pickup( std::vector<pick_drop_selection> &targets, bool autopickup )
     if( weight_was_okay && u.weight_carried() > u.weight_capacity() ) {
         add_msg( m_bad, _( "You're overburdened!" ) );
     }
-    if( volume_was_okay && u.carried_volume() > u.volume_capacity() ) {
+    if( volume_was_okay && u.carried_volume() > u.carried_capacity() ) {
         add_msg( m_bad, _( "You struggle to carry such a large volume!" ) );
     }
 
@@ -884,8 +884,8 @@ auto pick_up_from_items( const std::vector<item_stack::iterator> &here, const in
                         "%.1f", round_up( convert_weight( g->u.weight_capacity() ), 1 ) );
             const std::string fmted_volume_predict = colorize(
                         format_volume( volume_predict ),
-                        volume_predict > g->u.volume_capacity() ? c_red : c_white );
-            const std::string fmted_volume_capacity = format_volume( g->u.volume_capacity() );
+                        volume_predict > g->u.carried_capacity() ? c_red : c_white );
+            const std::string fmted_volume_capacity = format_volume( g->u.carried_capacity() );
 
             trim_and_print( w_pickup, point_zero, pickupW, c_white,
                             string_format( _( "PICK Wgt %1$s/%2$s  Vol %3$s/%4$s" ),

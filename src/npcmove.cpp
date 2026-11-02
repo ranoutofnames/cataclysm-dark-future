@@ -3585,7 +3585,7 @@ void npc::drop_items( units::mass drop_weight, units::volume drop_volume, int mi
              "vol %3.2f/%3.2f L)",
              name, units::to_kilogram( drop_weight ), units::to_liter( drop_volume ), inv_size(),
              units::to_kilogram( weight_carried() ), units::to_kilogram( weight_capacity() ),
-             units::to_liter( carried_volume() ), units::to_liter( volume_capacity() ) );
+             units::to_liter( carried_volume() ), units::to_liter( carried_capacity() ) );
 
     units::mass weight_dropped = units::from_gram( 0 );
     units::volume volume_dropped = units::from_liter( 0 );

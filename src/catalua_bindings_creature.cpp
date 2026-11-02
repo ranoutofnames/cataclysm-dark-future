@@ -1060,7 +1060,12 @@ void cata::detail::reg_character( sol::state &lua )
             return c.carried_volume();
         } );
 
-        DOC( "Total volume capacity of the carrying pockets" );
+        DOC( "Capacity of the carrying pockets (the pair of volume_carried)" );
+        luna::set_fx( ut, "carried_capacity", []( const UT_CLASS & c ) -> units::volume {
+            return c.carried_capacity();
+        } );
+
+        DOC( "Total volume capacity of every container pocket, holsters and plates included (not the pair of volume_carried; use carried_capacity)" );
         luna::set_fx( ut, "volume_capacity", []( const UT_CLASS & c ) -> units::volume {
             return c.volume_capacity();
         } );

@@ -3906,7 +3906,7 @@ inventory_selector::header_stats inventory_pickup_selector::get_raw_stats() cons
             weight_carried,
             u.weight_capacity(),
             volume_carried,
-            u.volume_capacity() ) );
+            u.carried_capacity() ) );
 }
 
 // CDF: P3-5-2a, DDA item_location::can_reload_with( ammo, now ) (item_location.cpp 1524-1537),

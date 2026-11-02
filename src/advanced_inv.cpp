@@ -228,7 +228,7 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         const double weight_carried = convert_weight( g->u.weight_carried() );
         const double weight_capacity = convert_weight( g->u.weight_capacity() );
         std::string volume_carried = format_volume( g->u.carried_volume() );
-        std::string volume_capacity = format_volume( g->u.volume_capacity() );
+        std::string volume_capacity = format_volume( g->u.carried_capacity() );
         // align right, so calculate formatted head length
         const std::string formatted_head = string_format( "%.1f/%.1f %s  %s/%s %s",
                                            weight_carried, weight_capacity, weight_units(),
@@ -239,7 +239,7 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         nc_color color = weight_carried > weight_capacity ? c_red : c_light_green;
         mvwprintz( window, point( hrightcol, 4 ), color, "%.1f", weight_carried );
         wprintz( window, c_light_gray, "/%.1f %s  ", weight_capacity, weight_units() );
-        color = g->u.carried_volume().value() > g->u.volume_capacity().value() ? c_red : c_light_green;
+        color = g->u.carried_volume().value() > g->u.carried_capacity().value() ? c_red : c_light_green;
         wprintz( window, color, volume_carried );
         wprintz( window, c_light_gray, "/%s %s", volume_capacity, volume_units_abbr() );
     } else {
