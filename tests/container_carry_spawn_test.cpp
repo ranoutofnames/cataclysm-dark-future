@@ -2,7 +2,6 @@
 // item::is_container(), but items spawned "inside" it, nested inserts and spills must still see its
 // carry pockets (DDA is_container() is any CONTAINER pocket).
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -37,9 +36,34 @@ TEST_CASE( "in_container_wraps_in_a_carry_only_garment", "[container1][item_spaw
     CHECK( sum_counts( *res ) == 1 );
 }
 
-TEST_CASE( "profession_container_item_keeps_the_bandolier", "[container1][item_spawn]" )
+// CDF: a profession entry with the string form of "container-item" is loaded as the entry modifier's
+// container (item_factory.cpp load_sub_ref) and spawned by Item_modifier::modify, not by
+// item::in_container; what matters there is the capacity of the carry garment (modifier charges).
+// The real bandolier_shotgun has a plain (non-carry) container pocket, so it was never affected.
+TEST_CASE( "profession_container_item_keeps_the_carry_garment", "[container1][item_spawn]" )
 {
     clear_all_state();
+    const profession &prof = string_id<profession>( "test_container1_carry_prof" ).obj();
+    std::vector<detached_ptr<item>> spawned = prof.items( true, {} );
+    int garments = 0;
+    int charges = 0;
+    for( const detached_ptr<item> &it : spawned ) {
+        if( it->typeId() == itype_test_backpack_carry ) {
+            garments++;
+            charges += sum_counts( *it );
+        }
+        // CDF: no loose item beside the garment
+        CHECK( it->typeId() != itype_id( "test_item_with_charges" ) );
+    }
+    CHECK( garments == 1 );
+    CHECK( charges == 7 );
+}
+
+TEST_CASE( "profession_breacher_shape_with_a_plain_pocket_bandolier", "[container1][item_spawn]" )
+{
+    clear_all_state();
+    // CDF: the real bandolier_shotgun has a plain pocket (is_container()), so the in_container guard never
+    // affected it; the shells went in the bandolier but, without the modifier capacity fallback, as 1 charge
     const profession &prof = string_id<profession>( "test_container1_breacher" ).obj();
     std::vector<detached_ptr<item>> spawned = prof.items( true, {} );
     int bandoliers = 0;
@@ -49,7 +73,6 @@ TEST_CASE( "profession_container_item_keeps_the_bandolier", "[container1][item_s
             bandoliers++;
             shells += sum_counts( *it );
         }
-        // CDF: no loose shells beside the bandolier
         CHECK( it->typeId() != itype_id( "shot_00" ) );
     }
     CHECK( bandoliers == 1 );
@@ -112,22 +135,13 @@ TEST_CASE( "nested_insert_into_a_carry_garment_in_a_bag", "[container1][item_spa
 TEST_CASE( "entry_level_container_item_uses_a_garment", "[container1][item_spawn]" )
 {
     clear_all_state();
-    // CDF: professions whose entry-level container-item names a carry-only garment
-    const std::vector<std::tuple<std::string, itype_id, int>> profs = {
-        { "test_container1_breacher", itype_id( "bandolier_shotgun" ), 12 },
-        { "test_container1_carry_prof", itype_test_backpack_carry, 7 }
-    };
-    for( const auto &pr : profs ) {
-        CAPTURE( std::get<0>( pr ) );
-        const profession &prof = string_id<profession>( std::get<0>( pr ) ).obj();
-        std::vector<detached_ptr<item>> res = prof.items( true, {} );
-        int garments = 0;
-        for( const detached_ptr<item> &it : res ) {
-            if( it->typeId() == std::get<1>( pr ) ) {
-                garments++;
-                CHECK( sum_counts( *it ) == std::get<2>( pr ) );
-            }
-        }
-        CHECK( garments == 1 );
-    }
+    // CDF: the object form of the entry-level container-item ("container-item": { "item": ... }) wraps
+    // the entry with item::in_container in Single_item_creator::create_single (item_from reaches it
+    // directly; items_from/professions use the string form via Item_modifier and put_into_container)
+    detached_ptr<item> res = item_group::item_from( item_group_id( "test_container1_entry_carry" ),
+                             calendar::turn );
+    REQUIRE( res );
+    CAPTURE( res->typeId().str() );
+    CHECK( res->typeId() == itype_test_backpack_carry );
+    CHECK( sum_counts( *res ) == 9 );
 }
