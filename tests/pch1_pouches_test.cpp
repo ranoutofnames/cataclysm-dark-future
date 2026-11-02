@@ -152,3 +152,67 @@ TEST_CASE( "pch1_pouches_have_pals_size_and_pockets", "[armor][pch1]" )
         }
     }
 }
+
+namespace
+{
+// the size check of molle_attach_actor::use (src/iuse_actor.cpp:4451): the pouch must be PALS and fit the vacancies
+auto pouch_fits( const item &vest, const item &pouch ) -> bool
+{
+    const int vacancies = molle_size( vest ) - vest.contents.get_additional_space_used();
+    return pouch.can_attach_as_pocket() && pouch.get_pocket_size() <= vacancies;
+}
+
+// attaches the way the MOLLE tests do (tests/molle_test.cpp:92); false when the size check refuses it
+auto attach_pouch( item &vest, const char *pouch_id ) -> bool
+{
+    detached_ptr<item> pouch = item::spawn( itype_id( pouch_id ), calendar::turn );
+    if( !pouch_fits( vest, *pouch ) ) {
+        return false;
+    }
+    vest.contents.add_pocket( std::move( pouch ) );
+    return true;
+}
+} // namespace
+
+TEST_CASE( "pch1_pouch_attaches_to_a_vest", "[armor][pch1]" )
+{
+    clear_all_state();
+    REQUIRE( itype_id( "load_bearing_vest" ).is_valid() );
+    detached_ptr<item> vest = item::spawn( itype_id( "load_bearing_vest" ), calendar::turn );
+    // CDF: load_bearing_vest attach_molle size 8 (cdf_molle_carriers.json, DDA ammo_pouch.json:748)
+    REQUIRE( molle_size( *vest ) == 8 );
+    REQUIRE( vest->contents.get_additional_space_used() == 0 );
+    // CDF: radio_pouch is PALS_SMALL (size 1), h2o_pouch is PALS_MEDIUM (size 2): cdf_molle_pouches.json
+    CHECK( attach_pouch( *vest, "radio_pouch" ) );
+    CHECK( vest->contents.get_additional_space_used() == 1 );
+    CHECK( attach_pouch( *vest, "h2o_pouch" ) );
+    CHECK( vest->contents.get_additional_space_used() == 3 );
+    const std::vector<const item *> attached = vest->contents.get_added_pockets();
+    REQUIRE( attached.size() == 2 );
+    CHECK( attached[0]->typeId() == itype_id( "radio_pouch" ) );
+    CHECK( attached[1]->typeId() == itype_id( "h2o_pouch" ) );
+    // the pouches' pockets are the vest's now (h2o_pouch has 2, radio_pouch 1)
+    CHECK( vest->contents.get_pockets().size() >= 3 );
+}
+
+TEST_CASE( "pch1_oversize_pouch_is_refused", "[armor][pch1]" )
+{
+    clear_all_state();
+    REQUIRE( itype_id( "light_load_bearing_vest" ).is_valid() );
+    detached_ptr<item> vest = item::spawn( itype_id( "light_load_bearing_vest" ), calendar::turn );
+    // CDF: light_load_bearing_vest attach_molle size 4 (cdf_molle_carriers.json, DDA ammo_pouch.json:721)
+    REQUIRE( molle_size( *vest ) == 4 );
+    // CDF: tool_pouch is PALS_LARGE (size 3), flashlight_pouch PALS_SMALL (size 1); the brief names
+    // flashlight_pouch as the large one but DDA gives it PALS_SMALL, so the large pouch here is tool_pouch
+    CHECK( attach_pouch( *vest, "tool_pouch" ) );
+    CHECK( vest->contents.get_additional_space_used() == 3 );
+    // a second large pouch needs 3 of the 1 remaining
+    CHECK_FALSE( attach_pouch( *vest, "tool_pouch" ) );
+    CHECK( vest->contents.get_additional_space_used() == 3 );
+    CHECK( vest->contents.get_added_pockets().size() == 1 );
+    // a small pouch exactly fills the 4
+    CHECK( attach_pouch( *vest, "flashlight_pouch" ) );
+    CHECK( vest->contents.get_additional_space_used() == molle_size( *vest ) );
+    CHECK_FALSE( attach_pouch( *vest, "radio_pouch" ) );
+    CHECK( vest->contents.get_added_pockets().size() == 2 );
+}
