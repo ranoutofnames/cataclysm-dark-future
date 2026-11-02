@@ -69,3 +69,240 @@ TEST_CASE("p3 golden: only ADAPTOR rows carry an adaptor block", "[p3][golden]")
     }
     REQUIRE(adaptor_rows == 6);
 }
+
+// ---------------------------------------------------------------------------------------------
+// P3-7-R0: the consumer of p3_golden.json. Every golden id that is in the loaded world must load
+// with exactly the golden pockets, compared index by index and only on the keys the golden entry
+// carries (README: "only the keys that are present"). The cases are hidden ([.]) so the suite
+// stays green until the data packet of a class ports its rows and un-hides its tag.
+//
+// Key map (golden pocket key -> pocket_data member):
+//   pocket_type -> type, ammo_restriction -> ammo_restriction, flag_restriction ->
+//   get_flag_restrictions(), item_restriction -> item_id_restriction, allowed_speedloaders,
+//   default_magazine, id -> pocket_id, magazine_well, max_contains_volume -> raw_volume_capacity,
+//   max_contains_weight, max_item_volume, max_item_length, moves, rigid, holster, watertight,
+//   airtight, open_container, carry.
+// ---------------------------------------------------------------------------------------------
+
+#include "generic_factory.h"
+#include "generic_readers.h"
+#include "item_factory.h"
+#include "itype.h"
+#include "pocket_data.h"
+
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <vector>
+
+namespace {
+
+struct golden_counts {
+    size_t in_golden = 0;
+    size_t loaded = 0;
+    std::vector<std::string> skipped;
+};
+
+// Loaded pockets as the golden sees them. The golden never lists MOD, CORPSE or SOFTWARE pockets
+// (the loader synthesizes the MOD pocket of guns itself, per DDA), so those are dropped here;
+// the relative order of the rest is unchanged.
+auto golden_view(const itype& type) -> std::vector<const pocket_data*> {
+    std::vector<const pocket_data*> out;
+    for (const pocket_data& pocket : type.pockets) {
+        if (pocket.type == pocket_type::MOD || pocket.type == pocket_type::CORPSE ||
+            pocket.type == pocket_type::SOFTWARE) {
+            continue;
+        }
+        out.push_back(&pocket);
+    }
+    return out;
+}
+
+template <typename A, typename B>
+void diff_if(std::vector<std::string>& diffs, const std::string& key, const A& loaded,
+             const B& expected) {
+    if (!(loaded == expected)) { diffs.push_back(key); }
+}
+
+// Names the keys of one golden pocket that the loaded pocket does not match.
+auto compare_pocket(const JsonObject& g, const pocket_data& p) -> std::vector<std::string> {
+    std::vector<std::string> diffs;
+    bool was_loaded = false;
+    if (g.has_member("pocket_type")) {
+        diff_if(diffs, "pocket_type", io::enum_to_string(p.type), g.get_string("pocket_type"));
+    }
+    if (g.has_member("ammo_restriction")) {
+        std::map<ammotype, int> expected;
+        optional(g, was_loaded, "ammo_restriction", expected);
+        diff_if(diffs, "ammo_restriction", p.ammo_restriction, expected);
+    }
+    if (g.has_member("flag_restriction")) {
+        pocket_data::FlagsSetType expected;
+        optional(g, was_loaded, "flag_restriction", expected);
+        diff_if(diffs, "flag_restriction", p.get_flag_restrictions(), expected);
+    }
+    if (g.has_member("item_restriction")) {
+        cata::flat_set<itype_id> expected;
+        optional(g, was_loaded, "item_restriction", expected);
+        diff_if(diffs, "item_restriction", p.item_id_restriction, expected);
+    }
+    if (g.has_member("allowed_speedloaders")) {
+        cata::flat_set<itype_id> expected;
+        optional(g, was_loaded, "allowed_speedloaders", expected);
+        diff_if(diffs, "allowed_speedloaders", p.allowed_speedloaders, expected);
+    }
+    if (g.has_member("default_magazine")) {
+        itype_id expected;
+        optional(g, was_loaded, "default_magazine", expected);
+        diff_if(diffs, "default_magazine", p.default_magazine, expected);
+    }
+    if (g.has_member("id")) { diff_if(diffs, "id", p.pocket_id, g.get_string("id")); }
+    if (g.has_member("magazine_well")) {
+        units::volume expected = 0_ml;
+        optional(g, was_loaded, "magazine_well", expected, volume_reader(), 0_ml);
+        diff_if(diffs, "magazine_well", p.magazine_well, expected);
+    }
+    if (g.has_member("max_contains_volume")) {
+        units::volume expected = 0_ml;
+        optional(g, was_loaded, "max_contains_volume", expected, volume_reader(), 0_ml);
+        diff_if(diffs, "max_contains_volume", p.raw_volume_capacity, expected);
+    }
+    if (g.has_member("max_contains_weight")) {
+        units::mass expected = 0_gram;
+        optional(g, was_loaded, "max_contains_weight", expected, mass_reader(), 0_gram);
+        diff_if(diffs, "max_contains_weight", p.max_contains_weight, expected);
+    }
+    if (g.has_member("max_item_volume")) {
+        units::volume expected = 0_ml;
+        optional(g, was_loaded, "max_item_volume", expected, volume_reader(), 0_ml);
+        const bool same = p.max_item_volume && *p.max_item_volume == expected;
+        if (!same) { diffs.push_back("max_item_volume"); }
+    }
+    if (g.has_member("max_item_length")) {
+        units::length expected = 0_mm;
+        optional(g, was_loaded, "max_item_length", expected);
+        diff_if(diffs, "max_item_length", p.max_item_length, expected);
+    }
+    if (g.has_member("moves")) { diff_if(diffs, "moves", p.moves, g.get_int("moves")); }
+    if (g.has_member("rigid")) { diff_if(diffs, "rigid", p.rigid, g.get_bool("rigid")); }
+    if (g.has_member("holster")) { diff_if(diffs, "holster", p.holster, g.get_bool("holster")); }
+    if (g.has_member("watertight")) {
+        diff_if(diffs, "watertight", p.watertight, g.get_bool("watertight"));
+    }
+    if (g.has_member("airtight")) {
+        diff_if(diffs, "airtight", p.airtight, g.get_bool("airtight"));
+    }
+    if (g.has_member("open_container")) {
+        diff_if(diffs, "open_container", p.open_container, g.get_bool("open_container"));
+    }
+    if (g.has_member("carry")) { diff_if(diffs, "carry", p.carry, g.get_bool("carry")); }
+    return diffs;
+}
+
+// Walks the golden. `cls` empty means every class. `order_only` compares the pocket count and
+// the pocket_type sequence of items with two or more golden pockets and nothing else.
+auto compare_golden(const std::string& cls, bool order_only, golden_counts& counts)
+    -> std::vector<std::string> {
+    std::ifstream file(P3_GOLDEN_FILENAME, std::ios::binary);
+    JsonIn jsin(file);
+    JsonObject golden = jsin.get_object();
+    golden.allow_omitted_members();
+    JsonObject items = golden.get_object("items");
+    std::vector<std::string> failures;
+
+    for (const JsonMember member : items) {
+        JsonObject item = member.get_object();
+        item.allow_omitted_members();
+        if (!cls.empty() && item.get_string("class") != cls) { continue; }
+        JsonArray gold_pockets = item.get_array("pockets");
+        if (order_only && gold_pockets.size() < 2) { continue; }
+        counts.in_golden++;
+        const itype_id id(member.name());
+        // ids absent from the loaded world (mod items) are counted and skipped
+        if (!id.is_valid()) {
+            counts.skipped.push_back(member.name());
+            continue;
+        }
+        counts.loaded++;
+        const std::vector<const pocket_data*> loaded =
+            golden_view(id.obj());
+        if (loaded.size() != gold_pockets.size()) {
+            failures.push_back(member.name() + ": " + std::to_string(loaded.size()) +
+                               " pockets loaded, golden has " +
+                               std::to_string(gold_pockets.size()));
+            continue;
+        }
+        size_t index = 0;
+        for (JsonObject gold : gold_pockets) {
+            gold.allow_omitted_members();
+            if (order_only) {
+                if (io::enum_to_string(loaded[index]->type) != gold.get_string("pocket_type")) {
+                    failures.push_back(member.name() + ": pocket " + std::to_string(index) +
+                                       " is " + io::enum_to_string(loaded[index]->type) +
+                                       ", golden " + gold.get_string("pocket_type"));
+                }
+            } else {
+                for (const std::string& key : compare_pocket(gold, *loaded[index])) {
+                    failures.push_back(member.name() + ": pocket " + std::to_string(index) + " " +
+                                       key);
+                }
+            }
+            index++;
+        }
+    }
+    return failures;
+}
+
+void report_failures(const std::vector<std::string>& failures) {
+    std::string head;
+    for (size_t i = 0; i < failures.size() && i < 15; i++) { head += failures[i] + "\n"; }
+    INFO(failures.size() << " mismatches, first:\n" << head);
+    CHECK(failures.empty());
+}
+
+void check_class(const std::string& cls) {
+    golden_counts counts;
+    const std::vector<std::string> failures = compare_golden(cls, false, counts);
+    std::cout << "p3 golden " << cls << ": golden=" << counts.in_golden
+              << " loaded=" << counts.loaded << " skipped=" << counts.skipped.size() << std::endl;
+    report_failures(failures);
+}
+
+} // namespace
+
+TEST_CASE("p3 golden load R1 MAG", "[.][p3][golden][load][R1]") { check_class("MAG"); }
+
+TEST_CASE("p3 golden load R2 GUN-INT", "[.][p3][golden][load][R2]") { check_class("GUN-INT"); }
+
+TEST_CASE("p3 golden load R3 WELL", "[.][p3][golden][load][R3]") { check_class("WELL"); }
+
+TEST_CASE("p3 golden load R4 TOOL-INT", "[.][p3][golden][load][R4]") { check_class("TOOL-INT"); }
+
+TEST_CASE("p3 golden load R5 CHARGES", "[.][p3][golden][load][R5]") { check_class("CHARGES"); }
+
+TEST_CASE("p3 golden load R6 ADAPTOR", "[.][p3][golden][load][R6]") { check_class("ADAPTOR"); }
+
+TEST_CASE("p3 golden load R8 DDA-POCKET", "[.][p3][golden][load][R8]") {
+    check_class("DDA-POCKET");
+}
+
+TEST_CASE("p3 golden pocket order", "[.][p3][golden][load][order]") {
+    golden_counts counts;
+    const std::vector<std::string> failures = compare_golden("", true, counts);
+    std::cout << "p3 golden order: multi-pocket golden=" << counts.in_golden
+              << " loaded=" << counts.loaded << " skipped=" << counts.skipped.size() << std::endl;
+    report_failures(failures);
+}
+
+TEST_CASE("p3 golden skip counts", "[.][p3][golden][skips]") {
+    // diagnostic, always passes: makes a silent skip visible
+    for (const std::string cls :
+         {"MAG", "GUN-INT", "WELL", "TOOL-INT", "CHARGES", "ADAPTOR", "DDA-POCKET"}) {
+        golden_counts counts;
+        compare_golden(cls, false, counts);
+        std::cout << "p3 golden skips " << cls << ": in golden " << counts.in_golden << ", loaded "
+                  << counts.loaded << ", skipped " << counts.skipped.size() << std::endl;
+        for (const std::string& id : counts.skipped) { std::cout << "  skipped " << id << "\n"; }
+    }
+    SUCCEED();
+}
