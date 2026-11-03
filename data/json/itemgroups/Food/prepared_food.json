@@ -1,0 +1,18 @@
+[
+  {
+    "type": "item_group",
+    "id": "cabbage_bag_plastic_8",
+    "subtype": "collection",
+    "container-item": "bag_plastic",
+    "//": "DDA itemgroups/Food/prepared_food.json:396. CDF: cabbage is a stack of charges here (250 ml a charge, raw_veggy.json:89-104), not a head per item, so the 8 heads are \"charges\": 8 instead of \"count\": 8",
+    "entries": [ { "item": "cabbage", "charges": 8 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "carrot_bowl_plastic_2",
+    "subtype": "collection",
+    "container-item": "bowl_plastic",
+    "//": "DDA itemgroups/Food/prepared_food.json:403. CDF: carrot is a stack of charges here, as the old salad_bar entry had it, so \"charges\": 2 instead of \"count\": 2",
+    "entries": [ { "item": "carrot", "charges": 2 } ]
+  }
+]
