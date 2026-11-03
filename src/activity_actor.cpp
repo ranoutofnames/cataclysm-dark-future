@@ -2359,7 +2359,7 @@ void reload_activity_actor::start( player_activity &/*act*/, Character &/*who*/ 
     progress.emplace( target_loc ? target_loc->tname() : std::string( "reload" ), moves_total );
 }
 
-void reload_activity_actor::reload_msg( Character &/*who*/, bool finished )
+void reload_activity_actor::reload_msg( Character &who, bool finished )
 {
     // Item may have been dropped from inventory between turns (e.g. pocket
     // overflow after the reload increased its size); the location is then
@@ -2382,7 +2382,7 @@ void reload_activity_actor::reload_msg( Character &/*who*/, bool finished )
 
             add_msg( m_neutral, _( "You insert %dx %s into the %s." ), qty, ammo_name, reloadable_name );
         }
-        // CDF: reload noise is job 6-1b (sounds::ambient_sound absent)
+        make_reload_sound( who, reloadable );
     } else if( reloadable.is_watertight_container() ) {
         add_msg( m_neutral, _( "You refill the %s." ), reloadable_name );
     } else {
@@ -2504,13 +2504,82 @@ void reload_activity_actor::do_turn( player_activity &act, Character &who )
     }
 }
 
+// CDF: P3-6-1b; DDA activity_actor.cpp:8451-8459. DDA calls sounds::ambient_sound, which CDF
+// does not have; the sound_event form is the one activity_handlers::reload_finish already uses.
+void reload_activity_actor::make_reload_sound( Character &who, item &reloadable )
+{
+    if( reloadable.type->gun->reload_noise_volume > 0_dB ) {
+        sound_event se;
+        se.origin = who.bub_pos();
+        se.volume = units::to_decibel( reloadable.type->gun->reload_noise_volume );
+        se.category = sounds::sound_t::activity;
+        se.description = reloadable.type->gun->reload_noise;
+        se.id = "reload";
+        se.variant = reloadable.typeId().str();
+
+        sounds::sound( se );
+        sfx::play_variant_sound( "reload", reloadable.typeId().str(),
+                                 sfx::get_heard_volume( who.bub_pos(), se.volume ) );
+    }
+}
+
 void reload_activity_actor::finish( player_activity &act, Character &who )
 {
     reload( act, who, quantity - already_loaded );
     already_loaded += quantity - already_loaded;
     reload_msg( who, true );
     act.set_to_null();
-    // CDF: sibling-well chain (DDA 8467-8509) is job 6-1b.
+
+    // Auto-chain sibling wells so the player is not prompted once per well.
+    // Inventory only - map items were not part of the player's original pick
+    // and walking them can surface debugmsgs on unrelated nearby items.
+    // CDF: P3-6-1b; DDA activity_actor.cpp:8467-8509. act.set_to_null() only nulls the type, and
+    // assign_activity pushes the finished activity onto the backlog (never resumed), so this
+    // actor is still alive for the reads below.
+    if( !target_loc || !target_loc->uses_firing_requirements() ) {
+        return;
+    }
+    item &chain_target = *target_loc;
+    // CDF: find_ammo_items_or_mags returns item *, not item_location.
+    const std::vector<item *> candidates =
+        character_funcs::find_ammo_items_or_mags( who, chain_target, /*empty=*/false, /*radius=*/ -1 );
+    if( candidates.empty() ) {
+        return;
+    }
+    int chain_pocket = -1;
+    item *chain_ammo = nullptr;
+    int idx = 0;
+    for( const item_pocket *p : chain_target.get_pockets( []( const item_pocket & ) {
+    return true;
+} ) ) {
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) && p->magazine_current() == nullptr ) {
+            item *match = nullptr;
+            for( item *cand : candidates ) {
+                if( p->can_reload_with( *cand, true ) ) {
+                    if( match ) {
+                        match = nullptr;
+                        break;
+                    }
+                    match = cand;
+                }
+            }
+            if( match ) {
+                chain_pocket = idx;
+                chain_ammo = match;
+                break;
+            }
+        }
+        ++idx;
+    }
+    if( !chain_ammo || chain_pocket < 0 ) {
+        return;
+    }
+    const int extra_moves = chain_target.get_var( "dirt", 0 ) > 7800 ? 2500 : 0;
+    item_reload_option chain_opt( who.as_player(), &chain_target, &chain_target, *chain_ammo,
+                                  chain_pocket );
+    who.assign_activity( std::make_unique<player_activity>(
+                             std::make_unique<reload_activity_actor>( std::move( chain_opt ), extra_moves ) ),
+                         false );
 }
 
 void reload_activity_actor::canceled( player_activity &act, Character &who )
@@ -2536,6 +2605,33 @@ void reload_activity_actor::serialize( JsonOut &jsout ) const
     jsout.member( "already_loaded", already_loaded );
 
     jsout.end_object();
+}
+
+// CDF: P3-6-1b; DDA activity_actor.cpp:8535-8556. CDF has no clone() and no JsonValue
+// deserializer: the signature is the insert actor's and the actor is built with new.
+std::unique_ptr<activity_actor> reload_activity_actor::deserialize( JsonIn &jsin )
+{
+    std::unique_ptr<reload_activity_actor> actor( new reload_activity_actor() );
+
+    JsonObject data = jsin.get_object();
+
+    data.read( "progress", actor->progress );
+    data.read( "moves_total", actor->moves_total );
+    data.read( "qty", actor->quantity );
+    // Saves missing the key route through the first-compatible-well path.
+    // TODO(multimag): backwards-compat default; remove after a stable release.
+    actor->pocket_index = -1;
+    data.read( "pocket_index", actor->pocket_index );
+    data.read( "target_loc", actor->target_loc );
+    data.read( "ammo_loc", actor->ammo_loc );
+    data.read( "seconds_per_round", actor->seconds_per_round );
+    data.read( "already_loaded", actor->already_loaded );
+    if( actor->ammo_loc ) {
+        // CDF: itype::id is protected; item::typeId() is the accessor.
+        actor->ammo_id = actor->ammo_loc->typeId();
+    }
+
+    return actor;
 }
 
 void throw_activity_actor::do_turn( player_activity &act, Character &who )
@@ -3246,6 +3342,7 @@ deserialize_functions = {
     { activity_id( "ACT_OXYTORCH" ), &oxytorch_activity_actor::deserialize },
     { activity_id( "ACT_PICKUP" ), &pickup_activity_actor::deserialize },
     { activity_id( "ACT_INSERT_ITEM" ), &insert_item_activity_actor::deserialize },
+    { activity_id( "ACT_RELOAD" ), &reload_activity_actor::deserialize },
     { activity_id( "ACT_STASH" ), &stash_activity_actor::deserialize },
     { activity_id( "ACT_THROW" ), &throw_activity_actor::deserialize },
     { activity_id( "ACT_ASSIST" ), &assist_activity_actor::deserialize },

@@ -31,6 +31,7 @@
 #include "type_id.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -201,6 +202,36 @@ TEST_CASE( "reload_activity_actor_serializes_pocket_index",
     const std::string serialized = oss.str();
     CAPTURE( serialized );
     CHECK( serialized.find( "\"pocket_index\":0" ) != std::string::npos );
+
+    // CDF: P3-6-1b; DDA activity_actor.cpp:8535-8556 and the registration at :15427.
+    // A saved ACT_RELOAD round trips through the registration table and comes back
+    // byte-identical.
+    item_reload_option round_trip_opt( &get_avatar(), &gun, &gun, ammo, /*pocket_index=*/0 );
+    std::unique_ptr<activity_actor> actor_ptr =
+        std::make_unique<reload_activity_actor>( std::move( round_trip_opt ) );
+
+    std::ostringstream saved;
+    {
+        JsonOut saved_jsout( saved );
+        serialize( actor_ptr, saved_jsout );
+    }
+    const std::string saved_text = saved.str();
+    CAPTURE( saved_text );
+    CHECK( saved_text.find( "\"actor_type\":\"ACT_RELOAD\"" ) != std::string::npos );
+    CHECK( saved_text.find( "\"pocket_index\":0" ) != std::string::npos );
+
+    std::istringstream in( saved_text );
+    JsonIn jsin( in );
+    std::unique_ptr<activity_actor> loaded;
+    deserialize( loaded, jsin );
+    REQUIRE( loaded );
+
+    std::ostringstream resaved;
+    {
+        JsonOut resaved_jsout( resaved );
+        serialize( loaded, resaved_jsout );
+    }
+    CHECK( resaved.str() == saved_text );
 }
 
 // DDA tests/multimag_test.cpp:1170. Depends on 3-5b (dress_magazine_wells at spawn sites).

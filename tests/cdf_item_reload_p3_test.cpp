@@ -7,16 +7,20 @@
 #include "coordinates.h"
 #include "debug.h"
 #include "flag.h"
+#include "game.h"
 #include "inventory_ui.h"
 #include "item.h"
 #include "item_category.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
+#include "json.h"
+#include "map/map.h"
 #include "player_activity.h"
 #include "type_id.h"
 #include "player_helpers.h"
 #include "reload/reload.h"
+#include "sounds.h"
 #include "state_helpers.h"
 #include "units.h"
 #include "value_ptr.h"
@@ -25,6 +29,7 @@
 #include <climits>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -1843,5 +1848,396 @@ TEST_CASE( "cdf_inventory_column_update_entry_cell_cache_and_get_highlighted",
         col.update_entry_cell_cache( foreign );
         // Neither the foreign count nor the stale count of the real entry reached the cache.
         CHECK( col.get_entry_cell_cache( 0 ).text[1] == "0" );
+    }
+}
+
+// ---- P3-6-1b: reload actor save/load, reload noise, sibling-well chain ----
+
+static const itype_id itype_test_multimag_turret_gun( "test_multimag_turret_gun" );
+static const itype_id itype_heavy_battery_cell( "heavy_battery_cell" );
+static const itype_id itype_battery( "battery" );
+static const itype_id itype_backpack( "backpack" );
+static const itype_id itype_water_clean( "water_clean" );
+static const itype_id itype_test_watertight_jug( "test_watertight_open_sealed_container_1L" );
+
+// CDF: the turret gun's glock well index in get_pockets() order, the same order the
+// actor's pocket_index uses (DDA tests/multimag_test.cpp:1088-1106).
+static int turret_glock_well_index( const item &gun )
+{
+    int idx = 0;
+    for( const item_pocket *p : gun.get_pockets( []( const item_pocket & ) {
+    return true;
+} ) ) {
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            for( const itype_id &id : p->item_type_restrictions() ) {
+                if( id == itype_glockmag ) {
+                    return idx;
+                }
+            }
+        }
+        ++idx;
+    }
+    return -1;
+}
+
+// CDF: P3-6-1b; DDA activity_actor.cpp:8535-8556. The hand-written actor text is a real
+// serialization with the pocket_index member removed, so the uids are valid.
+TEST_CASE( "reload_activity_actor_deserializes_missing_pocket_index", "[p3][reload]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_backpack ), false );
+
+    item &gun = you.i_add( item::spawn( itype_test_multimag_turret_gun ) );
+    detached_ptr<item> glock_ptr = item::spawn( itype_glockmag );
+    REQUIRE( glock_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                                pocket_type::MAGAZINE ).success() );
+    item &glock = you.i_add( std::move( glock_ptr ) );
+    const int glock_idx = turret_glock_well_index( gun );
+    REQUIRE( glock_idx >= 0 );
+
+    item_reload_option opt( &you, &gun, &gun, glock, glock_idx );
+    std::unique_ptr<activity_actor> actor =
+        std::make_unique<reload_activity_actor>( std::move( opt ) );
+
+    std::ostringstream oss;
+    {
+        JsonOut jsout( oss );
+        serialize( actor, jsout );
+    }
+    std::string text = oss.str();
+    const std::string key = "\"pocket_index\":" + std::to_string( glock_idx ) + ",";
+    const size_t key_pos = text.find( key );
+    REQUIRE( key_pos != std::string::npos );
+    text.erase( key_pos, key.size() );
+
+    std::istringstream in( text );
+    JsonIn jsin( in );
+    deserialize( actor, jsin );
+    REQUIRE( actor );
+
+    std::ostringstream reserialized;
+    {
+        JsonOut jsout( reserialized );
+        serialize( actor, jsout );
+    }
+    CAPTURE( reserialized.str() );
+    CHECK( reserialized.str().find( "\"pocket_index\":-1" ) != std::string::npos );
+}
+
+// CDF: P3-6-1b; DDA activity_actor.cpp:8535-8556. CDF's safe_reference is a uid into the
+// save tables. The actor text is written first (that assigns the uids), the two items are
+// saved, then the originals are destroyed as after a quit and only the saved text is left.
+// Loading the items back registers the uids through safe_reference<item>::register_load, and
+// the actor text then resolves to the loaded copies.
+TEST_CASE( "reload_activity_actor_survives_save_and_load", "[p3][reload]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_backpack ), false );
+
+    std::string actor_json;
+    std::string gun_json;
+    std::string mag_json;
+    {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_turret_gun ) );
+        detached_ptr<item> mag_ptr = item::spawn( itype_glockmag );
+        REQUIRE( mag_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                                  pocket_type::MAGAZINE ).success() );
+        item &mag = you.i_add( std::move( mag_ptr ) );
+        const int glock_idx = turret_glock_well_index( gun );
+        REQUIRE( glock_idx >= 0 );
+
+        item_reload_option opt( &you, &gun, &gun, mag, glock_idx );
+        REQUIRE( opt.qty() == 1 );
+        std::unique_ptr<activity_actor> actor =
+            std::make_unique<reload_activity_actor>( std::move( opt ) );
+
+        std::ostringstream actor_oss;
+        {
+            JsonOut jsout( actor_oss );
+            serialize( actor, jsout );
+        }
+        actor_json = actor_oss.str();
+        // The references are released before the originals go away.
+        actor.reset();
+
+        std::ostringstream gun_oss;
+        {
+            JsonOut jsout( gun_oss );
+            gun.serialize( jsout );
+        }
+        gun_json = gun_oss.str();
+
+        std::ostringstream mag_oss;
+        {
+            JsonOut jsout( mag_oss );
+            mag.serialize( jsout );
+        }
+        mag_json = mag_oss.str();
+
+        // The originals are destroyed, as after a quit: only their saved text is left.
+        detached_ptr<item> gone_gun = gun.detach();
+        detached_ptr<item> gone_mag = mag.detach();
+    }
+    REQUIRE( gun_json.find( "\"id\":" ) != std::string::npos );
+    REQUIRE( mag_json.find( "\"id\":" ) != std::string::npos );
+
+    std::istringstream gun_in( gun_json );
+    JsonIn gun_jsin( gun_in );
+    detached_ptr<item> loaded_gun_ptr = item::spawn( gun_jsin );
+    REQUIRE( loaded_gun_ptr );
+    item &gun = you.i_add( std::move( loaded_gun_ptr ) );
+
+    std::istringstream mag_in( mag_json );
+    JsonIn mag_jsin( mag_in );
+    detached_ptr<item> loaded_mag_ptr = item::spawn( mag_jsin );
+    REQUIRE( loaded_mag_ptr );
+    item &mag = you.i_add( std::move( loaded_mag_ptr ) );
+
+    std::unique_ptr<activity_actor> actor;
+    std::istringstream actor_in( actor_json );
+    JsonIn actor_jsin( actor_in );
+    deserialize( actor, actor_jsin );
+    REQUIRE( actor );
+    REQUIRE( actor->get_type() == activity_id( "ACT_RELOAD" ) );
+    reload_activity_actor *loaded = static_cast<reload_activity_actor *>( actor.get() );
+    CHECK( loaded->target() == &gun );
+    CHECK( loaded->ammo() == &mag );
+    CHECK( loaded->qty() == 1 );
+
+    you.assign_activity( std::make_unique<player_activity>( std::move( actor ) ) );
+    REQUIRE( you.activity );
+    process_activity( you );
+
+    const std::vector<item *> mags = gun.magazines_current();
+    REQUIRE( mags.size() == 1 );
+    CHECK( mags.front()->typeId() == itype_glockmag );
+}
+
+// CDF: P3-6-1b; ported from DDA tests/multimag_test.cpp:1066-1118.
+TEST_CASE( "multimag_reload_chains_to_sibling_well", "[p3][reload][multimag][activity]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_backpack ), false );
+
+    item &gun = you.i_add( item::spawn( itype_test_multimag_turret_gun ) );
+    REQUIRE( gun.uses_firing_requirements() );
+    REQUIRE( gun.magazines_current().empty() );
+
+    detached_ptr<item> glock_ptr = item::spawn( itype_glockmag );
+    REQUIRE( glock_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                                pocket_type::MAGAZINE ).success() );
+    item &glock = you.i_add( std::move( glock_ptr ) );
+
+    detached_ptr<item> batt_ptr = item::spawn( itype_heavy_battery_cell );
+    batt_ptr->ammo_set( itype_battery, 100 );
+    you.i_add( std::move( batt_ptr ) );
+
+    const int glock_idx = turret_glock_well_index( gun );
+    REQUIRE( glock_idx >= 0 );
+
+    item_reload_option opt( &you, &gun, &gun, glock, glock_idx );
+    you.assign_activity( std::make_unique<player_activity>(
+                             std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+    REQUIRE( you.activity );
+
+    process_activity( you );
+
+    const std::vector<item *> mags = gun.magazines_current();
+    CHECK( mags.size() == 2 );
+}
+
+// CDF: P3-6-1b; the ambiguity half of DDA activity_actor.cpp:8486-8495: two matching
+// candidates for one well mean "no match for this well", not "take the first".
+TEST_CASE( "reload_activity_actor_does_not_chain_on_ambiguous_ammo", "[p3][reload][multimag]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_backpack ), false );
+
+    item &gun = you.i_add( item::spawn( itype_test_multimag_turret_gun ) );
+    REQUIRE( gun.uses_firing_requirements() );
+    REQUIRE( gun.magazines_current().empty() );
+
+    detached_ptr<item> glock_ptr = item::spawn( itype_glockmag );
+    REQUIRE( glock_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                                pocket_type::MAGAZINE ).success() );
+    item &glock = you.i_add( std::move( glock_ptr ) );
+
+    for( int i = 0; i < 2; ++i ) {
+        detached_ptr<item> batt_ptr = item::spawn( itype_heavy_battery_cell );
+        batt_ptr->ammo_set( itype_battery, 100 );
+        you.i_add( std::move( batt_ptr ) );
+    }
+
+    const int glock_idx = turret_glock_well_index( gun );
+    REQUIRE( glock_idx >= 0 );
+
+    item_reload_option opt( &you, &gun, &gun, glock, glock_idx );
+    you.assign_activity( std::make_unique<player_activity>(
+                             std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+    REQUIRE( you.activity );
+
+    process_activity( you );
+
+    const std::vector<item *> mags = gun.magazines_current();
+    CHECK( mags.size() == 1 );
+}
+
+// CDF: P3-6-1b; DDA activity_actor.cpp:8469-8475 searches only the carrier's inventory
+// (radius -1): ammo on the map was not part of the player's pick.
+TEST_CASE( "reload_activity_actor_chain_ignores_ground_ammo", "[p3][reload][multimag]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_backpack ), false );
+    map &here = get_map();
+
+    item &gun = you.i_add( item::spawn( itype_test_multimag_turret_gun ) );
+    REQUIRE( gun.uses_firing_requirements() );
+    REQUIRE( gun.magazines_current().empty() );
+
+    detached_ptr<item> glock_ptr = item::spawn( itype_glockmag );
+    REQUIRE( glock_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                                pocket_type::MAGAZINE ).success() );
+    item &glock = you.i_add( std::move( glock_ptr ) );
+
+    detached_ptr<item> batt_ptr = item::spawn( itype_heavy_battery_cell );
+    batt_ptr->ammo_set( itype_battery, 100 );
+    here.add_item( you.bub_pos(), std::move( batt_ptr ) );
+    REQUIRE( here.i_at( you.bub_pos() ).size() == 1 );
+
+    const int glock_idx = turret_glock_well_index( gun );
+    REQUIRE( glock_idx >= 0 );
+
+    item_reload_option opt( &you, &gun, &gun, glock, glock_idx );
+    you.assign_activity( std::make_unique<player_activity>(
+                             std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+    REQUIRE( you.activity );
+
+    process_activity( you );
+
+    const std::vector<item *> mags = gun.magazines_current();
+    CHECK( mags.size() == 1 );
+}
+
+// CDF: P3-6-1b; DDA activity_actor.cpp:8451-8459. The gun is on the map three tiles away,
+// so the origin assertion tells who.bub_pos() apart from the target's position.
+TEST_CASE( "reload_activity_actor_plays_reload_noise", "[p3][reload][sound]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_backpack ), false );
+    map &here = get_map();
+
+    const tripoint_bub_ms gun_pos = you.bub_pos() + point( 3, 0 );
+    REQUIRE( here.inbounds( gun_pos ) );
+    here.add_item( gun_pos, item::spawn( itype_test_multimag_turret_gun ) );
+    REQUIRE( here.i_at( gun_pos ).size() == 1 );
+    item &gun = here.i_at( gun_pos ).only_item();
+    REQUIRE( gun.type->gun );
+    // CDF: islot_gun's default (itype.h:670); the turret fixture does not override it.
+    REQUIRE( gun.type->gun->reload_noise_volume == 40_dB );
+
+    detached_ptr<item> glock_ptr = item::spawn( itype_glockmag );
+    REQUIRE( glock_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                                pocket_type::MAGAZINE ).success() );
+    item &glock = you.i_add( std::move( glock_ptr ) );
+
+    const int glock_idx = turret_glock_well_index( gun );
+    REQUIRE( glock_idx >= 0 );
+
+    item_reload_option opt( &you, &gun, &gun, glock, glock_idx );
+    you.assign_activity( std::make_unique<player_activity>(
+                             std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+    REQUIRE( you.activity );
+
+    sounds::reset_sounds();
+    process_activity( you );
+    here.batch_flood_fill_sounds();
+
+    const std::vector<sound_instance_cache> &instances = here.m_sound_cache.sound_instances;
+    REQUIRE( instances.size() == 1 );
+    CHECK( instances[0].origin == you.bub_pos() );
+    CHECK( instances[0].sound.origin == you.bub_pos() );
+    CHECK( instances[0].sound.category == sounds::sound_t::activity );
+    CHECK( instances[0].sound.description == gun.type->gun->reload_noise );
+    // CDF: islot_gun::reload_noise's default text (itype.h:665).
+    CHECK( instances[0].sound.description == "click." );
+}
+
+// CDF: P3-6-1b; DDA activity_actor.cpp:8453's > 0 gate, and the gun branch of
+// reload_msg: a 0 dB gun and a non-gun target submit no sound event at all.
+TEST_CASE( "reload_activity_actor_is_silent_for_quiet_guns_and_non_guns", "[p3][reload][sound]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_backpack ), false );
+    map &here = get_map();
+
+    SECTION( "a 0 dB gun" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_turret_gun ) );
+        REQUIRE( gun.type->gun );
+        itype &gun_type = const_cast<itype &>( *gun.type );
+        const units::sound saved_volume = gun_type.gun->reload_noise_volume;
+        struct volume_guard {
+            itype &t;
+            units::sound v;
+            ~volume_guard() {
+                t.gun->reload_noise_volume = v;
+            }
+        } guard{ gun_type, saved_volume };
+        // CDF: runtime edit of the shared itype; CDF has no 0 dB gun fixture.
+        gun_type.gun->reload_noise_volume = 0_dB;
+
+        detached_ptr<item> glock_ptr = item::spawn( itype_glockmag );
+        REQUIRE( glock_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 15 ),
+                                    pocket_type::MAGAZINE ).success() );
+        item &glock = you.i_add( std::move( glock_ptr ) );
+
+        const int glock_idx = turret_glock_well_index( gun );
+        REQUIRE( glock_idx >= 0 );
+
+        item_reload_option opt( &you, &gun, &gun, glock, glock_idx );
+        you.assign_activity( std::make_unique<player_activity>(
+                                 std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+        REQUIRE( you.activity );
+
+        sounds::clear_floodfill_que( true );
+        process_activity( you );
+        here.batch_flood_fill_sounds();
+
+        CHECK( here.m_sound_cache.sound_instances.empty() );
+        // sounds::sound() bumps this before the <16 dB early return, so a submitted
+        // 0 dB event still shows up here.
+        CHECK( here.m_sound_cache.sounds_this_turn == 0 );
+        CHECK( gun.magazines_current().size() == 1 );
+    }
+
+    SECTION( "a watertight container" ) {
+        // CDF: the brief's water_bottle does not exist; the TEST_DATA jug is the container
+        // the 6-1a reloadable case uses (cdf_item_reload_p3_test.cpp:187).
+        item &jug = you.i_add( item::spawn( itype_test_watertight_jug ) );
+        REQUIRE( !jug.is_gun() );
+        REQUIRE( jug.is_reloadable() );
+
+        detached_ptr<item> water_ptr = item::spawn( itype_water_clean, calendar::turn, 1 );
+        item &water = *water_ptr;
+        you.i_add( std::move( water_ptr ) );
+
+        item_reload_option opt( &you, &jug, &jug, water );
+        REQUIRE( opt.qty() > 0 );
+        you.assign_activity( std::make_unique<player_activity>(
+                                 std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+        REQUIRE( you.activity );
+
+        sounds::clear_floodfill_que( true );
+        process_activity( you );
+        here.batch_flood_fill_sounds();
+
+        CHECK( here.m_sound_cache.sound_instances.empty() );
+        CHECK( here.m_sound_cache.sounds_this_turn == 0 );
     }
 }

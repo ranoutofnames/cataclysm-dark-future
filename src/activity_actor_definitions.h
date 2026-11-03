@@ -656,8 +656,7 @@ class insert_item_activity_actor : public activity_actor
 };
 
 // CDF: P3-6-1a-1 (DDA activity_actor_definitions.h:2332-2371); targets are
-// safe_reference<item> (D1, insert-actor pattern), no clone() (the CDF base has none);
-// deserialize and the registration are job 6-1b.
+// safe_reference<item> (D1, insert-actor pattern), no clone() (the CDF base has none).
 class reload_activity_actor : public activity_actor
 {
     public:
@@ -676,8 +675,22 @@ class reload_activity_actor : public activity_actor
         void reload( player_activity &act, Character &who, int load_qty = 1 );
 
         void serialize( JsonOut &jsout ) const override;
+        static std::unique_ptr<activity_actor> deserialize( JsonIn &jsin );
+
+        // CDF: P3-6-1b. Read-only seam for the tests (and 6-2a): the actor's targets
+        // replace the old player_activity::targets/index assertions.
+        item *target() const {
+            return target_loc ? target_loc.get() : nullptr;
+        }
+        item *ammo() const {
+            return ammo_loc ? ammo_loc.get() : nullptr;
+        }
+        int qty() const {
+            return quantity;
+        }
 
     private:
+        explicit reload_activity_actor() = default;
         int moves_total = 0;
         int quantity = 0;
         int seconds_per_round = 0;
@@ -691,6 +704,7 @@ class reload_activity_actor : public activity_actor
         safe_reference<item> ammo_loc;
 
         bool can_reload() const;
+        static void make_reload_sound( Character &who, item &reloadable );
 };
 
 class throw_activity_actor : public activity_actor
