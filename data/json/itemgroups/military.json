@@ -1118,5 +1118,51 @@
     "//": "Shoulder and groin protectors for heavy vest",
     "subtype": "collection",
     "entries": [ { "item": "iotv_groin_plate" }, { "item": "iotv_shoulder_plate" }, { "item": "iotv_neck_plate" } ]
+  },
+  {
+    "id": "kitted_heavy_vest",
+    "type": "item_group",
+    "//": "ESAPI plates and protectors for heavy vest and pouches",
+    "subtype": "collection",
+    "entries": [ { "group": "pristine_esapi_plates" }, { "group": "custom_heavy_lbv" }, { "group": "ballistic_protectors" } ]
+  },
+  {
+    "id": "used_kitted_heavy_vest",
+    "type": "item_group",
+    "//": "ESAPI plates and protectors for heavy vest and pouches",
+    "subtype": "collection",
+    "entries": [
+      { "group": "some_esapi_plates" },
+      { "group": "custom_heavy_lbv" },
+      { "group": "ballistic_protectors", "damage": [ 0, 2 ] }
+    ]
+  },
+  {
+    "id": "used_kitted_medium_vest",
+    "type": "item_group",
+    "//": "ESAPI plates for full vest and pouches",
+    "subtype": "collection",
+    "entries": [ { "group": "some_esapi_plates" }, { "group": "custom_medium_lbv" } ]
+  },
+  {
+    "id": "kitted_medium_vest",
+    "type": "item_group",
+    "//": "ESAPI plates for full vest and pouches",
+    "subtype": "collection",
+    "entries": [ { "group": "pristine_esapi_plates" }, { "group": "custom_medium_lbv" } ]
+  },
+  {
+    "id": "kitted_light_vest",
+    "type": "item_group",
+    "//": "ESAPI plates for full vest and pouches",
+    "subtype": "collection",
+    "entries": [ { "group": "pristine_esapi_front_plates" }, { "group": "custom_light_lbv" } ]
+  },
+  {
+    "id": "used_kitted_light_vest",
+    "type": "item_group",
+    "//": "ESAPI plates for full vest and pouches",
+    "subtype": "collection",
+    "entries": [ { "group": "some_esapi_front_plates" }, { "group": "custom_light_lbv" } ]
   }
 ]

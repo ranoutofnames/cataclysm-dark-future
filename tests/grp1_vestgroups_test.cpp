@@ -498,3 +498,108 @@ TEST_CASE("grp1_loaded_lbv_pouches_sit_in_molle_slots", "[armor][grp1][spawn]") 
         vests["heavy_load_bearing_vest"] / static_cast<double>(draws) == Approx(0.20).margin(0.10));
 }
 
+TEST_CASE("grp1_kit_groups_combine_plates_and_pouches", "[armor][grp1][spawn]") {
+    clear_all_state();
+    rng_set_engine_seed(20261105);
+    constexpr int draws = 300;
+
+    // the kit groups are collections of plate groups and a custom_*_lbv group: every item of a
+    // spawn is a plate or a pouch, none is a vest
+    std::set<std::string> plate_kinds = large_plates;
+    plate_kinds.insert(medium_plates.begin(), medium_plates.end());
+    plate_kinds.insert(iotv_plates.begin(), iotv_plates.end());
+
+    struct kit_row {
+        const char* group;
+        int large;     // plates for a large slot
+        int medium;    // plates for a medium slot
+        bool iotv;     // the three IOTV protectors
+        bool pristine; // no destroyed plate
+    };
+    // CDF: DDA military.json:111-153; some_esapi_plates and the front plate groups give 2 large
+    // (and 2 medium)
+    const std::vector<kit_row> rows = {
+        {"kitted_heavy_vest", 2, 2, true, true},
+        {"used_kitted_heavy_vest", 2, 2, true, false},
+        {"used_kitted_medium_vest", 2, 2, false, false},
+        {"kitted_medium_vest", 2, 2, false, true},
+        {"kitted_light_vest", 2, 0, false, true},
+        {"used_kitted_light_vest", 2, 0, false, false},
+    };
+    for (const kit_row& row : rows) {
+        CAPTURE(row.group);
+        failure_log log;
+        for (int i = 0; i < draws; ++i) {
+            spawned_items list = spawn(row.group);
+            const std::vector<std::string> ids = type_ids(list);
+            const std::string where = "draw " + std::to_string(i);
+            log.expect(count_in(ids, large_plates) == row.large, where + " large plates");
+            log.expect(count_in(ids, medium_plates) == row.medium, where + " medium plates");
+            log.expect(count_in(ids, iotv_plates) == (row.iotv ? 3 : 0), where + " protectors");
+            if (row.iotv) {
+                for (const std::string& plate : iotv_plates) {
+                    log.expect(count_of(ids, plate) == 1, where + " " + plate);
+                }
+            }
+            if (row.pristine) {
+                log.expect(count_of(ids, "destroyed_large_ceramic_plate") == 0
+                               && count_of(ids, "destroyed_medium_ceramic_plate") == 0,
+                           where + " destroyed plate");
+            }
+            // the rest is the pouches of the custom_*_lbv group, and it always has a first pouch
+            log.expect(count_of(ids, "chestpouch") + count_of(ids, "triple_stacker_pouch") > 0,
+                       where + " has no chest or stacker pouch");
+            for (detached_ptr<item>& it : list) {
+                const std::string id = it->typeId().str();
+                if (plate_kinds.count(id) == 0) {
+                    log.expect(lbv_pouches.count(id) > 0,
+                               where + " " + id + " is neither a plate nor a pouch");
+                } else if (iotv_plates.count(id) > 0 && !row.pristine) {
+                    log.expect(it->damage() >= 0 && it->damage() <= max_draw_damage,
+                               where + " protector damage");
+                } else if (iotv_plates.count(id) > 0) {
+                    log.expect(it->damage() == 0, where + " pristine protector is damaged");
+                }
+            }
+        }
+        CAPTURE(log.first);
+        CHECK(log.count == 0);
+    }
+
+    SECTION("the pristine kits carry exactly the pristine plate counts") {
+        // CDF: DDA military.json:90 and :97, pristine_esapi_plates and pristine_esapi_front_plates
+        failure_log log;
+        for (int i = 0; i < draws; ++i) {
+            spawned_items medium = spawn("kitted_medium_vest");
+            spawned_items light = spawn("kitted_light_vest");
+            spawned_items heavy = spawn("kitted_heavy_vest");
+            const std::vector<std::string> medium_ids = type_ids(medium);
+            const std::vector<std::string> light_ids = type_ids(light);
+            const std::vector<std::string> heavy_ids = type_ids(heavy);
+            log.expect(
+                count_of(medium_ids, "esapi_plate") == 2 && count_of(medium_ids, "esbi_plate") == 2,
+                "kitted_medium_vest draw " + std::to_string(i));
+            log.expect(
+                count_of(light_ids, "esapi_plate") == 2 && count_of(light_ids, "esbi_plate") == 0,
+                "kitted_light_vest draw " + std::to_string(i));
+            log.expect(
+                count_of(heavy_ids, "esapi_plate") == 2 && count_of(heavy_ids, "esbi_plate") == 2,
+                "kitted_heavy_vest draw " + std::to_string(i));
+        }
+        CAPTURE(log.first);
+        CHECK(log.count == 0);
+    }
+    SECTION("the used kits show both working and destroyed plates") {
+        std::set<std::string> seen;
+        for (int i = 0; i < draws; ++i) {
+            spawned_items list = spawn("used_kitted_medium_vest");
+            const std::vector<std::string> ids = type_ids(list);
+            seen.insert(ids.begin(), ids.end());
+        }
+        CHECK(seen.count("destroyed_large_ceramic_plate") == 1);
+        CHECK(seen.count("destroyed_medium_ceramic_plate") == 1);
+        CHECK(seen.count("esapi_plate") == 1);
+        CHECK(seen.count("esbi_plate") == 1);
+    }
+}
+
