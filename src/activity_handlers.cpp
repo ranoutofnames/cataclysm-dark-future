@@ -168,7 +168,6 @@ static const activity_id ACT_PRY_NAILS( "ACT_PRY_NAILS" );
 static const activity_id ACT_PULP( "ACT_PULP" );
 static const activity_id ACT_QUARTER( "ACT_QUARTER" );
 static const activity_id ACT_READ( "ACT_READ" );
-static const activity_id ACT_RELOAD( "ACT_RELOAD" );
 static const activity_id ACT_REPAIR_ITEM( "ACT_REPAIR_ITEM" );
 static const activity_id ACT_ROBOT_CONTROL( "ACT_ROBOT_CONTROL" );
 static const activity_id ACT_SHAVE( "ACT_SHAVE" );
@@ -343,7 +342,6 @@ activity_handlers::finish_functions = {
     { ACT_HOTWIRE_CAR, hotwire_finish },
     { ACT_MAKE_ZLAVE, make_zlave_finish },
     { ACT_PICKAXE, pickaxe_finish },
-    { ACT_RELOAD, reload_finish },
     { ACT_START_FIRE, start_fire_finish },
     { ACT_TRAIN, train_finish },
     { ACT_CHURN, churn_finish },
@@ -2091,72 +2089,6 @@ void activity_handlers::pulp_finish( player_activity *act, player *p )
     } else {
         act->set_to_null();
     }
-}
-
-void activity_handlers::reload_finish( player_activity *act, player *p )
-{
-    act->set_to_null();
-
-    if( act->targets.size() != 2 || act->index <= 0 ) {
-        debugmsg( "invalid arguments to ACT_RELOAD" );
-        return;
-    }
-
-    if( !act->targets[0] ) {
-        debugmsg( "reload target is null, failed to reload" );
-        return;
-    }
-
-    if( !act->targets[1] ) {
-        debugmsg( "ammo target is null, failed to reload" );
-        return;
-    }
-
-    item &reloadable = *act->targets[ 0 ];
-    item &ammo = *act->targets[1];
-    std::string ammo_name = ammo.tname();
-    const int qty = act->index;
-    const bool is_speedloader = ammo.has_flag( flag_SPEEDLOADER );
-
-    if( !reloadable.reload( *p, ammo, qty ) ) {
-        add_msg( m_info, _( "Can't reload the %s." ), reloadable.tname() );
-        return;
-    }
-
-    std::string msg = _( "You reload the %s." );
-
-
-    if( reloadable.get_var( "dirt", 0 ) > 7800 ) {
-        msg =
-            _( "You manage to loosen some debris and make your %s somewhat operational." );
-        reloadable.set_var( "dirt", ( reloadable.get_var( "dirt", 0 ) - rng( 790, 2750 ) ) );
-    }
-
-    if( reloadable.is_gun() ) {
-        p->recoil = MAX_RECOIL;
-
-        if( reloadable.has_flag( flag_RELOAD_ONE ) && !is_speedloader ) {
-            for( int i = 0; i != qty; ++i ) {
-                msg = _( "You insert one %2$s into the %1$s." );
-            }
-        }
-        if( reloadable.type->gun->reload_noise_volume > 0_dB ) {
-            sound_event se;
-            se.origin = p->bub_pos();
-            se.volume = units::to_decibel( reloadable.type->gun->reload_noise_volume );
-            se.category = sounds::sound_t::activity;
-            se.description = reloadable.type->gun->reload_noise;
-            se.id = "reload";
-            se.variant = reloadable.typeId().str();
-
-            sounds::sound( se );
-            sfx::play_variant_sound( "reload", reloadable.typeId().str(),
-                                     sfx::get_heard_volume( p->bub_pos(), se.volume ) );
-        }
-    } else if( reloadable.is_container() ) {
-        msg = _( "You refill the %s." );
-    }
-    add_msg( m_neutral, msg, reloadable.tname(), ammo_name );
 }
 
 void activity_handlers::start_fire_finish( player_activity *act, player *p )

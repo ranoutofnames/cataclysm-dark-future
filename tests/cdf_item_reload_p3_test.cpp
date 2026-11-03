@@ -24,7 +24,6 @@
 #include "type_id.h"
 #include "player_helpers.h"
 #include "reload/reload.h"
-#include "reload_activity_access.h"
 #include "sounds.h"
 #include "state_helpers.h"
 #include "units.h"
@@ -2267,7 +2266,7 @@ TEST_CASE( "avatar_action_reload_assigns_reload_actor", "[p3][reload][activity]"
     REQUIRE( who.activity );
     CHECK( who.activity->id() == activity_id( "ACT_RELOAD" ) );
     const reload_activity_actor *actor =
-        reload_actor_of( *who.activity );
+        dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
     REQUIRE( actor );
     CHECK( actor->target() == &gun );
     CHECK( actor->ammo() == &mag );
@@ -2300,9 +2299,9 @@ TEST_CASE( "avatar_action_reload_dirty_gun_adds_moves", "[p3][reload][activity]"
         avatar_action::reload( gun, false, false );
 
         REQUIRE( who.activity );
-        REQUIRE( reload_actor_of( *who.activity ) );
-        CHECK( activity_actor_of(*who.activity)->progress.get_moves_total() == plain_moves + 2500 );
-        CHECK( activity_actor_of(*who.activity)->progress.get_moves_left() == plain_moves + 2500 );
+        REQUIRE( dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() ) );
+        CHECK( who.activity->get_actor()->progress.get_moves_total() == plain_moves + 2500 );
+        CHECK( who.activity->get_actor()->progress.get_moves_left() == plain_moves + 2500 );
 
         process_activity( who );
 
@@ -2314,8 +2313,8 @@ TEST_CASE( "avatar_action_reload_dirty_gun_adds_moves", "[p3][reload][activity]"
         avatar_action::reload( gun, false, false );
 
         REQUIRE( who.activity );
-        REQUIRE( reload_actor_of( *who.activity ) );
-        CHECK( activity_actor_of(*who.activity)->progress.get_moves_total() == plain_moves );
+        REQUIRE( dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() ) );
+        CHECK( who.activity->get_actor()->progress.get_moves_total() == plain_moves );
     }
 }
 
@@ -2342,7 +2341,7 @@ TEST_CASE( "ammobelt_assembles_through_reload_actor", "[p3][reload][activity][iu
     REQUIRE( who.activity );
     CHECK( who.activity->id() == activity_id( "ACT_RELOAD" ) );
     const reload_activity_actor *actor =
-        reload_actor_of( *who.activity );
+        dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
     REQUIRE( actor );
     item *belt = actor->target();
     REQUIRE( belt );
@@ -2393,4 +2392,59 @@ TEST_CASE( "ammobelt_without_ammo_assigns_nothing", "[p3][reload][activity][iuse
         CHECK_FALSE( who.activity );
         CHECK_FALSE( who.has_item_with_id( itype_id( "belt223" ) ) );
     }
+}
+
+// CDF: P3-6-2b. Nothing creates an old-shape ACT_RELOAD after P3-6-2a, so
+// activity_handlers::reload_finish is gone. A legacy-shaped ACT_RELOAD (no actor, no targets)
+// takes player_activity::do_turn's "no finish function" path (player_activity.cpp:641-650:
+// call_finish returns false, set_to_null runs). The old handler logged "invalid arguments to
+// ACT_RELOAD" for it (activity_handlers.cpp:2101).
+TEST_CASE( "legacy_act_reload_has_no_finish_handler", "[p3][reload][activity]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.assign_activity( std::make_unique<player_activity>( activity_id( "ACT_RELOAD" ), 1 ) );
+    REQUIRE( you.activity );
+    REQUIRE( you.activity->id() == activity_id( "ACT_RELOAD" ) );
+
+    const std::string dmsg = capture_debugmsg_during( [&you]() {
+        process_activity( you );
+    } );
+
+    CHECK( dmsg == std::string() );
+    CHECK_FALSE( you.activity );
+}
+
+// CDF: P3-6-2b. A loud gun's reload makes exactly one noise: the actor's make_reload_sound
+// (6-1b). The deleted reload_finish also submitted one, so a surviving second finish path
+// would show up as a second sound instance. glock_19 does not override the 40 dB default of
+// islot_gun (itype.h:670); the sound category and text are the actor's (activity, "click.").
+TEST_CASE( "actor_reload_makes_one_reload_noise", "[p3][reload][sound][activity]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    who.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false );
+    map &here = get_map();
+    // CDF: the swappable-magazine fixture of avatar_action_reload_assigns_reload_actor above.
+    item &gun = who.i_add( item::spawn( itype_glock_19, calendar::start_of_cataclysm, 0 ) );
+    item &mag = who.i_add( item::spawn( itype_glockmag, calendar::start_of_cataclysm, 0 ) );
+    mag.ammo_set( itype_id( "9mm" ), 15 );
+    REQUIRE( gun.type->gun );
+    REQUIRE( gun.type->gun->reload_noise_volume == 40_dB );
+    REQUIRE( gun.ammo_remaining() == 0 );
+
+    avatar_action::reload( gun, false, false );
+    REQUIRE( who.activity );
+    REQUIRE( who.activity->id() == activity_id( "ACT_RELOAD" ) );
+
+    sounds::reset_sounds();
+    process_activity( who );
+    here.batch_flood_fill_sounds();
+
+    CHECK( gun.ammo_remaining() == 15 );
+    const std::vector<sound_instance_cache> &instances = here.m_sound_cache.sound_instances;
+    REQUIRE( instances.size() == 1 );
+    CHECK( instances[0].sound.origin == who.bub_pos() );
+    CHECK( instances[0].sound.category == sounds::sound_t::activity );
+    CHECK( instances[0].sound.description == gun.type->gun->reload_noise );
 }

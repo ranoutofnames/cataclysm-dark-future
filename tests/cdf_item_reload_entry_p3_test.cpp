@@ -1,3 +1,5 @@
+#include "activity_actor.h"
+#include "activity_actor_definitions.h"
 #include "avatar.h"
 #include "avatar_action.h"
 #include "calendar.h"
@@ -8,7 +10,6 @@
 #include "map/map.h"
 #include "player_activity.h"
 #include "player_helpers.h"
-#include "reload_activity_access.h"
 #include "state_helpers.h"
 #include "type_id.h"
 
@@ -108,7 +109,7 @@ TEST_CASE("reload_item_owned_by_other_steal_mode_proceeds", "[p3][reload][entry]
     CHECK(who.activity->id() == activity_id("ACT_RELOAD"));
     CHECK(who.has_item(gun));
     // CDF: P3-6-2a; the old targets facts, asserted through the reload actor.
-    const auto* actor = reload_actor_of(*who.activity);
+    const auto* actor = dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
     REQUIRE(actor);
     CHECK(actor->target() == &gun);
     CHECK(actor->ammo() == &ammo);
@@ -169,7 +170,7 @@ TEST_CASE("reload_wielded_reloads_only_the_wielded_item", "[p3][reload][entry]")
 
         REQUIRE(who.activity);
         // CDF: P3-6-2a; the old targets facts, asserted through the reload actor.
-        const auto* actor = reload_actor_of(*who.activity);
+        const auto* actor = dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
         REQUIRE(actor);
         REQUIRE(actor->ammo());
         REQUIRE(!who.wielded_items().empty());

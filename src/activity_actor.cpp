@@ -2505,7 +2505,7 @@ void reload_activity_actor::do_turn( player_activity &act, Character &who )
 }
 
 // CDF: P3-6-1b; DDA activity_actor.cpp:8451-8459. DDA calls sounds::ambient_sound, which CDF
-// does not have; the sound_event form is the one activity_handlers::reload_finish already uses.
+// does not have; the sound_event form is the one the old ACT_RELOAD finish handler used.
 void reload_activity_actor::make_reload_sound( Character &who, item &reloadable )
 {
     if( reloadable.type->gun->reload_noise_volume > 0_dB ) {

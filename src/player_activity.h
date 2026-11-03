@@ -117,6 +117,11 @@ class player_activity
             }
             return moves_left <= 0;
         }
+        // CDF: read-only view of the actor, null for a legacy-shaped activity. DDA keeps
+        // player_activity::actor public; CDF keeps it private and exposes this instead.
+        auto get_actor() const -> const activity_actor * {
+            return actor.get();
+        }
         //Wrapper func to return assistants array properly
         std::vector<weak_ptr_fast<npc>> &assistants();
         /*

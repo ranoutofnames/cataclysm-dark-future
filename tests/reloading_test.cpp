@@ -1,3 +1,5 @@
+#include "activity_actor.h"
+#include "activity_actor_definitions.h"
 #include "avatar.h"
 #include "avatar_action.h"
 #include "avatar_functions.h"
@@ -16,7 +18,6 @@
 #include "player_helpers.h"
 #include "point.h"
 #include "reload/reload.h"
-#include "reload_activity_access.h"
 #include "safe_reference.h"
 #include "state_helpers.h"
 #include "type_id.h"
@@ -325,7 +326,7 @@ TEST_CASE("preferred_reload_source_bypasses_prompt", "[reload][gun]") {
     REQUIRE(who.activity);
     CHECK(who.activity->id() == activity_id("ACT_RELOAD"));
     // CDF: P3-6-2a; the old targets/index facts, asserted through the reload actor.
-    const auto* actor = reload_actor_of(*who.activity);
+    const auto* actor = dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
     REQUIRE(actor);
     CHECK(actor->target() == &gun);
     CHECK(actor->ammo() == &preferred);
@@ -361,13 +362,13 @@ TEST_CASE("reload_player_handoff_accounting", "[reload]") {
     REQUIRE(who.activity);
     CHECK(who.activity->id() == activity_id("ACT_RELOAD"));
     // CDF: P3-6-2a; the old targets/index/moves facts, asserted through the reload actor.
-    const auto* actor = reload_actor_of(*who.activity);
+    const auto* actor = dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
     REQUIRE(actor);
     CHECK(actor->target() == target);
     CHECK(actor->ammo() == &ammo);
     CHECK(actor->qty() == 1);
-    CHECK(activity_actor_of(*who.activity)->progress.get_moves_total() == expected_activity_cost);
-    CHECK(activity_actor_of(*who.activity)->progress.get_moves_left() == expected_activity_cost);
+    CHECK(who.activity->get_actor()->progress.get_moves_total() == expected_activity_cost);
+    CHECK(who.activity->get_actor()->progress.get_moves_left() == expected_activity_cost);
     CHECK(target->ammo_remaining() == 0);
     CHECK(ammo.charges == 6);
 
