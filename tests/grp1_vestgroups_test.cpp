@@ -603,3 +603,252 @@ TEST_CASE("grp1_kit_groups_combine_plates_and_pouches", "[armor][grp1][spawn]") 
     }
 }
 
+namespace {
+// type ids of the plates in the plate slots of a vest, sorted (pattern: plate_ids of
+// tests/ablative_armor_test.cpp:54)
+auto plate_ids(const item& vest) -> std::vector<std::string> {
+    std::vector<std::string> ids;
+    for (const item* plate : ablative::plates(vest)) { ids.push_back(plate->typeId().str()); }
+    std::sort(ids.begin(), ids.end());
+    return ids;
+}
+
+// CDF: plate slots of the vests, data/json/items/armor/cdf_ballistic_vests.json: the ESAPI vest has
+// two large and two medium slots, the heavy vest the same plus the three IOTV protector slots, the
+// light vests and level_3_vest two large slots
+struct slot_layout {
+    int large;
+    int medium;
+    bool iotv;
+};
+
+auto layout_of(const std::string& id) -> const slot_layout* {
+    static const std::map<std::string, slot_layout> layouts = {
+        {"ballistic_vest_esapi", {2, 2, false}},
+        {"ballistic_vest_heavy", {2, 2, true}},
+        {"level_3_vest", {2, 0, false}},
+        {"ballistic_vest_light", {2, 0, false}},
+        {"ballistic_vest_light_operator", {2, 0, false}},
+        {"ballistic_vest_light_pouches", {2, 0, false}},
+    };
+    const auto found = layouts.find(id);
+    return found == layouts.end() ? nullptr : &found->second;
+}
+
+// every plate slot holds a plate of its kind: working only when the group is pristine
+void check_plates(failure_log& log, const item& vest, bool pristine, const std::string& where) {
+    const std::string id = vest.typeId().str();
+    const slot_layout* layout = layout_of(id);
+    if (layout == nullptr) { return; }
+    const std::vector<std::string> plates = plate_ids(vest);
+    log.expect(count_in(plates, large_plates) == layout->large, where + " " + id + " large plates");
+    log.expect(count_in(plates, medium_plates) == layout->medium,
+               where + " " + id + " medium plates");
+    log.expect(count_in(plates, iotv_plates) == (layout->iotv ? 3 : 0),
+               where + " " + id + " protectors");
+    log.expect(
+        static_cast<int>(plates.size()) == layout->large + layout->medium + (layout->iotv ? 3 : 0),
+        where + " " + id + " plate count " + std::to_string(plates.size()));
+    if (pristine) {
+        log.expect(count_of(plates, "destroyed_large_ceramic_plate") == 0
+                       && count_of(plates, "destroyed_medium_ceramic_plate") == 0,
+                   where + " " + id + " destroyed plate");
+    }
+}
+
+struct vest_group_row {
+    const char* group;
+    std::set<std::string> allowed; // top-level items a draw may hold
+    int min_plated;                // vests with plates per draw
+    int max_plated;
+    bool pristine;
+    bool with_pouches; // every plated vest has a pouch attached (the group uses a kitted_* group)
+    std::set<std::string> must_see; // item ids that show up in the draws
+};
+
+const std::set<std::string> load_bearing_vests =
+    {"load_bearing_vest", "light_load_bearing_vest", "heavy_load_bearing_vest"};
+const std::set<std::string> light_vests =
+    {"ballistic_vest_light", "ballistic_vest_light_operator", "ballistic_vest_light_pouches"};
+} // namespace
+
+TEST_CASE("grp1_vest_groups_resolve_and_carry_plates", "[armor][grp1][spawn]") {
+    clear_all_state();
+    rng_set_engine_seed(20261106);
+    constexpr int draws = 500;
+
+    std::set<std::string> military_allowed =
+        {"ballistic_vest_esapi", "level_3_vest", "ballistic_vest_heavy"};
+    military_allowed.insert(load_bearing_vests.begin(), load_bearing_vests.end());
+    military_allowed.insert(light_vests.begin(), light_vests.end());
+    std::set<std::string> military_seen =
+        {"ballistic_vest_esapi", "level_3_vest", "ballistic_vest_heavy", "ballistic_vest_light",
+         "load_bearing_vest"};
+    // CDF: DDA military.json:157-390; plated vests keep the vest's own pouches only through the kit
+    // groups
+    const std::vector<vest_group_row> rows = {
+        {"military_ballistic_vest", military_allowed, 1, 1, false, false, military_seen},
+        {"swat_ballistic_vest",
+         {"ballistic_vest_esapi", "tacvest", "heavy_load_bearing_vest_breacher"},
+         1,
+         1,
+         false,
+         false,
+         {"ballistic_vest_esapi", "tacvest", "heavy_load_bearing_vest_breacher"}},
+        {"swat_ballistic_vest_pristine",
+         {"ballistic_vest_esapi"},
+         1,
+         1,
+         true,
+         true,
+         {"ballistic_vest_esapi"}},
+        {"military_ballistic_vest_pristine", military_allowed, 0, 4, true, false, military_seen},
+        {"us_ballistic_vest_pristine",
+         {"ballistic_vest_esapi"},
+         1,
+         1,
+         true,
+         true,
+         {"ballistic_vest_esapi"}},
+        {"contractor_ballistic_vest_light", light_vests, 1, 1, true, true, light_vests},
+        {"military_ballistic_vest_light", light_vests, 1, 1, false, true, light_vests},
+        {"military_ballistic_vest_light_pristine", light_vests, 1, 1, true, true, light_vests},
+        {"ballistic_vest_light_pristine",
+         {"ballistic_vest_light"},
+         1,
+         1,
+         true,
+         true,
+         {"ballistic_vest_light"}},
+        {"military_ballistic_vest_heavy_pristine",
+         {"ballistic_vest_heavy"},
+         1,
+         1,
+         true,
+         true,
+         {"ballistic_vest_heavy"}},
+        {"xedra_ballistic_vest_heavy_pristine",
+         {"ballistic_vest_heavy"},
+         1,
+         1,
+         true,
+         true,
+         {"ballistic_vest_heavy"}},
+        {"military_ballistic_vest_heavy",
+         {"ballistic_vest_heavy"},
+         1,
+         1,
+         false,
+         true,
+         {"ballistic_vest_heavy"}},
+    };
+    REQUIRE(rows.size() == 12);
+
+    for (const vest_group_row& row : rows) {
+        CAPTURE(row.group);
+        CHECK(item_group::group_is_defined(item_group_id(row.group)));
+        failure_log log;
+        std::set<std::string> seen;
+        std::string debug_output;
+        debug_output = capture_debugmsg_during([&]() {
+            for (int i = 0; i < draws; ++i) {
+                spawned_items list = spawn(row.group);
+                const std::string where = "draw " + std::to_string(i);
+                int plated = 0;
+                for (detached_ptr<item>& it : list) {
+                    const std::string id = it->typeId().str();
+                    log.expect(it->typeId().is_valid(), where + " unknown id " + id);
+                    log.expect(row.allowed.count(id) > 0, where + " unexpected " + id);
+                    seen.insert(id);
+                    if (ablative::has_plate_slots(*it)) {
+                        ++plated;
+                        check_plates(log, *it, row.pristine, where);
+                        if (row.with_pouches) {
+                            log.expect(!it->contents.get_added_pockets().empty(),
+                                       where + " " + id + " has no pouch");
+                        }
+                    }
+                }
+                log.expect(plated >= row.min_plated && plated <= row.max_plated,
+                           where + " has " + std::to_string(plated) + " plated vests");
+            }
+        });
+        CAPTURE(log.first);
+        CAPTURE(debug_output);
+        CHECK(debug_output.empty());
+        CHECK(log.count == 0);
+        for (const std::string& id : row.must_see) {
+            CAPTURE(id);
+            CHECK(seen.count(id) == 1);
+        }
+    }
+}
+
+TEST_CASE("grp1_every_group_of_the_closure_exists", "[armor][grp1][spawn]") {
+    clear_all_state();
+    // CDF: the 40 groups of DDA military.json:33-390, custom_lbvs.json:4-130, gear.json:446-470
+    const std::vector<std::string> plates =
+        {"civilian_ballistic_inserts",  "civilian_face_armor",
+         "maybe_esapi_plate",           "maybe_esbi_plate",
+         "some_esapi_plates",           "some_esapi_front_plates",
+         "some_steel_front_plates",     "some_heavy_steel_front_plates",
+         "some_stab_front_plates",      "pristine_esapi_plates",
+         "pristine_esapi_front_plates", "ballistic_protectors"};
+    const std::vector<std::string> molle = {
+        "loaded_lbv",
+        "loaded_webbing_belt",
+        "molle_vest_bag_accessories",
+        "molle_accessories",
+        "molle_belt_contents",
+        "custom_light_lbv",
+        "custom_medium_lbv",
+        "custom_heavy_lbv",
+        "molle_backpacks_and_accessories",
+        "molle_backpacks_contents"};
+    const std::vector<std::string> kits =
+        {"kitted_heavy_vest",  "used_kitted_heavy_vest", "used_kitted_medium_vest",
+         "kitted_medium_vest", "kitted_light_vest",      "used_kitted_light_vest"};
+    const std::vector<std::string> vests = {
+        "military_ballistic_vest",
+        "swat_ballistic_vest",
+        "swat_ballistic_vest_pristine",
+        "military_ballistic_vest_pristine",
+        "us_ballistic_vest_pristine",
+        "contractor_ballistic_vest_light",
+        "military_ballistic_vest_light",
+        "military_ballistic_vest_light_pristine",
+        "ballistic_vest_light_pristine",
+        "military_ballistic_vest_heavy_pristine",
+        "xedra_ballistic_vest_heavy_pristine",
+        "military_ballistic_vest_heavy"};
+    REQUIRE(plates.size() + molle.size() + kits.size() + vests.size() == 40);
+
+    const auto check_closure = [](const std::vector<std::string>& groups) {
+        for (const std::string& group : groups) {
+            CAPTURE(group);
+            REQUIRE(item_group::group_is_defined(item_group_id(group)));
+            // a group that exists gives at least one item type, and every type it names is defined
+            const std::set<const itype*> types = item_group::every_possible_item_from(
+                item_group_id(group));
+            CHECK_FALSE(types.empty());
+            for (const itype* type : types) {
+                CAPTURE(type->get_id().str());
+                CHECK(type->get_id().is_valid());
+            }
+            // and it spawns something without a debugmsg
+            const std::string msg = capture_debugmsg_during([&group]() {
+                bool any = false;
+                for (int i = 0; i < 50; ++i) {
+                    spawned_items list = spawn(group);
+                    any = any || !list.empty();
+                }
+                CHECK(any);
+            });
+            CHECK(msg.empty());
+        }
+    };
+    SECTION("plate groups") { check_closure(plates); }
+    SECTION("MOLLE and load-bearing vest groups") { check_closure(molle); }
+    SECTION("kit groups") { check_closure(kits); }
+    SECTION("vest groups") { check_closure(vests); }
+}
