@@ -16,6 +16,7 @@
 #include "debug.h"
 #include "effect.h"
 #include "enums.h"
+#include "examine_item_menu.h"
 #include "flag.h"
 #include "game.h"
 #include "game_constants.h"
@@ -1515,22 +1516,21 @@ static item_reload_option favorite_ammo_or_select(
 {
     // CDF: DDA TODO(multimag), game.cpp:7039-7041: favorite-ammo fast path uses list_ammo() with the legacy first-compatible-well fallback. A second well that accepts the same ammo type is not offered without an explicit menu step.
     if( u.ammo_location ) {
-        // CDF: reload::discover_ammo stands in for DDA's u.list_ammo (4-d-b not landed, 6-3 OD-10); include_empty_mags is false as in DDA 7044
-        const auto discovery = reload::discover_ammo( u, it, {
-            .include_empty_mags = false,
-            .include_potential = false
-        } );
-        if( discovery.ammo_match_found ) {
+        std::vector<item_reload_option> ammo_list;
+        if( u.list_ammo( it, ammo_list, false ) ) {
             const auto is_favorite_and_compatible = [&it, &u]( const item_reload_option & opt ) {
                 return opt.ammo == &*u.ammo_location && it.can_reload_with( *opt.ammo, false );
             };
-            const auto iter = std::ranges::find_if( discovery.options, is_favorite_and_compatible );
-            if( iter != discovery.options.end() ) {
+            const auto iter = std::ranges::find_if( ammo_list, is_favorite_and_compatible );
+            if( iter != ammo_list.end() ) {
                 return *iter;
             }
         }
     }
     // CDF: DDA 7053-7055 resets an empty ammo_location; nothing to reset on a safe_reference
+    // CDF: DDA calls u.select_ammo here (CDF game_menus::inv::select_ammo, 5-3). That selector offers no loose
+    // ammo to a legacy direct-charge gun (sw_619 has a speedloader well and no loose-ammo target), so reload_ui
+    // stays here until the item data is converted (P3-6-3b report, Blocked).
     return reload_ui::select_ammo( u, it, {
         .prompt = prompt,
         .discovery = {
@@ -1643,11 +1643,52 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
     }
 }
 
+// per DDA item_location.cpp:1181-1191 (is_invisible_installed_gunmod): a gunmod installed in a gun.
+// CDF: islot_gunmod has no is_visible_when_installed field yet (packet 5-4 step A adds it), so every installed
+// gunmod counts as invisible. DDA shows two of them as rows of their own: mipim (rail.json:79) and
+// mounted_flashlight (underbarrel.json:605). The gun row is still listed and reaches the mods through the
+// gunmod targets of reload::discover_ammo.
+static auto is_invisible_installed_gunmod( const item &it ) -> bool
+{
+    if( !it.is_gunmod() ) {
+        return false;
+    }
+    const item *parent = it.parent_item();
+    return parent != nullptr && parent->is_gun();
+}
+
+// per DDA game.cpp:7142-7156 (reload_selector_preset::is_shown)
+static auto reload_item_filter() -> item_filter
+{
+    return []( const item & it ) {
+        return !is_invisible_installed_gunmod( it ) &&
+               examine_item_menu::rate_action_reload( get_avatar(), it ) == examine_item_menu::hint_rating::good;
+    };
+}
+
+// CDF: P3-6-3b test hooks (precedent: game_menus::inv::select_ammo_shows). Messages are stubs in the test
+// build and a non-empty picker never returns there, so the tests read the picker's filter and the number
+// of times reload_item opened the picker through these two functions.
+static int reload_item_picker_opens = 0;
+
+namespace avatar_action
+{
+auto reload_item_picker_shows( const item &it ) -> bool
+{
+    return reload_item_filter()( it );
+}
+
+auto reload_item_picker_opened_count() -> int
+{
+    return reload_item_picker_opens;
+}
+} // namespace avatar_action
+
 void avatar_action::reload_item()
 {
-    item *item_loc = reload_ui::pick_target( get_avatar(), []( const item & it ) {
-        return can_reload_item_or_mods( get_avatar(), it );
-    } );
+    reload_item_picker_opens++;
+    item *item_loc = g->inv_map_splice( reload_item_filter(), _( "Reload item" ), 1,
+                                        _( "You have nothing to reload." ) );
 
     if( !item_loc ) {
         add_msg( _( "Never mind." ) );
@@ -1681,14 +1722,21 @@ void avatar_action::reload_weapon( bool try_everything )
     // Reload misc magazines in inventory.
     avatar &u = get_avatar();
     map &here = get_map();
-    std::set<itype_id> compatible_magazines;
-    for( const item *gun : u.wielded_items() ) {
-        const std::set<itype_id> &mags = gun->magazine_compatible();
-        compatible_magazines.insert( mags.begin(), mags.end() );
-    }
+    // CDF: wielded_items() stands in for DDA's get_wielded_item() (at most one item, melee.cpp:1197-1209)
+    const auto wielded = u.wielded_items();
+    const item *weapon = wielded.empty() ? nullptr : wielded.front();
     std::vector<item *> reloadables = character_funcs::find_reloadables( u );
     std::sort( reloadables.begin(), reloadables.end(),
-    [&u, &compatible_magazines]( const item * ap, const item * bp ) {
+    [&u, weapon]( const item * ap, const item * bp ) {
+        // Non gun/magazines are sorted last and later ignored.
+        // CDF: DDA 7200-7202 returns false only for a; with a gun or magazine against b, the keys below
+        // can then put b first, which is not a strict weak order. The b test makes them one trailing class.
+        if( !ap->is_magazine() && !ap->is_gun() ) {
+            return false;
+        }
+        if( !bp->is_magazine() && !bp->is_gun() ) {
+            return true;
+        }
         // Current wielded weapon comes first.
         if( u.is_wielding( *bp ) ) {
             return false;
@@ -1697,25 +1745,30 @@ void avatar_action::reload_weapon( bool try_everything )
             return true;
         }
         // Second sort by affiliation with wielded gun
-        const bool mag_ap = compatible_magazines.contains( ap->typeId() );
-        const bool mag_bp = compatible_magazines.contains( bp->typeId() );
-        if( mag_ap != mag_bp ) {
-            return mag_ap;
+        if( weapon != nullptr ) {
+            const bool mag_ap = weapon->is_compatible( *ap ).success();
+            const bool mag_bp = weapon->is_compatible( *bp ).success();
+            if( mag_ap != mag_bp ) {
+                return mag_ap;
+            }
         }
         // Third sort by gun vs magazine,
         if( ap->is_gun() != bp->is_gun() ) {
             return ap->is_gun();
         }
         // Finally sort by speed to reload.
-        return ( ap->get_reload_time() * ( ap->ammo_capacity() - ap->ammo_remaining() ) ) <
-               ( bp->get_reload_time() * ( bp->ammo_capacity() - bp->ammo_remaining() ) );
+        // TODO(multimag): aggregate remaining_ammo_capacity() falls back to
+        // the first MAGAZINE_WELL; multi-well items rank by first-well only.
+        return ( ap->get_reload_time() * ap->remaining_ammo_capacity() ) <
+               ( bp->get_reload_time() * bp->remaining_ammo_capacity() );
     } );
-    for( item *&candidate : reloadables ) {
-        const auto discovery = reload::discover_ammo( u, *candidate, {
-            .include_empty_mags = false,
-            .include_potential = false
-        } );
-        if( !discovery.options.empty() ) {
+    for( item *candidate : reloadables ) {
+        if( !candidate->is_magazine() && !candidate->is_gun() ) {
+            continue;
+        }
+        std::vector<item_reload_option> ammo_list;
+        u.list_ammo( *candidate, ammo_list, false );
+        if( !ammo_list.empty() ) {
             reload( *candidate, false, false );
             return;
         }
@@ -1725,14 +1778,18 @@ void avatar_action::reload_weapon( bool try_everything )
         return;
     }
     // If we make it here and haven't found anything to reload, start looking elsewhere.
+    // per DDA game.cpp:7241-7258: a vehicle part at the player position always returns, with or without a turret
     vehicle *veh = veh_pointer_or_null( here.veh_at( u.bub_pos() ) );
-    turret_data turret;
-    if( veh && ( turret = veh->turret_query( u.abs_pos() ) ) && turret.can_reload() ) {
-        auto opt = reload_ui::select_ammo( u, turret.base(), { .prompt = true } );
-        if( opt ) {
-            // CDF: P3-6-2a (DDA game.cpp:7246-7256): opt.target is the turret base or one of its gunmods
-            u.assign_activity( std::make_unique<player_activity>(
-                                   std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+    if( veh != nullptr ) {
+        const turret_data turret = veh->turret_query( u.abs_pos() );
+        if( turret.can_reload() ) {
+            // CDF: DDA calls u.select_ammo( turret.base(), true ); reload_ui stays, see favorite_ammo_or_select
+            auto opt = reload_ui::select_ammo( u, turret.base(), { .prompt = true } );
+            if( opt ) {
+                // CDF: P3-6-2a (DDA game.cpp:7246-7256): opt.target is the turret base or one of its gunmods
+                u.assign_activity( std::make_unique<player_activity>(
+                                       std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
+            }
         }
         return;
     }

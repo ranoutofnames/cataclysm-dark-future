@@ -4,19 +4,30 @@
 #include "avatar_action.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "coordinates.h"
 #include "flag.h"
 #include "item.h"
 #include "item_pocket.h"
 #include "map/map.h"
 #include "player_activity.h"
 #include "player_helpers.h"
+#include "reload/reload.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "vehicle/vehicle.h"
 
 #include <algorithm>
+#include <functional>
 #include <string>
 #include <utility>
 #include <vector>
+
+// CDF: P3-6-3b test hooks, defined in src/avatar_action.cpp (precedent: game_menus::inv::select_ammo_shows).
+namespace avatar_action
+{
+auto reload_item_picker_shows( const item &it ) -> bool;
+auto reload_item_picker_opened_count() -> int;
+} // namespace avatar_action
 
 namespace {
 
@@ -479,4 +490,328 @@ TEST_CASE( "full_ammo_restricted_magazine_pocket_survives_overflow", "[p3][reloa
 
     gun.overflow( who.bub_pos(), &who );
     CHECK( gun.ammo_remaining() == 6 );
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-6-3b; the reload entry points take the DDA picker, sort and turret rule (DDA game.cpp:7142-7259).
+// ---------------------------------------------------------------------------
+
+namespace
+{
+
+auto picker_shows( const item &it ) -> bool
+{
+    return avatar_action::reload_item_picker_shows( it );
+}
+
+auto picker_set( avatar &who ) -> std::vector<const item *>
+{
+    std::vector<const item *> shown;
+    for( const item *it : who.all_items() ) {
+        if( picker_shows( *it ) ) {
+            shown.push_back( it );
+        }
+    }
+    return shown;
+}
+
+// Calls reload_weapon( false ) until `done` holds, finishing each activity it starts. Every call must start an
+// activity, so a sort that reloads some other item first shows up in the caller's checks on the other items.
+void reload_weapon_until( avatar &who, const std::function<bool()> &done )
+{
+    for( int i = 0; i < 20 && !done(); ++i ) {
+        avatar_action::reload_weapon( false );
+        REQUIRE( who.activity );
+        process_activity( who );
+    }
+    REQUIRE( done() );
+}
+
+} // namespace
+
+// CDF: P3-6-3b P1; DDA game.cpp:7142-7174 (reload_selector_preset: rate_action_reload == good).
+TEST_CASE( "reload_item_picker_lists_reloadable_items_only", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+    who.wear_item( item::spawn( "backpack", bday ), false );
+
+    // CDF: sw_619 (data/json/items/gun/38.json) keeps direct charges, which item::is_reloadable always counts as
+    // reloadable (item_gun_tool_ammo.cpp:90), so the empty gun is a sw_619 and the full one a glock_19 holding a
+    // full glockmag (glock_19 has a magazine well, so a full magazine makes it not reloadable)
+    item &empty_gun = who.i_add( item::spawn( "sw_619", bday, 0 ) );
+    detached_ptr<item> full_mag = item::spawn( "glockmag", bday, 0 );
+    REQUIRE( full_mag->put_in( item::spawn( "9mm", bday, 15 ), pocket_type::MAGAZINE ).success() );
+    detached_ptr<item> full_det = item::spawn( "glock_19", bday, 0 );
+    full_det->put_in( std::move( full_mag ) );
+    item &full_gun = who.i_add( std::move( full_det ) );
+    item &ammo = who.i_add( item::spawn( "38_special", bday, 6 ) );
+    // CDF: knife_combat (swords_and_blades.json) is not reloadable
+    item &knife = who.i_add( item::spawn( "knife_combat", bday ) );
+    // CDF: belt223 (magazine/223.json) is an ammo belt with linkage ammolink223 and the avatar carries no link,
+    // so rate_action_reload says iffy (a reloadable item that can_reload refuses)
+    item &belt = who.i_add( item::spawn( "belt223", bday ) );
+    REQUIRE( empty_gun.is_reloadable() );
+    REQUIRE_FALSE( full_gun.is_reloadable() );
+    REQUIRE_FALSE( ammo.is_reloadable() );
+    REQUIRE_FALSE( knife.is_reloadable() );
+    REQUIRE( belt.is_reloadable() );
+    REQUIRE_FALSE( who.can_reload( belt ) );
+
+    const std::vector<const item *> shown = picker_set( who );
+    CHECK( shown == std::vector<const item *> { &empty_gun } );
+    CHECK_FALSE( picker_shows( belt ) );
+}
+
+// CDF: P3-6-3b P2; DDA item_location.cpp:1181-1191 (is_invisible_installed_gunmod) and game.cpp:7151-7153.
+TEST_CASE( "installed_gunmods_are_not_separate_picker_rows", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+    who.wear_item( item::spawn( "backpack", bday ), false );
+
+    // CDF: ar15 (gun/223.json) takes the underslung shotgun u_shotgun (gunmod/underbarrel.json, 2-round clip)
+    detached_ptr<item> rifle = item::spawn( "ar15", bday, 0 );
+    REQUIRE( rifle->put_in( item::spawn( "u_shotgun", bday, 0 ), pocket_type::MOD ).success() );
+    REQUIRE( rifle->gunmods().size() == 1 );
+    item &gun = who.i_add( std::move( rifle ) );
+    item &mod = *gun.gunmods().front();
+    REQUIRE( mod.is_gunmod() );
+    REQUIRE( mod.is_reloadable() );
+    REQUIRE( mod.parent_item() == &gun );
+
+    CHECK( picker_shows( gun ) );
+    CHECK_FALSE( picker_shows( mod ) );
+}
+
+
+// CDF: P3-6-3b P3; DDA game.cpp:7186-7229 (the sort of reload_weapon).
+TEST_CASE( "reload_weapon_prefers_wielded_then_compatible_then_gun_then_speed", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+    who.wear_item( item::spawn( "backpack", bday ), false );
+
+    SECTION( "wielded gun, compatible magazine, other gun, incompatible magazine" ) {
+        // CDF: glock_19 takes glockmag (item::is_compatible, probed: it accepts glockmag and not stanag30 or
+        // sw_619), glockmag takes 9mm, sw_619 takes 38_special, stanag30 takes 556; knife_combat is not reloadable
+        detached_ptr<item> inserted_det = item::spawn( "glockmag", bday, 0 );
+        REQUIRE( inserted_det->put_in( item::spawn( "9mm", bday, 3 ), pocket_type::MAGAZINE ).success() );
+        detached_ptr<item> glock_det = item::spawn( "glock_19", bday, 0 );
+        glock_det->put_in( std::move( inserted_det ) );
+        REQUIRE( !who.wield( std::move( glock_det ) ) );
+        REQUIRE( !who.wielded_items().empty() );
+        item &wielded = *who.wielded_items().front();
+        REQUIRE( wielded.magazine_current() != nullptr );
+        item &spare = who.i_add( item::spawn( "glockmag", bday, 0 ) );
+        item &other = who.i_add( item::spawn( "sw_619", bday, 0 ) );
+        item &foreign = who.i_add( item::spawn( "stanag30", bday, 0 ) );
+        item &knife = who.i_add( item::spawn( "knife_combat", bday ) );
+        who.i_add( item::spawn( "9mm", bday, 100 ) );
+        who.i_add( item::spawn( "38_special", bday, 100 ) );
+        who.i_add( item::spawn( "556", bday, 100 ) );
+        REQUIRE( wielded.is_compatible( spare ).success() );
+        REQUIRE_FALSE( wielded.is_compatible( other ).success() );
+        REQUIRE_FALSE( wielded.is_compatible( foreign ).success() );
+        REQUIRE_FALSE( knife.is_reloadable() );
+
+        reload_weapon_until( who, [&wielded]() {
+            return wielded.ammo_remaining() == wielded.ammo_capacity();
+        } );
+        CHECK( spare.ammo_remaining() == 0 );
+        CHECK( other.ammo_remaining() == 0 );
+        CHECK( foreign.ammo_remaining() == 0 );
+
+        reload_weapon_until( who, [&spare]() {
+            return spare.ammo_remaining() == spare.ammo_capacity();
+        } );
+        CHECK( other.ammo_remaining() == 0 );
+        CHECK( foreign.ammo_remaining() == 0 );
+
+        reload_weapon_until( who, [&other]() {
+            return other.ammo_remaining() == other.ammo_capacity();
+        } );
+        CHECK( foreign.ammo_remaining() == 0 );
+
+        reload_weapon_until( who, [&foreign]() {
+            return foreign.ammo_remaining() == foreign.ammo_capacity();
+        } );
+    }
+
+    SECTION( "an empty gun is reloaded before a partly loaded one of the same kind" ) {
+        // CDF: nothing wielded, so the affiliation key is skipped. The empty sw_619 (38.json, direct charges, 7
+        // rounds) has remaining_ammo_capacity() 0 (probed), which is the DDA key 0, where capacity minus loaded
+        // gives 7 and 70 * 7 = 490. The glock_19 holding 12 of 15 rounds has 3 left either way, 100 * 3 = 300. So
+        // the DDA key puts the empty revolver first and the capacity-minus-loaded key puts the glock first.
+        item &empty_gun = who.i_add( item::spawn( "sw_619", bday, 0 ) );
+        detached_ptr<item> mag_det = item::spawn( "glockmag", bday, 0 );
+        REQUIRE( mag_det->put_in( item::spawn( "9mm", bday, 12 ), pocket_type::MAGAZINE ).success() );
+        detached_ptr<item> glock_det = item::spawn( "glock_19", bday, 0 );
+        glock_det->put_in( std::move( mag_det ) );
+        item &partial_gun = who.i_add( std::move( glock_det ) );
+        who.i_add( item::spawn( "38_special", bday, 100 ) );
+        who.i_add( item::spawn( "9mm", bday, 100 ) );
+        REQUIRE( partial_gun.ammo_remaining() == 12 );
+        REQUIRE( empty_gun.remaining_ammo_capacity() == 0 );
+        REQUIRE( partial_gun.remaining_ammo_capacity() == 3 );
+        REQUIRE( empty_gun.get_reload_time() * ( empty_gun.ammo_capacity() - empty_gun.ammo_remaining() ) >
+                 partial_gun.get_reload_time() * partial_gun.remaining_ammo_capacity() );
+
+        avatar_action::reload_weapon( false );
+        REQUIRE( who.activity );
+        process_activity( who );
+
+        CHECK( empty_gun.ammo_remaining() > 0 );
+        CHECK( partial_gun.ammo_remaining() == 12 );
+    }
+}
+
+// CDF: P3-6-3b P4; DDA game.cpp:7200-7202 and :7231-7233 (non guns and non magazines are sorted last and skipped).
+TEST_CASE( "reload_weapon_skips_non_guns_and_non_magazines", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+    who.wear_item( item::spawn( "backpack", bday ), false );
+
+    // CDF: bottle_plastic (containers.json) is an empty watertight bottle and jug_plastic holding water_clean is
+    // its liquid source (the fixture of reload_liquid_container above); neither is a gun or a magazine
+    item &bottle = who.i_add( item::spawn( "bottle_plastic", bday ) );
+    item &jug = who.i_add( item::spawn( "jug_plastic", bday ) );
+    REQUIRE( jug.put_in( item::spawn( "water_clean", calendar::turn_zero, 2 ), pocket_type::CONTAINER ).success() );
+    REQUIRE( bottle.is_reloadable() );
+    REQUIRE_FALSE( bottle.is_gun() );
+    REQUIRE_FALSE( bottle.is_magazine() );
+    std::vector<item_reload_option> bottle_ammo;
+    REQUIRE( who.list_ammo( bottle, bottle_ammo, false ) );
+    REQUIRE_FALSE( bottle_ammo.empty() );
+
+    SECTION( "a gun with ammo goes first and the bottle is left alone" ) {
+        item &gun = who.i_add( item::spawn( "sw_619", bday, 0 ) );
+        who.i_add( item::spawn( "38_special", bday, 100 ) );
+
+        reload_weapon_until( who, [&gun]() {
+            return gun.ammo_remaining() == gun.ammo_capacity();
+        } );
+
+        CHECK( bottle.get_contents_volume() == units::volume() );
+        CHECK( jug.get_contents_volume() > units::volume() );
+    }
+
+    SECTION( "nothing else to reload leaves the bottle alone" ) {
+        // the gun has no ammo to take, so the bottle is the only candidate that has a source
+        who.i_add( item::spawn( "sw_619", bday, 0 ) );
+
+        avatar_action::reload_weapon( false );
+
+        CHECK_FALSE( who.activity );
+        CHECK( bottle.get_contents_volume() == units::volume() );
+    }
+}
+
+// CDF: P3-6-3b P5; DDA game.cpp:7231-7238 (u.list_ammo( candidate, ammo_list, false ), then !ammo_list.empty()).
+TEST_CASE( "reload_weapon_uses_list_ammo", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+    who.wear_item( item::spawn( "backpack", bday ), false );
+
+    // CDF: test_multimag_gun (TEST_DATA/items.json) has two wells, glockmag (9mm) and stanag30 (223 ammo type,
+    // item 556); the first well holds a full glockmag
+    detached_ptr<item> glockmag_det = item::spawn( "glockmag", bday, 0 );
+    REQUIRE( glockmag_det->put_in( item::spawn( "9mm", bday, 15 ), pocket_type::MAGAZINE ).success() );
+    item &glockmag = *glockmag_det;
+    detached_ptr<item> gun_det = item::spawn( "test_multimag_gun", bday, 0 );
+    REQUIRE( gun_det->put_in( std::move( glockmag_det ), pocket_type::MAGAZINE_WELL ).success() );
+    item &gun = who.i_add( std::move( gun_det ) );
+    REQUIRE( glockmag.ammo_remaining() == glockmag.ammo_capacity() );
+    REQUIRE( gun.is_reloadable() );
+
+    SECTION( "a loaded magazine for the empty second well makes the gun a candidate" ) {
+        detached_ptr<item> stanag_det = item::spawn( "stanag30", bday, 0 );
+        REQUIRE( stanag_det->put_in( item::spawn( "556", bday, 30 ), pocket_type::MAGAZINE ).success() );
+        item &stanag = who.i_add( std::move( stanag_det ) );
+        std::vector<item_reload_option> list;
+        REQUIRE( who.list_ammo( gun, list, false ) );
+        REQUIRE_FALSE( list.empty() );
+
+        avatar_action::reload_weapon( false );
+
+        // CDF: the candidate is picked and the reload is queued for the gun with that magazine as the source.
+        // What the actor then loads is not this packet's: with the first well full the actor adds nothing
+        // (probed; DDA TODO(multimag), the aggregate check is first-well only).
+        REQUIRE( who.activity );
+        const auto *actor = dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
+        REQUIRE( actor );
+        CHECK( actor->target() == &gun );
+        CHECK( actor->ammo() == &stanag );
+        process_activity( who );
+        CHECK( glockmag.ammo_remaining() == glockmag.ammo_capacity() );
+    }
+
+    SECTION( "an empty magazine is not ammo for the second well" ) {
+        who.i_add( item::spawn( "stanag30", bday, 0 ) );
+        std::vector<item_reload_option> list;
+        who.list_ammo( gun, list, false );
+        REQUIRE( list.empty() );
+
+        avatar_action::reload_weapon( false );
+
+        CHECK_FALSE( who.activity );
+    }
+
+    SECTION( "a candidate with only an empty magazine to offer does not stop the next one" ) {
+        // CDF: reload_weapon starts reload( candidate, false, false ) for the first candidate whose list is not
+        // empty and returns, so a list that counted the empty stanag30 would end the search at the wielded gun
+        // (which then loads nothing) before the revolver is tried. sw_619 takes 38_special (38.json).
+        REQUIRE( !who.wield( who.inv_remove_item( &gun ) ) );
+        who.i_add( item::spawn( "stanag30", bday, 0 ) );
+        item &revolver = who.i_add( item::spawn( "sw_619", bday, 0 ) );
+        who.i_add( item::spawn( "38_special", bday, 100 ) );
+        std::vector<item_reload_option> list;
+        who.list_ammo( gun, list, false );
+        REQUIRE( list.empty() );
+        list.clear();
+        REQUIRE( who.list_ammo( gun, list, true ) );
+        REQUIRE_FALSE( list.empty() );
+
+        avatar_action::reload_weapon( false );
+
+        REQUIRE( who.activity );
+        const auto *actor = dynamic_cast<const reload_activity_actor *>( who.activity->get_actor() );
+        REQUIRE( actor );
+        CHECK( actor->target() == &revolver );
+        process_activity( who );
+    }
+}
+
+// CDF: P3-6-3b P6; DDA game.cpp:7241-7258 (a vehicle part at the player position always returns).
+TEST_CASE( "reload_weapon_on_vehicle_without_turret_does_not_open_the_picker", "[p3][reload][entry][6-3b]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    map &here = get_map();
+    // CDF: test_turret_rig (TEST_DATA/vehicle.json) is a frame with a turret_mount and a storage_battery: no turret
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ), tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0,
+                                     0 );
+    REQUIRE( veh );
+    who.setpos( veh->bub_part_location( 0 ) );
+    REQUIRE( here.veh_at( who.bub_pos() ) );
+    REQUIRE( who.all_items().empty() );
+
+    const int opened = avatar_action::reload_item_picker_opened_count();
+    avatar_action::reload_weapon( true );
+    CHECK_FALSE( who.activity );
+    CHECK( avatar_action::reload_item_picker_opened_count() == opened );
+
+    // the same call off the vehicle reaches the picker (which has nothing to list and returns)
+    who.setpos( tripoint_bub_ms( 60, 60, 0 ) );
+    REQUIRE_FALSE( here.veh_at( who.bub_pos() ) );
+    avatar_action::reload_weapon( true );
+    CHECK_FALSE( who.activity );
+    CHECK( avatar_action::reload_item_picker_opened_count() == opened + 1 );
 }
