@@ -1608,7 +1608,6 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
         return;
     }
 
-    bool use_loc = true;
     if( !it->has_flag( flag_ALLOWS_REMOTE_USE ) ) {
         // per DDA game.cpp:7111-7120: only an item the avatar does not already hold is checked and fetched
         if( !u.has_item( *it ) ) {
@@ -1618,7 +1617,6 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
             // CDF: item::obtain returns the fetched item and is never null, so DDA's "Never mind." branch (7116-7119) has no counterpart
             it = &loc.obtain( u );
         }
-        use_loc = false;
     }
 
     // per DDA game.cpp:7124: for holsters try to reload any contained item
@@ -1634,19 +1632,14 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
     }
 
     if( opt ) {
-        int moves = opt.moves();
-        if( it->get_var( "dirt", 0 ) > 7800 ) {
+        // per DDA game.cpp:7134-7138: the caller keeps the warning and hands the extra moves to the actor
+        const int extra_moves = it->get_var( "dirt", 0 ) > 7800 ? 2500 : 0;
+        if( extra_moves > 0 ) {
             add_msg( m_warning, _( "You struggle to reload the fouled %s." ), it->tname() );
-            moves += 2500;
         }
-
-        u.assign_activity( activity_id( "ACT_RELOAD" ), moves, opt.qty() );
-        if( use_loc ) {
-            u.activity->targets.emplace_back( *it );
-        } else {
-            u.activity->targets.emplace_back( opt.target );
-        }
-        u.activity->targets.emplace_back( opt.ammo );
+        // CDF: P3-6-2a; opt.target is the item to reload (for a remote-use item the item itself)
+        u.assign_activity( std::make_unique<player_activity>(
+                               std::make_unique<reload_activity_actor>( std::move( opt ), extra_moves ) ) );
     }
 }
 
@@ -1737,10 +1730,9 @@ void avatar_action::reload_weapon( bool try_everything )
     if( veh && ( turret = veh->turret_query( u.abs_pos() ) ) && turret.can_reload() ) {
         auto opt = reload_ui::select_ammo( u, turret.base(), { .prompt = true } );
         if( opt ) {
-            u.assign_activity( std::make_unique<player_activity>( activity_id( "ACT_RELOAD" ), opt.moves(),
-                               opt.qty() ) );
-            u.activity->targets.emplace_back( turret.base() );
-            u.activity->targets.emplace_back( opt.ammo );
+            // CDF: P3-6-2a (DDA game.cpp:7246-7256): opt.target is the turret base or one of its gunmods
+            u.assign_activity( std::make_unique<player_activity>(
+                                   std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
         }
         return;
     }

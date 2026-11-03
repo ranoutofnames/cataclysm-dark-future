@@ -1,5 +1,6 @@
 #include "activity_actor_definitions.h"
 #include "avatar.h"
+#include "avatar_action.h"
 #include "avatar_functions.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
@@ -14,12 +15,16 @@
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
+#include "iuse.h"
+#include "iuse_actor.h"
 #include "json.h"
 #include "map/map.h"
+#include "npc.h"
 #include "player_activity.h"
 #include "type_id.h"
 #include "player_helpers.h"
 #include "reload/reload.h"
+#include "reload_activity_access.h"
 #include "sounds.h"
 #include "state_helpers.h"
 #include "units.h"
@@ -2239,5 +2244,153 @@ TEST_CASE( "reload_activity_actor_is_silent_for_quiet_guns_and_non_guns", "[p3][
 
         CHECK( here.m_sound_cache.sound_instances.empty() );
         CHECK( here.m_sound_cache.sounds_this_turn == 0 );
+    }
+}
+
+// CDF: P3-6-2a (DDA game.cpp:7120-7140). The old ACT_RELOAD call sites (player reload, ammo belt)
+// now assign the reload actor.
+TEST_CASE( "avatar_action_reload_assigns_reload_actor", "[p3][reload][activity]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    who.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false );
+    // CDF: the swappable-magazine fixture of reloading_test.cpp:103: glock_19 takes glockmag and 9mm.
+    item &gun = who.i_add( item::spawn( itype_glock_19, calendar::start_of_cataclysm, 0 ) );
+    item &mag = who.i_add( item::spawn( itype_glockmag, calendar::start_of_cataclysm, 0 ) );
+    mag.ammo_set( itype_id( "9mm" ), 15 );
+    REQUIRE( gun.ammo_remaining() == 0 );
+    REQUIRE( gun.magazine_integral() == false );
+    REQUIRE( mag.ammo_remaining() == 15 );
+
+    avatar_action::reload( gun, false, false );
+
+    REQUIRE( who.activity );
+    CHECK( who.activity->id() == activity_id( "ACT_RELOAD" ) );
+    const reload_activity_actor *actor =
+        reload_actor_of( *who.activity );
+    REQUIRE( actor );
+    CHECK( actor->target() == &gun );
+    CHECK( actor->ammo() == &mag );
+    CHECK( actor->qty() == 1 );
+    CHECK( gun.ammo_remaining() == 0 );
+
+    process_activity( who );
+
+    CHECK_FALSE( who.activity );
+    CHECK( gun.magazines_current().size() == 1 );
+    CHECK( gun.ammo_remaining() == 15 );
+}
+
+TEST_CASE( "avatar_action_reload_dirty_gun_adds_moves", "[p3][reload][activity]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    who.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false );
+    // CDF: sw_619 takes 38_special (reload_on_location_test.cpp).
+    item &gun = who.i_add( item::spawn( "sw_619", calendar::start_of_cataclysm, 0 ) );
+    item &ammo = who.i_add( item::spawn( "38_special", calendar::start_of_cataclysm, 6 ) );
+    REQUIRE( gun.can_reload_with( ammo.typeId() ) );
+    const int plain_moves = item_reload_option( &who, &gun, &gun, ammo ).moves();
+    REQUIRE( plain_moves > 0 );
+
+    SECTION( "a fouled gun (dirt above 7800) takes 2500 extra moves and is cleaned" ) {
+        // CDF: the threshold 7800 and the 2500 extra moves are the old avatar_action::reload values.
+        gun.set_var( "dirt", 8000 );
+
+        avatar_action::reload( gun, false, false );
+
+        REQUIRE( who.activity );
+        REQUIRE( reload_actor_of( *who.activity ) );
+        CHECK( activity_actor_of(*who.activity)->progress.get_moves_total() == plain_moves + 2500 );
+        CHECK( activity_actor_of(*who.activity)->progress.get_moves_left() == plain_moves + 2500 );
+
+        process_activity( who );
+
+        CHECK( gun.ammo_remaining() == 1 );
+        CHECK( gun.get_var( "dirt", 0 ) < 8000 );
+    }
+
+    SECTION( "a clean gun takes no extra moves" ) {
+        avatar_action::reload( gun, false, false );
+
+        REQUIRE( who.activity );
+        REQUIRE( reload_actor_of( *who.activity ) );
+        CHECK( activity_actor_of(*who.activity)->progress.get_moves_total() == plain_moves );
+    }
+}
+
+// CDF: the ammo belt prompt is a menu for the avatar, so an npc drives ammobelt_actor::use
+// (reload_selection::prepare picks the single option for an npc, reload_selection.cpp:47).
+TEST_CASE( "ammobelt_assembles_through_reload_actor", "[p3][reload][activity][iuse]" )
+{
+    clear_all_state();
+    npc &who = spawn_npc( {50, 50, 0}, "test_talker" );
+    clear_character( who );
+    who.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false );
+    // CDF: belt223 (data/json/items/magazine/223.json) has linkage ammolink223, ammo_type 223;
+    // 556 is a 223 round (data/json/items/gun/223.json magazines list belt223).
+    item &link = who.i_add( item::spawn( "ammolink223", calendar::start_of_cataclysm, 100 ) );
+    item &ammo = who.i_add( item::spawn( "556", calendar::start_of_cataclysm, 100 ) );
+    REQUIRE( link.type->get_use( "ammobelt" ) );
+    const ammobelt_actor *belt_use = dynamic_cast<const ammobelt_actor *>
+                                     ( link.type->get_use( "ammobelt" )->get_actor_ptr() );
+    REQUIRE( belt_use );
+    REQUIRE( belt_use->belt == itype_id( "belt223" ) );
+
+    belt_use->use( who, link, false, tripoint_bub_ms() );
+
+    REQUIRE( who.activity );
+    CHECK( who.activity->id() == activity_id( "ACT_RELOAD" ) );
+    const reload_activity_actor *actor =
+        reload_actor_of( *who.activity );
+    REQUIRE( actor );
+    item *belt = actor->target();
+    REQUIRE( belt );
+    CHECK( belt->typeId() == itype_id( "belt223" ) );
+    CHECK( who.has_item( *belt ) );
+    CHECK( belt->ammo_remaining() == 0 );
+    CHECK( actor->ammo() == &ammo );
+    const int qty = actor->qty();
+    REQUIRE( qty > 0 );
+
+    process_activity( who );
+
+    CHECK_FALSE( who.activity );
+    CHECK( belt->ammo_remaining() == qty );
+    CHECK( who.has_item( *belt ) );
+}
+
+TEST_CASE( "ammobelt_without_ammo_assigns_nothing", "[p3][reload][activity][iuse]" )
+{
+    clear_all_state();
+    npc &who = spawn_npc( {50, 50, 0}, "test_talker" );
+    clear_character( who );
+    who.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false );
+    // CDF: belt223 has linkage ammolink223 (data/json/items/magazine/223.json); the guard is
+    // Character::can_reload, which needs one linkage charge in the pack.
+    detached_ptr<item> link = item::spawn( "ammolink223", calendar::start_of_cataclysm, 100 );
+    const ammobelt_actor *belt_use = dynamic_cast<const ammobelt_actor *>
+                                     ( link->type->get_use( "ammobelt" )->get_actor_ptr() );
+    REQUIRE( belt_use );
+
+    SECTION( "the linkage is not in the pack" ) {
+        who.i_add( item::spawn( "556", calendar::start_of_cataclysm, 100 ) );
+        REQUIRE( who.charges_of( itype_id( "ammolink223" ) ) == 0 );
+
+        belt_use->use( who, *link, false, tripoint_bub_ms() );
+
+        CHECK_FALSE( who.activity );
+        CHECK_FALSE( who.has_item_with_id( itype_id( "belt223" ) ) );
+    }
+
+    SECTION( "no 223 ammo in the pack" ) {
+        item &held = who.i_add( std::move( link ) );
+        REQUIRE( who.charges_of( itype_id( "ammolink223" ) ) == 100 );
+        REQUIRE( who.charges_of( itype_id( "556" ) ) == 0 );
+
+        belt_use->use( who, held, false, tripoint_bub_ms() );
+
+        CHECK_FALSE( who.activity );
+        CHECK_FALSE( who.has_item_with_id( itype_id( "belt223" ) ) );
     }
 }

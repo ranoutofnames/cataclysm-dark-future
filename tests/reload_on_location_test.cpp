@@ -11,6 +11,7 @@
 #include "map_helpers.h"
 #include "player_activity.h"
 #include "player_helpers.h"
+#include "reload_activity_access.h"
 #include "state_helpers.h"
 #include "type_id.h"
 #include "vehicle/veh_type.h"
@@ -62,10 +63,12 @@ TEST_CASE("reload_on_vehicle_cargo", "[magazine][visitable][item][item_location]
     REQUIRE(who.activity);
     CHECK(who.activity->id() == activity_id("ACT_RELOAD"));
 
-    REQUIRE(who.activity->targets.size() == 2);
-    CHECK(&*who.activity->targets[0] == &gun);
-    CHECK(&*who.activity->targets[1] == &ammo);
-    CHECK(who.activity->index == 1);
+    // CDF: P3-6-2a; the old targets/index facts, asserted through the reload actor.
+    const auto* actor = reload_actor_of(*who.activity);
+    REQUIRE(actor);
+    CHECK(actor->target() == &gun);
+    CHECK(actor->ammo() == &ammo);
+    CHECK(actor->qty() == 1);
 
     CHECK(who.has_item(gun));
     CHECK(gun.ammo_remaining() == 0);

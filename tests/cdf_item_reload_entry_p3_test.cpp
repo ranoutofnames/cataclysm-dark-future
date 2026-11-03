@@ -8,6 +8,7 @@
 #include "map/map.h"
 #include "player_activity.h"
 #include "player_helpers.h"
+#include "reload_activity_access.h"
 #include "state_helpers.h"
 #include "type_id.h"
 
@@ -106,8 +107,11 @@ TEST_CASE("reload_item_owned_by_other_steal_mode_proceeds", "[p3][reload][entry]
     REQUIRE(who.activity);
     CHECK(who.activity->id() == activity_id("ACT_RELOAD"));
     CHECK(who.has_item(gun));
-    REQUIRE(who.activity->targets.size() == 2);
-    CHECK(&*who.activity->targets.back() == &ammo);
+    // CDF: P3-6-2a; the old targets facts, asserted through the reload actor.
+    const auto* actor = reload_actor_of(*who.activity);
+    REQUIRE(actor);
+    CHECK(actor->target() == &gun);
+    CHECK(actor->ammo() == &ammo);
 }
 
 TEST_CASE("reload_carried_item_costs_no_obtain_moves", "[p3][reload][entry]") {
@@ -164,9 +168,12 @@ TEST_CASE("reload_wielded_reloads_only_the_wielded_item", "[p3][reload][entry]")
         avatar_action::reload_wielded();
 
         REQUIRE(who.activity);
-        REQUIRE(who.activity->targets.size() == 2);
+        // CDF: P3-6-2a; the old targets facts, asserted through the reload actor.
+        const auto* actor = reload_actor_of(*who.activity);
+        REQUIRE(actor);
+        REQUIRE(actor->ammo());
         REQUIRE(!who.wielded_items().empty());
-        CHECK(&*who.activity->targets.front() == who.wielded_items().front());
+        CHECK(actor->target() == who.wielded_items().front());
     }
 
     SECTION("nothing wielded") {

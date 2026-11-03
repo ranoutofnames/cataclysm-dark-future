@@ -1,5 +1,6 @@
 #include "../overmap/overmapbuffer.h"
 #include "action.h"
+#include "activity_actor_definitions.h"
 #include "activity_handlers.h"
 #include "avatar.h"
 #include "avatar_functions.h"
@@ -68,7 +69,6 @@
 #include <tuple>
 
 static const activity_id ACT_HOTWIRE_CAR("ACT_HOTWIRE_CAR");
-static const activity_id ACT_RELOAD("ACT_RELOAD");
 static const activity_id ACT_START_ENGINES("ACT_START_ENGINES");
 
 static const itype_id fuel_type_battery("battery");
@@ -2124,9 +2124,10 @@ void vehicle::interact_with(const tripoint_bub_ms& pos, int interact_part) {
         case RELOAD_TURRET: {
             auto opt = reload_ui::select_ammo(you, turret.base(), {.prompt = true});
             if (opt) {
-                you.assign_activity(ACT_RELOAD, opt.moves(), opt.qty());
-                you.activity->targets.emplace_back(turret.base());
-                you.activity->targets.emplace_back(opt.ammo);
+                // CDF: P3-6-2a (DDA vehicle_use.cpp:2562-2575): opt.target is the turret base or a
+                // gunmod
+                you.assign_activity(std::make_unique<player_activity>(
+                    std::make_unique<reload_activity_actor>(std::move(opt))));
             }
             return;
         }

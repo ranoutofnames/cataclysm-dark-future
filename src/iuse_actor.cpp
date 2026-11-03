@@ -3,6 +3,7 @@
 #include "action.h"
 #include "action_time_scale.h"
 #include "active_tile_data_def.h"
+#include "activity_actor_definitions.h"
 #include "activity_handlers.h"
 #include "addiction.h"
 #include "ammo.h"
@@ -125,7 +126,6 @@
 static const activity_id ACT_FIRSTAID( "ACT_FIRSTAID" );
 static const activity_id ACT_HAND_CRANK( "ACT_HAND_CRANK" );
 static const activity_id ACT_MAKE_ZLAVE( "ACT_MAKE_ZLAVE" );
-static const activity_id ACT_RELOAD( "ACT_RELOAD" );
 static const activity_id ACT_REPAIR_ITEM( "ACT_REPAIR_ITEM" );
 static const activity_id ACT_SPELLCASTING( "ACT_SPELLCASTING" );
 static const activity_id ACT_STUDY_SPELL( "ACT_STUDY_SPELL" );
@@ -3051,10 +3051,11 @@ int ammobelt_actor::use( player &p, item &, bool, const tripoint_bub_ms & ) cons
 
     auto opt = reload_ui::select_ammo( p, *mag, { .prompt = true } );
     if( opt ) {
-        p.assign_activity( ACT_RELOAD, opt.moves(), opt.qty() );
-        p.activity->targets.emplace_back( &*mag );
-        p.activity->targets.emplace_back( opt.ammo );
+        // CDF: P3-6-2a; the actor moves ammo into the belt while it runs, so the belt is put in the
+        // inventory first. opt.target is the belt's address, which i_add does not change.
         p.i_add( std::move( mag ) );
+        p.assign_activity( std::make_unique<player_activity>(
+                               std::make_unique<reload_activity_actor>( std::move( opt ) ) ) );
     }
 
     return 0;
