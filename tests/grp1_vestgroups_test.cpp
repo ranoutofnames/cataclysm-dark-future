@@ -247,3 +247,254 @@ TEST_CASE("grp1_plate_groups_yield_the_right_plates", "[armor][grp1][spawn]") {
     }
 }
 
+namespace {
+// size of the attach_molle action of an item, or -1 when it has none (as
+// tests/pch1_pouches_test.cpp)
+auto molle_size(const item& it) -> int {
+    const use_function* use = it.get_use("attach_molle");
+    if (use == nullptr) { return -1; }
+    const molle_attach_actor* actor = dynamic_cast<const molle_attach_actor*>(use->get_actor_ptr());
+    return actor == nullptr ? -1 : actor->size;
+}
+
+// type ids of the pouches attached to a carrier (its additional pockets), sorted
+auto attached_ids(const item& carrier) -> std::vector<std::string> {
+    std::vector<std::string> ids;
+    for (const item* pouch : carrier.contents.get_added_pockets()) {
+        ids.push_back(pouch->typeId().str());
+    }
+    std::sort(ids.begin(), ids.end());
+    return ids;
+}
+
+// CDF: the pouches of DDA custom_lbvs.json:33-75 (molle_accessories, molle_vest_bag_accessories)
+const std::set<std::string> accessory_pouches =
+    {"dump_pouch",      "gadget_pouch",  "sustainment_pouch",        "tool_pouch",
+     "radio_pouch",     "grenade_pouch", "tactical_shotshell_pouch", "tactical_grenade_pouch",
+     "flashlight_pouch"};
+const std::set<std::string> bag_pouches = {
+    "dump_pouch",
+    "gadget_pouch",
+    "sustainment_pouch",
+    "tool_pouch",
+    "radio_pouch",
+    "grenade_pouch",
+    "tactical_shotshell_pouch",
+    "tactical_grenade_pouch",
+    "flashlight_pouch",
+    "tactical_holster",
+    "canteen_pouch",
+    "h2o_pouch",
+    "gas_mask_pouch"};
+// the pouches a custom_*_lbv group can give: the bag pouches plus its own first entry
+const std::set<std::string> lbv_pouches = {
+    "dump_pouch",
+    "gadget_pouch",
+    "sustainment_pouch",
+    "tool_pouch",
+    "radio_pouch",
+    "grenade_pouch",
+    "tactical_shotshell_pouch",
+    "tactical_grenade_pouch",
+    "flashlight_pouch",
+    "tactical_holster",
+    "canteen_pouch",
+    "h2o_pouch",
+    "gas_mask_pouch",
+    "chestpouch",
+    "triple_stacker_pouch"};
+
+auto join(const std::set<std::string>& ids) -> std::string {
+    std::string text;
+    for (const std::string& id : ids) { text += id + " "; }
+    return text;
+}
+} // namespace
+
+TEST_CASE("grp1_molle_groups_spawn_pouches", "[armor][grp1][spawn]") {
+    clear_all_state();
+    rng_set_engine_seed(20261103);
+    constexpr int draws = 600;
+
+    SECTION(
+        "molle_accessories, molle_vest_bag_accessories and molle_belt_contents give only their pouches") {
+        // CDF: DDA custom_lbvs.json:20-75; the three groups are collections of pouches
+        const std::vector<std::pair<std::string, std::set<std::string>>> rows = {
+            {"molle_accessories", accessory_pouches},
+            {"molle_vest_bag_accessories", bag_pouches},
+            {"molle_belt_contents", bag_pouches},
+        };
+        for (const auto& row : rows) {
+            CAPTURE(row.first);
+            CHECK(possible_ids(row.first) == row.second);
+            failure_log log;
+            std::set<std::string> seen;
+            for (int i = 0; i < draws; ++i) {
+                spawned_items list = spawn(row.first);
+                for (detached_ptr<item>& it : list) {
+                    log.expect(row.second.count(it->typeId().str()) > 0, it->typeId().str());
+                    seen.insert(it->typeId().str());
+                }
+            }
+            CAPTURE(log.first);
+            CHECK(log.count == 0);
+            // every pouch of the group shows up (the rarest is 3.3 percent: miss chance below 1e-8)
+            CAPTURE(join(seen));
+            CHECK(seen == row.second);
+        }
+    }
+    SECTION(
+        "custom_light_lbv, custom_medium_lbv and custom_heavy_lbv give one chest pouch run or stacker pouch run") {
+        // CDF: DDA custom_lbvs.json:77-106, first entry is a distribution of chestpouch [1,2] and
+        // triple_stacker_pouch ([1,2] only on the heavy one), then molle_vest_bag_accessories
+        struct lbv_row {
+            const char* group;
+            int max_chest;
+            int max_stacker;
+        };
+        const std::vector<lbv_row> rows =
+            {{"custom_light_lbv", 2, 1}, {"custom_medium_lbv", 2, 1}, {"custom_heavy_lbv", 2, 2}};
+        for (const lbv_row& row : rows) {
+            CAPTURE(row.group);
+            CHECK(possible_ids(row.group) == lbv_pouches);
+            failure_log log;
+            bool chest_seen = false;
+            bool stacker_seen = false;
+            int max_chest_seen = 0;
+            int max_stacker_seen = 0;
+            for (int i = 0; i < draws; ++i) {
+                spawned_items list = spawn(row.group);
+                const std::vector<std::string> ids = type_ids(list);
+                const int chest = count_of(ids, "chestpouch");
+                const int stacker = count_of(ids, "triple_stacker_pouch");
+                // exactly one of the two, within its count
+                log.expect((chest > 0) != (stacker > 0), "draw " + std::to_string(i));
+                log.expect(chest <= row.max_chest && stacker <= row.max_stacker,
+                           "draw " + std::to_string(i));
+                log.expect(count_in(ids, lbv_pouches) == static_cast<int>(ids.size()),
+                           "draw " + std::to_string(i));
+                chest_seen = chest_seen || chest > 0;
+                stacker_seen = stacker_seen || stacker > 0;
+                max_chest_seen = std::max(max_chest_seen, chest);
+                max_stacker_seen = std::max(max_stacker_seen, stacker);
+            }
+            CAPTURE(log.first);
+            CHECK(log.count == 0);
+            CHECK(chest_seen);
+            CHECK(stacker_seen);
+            CHECK(max_chest_seen == row.max_chest);
+            CHECK(max_stacker_seen == row.max_stacker);
+        }
+    }
+    SECTION("molle_backpacks_and_accessories gives a MOLLE pack or rucksack with pouches on it") {
+        // CDF: DDA custom_lbvs.json:108-130: molle_pack 70, medium rucksack 15, large rucksack 15,
+        // with molle_backpacks_contents (sustainment_pouch, camelbak, bag accessories,
+        // deployment_bag)
+        CHECK(possible_ids("molle_backpacks_and_accessories")
+              == std::set<std::string>(
+                  {"molle_pack", "molle_medium_rucksack", "molle_large_rucksack"}));
+        std::set<std::string> contents = bag_pouches;
+        contents.insert({"camelbak", "deployment_bag"});
+        CHECK(possible_ids("molle_backpacks_contents") == contents);
+        failure_log log;
+        std::map<std::string, int> carriers;
+        int carrying_pouches = 0;
+        bool deployment_bag_seen = false;
+        for (int i = 0; i < draws; ++i) {
+            spawned_items list = spawn("molle_backpacks_and_accessories");
+            // the pouches are attached to the carrier, nothing is left on the ground
+            log.expect(list.size() == 1,
+                       "draw " + std::to_string(i) + " has " + std::to_string(list.size()));
+            for (detached_ptr<item>& it : list) {
+                carriers[it->typeId().str()]++;
+                const std::vector<std::string> attached = attached_ids(*it);
+                carrying_pouches += attached.empty() ? 0 : 1;
+                deployment_bag_seen =
+                    deployment_bag_seen || count_of(attached, "deployment_bag") > 0;
+                log.expect(molle_size(*it) > 0
+                               && it->contents.get_additional_space_used() <= molle_size(*it),
+                           it->typeId().str() + " is overfull");
+                log.expect(count_in(attached, contents) == static_cast<int>(attached.size()),
+                           it->typeId().str() + " carries an unexpected pouch");
+            }
+        }
+        CAPTURE(log.first);
+        CHECK(log.count == 0);
+        CHECK(carriers.size() == 3);
+        CHECK(carriers["molle_pack"] / static_cast<double>(draws) == Approx(0.70).margin(0.07));
+        CHECK(carriers["molle_medium_rucksack"] / static_cast<double>(draws)
+              == Approx(0.15).margin(0.07));
+        CHECK(carriers["molle_large_rucksack"] / static_cast<double>(draws)
+              == Approx(0.15).margin(0.07));
+        CHECK(carrying_pouches > draws / 2);
+        CHECK(deployment_bag_seen);
+    }
+    SECTION("loaded_webbing_belt is a webbing belt with pouches on it") {
+        // CDF: DDA custom_lbvs.json:14, webbing_belt with contents-group molle_belt_contents
+        failure_log log;
+        int carrying_pouches = 0;
+        for (int i = 0; i < draws; ++i) {
+            spawned_items list = spawn("loaded_webbing_belt");
+            log.expect(list.size() == 1 && list.front()->typeId() == itype_id("webbing_belt"),
+                       "draw " + std::to_string(i));
+            for (detached_ptr<item>& it : list) {
+                const std::vector<std::string> attached = attached_ids(*it);
+                carrying_pouches += attached.empty() ? 0 : 1;
+                log.expect(count_in(attached, bag_pouches) == static_cast<int>(attached.size()),
+                           "unexpected pouch on the belt");
+            }
+        }
+        CAPTURE(log.first);
+        CHECK(log.count == 0);
+        CHECK(carrying_pouches > draws / 2);
+    }
+}
+
+TEST_CASE("grp1_loaded_lbv_pouches_sit_in_molle_slots", "[armor][grp1][spawn]") {
+    clear_all_state();
+    rng_set_engine_seed(20261104);
+    constexpr int draws = 300;
+    // CDF: DDA custom_lbvs.json:4, load_bearing_vest 60 (custom_medium_lbv), light 20, heavy 20;
+    // attach_molle sizes 8, 4 and 14 (data/json/items/armor/cdf_molle_carriers.json)
+    const std::map<std::string, int> molle_slots =
+        {{"load_bearing_vest", 8}, {"light_load_bearing_vest", 4}, {"heavy_load_bearing_vest", 14}};
+    failure_log log;
+    std::map<std::string, int> vests;
+    for (int i = 0; i < draws; ++i) {
+        spawned_items list = spawn("loaded_lbv");
+        // one vest, no loose pouch
+        log.expect(list.size() == 1,
+                   "draw " + std::to_string(i) + " has " + std::to_string(list.size())
+                       + " top-level items");
+        for (detached_ptr<item>& vest : list) {
+            const std::string id = vest->typeId().str();
+            const auto slots = molle_slots.find(id);
+            log.expect(slots != molle_slots.end(), "unexpected " + id);
+            if (slots == molle_slots.end()) { continue; }
+            vests[id]++;
+            log.expect(molle_size(*vest) == slots->second, id + " webbing size");
+            const std::vector<std::string> attached = attached_ids(*vest);
+            // every pouch is one of the vest's MOLLE pockets and the vest has the first pouch of
+            // its group
+            log.expect(count_in(attached, lbv_pouches) == static_cast<int>(attached.size()),
+                       id + " pouch set");
+            log.expect(
+                count_of(attached, "chestpouch") + count_of(attached, "triple_stacker_pouch") > 0,
+                id + " has no chest or stacker pouch attached (draw " + std::to_string(i) + ")");
+            log.expect(vest->contents.get_additional_space_used() <= slots->second,
+                       id + " overfull");
+            for (const item* pouch : vest->contents.get_added_pockets()) {
+                log.expect(pouch->can_attach_as_pocket(), pouch->typeId().str() + " is not PALS");
+            }
+        }
+    }
+    CAPTURE(log.first);
+    CHECK(log.count == 0);
+    CHECK(vests.size() == 3);
+    CHECK(vests["load_bearing_vest"] / static_cast<double>(draws) == Approx(0.60).margin(0.10));
+    CHECK(
+        vests["light_load_bearing_vest"] / static_cast<double>(draws) == Approx(0.20).margin(0.10));
+    CHECK(
+        vests["heavy_load_bearing_vest"] / static_cast<double>(draws) == Approx(0.20).margin(0.10));
+}
+
