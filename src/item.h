@@ -2154,6 +2154,8 @@ class item : public location_visitable<item>, public game_object<item>
         int get_coverage( const bodypart_id &bodypart, const sub_bodypart_str_id &sbp ) const;
         /** True if the item has per-sub-location coverage data. */
         bool has_sub_coverage() const;
+        /** True if the item has a sub-portion that covers @p bodypart (a plain portion does not count). */
+        bool has_sub_coverage( const bodypart_id &bodypart ) const;
         /**
          * Returns the encumbrance value that this item has when worn by given
          * player, when containing a particular volume of contents.

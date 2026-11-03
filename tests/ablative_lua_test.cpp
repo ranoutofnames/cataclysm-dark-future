@@ -25,7 +25,8 @@ TEST_CASE("lua_ablative_and_sub_part_api", "[lua][armor][ablative][subpart]") {
     CHECK(test_data.get<int>("rig_plates") == 0);
     CHECK(test_data.get<int>("rig_slots") == 0);
 
-    CHECK(test_data.get<int>("torso_parts") == 2);
+    // CDF: sub_parts() lists the secondary locations too (torso: 2 primary + 4 secondary)
+    CHECK(test_data.get<int>("torso_parts") == 6);
     CHECK(test_data.get<std::string>("torso_part_1") == "torso_upper");
     CHECK(test_data.get<std::string>("torso_part_2") == "torso_lower");
     CHECK(test_data.get<int>("upper_max_coverage") == 60);

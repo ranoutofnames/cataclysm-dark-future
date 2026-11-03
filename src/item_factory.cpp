@@ -229,7 +229,8 @@ static void derive_armor_portions_from_sub_data( itype &obj )
         for( const bodypart_str_id &bp : sub.covers ) {
             int part_total = 0;
             for( const sub_bodypart_str_id &sbp : bp->sub_parts ) {
-                part_total += sbp->max_coverage;
+                // CDF: the primary locations add up to 100, secondary ones are a pool of their own
+                part_total += sbp->secondary ? 0 : sbp->max_coverage;
             }
             bool any_covered = false;
             for( const sub_bodypart_str_id &sbp : sub.sub_coverage ) {
@@ -270,23 +271,30 @@ static void derive_armor_portions_from_sub_data( itype &obj )
         }
         int part_total = 0;
         for( const sub_bodypart_str_id &sbp : bp->sub_parts ) {
-            part_total += sbp->max_coverage;
+            // CDF: primary locations only (see above)
+            part_total += sbp->secondary ? 0 : sbp->max_coverage;
         }
-        float weighted = 0.0f;
-        for( const auto &[sbp, sub_coverage] : sub_best[bp] ) {
-            weighted += static_cast<float>( sub_coverage ) * sbp->max_coverage / part_total;
-        }
-        entry.coverage = std::min( 100, static_cast<int>( std::lround( weighted ) ) );
-        float weighted_melee = 0.0f;
-        for( const auto &[sbp, sub_coverage] : sub_best_melee[bp] ) {
-            weighted_melee += static_cast<float>( sub_coverage ) * sbp->max_coverage / part_total;
-        }
-        entry.cover_melee = std::min( 100, static_cast<int>( std::lround( weighted_melee ) ) );
-        float weighted_ranged = 0.0f;
-        for( const auto &[sbp, sub_coverage] : sub_best_ranged[bp] ) {
-            weighted_ranged += static_cast<float>( sub_coverage ) * sbp->max_coverage / part_total;
-        }
-        entry.cover_ranged = std::min( 100, static_cast<int>( std::lround( weighted_ranged ) ) );
+        // CDF: primary locations are weighted by max_coverage as before; a portion that names only
+        // secondary locations takes the best coverage among them, unweighted (secondary pools are not
+        // part of the 100 of the primary ones)
+        const auto aggregate = [&part_total]( const std::map<sub_bodypart_str_id, int> &best ) {
+            float weighted = 0.0f;
+            int best_secondary = 0;
+            bool any_primary = false;
+            for( const auto &[sbp, sub_coverage] : best ) {
+                if( sbp->secondary ) {
+                    best_secondary = std::max( best_secondary, sub_coverage );
+                } else {
+                    any_primary = true;
+                    weighted += static_cast<float>( sub_coverage ) * sbp->max_coverage / part_total;
+                }
+            }
+            return any_primary ? std::min( 100, static_cast<int>( std::lround( weighted ) ) ) :
+                   std::min( 100, best_secondary );
+        };
+        entry.coverage = aggregate( sub_best[bp] );
+        entry.cover_melee = aggregate( sub_best_melee[bp] );
+        entry.cover_ranged = aggregate( sub_best_ranged[bp] );
         armor.data.push_back( entry );
     }
 }

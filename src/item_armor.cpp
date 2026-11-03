@@ -288,7 +288,10 @@ std::vector<sub_bodypart_id> item::get_covered_sub_body_parts( const side s ) co
                     continue;
                 }
                 for( const sub_bodypart_str_id &sbp : bp->sub_parts ) {
-                    covered.insert( sbp.id() );
+                    // CDF: a flat garment covers the primary locations only
+                    if( !sbp->secondary ) {
+                        covered.insert( sbp.id() );
+                    }
                 }
             }
         }

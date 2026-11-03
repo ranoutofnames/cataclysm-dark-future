@@ -9950,6 +9950,20 @@ void Character::absorb_hit( const bodypart_id &bp, damage_instance &dam,
             return hit_sub_part;
         };
 
+        // CDF: the secondary location (torso hanging front/back, neck, waist; legs draped) is
+        // rolled the same way, lazily, and shares the one coverage roll (DDA
+        // character_attire.cpp:1841-1889). The null id when the body part has no secondary pool.
+        sub_bodypart_str_id hit_secondary_sub_part = sub_bodypart_str_id::NULL_ID();
+        bool secondary_sub_part_rolled = false;
+        const auto roll_secondary_sub_part = [&]() -> const sub_bodypart_str_id & {
+            if( !secondary_sub_part_rolled )
+            {
+                hit_secondary_sub_part = bp->random_sub_part( true );
+                secondary_sub_part_rolled = true;
+            }
+            return hit_secondary_sub_part;
+        };
+
         // One coverage roll per damage element, shared by every worn layer, the ablative
         // pass and each carrier's armor_absorb (DDA Character::absorb_hit_internal).
         // Drawn lazily, on the first layer that tests it, so an element nothing covers costs
@@ -10009,6 +10023,20 @@ void Character::absorb_hit( const bodypart_id &bp, damage_instance &dam,
                                         armor.has_sub_coverage() || armor.is_ablative() ? roll_sub_part() :
                                         sub_bodypart_str_id::NULL_ID(),
                                         get_coverage_roll() );
+                // for the torso and legs the armor is also tested at the secondary location
+                // (hanging packs, neck, waist). Plates stay primary only, as in DDA.
+                // CDF: only armor that names sub-locations; a flat garment or a flat plate carrier
+                // covers the primary locations only (item::get_coverage( bp, sbp ) would report
+                // its flat coverage at any location, so the plain is_ablative() gate would test
+                // it twice). Also only where this body part has a sub-portion of its own: a plain
+                // torso portion on an item with sub-portions elsewhere (armor_riot_torso) would be
+                // tested twice as well
+                if( !destroy && armor.has_sub_coverage( bp ) ) {
+                    const sub_bodypart_str_id &secondary = roll_secondary_sub_part();
+                    if( secondary.is_valid() ) {
+                        destroy = armor_absorb( elem, armor, bp, secondary, get_coverage_roll() );
+                    }
+                }
             }
 
             if( destroy ) {

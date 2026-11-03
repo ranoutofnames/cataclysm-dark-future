@@ -29,7 +29,7 @@
     "hot_morale_mod": 2,
     "cold_morale_mod": 2,
     "bionic_slots": 80,
-    "sub_parts": [ "torso_upper", "torso_lower" ]
+    "sub_parts": [ "torso_upper", "torso_lower", "torso_neck", "torso_hanging_front", "torso_hanging_back", "torso_waist" ]
   },
   {
     "id": "head",
@@ -204,7 +204,7 @@
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
     "bionic_slots": 30,
-    "sub_parts": [ "leg_hip_l", "leg_upper_l", "leg_knee_l", "leg_lower_l" ]
+    "sub_parts": [ "leg_hip_l", "leg_upper_l", "leg_knee_l", "leg_lower_l", "leg_draped_l" ]
   },
   {
     "id": "leg_r",
@@ -229,7 +229,7 @@
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
     "bionic_slots": 30,
-    "sub_parts": [ "leg_hip_r", "leg_upper_r", "leg_knee_r", "leg_lower_r" ]
+    "sub_parts": [ "leg_hip_r", "leg_upper_r", "leg_knee_r", "leg_lower_r", "leg_draped_r" ]
   },
   {
     "id": "foot_l",

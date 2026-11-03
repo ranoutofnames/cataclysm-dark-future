@@ -230,5 +230,74 @@
     "opposite": "head_ear_l",
     "name": "right ear",
     "name_multiple": "ears"
+  },
+  {
+    "//": "CDF: the secondary entries are DDA body_parts.json:921-999. DDA's neck and waist point `opposite` at sub_limb_debug, which CDF does not have, so they are their own opposite.",
+    "id": "torso_neck",
+    "type": "sub_body_part",
+    "parent": "torso",
+    "max_coverage": 10,
+    "secondary": true,
+    "side": "both",
+    "name": "neck",
+    "locations_under": [ "torso_upper" ]
+  },
+  {
+    "id": "torso_hanging_front",
+    "type": "sub_body_part",
+    "parent": "torso",
+    "max_coverage": 35,
+    "secondary": true,
+    "side": "both",
+    "opposite": "torso_hanging_back",
+    "name": "front torso (hang)",
+    "name_multiple": "item hangs off you",
+    "locations_under": [ "torso_upper", "torso_lower" ]
+  },
+  {
+    "id": "torso_hanging_back",
+    "type": "sub_body_part",
+    "parent": "torso",
+    "max_coverage": 45,
+    "secondary": true,
+    "side": "both",
+    "opposite": "torso_hanging_front",
+    "name": "back torso (hang)",
+    "name_multiple": "item hangs off you",
+    "locations_under": [ "torso_upper", "torso_lower" ]
+  },
+  {
+    "id": "torso_waist",
+    "type": "sub_body_part",
+    "parent": "torso",
+    "max_coverage": 10,
+    "secondary": true,
+    "side": "both",
+    "name": "waist",
+    "locations_under": [ "leg_hip_r", "leg_hip_l" ]
+  },
+  {
+    "id": "leg_draped_l",
+    "type": "sub_body_part",
+    "parent": "leg_l",
+    "max_coverage": 100,
+    "secondary": true,
+    "side": "left",
+    "opposite": "leg_draped_r",
+    "name": "left leg (draped)",
+    "name_multiple": "legs (draped)",
+    "locations_under": [ "leg_hip_l", "leg_upper_l" ]
+  },
+  {
+    "id": "leg_draped_r",
+    "type": "sub_body_part",
+    "parent": "leg_r",
+    "max_coverage": 100,
+    "secondary": true,
+    "side": "right",
+    "opposite": "leg_draped_l",
+    "name": "right leg (draped)",
+    "name_multiple": "legs (draped)",
+    "locations_under": [ "leg_hip_r", "leg_upper_r" ]
   }
 ]

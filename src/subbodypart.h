@@ -13,9 +13,9 @@ class JsonObject;
  * A sub-location of a body part (upper torso, left shoulder, throat ...).
  *
  * CDF subset of DDA's `sub_body_part_type` (DDA #52468, src/subbodypart.h). The JSON schema
- * and ids are DDA's, so DDA data loads unchanged. Hanging/secondary locations,
- * `locations_under` and `similar_bodypart` are not taken (they belong to the armor-layering
- * system): `secondary` is parsed and must be false.
+ * and ids are DDA's, so DDA data loads unchanged. Secondary (hanging) locations and
+ * `locations_under` are taken; `similar_bodypart` is not (it belongs to the armor-layering
+ * system).
  */
 struct sub_body_part_type {
     sub_bodypart_str_id id;
@@ -31,8 +31,16 @@ struct sub_body_part_type {
     /** The location on the other side of the body (itself when there is none). */
     sub_bodypart_str_id opposite;
 
-    /** Reserved (DDA hanging locations). Must be false for now. */
+    /**
+     * Hanging/draped location (DDA `secondary`): rolled in its own pool on a hit, never part of a
+     * flat garment or of the primary sums.
+     */
     bool secondary = false;
+    /**
+     * Primary locations this one lies over (DDA `locations_under`).
+     * CDF: stored and validated only; DDA reads it for discomfort (where_discomfort), which CDF lacks.
+     */
+    std::vector<sub_bodypart_str_id> locations_under;
 
     /**
      * Share of the parent body part this location makes up. A body part's primary

@@ -49,7 +49,10 @@ TEST_CASE("sub body parts load with DDA's ids and coverage", "[armor][subpart]")
         CAPTURE(bp);
         int total = 0;
         for (const sub_bodypart_str_id &sbp : bodypart_str_id(bp)->sub_parts) {
-            total += sbp->max_coverage;
+            // CDF: the primary locations add up to 100; secondary ones are a pool of their own
+            if (!sbp->secondary) {
+                total += sbp->max_coverage;
+            }
         }
         CHECK(total == 100);
     }
@@ -71,6 +74,10 @@ TEST_CASE("random_sub_part follows max_coverage", "[armor][subpart]") {
         CAPTURE(bp);
         const std::map<std::string, int> counts = distribution(bp);
         for (const sub_bodypart_str_id &sbp : bodypart_str_id(bp)->sub_parts) {
+            // CDF: random_sub_part() rolls the primary pool; secondary ones have their own test
+            if (sbp->secondary) {
+                continue;
+            }
             CAPTURE(sbp.str());
             const auto found = counts.find(sbp.str());
             const double share = found == counts.end() ? 0.0 :

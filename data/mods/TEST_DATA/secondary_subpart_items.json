@@ -1,0 +1,73 @@
+[
+  {
+    "//": "CDF: fixtures for tests/secondary_subpart_test.cpp. A hanging pack names only a secondary location.",
+    "id": "test_hanging_pack",
+    "type": "ARMOR",
+    "name": "TEST hanging pack",
+    "description": "A test pack that hangs at the back of the torso at 30% coverage.",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_hanging_back" ], "coverage": 30, "encumbrance": 0 }
+    ]
+  },
+  {
+    "id": "test_hanging_pack_full",
+    "type": "ARMOR",
+    "name": "TEST full hanging pack",
+    "description": "A test pack that hangs at the back of the torso at 100% coverage.",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_hanging_back" ], "coverage": 100, "encumbrance": 0 }
+    ]
+  },
+  {
+    "id": "test_mixed_vest",
+    "type": "ARMOR",
+    "name": "TEST mixed vest",
+    "description": "A test vest: upper torso at 100% and a waist pouch at 50%.",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_upper" ], "coverage": 100, "encumbrance": 0 },
+      { "covers": [ "torso" ], "specifically_covers": [ "torso_waist" ], "coverage": 50, "encumbrance": 0 }
+    ]
+  },
+  {
+    "id": "test_plain_torso_sub_arms",
+    "type": "ARMOR",
+    "name": "TEST plain torso, sub-portions on the arms",
+    "description": "A test suit: a plain torso portion at 50% and a sub-portion on the lower arms (the shape of armor_riot_torso).",
+    "weight": "1 kg",
+    "volume": "2 L",
+    "price": "0 USD",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 2,
+    "flags": [ "UNBREAKABLE", "OUTER" ],
+    "armor_portion_data": [
+      { "covers": [ "torso" ], "coverage": 50, "encumbrance": 0 },
+      { "covers": [ "arm_l", "arm_r" ], "specifically_covers": [ "arm_lower_l", "arm_lower_r" ], "coverage": 60, "encumbrance": 0 }
+    ]
+  }
+]

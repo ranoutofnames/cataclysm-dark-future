@@ -29,6 +29,7 @@ void sub_body_part_type::load( const JsonObject &jo, const std::string & )
     mandatory( jo, was_loaded, "parent", parent );
     optional( jo, was_loaded, "name_multiple", name_multiple );
     optional( jo, was_loaded, "secondary", secondary, false );
+    optional( jo, was_loaded, "locations_under", locations_under );
     optional( jo, was_loaded, "max_coverage", max_coverage, 0 );
 
     const auto side_reader = enum_flags_reader<side> { "side" };
@@ -71,9 +72,6 @@ void sub_body_part_type::check() const
     if( id.is_null() ) {
         return;
     }
-    if( secondary ) {
-        debugmsg( "Sub body part %s is secondary, which CDF does not support yet", id.c_str() );
-    }
     if( max_coverage < 0 || max_coverage > 100 ) {
         debugmsg( "Sub body part %s has max_coverage %d outside 0-100", id.c_str(), max_coverage );
     }
@@ -84,6 +82,14 @@ void sub_body_part_type::check() const
         if( std::find( listed.begin(), listed.end(), id ) == listed.end() ) {
             debugmsg( "Sub body part %s is not listed in sub_parts of its parent %s", id.c_str(),
                       parent.c_str() );
+        }
+    }
+    for( const sub_bodypart_str_id &under : locations_under ) {
+        if( !under.is_valid() ) {
+            debugmsg( "Sub body part %s has invalid locations_under entry %s", id.c_str(), under.c_str() );
+        } else if( under->secondary ) {
+            debugmsg( "Sub body part %s: locations_under entry %s is not a primary location", id.c_str(),
+                      under.c_str() );
         }
     }
     if( !opposite.is_valid() ) {

@@ -144,15 +144,17 @@ struct body_part_type {
 
         /**
          * Sub-locations of this part (DDA `sub_parts`), e.g. upper and lower torso.
+         * Includes the secondary ones (hanging, draped); Lua `sub_parts()` returns them too.
          * Empty for parts without any: hits then have no sub-location.
          */
         std::vector<sub_bodypart_str_id> sub_parts;
 
         /**
-         * A sub-location chosen at random, weighted by each one's `max_coverage` (as in DDA).
-         * Returns the null id if this part has no sub-parts.
+         * A sub-location chosen at random, weighted by each one's `max_coverage` (as in DDA), from the
+         * primary locations, or from the secondary ones if `secondary`.
+         * Returns the null id if this part has none in that pool.
          */
-        sub_bodypart_str_id random_sub_part() const;
+        sub_bodypart_str_id random_sub_part( bool secondary = false ) const;
 
         LUA_TYPE_OPS( body_part_type, id );
 

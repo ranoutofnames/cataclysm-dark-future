@@ -7675,6 +7675,18 @@ bool item::has_sub_coverage() const
     return armor != nullptr && !armor->sub_data.empty();
 }
 
+bool item::has_sub_coverage( const bodypart_id &bodypart ) const
+{
+    const islot_armor *armor = find_armor_data();
+    if( armor == nullptr ) {
+        return false;
+    }
+    return std::any_of( armor->sub_data.begin(), armor->sub_data.end(),
+    [&bodypart]( const armor_portion_data & sub ) {
+        return sub.covers.test( bodypart.id() );
+    } );
+}
+
 int item::get_coverage( const bodypart_id &bodypart, const sub_bodypart_str_id &sbp ) const
 {
     return get_coverage( bodypart, sbp, cover_type::COVER_DEFAULT );

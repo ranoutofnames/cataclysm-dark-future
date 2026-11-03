@@ -268,17 +268,23 @@ void body_part_type::load( const JsonObject &jo, const std::string & )
     optional( jo, was_loaded, "side", part_side, side_reader, side::BOTH );
 }
 
-sub_bodypart_str_id body_part_type::random_sub_part() const
+sub_bodypart_str_id body_part_type::random_sub_part( bool secondary ) const
 {
     int total_weight = 0;
     for( const sub_bodypart_str_id &sbp : sub_parts ) {
-        total_weight += sbp->max_coverage;
+        // CDF: DDA picks within the primary or the secondary pool only
+        if( sbp->secondary == secondary ) {
+            total_weight += sbp->max_coverage;
+        }
     }
     if( total_weight <= 0 ) {
         return sub_bodypart_str_id::NULL_ID();
     }
     int roll = rng( 1, total_weight );
     for( const sub_bodypart_str_id &sbp : sub_parts ) {
+        if( sbp->secondary != secondary ) {
+            continue;
+        }
         if( roll <= sbp->max_coverage ) {
             return sbp;
         }
