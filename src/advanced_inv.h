@@ -10,6 +10,7 @@
 #include "advanced_inv_pane.h"
 #include "cursesdef.h"
 
+class Character;
 class input_context;
 class item;
 struct advanced_inv_save_state;
@@ -21,6 +22,17 @@ void create_advanced_inv();
  * TODO: Make this not needed.
  */
 void cancel_aim_processing();
+
+// CDF: CAP1b, header numbers of the inventory/worn panes (volume paired with carried_capacity())
+struct advanced_inv_inventory_head_data {
+    double weight_carried = 0.0;
+    double weight_capacity = 0.0;
+    std::string volume_carried;
+    std::string volume_capacity;
+    bool volume_over = false;
+};
+
+advanced_inv_inventory_head_data advanced_inv_inventory_head( const Character &who );
 
 class advanced_inventory
 {

@@ -1303,7 +1303,8 @@ static std::string carry_weight_string( const avatar &u )
     return string_format( "%.1f/%.1f", weight_carried, weight_capacity );
 }
 
-static std::string carry_volume_string( const avatar &u )
+// CDF: exported for tests (CAP1b)
+std::string carry_volume_string( const avatar &u )
 {
     double volume_carried = round_up( convert_volume( to_milliliter( u.carried_volume() ) ),
                                       2 );
@@ -1324,7 +1325,8 @@ static auto get_weight_color( const avatar &u ) -> nc_color
     }
 }
 
-static auto get_volume_color( const avatar &u ) -> nc_color
+// CDF: exported for tests (CAP1b)
+auto get_volume_color( const avatar &u ) -> nc_color
 {
     if( u.carried_volume() > u.carried_capacity() * 0.85 ) {
         return c_red;

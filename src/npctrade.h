@@ -47,6 +47,17 @@ struct trade_state {
     units::mass weight_left = 0_gram;
 };
 
+// CDF: CAP1b, the carried bar for the trade pane and the NPC gate (pair of carried_volume())
+struct pane_volume {
+    units::volume used = 0_ml;
+    units::volume max = 0_ml;
+};
+
+// carried_capacity() - carried_volume(), not floored (the gate needs the sign)
+auto carry_room( const Character &who ) -> units::volume;
+// net_volume_in: the volume that would move in to who (negative: out)
+auto trade_pane_volume( const Character &who, units::volume net_volume_in ) -> pane_volume;
+
 auto setup_trade_state( trade_state &state, int cost, npc &np ) -> void;
 auto npc_will_accept_trade( const trade_state &state, const npc &np ) -> bool;
 auto calc_npc_owes_you( const trade_state &state, const npc &np ) -> int;

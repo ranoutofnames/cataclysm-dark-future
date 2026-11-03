@@ -346,8 +346,6 @@ auto trading_window::update_win( npc &np, const std::string &deal ) -> void
     };
     const auto your_selected = sum_selected( state.yours, false );
     const auto their_selected = sum_selected( state.theirs, true );
-    const auto player_free_volume = g->u.free_space() +
-                                    your_selected.volume - their_selected.volume;
     const auto player_free_weight = g->u.weight_capacity() - g->u.weight_carried() +
                                     your_selected.weight - their_selected.weight;
 
@@ -429,11 +427,15 @@ auto trading_window::update_win( npc &np, const std::string &deal ) -> void
         const auto header_color = c_light_gray;
         mvwprintz( w_whose, point( 1, stats_y ), header_color, std::string( win_w, ' ' ) );
         if( !they || !np.is_shopkeeper() ) {
-            const auto pane_free_volume = they ? state.volume_left : player_free_volume;
+            // CDF: CAP1b, the volume figures use the carried bar (as the side panel), not
+            // the all-pocket volume_capacity()/free_space() pair
+            const auto player_vol = npc_trading::trade_pane_volume( g->u,
+                                    their_selected.volume - your_selected.volume );
             const auto pane_free_weight = they ? state.weight_left : player_free_weight;
-            const auto pane_max_volume = they ? np.volume_capacity() : g->u.volume_capacity();
+            const auto pane_max_volume = they ? np.carried_capacity() : player_vol.max;
             const auto pane_max_weight = they ? np.weight_capacity() : g->u.weight_capacity();
-            const auto pane_used_volume = pane_max_volume - pane_free_volume;
+            const auto pane_used_volume = they ? pane_max_volume - state.volume_left :
+                                           player_vol.used;
             const auto pane_used_weight = pane_max_weight - pane_free_weight;
             const auto weight_used_str = string_format( "%.2f",
                                          convert_weight( pane_used_weight ) );
@@ -794,7 +796,7 @@ auto trading_window::get_var_trade( const item &it, int total_count, int amount_
 
 auto trading_window::perform_trade( npc &np, const std::string &deal ) -> bool
 {
-    state.volume_left = np.free_space();
+    state.volume_left = npc_trading::carry_room( np ); // CDF: CAP1b, carried bar
     state.weight_left = np.weight_capacity() - np.weight_carried();
 
     // Shopkeeps are happy to have large inventories.

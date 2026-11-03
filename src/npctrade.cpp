@@ -220,6 +220,26 @@ void item_pricing::adjust_values( const double adjust, const faction *fac )
     }
 }
 
+static const trait_id trait_DEBUG_STORAGE( "DEBUG_STORAGE" );
+
+auto npc_trading::carry_room( const Character &who ) -> units::volume
+{
+    // CDF: DEBUG_STORAGE has no limit; a half-max keeps "+= vol" from overflowing
+    if( who.has_trait( trait_DEBUG_STORAGE ) ) {
+        return units::volume_max / 2;
+    }
+    return who.carried_capacity() - who.carried_volume();
+}
+
+auto npc_trading::trade_pane_volume( const Character &who,
+                                     units::volume net_volume_in ) -> pane_volume
+{
+    pane_volume ret;
+    ret.max = who.carried_capacity();
+    ret.used = who.carried_volume() + net_volume_in;
+    return ret;
+}
+
 auto npc_trading::setup_trade_state( trade_state &state, int cost, npc &np ) -> void
 {
     // Populate the list of what the NPC is willing to buy, and the prices they pay

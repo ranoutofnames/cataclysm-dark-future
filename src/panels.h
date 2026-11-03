@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "color.h"
 #include "coordinates.h"
 
 class JsonIn;
@@ -34,6 +35,11 @@ void draw_overmap_chunk( const catacurses::window &w_minimap, const avatar &you,
 } // namespace overmap_ui
 
 bool default_render();
+
+// CDF: exported for tests (CAP1b)
+std::string carry_volume_string( const avatar &u );
+// CDF: exported for tests (CAP1b)
+auto get_volume_color( const avatar &u ) -> nc_color;
 
 class window_panel
 {

@@ -210,6 +210,18 @@ void advanced_inventory::init()
     dest = ( save_state->active_left ) ? right : left;
 }
 
+// CDF: CAP1b, the carried-bar header numbers of the inventory/worn panes, split out for tests
+advanced_inv_inventory_head_data advanced_inv_inventory_head( const Character &who )
+{
+    advanced_inv_inventory_head_data head;
+    head.weight_carried = convert_weight( who.weight_carried() );
+    head.weight_capacity = convert_weight( who.weight_capacity() );
+    head.volume_carried = format_volume( who.carried_volume() );
+    head.volume_capacity = format_volume( who.carried_capacity() );
+    head.volume_over = who.carried_volume().value() > who.carried_capacity().value();
+    return head;
+}
+
 void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool active )
 {
     const auto &items = pane.items;
@@ -225,10 +237,11 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
 
     //print inventory's current and total weight + volume
     if( pane.get_area() == AIM_INVENTORY || pane.get_area() == AIM_WORN ) {
-        const double weight_carried = convert_weight( g->u.weight_carried() );
-        const double weight_capacity = convert_weight( g->u.weight_capacity() );
-        std::string volume_carried = format_volume( g->u.carried_volume() );
-        std::string volume_capacity = format_volume( g->u.carried_capacity() );
+        const advanced_inv_inventory_head_data head = advanced_inv_inventory_head( g->u );
+        const double weight_carried = head.weight_carried;
+        const double weight_capacity = head.weight_capacity;
+        const std::string &volume_carried = head.volume_carried;
+        const std::string &volume_capacity = head.volume_capacity;
         // align right, so calculate formatted head length
         const std::string formatted_head = string_format( "%.1f/%.1f %s  %s/%s %s",
                                            weight_carried, weight_capacity, weight_units(),
@@ -239,7 +252,7 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         nc_color color = weight_carried > weight_capacity ? c_red : c_light_green;
         mvwprintz( window, point( hrightcol, 4 ), color, "%.1f", weight_carried );
         wprintz( window, c_light_gray, "/%.1f %s  ", weight_capacity, weight_units() );
-        color = g->u.carried_volume().value() > g->u.carried_capacity().value() ? c_red : c_light_green;
+        color = head.volume_over ? c_red : c_light_green;
         wprintz( window, color, volume_carried );
         wprintz( window, c_light_gray, "/%s %s", volume_capacity, volume_units_abbr() );
     } else {

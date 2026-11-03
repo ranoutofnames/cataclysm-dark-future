@@ -584,6 +584,25 @@ std::vector<std::list<item_stack::iterator>> flatten( const std::vector<stacked_
     return flat;
 }
 
+// CDF: CAP1b, moved verbatim from the selector draw lambda so tests can reach it
+auto selector_head( const Character &who, units::mass weight_predict,
+                    units::volume volume_predict ) -> std::string
+{
+    const std::string fmted_weight_predict = colorize(
+                string_format( "%.1f", round_up( convert_weight( weight_predict ), 1 ) ),
+                weight_predict > who.weight_capacity() ? c_red : c_white );
+    const std::string fmted_weight_capacity = string_format(
+                "%.1f", round_up( convert_weight( who.weight_capacity() ), 1 ) );
+    const std::string fmted_volume_predict = colorize(
+                format_volume( volume_predict ),
+                volume_predict > who.carried_capacity() ? c_red : c_white );
+    const std::string fmted_volume_capacity = format_volume( who.carried_capacity() );
+
+    return string_format( _( "PICK Wgt %1$s/%2$s  Vol %3$s/%4$s" ),
+                          fmted_weight_predict, fmted_weight_capacity,
+                          fmted_volume_predict, fmted_volume_capacity );
+}
+
 } // namespace pickup
 
 namespace
@@ -877,20 +896,8 @@ auto pick_up_from_items( const std::vector<item_stack::iterator> &here, const in
             right_print( w_pickup, maxitems + 2, 0, c_light_gray, string_format( _( "[%s] Next" ),
                          ctxt.get_desc( "NEXT_TAB", 1 ) ) );
 
-            const std::string fmted_weight_predict = colorize(
-                        string_format( "%.1f", round_up( convert_weight( weight_predict ), 1 ) ),
-                        weight_predict > g->u.weight_capacity() ? c_red : c_white );
-            const std::string fmted_weight_capacity = string_format(
-                        "%.1f", round_up( convert_weight( g->u.weight_capacity() ), 1 ) );
-            const std::string fmted_volume_predict = colorize(
-                        format_volume( volume_predict ),
-                        volume_predict > g->u.carried_capacity() ? c_red : c_white );
-            const std::string fmted_volume_capacity = format_volume( g->u.carried_capacity() );
-
             trim_and_print( w_pickup, point_zero, pickupW, c_white,
-                            string_format( _( "PICK Wgt %1$s/%2$s  Vol %3$s/%4$s" ),
-                                           fmted_weight_predict, fmted_weight_capacity,
-                                           fmted_volume_predict, fmted_volume_capacity ) );
+                            pickup::selector_head( g->u, weight_predict, volume_predict ) );
 
             wnoutrefresh( w_pickup );
         } );

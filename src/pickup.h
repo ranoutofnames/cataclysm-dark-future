@@ -1,9 +1,11 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "coordinates.h"
 #include "item_stack.h"
+#include "units.h"
 
 class item;
 class Character;
@@ -57,6 +59,12 @@ auto cost_to_move_item( const Character &who, const item &it ) -> int;
  */
 auto handle_spillable_contents( Character &c, detached_ptr<item> &&it,
                                 map &m ) -> detached_ptr<item>;
+/**
+ * CDF: the "PICK Wgt a/b  Vol c/d" header of the pickup selector, with colour tags.
+ * Volume is paired with carried_capacity() (CAP1b: split out of the draw lambda for tests).
+ */
+auto selector_head( const Character &who, units::mass weight_predict,
+                    units::volume volume_predict ) -> std::string;
 } // namespace pickup
 
 
