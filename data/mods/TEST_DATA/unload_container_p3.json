@@ -1,0 +1,46 @@
+[
+  {
+    "//": "CDF: P3-6-4b. No shipped item has both a CONTAINER pocket and a MAGAZINE_WELL pocket, which the DDA stop after the first changed pocket type of the container unload (activity_actor.cpp:6459-6467) needs.",
+    "id": "test_p3_cage",
+    "type": "GENERIC",
+    "name": { "str": "test p3 cage" },
+    "description": "Test container with a storage pocket and a magazine well.",
+    "weight": "100 g",
+    "volume": "1 L",
+    "material": [ "steel" ],
+    "symbol": "[",
+    "color": "white",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "2 L", "max_contains_weight": "5 kg", "moves": 50 },
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "magazine_well": "250 ml",
+        "max_item_length": "2 km",
+        "item_restriction": [ "glockmag" ]
+      }
+    ]
+  },
+  {
+    "//": "CDF: P3-6-4b. A solids pocket first and a watertight pocket second, so one container holds a solid and a liquid at its top level (the liquid is handled after the removal pass).",
+    "id": "test_p3_split_jug",
+    "type": "GENERIC",
+    "name": { "str": "test p3 split jug" },
+    "description": "Test container with a pocket for solids and a watertight pocket.",
+    "weight": "100 g",
+    "volume": "2 L",
+    "material": [ "plastic" ],
+    "symbol": ")",
+    "color": "white",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "1 L", "max_contains_weight": "5 kg", "moves": 50 },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "watertight": true,
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "5 kg",
+        "moves": 50
+      }
+    ]
+  }
+]

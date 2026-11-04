@@ -65,6 +65,7 @@
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
+#include <functional>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -1797,31 +1798,59 @@ void avatar_action::unload( avatar &you )
     avatar_funcs::unload_item( you, *loc );
 }
 
+namespace
+{
+// CDF: P3-6-4b step 0. Unloading moves and merges items (the unloaded rounds are copied into the
+// inventory and the originals are destroyed, a container refills with copies of its contents), so
+// a list of items taken up front holds dangling pointers after the first unload. The list is
+// taken again before every item instead, and the items already handled are remembered by
+// safe_reference, which does not match a destroyed item or a new one at the same address.
+bool unload_all_of( avatar &you, const std::function<std::vector<item *>()> &collect )
+{
+    bool unloaded = false;
+    std::vector<safe_reference<item>> handled;
+    const auto was_handled = [&handled]( const item * it ) {
+        return std::ranges::any_of( handled, [it]( const safe_reference<item> &ref ) {
+            return ref && ref == it;
+        } );
+    };
+    for( ;; ) {
+        item *next = nullptr;
+        for( item *it : collect() ) {
+            if( item_funcs::can_be_unloaded( *it ) && !was_handled( it ) ) {
+                next = it;
+                break;
+            }
+        }
+        if( next == nullptr ) {
+            break;
+        }
+        handled.emplace_back( *next );
+        // CDF: P3-6-4a, bypass_activity: a loop must not start an activity per item
+        if( !avatar_funcs::unload_item( you, *next, true ) ) {
+            break;
+        }
+        unloaded = true;
+    }
+    return unloaded;
+}
+} // namespace
+
 void avatar_action::unload_all( avatar &you, bool inv )
 {
     bool unloaded = false;
     if( inv ) {
-        auto items = you.all_items();
-        for( item *it : items ) {
-            if( item_funcs::can_be_unloaded( *it ) ) {
-                // CDF: P3-6-4a, bypass_activity: a loop must not start an activity per item
-                if( !avatar_funcs::unload_item( you, *it, true ) ) {
-                    break;
-                }
-                unloaded = true;
-            }
-        }
+        unloaded = unload_all_of( you, [&you]() {
+            return you.all_items();
+        } );
     } else {
-        auto items = get_map().i_at( you.bub_pos() );
-        for( item *it : items ) {
-            if( item_funcs::can_be_unloaded( *it ) ) {
-                // CDF: P3-6-4a, bypass_activity: a loop must not start an activity per item
-                if( !avatar_funcs::unload_item( you, *it, true ) ) {
-                    break;
-                }
-                unloaded = true;
+        unloaded = unload_all_of( you, [&you]() {
+            std::vector<item *> items;
+            for( item * const &it : get_map().i_at( you.bub_pos() ) ) {
+                items.push_back( it );
             }
-        }
+            return items;
+        } );
     }
 
     if( !unloaded ) {

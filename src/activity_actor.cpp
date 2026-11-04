@@ -26,12 +26,14 @@
 #include "game_constants.h"
 #include "game_inventory.h"
 #include "gates.h"
+#include "handle_liquid.h"
 #include "iexamine.h"
 #include "int_id.h"
 #include "item.h"
 #include "item_group.h"
 #include "item_hauling.h"
 #include "item_parent_checks.h"
+#include "item_pocket.h"
 #include "itype.h"
 #include "json.h"
 #include "line.h"
@@ -2642,9 +2644,102 @@ std::unique_ptr<activity_actor> reload_activity_actor::deserialize( JsonIn &jsin
 }
 
 // ---- unload_activity_actor ----
-// Transplanted from DDA activity_actor.cpp:6414-6537 (unload_activity_actor), non-container branch
-// only (the container branch is 6-4b). CDF: the target is a safe_reference<item> and the actor's
-// moves live in its progress counter.
+// Transplanted from DDA activity_actor.cpp:6414-6537 (unload_activity_actor), the container branch
+// (P3-6-4b) included. CDF: the target is a safe_reference<item> and the actor's moves live in its
+// progress counter.
+
+namespace
+{
+// CDF: P3-6-4b. DDA Character::add_or_drop_with_msg( it, unloading, avoid, original ): an item
+// that leaves a container must not go back into it (best_pocket skips `avoid`; without it the
+// item is added to the pocket it is being removed from and merges with itself, item.cpp
+// merge_charges). avatar_funcs::add_or_drop_with_msg has no avoid parameter and its header is not
+// in the lock of this packet, so the same body, with the avoid argument, is here.
+auto add_or_drop_avoiding( avatar &you, detached_ptr<item> &&it,
+                           const item &avoid ) -> detached_ptr<item>
+{
+    if( it->made_of( LIQUID ) ) {
+        liquid_handler::consume_liquid( std::move( it ), 1 );
+        // NOLINTNEXTLINE(bugprone-use-after-move)
+        return std::move( it );
+    }
+    if( !you.can_pick_volume( *it ) ) {
+        put_into_vehicle_or_drop( you, item_drop_reason::too_large, std::move( it ) );
+    } else if( !you.can_pick_weight( *it, !get_option<bool>( "DANGEROUS_PICKUPS" ) ) ) {
+        put_into_vehicle_or_drop( you, item_drop_reason::too_heavy, std::move( it ) );
+    } else {
+        add_msg( _( "You put the %s in your inventory." ), it->tname() );
+        add_msg( m_info, "%c - %s", it->invlet == 0 ? ' ' : it->invlet, it->tname() );
+        you.i_add( std::move( it ), true, &avoid );
+    }
+    return detached_ptr<item>();
+}
+
+// per DDA activity_actor.cpp:6435-6470: the contents of the unloadable pockets leave a container,
+// the pocket types in the order CONTAINER, MAGAZINE_WELL, MAGAZINE, and only the first type that
+// changed is emptied by one action
+void unload_container( avatar &you, item &target )
+{
+    contents_change_handler handler;
+    bool changed = false;
+
+    for( const pocket_type ptype : {
+             pocket_type::CONTAINER,
+             pocket_type::MAGAZINE_WELL,
+             pocket_type::MAGAZINE
+         } ) {
+        // the unloadable top items and the pockets they sit in, taken before any of them leaves
+        std::vector<std::pair<item *, item_pocket *>> leaving;
+        for( item *contained : target.all_items_top( ptype, true ) ) {
+            leaving.emplace_back( contained, target.contained_where( *contained ) );
+        }
+        std::vector<std::pair<item *, item_pocket *>> liquids;
+        // CDF: DDA visits the contents and removes them one by one; remove_top_items_with does both
+        target.contents.remove_top_items_with( [&]( detached_ptr<item> &&contained ) {
+            const auto from = std::ranges::find( leaving, &*contained,
+                                                 &std::pair<item *, item_pocket *>::first );
+            if( from == leaving.end() ) {
+                return std::move( contained );
+            }
+            if( contained->made_of( LIQUID ) ) {
+                // CDF: consume_liquid may open a menu and must not run in the middle of the
+                // removal pass: the liquid stays here and is handled after the pass
+                liquids.push_back( *from );
+                return std::move( contained );
+            }
+            const int old_charges = contained->charges;
+            contained = add_or_drop_avoiding( you, std::move( contained ), target );
+            if( !contained || contained->charges != old_charges ) {
+                changed = true;
+                if( from->second != nullptr ) {
+                    from->second->unseal();
+                }
+                handler.add_unsealed( target );
+            }
+            return std::move( contained );
+        } );
+
+        for( const auto &[liquid, pocket] : liquids ) {
+            if( liquid_handler::consume_liquid( *liquid, 1 ) ) {
+                changed = true;
+                if( pocket != nullptr ) {
+                    pocket->unseal();
+                }
+                handler.add_unsealed( target );
+            }
+        }
+
+        if( changed ) {
+            target.on_contents_changed();
+            // CDF: no weight cache to invalidate (DDA invalidate_weight_carried_cache)
+            handler.handle_by( you );
+            // Warning: handle_by (Character::handle_contents_changed) can invalidate items,
+            // `target` among them: neither is used after here
+            break;
+        }
+    }
+}
+} // namespace
 
 void unload_activity_actor::start( player_activity &, Character & )
 {
@@ -2674,6 +2769,12 @@ void unload_activity_actor::unload( Character &who, item &target )
         return;
     }
     avatar &you = *you_ptr;
+
+    // CDF: the container test of unload_item (a container, or an item with container pockets)
+    if( target.is_container() || !target.get_container_pockets().empty() ) {
+        unload_container( you, target );
+        return;
+    }
 
     int qty = 0;
     bool actually_unloaded = false;

@@ -9,7 +9,7 @@
 //   whitelist logic itself (item::add_automatic_whitelist in item::in_container) is covered by
 //   the ported items_spawn_in_their_default_containers case in dda_item_test.cpp.
 // CUT pocket_mods: needs islot_mod::add_pockets, pocket_by_id and the DDA debug_* items (multimag, plan P3).
-// CUT unload_from_spillable_container: needs unload_activity_actor::unload (J6).
+// PORTED by P3-6-4b: unload_from_spillable_container is in tests/cdf_item_unload_p3_test.cpp (W7), using unload_activity_actor::unload.
 // Translation TT1-TT8 (orchestration/plans/P1-transplant/COMMON.md): item_location handles are plain
 // item pointers or references, clear_map_without_vision() is clear_map(), and map::add_item takes a
 // detached item.

@@ -2,6 +2,7 @@
 #include "avatar.h"
 #include "avatar_action.h"
 #include "avatar_functions.h"
+#include "cached_options.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "coordinates.h"
@@ -13,6 +14,7 @@
 #include "map/map.h"
 #include "player_activity.h"
 #include "player_helpers.h"
+#include "safe_reference.h"
 #include "state_helpers.h"
 #include "type_id.h"
 
@@ -25,6 +27,16 @@
 
 static const activity_id ACT_UNLOAD("ACT_UNLOAD");
 
+static const itype_id itype_backpack_hiking("backpack_hiking");
+static const itype_id itype_flashlight("flashlight");
+static const itype_id itype_glock_19("glock_19");
+static const itype_id itype_pencil("pencil");
+static const itype_id itype_steel_pan("steel_pan");
+static const itype_id itype_test_p3_cage("test_p3_cage");
+static const itype_id itype_test_p3_split_jug("test_p3_split_jug");
+static const itype_id itype_test_rock("test_rock");
+static const itype_id itype_tums("tums");
+static const itype_id itype_test_liquid_1ml("test_liquid_1ml");
 static const itype_id itype_556("556");
 static const itype_id itype_9mm("9mm");
 static const itype_id itype_ammolink223("ammolink223");
@@ -396,4 +408,371 @@ TEST_CASE("unload_actor_tolerates_a_lost_target", "[p3][unload][activity]") {
     CHECK(you.amount_of(itype_glockmag) == 0);
     // the rounds went with the magazine: nothing was unloaded into the pack
     CHECK(you.charges_of(itype_9mm) == 0);
+}
+
+// CDF: P3-6-4b step 0. avatar_action::unload_all( you, true ) took a list of every item the
+// avatar carries before it unloaded anything. Unloading moves items by copying them (the
+// originals are destroyed), so entries later in the list were dangling pointers and the copies
+// were never reached. Here a pouch holds three loaded magazines inside a pack that is not to be
+// emptied: unloading the pouch relocates the magazines (the three in the list are destroyed), and
+// the loop has to reach the copies and empty them too. The fixture is
+// TEST_DATA/unload_container_p3.json.
+TEST_CASE("unload_all_inventory_variant_runs_to_completion", "[p3][unload]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& pack = *you.top_items().front();
+    // the pack itself is not to be emptied (unloading a worn pack with no other storage puts its
+    // contents on the floor): its pockets are not unloadable
+    for (item_pocket* pkt : pack.get_container_pockets()) { pkt->settings.set_unloadable(false); }
+    detached_ptr<item> pouch = item::spawn(itype_test_p3_cage);
+    // CDF: glockmag holds 15 (magazine/9mm.json:72); 15 + 7 + 3 rounds of 9mm
+    for (const int rounds : {15, 7, 3}) {
+        detached_ptr<item> mag = item::spawn(itype_glockmag);
+        REQUIRE(mag->put_in(item::spawn(itype_9mm, calendar::turn, rounds), pocket_type::MAGAZINE)
+                    .success());
+        REQUIRE(pouch->put_in(std::move(mag), pocket_type::CONTAINER).success());
+    }
+    item& pouch_ref = *pouch;
+    REQUIRE(pack.put_in(std::move(pouch), pocket_type::CONTAINER).success());
+    REQUIRE(pouch_ref.all_items_top(pocket_type::CONTAINER).size() == 3);
+    REQUIRE(you.charges_of(itype_9mm) == 0);
+
+    avatar_action::unload_all(you, true);
+
+    CHECK(!you.activity);
+    CHECK(pouch_ref.contents.empty());
+    const std::vector<item*> mags = you.items_with([](const item& it) {
+        return it.typeId() == itype_glockmag;
+    });
+    REQUIRE(mags.size() == 3);
+    for (const item* mag : mags) { CHECK(mag->ammo_remaining() == 0); }
+    CHECK(you.charges_of(itype_9mm) == 25);
+}
+
+namespace {
+
+// CDF: sets the thief mode and pins it with THIEF_MODE_KEEP = YES, so query_consume_ownership
+// never reaches a popup; the dtor restores the defaults (as the reload entry tests do).
+struct thief_mode_guard_p3 {
+    explicit thief_mode_guard_p3(const std::string& mode) {
+        avatar& who = get_avatar();
+        who.set_value("THIEF_MODE", mode);
+        who.set_value("THIEF_MODE_KEEP", "YES");
+    }
+    ~thief_mode_guard_p3() {
+        avatar& who = get_avatar();
+        who.set_value("THIEF_MODE", "THIEF_ASK");
+        who.set_value("THIEF_MODE_KEEP", "NO");
+    }
+};
+
+// CDF: what the liquid handling does in test mode (nobody picks from the menu), restored on exit
+struct liquid_action_guard_p3 {
+    explicit liquid_action_guard_p3(const test_mode_spilling_action_t action)
+        : saved(test_mode_spilling_action) {
+        test_mode_spilling_action = action;
+    }
+    ~liquid_action_guard_p3() { test_mode_spilling_action = saved; }
+    test_mode_spilling_action_t saved;
+};
+
+// CDF: P3-6-4b. A hiking backpack (data/json/items/armor/storage.json:27) holding one item of each
+// of `ids` in its pockets, carried by the avatar.
+auto add_pack_holding(avatar& you, const std::vector<itype_id>& ids) -> item& {
+    detached_ptr<item> pack = item::spawn(itype_backpack_hiking);
+    for (const itype_id& id : ids) {
+        REQUIRE(pack->put_in(item::spawn(id), pocket_type::CONTAINER).success());
+    }
+    return you.i_add(std::move(pack));
+}
+
+auto moves_of_activity(avatar& you) -> int {
+    REQUIRE(you.has_activity(ACT_UNLOAD));
+    const activity_actor* actor = you.activity->get_actor();
+    REQUIRE(actor != nullptr);
+    return actor->progress.get_moves_total();
+}
+
+auto carried_of_type(avatar& you, const itype_id& id) -> std::vector<item*> {
+    return you.items_with([&id](const item& it) { return it.typeId() == id; });
+}
+
+} // namespace
+
+// CDF: P3-6-4b W1. DDA character_inventory.cpp:2548-2587: unloading a container assigns the unload
+// actor and the contents leave the container when it finishes (activity_actor.cpp:6435-6467).
+TEST_CASE("unload_container_starts_a_timed_activity", "[p3][unload][activity]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& pack = add_pack_holding(you, {itype_glock_19, itype_flashlight});
+    REQUIRE(pack.all_items_top(pocket_type::CONTAINER).size() == 2);
+
+    REQUIRE(avatar_funcs::unload_item(you, pack));
+
+    REQUIRE(you.has_activity(ACT_UNLOAD));
+    // the pack is still full until the activity runs
+    CHECK(pack.all_items_top(pocket_type::CONTAINER).size() == 2);
+
+    process_activity(you);
+
+    CHECK(!you.activity);
+    CHECK(pack.contents.empty());
+    // both items are carried by the avatar now, neither of them inside the pack
+    for (const itype_id& id : {itype_glock_19, itype_flashlight}) {
+        const std::vector<item*> found = carried_of_type(you, id);
+        REQUIRE(found.size() == 1);
+        CHECK(found.front()->parent_item() != &pack);
+    }
+}
+
+// CDF: P3-6-4b W2. DDA character_inventory.cpp:2569-2586: an item that stacks with the one before
+// it costs max( bulk handling cost, 1 ), any other item its full handling cost.
+TEST_CASE("unload_container_cost_discounts_stacks", "[p3][unload]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+
+    // CDF: a flashlight (lighting.json:183) is a tool that does not count by charges, so five of
+    // them are five items in the pack that stack with each other (test_rock merges into one item)
+    item& same_pack = add_pack_holding(you, std::vector<itype_id>(5, itype_flashlight));
+    const std::vector<item*> lights = same_pack.all_items_top(pocket_type::CONTAINER);
+    REQUIRE(lights.size() == 5);
+    for (const item* light : lights) { REQUIRE(lights.front()->stacks_with(*light)); }
+    const int first = you.item_handling_cost(*lights.front());
+    const int next = std::max(you.item_handling_cost(*lights.front(), true, 0, -1, true), 1);
+    // CDF: INVENTORY_HANDLING_PENALTY 100 (game_constants.h:73) + 100 ml / 20 ml = 105 for the
+    // first flashlight; the stack discount drops the base cost: 0 + 5 = 5 for each of the other
+    // four
+    REQUIRE(first == 105);
+    REQUIRE(next == 5);
+
+    REQUIRE(avatar_funcs::unload_item(you, same_pack));
+    const int stacked_moves = moves_of_activity(you);
+    CHECK(stacked_moves == first + 4 * next);
+    you.cancel_activity();
+
+    // five items that do not stack with each other: the full handling cost for each
+    item& mixed_pack = add_pack_holding(
+        you, {itype_test_rock, itype_pencil, itype_flashlight, itype_glock_19, itype_steel_pan});
+    int full_cost = 0;
+    const std::vector<item*> mixed = mixed_pack.all_items_top(pocket_type::CONTAINER);
+    REQUIRE(mixed.size() == 5);
+    for (const item* contained : mixed) { full_cost += you.item_handling_cost(*contained); }
+
+    REQUIRE(avatar_funcs::unload_item(you, mixed_pack));
+    const int mixed_moves = moves_of_activity(you);
+    CHECK(mixed_moves == full_cost);
+    CHECK(stacked_moves < mixed_moves);
+}
+
+// CDF: P3-6-4b W3. DDA activity_actor.cpp:6459-6467: the pocket types are emptied in the order
+// CONTAINER, MAGAZINE_WELL, MAGAZINE and only the first one that changed goes in one action.
+// The fixture is TEST_DATA/unload_container_p3.json (no shipped item has both pockets).
+TEST_CASE("unload_container_stops_after_first_changed_pocket_type", "[p3][unload][pocket]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    detached_ptr<item> cage_ptr = item::spawn(itype_test_p3_cage);
+    REQUIRE(cage_ptr->put_in(item::spawn(itype_test_rock), pocket_type::CONTAINER).success());
+    REQUIRE(cage_ptr->put_in(item::spawn(itype_glockmag), pocket_type::MAGAZINE_WELL).success());
+    item& cage = you.i_add(std::move(cage_ptr));
+    REQUIRE(cage.all_items_top(pocket_type::CONTAINER).size() == 1);
+    REQUIRE(cage.all_items_top(pocket_type::MAGAZINE_WELL).size() == 1);
+
+    REQUIRE(avatar_funcs::unload_item(you, cage));
+    process_activity(you);
+
+    CHECK(!you.activity);
+    CHECK(cage.all_items_top(pocket_type::CONTAINER).empty());
+    // the magazine in the well stays for the next press
+    CHECK(cage.all_items_top(pocket_type::MAGAZINE_WELL).size() == 1);
+
+    REQUIRE(avatar_funcs::unload_item(you, cage));
+    process_activity(you);
+
+    CHECK(cage.all_items_top(pocket_type::MAGAZINE_WELL).empty());
+    CHECK(carried_of_type(you, itype_glockmag).size() == 1);
+    CHECK(carried_of_type(you, itype_test_rock).size() == 1);
+}
+
+// CDF: P3-6-4b W4. DDA character_inventory.cpp:2575 and activity_actor.cpp:6447: only the pockets
+// whose settings allow unloading are emptied, the actor path included.
+TEST_CASE("unload_container_leaves_non_unloadable_pockets", "[p3][unload][pocket]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& pack = add_pack_holding(you, {itype_test_rock});
+    for (item_pocket* pkt : pack.get_container_pockets()) { pkt->settings.set_unloadable(false); }
+
+    avatar_funcs::unload_item(you, pack);
+    process_activity_bounded(you, 20, 1000);
+    CHECK(!you.activity);
+    CHECK(pack.all_items_top(pocket_type::CONTAINER).size() == 1);
+
+    for (item_pocket* pkt : pack.get_container_pockets()) { pkt->settings.set_unloadable(true); }
+    REQUIRE(avatar_funcs::unload_item(you, pack));
+    process_activity_bounded(you, 20, 1000);
+    CHECK(!you.activity);
+    CHECK(pack.contents.empty());
+}
+
+// CDF: P3-6-4b W5. A liquid in a container is not handed over inside the removal pass: the solids
+// leave first and the liquid is then offered to consume_liquid (which may open a menu). In test
+// mode the menu is replaced by test_mode_spilling_action (handle_liquid.cpp, get_liquid_target).
+TEST_CASE("unload_container_liquid_is_handled_after_the_pass", "[p3][unload][liquid]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    map& here = get_map();
+    const tripoint_bub_ms spot(60, 60, 0);
+    g->place_player(spot);
+    here.i_clear(spot);
+    you.wear_item(item::spawn(itype_backpack), false);
+    detached_ptr<item> jug_ptr = item::spawn(itype_test_p3_split_jug);
+    REQUIRE(jug_ptr->put_in(item::spawn(itype_test_rock), pocket_type::CONTAINER).success());
+    // CDF: test_liquid_1ml (TEST_DATA/dda_unseal_items.json:4) is a liquid that stays an item on
+    // the ground (water_clean is poured into a field); the jug's second pocket is the watertight
+    // one
+    REQUIRE(
+        jug_ptr
+            ->put_in(item::spawn(itype_test_liquid_1ml, calendar::turn, 2), pocket_type::CONTAINER)
+            .success());
+    item& jug = you.i_add(std::move(jug_ptr));
+    REQUIRE(jug.all_items_top(pocket_type::CONTAINER).size() == 2);
+
+    SECTION("the liquid is poured out once the solids are gone") {
+        const liquid_action_guard_p3 guard(test_mode_spilling_action_t::spill_all);
+        REQUIRE(avatar_funcs::unload_item(you, jug));
+        process_activity(you);
+
+        CHECK(jug.contents.empty());
+        CHECK(carried_of_type(you, itype_test_rock).size() == 1);
+        int on_floor = 0;
+        for (const item* floor_it : here.i_at(spot)) {
+            if (floor_it->typeId() == itype_test_liquid_1ml) { on_floor += floor_it->charges; }
+        }
+        CHECK(on_floor == 2);
+    }
+    SECTION("a liquid that nobody takes stays in the container") {
+        const liquid_action_guard_p3 guard(test_mode_spilling_action_t::cancel_spill);
+        REQUIRE(avatar_funcs::unload_item(you, jug));
+        process_activity(you);
+
+        CHECK(jug.all_items_top(pocket_type::CONTAINER).size() == 1);
+        CHECK(jug.all_items_top(pocket_type::CONTAINER).front()->typeId() == itype_test_liquid_1ml);
+        CHECK(carried_of_type(you, itype_test_rock).size() == 1);
+    }
+}
+
+// CDF: P3-6-4b W6. The checks before the cost loop: an empty container is "already empty" (no
+// activity) and a foreign item is refused under THIEF_HONEST (query_consume_ownership). The message
+// texts are not asserted: tests/fake_messages.cpp stubs add_msg.
+TEST_CASE("unload_container_already_empty_and_foreign_item", "[p3][unload]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+
+    SECTION("an empty container") {
+        item& pack = add_pack_holding(you, {});
+        CHECK_FALSE(avatar_funcs::unload_item(you, pack));
+        CHECK(!you.activity);
+    }
+    SECTION("a foreign-owned container under THIEF_HONEST") {
+        item& pack = add_pack_holding(you, {itype_test_rock});
+        // CDF: foreign faction that does not shoot on sight (likes_u 30, factions.json:235), which
+        // query_consume_ownership needs to ask at all; the avatar is your_followers
+        pack.set_owner(faction_id("free_merchants"));
+        REQUIRE_FALSE(pack.is_owned_by(you, true));
+        const thief_mode_guard_p3 guard("THIEF_HONEST");
+
+        CHECK_FALSE(avatar_funcs::unload_item(you, pack));
+        CHECK(!you.activity);
+        CHECK(pack.all_items_top(pocket_type::CONTAINER).size() == 1);
+    }
+}
+
+// CDF: P3-6-4b W7. DDA tests/item_pocket_test.cpp:3036-3091 (issue 75156, a segfault): the static
+// unload of an item that is nested in another container. backpack > steel pan > two bottles of
+// antacid tablets (1 and 4). The tablet moves into the other bottle, the pan spills its bottles
+// into the pack.
+TEST_CASE("unload_from_spillable_container", "[item][pocket]") {
+    clear_all_state();
+    avatar& u = get_avatar();
+    map& here = get_map();
+    REQUIRE(!u.wear_item(item::spawn(itype_backpack), false));
+    item* backpack = u.top_items().front();
+    GIVEN("spillable container contains two pillbottles, one with 4 pills and one with 1 pill") {
+        // Starting inventory looks like:
+        //   backpack >
+        //     steel_pan >
+        //       bottle_plastic_small > antacid tablet (1)
+        //       bottle_plastic_small > antacid tablet (4)
+        // (the pan would normally reject the bottles with a spill message)
+        REQUIRE(backpack->put_in(item::spawn(itype_steel_pan), pocket_type::CONTAINER).success());
+        item* steelpan = backpack->all_items_top().front();
+        REQUIRE(
+            steelpan
+                ->put_in(item::in_its_container(item::spawn(itype_tums, calendar::turn, 1), 1),
+                         pocket_type::CONTAINER)
+                .success());
+        REQUIRE(
+            steelpan
+                ->put_in(item::in_its_container(item::spawn(itype_tums, calendar::turn, 1), 4),
+                         pocket_type::CONTAINER)
+                .success());
+        WHEN("unload the pillbottle that only has one pill") {
+            item* bottle1 = steelpan->all_items_top().front();
+            const safe_reference<item> bottle1_ref(bottle1);
+            unload_activity_actor::unload(u, *bottle1);
+            THEN(
+                "pill is unloaded into bottle that previously had 4 pills, remaining empty bottle is kept") {
+                // Expected inventory after unloading should be:
+                //   backpack >
+                //     steel_pan
+                //     bottle_plastic_small
+                //     bottle_plastic_small > antacid tablet (5)
+                CHECK(here.i_at(u.bub_pos()).empty()); // no items spilled to ground
+                CHECK(u.top_items().size() == 1);      // backpack is still only inventory item
+                const std::vector<item*> backpack_items_vec = backpack->all_items_top();
+                REQUIRE(backpack_items_vec.size() == 3);
+                CHECK(backpack_items_vec[0]->typeId().str() == "steel_pan");
+                CHECK(backpack_items_vec[0]->empty());
+                CHECK(backpack_items_vec[1]->typeId().str() == "bottle_plastic_small");
+                CHECK(backpack_items_vec[1]->empty());
+                CHECK(backpack_items_vec[2]->typeId().str() == "bottle_plastic_small");
+                // CDF: DDA stores the five tablets as five items; here they are one stack of
+                // five (the tablets count by charges), so the five are counted by charges
+                REQUIRE(backpack_items_vec[2]->all_items_top().size() == 1);
+                CHECK(backpack_items_vec[2]->all_items_top().front()->charges == 5);
+                // the spilled bottle was moved (copied) out of the pan: the reference to it
+                // is gone, as the item_location of DDA is
+                CHECK_FALSE(static_cast<bool>(bottle1_ref));
+            }
+        }
+    }
+}
+
+// CDF: P3-6-4b W8. bypass_activity (a CDF extension of the container branch, DDA has none there):
+// the container empties at once, no activity is created and the cost of the loop is charged.
+TEST_CASE("unload_container_bypass_charges_the_loop_moves", "[p3][unload]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& pack = add_pack_holding(you, std::vector<itype_id>(5, itype_flashlight));
+    const std::vector<item*> lights = pack.all_items_top(pocket_type::CONTAINER);
+    REQUIRE(lights.size() == 5);
+    // the W2 sum for a stack of five
+    const int first = you.item_handling_cost(*lights.front());
+    const int next = std::max(you.item_handling_cost(*lights.front(), true, 0, -1, true), 1);
+    // CDF: 105 for the first flashlight and 5 for each stack mate (see W2)
+    REQUIRE(first == 105);
+    REQUIRE(next == 5);
+    const int moves_before = you.get_moves();
+
+    REQUIRE(avatar_funcs::unload_item(you, pack, true));
+
+    CHECK(!you.activity);
+    CHECK(pack.contents.empty());
+    CHECK(moves_before - you.get_moves() == first + 4 * next);
 }

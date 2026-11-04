@@ -255,10 +255,11 @@ TEST_CASE("unload_item leaves pockets that are not unloadable alone", "[pocket][
     pack.put_in(item::spawn(itype_test_rock, calendar::turn));
     REQUIRE(!pack.contents.empty());
     you.i_add(std::move(pack_d));
-    avatar_funcs::unload_item(you, pack);
+    // CDF: P3-6-4b, bypass_activity: unloading a container is a timed activity now
+    avatar_funcs::unload_item(you, pack, true);
     CHECK_FALSE(pack.contents.empty());
     for (item_pocket* pkt : pack.get_container_pockets()) { pkt->settings.set_unloadable(true); }
-    avatar_funcs::unload_item(you, pack);
+    avatar_funcs::unload_item(you, pack, true);
     CHECK(pack.contents.empty());
 }
 

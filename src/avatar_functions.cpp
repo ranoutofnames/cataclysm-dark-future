@@ -732,7 +732,7 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity )
     if( !query_consume_ownership( it, you ) ) {
         return false;
     }
-    // Unload a container consuming moves per item successfully removed
+    // Unload a container: a timed activity, the cost is a loop over the contents (P3-6-4b)
     if( it.is_container() || !it.get_container_pockets().empty() || it.type->can_use( "holster" ) ) {
         if( it.contents.empty() ) {
             add_msg( m_info, _( "The %s is already empty!" ), it.tname() );
@@ -743,35 +743,33 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity )
             return false;
         }
 
-        bool changed = false;
-        std::vector<item *> liquids;
-        // per DDA character_inventory.cpp:2575: only pockets whose settings allow unloading
-        const std::vector<item *> unloadable = it.contents.all_items_top( pocket_type::CONTAINER, true );
-        it.contents.remove_top_items_with( [&changed, &you, &liquids,
-                  &unloadable]( detached_ptr<item> &&contained ) {
-            if( std::ranges::find( unloadable, &*contained ) == unloadable.end() ) {
-                return std::move( contained );
+        // per DDA character_inventory.cpp:2564-2586: an item that stacks with the one before it
+        // costs its bulk handling cost, any other item its full handling cost
+        int moves = 0;
+        const item *prev_contained = nullptr;
+        for( const pocket_type ptype : {
+                 pocket_type::CONTAINER,
+                 pocket_type::MAGAZINE_WELL,
+                 pocket_type::MAGAZINE
+             } ) {
+            for( const item *contained : it.all_items_top( ptype, true ) ) {
+                if( prev_contained != nullptr && prev_contained->stacks_with( *contained ) ) {
+                    moves += std::max( you.item_handling_cost( *contained, true, 0, -1, true ), 1 );
+                } else {
+                    moves += you.item_handling_cost( *contained );
+                }
+                prev_contained = contained;
             }
-            if( contained->made_of( LIQUID ) ) {
-                liquids.push_back( &*contained );
-                return std::move( contained );
-            }
-            int old_charges = contained->charges;
-            item &obj = *contained;
-            contained = add_or_drop_with_msg( you, std::move( contained ), true );
-            if( !contained || contained->charges != old_charges ) {
-                you.mod_moves( -you.item_handling_cost( obj ) );
-                changed = true;
-            }
-            return std::move( contained );
-        } );
-
-        for( item *liquid : liquids ) {
-            liquid_handler::consume_liquid( *liquid, 1 );
         }
-
-        if( changed ) {
-            it.on_contents_changed();
+        // CDF: DDA has no bypass here (character_inventory.cpp:2586 always assigns the actor).
+        // P3-6-4a's loops (unload_all) pass bypass_activity: the contents leave at once and the
+        // moves of the loop are charged, as the instant unload always charged them
+        if( bypass_activity ) {
+            unload_activity_actor::unload( you, it );
+            you.mod_moves( -moves );
+        } else {
+            you.assign_activity( std::make_unique<player_activity>(
+                                     std::make_unique<unload_activity_actor>( moves, it ) ) );
         }
         return true;
     }
