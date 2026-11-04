@@ -7,7 +7,9 @@
 #include "catch/catch.hpp"
 #include "coordinates.h"
 #include "examine_item_menu.h"
+#include "flag.h"
 #include "game.h"
+#include "game_constants.h"
 #include "item.h"
 #include "item_pocket.h"
 #include "itype.h"
@@ -49,6 +51,11 @@ static const itype_id itype_heavy_battery_cell("heavy_battery_cell");
 static const itype_id itype_plut_cell("plut_cell");
 static const itype_id itype_test_multimag_gun_integral_ammo("test_multimag_gun_integral_ammo");
 static const itype_id itype_test_plutonium_mag("test_plutonium_mag");
+static const itype_id itype_pipe_pistol("pipe_pistol");
+static const itype_id itype_stanag30("stanag30");
+static const itype_id itype_test_multimag_aux_gun("test_multimag_aux_gun");
+static const itype_id itype_test_multimag_gun("test_multimag_gun");
+static const itype_id itype_test_p3_two_well_gunmod("test_p3_two_well_gunmod");
 
 namespace {
 
@@ -331,7 +338,11 @@ TEST_CASE("unload_item_on_a_multimag_gun_stays_synchronous", "[p3][unload][multi
     item& gun = you.i_add(std::move(gun_ptr));
     REQUIRE(gun.magazines_current().size() == 1);
 
-    REQUIRE(avatar_funcs::unload_item(you, gun));
+    // CDF: P3-6-4d. The gun has two sources (the 9mm pocket and the cell): without
+    // bypass_activity unload_item asks "Unload which source?" (DDA character_inventory.cpp:2722), a
+    // uilist that cannot be answered here. The call passes bypass_activity; the checks are
+    // unchanged.
+    REQUIRE(avatar_funcs::unload_item(you, gun, true));
 
     CHECK(!you.activity);
     CHECK(!you.has_activity(ACT_UNLOAD));
@@ -954,4 +965,402 @@ TEST_CASE("unload_new_container_ignored_by_magazines_and_empty_checks", "[p3][un
         CHECK(!you.activity);
         CHECK(second.contents.empty());
     }
+}
+
+namespace {
+
+// CDF: P3-6-4d. test_multimag_gun (data/mods/TEST_DATA/items.json:1467) with a glockmag holding 15
+// 9mm in its first well and a stanag30 (data/json/items/magazine/223.json:141) holding 30 556 in
+// the second one, carried by the avatar.
+auto add_two_well_gun(avatar& you) -> item& {
+    detached_ptr<item> gun = item::spawn(itype_test_multimag_gun);
+    detached_ptr<item> glock = item::spawn(itype_glockmag);
+    REQUIRE(
+        glock->put_in(item::spawn(itype_9mm, calendar::turn, 15), pocket_type::MAGAZINE).success());
+    detached_ptr<item> stanag = item::spawn(itype_stanag30);
+    REQUIRE(stanag->put_in(item::spawn(itype_556, calendar::turn, 30), pocket_type::MAGAZINE)
+                .success());
+    REQUIRE(gun->put_in(std::move(glock), pocket_type::MAGAZINE_WELL).success());
+    REQUIRE(gun->put_in(std::move(stanag), pocket_type::MAGAZINE_WELL).success());
+    item& placed = you.i_add(std::move(gun));
+    REQUIRE(placed.magazines_current().size() == 2);
+    return placed;
+}
+
+// CDF: P3-6-4d. test_multimag_gun_integral_ammo (items.json:1846): one 9mm in its integral MAGAZINE
+// pocket (ammo_restriction 9mm: 1) and, with_cell, a heavy_battery_cell charged with 56 in the
+// well (the charge of cdf_item_ammo_p3_test.cpp:645).
+auto add_integral_gun(avatar& you, bool with_cell) -> item& {
+    detached_ptr<item> gun = item::spawn(itype_test_multimag_gun_integral_ammo);
+    REQUIRE(
+        gun->put_in(item::spawn(itype_9mm, calendar::turn, 1), pocket_type::MAGAZINE).success());
+    if (with_cell) {
+        detached_ptr<item> cell = item::spawn(itype_heavy_battery_cell);
+        cell->ammo_set(cell->ammo_default(), 56);
+        REQUIRE(cell->ammo_remaining() == 56);
+        REQUIRE(gun->put_in(std::move(cell), pocket_type::MAGAZINE_WELL).success());
+    }
+    item& placed = you.i_add(std::move(gun));
+    REQUIRE(placed.magazines_current().size() == (with_cell ? 1u : 0u));
+    return placed;
+}
+
+auto integral_pockets_of(item& gun) -> std::vector<item_pocket*> {
+    return gun.get_pockets([](const item_pocket& p) { return p.is_type(pocket_type::MAGAZINE); });
+}
+
+} // namespace
+
+// CDF: P3-6-4d Y1. DDA multimag_test.cpp:949 (character_unload_ejects_every_loaded_magazine): the
+// gun branch ejects every loaded magazine, not the first well only.
+TEST_CASE("unload_gun_ejects_every_loaded_magazine", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& gun = add_two_well_gun(you);
+
+    REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+    CHECK(gun.magazines_current().empty());
+    // both magazines are in the inventory and kept their rounds
+    const std::vector<item*> glocks = carried_of_type(you, itype_glockmag);
+    const std::vector<item*> stanags = carried_of_type(you, itype_stanag30);
+    REQUIRE(glocks.size() == 1);
+    REQUIRE(stanags.size() == 1);
+    CHECK(glocks.front()->ammo_remaining() == 15);
+    CHECK(stanags.front()->ammo_remaining() == 30);
+    CHECK(glocks.front()->parent_item() != &gun);
+    CHECK(stanags.front()->parent_item() != &gun);
+}
+
+// CDF: P3-6-4d Y2. DDA multimag_test.cpp:1120 (multimag_unload_drains_integral_and_well): a gun
+// with an integral MAGAZINE pocket and a battery in its well gives up both.
+TEST_CASE("unload_gun_drains_the_integral_pocket_and_the_well", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& gun = add_integral_gun(you, true);
+    REQUIRE(integral_pockets_of(gun).size() == 1);
+
+    REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+    CHECK(gun.magazines_current().empty());
+    for (item_pocket* pocket : integral_pockets_of(gun)) {
+        for (const item* left : pocket->all_items_top()) { CHECK(left->has_flag(flag_CASING)); }
+    }
+    CHECK(you.charges_of(itype_9mm) == 1);
+    const std::vector<item*> cells = carried_of_type(you, itype_heavy_battery_cell);
+    REQUIRE(cells.size() == 1);
+    CHECK(cells.front()->ammo_remaining() == 56);
+}
+
+// CDF: P3-6-4d Y3. CDF-only. The integral-only gun has ammo_capacity() 0 (no clip, no well
+// magazine), which the old gate refused; the drainable pocket is the exemption.
+TEST_CASE("unload_integral_only_multimag_gun_reaches_the_drain_branch", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& gun = add_integral_gun(you, false);
+    // CDF: the gate of unload_item refuses ammo_capacity() <= 0; this gun has none to give
+    REQUIRE(gun.ammo_capacity() <= 0);
+    REQUIRE(gun.ammo_remaining() == 1);
+
+    REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+    CHECK(you.charges_of(itype_9mm) == 1);
+    CHECK(gun.ammo_remaining() == 0);
+    for (item_pocket* pocket : integral_pockets_of(gun)) {
+        for (const item* left : pocket->all_items_top()) { CHECK(left->has_flag(flag_CASING)); }
+    }
+}
+
+// CDF: P3-6-4d. CDF-only. With one source the picker is not asked, so the default call (no
+// bypass_activity) of a gun unload stays synchronous and starts no activity (ADV-14).
+TEST_CASE("unload_gun_with_one_source_needs_no_bypass", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+
+    SECTION("one integral pocket") {
+        item& gun = add_integral_gun(you, false);
+
+        REQUIRE(avatar_funcs::unload_item(you, gun));
+
+        CHECK(!you.activity);
+        CHECK(gun.ammo_remaining() == 0);
+        CHECK(you.charges_of(itype_9mm) == 1);
+    }
+
+    SECTION("one magazine") {
+        detached_ptr<item> gun_ptr = item::spawn(itype_test_multimag_gun);
+        detached_ptr<item> glock = item::spawn(itype_glockmag);
+        REQUIRE(glock->put_in(item::spawn(itype_9mm, calendar::turn, 15), pocket_type::MAGAZINE)
+                    .success());
+        REQUIRE(gun_ptr->put_in(std::move(glock), pocket_type::MAGAZINE_WELL).success());
+        item& gun = you.i_add(std::move(gun_ptr));
+        REQUIRE(gun.magazines_current().size() == 1);
+
+        REQUIRE(avatar_funcs::unload_item(you, gun));
+
+        CHECK(!you.activity);
+        CHECK(gun.magazines_current().empty());
+        CHECK(carried_of_type(you, itype_glockmag).size() == 1);
+    }
+}
+
+// CDF: P3-6-4d Y4. DDA character_inventory.cpp:2753 and :2780: every source costs half of the
+// reload cost of what it holds, a magazine with qty -1 and an integral pocket with its rounds.
+TEST_CASE("unload_moves_cost_half_reload_per_source", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+
+    SECTION("two magazines") {
+        item& gun = add_two_well_gun(you);
+        const std::vector<item*> mags = gun.magazines_current();
+        REQUIRE(mags.size() == 2);
+        const int first = you.item_reload_cost(gun, *mags[0], -1) / 2;
+        const int second = you.item_reload_cost(gun, *mags[1], -1) / 2;
+        // CDF: the two magazines are not free and differ, so charging once or the full cost shows
+        REQUIRE(first > 0);
+        REQUIRE(second > 0);
+        REQUIRE(first != second);
+        const int before = you.get_moves();
+
+        REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+        CHECK(before - you.get_moves() == first + second);
+    }
+
+    SECTION("an integral pocket and a magazine") {
+        item& gun = add_integral_gun(you, true);
+        const std::vector<item*> mags = gun.magazines_current();
+        REQUIRE(mags.size() == 1);
+        const std::vector<item_pocket*> pockets = integral_pockets_of(gun);
+        REQUIRE(pockets.size() == 1);
+        const std::vector<item*> rounds = pockets.front()->all_items_top();
+        REQUIRE(rounds.size() == 1);
+        const int cell_cost = you.item_reload_cost(gun, *mags[0], -1) / 2;
+        const int round_cost = you.item_reload_cost(gun, *rounds[0], 1) / 2;
+        REQUIRE(cell_cost > 0);
+        REQUIRE(round_cost > 0);
+        const int before = you.get_moves();
+
+        REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+        CHECK(before - you.get_moves() == cell_cost + round_cost);
+    }
+}
+
+// CDF: P3-6-4d Y5. The refusals stay: the gate (a non-magazine thing is "can't unload") and the
+// "isn't loaded" check. The message texts are not asserted: add_msg is stubbed in the tests.
+TEST_CASE("unload_gate_still_refuses_non_magazine_items", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+
+    SECTION("a stack of tums: charges, but no ammo type") {
+        // CDF: tums (data/json/items/comestibles) is count_by_charges with no ammo type; for such
+        // an item ammo_remaining() is its charges, so only the gate stops the loose-ammo branch
+        item& pills = you.i_add(item::spawn(itype_tums, calendar::turn, 4));
+        REQUIRE(pills.ammo_types().empty());
+        REQUIRE(pills.ammo_remaining() > 0);
+        const int charges = pills.charges;
+
+        CHECK_FALSE(avatar_funcs::unload_item(you, pills, true));
+
+        CHECK(pills.charges == charges);
+    }
+
+    SECTION("a pencil") {
+        item& pencil = you.i_add(item::spawn(itype_pencil));
+        REQUIRE(pencil.ammo_types().empty());
+
+        CHECK_FALSE(avatar_funcs::unload_item(you, pencil, true));
+    }
+
+    SECTION("a gun with nothing in it") {
+        detached_ptr<item> gun_ptr = item::spawn(itype_test_multimag_gun);
+        item& gun = you.i_add(std::move(gun_ptr));
+        REQUIRE(gun.magazines_current().empty());
+        const int before = you.get_moves();
+
+        CHECK_FALSE(avatar_funcs::unload_item(you, gun, true));
+
+        CHECK(you.get_moves() == before);
+    }
+}
+
+// CDF: P3-6-4d Y6. DDA character_inventory.cpp:2828-2832: after a gun unload the aim recoil is
+// reset to the maximum and an item with MAG_DESTROY that holds nothing any more is gone.
+TEST_CASE("unload_gun_resets_recoil_and_destroys_mag_destroy_items", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+
+    SECTION("recoil") {
+        item& gun = add_two_well_gun(you);
+        you.recoil = 0;
+
+        REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+        CHECK(you.recoil == MAX_RECOIL);
+    }
+
+    SECTION("MAG_DESTROY") {
+        // CDF: no gun or tool in the data has MAG_DESTROY (only belts, 40mm.json:20): the flag is
+        // set on the instance; the gun holds one magazine and is empty after the unload
+        detached_ptr<item> gun_ptr = item::spawn(itype_test_multimag_gun);
+        detached_ptr<item> glock = item::spawn(itype_glockmag);
+        REQUIRE(glock->put_in(item::spawn(itype_9mm, calendar::turn, 5), pocket_type::MAGAZINE)
+                    .success());
+        REQUIRE(gun_ptr->put_in(std::move(glock), pocket_type::MAGAZINE_WELL).success());
+        gun_ptr->set_flag(flag_MAG_DESTROY);
+        item& gun = you.i_add(std::move(gun_ptr));
+        REQUIRE(gun.has_flag(flag_MAG_DESTROY));
+
+        REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+        // nothing touches the gun from here: it is destroyed
+        CHECK(carried_of_type(you, itype_test_multimag_gun).empty());
+        const std::vector<item*> mags = carried_of_type(you, itype_glockmag);
+        CHECK(mags.size() == 1);
+    }
+
+    SECTION("a gun without MAG_DESTROY stays") {
+        item& gun = add_two_well_gun(you);
+
+        REQUIRE(avatar_funcs::unload_item(you, gun, true));
+
+        CHECK(carried_of_type(you, itype_test_multimag_gun).size() == 1);
+    }
+}
+
+// CDF: P3-6-4d Y7. DDA activity_actor.cpp:761 and :935: gunmod_remove unloads the mod with
+// bypass_activity, so a mod with several sources is emptied without the "Unload which source?"
+// question (a uilist cannot be answered here: asked, it would cancel and the removal would fail).
+TEST_CASE("gunmod_remove_unloads_without_a_picker", "[p3][unload][gunmod]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+
+    SECTION("a mod with two loaded wells") {
+        // CDF: test_p3_two_well_gunmod (data/mods/TEST_DATA/unload_gun_p3.json), pipe_pistol is its
+        // mod_targets
+        detached_ptr<item> gun_ptr = item::spawn(itype_pipe_pistol);
+        REQUIRE(gun_ptr->put_in(item::spawn(itype_test_p3_two_well_gunmod), pocket_type::MOD)
+                    .success());
+        item& gun = you.i_add(std::move(gun_ptr));
+        REQUIRE(gun.gunmods().size() == 1);
+        item& mod = *gun.gunmods().front();
+        detached_ptr<item> glock = item::spawn(itype_glockmag);
+        REQUIRE(glock->put_in(item::spawn(itype_9mm, calendar::turn, 15), pocket_type::MAGAZINE)
+                    .success());
+        detached_ptr<item> stanag = item::spawn(itype_stanag30);
+        REQUIRE(stanag->put_in(item::spawn(itype_556, calendar::turn, 30), pocket_type::MAGAZINE)
+                    .success());
+        REQUIRE(mod.put_in(std::move(glock), pocket_type::MAGAZINE_WELL).success());
+        REQUIRE(mod.put_in(std::move(stanag), pocket_type::MAGAZINE_WELL).success());
+        REQUIRE(mod.magazines_current().size() == 2);
+
+        REQUIRE(avatar_funcs::gunmod_remove(you, gun, mod));
+
+        CHECK(gun.gunmods().empty());
+        CHECK(carried_of_type(you, itype_test_p3_two_well_gunmod).size() == 1);
+        const std::vector<item*> glocks = carried_of_type(you, itype_glockmag);
+        const std::vector<item*> stanags = carried_of_type(you, itype_stanag30);
+        REQUIRE(glocks.size() == 1);
+        REQUIRE(stanags.size() == 1);
+        CHECK(glocks.front()->ammo_remaining() == 15);
+        CHECK(stanags.front()->ammo_remaining() == 30);
+    }
+
+    SECTION("a mod with one loaded well") {
+        detached_ptr<item> gun_ptr = item::spawn(itype_pipe_pistol);
+        REQUIRE(
+            gun_ptr->put_in(item::spawn(itype_test_multimag_aux_gun), pocket_type::MOD).success());
+        item& gun = you.i_add(std::move(gun_ptr));
+        REQUIRE(gun.gunmods().size() == 1);
+        item& mod = *gun.gunmods().front();
+        detached_ptr<item> glock = item::spawn(itype_glockmag);
+        REQUIRE(glock->put_in(item::spawn(itype_9mm, calendar::turn, 15), pocket_type::MAGAZINE)
+                    .success());
+        REQUIRE(mod.put_in(std::move(glock), pocket_type::MAGAZINE_WELL).success());
+        REQUIRE(mod.magazines_current().size() == 1);
+
+        REQUIRE(avatar_funcs::gunmod_remove(you, gun, mod));
+
+        CHECK(gun.gunmods().empty());
+        const std::vector<item*> glocks = carried_of_type(you, itype_glockmag);
+        REQUIRE(glocks.size() == 1);
+        CHECK(glocks.front()->ammo_remaining() == 15);
+    }
+}
+
+// CDF: P3-6-4d (carried from the 6-4c audit). DDA Character::add_or_drop_with_msg( ..., avoid ):
+// an item taken out of a container must not be put back into the container it left (it would
+// merge with itself, item.cpp merge_charges). The avatar wears nothing but the hiking pack
+// (data/json/items/armor/storage.json:27), so the pack is the only place the pencil can go; with
+// the pack named in `avoid` the pencil goes to the hands, without it the pack takes it back.
+TEST_CASE("add_or_drop_with_msg_avoids_the_named_container", "[p3][unload]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    REQUIRE(!you.wear_item(item::spawn(itype_backpack_hiking), false));
+    item* pack = nullptr;
+    for (item* const& worn_item : you.worn) {
+        if (worn_item->typeId() == itype_backpack_hiking) { pack = worn_item; }
+    }
+    REQUIRE(pack != nullptr);
+    REQUIRE(pack->put_in(item::spawn(itype_pencil), pocket_type::CONTAINER).success());
+    const std::vector<item*> inside = pack->all_items_top(pocket_type::CONTAINER);
+    REQUIRE(inside.size() == 1);
+    item* const pencil = inside.front();
+
+    // the item leaves the pack as in unload_item
+    detached_ptr<item> taken;
+    pack->contents.remove_top_items_with([&](detached_ptr<item>&& e) {
+        if (&*e == pencil) {
+            taken = std::move(e);
+            return detached_ptr<item>();
+        }
+        return std::move(e);
+    });
+    REQUIRE(taken);
+    REQUIRE(pack->contents.empty());
+
+    SECTION("with the pack in avoid, the pencil is not put back into it") {
+        taken = avatar_funcs::add_or_drop_with_msg(you, std::move(taken), true, pack);
+
+        CHECK(!taken);
+        CHECK(pencil->parent_item() != pack);
+        CHECK(pack->contents.empty());
+    }
+
+    SECTION("without avoid, the pack takes it back") {
+        taken = avatar_funcs::add_or_drop_with_msg(you, std::move(taken), true);
+
+        CHECK(!taken);
+        CHECK(pencil->parent_item() == pack);
+    }
+}
+
+// CDF: P3-6-4d, BN-only caller check (AUTO-199). A gun that keeps its rounds as direct charges (no
+// magazine, no well: sw_619, data/json/items/ranged/pistols.json, takes 38_special) is neither a
+// magazine source nor a drainable integral pocket: unload_item still reaches the loose-ammo branch
+// and gives the rounds back, as before.
+TEST_CASE("unload_gun_with_direct_charges_still_returns_its_rounds", "[p3][unload]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    you.wear_item(item::spawn(itype_backpack), false);
+    item& gun = you.i_add(item::spawn("sw_619", calendar::start_of_cataclysm, 0));
+    gun.ammo_set(itype_id("38_special"), 6);
+    REQUIRE(gun.ammo_remaining() == 6);
+    REQUIRE(gun.magazines_current().empty());
+    REQUIRE(gun.magazine_current() == nullptr);
+
+    REQUIRE(avatar_funcs::unload_item(you, gun));
+
+    CHECK(!you.activity);
+    CHECK(gun.ammo_remaining() == 0);
+    CHECK(you.charges_of(itype_id("38_special")) == 6);
 }

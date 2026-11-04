@@ -1,0 +1,43 @@
+[
+  {
+    "//": "CDF: P3-6-4d Y7. Base data has no gunmod that is a gun with two magazine wells: test_multimag_aux_gun has one. Two wells make two unload sources, so unload_item would ask 'Unload which source?' unless gunmod_remove passes bypass_activity (DDA activity_actor.cpp:761, :935).",
+    "id": "test_p3_two_well_gunmod",
+    "type": "GUNMOD",
+    "name": { "str": "test two-well gunmod" },
+    "description": "Test auxiliary gun-gunmod with two magazine wells, for unloading a mod with several sources.",
+    "weight": "300 g",
+    "volume": "300 ml",
+    "longest_side": "120 mm",
+    "material": [ "steel" ],
+    "symbol": ":",
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "id": "aux_pistol",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "item_restriction": [ "glockmag" ]
+      },
+      {
+        "id": "aux_rifle",
+        "max_item_length": "2 km",
+        "magazine_well": "500 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "item_restriction": [ "stanag30" ]
+      }
+    ],
+    "location": "underbarrel",
+    "mod_targets": [ "pipe_pistol" ],
+    "install_time": "5 s",
+    "gun_data": {
+      "ammo": [ "9mm", "223" ],
+      "skill": "pistol",
+      "range": 5,
+      "ranged_damage": { "damage_type": "bullet", "amount": 8 },
+      "dispersion": 600,
+      "durability": 10,
+      "modes": [ [ "DEFAULT", "aux", 1 ] ]
+    }
+  }
+]

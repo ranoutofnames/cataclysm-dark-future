@@ -14,6 +14,7 @@
 #include "game.h"
 #include "game_inventory.h"
 #include "handle_liquid.h"
+#include "item_pocket.h"
 #include "itype.h"
 #include "locations.h"
 #include "map/field_type.h"
@@ -24,6 +25,7 @@
 #include "options.h"
 #include "output.h"
 #include "player_activity.h"
+#include "pocket_data.h"
 #include "skill.h"
 #include "trap.h"
 #include "vehicle/veh_type.h"
@@ -532,7 +534,8 @@ static bool gunmod_remove_impl( avatar &you, item &gun, item &mod )
     }
 
     item *loc = &mod;
-    if( mod.ammo_remaining() && !avatar_funcs::unload_item( you, *loc ) ) {
+    // per DDA activity_actor.cpp:761 and :935: the mod is unloaded without asking for a source
+    if( mod.ammo_remaining() && !avatar_funcs::unload_item( you, *loc, true ) ) {
         return false;
     }
 
@@ -727,6 +730,27 @@ detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it,
     return detached_ptr<item>();
 }
 
+// per DDA character_inventory.cpp:2525-2542: a gun or tool that fires from an integral MAGAZINE
+// pocket (a second, built-in magazine) holds ammo that can be taken out
+static bool has_drainable_integral_pocket( const item &target )
+{
+    if( !target.uses_firing_requirements() ) {
+        return false;
+    }
+    const std::vector<const item_pocket *> integral_pockets = target.get_pockets(
+    []( const item_pocket & p ) {
+        return p.is_type( pocket_type::MAGAZINE );
+    } );
+    for( const item_pocket *p : integral_pockets ) {
+        for( const item *e : p->all_items_top() ) {
+            if( !e->has_flag( flag_CASING ) && e->is_ammo() ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_container )
 {
     item &it = loc;
@@ -800,8 +824,9 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_contai
     std::vector<item *> opts( 1, &it );
 
     for( auto e : it.gunmods() ) {
-        if( e->is_gun() && !e->has_flag( flag_NO_UNLOAD ) &&
-            ( e->magazine_current() || e->ammo_remaining() > 0 || e->casings_count() > 0 ) ) {
+        if( ( e->is_gun() && !e->has_flag( flag_NO_UNLOAD ) &&
+              ( e->magazine_current() || e->ammo_remaining() > 0 || e->casings_count() > 0 ) ) ||
+            ( e->has_flag( flag_BRASS_CATCHER ) && !e->is_container_empty() ) ) {
             msgs.emplace_back( e->tname() );
             opts.emplace_back( e );
         }
@@ -822,27 +847,34 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_contai
     }
 
     // Next check for any reasons why the item cannot be unloaded
-    if( target->ammo_types().empty() || target->ammo_capacity() <= 0 ) {
-        add_msg( m_info, _( "You can't unload a %s!" ), target->tname() );
-        return false;
-    }
-
-    if( target->has_flag( flag_NO_UNLOAD ) ) {
-        if( target->has_flag( flag_RECHARGE ) || target->has_flag( flag_USE_UPS ) ) {
-            add_msg( m_info, _( "You can't unload a rechargeable %s!" ), target->tname() );
-        } else {
+    if( !target->has_flag( flag_BRASS_CATCHER ) ) {
+        // CDF: DDA refuses !is_magazine() && !uses_magazine() (character_inventory.cpp:2626); CDF's
+        // gate stays, and a gun whose only ammo is in an integral MAGAZINE pocket (ammo_capacity()
+        // is 0 for it) is let through
+        if( ( target->ammo_types().empty() || target->ammo_capacity() <= 0 ) &&
+            !has_drainable_integral_pocket( *target ) ) {
             add_msg( m_info, _( "You can't unload a %s!" ), target->tname() );
+            return false;
         }
-        return false;
-    }
 
-    if( !target->magazine_current() && target->ammo_remaining() <= 0 && target->casings_count() <= 0 ) {
-        if( target->is_tool() ) {
-            add_msg( m_info, _( "Your %s isn't charged." ), target->tname() );
-        } else {
-            add_msg( m_info, _( "Your %s isn't loaded." ), target->tname() );
+        if( target->has_flag( flag_NO_UNLOAD ) ) {
+            if( target->has_flag( flag_RECHARGE ) || target->has_flag( flag_USE_UPS ) ) {
+                add_msg( m_info, _( "You can't unload a rechargeable %s!" ), target->tname() );
+            } else {
+                add_msg( m_info, _( "You can't unload a %s!" ), target->tname() );
+            }
+            return false;
         }
-        return false;
+
+        if( !target->magazine_current() && target->ammo_remaining() <= 0 &&
+            target->casings_count() <= 0 ) {
+            if( target->is_tool() ) {
+                add_msg( m_info, _( "Your %s isn't charged." ), target->tname() );
+            } else {
+                add_msg( m_info, _( "Your %s isn't loaded." ), target->tname() );
+            }
+            return false;
+        }
     }
 
     target->casings_handle( [&]( detached_ptr<item> &&e ) {
@@ -850,10 +882,13 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_contai
         return detached_ptr<item>();
     } );
 
+    // CDF: DDA calls invalidate_weight_carried_cache() here (character_inventory.cpp:2655): CDF has
+    // no such Character method
+
     // CDF: P3-6-4a (DDA character_inventory.cpp:2657-2676). Magazines and ammo belts unload through
     // unload_activity_actor, a timed activity; bypass_activity unloads at once (loops and callers
     // that need the result). A gun or tool with an integral MAGAZINE pocket is is_magazine() too
-    // (D13) but is not served by the actor (ADV-14): it keeps the synchronous body below until 6-4d.
+    // (D13) but is not served by the actor (ADV-14): it takes the synchronous multi-source body below (6-4d).
     if( target->is_magazine() && !target->is_gun() && !target->is_tool() ) {
         if( bypass_activity ) {
             unload_activity_actor::unload( you, *target );
@@ -878,48 +913,136 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_contai
         return true;
     }
 
-    if( target->is_magazine() ) {
-        // CDF: only guns and tools with an integral MAGAZINE pocket reach this synchronous body now;
-        // 6-4d replaces it.
-        // Calculate the time to remove the contained ammo (consuming half as much time as required to load the magazine)
-        int mv = 0;
-        int qty = 0;
-        it.contents.remove_top_items_with( [&]( detached_ptr<item> &&contained ) {
-            mv += you.item_reload_cost( it, *contained, contained->charges ) / 2;
-            qty += contained->charges;
-            return add_or_drop_with_msg( you, std::move( contained ), true );
-        } );
-
-        // remove the belt linkage
-        if( it.is_ammo_belt() ) {
-            if( it.type->magazine->linkage ) {
-                detached_ptr<item> link = item::spawn( *it.type->magazine->linkage, calendar::turn, qty );
-                add_or_drop_with_msg( you, std::move( link ), true );
+    // CDF: P3-6-4d (DDA character_inventory.cpp:2678-2790). A gun or tool gives up every loaded
+    // magazine and the ammo in its integral MAGAZINE pockets, synchronously (ADV-14: no actor here).
+    // CDF: a magazine parked outside a well (MIGRATION, cdf_legacy_direct_charges) is a source too,
+    // magazine_current() finds it where magazines_current() does not.
+    std::vector<item *> mags_to_eject = target->magazines_current();
+    if( mags_to_eject.empty() ) {
+        if( item *parked = target->magazine_current() ) {
+            mags_to_eject.push_back( parked );
+        }
+    }
+    if( !mags_to_eject.empty() || has_drainable_integral_pocket( *target ) ) {
+        struct integral_source {
+            item_pocket *pocket;
+            std::string label;
+            int total_qty;
+        };
+        std::vector<integral_source> integral_sources;
+        if( target->uses_firing_requirements() ) {
+            const std::vector<item_pocket *> integral_pockets = target->get_pockets(
+            []( const item_pocket & p ) {
+                return p.is_type( pocket_type::MAGAZINE );
+            } );
+            for( item_pocket *p : integral_pockets ) {
+                std::string entry_name;
+                int amount = 0;
+                for( const item *e : p->all_items_top() ) {
+                    if( e->has_flag( flag_CASING ) || !e->is_ammo() ) {
+                        continue;
+                    }
+                    amount += e->charges > 0 ? e->charges : 1;
+                    if( entry_name.empty() ) {
+                        entry_name = e->tname();
+                    }
+                }
+                if( amount == 0 ) {
+                    continue;
+                }
+                // CDF: pocket_id is loaded and had no consumer until this label
+                const pocket_data *pd = p->get_pocket_data();
+                std::string label = entry_name;
+                if( pd != nullptr ) {
+                    const std::string display = pd->pocket_name.translated();
+                    if( !display.empty() ) {
+                        label = string_format( "%s (%s)", entry_name, display );
+                    } else if( !pd->pocket_id.empty() ) {
+                        label = string_format( "%s (%s)", entry_name, pd->pocket_id );
+                    }
+                }
+                integral_sources.push_back( { p, label, amount } );
             }
-            add_msg( _( "You disassemble your %s." ), it.tname() );
-        } else {
-            add_msg( _( "You unload your %s." ), it.tname() );
         }
-
-        you.mod_moves( -std::min( 200, mv ) );
-        if( loc.has_flag( flag_MAG_DESTROY ) && loc.ammo_remaining() == 0 ) {
-            loc.detach();
-        }
-        return true;
-    } else if( item *mag = target->magazine_current() ) {
-        bool unloaded = false;
-        target->contents.remove_top_items_with( [&]( detached_ptr<item> &&it ) {
-            if( &*it == mag ) {
-                it = add_or_drop_with_msg( you, std::move( it ), true );
-                if( !it ) {
-                    unloaded = true;
+        const int total_sources = static_cast<int>( mags_to_eject.size() +
+                                  integral_sources.size() );
+        if( !bypass_activity && total_sources > 1 ) {
+            std::vector<std::string> msgs_v;
+            msgs_v.reserve( total_sources + 1 );
+            for( const item *mag : mags_to_eject ) {
+                msgs_v.emplace_back( mag->tname() );
+            }
+            for( const integral_source &src : integral_sources ) {
+                msgs_v.emplace_back( src.label );
+            }
+            msgs_v.emplace_back( _( "All" ) );
+            const int ret = uilist( _( "Unload which source?" ), msgs_v );
+            if( ret < 0 ) {
+                return false;
+            }
+            if( ret < total_sources ) {
+                if( ret < static_cast<int>( mags_to_eject.size() ) ) {
+                    item *picked = mags_to_eject[ret];
+                    mags_to_eject = { picked };
+                    integral_sources.clear();
+                } else {
+                    integral_source picked = integral_sources[ret - mags_to_eject.size()];
+                    integral_sources = { picked };
+                    mags_to_eject.clear();
                 }
             }
-            return std::move( it );
-        } );
-        if( unloaded ) {
+        }
+        for( item *mag : mags_to_eject ) {
+            // CDF: the cost is read before the magazine leaves the gun (DDA computes it before the
+            // remove too, 2753-2757); the magazine is detached and handed over in one visit, and
+            // stays in the gun if nothing was moved
+            const int cost = you.item_reload_cost( *target, *mag, -1 ) / 2;
+            bool ejected = false;
+            target->contents.remove_top_items_with( [&]( detached_ptr<item> &&e ) {
+                if( &*e == mag ) {
+                    e = add_or_drop_with_msg( you, std::move( e ), true );
+                    if( !e ) {
+                        ejected = true;
+                    }
+                }
+                return std::move( e );
+            } );
+            if( !ejected ) {
+                return false;
+            }
             // Eject magazine consuming half as much time as required to insert it
-            you.moves -= you.item_reload_cost( *target, *mag, -1 ) / 2;
+            you.mod_moves( -cost );
+        }
+        for( const integral_source &src : integral_sources ) {
+            std::vector<item *> to_remove;
+            for( item *e : src.pocket->all_items_top() ) {
+                if( e->has_flag( flag_CASING ) || !e->is_ammo() ) {
+                    continue;
+                }
+                to_remove.push_back( e );
+            }
+            // CDF: the cost is read before the first round leaves the pocket. DDA copies each item
+            // and sets FILTHY on the copy when the gun is filthy (2767-2769): CDF has no FILTHY
+            // flag, the copy is omitted.
+            int cost = 0;
+            if( !to_remove.empty() ) {
+                cost = you.item_reload_cost( *target, *to_remove.front(), src.total_qty ) / 2;
+            }
+            for( item *e : to_remove ) {
+                const bool bulk = e->count_by_charges() && e->charges > 1;
+                detached_ptr<item> drained = src.pocket->remove_item( e );
+                drained = add_or_drop_with_msg( you, std::move( drained ), bulk );
+                if( drained ) {
+                    // CDF: part of a liquid had nowhere to go: it stays in the pocket
+                    src.pocket->add( std::move( drained ) );
+                    return false;
+                }
+            }
+            you.mod_moves( -cost );
+            src.pocket->on_contents_changed();
+        }
+        if( !integral_sources.empty() ) {
+            target->on_contents_changed();
         }
 
     } else if( target->ammo_remaining() ) {
@@ -967,6 +1090,8 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_contai
         }
 
         target->ammo_set( target->ammo_current(), target->ammo_remaining() - qty );
+    } else if( target->has_flag( flag_BRASS_CATCHER ) ) {
+        target->spill_contents( you );
     }
 
     // Turn off any active tools
@@ -975,8 +1100,15 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_contai
     }
 
     add_msg( _( "You unload your %s." ), target->tname() );
-    return true;
 
+    // CDF: DDA loc.remove_item(); the item is gone after this, nothing may use it or target
+    if( loc.has_flag( flag_MAG_DESTROY ) && loc.ammo_remaining() == 0 ) {
+        loc.detach();
+    }
+
+    you.recoil = MAX_RECOIL;
+
+    return true;
 }
 
 std::vector<npc *> list_potential_theft_witnesses( avatar &you, const faction_id &owners )
