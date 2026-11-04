@@ -24,6 +24,7 @@
 #include "gun_mode.h"
 #include "int_id.h"
 #include "inventory.h"
+#include "inventory_ui.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_functions.h"
@@ -1785,17 +1786,35 @@ void avatar_action::reload_weapon( bool try_everything )
     reload_item();
 }
 
+// Per DDA avatar_action.cpp:1289-1312 (avatar_action::unload).
+// CDF: item * stands for item_location, and the screen returns the named struct unload_selection
+// in place of std::pair<item_location, bool> (5-4). item::is_container() leaves out worn storage
+// (carry pockets, item_container.cpp:983); DDA's is_container() is "has a CONTAINER pocket", so a
+// backpack is a container here too.
 void avatar_action::unload( avatar &you )
 {
-    item *loc = g->inv_map_splice( []( const item & it ) {
-        return item_funcs::can_be_unloaded( it );
-    }, _( "Unload item" ), 1, _( "You have nothing to unload." ) );
-
-    if( !loc ) {
+    const unload_selection chosen = game_menus::inv::unload( you );
+    if( chosen.to_unload == nullptr ) {
         add_msg( _( "Never mind." ) );
         return;
     }
-    avatar_funcs::unload_item( you, *loc );
+
+    if( chosen.auto_contain || !chosen.to_unload->has_pocket_type( pocket_type::CONTAINER ) ) {
+        // Auto contain
+        avatar_funcs::unload_item( you, *chosen.to_unload );
+    } else {
+        // Manual contain
+        item *new_container = g->inv_map_splice( [&you]( const item & it ) {
+            return it.has_pocket_type( pocket_type::CONTAINER ) && !it.is_corpse() &&
+                   examine_item_menu::rate_action_insert( you, it ) == examine_item_menu::hint_rating::good;
+        }, _( "Insert item" ), 1, _( "You have no container to insert items." ) );
+
+        if( new_container == nullptr ) {
+            add_msg( _( "Never mind." ) );
+            return;
+        }
+        avatar_funcs::unload_item( you, *chosen.to_unload, false, new_container );
+    }
 }
 
 namespace

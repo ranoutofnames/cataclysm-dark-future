@@ -703,7 +703,7 @@ void use_item( avatar &you, item &used )
 }
 
 detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it,
-        bool unloading )
+        bool unloading, const item *avoid )
 {
     if( it->made_of( LIQUID ) ) {
         liquid_handler::consume_liquid( std::move( it ), 1 );
@@ -720,12 +720,14 @@ detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it,
     } else {
         add_msg( _( "You put the %s in your inventory." ), it->tname() );
         add_msg( m_info, "%c - %s", it->invlet == 0 ? ' ' : it->invlet, it->tname() );
-        you.i_add( std::move( it ) );
+        // CDF: P3-6-4c, DDA's avoid argument: an item taken out of a container must not be added
+        // to the pocket it left (it would merge with itself, item.cpp merge_charges)
+        you.i_add( std::move( it ), true, avoid );
     }
     return detached_ptr<item>();
 }
 
-bool unload_item( avatar &you, item &loc, bool bypass_activity )
+bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_container )
 {
     item &it = loc;
     //Give the player the same options as when attempting to eat food that doesn't belong to them, bomb out if they say no.
@@ -744,22 +746,41 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity )
         }
 
         // per DDA character_inventory.cpp:2564-2586: an item that stacks with the one before it
-        // costs its bulk handling cost, any other item its full handling cost
+        // costs its bulk handling cost, any other item its full handling cost; with a destination
+        // container (manual contain, 2578-2581) there is no cost loop, the items go to the insert
+        // activity instead
         int moves = 0;
         const item *prev_contained = nullptr;
+        drop_locations locs;
         for( const pocket_type ptype : {
                  pocket_type::CONTAINER,
                  pocket_type::MAGAZINE_WELL,
                  pocket_type::MAGAZINE
              } ) {
-            for( const item *contained : it.all_items_top( ptype, true ) ) {
-                if( prev_contained != nullptr && prev_contained->stacks_with( *contained ) ) {
-                    moves += std::max( you.item_handling_cost( *contained, true, 0, -1, true ), 1 );
+            for( item *contained : it.all_items_top( ptype, true ) ) {
+                if( new_container == nullptr ) {
+                    if( prev_contained != nullptr && prev_contained->stacks_with( *contained ) ) {
+                        moves += std::max( you.item_handling_cost( *contained, true, 0, -1, true ), 1 );
+                    } else {
+                        moves += you.item_handling_cost( *contained );
+                    }
+                    prev_contained = contained;
                 } else {
-                    moves += you.item_handling_cost( *contained );
+                    // redirect to insert actor
+                    const int count = contained->count_by_charges() ? contained->charges : 1;
+                    locs.emplace_back( *contained, count );
                 }
-                prev_contained = contained;
             }
+        }
+        if( new_container != nullptr ) {
+            // CDF: DDA assigns insert_item_activity_actor( new_container, locs, true ) (2587-2589),
+            // the actor holds safe references and the activity is built as game_inventory.cpp does
+            if( !locs.empty() ) {
+                you.assign_activity( std::make_unique<player_activity>(
+                                         std::make_unique<insert_item_activity_actor>( *new_container, locs,
+                                                 true ) ) );
+            }
+            return true;
         }
         // CDF: DDA has no bypass here (character_inventory.cpp:2586 always assigns the actor).
         // P3-6-4a's loops (unload_all) pass bypass_activity: the contents leave at once and the

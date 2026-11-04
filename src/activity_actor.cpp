@@ -2650,31 +2650,6 @@ std::unique_ptr<activity_actor> reload_activity_actor::deserialize( JsonIn &jsin
 
 namespace
 {
-// CDF: P3-6-4b. DDA Character::add_or_drop_with_msg( it, unloading, avoid, original ): an item
-// that leaves a container must not go back into it (best_pocket skips `avoid`; without it the
-// item is added to the pocket it is being removed from and merges with itself, item.cpp
-// merge_charges). avatar_funcs::add_or_drop_with_msg has no avoid parameter and its header is not
-// in the lock of this packet, so the same body, with the avoid argument, is here.
-auto add_or_drop_avoiding( avatar &you, detached_ptr<item> &&it,
-                           const item &avoid ) -> detached_ptr<item>
-{
-    if( it->made_of( LIQUID ) ) {
-        liquid_handler::consume_liquid( std::move( it ), 1 );
-        // NOLINTNEXTLINE(bugprone-use-after-move)
-        return std::move( it );
-    }
-    if( !you.can_pick_volume( *it ) ) {
-        put_into_vehicle_or_drop( you, item_drop_reason::too_large, std::move( it ) );
-    } else if( !you.can_pick_weight( *it, !get_option<bool>( "DANGEROUS_PICKUPS" ) ) ) {
-        put_into_vehicle_or_drop( you, item_drop_reason::too_heavy, std::move( it ) );
-    } else {
-        add_msg( _( "You put the %s in your inventory." ), it->tname() );
-        add_msg( m_info, "%c - %s", it->invlet == 0 ? ' ' : it->invlet, it->tname() );
-        you.i_add( std::move( it ), true, &avoid );
-    }
-    return detached_ptr<item>();
-}
-
 // per DDA activity_actor.cpp:6435-6470: the contents of the unloadable pockets leave a container,
 // the pocket types in the order CONTAINER, MAGAZINE_WELL, MAGAZINE, and only the first type that
 // changed is emptied by one action
@@ -2708,7 +2683,9 @@ void unload_container( avatar &you, item &target )
                 return std::move( contained );
             }
             const int old_charges = contained->charges;
-            contained = add_or_drop_avoiding( you, std::move( contained ), target );
+            // CDF: the item that leaves a container must not go back into it (DDA avoid argument)
+            contained = avatar_funcs::add_or_drop_with_msg( you, std::move( contained ), true,
+                        &target );
             if( !contained || contained->charges != old_charges ) {
                 changed = true;
                 if( from->second != nullptr ) {

@@ -572,9 +572,44 @@ hint_rating rate_action_insert( const avatar &you, const item &it )
     return hint_rating::good;
 }
 
+// Per DDA character_ammo.cpp:255-290 (Character::rate_action_unload): every magazine well and every
+// loaded gun mod counts, an unloaded item that takes ammo is "maybe" (iffy) instead of "no"
 hint_rating rate_action_unload( const avatar &/*you*/, const item &it )
 {
-    return item_funcs::can_be_unloaded( it ) ? hint_rating::good : hint_rating::cant;
+    // CDF: P3-6-4c. The container test of avatar_funcs::unload_item (DDA: it.is_container() only):
+    // holsters and items with container pockets stay unloadable as they were
+    if( ( it.is_container() || !it.get_container_pockets().empty() ||
+          it.type->can_use( "holster" ) ) &&
+        !it.empty() && it.can_unload_liquid() ) {
+        return hint_rating::good;
+    }
+
+    if( it.has_flag( flag_NO_UNLOAD ) ) {
+        return hint_rating::cant;
+    }
+
+    if( !it.magazines_current().empty() ) {
+        return hint_rating::good;
+    }
+
+    for( const item *mod : it.gunmods() ) {
+        if( ( mod->is_gun() && !mod->has_flag( flag_NO_UNLOAD ) &&
+              ( !mod->magazines_current().empty() || mod->ammo_remaining() > 0 ||
+                mod->casings_count() > 0 ) ) ||
+            ( mod->has_flag( flag_BRASS_CATCHER ) && !mod->is_container_empty() ) ) {
+            return hint_rating::good;
+        }
+    }
+
+    if( it.ammo_types().empty() ) {
+        return hint_rating::cant;
+    }
+
+    if( it.ammo_remaining() > 0 || it.casings_count() > 0 ) {
+        return hint_rating::good;
+    }
+
+    return hint_rating::iffy;
 }
 
 hint_rating rate_action_mend( const avatar &/*you*/, const item &it )

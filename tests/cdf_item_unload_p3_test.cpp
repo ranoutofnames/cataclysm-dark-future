@@ -6,6 +6,7 @@
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "coordinates.h"
+#include "examine_item_menu.h"
 #include "game.h"
 #include "item.h"
 #include "item_pocket.h"
@@ -25,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+static const activity_id ACT_INSERT_ITEM("ACT_INSERT_ITEM");
 static const activity_id ACT_UNLOAD("ACT_UNLOAD");
 
 static const itype_id itype_backpack_hiking("backpack_hiking");
@@ -775,4 +777,181 @@ TEST_CASE("unload_container_bypass_charges_the_loop_moves", "[p3][unload]") {
     CHECK(!you.activity);
     CHECK(pack.contents.empty());
     CHECK(moves_before - you.get_moves() == first + 4 * next);
+}
+
+// CDF: P3-6-4c X1. DDA character_ammo.cpp:255-290 (Character::rate_action_unload), in its order: a
+// container with something in it is good, NO_UNLOAD is cant, a loaded magazine well is good, a
+// gun mod that is a loaded gun is good, an item without ammo types is cant, an item with rounds
+// or casings is good and every other ammo user is iffy (the "maybe" colour of the examine menu).
+TEST_CASE("rate_action_unload_per_well_rule", "[p3][unload][multimag]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    using examine_item_menu::hint_rating;
+
+    SECTION("a backpack with one item is good, an empty one is not") {
+        // CDF: backpack_hiking (data/json/items/armor/storage.json:27) has container pockets
+        detached_ptr<item> pack = item::spawn(itype_backpack_hiking);
+        CHECK(examine_item_menu::rate_action_unload(you, *pack) != hint_rating::good);
+        REQUIRE(pack->put_in(item::spawn(itype_flashlight), pocket_type::CONTAINER).success());
+        CHECK(examine_item_menu::rate_action_unload(you, *pack) == hint_rating::good);
+    }
+
+    SECTION("NO_UNLOAD is cant even when the item holds ammo") {
+        // CDF: the M72 LAW (data/json/items/gun/66mm.json:26) extends flags with NO_UNLOAD
+        detached_ptr<item> law = item::spawn("LAW");
+        law->ammo_set(itype_id("66mm_HEAT"), 1);
+        REQUIRE(law->ammo_remaining() == 1);
+        CHECK(examine_item_menu::rate_action_unload(you, *law) == hint_rating::cant);
+    }
+
+    SECTION("a gun with two wells") {
+        // CDF: test_multimag_gun (data/mods/TEST_DATA/items.json:1467) has a glockmag well and a
+        // stanag30 well
+        detached_ptr<item> gun = item::spawn("test_multimag_gun");
+        REQUIRE(gun->magazines_current().empty());
+        // no magazine and no rounds: the gun takes ammo, so it is "maybe" and not "no"
+        CHECK(examine_item_menu::rate_action_unload(you, *gun) == hint_rating::iffy);
+
+        // only the second well holds a magazine (the magazine is empty: the well is what counts)
+        REQUIRE(gun->put_in(item::spawn("stanag30"), pocket_type::MAGAZINE_WELL).success());
+        REQUIRE(gun->magazines_current().size() == 1);
+        CHECK(examine_item_menu::rate_action_unload(you, *gun) == hint_rating::good);
+    }
+
+    SECTION("an item that takes no ammo is cant") {
+        // CDF: the pencil (data/mods/TEST_DATA/dda_pocket_items.json) has no ammo types and
+        // NO_UNLOAD; the empty steel pan (data/json/items/generic/dining_kitchen.json) has no ammo
+        // types and no NO_UNLOAD, so only the ammo type test can rate it cant
+        detached_ptr<item> pencil = item::spawn(itype_pencil);
+        REQUIRE(pencil->ammo_types().empty());
+        CHECK(examine_item_menu::rate_action_unload(you, *pencil) == hint_rating::cant);
+        detached_ptr<item> pan = item::spawn(itype_steel_pan);
+        REQUIRE(pan->ammo_types().empty());
+        REQUIRE_FALSE(pan->has_flag(flag_id("NO_UNLOAD")));
+        REQUIRE(pan->empty());
+        CHECK(examine_item_menu::rate_action_unload(you, *pan) == hint_rating::cant);
+    }
+
+    SECTION("a rifle is good through a loaded gun mod") {
+        // CDF: ar15 (gun/223.json) takes the underslung shotgun u_shotgun
+        // (gunmod/underbarrel.json:611, clip 2, ammo shot)
+        detached_ptr<item> rifle = item::spawn("ar15");
+        CHECK(examine_item_menu::rate_action_unload(you, *rifle) == hint_rating::iffy);
+        REQUIRE(rifle->put_in(item::spawn("u_shotgun"), pocket_type::MOD).success());
+        REQUIRE(rifle->gunmods().size() == 1);
+        CHECK(examine_item_menu::rate_action_unload(you, *rifle) == hint_rating::iffy);
+        rifle->gunmods().front()->ammo_set(itype_id("shot_00"), 1);
+        REQUIRE(rifle->gunmods().front()->ammo_remaining() == 1);
+        CHECK(examine_item_menu::rate_action_unload(you, *rifle) == hint_rating::good);
+    }
+
+    SECTION("a gun with rounds in it is good") {
+        // CDF: sw_619 takes 38_special and keeps its rounds as direct charges (gun/38.json)
+        detached_ptr<item> revolver = item::spawn("sw_619");
+        CHECK(examine_item_menu::rate_action_unload(you, *revolver) == hint_rating::iffy);
+        revolver->ammo_set(itype_id("38_special"), 6);
+        REQUIRE(revolver->ammo_remaining() == 6);
+        CHECK(examine_item_menu::rate_action_unload(you, *revolver) == hint_rating::good);
+    }
+}
+
+// CDF: P3-6-4c X3. DDA character_inventory.cpp:2578-2589: with a destination container the cost
+// loop is skipped and every top item of the source becomes a drop_location (the whole stack for
+// items that count by charges) for the insert actor, which moves the contents when it runs.
+TEST_CASE("unload_with_new_container_uses_the_insert_actor", "[p3][unload][activity]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    // CDF: a worn hiking backpack (50 L) holds the two hiking packs (14 L each) the cases carry;
+    // the small backpack (15 L, storage.json) cannot
+    you.wear_item(item::spawn(itype_backpack_hiking), false);
+
+    SECTION("items that do not count by charges") {
+        item& pack = add_pack_holding(you, {itype_glock_19, itype_flashlight});
+        item& second = you.i_add(item::spawn(itype_backpack_hiking));
+        REQUIRE(pack.all_items_top(pocket_type::CONTAINER).size() == 2);
+        REQUIRE(second.contents.empty());
+        const int moves_before = you.get_moves();
+
+        REQUIRE(avatar_funcs::unload_item(you, pack, false, &second));
+
+        CHECK(you.has_activity(ACT_INSERT_ITEM));
+        CHECK_FALSE(you.has_activity(ACT_UNLOAD));
+        // no cost loop up front: the insert actor pays its moves per item when it runs
+        CHECK(you.get_moves() == moves_before);
+        // nothing moved yet
+        CHECK(pack.all_items_top(pocket_type::CONTAINER).size() == 2);
+        CHECK(second.contents.empty());
+
+        process_activity(you);
+
+        CHECK(!you.activity);
+        CHECK(pack.contents.empty());
+        const std::vector<item*> inside = second.all_items_top(pocket_type::CONTAINER);
+        REQUIRE(inside.size() == 2);
+        for (const itype_id& id : {itype_glock_19, itype_flashlight}) {
+            const std::vector<item*> found = carried_of_type(you, id);
+            REQUIRE(found.size() == 1);
+            CHECK(found.front()->parent_item() == &second);
+        }
+    }
+
+    SECTION("a stack that counts by charges moves whole") {
+        // CDF: 9mm (data/json/items/ammo/9mm.json) counts by charges
+        detached_ptr<item> source = item::spawn(itype_backpack_hiking);
+        REQUIRE(source->put_in(item::spawn(itype_9mm, calendar::turn, 30), pocket_type::CONTAINER)
+                    .success());
+        item& pack = you.i_add(std::move(source));
+        item& second = you.i_add(item::spawn(itype_backpack_hiking));
+        REQUIRE(pack.all_items_top(pocket_type::CONTAINER).size() == 1);
+
+        REQUIRE(avatar_funcs::unload_item(you, pack, false, &second));
+        REQUIRE(you.has_activity(ACT_INSERT_ITEM));
+        process_activity(you);
+
+        CHECK(!you.activity);
+        CHECK(pack.contents.empty());
+        int rounds = 0;
+        for (const item* it : second.all_items_top(pocket_type::CONTAINER)) {
+            REQUIRE(it->typeId() == itype_9mm);
+            rounds += it->charges;
+        }
+        CHECK(rounds == 30);
+    }
+}
+
+// CDF: P3-6-4c X4. DDA character_inventory.cpp:2550-2554 and 2658-2676: only the container branch
+// reads new_container. A magazine keeps its timed unload; an empty container is refused first.
+TEST_CASE("unload_new_container_ignored_by_magazines_and_empty_checks", "[p3][unload][activity]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    // CDF: a worn hiking backpack (50 L) holds the two hiking packs (14 L each) the cases carry;
+    // the small backpack (15 L, storage.json) cannot
+    you.wear_item(item::spawn(itype_backpack_hiking), false);
+    item& second = you.i_add(item::spawn(itype_backpack_hiking));
+
+    SECTION("a loaded magazine") {
+        item& mag = add_loaded_glockmag(you, 10);
+        REQUIRE(mag.ammo_remaining() == 10);
+
+        REQUIRE(avatar_funcs::unload_item(you, mag, false, &second));
+
+        CHECK(you.has_activity(ACT_UNLOAD));
+        CHECK_FALSE(you.has_activity(ACT_INSERT_ITEM));
+        process_activity(you);
+        CHECK(!you.activity);
+        CHECK(mag.ammo_remaining() == 0);
+        CHECK(you.charges_of(itype_9mm) == 10);
+    }
+
+    SECTION("an empty container") {
+        detached_ptr<item> empty = item::spawn(itype_backpack_hiking);
+        item& pack = you.i_add(std::move(empty));
+        REQUIRE(pack.contents.empty());
+
+        // the message "is already empty" is not asserted: add_msg is stubbed in the tests
+        CHECK_FALSE(avatar_funcs::unload_item(you, pack, false, &second));
+
+        CHECK(!you.activity);
+        CHECK(second.contents.empty());
+    }
 }

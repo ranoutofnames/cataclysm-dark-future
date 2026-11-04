@@ -56,16 +56,21 @@ void use_item( avatar &you, item &used );
 /**
  * Puts @p it in the inventory, or on the ground when it does not fit; liquids are handled by the
  * liquid handler. Returns what could not be handled (null when everything was).
+ * @param avoid An item @p it must not be added to (the container it was taken out of).
  * CDF: P3-6-4a; exported for unload_activity_actor::unload (DDA Character::add_or_drop_with_msg).
  */
-detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it, bool unloading );
+detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it, bool unloading,
+        const item *avoid = nullptr );
 
 /**
  * Unload an item at given location.
  * @param bypass_activity Unload a magazine or belt at once instead of starting the timed
  * ACT_UNLOAD activity (DDA Character::unload); loops over many items pass true.
+ * @param new_container Put the contents of a container into this container (the insert activity)
+ * instead of into the inventory (DDA Character::unload, new_container).
  */
-bool unload_item( avatar &you, item &loc, bool bypass_activity = false );
+bool unload_item( avatar &you, item &loc, bool bypass_activity = false,
+                  item *new_container = nullptr );
 
 /** List potential theft witnesses */
 std::vector<npc *> list_potential_theft_witnesses( avatar &you, const faction_id &owners );
