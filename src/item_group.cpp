@@ -700,10 +700,13 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
             // spawn a "water (0)" item.
             new_item->charges = std::max( 1, ch );
         } else if( new_item->is_tool() ) {
-            const int qty = std::min( ch, new_item->ammo_capacity() );
-            new_item->charges = qty;
-            if( !new_item->ammo_types().empty() && qty > 0 ) {
-                new_item->ammo_set( new_item->ammo_default(), qty );
+            if( !new_item->ammo_types().empty() ) {
+                // CDF: DDA puts the count in the magazine or pocket (item_group.cpp:642-656); ammo_set adds
+                // the default magazine to a well and clamps by the magazine capacity. Capping by
+                // ammo_capacity() here gave an empty tool: a well tool has capacity 0 before its magazine exists.
+                new_item->ammo_set( new_item->ammo_default(), ch );
+            } else {
+                new_item->charges = std::min( ch, new_item->ammo_capacity() ); // CDF: charge-only tools keep direct charges
             }
         } else if( new_item->type->can_have_charges() ) {
             new_item->charges = ch;

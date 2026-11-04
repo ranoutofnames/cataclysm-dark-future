@@ -1,0 +1,75 @@
+[
+  {
+    "id": "test_helmet_eod_p3",
+    "type": "TOOL_ARMOR",
+    "category": "armor",
+    "//": "CDF: 4-c-Ja B1 fixture. Copy of helmet_eod (branch cdf/eod1, cdf_eod_kit.json): a TOOL_ARMOR (explicit magazines key: the base has no derive, 7-PRE adds it for wells; the real helmet_eod has none, so EOD1 needs 7-PRE merged or its own key) with a BATTERY_MEDIUM magazine well and default medium_battery_cell, without the transform use_action.",
+    "name": { "str": "test EOD helmet" },
+    "description": "A test helmet with a battery well for item-group charges tests.",
+    "weight": "3600 g",
+    "volume": "4 L",
+    "price": "0 USD",
+    "material": [ "kevlar_rigid", "plastic", "plastic_pad" ],
+    "material_thickness": 20,
+    "symbol": "[",
+    "color": "light_green",
+    "warmth": 65,
+    "ammo": "battery",
+    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
+    "armor_portion_data": [ { "covers": [ "head" ], "coverage": 100 } ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "rigid": true,
+        "max_item_length": "2 km",
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "default_magazine": "medium_battery_cell"
+      }
+    ],
+    "flags": [ "STURDY", "OUTER" ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_charges_lantern_120_p3",
+    "subtype": "collection",
+    "entries": [ { "item": "gasoline_lantern", "prob": 100, "charges": 120 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_charges_lantern_9999_p3",
+    "subtype": "collection",
+    "entries": [ { "item": "gasoline_lantern", "prob": 100, "charges": 9999 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_charges_candle_10_p3",
+    "subtype": "collection",
+    "entries": [ { "item": "candle", "prob": 100, "charges": 10 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_charges_gps_5_p3",
+    "subtype": "collection",
+    "//": "gps_device takes a magazine (light battery cells) and has no integral capacity",
+    "entries": [ { "item": "gps_device", "prob": 100, "charges": 5 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_charges_helmet_p3",
+    "subtype": "collection",
+    "//": "same shape as the eod_armor group entry: charges [0, 500] on a well TOOL_ARMOR",
+    "entries": [ { "item": "test_helmet_eod_p3", "prob": 100, "charges": [ 0, 500 ] } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_charges_helmet_fixed_p3",
+    "subtype": "collection",
+    "entries": [ { "item": "test_helmet_eod_p3", "prob": 100, "charges": 300 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_charges_helmet_over_p3",
+    "subtype": "collection",
+    "entries": [ { "item": "test_helmet_eod_p3", "prob": 100, "charges": 9999 } ]
+  }
+]
