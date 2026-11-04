@@ -1264,9 +1264,26 @@
     "material": [ "plastic" ],
     "symbol": "[",
     "color": "dark_gray",
-    "covers": [ "mouth", "eyes" ],
-    "coverage": 100,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes" ],
+        "rigid_layer_only": true,
+        "coverage": 100,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_lips", "mouth_nose", "mouth_chin" ],
+        "coverage": 100,
+        "encumbrance": [ 20, 40 ]
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_cheeks" ],
+        "coverage": 100,
+        "encumbrance": 20
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "environmental_protection": 1,
@@ -1298,9 +1315,26 @@
     "material": [ "plastic" ],
     "symbol": "[",
     "color": "dark_gray",
-    "covers": [ "mouth", "eyes" ],
-    "coverage": 100,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes" ],
+        "rigid_layer_only": true,
+        "coverage": 100,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_lips", "mouth_nose", "mouth_chin" ],
+        "coverage": 100,
+        "encumbrance": [ 20, 40 ]
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_cheeks" ],
+        "coverage": 100,
+        "encumbrance": 20
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "environmental_protection": 1,
@@ -2416,7 +2450,19 @@
     "name": { "str": "ski mask" },
     "weight": "86 g",
     "color": "dark_gray",
-    "covers": [ "head", "mouth" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 80,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_lips", "mouth_cheeks", "mouth_chin" ],
+        "coverage": 100,
+        "encumbrance": 10
+      }
+    ],
     "use_action": {
       "type": "transform",
       "menu_text": "Loosen",
@@ -2430,9 +2476,7 @@
     "material": [ "wool" ],
     "volume": "250 ml",
     "warmth": 50,
-    "encumbrance": 10,
     "flags": [ "VARSIZE", "SKINTIGHT", "POWERARMOR_COMPATIBLE" ],
-    "coverage": 80,
     "material_thickness": 3
   },
   {

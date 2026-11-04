@@ -59,9 +59,19 @@
     "symbol": "[",
     "looks_like": "balclava",
     "color": "red",
-    "covers": [ "head" ],
-    "coverage": 75,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 75,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_cheeks", "mouth_chin" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 3,
     "environmental_protection": 1,
@@ -221,9 +231,32 @@
     "symbol": "[",
     "looks_like": "helmet_plate",
     "color": "light_gray",
-    "covers": [ "head" ],
-    "coverage": 90,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 90,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "eyes" ],
+        "coverage": 65,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_cheeks" ],
+        "rigid_layer_only": true,
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_lips", "mouth_nose", "mouth_chin" ],
+        "rigid_layer_only": true,
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ],
@@ -238,7 +271,32 @@
     "description": "An open medieval helmet remade in modern superalloy.  Provides excellent protection for the head.",
     "material": [ "superalloy" ],
     "color": "light_cyan",
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 90,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "eyes" ],
+        "coverage": 65,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_cheeks" ],
+        "rigid_layer_only": true,
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_lips", "mouth_nose", "mouth_chin" ],
+        "rigid_layer_only": true,
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
   },
   {
@@ -356,9 +414,20 @@
     "symbol": "[",
     "looks_like": "helmet_barbute",
     "color": "light_gray",
-    "covers": [ "head" ],
-    "coverage": 85,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 85,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_cheeks", "mouth_chin" ],
+        "rigid_layer_only": true,
+        "coverage": 40,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ],
@@ -379,9 +448,33 @@
     "symbol": "[",
     "looks_like": "helmet_barbute",
     "color": "dark_gray",
-    "covers": [ "head", "eyes", "mouth" ],
-    "coverage": 95,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 95,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "eyes" ],
+        "rigid_layer_only": true,
+        "coverage": 35,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "mouth" ],
+        "rigid_layer_only": true,
+        "specifically_covers": [ "mouth_lips" ],
+        "coverage": 80,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "mouth" ],
+        "rigid_layer_only": true,
+        "specifically_covers": [ "mouth_cheeks", "mouth_chin", "mouth_nose" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 25,
     "material_thickness": 4,
     "environmental_protection": 1,
@@ -544,9 +637,38 @@
     "material": [ "plastic", "nomex" ],
     "symbol": "[",
     "color": "dark_gray",
-    "covers": [ "head", "mouth" ],
-    "coverage": 100,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "eyes" ],
+        "rigid_layer_only": true,
+        "coverage": 100,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_nose" ],
+        "rigid_layer_only": true,
+        "coverage": 100,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_chin" ],
+        "coverage": 100,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_cheeks", "mouth_lips" ],
+        "coverage": 100,
+        "encumbrance": 5
+      }
+    ],
     "warmth": 30,
     "material_thickness": 6,
     "environmental_protection": 1,
@@ -567,9 +689,20 @@
     "symbol": "[",
     "looks_like": "helmet_barbute",
     "color": "light_gray",
-    "covers": [ "head", "eyes" ],
-    "coverage": 80,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 80,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_nose" ],
+        "rigid_layer_only": true,
+        "coverage": 90,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ],
@@ -824,9 +957,33 @@
     "symbol": "[",
     "looks_like": "helmet_plate",
     "color": "yellow",
-    "covers": [ "head", "eyes", "mouth" ],
-    "coverage": 90,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 90,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "eyes" ],
+        "rigid_layer_only": true,
+        "coverage": 50,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "mouth" ],
+        "rigid_layer_only": true,
+        "specifically_covers": [ "mouth_nose", "mouth_cheeks" ],
+        "coverage": 95,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "mouth" ],
+        "rigid_layer_only": true,
+        "specifically_covers": [ "mouth_lips", "mouth_chin" ],
+        "coverage": 75,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 3,
     "techniques": [ "WBLOCK_1" ],

@@ -66,7 +66,8 @@
     "drench_capacity": 1,
     "hit_difficulty": 1.2,
     "stylish_bonus": 2,
-    "bionic_slots": 4
+    "bionic_slots": 4,
+    "sub_parts": [ "eyes_left", "eyes_right" ]
   },
   {
     "id": "mouth",
@@ -84,7 +85,8 @@
     "stylish_bonus": 2,
     "hot_morale_mod": 2,
     "cold_morale_mod": 2,
-    "bionic_slots": 4
+    "bionic_slots": 4,
+    "sub_parts": [ "mouth_lips", "mouth_nose", "mouth_cheeks", "mouth_chin" ]
   },
   {
     "id": "arm_l",

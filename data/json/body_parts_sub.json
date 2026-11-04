@@ -212,6 +212,59 @@
     "name": "throat"
   },
   {
+    "id": "eyes_left",
+    "type": "sub_body_part",
+    "parent": "eyes",
+    "max_coverage": 50,
+    "side": "left",
+    "opposite": "eyes_right",
+    "name": "left eye",
+    "name_multiple": "eyes"
+  },
+  {
+    "id": "eyes_right",
+    "type": "sub_body_part",
+    "parent": "eyes",
+    "max_coverage": 50,
+    "side": "right",
+    "opposite": "eyes_left",
+    "name": "right eye",
+    "name_multiple": "eyes"
+  },
+  {
+    "//": "CDF: the four mouth entries have no opposite (DDA points it at sub_limb_debug, which CDF does not have)",
+    "id": "mouth_lips",
+    "type": "sub_body_part",
+    "parent": "mouth",
+    "max_coverage": 15,
+    "side": "both",
+    "name": "lips"
+  },
+  {
+    "id": "mouth_nose",
+    "type": "sub_body_part",
+    "parent": "mouth",
+    "max_coverage": 15,
+    "side": "both",
+    "name": "nose"
+  },
+  {
+    "id": "mouth_cheeks",
+    "type": "sub_body_part",
+    "parent": "mouth",
+    "max_coverage": 30,
+    "side": "both",
+    "name": "cheeks"
+  },
+  {
+    "id": "mouth_chin",
+    "type": "sub_body_part",
+    "parent": "mouth",
+    "max_coverage": 40,
+    "side": "both",
+    "name": "chin"
+  },
+  {
     "id": "head_ear_l",
     "type": "sub_body_part",
     "parent": "head",
