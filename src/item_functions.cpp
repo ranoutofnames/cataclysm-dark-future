@@ -44,6 +44,16 @@ bool can_be_unloaded( const item &itm )
     return itm.ammo_remaining() > 0 || itm.casings_count() > 0;
 }
 
+auto is_invisible_installed_gunmod( const item &itm ) -> bool
+{
+    if( !itm.is_gunmod() ) {
+        return false;
+    }
+    const item *parent = itm.parent_item();
+    const bool installed = parent != nullptr && parent->is_gun();
+    return installed && !itm.type->gunmod->is_visible_when_installed;
+}
+
 // TODO: Add consideration for BIONIC_GUNS when their fake_items get USES_BIONIC_POWER
 int shots_remaining( const Character &who, const item &it )
 {

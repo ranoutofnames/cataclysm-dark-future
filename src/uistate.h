@@ -98,6 +98,10 @@ class uistatedata
         itype_id adv_inv_container_content_type = itype_id::NULL_ID();
         bool adv_inv_container_in_vehicle = false;
 
+        // Whether the unload screen puts the unloaded contents straight into the pack ("Auto")
+        // or asks for a destination ("Manual"); per DDA uistate.h unload_auto_contain
+        bool unload_auto_contain = false;
+
         advanced_inv_save_state transfer_save;
 
         bool editmap_nsa_viewmode = false;      // true: ignore LOS and lighting

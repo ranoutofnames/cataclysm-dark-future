@@ -9,6 +9,7 @@
 #include "detached_ptr.h"
 #include "drop_preview.h"
 #include "flag.h"
+#include "avatar_action.h"
 #include "game.h"
 #include "game_inventory.h"
 #include "ime.h"
@@ -33,6 +34,7 @@
 #include "translations.h"
 #include "type_id.h"
 #include "ui_manager.h"
+#include "uistate.h"
 #include "units_utility.h"
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
@@ -3291,6 +3293,56 @@ item *inventory_pick_selector::execute()
             on_input( input );
         }
 
+    }
+}
+
+// CDF: P3-5-4, DDA inventory_ui.cpp:5302-5377. item * for item_location (D1), a named struct for
+// the pair, get_active_column().get_selected() for get_highlighted(). Not ported (owner rule D5, no
+// mouse paths): the CLICK_AND_DRAG, MOUSE_MOVE and drag-and-drop SELECT branches (5325-5350) and
+// drag_drop_item.
+unload_selector::unload_selector( player &p, const inventory_selector_preset &preset ) :
+    inventory_pick_selector( p, preset )
+{
+    ctxt.register_action( "CONTAIN_MODE" );
+    set_hint( hint_string() );
+}
+
+auto unload_selector::hint_string() -> std::string
+{
+    return string_format(
+               _( "<color_yellow>%s</color> Confirm  <color_yellow>%s</color> Cancel  <color_yellow>%s</color> Select destination (<color_yellow>%s</color>)" ),
+               ctxt.get_desc( "CONFIRM" ), ctxt.get_desc( "QUIT" ), ctxt.get_desc( "CONTAIN_MODE" ),
+               uistate.unload_auto_contain ? _( "Auto" ) : _( "Manual" ) );
+}
+
+auto unload_selector::execute() -> unload_selection
+{
+    shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+    while( true ) {
+        ui_manager::redraw();
+        const inventory_input input = get_input();
+
+        if( input.entry != nullptr ) {
+            if( select( input.entry->any_item() ) ) {
+                ui_manager::redraw();
+            }
+            return { input.entry->any_item(), uistate.unload_auto_contain };
+        } else if( input.action == "QUIT" ) {
+            return { nullptr, uistate.unload_auto_contain };
+        } else if( input.action == "CONFIRM" ) {
+            const inventory_entry &highlighted = get_active_column().get_highlighted();
+            if( highlighted && highlighted.is_selectable() ) {
+                if( !avatar_action::check_stealing( get_player_character(), *highlighted.any_item() ) ) {
+                    return { nullptr, uistate.unload_auto_contain };
+                }
+                return { highlighted.any_item(), uistate.unload_auto_contain };
+            }
+        } else if( input.action == "CONTAIN_MODE" ) {
+            uistate.unload_auto_contain = !uistate.unload_auto_contain;
+            set_hint( hint_string() );
+        } else {
+            on_input( input );
+        }
     }
 }
 

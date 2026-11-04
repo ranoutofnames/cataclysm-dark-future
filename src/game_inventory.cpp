@@ -23,6 +23,7 @@
 #include "inventory.h"
 #include "inventory_ui.h"
 #include "item.h"
+#include "item_functions.h"
 #include "messages.h"
 #include "item_parent_checks.h"
 #include "iteminfo_format_utils.h"
@@ -1562,6 +1563,58 @@ drop_locations game_menus::inv::unload_container()
         }
     }
     return dropped;
+}
+
+// CDF: P3-5-4, DDA game_inventory.cpp:3124-3128 (unload_selector_preset::is_shown) as a function on
+// items, for tests/. CDF's preset has no pocket-type member (DDA _pk_type = { CONTAINER, MOD }), so the
+// pocket test is done here: an entry that lies inside another item is listed only when it lies in a
+// CONTAINER or MOD pocket, which leaves out the magazine seated in a gun's well and the rounds in it.
+bool game_menus::inv::unload_selector_shows( const item &it )
+{
+    const item *parent = it.parent_item();
+    if( parent != nullptr ) {
+        const item_pocket *pocket = parent->contents.pocket_of( &it );
+        if( pocket == nullptr ||
+            !( pocket->is_type( pocket_type::CONTAINER ) || pocket->is_type( pocket_type::MOD ) ) ) {
+            return false;
+        }
+    }
+    return !item_funcs::is_invisible_installed_gunmod( it ) &&
+           examine_item_menu::rate_action_unload( get_avatar(), it ) ==
+           examine_item_menu::hint_rating::good;
+}
+
+namespace
+{
+class unload_selector_preset : public inventory_selector_preset
+{
+    public:
+        bool is_shown( const item *loc ) const override {
+            return game_menus::inv::unload_selector_shows( *loc );
+        }
+};
+} // namespace
+
+// CDF: P3-5-4, DDA game_inventory.cpp:3134-3153.
+unload_selection game_menus::inv::unload( player &you )
+{
+    const unload_selector_preset preset;
+    unload_selector inv_s( you, preset );
+
+    inv_s.set_title( _( "Unload item" ) );
+    inv_s.set_display_stats( false );
+
+    inv_s.clear_items();
+
+    inv_s.add_character_items( you );
+    inv_s.add_nearby_items( 1 );
+
+    if( inv_s.empty() ) {
+        popup( _( "You have nothing to unload." ), PF_GET_KEY );
+        return { nullptr, false };
+    }
+
+    return inv_s.execute();
 }
 
 // Per DDA inventory_ui.cpp:2050 (inventory_selector::drag_drop_item): the "Select pocket" menu.

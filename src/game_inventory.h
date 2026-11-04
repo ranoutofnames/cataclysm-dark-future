@@ -18,6 +18,7 @@ class item_reload_option;
 class player;
 class repair_item_actor;
 class Character;
+struct unload_selection;
 
 using item_filter = std::function<bool( const item & )>;
 
@@ -90,6 +91,14 @@ void insert_items( item &holster );
 void insert_items_again( const drop_locations &targets );
 /** Choose containers to unload; returns their contents (DDA game_inventory.cpp:2119). */
 drop_locations unload_container();
+/**
+ * The "Unload item" screen (DDA game_inventory.cpp:3134-3153): lists what can be unloaded and returns the
+ * chosen item (nullptr if cancelled) with the Auto/Manual destination flag.
+ */
+unload_selection unload( player &you );
+// CDF: P3-5-4, test hook (precedent: select_ammo_shows). The is_shown of the unload preset, DDA
+// game_inventory.cpp:3124-3128, as a function, because the preset class is in an anonymous namespace.
+bool unload_selector_shows( const item &it );
 /** The reload picker (DDA game_inventory.cpp 3288-3433): choose the ammo source for @p loc. */
 // CDF: P3-5-3a, DDA game_inventory.h 203-204. `player &` and `item &` in place of Character & and
 // const item_location & (ADV-14 ruling 4, D1), item_reload_option for item::reload_option, and a

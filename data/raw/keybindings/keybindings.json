@@ -380,6 +380,13 @@
   },
   {
     "type": "keybinding",
+    "id": "CONTAIN_MODE",
+    "category": "INVENTORY",
+    "name": "Toggle contain mode for unloaded items",
+    "bindings": [ { "input_method": "keyboard", "key": "U" } ]
+  },
+  {
+    "type": "keybinding",
     "id": "VIEW_CATEGORY_MODE",
     "category": "INVENTORY",
     "name": "Toggle inventory view to show item categories",

@@ -5,6 +5,7 @@
 #include "json.h"
 #include "relic.h"
 
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -453,4 +454,34 @@ TEST_CASE( "derive_ammo_types_and_default_magazine_from_well", "[p3][loader]" ) 
     REQUIRE( mag != nullptr );
     CHECK( mag->typeId() == itype_id( "p3pre_mag" ) );
     CHECK( loaded.ammo_remaining() == 5 );
+}
+
+// CDF: P3-5-4 U7; DDA itype.h:1074 and item_factory.cpp:3884 (is_visible_when_installed). DDA sets the
+// key on mipim (gunmod/rail.json:79) and mounted_flashlight (gunmod/underbarrel.json:605); a grep of
+// CDF data/ finds neither id, so the only item with the key is the TEST_DATA fixture
+// test_visible_underslung_shotgun (visible_gunmod_p3.json, copy-from u_shotgun).
+TEST_CASE( "is_visible_when_installed_loads", "[p3][loader][5-4]" )
+{
+    const std::set<std::string> visible_ids = {
+        "mipim", "mounted_flashlight", "test_visible_underslung_shotgun"
+    };
+    int gunmods = 0;
+    int visible_found = 0;
+    for( const itype *t : item_controller->all() ) {
+        if( !t->gunmod ) {
+            continue;
+        }
+        ++gunmods;
+        const bool expected = visible_ids.count( t->get_id().str() ) > 0;
+        INFO( t->get_id().str() );
+        CHECK( t->gunmod->is_visible_when_installed == expected );
+        if( t->gunmod->is_visible_when_installed ) {
+            ++visible_found;
+        }
+    }
+    // CDF: u_shotgun (gunmod/underbarrel.json:611) has no key; its copy-from child sets it
+    REQUIRE( gunmods > 1 );
+    CHECK( visible_found == 1 );
+    CHECK_FALSE( itype_id( "u_shotgun" ).obj().gunmod->is_visible_when_installed );
+    CHECK( itype_id( "test_visible_underslung_shotgun" ).obj().gunmod->is_visible_when_installed );
 }

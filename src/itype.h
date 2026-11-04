@@ -820,6 +820,10 @@ struct islot_gunmod : common_ranged_data {
     /** Modifies base strength required */
     int min_str_required_mod = 0;
 
+    /** If the installed mod is visible and selectable in the inventory menu
+     *  (used by mounted flashlights and similar), per DDA itype.h:1074 */
+    bool is_visible_when_installed = false;
+
     /** Additional gunmod slots to add to the gun */
     std::map<gunmod_location, int> add_mod;
 

@@ -875,6 +875,24 @@ class inventory_pick_selector : public inventory_selector
         virtual auto pick_by_unbound_key( int /*key*/ ) -> item * { return nullptr; } // *NOPAD*
 };
 
+/** The choice made in the unload screen: the item to unload (nullptr if cancelled) and the Auto flag. */
+struct unload_selection {
+    item *to_unload = nullptr;
+    bool auto_contain = false;
+};
+
+// CDF: P3-5-4, DDA inventory_ui.h:1215-1222. The result is a named struct in place of
+// std::pair<item_location, bool> (item * for item_location, D1; AGENT_RULES: no std::pair in
+// interfaces). hint_string is protected, not private, so a test can read it through a subclass.
+class unload_selector : public inventory_pick_selector
+{
+    public:
+        explicit unload_selector( player &p, const inventory_selector_preset &preset = default_preset );
+        auto execute() -> unload_selection;
+    protected:
+        auto hint_string() -> std::string;
+};
+
 class inventory_multiselector : public inventory_selector
 {
     public:

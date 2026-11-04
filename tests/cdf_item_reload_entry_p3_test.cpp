@@ -7,7 +7,9 @@
 #include "coordinates.h"
 #include "flag.h"
 #include "item.h"
+#include "item_functions.h"
 #include "item_pocket.h"
+#include "itype.h"
 #include "map/map.h"
 #include "player_activity.h"
 #include "player_helpers.h"
@@ -586,6 +588,43 @@ TEST_CASE( "installed_gunmods_are_not_separate_picker_rows", "[p3][reload][entry
     CHECK_FALSE( picker_shows( mod ) );
 }
 
+
+// CDF: P3-5-4 P7 (the 6-3b draft's P7); DDA item_location.cpp:1181-1191 and game.cpp:7151-7153. DDA keeps
+// mounted_flashlight and mipim visible; CDF has neither item (git grep of data/ is empty), so the TEST_DATA
+// fixture test_visible_underslung_shotgun (u_shotgun with is_visible_when_installed) stands in.
+TEST_CASE( "installed_gunmods_with_visible_flag_are_picker_rows", "[p3][reload][entry][5-4]" )
+{
+    clear_all_state();
+    avatar &who = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+    who.wear_item( item::spawn( "backpack", bday ), false );
+
+    // CDF: ar15 (gun/223.json) takes underbarrel mods (gunmod/underbarrel.json:623)
+    detached_ptr<item> rifle = item::spawn( "ar15", bday, 0 );
+    REQUIRE( rifle->put_in( item::spawn( "test_visible_underslung_shotgun", bday, 0 ),
+                            pocket_type::MOD ).success() );
+    item &gun = who.i_add( std::move( rifle ) );
+    REQUIRE( gun.gunmods().size() == 1 );
+    item &mod = *gun.gunmods().front();
+    REQUIRE( mod.typeId() == itype_id( "test_visible_underslung_shotgun" ) );
+    REQUIRE( mod.parent_item() == &gun );
+    REQUIRE( mod.is_reloadable() );
+
+    CHECK( mod.type->gunmod->is_visible_when_installed );
+    CHECK_FALSE( item_funcs::is_invisible_installed_gunmod( mod ) );
+    CHECK( picker_shows( gun ) );
+    CHECK( picker_shows( mod ) );
+
+    // a mod outside a gun is no installed mod, and the plain u_shotgun keeps the DDA rule
+    item &loose = who.i_add( item::spawn( "u_shotgun", bday, 0 ) );
+    CHECK_FALSE( item_funcs::is_invisible_installed_gunmod( loose ) );
+    detached_ptr<item> plain_rifle = item::spawn( "ar15", bday, 0 );
+    REQUIRE( plain_rifle->put_in( item::spawn( "u_shotgun", bday, 0 ), pocket_type::MOD ).success() );
+    item &plain_gun = who.i_add( std::move( plain_rifle ) );
+    REQUIRE( plain_gun.gunmods().size() == 1 );
+    CHECK( item_funcs::is_invisible_installed_gunmod( *plain_gun.gunmods().front() ) );
+    CHECK_FALSE( picker_shows( *plain_gun.gunmods().front() ) );
+}
 
 // CDF: P3-6-3b P3; DDA game.cpp:7186-7229 (the sort of reload_weapon).
 TEST_CASE( "reload_weapon_prefers_wielded_then_compatible_then_gun_then_speed", "[p3][reload][entry][6-3b]" )

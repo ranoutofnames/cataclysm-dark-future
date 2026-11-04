@@ -1550,8 +1550,9 @@ static bool can_reload_item_or_mods( const avatar &you, const item &itm )
     return itm.is_reloadable() && you.can_reload( itm );
 }
 
-// CDF: DDA activity_actor.cpp:10004-10024 (static check_stealing). DDA's avatar_action::check_stealing wrapper (10026-10028) is not ported: no header edit.
-static auto check_stealing( Character &who, item &it ) -> bool
+// CDF: DDA activity_actor.cpp:10004-10024 (static check_stealing) and the public wrapper 10026-10028,
+// which P3-5-4 needs from the unload selector, are one function here.
+bool avatar_action::check_stealing( Character &who, item &it )
 {
     if( !it.is_owned_by( who, true ) ) {
         // CDF: THIEF_MODE_KEEP is BN's "keep the answer" flag: a one-time answer (KEEP != YES) falls back to THIEF_ASK
@@ -1643,25 +1644,11 @@ void avatar_action::reload( item &loc, bool prompt, bool empty )
     }
 }
 
-// per DDA item_location.cpp:1181-1191 (is_invisible_installed_gunmod): a gunmod installed in a gun.
-// CDF: islot_gunmod has no is_visible_when_installed field yet (packet 5-4 step A adds it), so every installed
-// gunmod counts as invisible. DDA shows two of them as rows of their own: mipim (rail.json:79) and
-// mounted_flashlight (underbarrel.json:605). The gun row is still listed and reaches the mods through the
-// gunmod targets of reload::discover_ammo.
-static auto is_invisible_installed_gunmod( const item &it ) -> bool
-{
-    if( !it.is_gunmod() ) {
-        return false;
-    }
-    const item *parent = it.parent_item();
-    return parent != nullptr && parent->is_gun();
-}
-
 // per DDA game.cpp:7142-7156 (reload_selector_preset::is_shown)
 static auto reload_item_filter() -> item_filter
 {
     return []( const item & it ) {
-        return !is_invisible_installed_gunmod( it ) &&
+        return !item_funcs::is_invisible_installed_gunmod( it ) &&
                examine_item_menu::rate_action_reload( get_avatar(), it ) == examine_item_menu::hint_rating::good;
     };
 }

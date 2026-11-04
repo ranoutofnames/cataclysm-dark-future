@@ -1,0 +1,10 @@
+[
+  {
+    "id": "test_visible_underslung_shotgun",
+    "type": "GUNMOD",
+    "copy-from": "u_shotgun",
+    "name": { "str": "visible underslung shotgun" },
+    "description": "Fixture for the P3 is_visible_when_installed tests: u_shotgun that stays a row of its own when installed (mipim and mounted_flashlight, which DDA marks this way, have no CDF item yet).",
+    "is_visible_when_installed": true
+  }
+]

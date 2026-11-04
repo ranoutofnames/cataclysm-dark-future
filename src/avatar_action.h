@@ -55,6 +55,12 @@ void wield( item &loc );
 
 /** Reload specified item. */
 void reload( item &loc, bool prompt = false, bool empty = true );
+/**
+ * Checks that the player may take @p it: an item owned by somebody else asks, and honours THIEF_MODE.
+ * Per DDA activity_actor.cpp:10004-10028 (avatar_action::check_stealing).
+ * @return false if the player declines to steal.
+ */
+bool check_stealing( Character &who, item &it );
 /** Prompt to reload some item. */
 void reload_item();
 /** Reload wielded item. */
