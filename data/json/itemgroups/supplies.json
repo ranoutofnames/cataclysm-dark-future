@@ -787,5 +787,19 @@
       { "item": "ammo_ballista_wood", "prob": 25, "count": [ 5, 10 ] },
       { "item": "ammo_ballista_iron", "prob": 25, "count": [ 5, 10 ] }
     ]
+  },
+  {
+    "id": "cable_roll_part",
+    "type": "item_group",
+    "//": "CDF: EOD1. DDA supplies.json:416, needed by gear_eod. CDF: cable is a BN AMMO stack, so the DDA count [3,100] is written as charges (50 at most: 50 cable is 188 ml, the spool holds 200 ml).",
+    "container-item": "spool_small",
+    "items": [ { "item": "cable", "charges": [ 3, 50 ] } ]
+  },
+  {
+    "id": "copper_wire_roll_part",
+    "type": "item_group",
+    "//": "CDF: EOD1. DDA supplies.json:429, needed by gear_eod. CDF: copper_wire is a BN AMMO stack, so the DDA count [3,100] is written as charges.",
+    "container-item": "spool_small",
+    "items": [ { "item": "copper_wire", "charges": [ 3, 100 ] } ]
   }
 ]

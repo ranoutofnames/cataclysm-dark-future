@@ -2860,5 +2860,13 @@
     "type": "json_flag",
     "context": [ "ARMOR", "GENERIC" ],
     "//": "CDF: label only, as in DDA flags.json:1562 (no C++ reads it; DDA reads it from effects-on-condition that CDF lacks)."
+  },
+  {
+    "id": "HELMET_FACE_SHIELD",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "//": "CDF: EOD1. DDA flags.json:423 (b4b62254ae2); label only, no C++ reads it in DDA.",
+    "info": "This item is attachable in the front of <info>hard hats and helmets</info> to protect your eyes or face.",
+    "restriction": "Item must be some kind of face shield"
   }
 ]

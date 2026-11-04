@@ -532,6 +532,7 @@
     "id": "army_personal_locker",
     "subtype": "distribution",
     "entries": [
+      { "group": "eod_armor", "prob": 15 },
       { "item": "jumpsuit", "prob": 40 },
       { "item": "pants_army", "prob": 70 },
       { "item": "jacket_army", "prob": 70 },
