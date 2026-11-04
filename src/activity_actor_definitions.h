@@ -707,6 +707,40 @@ class reload_activity_actor : public activity_actor
         static void make_reload_sound( Character &who, item &reloadable );
 };
 
+// CDF: P3-6-4a (DDA activity_actor_definitions.h:2035-2067). Unloads a magazine or an ammo belt over
+// time; the target is a safe_reference<item> (D1) and there is no clone() (the CDF base has none).
+// Containers are 6-4b; guns and tools stay in avatar_funcs::unload_item (6-4d).
+class unload_activity_actor : public activity_actor
+{
+    public:
+        unload_activity_actor( int moves_total, item &target )
+            : moves_total( moves_total ), target( &target ) {}
+
+        activity_id get_type() const override {
+            return activity_id( "ACT_UNLOAD" );
+        }
+
+        void start( player_activity &act, Character &who ) override;
+        void do_turn( player_activity &, Character & ) override {}
+        void finish( player_activity &act, Character &who ) override;
+
+        /** Unloads the magazine instantly. Can be called without an activity. May destroy the item. */
+        static void unload( Character &who, item &target );
+
+        void serialize( JsonOut &jsout ) const override;
+        static std::unique_ptr<activity_actor> deserialize( JsonIn &jsin );
+
+    private:
+        unload_activity_actor() = default;
+        int moves_total = 0;
+        safe_reference<item> target;
+
+        bool can_resume_with_internal( const activity_actor &other, const Character & ) const override {
+            const unload_activity_actor &act = static_cast<const unload_activity_actor &>( other );
+            return target == act.target;
+        }
+};
+
 class throw_activity_actor : public activity_actor
 {
     private:

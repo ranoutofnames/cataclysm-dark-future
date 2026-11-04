@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 
+#include "activity_actor_definitions.h"
 #include "activity_handlers.h"
 #include "avatar.h"
 #include "character_functions.h"
@@ -701,7 +702,7 @@ void use_item( avatar &you, item &used )
     you.recalculate_enchantment_cache();
 }
 
-static detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it,
+detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it,
         bool unloading )
 {
     if( it->made_of( LIQUID ) ) {
@@ -724,7 +725,7 @@ static detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> 
     return detached_ptr<item>();
 }
 
-bool unload_item( avatar &you, item &loc )
+bool unload_item( avatar &you, item &loc, bool bypass_activity )
 {
     item &it = loc;
     //Give the player the same options as when attempting to eat food that doesn't belong to them, bomb out if they say no.
@@ -830,7 +831,37 @@ bool unload_item( avatar &you, item &loc )
         return detached_ptr<item>();
     } );
 
+    // CDF: P3-6-4a (DDA character_inventory.cpp:2657-2676). Magazines and ammo belts unload through
+    // unload_activity_actor, a timed activity; bypass_activity unloads at once (loops and callers
+    // that need the result). A gun or tool with an integral MAGAZINE pocket is is_magazine() too
+    // (D13) but is not served by the actor (ADV-14): it keeps the synchronous body below until 6-4d.
+    if( target->is_magazine() && !target->is_gun() && !target->is_tool() ) {
+        if( bypass_activity ) {
+            unload_activity_actor::unload( you, *target );
+        } else {
+            // CDF: ruling Q-16-2 (b), CDF's magazine and belt unload numbers in DDA's shape: the cost
+            // is summed over the CONTAINER, MAGAZINE and MAGAZINE_WELL contents as in DDA (:2661-2669),
+            // but each stack costs half of its reload cost, a belt included (DDA charges the full cost
+            // and halves only belts), and the whole is capped at 200 moves.
+            int mv = 0;
+            for( const pocket_type ptype : {
+                     pocket_type::CONTAINER,
+                     pocket_type::MAGAZINE,
+                     pocket_type::MAGAZINE_WELL
+                 } ) {
+                for( const item *contained : target->all_items_top( ptype ) ) {
+                    mv += you.item_reload_cost( *target, *contained, contained->charges ) / 2;
+                }
+            }
+            you.assign_activity( std::make_unique<player_activity>(
+                                     std::make_unique<unload_activity_actor>( std::min( 200, mv ), *target ) ) );
+        }
+        return true;
+    }
+
     if( target->is_magazine() ) {
+        // CDF: only guns and tools with an integral MAGAZINE pocket reach this synchronous body now;
+        // 6-4d replaces it.
         // Calculate the time to remove the contained ammo (consuming half as much time as required to load the magazine)
         int mv = 0;
         int qty = 0;

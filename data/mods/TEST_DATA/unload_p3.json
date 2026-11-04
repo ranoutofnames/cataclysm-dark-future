@@ -1,0 +1,16 @@
+[
+  {
+    "//": "CDF: P3-6-4a. No base-data magazine takes plutonium cells, so the plutonium divide of the unload actor (DDA activity_actor.cpp:6476-6478) needs this fixture.",
+    "id": "test_plutonium_mag",
+    "type": "MAGAZINE",
+    "name": { "str": "test plutonium magazine" },
+    "description": "Test magazine that holds plutonium cells as charges.",
+    "weight": "100 g",
+    "volume": "250 ml",
+    "material": [ "steel" ],
+    "symbol": "(",
+    "color": "white",
+    "ammo_type": [ "plutonium" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "plutonium": 5000 } } ]
+  }
+]

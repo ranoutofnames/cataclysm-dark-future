@@ -1804,7 +1804,8 @@ void avatar_action::unload_all( avatar &you, bool inv )
         auto items = you.all_items();
         for( item *it : items ) {
             if( item_funcs::can_be_unloaded( *it ) ) {
-                if( !avatar_funcs::unload_item( you, *it ) ) {
+                // CDF: P3-6-4a, bypass_activity: a loop must not start an activity per item
+                if( !avatar_funcs::unload_item( you, *it, true ) ) {
                     break;
                 }
                 unloaded = true;
@@ -1814,7 +1815,8 @@ void avatar_action::unload_all( avatar &you, bool inv )
         auto items = get_map().i_at( you.bub_pos() );
         for( item *it : items ) {
             if( item_funcs::can_be_unloaded( *it ) ) {
-                if( !avatar_funcs::unload_item( you, *it ) ) {
+                // CDF: P3-6-4a, bypass_activity: a loop must not start an activity per item
+                if( !avatar_funcs::unload_item( you, *it, true ) ) {
                     break;
                 }
                 unloaded = true;

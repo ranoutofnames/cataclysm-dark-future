@@ -474,6 +474,15 @@
     "verbose_tooltip": false
   },
   {
+    "//": "CDF: P3-6-4a. DDA player_activities.json:899-906 (activity_level NO_EXERCISE dropped: no such CDF key). based_on speed is complex_moves.speed; can_resume false is suspendable false (DDA Character::cancel_activity keeps a cancelled activity out of the backlog only when can_resume) plus no_resume.",
+    "id": "ACT_UNLOAD",
+    "type": "activity_type",
+    "verb": "unloading",
+    "suspendable": false,
+    "no_resume": true,
+    "complex_moves": { "speed": true }
+  },
+  {
     "id": "ACT_STASH",
     "type": "activity_type",
     "verb": "stashing",

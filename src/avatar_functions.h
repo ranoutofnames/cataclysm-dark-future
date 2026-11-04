@@ -8,6 +8,9 @@ class npc;
 class item;
 class item_location;
 
+template<typename T>
+class detached_ptr;
+
 namespace avatar_funcs
 {
 
@@ -50,8 +53,19 @@ void toolmod_add( avatar &you, item &tool, item &mod );
 /** Use a tool at given location */
 void use_item( avatar &you, item &used );
 
-/** Unload an item at given location */
-bool unload_item( avatar &you, item &loc );
+/**
+ * Puts @p it in the inventory, or on the ground when it does not fit; liquids are handled by the
+ * liquid handler. Returns what could not be handled (null when everything was).
+ * CDF: P3-6-4a; exported for unload_activity_actor::unload (DDA Character::add_or_drop_with_msg).
+ */
+detached_ptr<item> add_or_drop_with_msg( avatar &you, detached_ptr<item> &&it, bool unloading );
+
+/**
+ * Unload an item at given location.
+ * @param bypass_activity Unload a magazine or belt at once instead of starting the timed
+ * ACT_UNLOAD activity (DDA Character::unload); loops over many items pass true.
+ */
+bool unload_item( avatar &you, item &loc, bool bypass_activity = false );
 
 /** List potential theft witnesses */
 std::vector<npc *> list_potential_theft_witnesses( avatar &you, const faction_id &owners );

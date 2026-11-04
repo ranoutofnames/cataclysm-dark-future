@@ -7,6 +7,7 @@
 #include "advanced_inv.h"
 #include "avatar.h"
 #include "avatar_action.h"
+#include "avatar_functions.h"
 #include "calendar.h"
 #include "character.h"
 #include "character_functions.h"
@@ -22,6 +23,7 @@
 #include "event_bus.h"
 #include "flag.h"
 #include "game.h"
+#include "game_constants.h"
 #include "game_inventory.h"
 #include "gates.h"
 #include "iexamine.h"
@@ -30,6 +32,7 @@
 #include "item_group.h"
 #include "item_hauling.h"
 #include "item_parent_checks.h"
+#include "itype.h"
 #include "json.h"
 #include "line.h"
 #include "locations.h"
@@ -63,13 +66,17 @@
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
 
+#include <algorithm>
 #include <cmath>
 #include <list>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #define dbg(x) DebugLog((x),DC::Game)
+
+static const ammotype ammo_plutonium( "plutonium" );
 
 static const construction_str_id deconstruct_simple( "constr_deconstruct_simple" );
 static const construction_str_id deconstruct( "constr_deconstruct" );
@@ -2634,6 +2641,122 @@ std::unique_ptr<activity_actor> reload_activity_actor::deserialize( JsonIn &jsin
     return actor;
 }
 
+// ---- unload_activity_actor ----
+// Transplanted from DDA activity_actor.cpp:6414-6537 (unload_activity_actor), non-container branch
+// only (the container branch is 6-4b). CDF: the target is a safe_reference<item> and the actor's
+// moves live in its progress counter.
+
+void unload_activity_actor::start( player_activity &, Character & )
+{
+    // CDF: DDA writes act.moves_left and act.moves_total (activity_actor.cpp:6416-6417)
+    progress.emplace( target ? target->tname() : std::string( "unload" ), moves_total );
+}
+
+void unload_activity_actor::finish( player_activity &act, Character &who )
+{
+    // Need to copy `target` here because `::unload` is static and `this` might be invalidated
+    // after `act.set_to_null()` has been called (so `this.target` might also be invalidated)
+    // (per DDA activity_actor.cpp:6422-6423)
+    const safe_reference<item> target_copy = target;
+    act.set_to_null();
+    // CDF: the target can be destroyed while the activity runs (DDA holds an item_location)
+    if( target_copy ) {
+        unload( who, *target_copy );
+    }
+}
+
+void unload_activity_actor::unload( Character &who, item &target )
+{
+    // CDF: the helper that moves items to the inventory is avatar-only (detached_ptr, avatar_funcs);
+    // an NPC never gets this activity
+    avatar *const you_ptr = who.as_avatar();
+    if( you_ptr == nullptr ) {
+        return;
+    }
+    avatar &you = *you_ptr;
+
+    int qty = 0;
+    bool actually_unloaded = false;
+
+    // per DDA activity_actor.cpp:6474-6486: the top level items of the CONTAINER, MAGAZINE and
+    // MAGAZINE_WELL pockets leave the target, plutonium as cells and not as charges
+    std::vector<item *> contents;
+    for( const pocket_type ptype : {
+             pocket_type::CONTAINER,
+             pocket_type::MAGAZINE,
+             pocket_type::MAGAZINE_WELL
+         } ) {
+        for( item *contained : target.all_items_top( ptype ) ) {
+            contents.push_back( contained );
+        }
+    }
+    // CDF: DDA visits the contents and removes them afterwards; remove_top_items_with does both
+    target.contents.remove_top_items_with( [&]( detached_ptr<item> &&contained ) {
+        if( std::ranges::find( contents, &*contained ) == contents.end() ) {
+            return std::move( contained );
+        }
+        if( contained->ammo_type() == ammo_plutonium ) {
+            contained->charges /= PLUTONIUM_CHARGES;
+        }
+        // the item is gone once it has been moved, DDA reads the charges after the move
+        const int moved_charges = contained->charges;
+        contained = avatar_funcs::add_or_drop_with_msg( you, std::move( contained ), true );
+        if( !contained ) {
+            qty += moved_charges;
+            actually_unloaded = true;
+        }
+        return std::move( contained );
+    } );
+
+    // remove the belt linkage
+    if( target.is_ammo_belt() ) {
+        if( target.type->magazine && target.type->magazine->linkage ) {
+            detached_ptr<item> link = item::spawn( *target.type->magazine->linkage, calendar::turn,
+                                                   qty );
+            if( !avatar_funcs::add_or_drop_with_msg( you, std::move( link ), true ) ) {
+                actually_unloaded = true;
+            }
+        }
+        if( actually_unloaded ) {
+            who.add_msg_if_player( _( "You disassemble your %s." ), target.tname() );
+        }
+    } else if( actually_unloaded ) {
+        who.add_msg_if_player( _( "You unload your %s." ), target.tname() );
+    }
+
+    if( target.has_flag( flag_MAG_DESTROY ) && target.ammo_remaining() == 0 ) {
+        // CDF: detach() for DDA's remove_item(); the target is not used after this
+        target.detach();
+    }
+
+    who.recoil = MAX_RECOIL;
+}
+
+void unload_activity_actor::serialize( JsonOut &jsout ) const
+{
+    jsout.start_object();
+
+    // CDF: every CDF actor writes its progress counter, as the insert and reload actors do
+    jsout.member( "progress", progress );
+    jsout.member( "moves_total", moves_total );
+    jsout.member( "target", target );
+
+    jsout.end_object();
+}
+
+std::unique_ptr<activity_actor> unload_activity_actor::deserialize( JsonIn &jsin )
+{
+    std::unique_ptr<unload_activity_actor> actor( new unload_activity_actor() );
+
+    JsonObject data = jsin.get_object();
+
+    data.read( "progress", actor->progress );
+    data.read( "moves_total", actor->moves_total );
+    data.read( "target", actor->target );
+
+    return actor;
+}
+
 void throw_activity_actor::do_turn( player_activity &act, Character &who )
 {
     // Make copies of relevant values since the class would
@@ -3344,6 +3467,7 @@ deserialize_functions = {
     { activity_id( "ACT_INSERT_ITEM" ), &insert_item_activity_actor::deserialize },
     { activity_id( "ACT_RELOAD" ), &reload_activity_actor::deserialize },
     { activity_id( "ACT_STASH" ), &stash_activity_actor::deserialize },
+    { activity_id( "ACT_UNLOAD" ), &unload_activity_actor::deserialize },
     { activity_id( "ACT_THROW" ), &throw_activity_actor::deserialize },
     { activity_id( "ACT_ASSIST" ), &assist_activity_actor::deserialize },
     { activity_id( "ACT_LONGSALVAGE" ), &salvage_activity_actor::deserialize },
