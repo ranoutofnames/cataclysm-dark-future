@@ -1,0 +1,39 @@
+[
+  {
+    "//": "CDF: 4-c-Jc1a. One pseudo item, so use_furn_fake_item shows no menu. Charcoal ammo as char_purifier_fake (fake.json); manualnoise fields copied from tool/misc.json (airhorn).",
+    "id": "test_fake_noise_tool",
+    "type": "TOOL",
+    "name": { "str": "TEST fake noise tool" },
+    "description": "Pseudo item for the furniture fake tool test.",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "symbol": ";",
+    "color": "red",
+    "ammo": "charcoal",
+    "max_charges": 100,
+    "charges_per_use": 3,
+    "use_action": {
+      "type": "manualnoise",
+      "moves": 100,
+      "noise": 10,
+      "noise_message": "TEST noise",
+      "noise_id": "misc",
+      "noise_variant": "airhorn",
+      "use_message": "You use the test tool.",
+      "no_charges_message": "Nothing happens."
+    },
+    "flags": [ "TRADER_AVOID" ]
+  },
+  {
+    "type": "furniture",
+    "id": "f_test_fake_tool",
+    "name": "test fake tool furniture",
+    "description": "Furniture whose pseudo tool draws its charcoal from the tile.",
+    "symbol": "f",
+    "color": "blue",
+    "move_cost_mod": 1,
+    "required_str": -1,
+    "crafting_pseudo_item": "test_fake_noise_tool",
+    "examine_action": "use_furn_fake_item"
+  }
+]

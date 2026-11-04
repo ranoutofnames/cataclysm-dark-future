@@ -102,6 +102,7 @@ void reload_furniture( player &p, const tripoint_bub_ms &examp );
 void use_furn_fake_item( player &p, const tripoint_bub_ms &examp );
 void curtains( player &p, const tripoint_bub_ms &examp );
 void sign( player &p, const tripoint_bub_ms &examp );
+bool can_write_with( const item &it );
 void pay_gas( player &p, const tripoint_bub_ms &examp );
 void ledge( player &p, const tripoint_bub_ms &examp );
 auto can_start_jump_over_tile( const player &p ) -> bool;

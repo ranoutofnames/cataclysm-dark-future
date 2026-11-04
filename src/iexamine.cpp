@@ -5293,25 +5293,26 @@ void iexamine::use_furn_fake_item( player &p, const tripoint_bub_ms &examp )
     };
 
     charges_type charge_type = charges_type::none;
-    fake_item.charges = 0;
+    // CDF: the fake item spawns with no rounds, and its rounds live in a pocket (4-b2), so they
+    // are set and read through ammo_set / ammo_remaining instead of `charges`.
 
     if( fake_item.has_flag( flag_USES_GRID_POWER ) ) {
         const distribution_grid &grid = get_distribution_grid_tracker().grid_at( abspos );
-        fake_item.charges = grid.get_resource();
+        fake_item.ammo_set( ammo, grid.get_resource() );
         charge_type = charges_type::grid;
     } else if( ammo != itype_id::NULL_ID() ) {
-        fake_item.charges = count_charges_in_list( &*ammo, m.i_at( examp ) );
+        fake_item.ammo_set( ammo, count_charges_in_list( &*ammo, m.i_at( examp ) ) );
         charge_type = charges_type::ammo_from_map;
     }
 
-    const int original_charges = fake_item.charges;
+    const int original_charges = fake_item.ammo_remaining();
     p.invoke_item( &fake_item, examp );
 
     // HACK: Evil hack incoming
     activity_handlers::repair_activity_hack::patch_activity_for_furniture( *g->u.activity, examp,
             cur_tool.get_id() );
 
-    const int discharged_ammo = original_charges - fake_item.charges;
+    const int discharged_ammo = original_charges - fake_item.ammo_remaining();
 
     if( discharged_ammo == 0 ) {
         return;
@@ -5342,7 +5343,7 @@ void iexamine::use_furn_fake_item( player &p, const tripoint_bub_ms &examp )
         case charges_type::none:
             debugmsg( "Somehow changed charges of fake item %s without ammo type to %d.",
                       cur_tool.get_id().c_str(),
-                      fake_item.charges
+                      fake_item.ammo_remaining()
                     );
             return;
     }
@@ -5390,6 +5391,13 @@ void iexamine::curtains( player &p, const tripoint_bub_ms &examp )
     }
 }
 
+// CDF: DDA tests `it.charges > 0` (iexamine.cpp:5082), which misses tools whose paint is in a
+// pocket (spray can); ammo_remaining() covers both, and the filter is testable on its own.
+bool iexamine::can_write_with( const item &it )
+{
+    return it.has_flag( flag_WRITE_MESSAGE ) && it.ammo_remaining() > 0;
+}
+
 void iexamine::sign( player &p, const tripoint_bub_ms &examp )
 {
     map &here = get_map();
@@ -5407,9 +5415,7 @@ void iexamine::sign( player &p, const tripoint_bub_ms &examp )
 
     // Allow chance to modify message.
     std::vector<tool_comp> tools;
-    std::vector<item *> filter = p.crafting_inventory().items_with( []( const item & it ) {
-        return it.has_flag( flag_WRITE_MESSAGE ) && it.charges > 0;
-    } );
+    std::vector<item *> filter = p.crafting_inventory().items_with( can_write_with );
     tools.reserve( filter.size() );
     for( const item *writing_item : filter ) {
         tools.emplace_back( writing_item->typeId(), 1 );

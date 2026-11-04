@@ -2466,7 +2466,7 @@ int manualnoise_actor::use( player &p, item &it, bool t, const tripoint_bub_ms &
     if( t ) {
         return 0;
     }
-    if( it.type->charges_to_use() != 0 && it.charges < it.type->charges_to_use() ) {
+    if( it.type->charges_to_use() != 0 && it.ammo_remaining() < it.type->charges_to_use() ) {
         p.add_msg_if_player( _( no_charges_message ) );
         return 0;
     }
@@ -2494,7 +2494,7 @@ int manualnoise_actor::use( player &p, item &it, bool t, const tripoint_bub_ms &
 ret_val<bool> manualnoise_actor::can_use( const Character &, const item &it, bool,
         const tripoint_bub_ms & ) const
 {
-    if( it.charges < it.type->charges_to_use() ) {
+    if( it.ammo_remaining() < it.type->charges_to_use() ) {
         return ret_val<bool>::make_failure( _( "This tool doesn't have enough charges." ) );
     }
 
