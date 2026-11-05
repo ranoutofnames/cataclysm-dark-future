@@ -307,7 +307,7 @@
     "use_action": [ "PORTABLE_GAME", "WEATHER_TOOL", "TOGGLE_UPS_CHARGING" ]
   },
   {
-    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; integral pocket until a plutonium magazine item is designed",
+    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; PLUT1: a MAGAZINE_WELL for the plutonium fuel pack (initial_charges still sets the spawn load through default_ammo)",
     "id": "holo_cloak",
     "type": "TOOL_ARMOR",
     "category": "clothing",
@@ -324,10 +324,20 @@
     "covers": [ "torso", "head", "arms", "legs" ],
     "coverage": 90,
     "encumbrance": 10,
-    "max_charges": 1000,
     "initial_charges": 500,
     "charges_per_use": 25,
-    "ammo": "plutonium",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "plut_pack_small" ],
+        "default_magazine": "plut_pack_small"
+      }
+    ],
+    "tool_ammo": "plutonium",
+    "default_ammo": "plut_cell_charge",
+    "magazines": [ [ "plutonium", [ "plut_pack_small" ] ] ],
     "warmth": 10,
     "material_thickness": 1,
     "environmental_protection": 4,
@@ -837,7 +847,7 @@
     }
   },
   {
-    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; integral pocket until a plutonium magazine item is designed",
+    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; PLUT1: a MAGAZINE_WELL for the plutonium fuel pack (initial_charges still sets the spawn load through default_ammo)",
     "id": "rm13_armor",
     "type": "TOOL_ARMOR",
     "category": "clothing",
@@ -864,10 +874,29 @@
     "weight": "6820 g",
     "volume": "9 L",
     "to_hit": -3,
-    "max_charges": 5000,
     "charges_per_use": 5,
     "initial_charges": 5000,
-    "ammo": "plutonium",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "plut_pack_large" ],
+        "default_magazine": "plut_pack_large"
+      },
+      {
+        "pocket_type": "MOD"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "8000 ml",
+        "rigid": true,
+        "moves": 100
+      }
+    ],
+    "tool_ammo": "plutonium",
+    "default_ammo": "plut_cell_charge",
+    "magazines": [ [ "plutonium", [ "plut_pack_large" ] ] ],
     "use_action": {
       "type": "transform",
       "msg": "You activate your RM13 combat armor.",
@@ -940,7 +969,7 @@
     "hearing_protection": 0
   },
   {
-    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; integral pocket until a plutonium magazine item is designed",
+    "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; PLUT1: a MAGAZINE_WELL for the plutonium fuel pack (initial_charges still sets the spawn load through default_ammo)",
     "id": "dimensional_anchor",
     "type": "TOOL_ARMOR",
     "category": "clothing",
@@ -954,8 +983,18 @@
     "material": [ "ceramic", "kevlar" ],
     "weight": "1250 g",
     "volume": "4500 ml",
-    "ammo": "plutonium",
-    "max_charges": 1000,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "plut_pack_small" ],
+        "default_magazine": "plut_pack_small"
+      }
+    ],
+    "tool_ammo": "plutonium",
+    "default_ammo": "plut_cell_charge",
+    "magazines": [ [ "plutonium", [ "plut_pack_small" ] ] ],
     "initial_charges": 1000,
     "use_action": {
       "type": "transform",

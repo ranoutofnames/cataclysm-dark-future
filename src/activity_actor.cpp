@@ -87,6 +87,8 @@ advanced_object_deconstruction( "advanced_object_deconstruction" );
 
 static const itype_id itype_bone_human( "bone_human" );
 static const itype_id itype_electrohack( "electrohack" );
+static const itype_id itype_plut_cell( "plut_cell" );
+static const itype_id itype_plut_cell_charge( "plut_cell_charge" );
 
 static const skill_id skill_computer( "computer" );
 static const skill_id skill_mechanics( "mechanics" );
@@ -2773,7 +2775,16 @@ void unload_activity_actor::unload( Character &who, item &target )
         if( std::ranges::find( contents, &*contained ) == contents.end() ) {
             return std::move( contained );
         }
-        if( contained->ammo_type() == ammo_plutonium ) {
+        if( contained->typeId() == itype_plut_cell_charge ) {
+            // CDF: PLUT1. A plutonium pack holds its fuel as one plut_cell_charge stack; the whole
+            // stack leaves as charges / 500 plut_cell, as DDA moves the divided stack (the remainder
+            // is dropped, as in DDA). Fewer than 500 charges leave nothing.
+            const int cells = contained->charges / PLUTONIUM_CHARGES;
+            if( cells <= 0 ) {
+                return detached_ptr<item>();
+            }
+            contained = item::spawn( itype_plut_cell, calendar::turn, cells );
+        } else if( contained->ammo_type() == ammo_plutonium ) {
             contained->charges /= PLUTONIUM_CHARGES;
         }
         // the item is gone once it has been moved, DDA reads the charges after the move

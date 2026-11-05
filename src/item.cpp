@@ -165,6 +165,7 @@ static const itype_id itype_cigar_butt( "cigar_butt" );
 static const itype_id itype_cigar_lit( "cigar_lit" );
 static const itype_id itype_joint_roach( "joint_roach" );
 static const itype_id itype_plut_cell( "plut_cell" );
+static const itype_id itype_plut_cell_charge( "plut_cell_charge" );
 static const itype_id itype_rad_badge( "rad_badge" );
 static const itype_id itype_tuned_mechanism( "tuned_mechanism" );
 static const itype_id itype_stock_small( "stock_small" );
@@ -8772,7 +8773,9 @@ bool item::is_reloadable_helper( const itype_id &ammo, bool now ) const
     } else if( magazine_integral() ) {
         if( !ammo.is_empty() ) {
             if( now && ammo_data() ) {
-                if( ammo_current() != ammo ) {
+                // CDF: PLUT1, a plutonium pack holds its cells as plut_cell_charge, which a plut_cell reloads
+                if( ammo_current() != ammo &&
+                    !( ammo == itype_plut_cell && ammo_current() == itype_plut_cell_charge ) ) {
                     return false;
                 }
             } else {
@@ -10000,7 +10003,25 @@ bool item::reload( Character &who, item &loc, int qty, int pocket_index )
             }
         }
 
-        detached_ptr<item> to_reload = ammo->split( qty );
+        detached_ptr<item> to_reload;
+        if( ammo->typeId() == itype_plut_cell ) {
+            // CDF: PLUT1, DDA item_gun_tool_ammo.cpp:3526-3531 (reload into a magazine scales a cell by
+            // PLUTONIUM_CHARGES and caps at the capacity). qty is in cells here (limit above); the pack
+            // holds the contents as plut_cell_charge so weight and volume come from the data. Any
+            // excess of the last cell is wasted, as in the integral branch below.
+            const int room = ammo_capacity( ammo_plutonium ) - ammo_remaining();
+            const int charges_in = std::min( qty * PLUTONIUM_CHARGES, room );
+            if( charges_in <= 0 ) {
+                return false;
+            }
+            // the cells leave the stack; a pack receives the charge item, an integral tool (suit, reactor)
+            // keeps its plut_cell contents with the charges scaled
+            detached_ptr<item> spent_cells = ammo->split( qty );
+            to_reload = item::spawn( type->magazine ? itype_plut_cell_charge : itype_plut_cell,
+                                     calendar::turn, charges_in );
+        } else {
+            to_reload = ammo->split( qty );
+        }
         bool merged = false;
         for( item *it : contents.all_items_top() ) {
             if( it->merge_charges( std::move( to_reload ) ) ) {

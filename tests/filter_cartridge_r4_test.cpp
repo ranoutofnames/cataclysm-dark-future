@@ -163,16 +163,17 @@ TEST_CASE( "r4_wells_load_for_all_18_and_plutonium_stays_integral", "[filt1][r4]
         CHECK_FALSE( tool->type->tool->ammo_id.empty() );
         CHECK_FALSE( tool->contents.has_pocket_type( pocket_type::MAGAZINE ) );
     }
-    // CDF: owner ruling 2026-10-31: the plutonium tools are still integral, no well.
+    // CDF: PLUT1 (owner ruling 2026-10-31, plutonium kept): the plutonium tools have one well for
+    // their plutonium fuel pack and no integral pocket any more.
     for( const integral_expect &e : plutonium_integral() ) {
         CAPTURE( e.id );
         REQUIRE( itype_id( e.id ).is_valid() );
         const item *tool = item::spawn_temporary( itype_id( e.id ) );
         REQUIRE( tool->type->tool );
-        CHECK( wells_of( *tool->type ).empty() );
-        CHECK( tool->type->tool->max_charges == e.max_charges );
+        CHECK( wells_of( *tool->type ).size() == 1 );
+        CHECK( tool->type->tool->max_charges == 0 );
         CHECK( tool->type->tool->ammo_id.contains( ammotype( "plutonium" ) ) );
-        CHECK( tool->contents.has_pocket_type( pocket_type::MAGAZINE ) );
+        CHECK_FALSE( tool->contents.has_pocket_type( pocket_type::MAGAZINE ) );
     }
 }
 
@@ -205,10 +206,10 @@ TEST_CASE( "r4_rebreather_takes_cartridge", "[filt1][r4]" )
         // CDF: the amendment (A3) wants the regenerator refused, but the well is DDA's flag
         // REBREATHER_CART and DDA gives the regenerator that flag (filter.json:96), so it fits.
     }
-    // CDF: owner ruling 2026-10-31: rm13_armor keeps its integral plutonium pocket (was: well 1
-    // rm13_battery, well 2 regenerator, plut_cell refused by both).
+    // CDF: PLUT1: rm13_armor has one well, for its plutonium fuel pack (was: well 1 rm13_battery,
+    // well 2 regenerator, plut_cell refused by both).
     const item *rm13 = item::spawn_temporary( itype_id( "rm13_armor" ) );
-    CHECK( wells_of( *rm13->type ).empty() );
+    CHECK( wells_of( *rm13->type ).size() == 1 );
     CHECK( rm13->type->tool->ammo_id.contains( ammotype( "plutonium" ) ) );
 }
 
@@ -234,8 +235,8 @@ TEST_CASE( "r4_spawn_with_default_magazine", "[filt1][r4]" )
     CHECK( mask->ammo_remaining() == 100 );
     REQUIRE( mask->magazines_current().size() == 1 );
     CHECK( mask->magazines_current().front()->typeId() == itype_id( "gasfilter_med" ) );
-    // CDF: owner ruling 2026-10-31: the plutonium tools spawn with their CDF initial_charges in the
-    // integral pocket (was: rm13_armor default magazine rm13_battery).
+    // CDF: PLUT1: the plutonium tools spawn with their CDF initial_charges in the plutonium fuel
+    // pack (was: rm13_armor default magazine rm13_battery).
     for( const integral_expect &e : plutonium_integral() ) {
         CAPTURE( e.id );
         const item *tool = item::spawn_temporary( itype_id( e.id ) );

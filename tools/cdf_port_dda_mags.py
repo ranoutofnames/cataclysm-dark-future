@@ -1611,6 +1611,11 @@ COPY_WELL_IDS = frozenset((
     "rebreather_on", "rebreather_xl", "rebreather_xl_on",
 ))
 ACT_KEEP_WELL = "AUTHOR-KEEP-CDF-WELL"      # DDA twin has no magazine pocket: CDF's well/pocket kept
+# CDF: PLUT1. The plutonium tools keep CDF's own well (a plutonium fuel pack), not the DDA battery
+# well of their twin: the plan is the well they have, so --check and the golden agree with the data.
+PLUT_WELL_IDS = frozenset((
+    "dimensional_anchor", "dimensional_anchor_on", "holo_cloak", "rm13_armor", "rm13_armor_on",
+))
 
 
 def build_records(ctx, classes, ids):
@@ -1649,6 +1654,18 @@ def build_records(ctx, classes, ids):
             out["action"] = ACT_COPY_WELL if iid in COPY_WELL_IDS else ACT_KEEP_INTEGRAL
         elif out["action"] == "AUTHOR" and "nopocket" in out["diff"] and cls in ("WELL", "TOOL-INT"):
             out["action"] = ACT_KEEP_WELL
+        if iid in PLUT_WELL_IDS and any(p.get("pocket_type") == "MAGAZINE_WELL"
+                                        for p in pocket_list(rec["eff"])):
+            # CDF: PLUT1, the tool's own pockets are the plan (no edit, no dropped key or id)
+            out["action"] = ACT_KEEP_WELL
+            out["pocket_data"] = copy.deepcopy(pocket_list(rec["eff"]))
+            out["dropped_keys"] = []
+            out["dropped_ids"] = []
+            out["set_keys"] = {}
+            out["diff"] = []
+            out["ammo_diff"] = {}
+            out["well_diff"] = {"cdf_added": [], "dda_only_kept": [], "unfit": []}
+            out["notes"].append("PLUT1: plutonium fuel pack well kept (CDF, not the DDA battery well)")
         for p in out["pocket_data"]:
             out["violations"] += check_pocket(p, ctx)
         records.append(out)
