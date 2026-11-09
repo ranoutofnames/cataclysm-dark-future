@@ -520,12 +520,20 @@ static VisitResponse visit_internal( const std::function<VisitResponse( item *, 
     return VisitResponse::ABORT;
 }
 
+// CDF (CAP1d): the pockets whose items are listed as carried: the carried storage and the holster
+// pockets, container pockets only. A tool's own ammo or magazine pocket is never one of them, so a
+// loaded tool's ammo stays visible only to the tool-aware lookups (in_tools).
+static auto is_listed_pocket( const item_pocket &pocket ) -> bool
+{
+    return ( pocket.is_carry() || pocket.is_holster() ) && pocket.is_type( pocket_type::CONTAINER );
+}
+
 VisitResponse item_contents::visit_contents( const std::function<VisitResponse( item *, item * )>
         &func, item *parent, bool skip_carry )
 {
     for( item_pocket &pocket : pockets ) {
         // CDF: holster pockets are listed with the carried items (see is_listed_pocket)
-        if( skip_carry && ( pocket.is_carry() || pocket.is_holster() ) ) {
+        if( skip_carry && is_listed_pocket( pocket ) ) {
             continue;
         }
         for( item *&e : pocket.items() ) {
@@ -621,7 +629,7 @@ VisitResponse visitable<Character>::visit_items(
 
     const auto visit_carried = [&func]( item & holder ) {
         for( item_pocket &pocket : holder.contents.get_pockets() ) {
-            if( !( pocket.is_carry() || pocket.is_holster() ) || !pocket.is_type( pocket_type::CONTAINER ) ) {
+            if( !is_listed_pocket( pocket ) ) {
                 continue;
             }
             for( item *&carried_it : pocket.items() ) {
@@ -954,7 +962,7 @@ void location_visitable<Character>::remove_items_with( const
         if( response == VisitResponse::SKIP && worn_it ) {
             // NOLINTNEXTLINE(bugprone-use-after-move)
             for( item_pocket &pocket : worn_it->contents.get_pockets() ) {
-                if( pocket.is_carry() || pocket.is_holster() ) {
+                if( is_listed_pocket( pocket ) ) {
                     visit_internal( filter_and_collect, pocket.items(), last );
                 }
             }

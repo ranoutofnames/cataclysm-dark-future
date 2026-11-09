@@ -433,3 +433,70 @@ TEST_CASE( "Character_use_charges_descends_into_gun_magazine", "[p3][visitable]"
     CHECK( !used.empty() );
     CHECK( carried.ammo_remaining() == 20 );
 }
+
+// CDF (CAP1d): a loaded tool's ammo is visible only to the tool-aware lookups, wherever the tool sits:
+// a carry pocket, a holster pocket of a backpack (strap) or a real holster. DDA item.cpp:4013.
+namespace
+{
+enum class tool_place { carry, strap, holster };
+
+auto place_loaded_lighter( Character &guy, tool_place where ) -> item *
+{
+    detached_ptr<item> det = tool_with_ammo( itype_id( "lighter" ), 10 );
+    if( where == tool_place::carry ) {
+        wear_backpack( guy );
+        return &guy.i_add( std::move( det ) );
+    }
+    detached_ptr<item> holder = item::spawn( itype_id( where == tool_place::strap ? "backpack" : "holster" ) );
+    item &worn = *holder;
+    guy.wear_item( std::move( holder ), false );
+    for( item_pocket &pocket : worn.contents.get_pockets() ) {
+        if( pocket.is_holster() && pocket.is_type( pocket_type::CONTAINER ) ) {
+            // CDF: add() skips the holster's item restrictions; the lookups, not the pocket rules, are tested
+            item *placed = nullptr;
+            pocket.add( std::move( det ), &placed );
+            return placed;
+        }
+    }
+    return nullptr;
+}
+} // namespace
+
+TEST_CASE( "loaded_tool_ammo_stays_hidden_from_plain_lookups_in_any_pocket", "[p3][visitable]" )
+{
+    const itype_id fluid( "chem_butane" );
+    const auto where = GENERATE( tool_place::carry, tool_place::strap, tool_place::holster );
+    clear_all_state();
+    clear_avatar();
+    Character &guy = get_avatar();
+    item *lighter = place_loaded_lighter( guy, where );
+    REQUIRE( lighter != nullptr );
+    REQUIRE( lighter->ammo_remaining() == 10 );
+
+    SECTION( "charges_of" ) {
+        CHECK( guy.charges_of( fluid, INT_MAX, return_true<item>, nullptr, false ) == 0 );
+        CHECK( guy.charges_of( fluid, INT_MAX, return_true<item>, nullptr, true ) == 10 );
+    }
+    SECTION( "amount_of of the tool itself" ) {
+        CHECK( guy.has_amount( itype_id( "lighter" ), 1 ) );
+        CHECK( guy.amount_of( itype_id( "lighter" ) ) == 1 );
+    }
+    SECTION( "remove_items_with honours SKIP on a tool" ) {
+        int seen_fluid = 0;
+        guy.remove_items_with( [&]( detached_ptr<item> &&e ) {
+            if( e->typeId() == fluid ) {
+                seen_fluid++;
+            }
+            return e->is_tool() ? VisitResponse::SKIP : VisitResponse::NEXT;
+        } );
+        CHECK( seen_fluid == 0 );
+        CHECK( lighter->ammo_remaining() == 10 );
+    }
+    SECTION( "use_charges, in_tools false then true" ) {
+        CHECK( guy.use_charges( fluid, 4 ).empty() );
+        CHECK( lighter->ammo_remaining() == 10 );
+        const auto used = guy.use_charges( fluid, 4, return_true<item>, true );
+        CHECK( used.size() == 1 );
+        CHECK( lighter->ammo_remaining() == 6 );
+    }
+}
