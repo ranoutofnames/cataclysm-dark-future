@@ -171,18 +171,11 @@ TEST_CASE("p3 r1a loaded loose magazines fit every well", "[p3][data][R1]") {
     }
     INFO("refused: " << refused.size() << ": " << all_refused);
     CHECK(checked > 0);
-    // CDF: finding, not fixed here: a loaded stripper clip is refused by these six rifles (their wells have no
-    // magazine_well volume, so the loose-magazine lift does not apply). Pinned so a change in either direction shows;
-    // without the lift for belts (item_factory.cpp loose_mag) the list grows to twelve.
-    const std::vector<std::string> known = {
-        "m1903 <- 3006_clip", "sks <- 762x39_clip", "mosin91_30 <- 762R_clip",
-        "mosin91_30_ebr <- 762R_clip", "mosin44 <- 762R_clip", "mosin44_ebr <- 762R_clip"
-    };
-    std::vector<std::string> sorted_refused = refused;
-    std::vector<std::string> sorted_known = known;
-    std::sort(sorted_refused.begin(), sorted_refused.end());
-    std::sort(sorted_known.begin(), sorted_known.end());
-    CHECK(sorted_refused == sorted_known);
+    // R1c: the six stripper-clip rifles (m1903, sks, mosin91_30, mosin91_30_ebr, mosin44, mosin44_ebr) used to
+    // refuse a loaded clip: their wells have no magazine_well volume, so the loose-magazine lift did not apply.
+    // Mutation: restoring `&& obj.magazine_well > 0_ml` on the lift in item_factory.cpp brings the six back, and
+    // dropping the lift for belts as well makes it twelve.
+    CHECK(refused.empty());
 }
 
 TEST_CASE("p3 r1b capacity literals", "[p3][data][R1]") {

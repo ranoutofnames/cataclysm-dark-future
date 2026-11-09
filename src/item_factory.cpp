@@ -1156,7 +1156,9 @@ void Item_factory::synthesize_pockets( itype &obj ) const
         pocket_data pocket( pocket_type::MAGAZINE_WELL );
         units::volume biggest = 0_ml;
         // CDF: a loaded non-rigid magazine is bigger than its empty template (the rounds add volume
-        // above magazine_well), so the well must not cap on the empty volume
+        // above magazine_well), so the well must not cap on the empty volume. Also without a
+        // magazine_well: a loaded stripper clip is bigger than the empty one (per DDA
+        // item_factory.cpp:4078, legacy magazine wells are 200 L)
         bool loose_mag = false;
         for( const auto &mags : obj.magazines ) {
             for( const itype_id &mag : mags.second ) {
@@ -1183,7 +1185,7 @@ void Item_factory::synthesize_pockets( itype &obj ) const
             pocket.default_magazine = *well_defaults.begin();
         }
         pocket.raw_volume_capacity = std::max( biggest, 1_ml );
-        if( loose_mag && obj.magazine_well > 0_ml ) {
+        if( loose_mag ) {
             pocket.raw_volume_capacity += 200_liter;
         }
         // per DDA item_factory.cpp:4086: magazine wells take any length
