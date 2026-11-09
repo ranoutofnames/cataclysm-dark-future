@@ -57,8 +57,21 @@
     "//": "A reusable healing item that's also armored?  Yeah, that's staying valuable for a while.",
     "price": "700 USD",
     "price_postapoc": "80 USD",
+    "//2b": "CDF: the flat covers/coverage/encumbrance of a copy-from child of cloak_leather is restated as portions with the same numbers (a flat override of a specifically_covers item is a loader error).",
     "color": "yellow",
-    "encumbrance": 12,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arms" ],
+        "coverage": 90,
+        "encumbrance": 12
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 90,
+        "encumbrance": 12
+      }
+    ],
     "max_charges": 60,
     "charges_per_use": 30,
     "ammo": "essence_dull_type",
@@ -288,9 +301,39 @@
     "description": "A loose-fitting robe of some sort, heavily altered with decorations resting on the shoulders, dyed in a simple dark gray.  Activating it will grant invisibility, constantly draining essence while in use.",
     "price": "900 USD",
     "price_postapoc": "70 USD",
-    "coverage": 100,
-    "encumbrance": 7,
-    "max_encumbrance": 7,
+    "//2b": "CDF: the flat covers/coverage/encumbrance of a copy-from child of robe is restated as portions with its own numbers (100 / 7) on the parent robe's DDA placement split (no DDA item of this id; no blends).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_lower" ],
+        "coverage": 100,
+        "encumbrance": [ 7, 7 ]
+      },
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_upper" ],
+        "coverage": 100,
+        "encumbrance": [ 7, 7 ]
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 100,
+        "encumbrance": [ 7, 7 ]
+      },
+      {
+        "covers": [ "arm_l", "arm_r" ],
+        "specifically_covers": [ "arm_shoulder_l", "arm_shoulder_r", "arm_upper_r", "arm_upper_l", "arm_elbow_r", "arm_elbow_l" ],
+        "coverage": 100,
+        "encumbrance": [ 7, 7 ]
+      },
+      {
+        "covers": [ "arm_l", "arm_r" ],
+        "specifically_covers": [ "arm_lower_l", "arm_lower_r" ],
+        "coverage": 100,
+        "encumbrance": [ 7, 7 ]
+      }
+    ],
     "color": "dark_gray",
     "max_charges": 20,
     "charges_per_use": 1,

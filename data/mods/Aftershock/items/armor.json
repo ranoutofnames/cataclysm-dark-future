@@ -66,9 +66,20 @@
     "material": [ "graphene_weave" ],
     "symbol": "[",
     "color": "dark_gray",
-    "covers": [ "torso", "head", "arms", "legs" ],
-    "coverage": 85,
-    "encumbrance": 4,
+    "//2b": "CDF: the flat covers/coverage/encumbrance of a copy-from child of jedi_cloak is restated as portions with the same numbers (a flat override of a specifically_covers item is a loader error).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "head", "arms" ],
+        "coverage": 85,
+        "encumbrance": 4
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 85,
+        "encumbrance": 4
+      }
+    ],
     "warmth": 30,
     "material_thickness": 3,
     "flags": [ "OVERSIZE", "HOOD", "OUTER", "NO_REPAIR", "SUPER_FANCY", "STURDY", "ALLOWS_TAIL_SNAKE" ],

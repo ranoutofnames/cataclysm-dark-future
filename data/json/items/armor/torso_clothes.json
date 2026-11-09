@@ -13,9 +13,21 @@
     "symbol": "[",
     "looks_like": "vest_leather",
     "color": "brown",
-    "covers": [ "torso", "legs" ],
-    "coverage": 70,
-    "encumbrance": 5,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "coverage": 70,
+        "encumbrance": 2,
+        "volume_encumber_modifier": 0.3
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 42,
+        "encumbrance": [ 1, 1 ]
+      }
+    ],
     "storage": "2 L",
     "warmth": 15,
     "material_thickness": 3,

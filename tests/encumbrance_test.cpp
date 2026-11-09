@@ -66,7 +66,8 @@ struct add_trait {
 
 static constexpr int karate_gi_e = 0;
 static constexpr int vest_e = 5;
-static constexpr int greatcoat_e = 23;
+// CDF: DDA coats.json:1073 greatcoat torso portions (11 lower + 0 upper); was 23 (CDF flat)
+static constexpr int greatcoat_e = 11;
 
 TEST_CASE("regular_clothing_encumbrance", "[encumbrance]") {
     clear_all_state();

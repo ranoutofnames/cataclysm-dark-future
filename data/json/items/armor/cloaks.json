@@ -86,9 +86,20 @@
     "symbol": "[",
     "looks_like": "coat_rain",
     "color": "green",
-    "covers": [ "torso", "arms", "legs" ],
-    "coverage": 90,
-    "encumbrance": 4,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arm_l", "arm_r" ],
+        "coverage": 65,
+        "encumbrance": 4
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 65,
+        "encumbrance": 4
+      }
+    ],
     "warmth": 30,
     "material_thickness": 2,
     "environmental_protection": 3,
@@ -108,9 +119,20 @@
     "symbol": "[",
     "looks_like": "cloak_leather",
     "color": "brown",
-    "covers": [ "torso", "arms", "legs" ],
-    "coverage": 90,
-    "encumbrance": 6,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arm_l", "arm_r" ],
+        "coverage": 65,
+        "encumbrance": 6
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 65,
+        "encumbrance": 6
+      }
+    ],
     "warmth": 60,
     "material_thickness": 2,
     "environmental_protection": 3,
@@ -130,9 +152,20 @@
     "symbol": "[",
     "looks_like": "cloak",
     "color": "dark_gray",
-    "covers": [ "torso", "arms", "legs" ],
-    "coverage": 90,
-    "encumbrance": 6,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arm_l", "arm_r" ],
+        "coverage": 65,
+        "encumbrance": 6
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 65,
+        "encumbrance": 6
+      }
+    ],
     "warmth": 40,
     "material_thickness": 2,
     "environmental_protection": 3,
@@ -152,9 +185,20 @@
     "symbol": "[",
     "looks_like": "cloak",
     "color": "blue",
-    "covers": [ "torso", "arms", "legs" ],
-    "coverage": 90,
-    "encumbrance": 5,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arm_l", "arm_r" ],
+        "coverage": 65,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 65,
+        "encumbrance": 5
+      }
+    ],
     "warmth": 50,
     "material_thickness": 2,
     "environmental_protection": 3,
@@ -175,9 +219,20 @@
     "symbol": "[",
     "looks_like": "robe",
     "color": "brown",
-    "covers": [ "torso", "head", "arms", "hands", "legs" ],
-    "coverage": 90,
-    "encumbrance": 3,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arm_l", "arm_r", "head", "hand_l", "hand_r" ],
+        "coverage": 65,
+        "encumbrance": 3
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 65,
+        "encumbrance": 3
+      }
+    ],
     "warmth": 50,
     "material_thickness": 2,
     "environmental_protection": 5,
@@ -197,9 +252,20 @@
     "symbol": "[",
     "looks_like": "cloak",
     "color": "light_gray",
-    "covers": [ "torso", "arms", "legs" ],
-    "coverage": 90,
-    "encumbrance": 50,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arm_l", "arm_r" ],
+        "coverage": 65,
+        "encumbrance": 50
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 65,
+        "encumbrance": 50
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "environmental_protection": 4,
@@ -230,7 +296,7 @@
       "msg": "The %s flickers for a moment as it becomes opaque.",
       "target": "optical_cloak"
     },
-    "covers": [ "torso", "arms", "legs" ]
+    "//2b": "CDF: covers inherited from optical_cloak, which names its portions (a flat covers on a copy-from child of a specifically_covers item is a loader error)."
   },
   {
     "id": "poncho",

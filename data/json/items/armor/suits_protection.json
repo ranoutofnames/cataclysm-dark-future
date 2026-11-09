@@ -282,7 +282,7 @@
     "id": "armor_riot",
     "type": "ARMOR",
     "category": "armor",
-    "//": "CDF: DDA suits_protection.json:1331 (b4b62254ae2) in BN armor format; replaces the old BN armor_riot (4000 g, 7500 ml, plastic/cotton, torso/legs/arms 85). One material list, plastic_pad first (largest portion), material_thickness 7 (DDA plastic_pad on the torso). Dropped: the gastropod_foot and tentacle_lower_* portions and the flags ALLOWS_GASTROPOD_FOOT / ALLOWS_LEG_TENTACLES (CDF has no such body parts or flags). DDA portion 3 also lists foot_l/foot_r at 65 without specifically_covers; dropped here because the foot is covered whole by the foot portion at 75 (the loader forbids mixing). Removed old BN fields: to_hit -3, bashing 6, repairs_like survivor_suit (DDA has none). The foot portion has no specifically_covers: CDF: DDA foot_arch/foot_ankle sub-locations do not exist; whole foot until a foot sub-location packet. The item_overlay lines for longest_side and molle_capacity are deleted (cdf_overlay_lengths.json, cdf_overlay_molle.json): the item carries both itself.",
+    "//2b": "CDF: DDA suits_protection.json:1331 (b4b62254ae2) in BN armor format; replaces the old BN armor_riot (4000 g, 7500 ml, plastic/cotton, torso/legs/arms 85). One material list, plastic_pad first (largest portion), material_thickness 7 (DDA plastic_pad on the torso). Dropped: the gastropod_foot and tentacle_lower_* portions and the flags ALLOWS_GASTROPOD_FOOT / ALLOWS_LEG_TENTACLES (CDF has no such body parts or flags). DDA portion 3 also lists foot_l/foot_r at 65 without specifically_covers; dropped here because the foot is covered whole by the foot portion at 75 (the loader forbids mixing). Removed old BN fields: to_hit -3, bashing 6, repairs_like survivor_suit (DDA has none). The foot portion has no specifically_covers: CDF: DDA foot_arch/foot_ankle sub-locations do not exist; whole foot until a foot sub-location packet. The item_overlay lines for longest_side and molle_capacity are deleted (cdf_overlay_lengths.json, cdf_overlay_molle.json): the item carries both itself.",
     "name": { "str": "riot armor suit" },
     "description": "A full suit of black plastic body armor plates used by riot police.  Cleverly placed velcro straps secure each piece, resulting in slightly less encumbrance than its constituent parts.  MOLLE webbing is attached to the torso and the word POLICE is emblazoned across the front.",
     "weight": "3 kg",
@@ -554,9 +554,25 @@
     "symbol": "[",
     "looks_like": "coat_winter",
     "color": "light_gray",
-    "covers": [ "torso", "arms", "legs" ],
-    "coverage": 90,
-    "encumbrance": 15,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "coverage": 100,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "arm_l", "arm_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 72,
+        "encumbrance": 7
+      }
+    ],
     "warmth": 30,
     "material_thickness": 5,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],

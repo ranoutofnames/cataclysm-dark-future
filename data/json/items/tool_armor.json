@@ -321,9 +321,26 @@
     "material": [ "superalloy" ],
     "symbol": "[",
     "color": "light_gray",
-    "covers": [ "torso", "head", "arms", "legs" ],
-    "coverage": 90,
-    "encumbrance": 10,
+    "//2b": "CDF: portions follow DDA b4b62254ae2 (coverage, encumbrance, sub-locations, the legs on leg_draped_l and leg_draped_r); DDA tentacle, gastropod, tail and wing portions and the BELTED layer are not carried (no such parts or field).",
+    "armor_portion_data": [
+      {
+        "covers": [ "torso", "arm_l", "arm_r" ],
+        "coverage": 70,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead", "head_nape" ],
+        "coverage": 100,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "leg_l", "leg_r" ],
+        "specifically_covers": [ "leg_draped_l", "leg_draped_r" ],
+        "coverage": 70,
+        "encumbrance": 10
+      }
+    ],
     "initial_charges": 500,
     "charges_per_use": 25,
     "pocket_data": [
@@ -3494,7 +3511,7 @@
   {
     "id": "rm13_battery",
     "type": "MAGAZINE",
-    "//": "CDF: DDA rm13_combat_armor.json:250-272 (b4b62254ae2) in CDF form: category magazines (tool_magazine does not exist), material list without portions, no pocket_data (built from ammo_type + capacity).",
+    "//2b": "CDF: DDA rm13_combat_armor.json:250-272 (b4b62254ae2) in CDF form: category magazines (tool_magazine does not exist), material list without portions, no pocket_data (built from ammo_type + capacity).",
     "category": "magazines",
     "name": "RM13 battery pack",
     "description": "A simple, heavy, black battery pack labeled \"RM13\".",
