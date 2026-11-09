@@ -23,9 +23,15 @@ class JsonIn;
 class JsonObject;
 class JsonOut;
 class faction;
+class input_context;
 class item;
 class map;
 struct construction;
+
+namespace catacurses
+{
+class window;
+} // namespace catacurses
 
 using faction_id = string_id<faction>;
 static const faction_id your_fac( "your_followers" );
@@ -42,6 +48,7 @@ class zone_type
 
         zone_type_id id;
         bool was_loaded = false;
+        bool hidden = false;
 
         zone_type() = default;
         explicit zone_type( const std::string &name, const std::string &desc,
@@ -527,6 +534,7 @@ class zone_manager
                                           const faction_id &fac = your_fac ) const;
         std::optional<std::string> query_name( const std::string &default_name = "" ) const;
         std::optional<zone_type_id> query_type() const;
+        auto selectable_types() const -> std::vector<zone_type_id>;
         void swap( zone_data &a, zone_data &b );
         void rotate_zones( map &target_map, int turns );
         // list of tripoints of zones that are loot zones only
@@ -539,8 +547,8 @@ class zone_manager
         std::vector<ref_zone_data> get_zones( const faction_id &fac = your_fac );
         std::vector<ref_const_zone_data> get_zones( const faction_id &fac = your_fac ) const;
 
-        bool save_zones();
-        void load_zones();
+        bool save_zones( const std::string &suffix = {} );
+        void load_zones( const std::string &suffix = {} );
         void zone_edited( zone_data &zone );
         void revert_vzones();
         void serialize( JsonOut &json ) const;
@@ -556,3 +564,35 @@ void defer_zone_add( const std::string &name, const zone_type_id &type,
                      const faction_id &faction, bool invert, bool enabled,
                      const tripoint_abs_ms &start, const tripoint_abs_ms &end );
 void flush_deferred_zones();
+
+/**
+ * The zone manager window.
+ *
+ * display_zone_manager() is defined in zone_manager_ui.cpp. The static helpers
+ * are pure seams used by the zone manager tests.
+ */
+class zone_manager_ui
+{
+    public:
+        static void display_zone_manager();
+
+        static auto visible_zones( zone_manager &mgr, const faction_id &fac, bool show_all,
+                                   const tripoint_abs_ms &from, bool debug )
+        -> std::vector<zone_manager::ref_zone_data>;
+        static auto zone_row_text( const zone_data &zone, const tripoint_abs_ms &from, int width )
+        -> std::string;
+        static auto cursor_after_add( int zone_cnt, int vehicle_zones_before,
+                                      int vehicle_zones_after ) -> int;
+        static auto set_enabled_where( const std::vector<zone_manager::ref_zone_data> &zones,
+                                       const std::function<bool( const zone_data & )> &predicate,
+                                       bool enabled ) -> bool;
+        static auto move_zone_index( int active_index, int zone_cnt, bool up ) -> int;
+
+    private:
+        static auto zones_manager_shortcuts( const catacurses::window &w_info,
+                                             const faction_id &faction, bool show_all_zones,
+                                             const input_context &ctxt, int width ) -> void;
+        static auto zones_manager_draw_borders( const catacurses::window &w_border,
+                                                const catacurses::window &w_info_border,
+                                                int i_info_height, int width ) -> void;
+};

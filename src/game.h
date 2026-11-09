@@ -172,6 +172,7 @@ class game : public submap_load_listener
         friend class editmap;
         friend class advanced_inventory;
         friend class main_menu;
+        friend class zone_manager_ui;
         friend distribution_grid_tracker &get_distribution_grid_tracker();
         friend auto get_distribution_grid_tracker_for(
             const dimension_id & ) -> distribution_grid_tracker *;
@@ -706,7 +707,7 @@ class game : public submap_load_listener
         bool check_near_zone( const zone_type_id &type, const tripoint_bub_ms &where ) const;
         bool is_zones_manager_open() const;
         bool is_zone_submap_grid_overlay_enabled() const;
-        void zones_manager();
+        auto set_zones_manager_open( bool zm_open ) -> void { zones_manager_open = zm_open; }
 
         // Look at nearby terrain ';', or select zone points
         std::optional<tripoint_bub_ms> look_around( look_around_mode mode = LA_MODE_DEFAULT );
@@ -1403,6 +1404,20 @@ class game : public submap_load_listener
         item *add_fake_item( detached_ptr<item> &&fake );
         void remove_fake_item( item *it );
 };
+
+/// Options for the zone overlay draw callback shared by `look_around` and the
+/// zone manager window.
+struct zone_callback_options {
+    std::optional<tripoint_abs_ms> &zone_start;
+    std::optional<tripoint_abs_ms> &zone_end;
+    bool &zone_blink;
+    bool &zone_cursor;
+    std::function<std::vector<tripoint_bub_ms>( const tripoint_abs_ms &, const tripoint_abs_ms & )>
+    point_generator;
+    bool is_moving_zone = false;
+};
+auto create_zone_callback( const zone_callback_options &options ) ->
+shared_ptr_fast<game::draw_callback_t>;
 
 // Returns temperature modifier from direct heat radiation of nearby sources
 // @param location Location affected by heat sources

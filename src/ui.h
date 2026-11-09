@@ -1,10 +1,12 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <initializer_list>
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -455,3 +457,123 @@ class pointmenu_cb : public uilist_callback
         ~pointmenu_cb() override;
         void select( uilist *menu ) override;
 };
+
+/**
+ * Helper for typical UI list navigation with wrap-around
+ * Add delta to val. If on bounds, wrap to other bound, otherwise clamp to the range [0,size)
+ */
+template<typename V, typename S>
+inline std::enable_if_t < !std::is_enum_v<V>, V >
+inc_clamp_wrap( V val, int delta, S size )
+{
+    if( size == 0 ) {
+        return 0;
+    }
+    // wrap to last
+    if( val <= 0 && delta < 0 ) {
+        return size - 1;
+    }
+    // wrap to first
+    // Templating of existing `unsigned int` triggers linter rules against `unsigned long`
+    // NOLINTNEXTLINE(cata-no-long)
+    if( val >= static_cast<V>( size ) - 1 && delta > 0 ) {
+        return 0;
+    }
+    return std::clamp<V>( val + delta, 0, size - 1 );
+}
+
+/**
+ * Helper for typical arrow key UI list navigation with wrap-around
+ * Add 1/-1 to val, then wrap to the range [0,size)
+ */
+template<typename V, typename S>
+inline std::enable_if_t < !std::is_enum_v<V>, V >
+inc_clamp_wrap( V val, bool inc, S size )
+{
+    return inc_clamp_wrap( val, static_cast<int>( inc ? 1 : -1 ), size );
+}
+
+/**
+ * Helper for typical arrow key UI list navigation with wrap-around
+ * Specialized for enum values
+ * Add 1/-1 to val, then wrap to the range [0,size)
+ */
+template<typename T, typename I>
+inline std::enable_if_t<std::is_enum_v<T>, T>
+inc_clamp_wrap( T val, I inc, T size )
+{
+    return static_cast<T>( inc_clamp_wrap( static_cast<int>( val ), inc, static_cast<int>( size ) ) );
+}
+
+/**
+ * Helper for typical UI list navigation without wrap-around
+ * Add delta to val, then clamp to the range [min,max]
+ */
+template<typename V, typename S>
+inline std::enable_if_t < !std::is_enum_v<V>, V >
+inc_clamp( V val, int delta, S min, S max )
+{
+    // Templating of existing `unsigned int` triggers linter rules against `unsigned long`
+    if constexpr( std::is_unsigned_v<V> ) {
+        // NOLINTNEXTLINE(cata-no-long)
+        if( delta < 0 && val <= static_cast<V>( -delta ) ) {
+            return min;
+        }
+    }
+    return std::clamp<V>( val + delta, min, max );
+}
+
+/**
+ * Helper for typical arrow key UI list navigation without wrap-around
+ * Add 1/-1 to val, then clamp to the range [0,max]
+ */
+template<typename V, typename S>
+inline std::enable_if_t < !std::is_enum_v<V>, V >
+inc_clamp( V val, bool inc, S max )
+{
+    // NOLINTNEXTLINE(cata-no-long)
+    return inc_clamp( val, inc ? 1 : -1, static_cast<S>( 0 ), max );
+}
+
+/**
+ * Helper for typical UI list navigation without wrap-around
+ * Add delta to val, then clamp to the range [0,max]
+ */
+template<typename V, typename S>
+inline std::enable_if_t < !std::is_enum_v<V>, V >
+inc_clamp( V val, int delta, S max )
+{
+    // NOLINTNEXTLINE(cata-no-long)
+    return inc_clamp( val, delta, static_cast<S>( 0 ), max );
+}
+
+/**
+ * Helper for typical UI list navigation without wrap-around
+ * Add 1/-1 to val, then clamp to the range [min,max]
+ */
+template<typename V, typename S>
+inline std::enable_if_t < !std::is_enum_v<V>, V >
+inc_clamp( V val, bool inc, S min, S max )
+{
+    return inc_clamp( val, inc ? 1 : -1, min, max );
+}
+
+/**
+ * Helper for typical UI list navigation without wrap-around
+ * Specialized for enum values
+ * Add 1/-1 to val, then clamp to the range [0,max]
+ */
+template<typename T, typename I>
+inline std::enable_if_t<std::is_enum_v<T>, T>
+inc_clamp( T val, I inc, T size )
+{
+    return static_cast<T>( inc_clamp( static_cast<int>( val ), inc, static_cast<int>( size ) ) );
+}
+
+/**
+ * Helper for typical UI list navigation with wrap-around
+ * Handles up, down, scroll_up and _down, page_up and _down, home, and end
+ * Returns true if an action/input was handled
+ */
+template<typename V, typename S>
+bool navigate_ui_list( const std::string &action, V &val, int page_delta, S size, bool wrap );

@@ -271,6 +271,18 @@
   },
   {
     "type": "keybinding",
+    "id": "HOME",
+    "name": "Home",
+    "bindings": [ { "input_method": "keyboard", "key": "HOME" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "END",
+    "name": "End",
+    "bindings": [ { "input_method": "keyboard", "key": "END" } ]
+  },
+  {
+    "type": "keybinding",
     "id": "SCROLL_UP",
     "name": "Scroll up",
     "bindings": [ { "input_method": "mouse", "key": "SCROLL_UP" } ]
@@ -2968,6 +2980,27 @@
     "category": "ZONES_MANAGER",
     "name": "Disable zone",
     "bindings": [ { "input_method": "keyboard", "key": "d" }, { "input_method": "keyboard", "key": "D" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "ENABLE_VEHICLE_ZONES",
+    "category": "ZONES_MANAGER",
+    "name": "Enable vehicle zones",
+    "bindings": [ { "input_method": "keyboard", "key": "c" }, { "input_method": "keyboard", "key": "C" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "DISABLE_VEHICLE_ZONES",
+    "category": "ZONES_MANAGER",
+    "name": "Disable vehicle zones",
+    "bindings": [ { "input_method": "keyboard", "key": "v" }, { "input_method": "keyboard", "key": "V" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "CHANGE_FACTION",
+    "category": "ZONES_MANAGER",
+    "name": "Change shown faction",
+    "bindings": [ { "input_method": "keyboard", "key": "F" }, { "input_method": "keyboard", "key": "f" } ]
   },
   {
     "type": "keybinding",

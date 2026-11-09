@@ -1,0 +1,17 @@
+[
+  {
+    "id": "TEST_HIDDEN_ZONE",
+    "type": "LOOT_ZONE",
+    "name": "Test hidden zone",
+    "description": "Hidden loot zone type used by the zone manager tests.",
+    "color": "light_gray",
+    "hidden": true
+  },
+  {
+    "id": "TEST_VISIBLE_ZONE",
+    "type": "LOOT_ZONE",
+    "name": "Test visible zone",
+    "description": "Visible loot zone type used by the zone manager tests.",
+    "color": "light_gray"
+  }
+]

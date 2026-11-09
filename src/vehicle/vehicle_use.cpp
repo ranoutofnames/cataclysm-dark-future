@@ -552,7 +552,7 @@ void vehicle::autopilot_patrol_check() {
     if (mgr.has_near(zone_type_id("VEHICLE_PATROL"), abs_ms_location(), 60)) {
         enable_patrol();
     } else {
-        g->zones_manager();
+        zone_manager_ui::display_zone_manager();
     }
 }
 

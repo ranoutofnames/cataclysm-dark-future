@@ -178,6 +178,7 @@ void zone_type::load( const JsonObject &jo, const std::string & )
     mandatory( jo, was_loaded, "id", id );
     optional( jo, was_loaded, "description", desc_, "" );
     optional( jo, was_loaded, "color", color_, c_white );
+    optional( jo, was_loaded, "hidden", hidden );
 }
 
 shared_ptr_fast<zone_options> zone_options::create( const zone_type_id &type )
@@ -827,36 +828,40 @@ std::optional<std::string> zone_manager::query_name( const std::string &default_
 
 std::optional<zone_type_id> zone_manager::query_type() const
 {
-    const auto &types = get_manager().get_types();
-    std::vector<std::pair<zone_type_id, zone_type>> types_vec;
-    std::copy( types.begin(), types.end(),
-               std::back_inserter<std::vector<std::pair<zone_type_id, zone_type>>>( types_vec ) );
-    std::sort( types_vec.begin(), types_vec.end(),
-    []( const std::pair<zone_type_id, zone_type> &lhs, const std::pair<zone_type_id, zone_type> &rhs ) {
-        return localized_compare( lhs.second.name(), rhs.second.name() );
-    } );
+    const auto types_vec = selectable_types();
 
     uilist as_m;
     as_m.desc_enabled = true;
     as_m.text = _( "Select zone type:" );
 
     size_t i = 0;
-    for( const auto &pair : types_vec ) {
-        const auto &type = pair.second;
+    for( const auto &type_id : types_vec ) {
+        const auto &type = *type_id;
 
         as_m.addentry_desc( i++, true, MENU_AUTOASSIGN, type.name(), type.desc() );
     }
 
     as_m.query();
-    if( as_m.ret < 0 ) {
+    if( as_m.ret < 0 || static_cast<size_t>( as_m.ret ) >= types_vec.size() ) {
         return {};
     }
-    size_t index = as_m.ret;
+    return types_vec[static_cast<size_t>( as_m.ret )];
+}
 
-    auto iter = types_vec.begin();
-    std::advance( iter, index );
+auto zone_manager::selectable_types() const -> std::vector<zone_type_id>
+{
+    std::vector<std::pair<zone_type_id, zone_type>> types_vec;
+    for( const auto &entry : get_types() ) {
+        if( !entry.first.is_valid() || !entry.first->hidden ) {
+            types_vec.emplace_back( entry );
+        }
+    }
+    std::sort( types_vec.begin(), types_vec.end(),
+    []( const std::pair<zone_type_id, zone_type> &lhs, const std::pair<zone_type_id, zone_type> &rhs ) {
+        return localized_compare( lhs.second.name(), rhs.second.name() );
+    } );
 
-    return iter->first;
+    return types_vec | std::views::keys | std::ranges::to<std::vector>();
 }
 
 bool zone_data::set_name()
@@ -1638,9 +1643,9 @@ void zone_data::deserialize( JsonIn &jsin )
     options = new_options;
 }
 
-bool zone_manager::save_zones()
+bool zone_manager::save_zones( const std::string &suffix )
 {
-    const auto saved = g->get_active_world()->write_to_player_file( ".zones.json",
+    const auto saved = g->get_active_world()->write_to_player_file( ".zones" + suffix + ".json",
     [&]( std::ostream & fout ) {
         auto jsout = JsonOut( fout );
         serialize( jsout );
@@ -1654,12 +1659,17 @@ bool zone_manager::save_zones()
     return true;
 }
 
-void zone_manager::load_zones()
+void zone_manager::load_zones( const std::string &suffix )
 {
-    g->get_active_world()->read_from_player_file( ".zones.json", [&]( std::istream & fin ) {
+    const auto loaded = g->get_active_world()->read_from_player_file( ".zones" + suffix + ".json",
+    [&]( std::istream & fin ) {
         JsonIn jsin( fin );
         deserialize( jsin );
     }, true );
+    if( !loaded ) {
+        // If no such file or failed to load, clear zones.
+        zones.clear();
+    }
     revert_vzones();
     added_vzones.clear();
     changed_vzones.clear();
