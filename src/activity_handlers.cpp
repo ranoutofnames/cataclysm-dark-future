@@ -2512,10 +2512,6 @@ namespace repair_activity_hack
 
 namespace
 {
-enum class hack_type_t : int {
-    vehicle = 0,
-    furniture = 1
-};
 
 std::optional<hack_type_t> get_hack_type( const player_activity &activity )
 {
@@ -2536,6 +2532,8 @@ tripoint_bub_ms get_position( const player_activity &activity )
     return abs_to_bub( activity.coords.at( 0 ) );
 }
 
+} // namespace
+
 item *get_fake_tool( hack_type_t hack_type, const player_activity &activity )
 {
     const tripoint_bub_ms position = get_position( activity );
@@ -2553,7 +2551,7 @@ item *get_fake_tool( hack_type_t hack_type, const player_activity &activity )
             const vehicle &veh = pos->vehicle();
 
             fake_item = item::spawn_temporary( activity.str_values[1], calendar::turn, 0 );
-            fake_item->charges = veh.fuel_left( itype_battery );
+            fake_item->ammo_set( fake_item->ammo_default(), veh.fuel_left( itype_battery ) );
 
             break;
         }
@@ -2575,7 +2573,7 @@ item *get_fake_tool( hack_type_t hack_type, const player_activity &activity )
                     const auto abspos = activity.coords.at( 0 );
                     const distribution_grid &grid = get_distribution_grid_tracker().grid_at( abspos );
                     fake_item = item::spawn_temporary( item_type.get_id(), calendar::turn, 0 );
-                    fake_item->charges = grid.get_resource( true );
+                    fake_item->ammo_set( fake_item->ammo_default(), grid.get_resource( true ) );
                     break;
                 }
             }
@@ -2594,7 +2592,7 @@ void discharge_real_power_source(
     const int original_charges
 )
 {
-    const int used_charges = original_charges - tool.charges;
+    const int used_charges = original_charges - tool.ammo_remaining();
 
     if( used_charges <= 0 ) {
         return;
@@ -2627,8 +2625,6 @@ void discharge_real_power_source(
         );
     }
 }
-
-} // namespace
 
 void patch_activity_for_vehicle(
     player_activity &activity,
@@ -2696,7 +2692,7 @@ void activity_handlers::train_skill_do_turn( player_activity *act, player *p )
     if( hack_type ) {
         main_tool = hack::get_fake_tool( hack_type.value(), *act );
         if( main_tool != nullptr ) {
-            hack_original_charges = main_tool ? main_tool->charges : 0;
+            hack_original_charges = main_tool ? main_tool->ammo_remaining() : 0;
         }
     } else {
         main_tool = &*act->get_tools().front();
@@ -2790,7 +2786,7 @@ void activity_handlers::repair_item_finish( player_activity *act, player *p )
         ploc = &*act->targets[0];
     }
     const auto hack_position = hack_type ? hack::get_position( *act ) : tripoint_bub_ms{};
-    const int hack_original_charges = fake_tool ? fake_tool->charges : 0;
+    const int hack_original_charges = fake_tool ? fake_tool->ammo_remaining() : 0;
 
     item *main_tool = nullptr;
     if( hack_type.has_value() ) {

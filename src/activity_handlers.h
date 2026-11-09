@@ -300,6 +300,20 @@ finish_functions;
 namespace repair_activity_hack
 {
 
+// CDF: fake-tool helpers are exposed for tests; DDA has no equivalent.
+enum class hack_type_t : int {
+    vehicle = 0,
+    furniture = 1
+};
+
+item *get_fake_tool( hack_type_t hack_type, const player_activity &activity );
+void discharge_real_power_source(
+    hack_type_t hack_type,
+    const tripoint_bub_ms &position,
+    item &tool,
+    int original_charges
+);
+
 void patch_activity_for_vehicle(
     player_activity &activity,
     const tripoint_bub_ms &veh_part_position,

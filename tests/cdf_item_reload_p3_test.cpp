@@ -472,7 +472,9 @@ TEST_CASE( "reload_option_qty_forces_1_for_pocket_targeted_reloads", "[p3][reloa
 
     item_reload_option untargeted( &dummy, &gun, &gun, ammo );
     untargeted.qty( 1000 );
-    REQUIRE( untargeted.qty() > 1 );
+    // CDF: P3-4-c-H7: qty() follows DDA now (count() of a magazine is 1, not its rounds), so the
+    // untargeted quantity is no longer > 1 here; the targeted check below keeps the pocket-forces-1 rule.
+    CHECK( untargeted.qty() >= 1 );
 
     item_reload_option opt( &dummy, &gun, &gun, ammo );
     opt.pocket_index = glock_idx;

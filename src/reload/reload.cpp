@@ -184,7 +184,12 @@ void item_reload_option::qty(int val) {
     }
 
     const auto ammo_by_charges = ammo_obj.is_ammo() || ammo_in_container || ammo->is_comestible();
-    const auto available_ammo = ammo_by_charges ? ammo_obj.charges : ammo_obj.ammo_remaining();
+    int available_ammo;
+    if (ammo->has_flag(flag_SPEEDLOADER) || ammo->has_flag(flag_SPEEDLOADER_CLIP)) {
+        available_ammo = ammo_obj.ammo_remaining();
+    } else {
+        available_ammo = ammo_by_charges ? ammo_obj.charges : ammo_obj.count();
+    }
     // Constrain by available ammo, target capacity and other external factors (max_qty).
     // @ref max_qty is currently set when reloading ammo belts and limits to available linkages.
     qty_ = std::min({val, available_ammo, remaining_capacity, max_qty});
