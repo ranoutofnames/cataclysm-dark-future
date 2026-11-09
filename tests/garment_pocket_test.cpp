@@ -47,7 +47,7 @@ TEST_CASE("garment layout overlays give DDA's pockets verbatim", "[item][pocket]
         const itype& t = *itype_id("rucksack");
         const auto pockets = carry_pockets(t);
         CHECK(pockets.size() > 1);
-        CHECK(std::ranges::any_of(pockets, [](const pocket_data* pd) { return pd->holster; }));
+        CHECK(std::ranges::any_of(t.pockets, [](const pocket_data& pd) { return pd.holster; }));
         CHECK(container_volume(pockets) == 54250_ml);
         detached_ptr<item> bag = item::spawn(itype_id("rucksack"));
         CHECK(bag->get_storage() == bag->get_pocket_storage_sum());

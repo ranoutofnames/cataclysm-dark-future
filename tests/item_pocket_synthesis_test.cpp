@@ -1,4 +1,6 @@
 #include "catch/catch.hpp"
+#include "fstream_utils.h"
+#include "json.h"
 #include "flag.h"
 #include "item_factory.h"
 #include "item_pocket.h"
@@ -19,6 +21,41 @@ auto count_type(const itype& t, pocket_type pt) -> int {
     }));
 }
 
+// The holster pockets of the worn layouts (CAP1c): the item_overlay entries of
+// cdf_overlay_garment_pockets.json that carry "holster": true. A garment without a layout gets
+// the 10 L strap pocket when its storage is 10 L or more (item_factory synthesize_pockets).
+auto overlay_holster_counts() -> const std::map<std::string, int>& {
+    static const std::map<std::string, int> counts = [] {
+        std::map<std::string, int> ret;
+        const bool read = read_from_file_json("data/json/items/cdf_overlay_garment_pockets.json",
+        [&ret](JsonIn& jsin) {
+            JsonArray all = jsin.get_array();
+            while (all.has_more()) {
+                JsonObject overlay = all.next_object();
+                overlay.allow_omitted_members();
+                int holsters = 0;
+                JsonArray pockets = overlay.get_array("pocket_data");
+                while (pockets.has_more()) {
+                    JsonObject pocket = pockets.next_object();
+                    pocket.allow_omitted_members();
+                    if (pocket.get_bool("holster", false)) { holsters++; }
+                }
+                ret[overlay.get_string("id")] = holsters;
+            }
+        });
+        REQUIRE(read);
+        return ret;
+    }();
+    return counts;
+}
+
+auto worn_holsters(const itype& t) -> int {
+    if (!t.armor || t.armor->storage <= 0_ml) { return 0; }
+    const auto layout = overlay_holster_counts().find(t.get_id().str());
+    if (layout != overlay_holster_counts().end()) { return layout->second; }
+    return t.armor->storage >= 10_liter ? 1 : 0;
+}
+
 // The pocket set the plan's step-2 table predicts for a type without "pocket_data".
 auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
     std::map<pocket_type, int> ret;
@@ -26,7 +63,9 @@ auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
     if (t.container) { containers++; }
     // P1f: holsters and bandoliers are explicit pocket_data now, there is nothing to synthesise
     // attach_molle is no longer a pocket: MOLLE is DDA additional_pockets (J5, owner decision)
+    // worn storage: the carry pockets are checked in garment_pocket_test, the holsters are counted here
     if (containers > 0) { ret[pocket_type::CONTAINER] = containers; }
+    if (worn_holsters(t) > 0) { ret[pocket_type::CONTAINER] += worn_holsters(t); }
     if (t.magazine) { ret[pocket_type::MAGAZINE] = 1; }
     // 4-b2: a tool with an ammo type and max_charges gets an integral MAGAZINE pocket (money keeps charges)
     if (t.tool && !t.tool->ammo_id.empty() && t.tool->max_charges > 0 && t.magazines.empty() &&

@@ -3300,6 +3300,14 @@ static auto is_carried_pocket( const item_pocket &pocket ) -> bool
     return pocket.is_carry() && pocket.is_type( pocket_type::CONTAINER );
 }
 
+// CDF: the pockets whose items are listed as carried (positions, stacks, lookups): the carried
+// storage and the holster pockets. `carry` decides capacity only, never visibility: a holstered
+// item stays reachable for reload, wield and use lookups (DDA has no carry flag).
+static auto is_listed_pocket( const item_pocket &pocket ) -> bool
+{
+    return ( pocket.is_carry() || pocket.is_holster() ) && pocket.is_type( pocket_type::CONTAINER );
+}
+
 // the wielded item, if there is one: a wielded bag is part of the carried view (J4-1, DDA
 // best_pocket searches the wielded item first)
 static const item *wielded_for_carry( const Character &who )
@@ -13661,7 +13669,7 @@ std::vector<carried_stack> carried_item_stacks( const Character &who )
             return;
         }
         for( const item_pocket &pocket : source->contents.get_pockets() ) {
-            if( !is_carried_pocket( pocket ) ) {
+            if( !is_listed_pocket( pocket ) ) {
                 continue;
             }
             for( item * const &it : pocket.items() ) {

@@ -1170,7 +1170,8 @@ void Item_factory::synthesize_pockets( itype &obj ) const
             if( obj.armor->storage >= 10_liter ) {
                 // mirrors DDA's external strap pockets
                 pocket_data strap( pocket_type::CONTAINER );
-                strap.carry = true;
+                // CDF (CAP1c): the same rule as an item's own pockets: a holster is no carried storage
+                strap.carry = false;
                 strap.holster = true;
                 strap.raw_volume_capacity = 10_liter;
                 strap.max_item_volume = 10_liter;
@@ -1265,7 +1266,10 @@ void Item_factory::load_item_overlay( const JsonObject &jo )
         for( const JsonObject jo_pocket : jo.get_array( "pocket_data" ) ) {
             pocket_data pocket;
             pocket.load( jo_pocket );
-            pocket.carry = true;
+            // CDF (CAP1c): the same rule as an item's own pockets (CARRY1); the overlay only supplies the layout
+            if( !pocket.carry_given ) {
+                pocket.carry = pocket.type == pocket_type::CONTAINER && !pocket.holster && !pocket.ablative;
+            }
             layout.push_back( pocket );
         }
         overlay_pockets[id] = std::move( layout );

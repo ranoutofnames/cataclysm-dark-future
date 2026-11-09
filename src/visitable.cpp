@@ -524,7 +524,8 @@ VisitResponse item_contents::visit_contents( const std::function<VisitResponse( 
         &func, item *parent, bool skip_carry )
 {
     for( item_pocket &pocket : pockets ) {
-        if( skip_carry && pocket.is_carry() ) {
+        // CDF: holster pockets are listed with the carried items (see is_listed_pocket)
+        if( skip_carry && ( pocket.is_carry() || pocket.is_holster() ) ) {
             continue;
         }
         for( item *&e : pocket.items() ) {
@@ -620,7 +621,7 @@ VisitResponse visitable<Character>::visit_items(
 
     const auto visit_carried = [&func]( item & holder ) {
         for( item_pocket &pocket : holder.contents.get_pockets() ) {
-            if( !pocket.is_carry() || !pocket.is_type( pocket_type::CONTAINER ) ) {
+            if( !( pocket.is_carry() || pocket.is_holster() ) || !pocket.is_type( pocket_type::CONTAINER ) ) {
                 continue;
             }
             for( item *&carried_it : pocket.items() ) {
@@ -953,7 +954,7 @@ void location_visitable<Character>::remove_items_with( const
         if( response == VisitResponse::SKIP && worn_it ) {
             // NOLINTNEXTLINE(bugprone-use-after-move)
             for( item_pocket &pocket : worn_it->contents.get_pockets() ) {
-                if( pocket.is_carry() ) {
+                if( pocket.is_carry() || pocket.is_holster() ) {
                     visit_internal( filter_and_collect, pocket.items(), last );
                 }
             }
