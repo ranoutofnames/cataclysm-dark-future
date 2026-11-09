@@ -572,7 +572,11 @@ std::string fmt_wielded_weapon( const Character &who )
     } else if( ( weapon.is_container() && weapon.contents.num_item_stacks() == 1 ) ||
                weapon.ammo_capacity() > 0 ) {
         return string_format( "(%d) %s",
-                              weapon.is_container() ? weapon.contents.front().charges : weapon.ammo_remaining(), weapon.tname() );
+                              // CDF: 4-c-Jb: a tool in the bag keeps its rounds in its pocket, not in charges
+                              weapon.is_container() ?
+                              ( weapon.contents.front().count_by_charges() ?
+                                weapon.contents.front().charges : weapon.contents.front().ammo_remaining() ) :
+                              weapon.ammo_remaining(), weapon.tname() );
     } else {
         return weapon.tname();
     }

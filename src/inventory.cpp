@@ -471,7 +471,12 @@ void inventory::form_from_map( map &m, std::vector<tripoint_bub_ms> pts, const C
                         auto &grid = get_distribution_grid_tracker().grid_at( bub_to_abs( p ) );
                         furn_item.charges = grid.get_resource();
                     } else {
-                        furn_item.charges = ammo ? count_charges_in_list( &*ammo, m.i_at( p ) ) : 0;
+                        // CDF: 4-c-Jb: the tool's integral pocket holds the tile's ammo, charges stay 0
+                        if( ammo ) {
+                            furn_item.ammo_set( ammo, count_charges_in_list( &*ammo, m.i_at( p ) ) );
+                        } else {
+                            furn_item.charges = 0;
+                        }
                     }
                     add_item_by_items_type_cache( furn_item, false, true, false );
                 }

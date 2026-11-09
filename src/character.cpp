@@ -11729,10 +11729,12 @@ const item *Character::get_item_with_id( const itype_id &item_id, bool need_char
 
     for( const carried_stack &stack : carried_item_stacks( *this ) ) {
         for( item *top : stack ) {
-            top->visit_items( [&ret, &item_id, &need_charges]( const item * it ) {
+            top->visit_items( [this, &ret, &item_id, &need_charges]( const item * it ) {
                 if( it->typeId() == item_id ) {
                     if( it->is_tool() && need_charges ) {
-                        if( it->type->tool->max_charges && it->charges <= 0 ) {
+                        // CDF: 4-c-Jb: a tool's rounds live in its pocket, `charges` stays 0.
+                        // The need_charges parameter is kept for the Lua and NPC callers.
+                        if( it->type->tool->max_charges && it->ammo_remaining( this ) <= 0 ) {
                             return VisitResponse::SKIP;
                         }
                     }
@@ -11759,10 +11761,10 @@ item &Character::add_item_with_id( const itype_id &item_id, int count )
 
 bool Character::has_item_with_id( const itype_id &item_id, bool need_charges ) const
 {
-    return has_item_with( [&item_id, &need_charges]( const item & it ) {
+    return has_item_with( [this, &item_id, &need_charges]( const item & it ) {
         if( it.is_tool() && need_charges ) {
             return it.typeId() == item_id &&
-                   it.type->tool->max_charges ? it.charges > 0 : it.typeId() == item_id;
+                   ( !it.type->tool->max_charges || it.ammo_remaining( this ) > 0 );
         }
         return it.typeId() == item_id;
     } );
@@ -11770,10 +11772,10 @@ bool Character::has_item_with_id( const itype_id &item_id, bool need_charges ) c
 
 std::vector<item *> Character::all_items_with_id( const itype_id &item_id, bool need_charges ) const
 {
-    return items_with( [&item_id, &need_charges]( const item & it ) {
+    return items_with( [this, &item_id, &need_charges]( const item & it ) {
         if( it.is_tool() && need_charges ) {
             return it.typeId() == item_id &&
-                   it.type->tool->max_charges ? it.charges > 0 : it.typeId() == item_id;
+                   ( !it.type->tool->max_charges || it.ammo_remaining( this ) > 0 );
         }
         return it.typeId() == item_id;
     } );
@@ -11781,9 +11783,10 @@ std::vector<item *> Character::all_items_with_id( const itype_id &item_id, bool 
 
 bool Character::has_item_with_flag( const flag_id &flag, bool need_charges ) const
 {
-    return has_item_with( [&flag, &need_charges]( const item & it ) {
+    return has_item_with( [this, &flag, &need_charges]( const item & it ) {
         if( it.is_tool() && need_charges ) {
-            return it.has_flag( flag ) && it.type->tool->max_charges ? it.charges > 0 : it.has_flag( flag );
+            return it.has_flag( flag ) &&
+                   ( !it.type->tool->max_charges || it.ammo_remaining( this ) > 0 );
         }
         return it.has_flag( flag );
     } );
@@ -11791,9 +11794,10 @@ bool Character::has_item_with_flag( const flag_id &flag, bool need_charges ) con
 
 std::vector<item *> Character::all_items_with_flag( const flag_id &flag, bool need_charges ) const
 {
-    return items_with( [&flag, &need_charges]( const item & it ) {
+    return items_with( [this, &flag, &need_charges]( const item & it ) {
         if( it.is_tool() && need_charges ) {
-            return it.has_flag( flag ) && it.type->tool->max_charges ? it.charges > 0 : it.has_flag( flag );
+            return it.has_flag( flag ) &&
+                   ( !it.type->tool->max_charges || it.ammo_remaining( this ) > 0 );
         }
         return it.has_flag( flag );
     } );
@@ -11801,9 +11805,9 @@ std::vector<item *> Character::all_items_with_flag( const flag_id &flag, bool ne
 
 std::vector<item *> Character::all_items( bool need_charges ) const
 {
-    return items_with( [&need_charges]( const item & it ) {
+    return items_with( [this, &need_charges]( const item & it ) {
         if( it.is_tool() && need_charges ) {
-            return it.type->tool->max_charges ? it.charges > 0 : true;
+            return !it.type->tool->max_charges || it.ammo_remaining( this ) > 0;
         }
         return true;
     } );
