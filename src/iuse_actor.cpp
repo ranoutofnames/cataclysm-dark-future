@@ -2335,7 +2335,8 @@ int fireweapon_off_actor::use( player &p, item &it, bool t, const tripoint_bub_m
         return 0;
     }
 
-    if( it.charges <= 0 ) {
+    // CDF: the fuel lives in the weapon's pocket since 4-b2 (DDA reads it through ammo_sufficient)
+    if( it.ammo_remaining() <= 0 ) {
         p.add_msg_if_player( _( lacks_fuel_message ) );
         return 0;
     }
@@ -2371,7 +2372,7 @@ int fireweapon_off_actor::use( player &p, item &it, bool t, const tripoint_bub_m
 ret_val<bool> fireweapon_off_actor::can_use( const Character &p, const item &it, bool,
         const tripoint_bub_ms & ) const
 {
-    if( it.charges < it.type->charges_to_use() ) {
+    if( it.ammo_remaining() < it.type->charges_to_use() ) {
         return ret_val<bool>::make_failure( _( "This tool doesn't have enough charges." ) );
     }
 
@@ -2404,7 +2405,7 @@ std::unique_ptr<iuse_actor> fireweapon_on_actor::clone() const
 int fireweapon_on_actor::use( player &p, item &it, bool t, const tripoint_bub_ms & ) const
 {
     bool extinguish = true;
-    if( it.charges == 0 ) {
+    if( it.ammo_remaining() == 0 ) {
         p.add_msg_if_player( m_bad, _( charges_extinguish_message ) );
         // Revert when it runs out of charges is handled in process_tool.
         extinguish = false;

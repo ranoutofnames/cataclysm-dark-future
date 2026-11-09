@@ -1804,10 +1804,6 @@ int iuse::fish_trap( player *p, item *it, bool t, const tripoint_bub_ms &pos )
             return 0;
         }
 
-        if( it->charges < 0 ) {
-            it->charges = 0;
-            return 0;
-        }
         if( p->is_mounted() ) {
             p->add_msg_if_player( m_info, _( "You cannot do that while mounted." ) );
             return 0;
@@ -1817,7 +1813,8 @@ int iuse::fish_trap( player *p, item *it, bool t, const tripoint_bub_ms &pos )
             return 0;
         }
 
-        if( it->charges == 0 ) {
+        // CDF: the bait lives in the trap's pocket since 4-b2 (DDA iuse.cpp:1479)
+        if( it->ammo_remaining() == 0 ) {
             p->add_msg_if_player( _( "Fish are not foolish enough to go in here without bait." ) );
             return 0;
         }
@@ -1845,7 +1842,7 @@ int iuse::fish_trap( player *p, item *it, bool t, const tripoint_bub_ms &pos )
 
     } else {
         // Handle processing fish trap over time.
-        if( it->charges == 0 ) {
+        if( it->ammo_remaining() == 0 ) {
             it->deactivate();
             return 0;
         }
@@ -1858,11 +1855,13 @@ int iuse::fish_trap( player *p, item *it, bool t, const tripoint_bub_ms &pos )
             int fish = good_fishing_spot( pos );
             int success = -250 + ( good_fishing_spot( pos ) * 15 );
             const int surv_mod = p->get_skill_level( skill_survival ) + ( fish );
-            for( int i = 0; i < it->charges; i++ ) {
+            const int bait = it->ammo_remaining();
+            for( int i = 0; i < bait; i++ ) {
                 success += surv_mod + fish;
             }
 
-            it->charges = 0;
+            // CDF: use up all the bait (DDA iuse.cpp:1553)
+            it->ammo_consume( bait, pos, nullptr );
 
             int caught = 0;
 
@@ -3989,6 +3988,7 @@ int iuse::rpgdie( player *you, item *die, bool, const tripoint_bub_ms & )
     return 0;
 }
 
+// CDF: the air lives in the tank's nitrox pocket since 4-b2, so it is read with ammo_remaining()
 int iuse::dive_tank( player *p, item *it, bool t, const tripoint_bub_ms & )
 {
     if( t ) { // Normal use
@@ -3999,7 +3999,7 @@ int iuse::dive_tank( player *p, item *it, bool t, const tripoint_bub_ms & )
             if( one_in( 15 ) ) {
                 p->add_msg_if_player( m_bad, _( "You take a deep breath from your %s." ), it->tname() );
             }
-            if( it->charges == 0 ) {
+            if( it->ammo_remaining() == 0 ) {
                 p->add_msg_if_player( m_bad, _( "Air in your %s runs out." ), it->tname() );
                 it->set_var( "overwrite_env_resist", 0 );
                 it->convert( itype_id( it->typeId().str().substr( 0,
@@ -4014,7 +4014,7 @@ int iuse::dive_tank( player *p, item *it, bool t, const tripoint_bub_ms & )
         }
 
     } else { // Turning it on/off
-        if( it->charges == 0 ) {
+        if( it->ammo_remaining() == 0 ) {
             p->add_msg_if_player( _( "Your %s is empty." ), it->tname() );
         } else if( it->is_active() ) { //off
             p->add_msg_if_player( _( "You turn off the regulator and close the air valve." ) );
@@ -4033,7 +4033,9 @@ int iuse::dive_tank( player *p, item *it, bool t, const tripoint_bub_ms & )
             }
         }
     }
-    if( it->charges == 0 ) {
+    // CDF: only an "_on" tank has a suffix to strip; DDA strips 3 characters from any id here, which turns an
+    // already-off, empty "scuba_tank" into the undefined "scuba_t" (and the tick above into a double strip)
+    if( it->ammo_remaining() == 0 && it->typeId().str().ends_with( "_on" ) ) {
         it->set_var( "overwrite_env_resist", 0 );
         it->convert( itype_id( it->typeId().str().substr( 0,
                                it->typeId().str().size() - 3 ) ) );
@@ -8142,7 +8144,8 @@ static bool hackveh( player &p, item &it, vehicle &veh )
     if( effort == 0 && !query_yn( _( "Try to hack this car's security system?" ) ) ) {
         // Scanning for security systems isn't free
         p.moves -= to_moves<int>( 1_seconds );
-        it.charges -= 1;
+        // CDF: the remote control's battery is a pocket since 4-b2
+        it.ammo_consume( 1, p.bub_pos(), &p );
         return false;
     }
 
@@ -8161,7 +8164,7 @@ static bool hackveh( player &p, item &it, vehicle &veh )
     }
 
     p.moves -= to_moves<int>( time_duration::from_seconds( effort ) );
-    it.charges -= effort;
+    it.ammo_consume( effort, p.bub_pos(), &p );
     if( success && advanced ) { // Unlock controls, but only if they're drive-by-wire
         veh.is_locked = false;
     }

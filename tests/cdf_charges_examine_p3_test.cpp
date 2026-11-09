@@ -7,6 +7,7 @@
 #include "item.h"
 #include "map/map.h"
 #include "map_helpers.h"
+#include "messages.h"
 #include "player_helpers.h"
 #include "state_helpers.h"
 #include "type_id.h"
@@ -59,12 +60,19 @@ TEST_CASE( "furn_fake_item_without_ammo_on_the_tile_does_nothing", "[iexamine][c
     here.furn_set( pos, furn_id( "f_test_fake_tool" ) );
     REQUIRE( charcoal_on( pos ) == 0 );
 
+    Messages::clear_messages();
     const std::string captured = capture_debugmsg_during( [&]() {
         iexamine::use_furn_fake_item( u, pos );
     } );
 
     CHECK( captured.empty() );
     CHECK( charcoal_on( pos ) == 0 );
+    // CDF: bites a fake tool built with rounds the tile does not have (the use message appears
+    // only if the tool ran); the tool's own guards are shadowed, see the 4-c-Jc1b plan.
+    for( const auto &msg : Messages::recent_messages( 0 ) ) {
+        INFO( "message: " << msg.second );
+        CHECK( msg.second.find( "You use the test tool." ) == std::string::npos );
+    }
 }
 
 TEST_CASE( "sign_writing_tool_filter_counts_pocket_ammo", "[iexamine][charges][p3]" )
