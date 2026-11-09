@@ -82,6 +82,99 @@ static const quality_id qual_SLEEP_AID( "SLEEP_AID" );
 
 static const enchantment_value_id ench_val_UNCANNY_DODGE( "UNCANNY_DODGE" );
 
+namespace
+{
+
+// CDF: 5-5d: per-pocket "cur/max" entries for the Wield line of a multimag gun. This is the pocket
+// walk of item::multi_well_name_segments (item.cpp) without the ammo names; DDA keeps two copies too
+// (weapname_ammo and display_name), and sharing one would need an item.h declaration (P3-open).
+// Returns "(cur/max, ...)", or an empty string when the gun has no ammo pocket.
+std::string multimag_ammo_summary( const item &gun )
+{
+    const auto pockets = gun.get_pockets(
+    []( const item_pocket & p ) {
+        return p.is_type( pocket_type::MAGAZINE_WELL ) || p.is_type( pocket_type::MAGAZINE );
+    } );
+    std::vector<std::string> segments;
+    for( const item_pocket *p : pockets ) {
+        int ammo_current = 0;
+        int ammo_max = 0;
+        if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+            const item *mag = p->magazine_current();
+            if( mag != nullptr ) {
+                ammo_current = mag->ammo_remaining();
+                const itype *adata = mag->ammo_data();
+                if( adata ) {
+                    ammo_max = mag->ammo_capacity( adata->ammo->type );
+                } else if( !mag->ammo_default().is_null() ) {
+                    const itype &tmpl = *mag->ammo_default();
+                    if( tmpl.ammo ) {
+                        ammo_max = mag->ammo_capacity( tmpl.ammo->type );
+                    }
+                }
+            } else {
+                const itype_id default_mag = p->magazine_default();
+                if( !default_mag.is_null() && default_mag->magazine ) {
+                    ammo_max = default_mag->magazine->capacity;
+                }
+            }
+        } else {
+            ammotype loaded_ammotype;
+            bool has_loaded_ammo = false;
+            for( const item *e : p->all_items_top() ) {
+                if( e->has_flag( flag_CASING ) ) {
+                    continue;
+                }
+                ammo_current += e->charges > 0 ? e->charges : 1;
+                if( !has_loaded_ammo && e->is_ammo() ) {
+                    loaded_ammotype = e->ammo_type();
+                    has_loaded_ammo = true;
+                }
+            }
+            if( p->get_pocket_data() != nullptr ) {
+                const auto &restrictions = p->get_pocket_data()->ammo_restriction;
+                if( has_loaded_ammo && restrictions.contains( loaded_ammotype ) ) {
+                    // CDF: 5-5d: honour capacity_mods scaling; DDA reads the raw ammo_restriction
+                    // number (character_inventory.cpp), and the item name uses the pocket capacity.
+                    ammo_max = p->ammo_capacity( loaded_ammotype );
+                } else if( !restrictions.empty() ) {
+                    ammo_max = p->ammo_capacity( restrictions.begin()->first );
+                }
+            }
+        }
+        nc_color color = c_white;
+        if( ammo_current == 0 ) {
+            color = c_light_red;
+        } else if( ammo_max > 0 && ammo_current < ammo_max ) {
+            const double ratio = static_cast<double>( ammo_current ) / static_cast<double>( ammo_max );
+            if( ratio < 1.0 / 3.0 ) {
+                color = c_red;
+            } else if( ratio < 2.0 / 3.0 ) {
+                color = c_yellow;
+            } else {
+                color = c_light_green;
+            }
+        }
+        segments.emplace_back( colorize( string_format( "%d/%d", ammo_current, ammo_max ), color ) );
+    }
+    if( segments.empty() ) {
+        return std::string();
+    }
+    std::string summary = "(";
+    bool first = true;
+    for( const std::string &segment : segments ) {
+        if( !first ) {
+            summary += ", ";
+        }
+        first = false;
+        summary += segment;
+    }
+    summary += ")";
+    return summary;
+}
+
+} // namespace
+
 namespace character_funcs
 {
 
@@ -542,12 +635,27 @@ std::string fmt_wielded_weapon( const Character &who )
     }
     const item &weapon = who.primary_weapon();
     if( weapon.is_gun() ) {
-        std::string str = weapon.is_gunmod()
-                          ? string_format( "(%d) %s",
-                                           weapon.ammo_remaining(), weapon.type_name() )
-                          : string_format( "(%d) [%s] %s",
-                                           weapon.gun_current_mode()->ammo_remaining(),
-                                           weapon.gun_current_mode().tname(), weapon.type_name() );
+        std::string str;
+        if( weapon.is_gunmod() ) {
+            str = string_format( "(%d) %s", weapon.ammo_remaining(), weapon.type_name() );
+        } else {
+            const gun_mode mode = weapon.gun_current_mode();
+            const int cur_ammo = mode.target != nullptr ? mode.target->ammo_remaining() : 0;
+            // CDF: 5-5d: a gun with firing requirements lists every ammo pocket as "cur/max"
+            // instead of the current mode's single count (DDA weapname_ammo, character_inventory.cpp).
+            const std::string ammo_text = weapon.uses_firing_requirements()
+                                          ? multimag_ammo_summary( weapon )
+                                          : string_format( "(%d)", cur_ammo );
+            // CDF: 5-5d: hide the mode when the gun that owns it has no alternative (DDA weapname_mode).
+            const bool show_mode = mode.target != nullptr && mode.target->gun_all_modes().size() > 1;
+            str = weapon.type_name();
+            if( show_mode ) {
+                str = "[" + mode.tname() + "] " + str;
+            }
+            if( !ammo_text.empty() ) {
+                str = ammo_text + " " + str;
+            }
+        }
         // Is either the base item or at least one auxiliary gunmod loaded (includes empty magazines)
         bool base = weapon.ammo_capacity() > 0 && !weapon.has_flag( flag_RELOAD_AND_SHOOT );
 
