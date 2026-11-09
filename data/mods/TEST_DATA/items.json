@@ -2403,5 +2403,25 @@
       "str": "test jam gun mult zero"
     },
     "gun_jam_mult": 0
+  },
+  {
+    "id": "pal_test_powered_armor",
+    "type": "TOOL_ARMOR",
+    "name": { "str": "TEST powered armor" },
+    "description": "Power armor that spends charges, for the PAL1 energy-branch test.",
+    "weight": "1 kg",
+    "volume": "1 L",
+    "price": "1 USD",
+    "price_postapoc": "1 USD",
+    "material": [ "steel" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "covers": [ "legs" ],
+    "coverage": 100,
+    "encumbrance": 10,
+    "material_thickness": 1,
+    "ammo": "battery",
+    "charges_per_use": 25,
+    "flags": [ "POWERARMOR_EXO", "USE_UPS", "NAT_UPS" ]
   }
 ]
