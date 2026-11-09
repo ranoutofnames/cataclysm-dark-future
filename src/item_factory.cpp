@@ -1107,6 +1107,14 @@ void Item_factory::synthesize_pockets( itype &obj ) const
                 }
             }
         }
+        // CDF (MOD1): explicit pocket_data used to drop the gunmod/toolmod pocket; DDA adds it after load
+        // (DDA item_factory.cpp:4136-4140), so a gun or tool that did not declare one gets it here.
+        if( ( obj.gun || obj.tool ) &&
+            std::none_of( obj.pockets.begin(), obj.pockets.end(), []( const pocket_data & pocket ) {
+            return pocket.type == pocket_type::MOD;
+        } ) ) {
+            obj.pockets.emplace_back( pocket_type::MOD );
+        }
         add_molle( obj );
         return;
     }

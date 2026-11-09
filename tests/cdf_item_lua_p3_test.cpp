@@ -95,8 +95,8 @@ TEST_CASE( "lua_item_ammo_remaining_index", "[p3][lua]" ) {
     }
     REQUIRE( glock_well >= 0 );
     REQUIRE( stanag_well >= 0 );
-    // The fixture has two MAGAZINE_WELL pockets and nothing else, so index 2 is out of range.
-    REQUIRE( pocket_count == 2 );
+    // The fixture has two MAGAZINE_WELL pockets and the MOD pocket every gun gets (MOD1), so index 3 is out of range.
+    REQUIRE( pocket_count == 3 );
 
     auto lua = make_lua_state();
     lua.globals()["gun"] = &*gun;
@@ -106,7 +106,7 @@ TEST_CASE( "lua_item_ammo_remaining_index", "[p3][lua]" ) {
         return {
             glock = gun:ammo_remaining(glock_well),
             stanag = gun:ammo_remaining(stanag_well),
-            out_of_range = gun:ammo_remaining(2),
+            out_of_range = gun:ammo_remaining(3),
             negative = gun:ammo_remaining(-1)
         }
     )", sol::script_pass_on_error );

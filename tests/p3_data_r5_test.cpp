@@ -71,7 +71,8 @@ TEST_CASE("p3 r5 charges literals", "[p3][data][R5]") {
         REQUIRE(t.tool);
         CHECK(t.tool->max_charges == r.max_charges);
         CHECK(t.tool->ammo_id.contains(ammotype(r.ammo)));
-        REQUIRE(t.pockets.size() == 1);
+        // MOD1: every tool also has its MOD pocket, appended after the magazine pocket
+        REQUIRE(t.pockets.size() == 2);
         REQUIRE(t.pockets.front().type == pocket_type::MAGAZINE);
         REQUIRE(t.pockets.front().ammo_restriction.count(ammotype(r.ammo)) == 1);
         CHECK(t.pockets.front().ammo_restriction.at(ammotype(r.ammo)) == r.max_charges);
