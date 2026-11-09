@@ -1574,8 +1574,42 @@ void veh_interact::calc_overview() {
 
     for (const vpart_reference& vpr : veh->get_all_parts()) {
         if (vpr.part().is_turret() && vpr.part().is_available()) {
-            overview_opts
-                .emplace_back("TURRET", &vpr.part(), next_hotkey(vpr.part(), hotkey), details_ammo);
+            if (vpr.part().base->uses_firing_requirements()) {
+                // CDF: one row per multimag pocket under the turret entry.
+                auto multimag_details = [veh = this->veh](
+                                            const vehicle_part& pt, const catacurses::window& w,
+                                            int y) {
+                    const turret_data td = veh->turret_query(pt);
+                    int row = y + 1;
+                    for (const multimag_display_pocket& dp : td.multimag_display_state()) {
+                        std::string ammo_text = "-";
+                        nc_color ammo_clr = c_light_gray;
+                        if (!dp.ammo_itype.is_null()) {
+                            ammo_text = item::nname(dp.ammo_itype, std::max(dp.effective_qty, 1));
+                            ammo_clr = dp.ammo_itype->color;
+                        }
+                        const nc_color row_clr =
+                            dp.effective_qty < dp.per_use_qty ? c_red : c_light_gray;
+                        const std::string source_tag =
+                            dp.vehicle_bound ? colorize("[v] ", c_cyan) : "    ";
+                        trim_and_print(w, point(8, row), getmaxx(w) - 14, row_clr, "%s", dp.pocket_id);
+                        right_print(
+                            w, row, 1, ammo_clr,
+                            string_format(
+                                "%s%s   %5i", source_tag, colorize(ammo_text, ammo_clr),
+                                dp.effective_qty));
+                        row++;
+                    }
+                };
+                overview_opts.emplace_back(
+                    "TURRET", &vpr.part(), next_hotkey(vpr.part(), hotkey), multimag_details);
+                overview_opts.back().extra_rows = [veh = this->veh](const vehicle_part& pt) {
+                    return static_cast<int>(veh->turret_query(pt).multimag_display_state().size());
+                };
+            } else {
+                overview_opts.emplace_back(
+                    "TURRET", &vpr.part(), next_hotkey(vpr.part(), hotkey), details_ammo);
+            }
         }
     }
 
@@ -1630,7 +1664,7 @@ void veh_interact::display_overview() {
 
         // print extra columns (if any)
         overview_opts[idx].details(pt, w_list, y);
-        y++;
+        y += 1 + (overview_opts[idx].extra_rows ? overview_opts[idx].extra_rows(pt) : 0);
         if (y < (getmaxy(w_list) - 1)) {
             overview_limit = overview_offset;
         } else {

@@ -803,3 +803,100 @@ TEST_CASE( "turret_range_and_ammo_data_come_from_prepared_copy", "[p3][turret]" 
     CHECK( gun.ammo_remaining_in_pocket( "power" ) == 0 );
     CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 10 );
 }
+
+// CDF: P3-8-5b-2 display-state tests (E5-E8). The vehicle screen drawing has no
+// headless window and is not tested.
+namespace
+{
+auto loaded_multimag_rig( int battery ) -> vehicle_part *
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto turret_index = veh->install_part( tripoint_mnt_veh::zero(),
+                              vpart_id( "turret_test_multimag_turret_gun" ), true );
+    REQUIRE( turret_index >= 0 );
+    if( battery > 0 ) {
+        veh->charge_battery( battery, false );
+    }
+    REQUIRE( veh->fuel_left( itype_id( "battery" ), true ) == battery );
+    vehicle_part &turret_part = veh->part( turret_index );
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    REQUIRE( mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 10 ),
+                          pocket_type::MAGAZINE ).success() );
+    REQUIRE( turret_part.get_base().put_in( std::move( mag ),
+                                            pocket_type::MAGAZINE_WELL ).success() );
+    return &turret_part;
+}
+
+auto find_row( const std::vector<multimag_display_pocket> &rows,
+               const std::string &id ) -> const multimag_display_pocket *
+{
+    for( const multimag_display_pocket &r : rows ) {
+        if( r.pocket_id == id ) {
+            return &r;
+        }
+    }
+    return nullptr;
+}
+} // namespace
+
+TEST_CASE( "multimag_display_state_reports_each_pocket", "[p3][turret]" )
+{
+    vehicle_part *part = loaded_multimag_rig( 1000 );
+    vehicle *veh = &get_map().veh_at( tripoint_bub_ms( 65, 65, 0 ) )->vehicle();
+    const auto rows = veh->turret_query( *part ).multimag_display_state();
+    REQUIRE( rows.size() == 2 );
+    const multimag_display_pocket *ammo = find_row( rows, "ammo" );
+    const multimag_display_pocket *power = find_row( rows, "power" );
+    REQUIRE( ammo != nullptr );
+    REQUIRE( power != nullptr );
+    CHECK( ammo->local_qty > 0 );
+    CHECK( !ammo->vehicle_bound );
+    CHECK( power->local_qty == 0 );
+    CHECK( power->effective_qty > 0 );
+    CHECK( power->vehicle_bound );
+    CHECK( power->per_use_qty > 0 );
+}
+
+TEST_CASE( "multimag_display_state_is_empty_for_plain_guns", "[p3][turret]" )
+{
+    clear_all_state();
+    vehicle *veh = get_map().add_vehicle( vproto_id( "test_turret_rig" ),
+                                          tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto idx = veh->install_part( tripoint_mnt_veh::zero(),
+                                        vpart_id( "mounted_rebar_rifle" ), true );
+    REQUIRE( idx >= 0 );
+    REQUIRE( !veh->part( idx ).get_base().uses_firing_requirements() );
+    CHECK( veh->turret_query( veh->part( idx ) ).multimag_display_state().empty() );
+}
+
+TEST_CASE( "multimag_display_state_does_not_touch_the_real_gun_or_the_battery",
+           "[p3][turret]" )
+{
+    vehicle_part *part = loaded_multimag_rig( 1000 );
+    vehicle *veh = &get_map().veh_at( tripoint_bub_ms( 65, 65, 0 ) )->vehicle();
+    item &gun = part->get_base();
+    const int ammo_before = gun.ammo_remaining_in_pocket( "ammo" );
+    const int contents_before = static_cast<int>( gun.all_items_top().size() );
+    const auto rows = veh->turret_query( *part ).multimag_display_state();
+    REQUIRE( !rows.empty() );
+    CHECK( gun.ammo_remaining_in_pocket( "power" ) == 0 );
+    CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == ammo_before );
+    CHECK( static_cast<int>( gun.all_items_top().size() ) == contents_before );
+    CHECK( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+}
+
+TEST_CASE( "multimag_display_state_shows_the_shortfall_on_a_drained_battery",
+           "[p3][turret]" )
+{
+    vehicle_part *part = loaded_multimag_rig( 0 );
+    vehicle *veh = &get_map().veh_at( tripoint_bub_ms( 65, 65, 0 ) )->vehicle();
+    const auto rows = veh->turret_query( *part ).multimag_display_state();
+    const multimag_display_pocket *power = find_row( rows, "power" );
+    REQUIRE( power != nullptr );
+    CHECK( power->effective_qty < power->per_use_qty );
+}

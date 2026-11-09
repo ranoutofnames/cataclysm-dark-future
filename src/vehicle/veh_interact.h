@@ -206,6 +206,9 @@ private:
 
         /** Writes to message window when part is selected */
         std::function<void(const vehicle_part& pt)> message;
+
+        /** Rows drawn below the entry's own row by `details` (null: none) */
+        std::function<int(const vehicle_part& pt)> extra_rows;
     };
     std::vector<part_option> overview_opts;
     std::map<std::string, std::function<void(const catacurses::window&, int)>> overview_headers;

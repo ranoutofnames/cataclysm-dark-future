@@ -273,6 +273,47 @@ auto turret_data::can_unload() const -> bool {
     return part->base->ammo_remaining() > 0;
 }
 
+auto turret_data::multimag_display_state() const -> std::vector<multimag_display_pocket> {
+    std::vector<multimag_display_pocket> out;
+    if (!veh || !part) { return out; }
+
+    const item& gun = *part->base;
+    if (!gun.uses_firing_requirements()) { return out; }
+
+    const gun_mode_id mode = gun.gun_get_mode_id();
+    // CDF: TODO(multimag): base itype firing_requirements only; gunmod-owned
+    // modes (mode_firing_requirements) are not resolved for turrets.
+    const std::vector<pocket_consumption_entry>* entries =
+        gun.type->firing_requirements.for_mode(mode);
+    if (entries == nullptr) { return out; }
+
+    // CDF: temporary-item pool copy; prepare_multimag_pockets takes no map argument.
+    item* gun_copy = item::spawn_temporary(gun);
+    const std::map<std::string, multimag_pocket_state> bindings =
+        vehicle::prepare_multimag_pockets(*veh, *gun_copy, mode, ammo_current());
+    for (const pocket_consumption_entry& pce : *entries) {
+        multimag_display_pocket dp;
+        dp.pocket_id = pce.pocket;
+        dp.per_use_qty = pce.qty;
+        dp.local_qty = gun.ammo_remaining_in_pocket(pce.pocket);
+        dp.effective_qty = gun_copy->ammo_remaining_in_pocket(pce.pocket);
+        dp.vehicle_bound = bindings.count(pce.pocket) > 0;
+        if (const item_pocket* pkt = gun_copy->pocket_by_id(pce.pocket)) {
+            for (const item* it : pkt->all_items_top()) {
+                if (!it) { continue; }
+
+                if (const itype* ad = it->ammo_data()) {
+                    dp.ammo_itype = ad->get_id();
+                    break;
+                }
+                if (!it->typeId().is_null()) { dp.ammo_itype = it->typeId(); }
+            }
+        }
+        out.push_back(std::move(dp));
+    }
+    return out;
+}
+
 auto turret_data::query() const -> turret_data::status {
     if (!veh || !part) { return status::invalid; }
 
