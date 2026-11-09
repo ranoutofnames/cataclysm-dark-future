@@ -8,19 +8,41 @@
 namespace {
 
 const std::string P3_GOLDEN_FILENAME = "tests/data/dda_staged/p3_golden.json";
+const std::string P3_GOLDEN_TARGET_IDS_FILENAME =
+    "tests/data/dda_staged/p3_golden_target_ids.json";
 
 } // namespace
 
-TEST_CASE("p3 golden file has format 1, the DDA hash and 1171 items", "[p3][golden]") {
+TEST_CASE("p3 golden file has format 1, the DDA hash and the target items", "[p3][golden]") {
     std::ifstream file(P3_GOLDEN_FILENAME, std::ios::binary);
     JsonIn jsin(file);
     JsonObject golden = jsin.get_object();
+    golden.allow_omitted_members();
 
     REQUIRE(golden.get_int("format") == 1);
     REQUIRE(golden.get_string("dda") == "918f396f370ea48fad924fb45a797386a2f6ddb4");
     JsonObject items = golden.get_object("items");
     items.allow_omitted_members();
-    REQUIRE(items.size() == 1171);
+
+    // The count is read from the file; what is pinned is the 1190 target ids (7-GOLD1 regen
+    // target, with their class) and the three TEST_DATA ids the tree gained after it.
+    std::ifstream ids_file(P3_GOLDEN_TARGET_IDS_FILENAME, std::ios::binary);
+    JsonIn ids_in(ids_file);
+    JsonObject ids = ids_in.get_object();
+    ids.allow_omitted_members();
+    size_t expected = 0;
+    for (const char* group : {"target", "extra"}) {
+        JsonObject listed = ids.get_object(group);
+        for (const JsonMember member : listed) {
+            expected++;
+            INFO(group << " id " << member.name());
+            REQUIRE(items.has_object(member.name()));
+            JsonObject item = items.get_object(member.name());
+            item.allow_omitted_members();
+            CHECK(item.get_string("class") == listed.get_string(member.name()));
+        }
+    }
+    CHECK(items.size() == expected);
 }
 
 TEST_CASE("p3 golden items have a known class and action", "[p3][golden]") {
@@ -37,6 +59,7 @@ TEST_CASE("p3 golden items have a known class and action", "[p3][golden]") {
          "AUTHOR",
          "AUTHOR-KEEP-CDF-WELL",
          "AUTHOR-KEEP-CDF-INTEGRAL",
+         "DROP-KEY",
          "HAND-FALLBACK",
          "KEEP-REVIEW"};
 
@@ -67,7 +90,7 @@ TEST_CASE("p3 golden: only ADAPTOR rows carry an adaptor block", "[p3][golden]")
         }
         if (has_adaptor) { adaptor_rows++; }
     }
-    REQUIRE(adaptor_rows == 6);
+    REQUIRE(adaptor_rows == 4);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -201,8 +224,9 @@ auto compare_pocket(const JsonObject& g, const pocket_data& p) -> std::vector<st
 
 // Walks the golden. `cls` empty means every class. `order_only` compares the pocket count and
 // the pocket_type sequence of items with two or more golden pockets and nothing else.
-auto compare_golden(const std::string& cls, bool order_only, golden_counts& counts)
-    -> std::vector<std::string> {
+// `only_ids`, when not null, restricts the walk to those ids (7-GOLD1 batches).
+auto compare_golden(const std::string& cls, bool order_only, golden_counts& counts,
+                    const std::set<std::string>* only_ids = nullptr) -> std::vector<std::string> {
     std::ifstream file(P3_GOLDEN_FILENAME, std::ios::binary);
     JsonIn jsin(file);
     JsonObject golden = jsin.get_object();
@@ -214,6 +238,7 @@ auto compare_golden(const std::string& cls, bool order_only, golden_counts& coun
         JsonObject item = member.get_object();
         item.allow_omitted_members();
         if (!cls.empty() && item.get_string("class") != cls) { continue; }
+        if (only_ids != nullptr && only_ids->count(member.name()) == 0) { continue; }
         JsonArray gold_pockets = item.get_array("pockets");
         if (order_only && gold_pockets.size() < 2) { continue; }
         counts.in_golden++;
@@ -269,6 +294,17 @@ void check_class(const std::string& cls) {
 }
 
 } // namespace
+
+// Used by tests/p3_golden_batches_test.cpp: compares only `ids` against the golden.
+auto p3_golden_compare_ids(const std::set<std::string>& ids, size_t& in_golden, size_t& loaded,
+                           std::vector<std::string>& skipped) -> std::vector<std::string> {
+    golden_counts counts;
+    std::vector<std::string> failures = compare_golden("", false, counts, &ids);
+    in_golden = counts.in_golden;
+    loaded = counts.loaded;
+    skipped = counts.skipped;
+    return failures;
+}
 
 TEST_CASE("p3 golden load R1 MAG", "[.][p3][golden][load][R1]") { check_class("MAG"); }
 

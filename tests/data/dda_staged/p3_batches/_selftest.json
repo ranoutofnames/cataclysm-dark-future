@@ -1,0 +1,25 @@
+{
+  "batch": "_selftest",
+  "note": "19 ids already converted to DDA wells by R4-4b and FILT1; fails against the old golden, passes against the refreshed one",
+  "items": {
+    "control_laptop": {},
+    "control_laptop_screen_lit": {},
+    "game_watch": {},
+    "helmet_scavenger": {},
+    "mask_filter": {},
+    "mask_fsurvivor": {},
+    "mask_gas": {},
+    "mask_gas_xl": {},
+    "mask_h20survivor": {},
+    "mask_h20survivor_on": {},
+    "mask_hsurvivor": {},
+    "mask_lsurvivor": {},
+    "mask_survivor": {},
+    "plastic_jack_o_lantern": {},
+    "plastic_jack_o_lantern_lit": {},
+    "rebreather": {},
+    "rebreather_on": {},
+    "rebreather_xl": {},
+    "rebreather_xl_on": {}
+  }
+}
