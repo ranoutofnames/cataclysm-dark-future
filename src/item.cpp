@@ -10662,9 +10662,19 @@ bool item::will_explode_in_fire() const
 
     // Most containers do nothing to protect the contents from fire
     if( !type->magazine || !type->magazine->protects_contents ) {
-        return has_item_with( [&]( const item & it ) {
-            return this != &it && it.will_explode_in_fire();
-        } );
+        if( has_item_with( [&]( const item & it ) {
+        return this != &it && it.will_explode_in_fire();
+    } ) ) {
+            return true;
+        }
+        // CDF (3-8b-b): has_item_with does not see the round of an integral MAGAZINE pocket (a gun or
+        // tool without a magazine block); DDA counts it, so look at that pocket's items too.
+        for( const item *it : all_items_top( pocket_type::MAGAZINE ) ) {
+            if( it->will_explode_in_fire() ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     return false;

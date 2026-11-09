@@ -100,5 +100,13 @@
     "price_postapoc": "50 cent",
     "flags": [ "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": false, "ammo_restriction": { "p3_paper": 90 } } ]
+  },
+  {
+    "//": "CDF: P3-3-8b-b; the mod-bay integral gun with a real clip size, so ammo_capacity of a pocket gun is not 0.",
+    "id": "p3_multimag_gun_integral_clip",
+    "type": "GUN",
+    "name": { "str": "p3 integral-mag gun with a clip size" },
+    "copy-from": "p3_multimag_gun_integral_ammo",
+    "clip_size": 7
   }
 ]

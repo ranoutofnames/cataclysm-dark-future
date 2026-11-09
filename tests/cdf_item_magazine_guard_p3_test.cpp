@@ -52,30 +52,35 @@ auto loaded_glockmag() -> detached_ptr<item>
 
 TEST_CASE( "ammo_unset_keeps_gunmods_of_a_pocket_gun", "[p3][ammo][magazine]" )
 {
-    // CDF: the fixture gun has no MOD pocket (put_in( MOD ) fails: "pocket with type (MOD) not found"), so the
-    // "other pockets stay" half of the rule is pinned through its MAGAZINE_WELL instead of a gunmod.
-    detached_ptr<item> gun = make_pocket_gun();
+    // CDF (3-8b-b): the base fixture has no MOD pocket; p3_multimag_gun_integral_ammo (multimag_p3.json) is the
+    // same gun with a mod bay, so the original assertion (a real gunmod survives ammo_unset) is restored.
+    detached_ptr<item> gun = item::spawn( itype_id( "p3_multimag_gun_integral_ammo" ) );
+    REQUIRE( gun->type->magazine == nullptr );
     load_pocket_gun( *gun );
-    REQUIRE( gun->put_in( item::spawn( itype_id( "heavy_battery_cell" ) ),
-                          pocket_type::MAGAZINE_WELL ).success() );
-    const size_t well_before = gun->all_items_top( pocket_type::MAGAZINE_WELL ).size();
-    REQUIRE( well_before == 1 );
+    REQUIRE( gun->put_in( item::spawn( itype_id( "test_multimag_capacity_gunmod" ) ),
+                          pocket_type::MOD ).success() );
+    const size_t mods_before = gun->gunmods().size();
+    REQUIRE( mods_before == 1 );
     detached_ptr<item> mag = loaded_glockmag();
 
     gun->ammo_unset();
     mag->ammo_unset();
 
     CHECK( gun->ammo_remaining() == 0 );
-    CHECK( gun->all_items_top( pocket_type::MAGAZINE_WELL ).size() == well_before );
+    CHECK( gun->gunmods().size() == mods_before );
     // negative control: a plain magazine still empties
     CHECK( mag->ammo_remaining() == 0 );
 }
 
 TEST_CASE( "ammo_capacity_of_a_pocket_gun_is_its_clip", "[p3][ammo][magazine]" )
 {
-    detached_ptr<item> gun = make_pocket_gun();
-    // no mods installed: the gun's own clip, not a magazine capacity
-    CHECK( gun->ammo_capacity( true ) == gun->type->gun->clip );
+    // CDF (3-8b-b): the base fixture's clip is 0 (so "== clip" could not tell a clip from nothing);
+    // p3_multimag_gun_integral_clip (multimag_p3.json) is the same gun with clip_size 7.
+    detached_ptr<item> gun = item::spawn( itype_id( "p3_multimag_gun_integral_clip" ) );
+    REQUIRE( gun->type->magazine == nullptr );
+    REQUIRE( gun->type->gun->clip == 7 );
+    // no mods installed: the gun's own clip, not a magazine capacity and not 0
+    CHECK( gun->ammo_capacity( true ) == 7 );
     // control: a plain magazine reports its own capacity
     detached_ptr<item> mag = item::spawn( plain_mag_id );
     CHECK( mag->ammo_capacity( true ) == mag->type->magazine->capacity );
@@ -106,14 +111,17 @@ TEST_CASE( "weight_of_a_pocket_gun_does_not_touch_the_magazine_block", "[p3][amm
 
 TEST_CASE( "will_explode_in_fire_of_a_pocket_gun", "[p3][ammo][magazine]" )
 {
-    // the guard here is "no crash": the gun has no magazine block, so the protects_contents term must not be read.
+    // CDF (3-8b-b): a loaded integral-pocket gun counts its round as DDA does (has_item_with does not see the
+    // integral MAGAZINE pocket, item::will_explode_in_fire now looks at it).
     detached_ptr<item> empty_gun = make_pocket_gun();
     CHECK_FALSE( empty_gun->will_explode_in_fire() );
 
+    // a 9mm round cooks off (ammo->cookoff), so the loaded gun explodes; the empty gun above does not
     detached_ptr<item> loaded_gun = make_pocket_gun();
     load_pocket_gun( *loaded_gun );
-    // CDF: the value for a loaded gun is not pinned (has_item_with does not see the integral MAGAZINE pocket's round)
-    static_cast<void>( loaded_gun->will_explode_in_fire() );
+    REQUIRE( loaded_gun->ammo_data() != nullptr );
+    REQUIRE( loaded_gun->ammo_data()->ammo->cookoff );
+    CHECK( loaded_gun->will_explode_in_fire() );
 }
 
 TEST_CASE( "fitting_pocket_keeps_a_pocket_gun_out_of_magazine_wells", "[p3][ammo][magazine]" )
