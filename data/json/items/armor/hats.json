@@ -13,9 +13,14 @@
     "symbol": "[",
     "looks_like": "cowboy_hat",
     "color": "brown",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 8,
     "material_thickness": 2,
     "environmental_protection": 2,
@@ -35,8 +40,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 40,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "FANCY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ]
@@ -54,8 +65,14 @@
     "symbol": "[",
     "looks_like": "beret",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 40,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 15,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "WATERPROOF", "FANCY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ]
@@ -74,9 +91,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 5,
     "material_thickness": 2,
     "environmental_protection": 1,
@@ -95,9 +117,14 @@
     "symbol": "[",
     "looks_like": "bowhat",
     "color": "brown",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 7,
     "material_thickness": 2,
     "environmental_protection": 2,
@@ -116,9 +143,14 @@
     "material": [ "cotton", "aluminum" ],
     "weight": "733 g",
     "volume": "1500 ml",
-    "encumbrance": 5,
-    "covers": [ "head" ],
-    "coverage": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 60,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "OVERSIZE", "BELTED", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS" ],
     "pocket_data": [
@@ -145,9 +177,14 @@
     "symbol": "[",
     "looks_like": "bowhat",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 60,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 4,
     "material_thickness": 1,
     "flags": [ "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ],
@@ -166,9 +203,14 @@
     "symbol": "[",
     "looks_like": "cowboy_hat",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 65,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "environmental_protection": 2,
@@ -189,9 +231,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 5,
     "material_thickness": 1,
     "environmental_protection": 2,
@@ -212,9 +259,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "white",
-    "covers": [ "head" ],
-    "coverage": 75,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 5,
     "material_thickness": 2,
     "environmental_protection": 1,
@@ -233,8 +285,14 @@
     "symbol": "[",
     "looks_like": "hat_ball",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 65,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead", "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 20,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "HELMET_COMPAT", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ]
@@ -252,9 +310,14 @@
     "symbol": "[",
     "looks_like": "hat_knit",
     "color": "brown",
-    "covers": [ "head" ],
-    "coverage": 95,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead", "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 70,
     "material_thickness": 3,
     "valid_mods": [ "resized_large", "resized_small" ]
@@ -267,7 +330,6 @@
     "name": { "str": "faux fur hat" },
     "description": "A stylish hat made of faux fur.  Like real fur, but without the suffering, if the tag is to be believed.  Very warm.",
     "material": [ "faux_fur", "cotton" ],
-    "covers": [ "head" ],
     "flags": [ "FANCY" ],
     "warmth": 60
   },
@@ -298,9 +360,15 @@
     "symbol": "[",
     "looks_like": "hat_ball",
     "color": "yellow",
-    "covers": [ "head" ],
-    "coverage": 80,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ],
+        "cover_vitals": 90
+      }
+    ],
     "warmth": 5,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ],
@@ -320,9 +388,15 @@
     "symbol": "[",
     "looks_like": "hat_hard",
     "color": "yellow",
-    "covers": [ "head" ],
-    "coverage": 80,
-    "encumbrance": 13,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ],
+        "cover_vitals": 90
+      }
+    ],
     "warmth": 6,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ],
@@ -341,9 +415,14 @@
     "symbol": "[",
     "looks_like": "hat_ball",
     "color": "light_red",
-    "covers": [ "head" ],
-    "coverage": 85,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead", "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 50,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -362,8 +441,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 65,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead", "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 40,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "HELMET_COMPAT", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ]
@@ -382,8 +467,14 @@
     "symbol": "[",
     "looks_like": "hat_ball",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 50,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 30,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ]
@@ -401,9 +492,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 5,
-    "encumbrance": 17,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_r", "head_ear_l" ],
+        "coverage": 25,
+        "encumbrance_modifiers": [ "IMBALANCED" ]
+      }
+    ],
     "warmth": 5,
     "material_thickness": 1,
     "flags": [ "OVERSIZE", "HELMET_COMPAT", "ALLOWS_NATURAL_ATTACKS" ],
@@ -424,9 +520,14 @@
     "symbol": "[",
     "looks_like": "cowboy_hat",
     "color": "light_red",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 2,
     "material_thickness": 2,
     "environmental_protection": 4,
@@ -447,8 +548,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "blue",
-    "covers": [ "head" ],
-    "coverage": 40,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 3,
     "material_thickness": 1,
     "valid_mods": [ "resized_large", "resized_small" ],
@@ -468,9 +575,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "white",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 6,
     "material_thickness": 1,
     "environmental_protection": 1,
@@ -491,9 +603,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "white",
-    "covers": [ "head" ],
-    "coverage": 25,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_ear_r", "head_ear_l" ],
+        "coverage": 55,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "FANCY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ]
@@ -512,9 +629,14 @@
     "symbol": "[",
     "looks_like": "bowhat",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 5,
     "material_thickness": 1,
     "environmental_protection": 1,
@@ -534,9 +656,14 @@
     "symbol": "[",
     "looks_like": "hat_ball",
     "color": "blue",
-    "covers": [ "head" ],
-    "coverage": 60,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "environmental_protection": 2,
@@ -556,8 +683,14 @@
     "symbol": "[",
     "looks_like": "cowboy_hat",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 40,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 2,
     "material_thickness": 1,
     "environmental_protection": 2,
@@ -576,8 +709,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "yellow",
-    "covers": [ "head" ],
-    "coverage": 90,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "ARMOR_PSI", "add": -10 } ] } ] },
     "flags": [
       "OVERSIZE",
@@ -604,9 +743,14 @@
     "symbol": "[",
     "looks_like": "porkpie",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 5,
     "material_thickness": 2,
     "environmental_protection": 1,
@@ -625,9 +769,14 @@
     "symbol": "[",
     "looks_like": "bowhat",
     "color": "brown",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 7,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -648,9 +797,14 @@
     "symbol": "[",
     "looks_like": "hat_cotton",
     "color": "white",
-    "covers": [ "head" ],
-    "coverage": 50,
-    "encumbrance": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead", "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "flags": [ "OVERSIZE", "ALLOWS_NATURAL_ATTACKS" ]
@@ -670,9 +824,14 @@
     "symbol": "[",
     "looks_like": "hat_ball",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 40,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 5,
     "material_thickness": 1,
     "environmental_protection": 1,

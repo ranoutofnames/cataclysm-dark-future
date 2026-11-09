@@ -1,0 +1,642 @@
+[
+  {
+    "id": "p3h_1g_none",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_1g_none"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "1 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ],
+    "//": "CDF: HEAD2 loader fixtures (tests/armor_portion_encumbrance_test.cpp): head items whose encumbrance is derived from the weight by encumbrance_modifiers, and portion layers."
+  },
+  {
+    "id": "p3h_300g_none",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_300g_none"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "300 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_400g_none",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_400g_none"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "400 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_550g_none",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_550g_none"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "550 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_5600g_none",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_5600g_none"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "5600 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_550g_imbalanced",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_550g_imbalanced"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "550 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "IMBALANCED"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_550g_neck",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_550g_neck"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "550 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "RESTRICTS_NECK"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_550g_supported",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_550g_supported"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "550 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "WELL_SUPPORTED"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_550g_neck_supported",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_550g_neck_supported"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "550 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "RESTRICTS_NECK",
+          "WELL_SUPPORTED"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_5600g_supported",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_5600g_supported"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "5600 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "WELL_SUPPORTED"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_550g_two_portions",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_550g_two_portions"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "550 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "specifically_covers": [
+          "head_forehead"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "RESTRICTS_NECK",
+          "WELL_SUPPORTED"
+        ]
+      },
+      {
+        "covers": [
+          "head"
+        ],
+        "specifically_covers": [
+          "head_crown"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "RESTRICTS_NECK",
+          "WELL_SUPPORTED"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_550g_varsize",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_550g_varsize"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "550 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "flags": [
+      "VARSIZE"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_1600g_varsize",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_1600g_varsize"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "1600 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "flags": [
+      "VARSIZE"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_1g_supported",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_1g_supported"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "1 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "WELL_SUPPORTED"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_300g_both_keys",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_300g_both_keys"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "300 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance": 30,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_300g_pocket",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_300g_pocket"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "300 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": false,
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "2 kg",
+        "moves": 100
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_layers_plain",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_layers_plain"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "300 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ],
+        "layers": [
+          "OUTER"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_layers_union",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_layers_union"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "300 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "specifically_covers": [
+          "head_forehead"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ],
+        "layers": [
+          "OUTER"
+        ]
+      },
+      {
+        "covers": [
+          "head"
+        ],
+        "specifically_covers": [
+          "head_crown"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ],
+        "layers": [
+          "BELTED"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_layers_first_only",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_layers_first_only"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "300 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "specifically_covers": [
+          "head_forehead"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ],
+        "layers": [
+          "OUTER"
+        ]
+      },
+      {
+        "covers": [
+          "head"
+        ],
+        "specifically_covers": [
+          "head_crown"
+        ],
+        "coverage": 100,
+        "encumbrance_modifiers": [
+          "NONE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p3h_numeric_light",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_numeric_light"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "100 g",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance": 10
+      }
+    ]
+  },
+  {
+    "id": "p3h_numeric_heavy",
+    "type": "ARMOR",
+    "category": "armor",
+    "name": {
+      "str": "p3h_numeric_heavy"
+    },
+    "description": "HEAD2 loader fixture.",
+    "weight": "6 kg",
+    "volume": "500 ml",
+    "material": [
+      "cotton"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [
+          "head"
+        ],
+        "coverage": 100,
+        "encumbrance": 10
+      }
+    ]
+  }
+]

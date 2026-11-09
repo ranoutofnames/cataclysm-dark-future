@@ -4,6 +4,7 @@
 #include <bitset>
 #include <cstddef>
 #include <initializer_list>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "catalua_type_operators.h"
 #include "string_id.h"
 #include "translations.h"
+#include "units.h"
 #include "type_id.h"
 #include "location_ptr.h"
 #include "units/body_temperature.h"
@@ -148,6 +150,12 @@ struct body_part_type {
          * Empty for parts without any: hits then have no sub-location.
          */
         std::vector<sub_bodypart_str_id> sub_parts;
+
+        /**
+         * CDF: DDA `encumbrance_per_weight`, the points of a weight to encumbrance table (the head
+         * has one). Armor portions with `encumbrance_modifiers` interpolate their encumbrance on it.
+         */
+        std::map<units::mass, int> encumbrance_per_weight;
 
         /**
          * A sub-location chosen at random, weighted by each one's `max_coverage` (as in DDA), from the

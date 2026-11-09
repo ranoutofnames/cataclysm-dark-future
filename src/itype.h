@@ -302,6 +302,20 @@ struct part_material {
     int cover = 100;
 };
 
+// DDA `encumbrance_modifier`: how a head item's weight-derived encumbrance is adjusted
+enum class encumbrance_modifier : int {
+    IMBALANCED,
+    RESTRICTS_NECK,
+    WELL_SUPPORTED,
+    NONE,
+    last
+};
+
+template<>
+struct enum_traits<encumbrance_modifier> {
+    static constexpr encumbrance_modifier last = encumbrance_modifier::last;
+};
+
 struct armor_portion_data {
     /**
      * How much this item encumbers the player.
@@ -344,9 +358,20 @@ struct armor_portion_data {
     /** DDA: volume of non-rigid pocket capacity that adds one point of encumbrance. */
     static constexpr units::volume volume_per_encumbrance = 250_ml;
 
-    // What layer does it cover if any
-    // TODO: Not currently supported, we still use flags for this
-    //std::optional<layer_level> layer;
+    /**
+     * CDF: DDA `encumbrance_modifiers`. When not empty, the encumbrance of the item is derived
+     * from its weight (calc_encumbrance, run when the item type is finalized) instead of being read.
+     */
+    std::vector<encumbrance_modifier> encumber_modifiers;
+
+    /**
+     * CDF: DDA portion-level `layers`. Stored only: CDF's layer is still one value per item
+     * (itype::layer), nothing reads this yet.
+     */
+    std::set<layer_level> layers;
+
+    /** DDA itype.cpp: encumbrance of an item of `weight` on `bp` from bp->encumbrance_per_weight. */
+    int calc_encumbrance( units::mass weight, bodypart_id bp ) const;
 };
 
 struct islot_armor {

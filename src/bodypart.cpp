@@ -17,6 +17,7 @@
 #include "subbodypart.h"
 #include "type_id.h"
 #include "type_id_implement.h"
+#include "units_serde.h"
 #include "locations.h"
 
 const bodypart_str_id body_part_head( "head" );
@@ -263,6 +264,16 @@ void body_part_type::load( const JsonObject &jo, const std::string & )
     optional( jo, was_loaded, "bionic_slots", bionic_slots_, 0 );
 
     optional( jo, was_loaded, "sub_parts", sub_parts );
+
+    // CDF: DDA bodypart.cpp encumbrance_per_weight, [ { "weight": "300 g", "encumbrance": 4 }, ... ]
+    if( jo.has_array( "encumbrance_per_weight" ) ) {
+        encumbrance_per_weight.clear();
+        for( const JsonObject &point : jo.get_array( "encumbrance_per_weight" ) ) {
+            const units::mass weight = read_from_json_string<units::mass>( *point.get_raw( "weight" ),
+                                       units::mass_units );
+            encumbrance_per_weight[weight] = point.get_int( "encumbrance" );
+        }
+    }
 
     const auto side_reader = enum_flags_reader<side> { "side" };
     optional( jo, was_loaded, "side", part_side, side_reader, side::BOTH );

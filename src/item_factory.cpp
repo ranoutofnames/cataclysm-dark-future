@@ -253,6 +253,11 @@ static void derive_armor_portions_from_sub_data( itype &obj )
             entry.covers.set( bp );
             entry.encumber += sub.encumber;
             entry.cover_vitals += sub.cover_vitals;
+            // CDF: DDA item_factory.cpp:1193-1195 and :1216-1218, modifiers are concatenated (not
+            // de-duplicated) and layers unioned over the sub portions of the body part
+            entry.encumber_modifiers.insert( entry.encumber_modifiers.end(),
+                                             sub.encumber_modifiers.begin(), sub.encumber_modifiers.end() );
+            entry.layers.insert( sub.layers.begin(), sub.layers.end() );
             // the full-storage encumbrance is worked out when the pockets are final, from
             // the sub portions (finalize_armor_portions)
             entry.max_encumber = -1;
@@ -299,6 +304,45 @@ static void derive_armor_portions_from_sub_data( itype &obj )
     }
 }
 
+// CDF: DDA itype.cpp:440-507. Interpolates `weight` on the table of `bp` and applies the modifiers:
+// IMBALANCED and RESTRICTS_NECK add 10, WELL_SUPPORTED takes 20 off the multiplier, at least 1.
+int armor_portion_data::calc_encumbrance( units::mass weight, bodypart_id bp ) const
+{
+    const std::map<units::mass, int> &table = bp.obj().encumbrance_per_weight;
+    auto itt = table.lower_bound( weight );
+    if( itt == table.begin() || itt == table.end() ) {
+        debugmsg( "Can't find a notable point to match this with" );
+        return 100;
+    }
+    --itt;
+    const auto next_itt = std::next( itt );
+    const float scale = static_cast<float>( weight.value() - itt->first.value() ) /
+                        static_cast<float>( next_itt->first.value() - itt->first.value() );
+    int encumbrance = itt->second + std::roundf( static_cast<float>( next_itt->second - itt->second ) *
+                      scale );
+
+    int multiplier = 100;
+    int additional_encumbrance = 0;
+    for( const encumbrance_modifier &em : encumber_modifiers ) {
+        switch( em ) {
+            case encumbrance_modifier::IMBALANCED:
+            case encumbrance_modifier::RESTRICTS_NECK:
+                additional_encumbrance += 10;
+                break;
+            case encumbrance_modifier::WELL_SUPPORTED:
+                multiplier -= 20;
+                break;
+            case encumbrance_modifier::NONE:
+            case encumbrance_modifier::last:
+                break;
+        }
+    }
+    encumbrance = std::roundf( static_cast<float>( encumbrance ) * static_cast<float>( multiplier ) /
+                               100.0f );
+    encumbrance += additional_encumbrance;
+    return std::max( encumbrance, 1 );
+}
+
 // Armor flags and values that depend on the final pockets and materials (DDA item_factory.cpp:
 // 1111-1148 max_encumber and rigid / comfortable, 1509-1560 armor flags). CDF: portions have no
 // materials of their own, so `rigid` and `comfortable` come from the item-wide materials
@@ -330,6 +374,18 @@ static void finalize_armor_portions( itype &obj )
         if( sub.max_encumber < 0 ) {
             sub.max_encumber = full_encumbrance( sub );
         }
+    }
+    // CDF: DDA item_factory.cpp:1302-1324, an encumbrance given by modifiers is worked out from the
+    // item weight; the maximum follows from it (so the sum of the sub maxima below skips it)
+    for( armor_portion_data &portion : armor.data ) {
+        if( portion.encumber_modifiers.empty() || portion.covers.none() ) {
+            continue;
+        }
+        portion.encumber = portion.calc_encumbrance( obj.weight, ( *portion.covers.begin() ).id() );
+        if( obj.has_flag( flag_VARSIZE ) ) {
+            portion.encumber = std::min( portion.encumber * 2, portion.encumber + 10 );
+        }
+        portion.max_encumber = full_encumbrance( portion );
     }
     for( armor_portion_data &portion : armor.data ) {
         if( portion.max_encumber >= 0 ) {
@@ -2933,23 +2989,43 @@ void Item_factory::load_pet_armor( const JsonObject &jo, const std::string &src 
 namespace io
 {
 template<>
+std::string enum_to_string<encumbrance_modifier>( encumbrance_modifier data )
+{
+    switch( data ) {
+        case encumbrance_modifier::IMBALANCED:
+            return "IMBALANCED";
+        case encumbrance_modifier::RESTRICTS_NECK:
+            return "RESTRICTS_NECK";
+        case encumbrance_modifier::WELL_SUPPORTED:
+            return "WELL_SUPPORTED";
+        case encumbrance_modifier::NONE:
+            return "NONE";
+        case encumbrance_modifier::last:
+            break;
+    }
+    debugmsg( "Invalid encumbrance_modifier" );
+    abort();
+}
+
+// CDF: these strings are DDA's (they had no reader here), so portion `layers` reads DDA data
+template<>
 std::string enum_to_string<layer_level>( layer_level data )
 {
     switch( data ) {
         case layer_level::PERSONAL_LAYER:
-            return "Personal";
+            return "PERSONAL";
         case layer_level::UNDERWEAR_LAYER:
-            return "Underwear";
+            return "SKINTIGHT";
         case layer_level::REGULAR_LAYER:
-            return "Regular";
+            return "NORMAL";
         case layer_level::WAIST_LAYER:
-            return "Waist";
+            return "WAIST";
         case layer_level::OUTER_LAYER:
-            return "Outer";
+            return "OUTER";
         case layer_level::BELTED_LAYER:
-            return "Belted";
+            return "BELTED";
         case layer_level::AURA_LAYER:
-            return "Aura";
+            return "AURA";
         case layer_level::MAX_CLOTHING_LAYER:
             break;
     }
@@ -2995,7 +3071,15 @@ void Item_factory::load( islot_armor &slot, const JsonObject &jo, const std::str
                 }
             }
 
-            if( obj.has_array( "encumbrance" ) ) {
+            if( obj.has_array( "encumbrance_modifiers" ) ) {
+                // CDF: DDA item_factory.cpp:3497-3504, the encumbrance comes from the item weight when
+                // the item type is finalized and a given number is ignored
+                obj.read( "encumbrance_modifiers", tempData.encumber_modifiers, true );
+                if( obj.has_member( "encumbrance" ) ) {
+                    // marks the ignored key as read
+                    static_cast<void>( obj.get_member( "encumbrance" ) );
+                }
+            } else if( obj.has_array( "encumbrance" ) ) {
                 tempData.encumber = obj.get_array( "encumbrance" ).get_int( 0 );
                 tempData.max_encumber = obj.get_array( "encumbrance" ).get_int( 1 );
             } else if( obj.has_int( "encumbrance" ) ) {
@@ -3029,6 +3113,8 @@ void Item_factory::load( islot_armor &slot, const JsonObject &jo, const std::str
             }
             tempData.volume_encumber_modifier = static_cast<float>( obj.get_float( "volume_encumber_modifier",
                                                 1.0 ) );
+            // CDF: DDA portion-level `layers`, stored only (CDF's layer is one value per item)
+            obj.read( "layers", tempData.layers, true );
             if( tempData.sub_coverage.empty() ) {
                 slot.data.push_back( tempData );
             } else {
@@ -3036,17 +3122,6 @@ void Item_factory::load( islot_armor &slot, const JsonObject &jo, const std::str
                 slot.sub_data.push_back( tempData );
             }
 
-            // TODO: Not currently supported, we still use flags for this
-            //if( obj.has_string( "layer" ) ) {
-            //    for( auto &piece : data ) {
-            //        layer_level layer;
-            //        obj.read( "layer", layer );
-            //    }
-            //} else {
-            //    for( armor_portion_data &piece : data ) {
-            //        piece.layer = layer_level::REGULAR;
-            //    }
-            //}
         }
     } else if( !slot.sub_data.empty() ) {
         // copied from an item with per-sub-location portions: the flat keys can't say which

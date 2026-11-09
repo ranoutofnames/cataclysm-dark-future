@@ -75,7 +75,14 @@
     "name": { "str": "head bandana" },
     "description": "A cotton bandana, worn over the head for warmth and to keep the wind out of your hair.  Activate to adjust it to wear over your mouth instead.",
     "looks_like": "headscarf",
-    "covers": [ "head" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "use_action": {
       "menu_text": "Cover mouth",
       "type": "transform",

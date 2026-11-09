@@ -49,7 +49,17 @@
     "hot_morale_mod": 2,
     "cold_morale_mod": 2,
     "bionic_slots": 18,
-    "sub_parts": [ "head_forehead", "head_crown", "head_nape", "head_throat", "head_ear_l", "head_ear_r" ]
+    "sub_parts": [ "head_forehead", "head_crown", "head_nape", "head_throat", "head_ear_l", "head_ear_r" ],
+    "encumbrance_per_weight": [
+      { "weight": "1 mg", "encumbrance": 1 },
+      { "weight": "300 g", "encumbrance": 4 },
+      { "weight": "800 g", "encumbrance": 8 },
+      { "weight": "1300 g", "encumbrance": 20 },
+      { "weight": "1600 g", "encumbrance": 30 },
+      { "weight": "2200 g", "encumbrance": 50 },
+      { "weight": "5600 g", "encumbrance": 80 },
+      { "weight": "10000 g", "encumbrance": 160 }
+    ]
   },
   {
     "id": "eyes",

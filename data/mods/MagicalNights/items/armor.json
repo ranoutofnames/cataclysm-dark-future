@@ -56,9 +56,29 @@
     "copy-from": "helmet_chitin",
     "type": "ARMOR",
     "name": { "str": "demon chitin helmet" },
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes", "mouth" ],
+        "coverage": 95,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [
+          "head_crown",
+          "head_forehead",
+          "head_ear_l",
+          "head_ear_r",
+          "head_nape",
+          "head_throat"
+        ],
+        "coverage": 95,
+        "encumbrance": 9
+      }
+    ],
     "description": "A helmet crafted from the carefully cleaned and pruned red exoskeletons of demon spiders.  Covers the entire head; fire-resistant and very durable.",
     "material": [ "demon_chitin" ],
-    "proportional": { "weight": 0.9, "encumbrance": 0.9, "price": 10, "warmth": 2 },
+    "proportional": { "weight": 0.9, "price": 10, "warmth": 2 },
     "environmental_protection": 8
   },
   {

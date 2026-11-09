@@ -13,9 +13,24 @@
     "symbol": "[",
     "looks_like": "helmet_plate",
     "color": "light_gray",
-    "covers": [ "head" ],
-    "coverage": 55,
-    "encumbrance": 50,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "IMBALANCED" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 80
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 20
+      }
+    ],
     "warmth": 5,
     "material_thickness": 2,
     "qualities": [ [ "COOK", 3 ], [ "BOIL", 2 ], [ "CONTAIN", 1 ], [ "CHEM", 1 ] ],
@@ -62,8 +77,14 @@
     "armor_portion_data": [
       {
         "covers": [ "head" ],
-        "coverage": 75,
-        "encumbrance": 20
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 40,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead", "head_ear_l", "head_ear_r" ],
+        "coverage": 95
       },
       {
         "covers": [ "mouth" ],
@@ -93,9 +114,20 @@
     "symbol": "[",
     "looks_like": "hat_hard",
     "color": "green",
-    "covers": [ "head" ],
-    "coverage": 85,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 50,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 20,
     "material_thickness": 8,
     "techniques": [ "WBLOCK_1" ],
@@ -114,7 +146,19 @@
     "price_postapoc": "12 USD",
     "to_hit": -1,
     "bashing": 12,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 50
+      }
+    ],
     "material": [ "hardsteel" ],
     "color": "dark_gray",
     "material_thickness": 5,
@@ -161,9 +205,20 @@
     "symbol": "[",
     "looks_like": "tac_fullhelmet",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 95,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 10,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 8,
     "techniques": [ "WBLOCK_1" ],
@@ -185,9 +240,20 @@
     "symbol": "[",
     "looks_like": "cowboy_hat",
     "color": "yellow",
-    "covers": [ "head" ],
-    "coverage": 75,
-    "encumbrance": 40,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r", "head_nape" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 15,
     "material_thickness": 6,
     "environmental_protection": 6,
@@ -209,9 +275,20 @@
     "symbol": "[",
     "looks_like": "hat_hard",
     "color": "blue",
-    "covers": [ "head" ],
-    "coverage": 95,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 95,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 15,
     "material_thickness": 3,
     "environmental_protection": 1,
@@ -234,8 +311,15 @@
     "armor_portion_data": [
       {
         "covers": [ "head" ],
-        "coverage": 90,
-        "encumbrance": 30
+        "specifically_covers": [ "head_forehead", "head_crown", "head_ear_l", "head_ear_r" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape" ],
+        "coverage": 20,
+        "encumbrance_modifiers": [ "NONE" ]
       },
       {
         "covers": [ "eyes" ],
@@ -273,11 +357,6 @@
     "color": "light_cyan",
     "armor_portion_data": [
       {
-        "covers": [ "head" ],
-        "coverage": 90,
-        "encumbrance": 25
-      },
-      {
         "covers": [ "eyes" ],
         "coverage": 65,
         "encumbrance": 0
@@ -295,6 +374,17 @@
         "rigid_layer_only": true,
         "coverage": 50,
         "encumbrance": 0
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead", "head_crown", "head_ear_l", "head_ear_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape" ],
+        "coverage": 20
       }
     ],
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
@@ -314,9 +404,19 @@
     "symbol": "[",
     "looks_like": "hat_hard",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 75,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 80
+      }
+    ],
     "warmth": 15,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ]
@@ -336,9 +436,26 @@
     "symbol": "[",
     "looks_like": "helmet_larmor",
     "color": "green",
-    "covers": [ "head", "eyes", "mouth" ],
-    "coverage": 95,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes", "mouth" ],
+        "coverage": 95,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [
+          "head_crown",
+          "head_forehead",
+          "head_ear_l",
+          "head_ear_r",
+          "head_nape",
+          "head_throat"
+        ],
+        "coverage": 95,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "environmental_protection": 4,
@@ -358,9 +475,19 @@
     "symbol": "[",
     "looks_like": "helmet_barbute",
     "color": "brown",
-    "covers": [ "head" ],
-    "coverage": 90,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead", "head_crown", "head_ear_l", "head_ear_r" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "RESTRICTS_NECK", "WELL_SUPPORTED" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape" ],
+        "coverage": 90
+      }
+    ],
     "warmth": 35,
     "material_thickness": 3,
     "techniques": [ "WBLOCK_1" ],
@@ -375,7 +502,26 @@
     "description": "A helmet crafted from the carefully cleaned and pruned biosilicified exoskeletons of acidic ants.  Covers the entire head; acid-resistant and very durable.",
     "price_postapoc": "1750 cent",
     "material": [ "acidchitin", "leather" ],
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes", "mouth" ],
+        "coverage": 95,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [
+          "head_crown",
+          "head_forehead",
+          "head_ear_l",
+          "head_ear_r",
+          "head_nape",
+          "head_throat"
+        ],
+        "coverage": 95,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "proportional": { "weight": 1.125, "volume": 1.13, "price": 1.25, "warmth": 1.5 },
     "relative": { "bashing": 1, "material_thickness": 1, "environmental_protection": 1 }
   },
@@ -393,9 +539,19 @@
     "symbol": "[",
     "looks_like": "helmet_motor",
     "color": "yellow",
-    "covers": [ "head" ],
-    "coverage": 85,
-    "encumbrance": 50,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 95
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "flags": [ "WATER_FRIENDLY" ]
@@ -417,8 +573,19 @@
     "armor_portion_data": [
       {
         "covers": [ "head" ],
-        "coverage": 85,
-        "encumbrance": 10
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 20
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape" ],
+        "coverage": 80
       },
       {
         "covers": [ "mouth" ],
@@ -451,8 +618,15 @@
     "armor_portion_data": [
       {
         "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_ear_l", "head_ear_r", "head_forehead", "head_nape" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "RESTRICTS_NECK", "WELL_SUPPORTED" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_throat" ],
         "coverage": 95,
-        "encumbrance": 20
+        "encumbrance_modifiers": [ "RESTRICTS_NECK", "WELL_SUPPORTED" ]
       },
       {
         "covers": [ "eyes" ],
@@ -494,9 +668,19 @@
     "symbol": "[",
     "looks_like": "hat_hard",
     "color": "brown",
-    "covers": [ "head" ],
-    "coverage": 85,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_ear_l", "head_ear_r" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 90
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ],
@@ -507,10 +691,23 @@
     "copy-from": "helmet_larmor",
     "type": "ARMOR",
     "name": { "str": "plated leather helmet" },
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_ear_l", "head_ear_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 90
+      }
+    ],
     "description": "A thick leather helmet that has been reinforced with strategically-placed metal plates.  Provides excellent protection for the head.",
     "material": [ "leather", "iron" ],
     "looks_like": "helmet_galea",
-    "proportional": { "price": 4, "price_postapoc": 1.2, "encumbrance": 1.25 },
+    "proportional": { "price": 4, "price_postapoc": 1.2 },
     "relative": { "weight": "500 g" }
   },
   {
@@ -525,9 +722,20 @@
     "material": [ "leather", "bone" ],
     "symbol": "[",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 85,
-    "encumbrance": 26,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "IMBALANCED" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 60,
+        "encumbrance_modifiers": [ "IMBALANCED" ]
+      }
+    ],
     "material_thickness": 3,
     "flags": [ "WATER_FRIENDLY" ]
   },
@@ -640,17 +848,25 @@
     "armor_portion_data": [
       {
         "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_ear_l", "head_ear_r", "head_forehead" ],
         "coverage": 100,
-        "encumbrance": 25
+        "encumbrance_modifiers": [ "RESTRICTS_NECK", "WELL_SUPPORTED" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape", "head_throat" ],
+        "coverage": 40
       },
       {
         "covers": [ "eyes" ],
+        "layers": [ "OUTER" ],
         "rigid_layer_only": true,
         "coverage": 100,
         "encumbrance": 5
       },
       {
         "covers": [ "mouth" ],
+        "layers": [ "OUTER" ],
         "specifically_covers": [ "mouth_nose" ],
         "rigid_layer_only": true,
         "coverage": 100,
@@ -692,8 +908,15 @@
     "armor_portion_data": [
       {
         "covers": [ "head" ],
-        "coverage": 80,
-        "encumbrance": 10
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 20,
+        "encumbrance_modifiers": [ "NONE" ]
       },
       {
         "covers": [ "mouth" ],
@@ -722,9 +945,25 @@
     "symbol": "[",
     "looks_like": "balclava",
     "color": "white",
-    "covers": [ "head", "eyes", "mouth" ],
-    "coverage": 95,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes", "mouth" ],
+        "coverage": 95,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_nape", "head_ear_l", "head_ear_r", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_throat" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 15,
     "material_thickness": 3,
     "environmental_protection": 4,
@@ -791,9 +1030,25 @@
     "symbol": "[",
     "looks_like": "mask_gas",
     "color": "white",
-    "covers": [ "head", "eyes", "mouth" ],
-    "coverage": 100,
-    "encumbrance": 23,
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes", "mouth" ],
+        "coverage": 100,
+        "encumbrance": 23
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_nape", "head_ear_l", "head_ear_r", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance": 16
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_throat" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 8,
     "initial_charges": 100,
@@ -830,9 +1085,19 @@
     "symbol": "[",
     "looks_like": "helmet_plate",
     "color": "light_gray",
-    "covers": [ "head", "eyes", "mouth" ],
-    "coverage": 80,
-    "encumbrance": 35,
+    "armor_portion_data": [
+      {
+        "covers": [ "eyes", "mouth" ],
+        "coverage": 80,
+        "encumbrance": 35
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_ear_l", "head_ear_r" ],
+        "coverage": 70,
+        "encumbrance_modifiers": [ "IMBALANCED" ]
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "flags": [ "OUTER" ]
@@ -852,9 +1117,14 @@
     "symbol": "[",
     "looks_like": "helmet_bike",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 65,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 65,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "techniques": [ "WBLOCK_1" ]
@@ -935,9 +1205,19 @@
     "symbol": "[",
     "looks_like": "helmet_plate",
     "color": "dark_gray",
-    "covers": [ "head" ],
-    "coverage": 70,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 90
+      }
+    ],
     "warmth": 15,
     "material_thickness": 3,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded", "resized_large", "resized_small" ],
@@ -960,8 +1240,14 @@
     "armor_portion_data": [
       {
         "covers": [ "head" ],
-        "coverage": 90,
-        "encumbrance": 30
+        "specifically_covers": [ "head_crown", "head_forehead" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r", "head_nape" ],
+        "coverage": 50
       },
       {
         "covers": [ "eyes" ],
@@ -1003,9 +1289,24 @@
     "symbol": "[",
     "looks_like": "pot_helmet",
     "color": "light_gray",
-    "covers": [ "head" ],
-    "coverage": 55,
-    "encumbrance": 50,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "IMBALANCED" ]
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 80
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_l", "head_ear_r" ],
+        "coverage": 20
+      }
+    ],
     "warmth": 5,
     "material_thickness": 2,
     "techniques": [ "WBLOCK_1" ],
@@ -1020,7 +1321,19 @@
     "description": "A helmet made from carved bone, laced together into a pattern resembling a Mycenaean boar's tusk helmet.  Tough but stiff, and a bit brittle.",
     "material": [ "bone_heavy" ],
     "color": "white",
-    "encumbrance": 12,
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_crown", "head_ear_l", "head_ear_r" ],
+        "coverage": 100,
+        "encumbrance": 12
+      },
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_forehead" ],
+        "coverage": 90
+      }
+    ],
     "warmth": 12,
     "environmental_protection": 1,
     "proportional": { "weight": 1.2 },

@@ -15,7 +15,7 @@
 #include <vector>
 
 // EYEMOUTH1: the eyes and mouth sub-locations (DDA ids and weights) and the six items converted
-// to use them. Head numbers are the CDF flat values; eyes and mouth numbers are DDA's portion data.
+// to use them. Head numbers are DDA's head portions (HEAD2); eyes and mouth numbers are DDA's portion data.
 
 namespace
 {
@@ -148,34 +148,36 @@ struct kept_row {
     int mouth_enc;
 };
 
-// The head numbers are the CDF flat values from before the conversion (head sub-locations are
-// HEAD2). The eyes and mouth numbers are DDA's portion data (owner ruling: where the item sits
+// CDF: the head numbers are DDA's head portions as HEAD2 converted them (coverage aggregate and
+// weight-derived or DDA-written encumbrance, see briefs/head2/head2-v5-table.md). The eyes and mouth numbers are DDA's portion data (owner ruling: where the item sits
 // and how much it restricts there follows DDA), see briefs/eyemouth1/literals.md.
 const std::vector<kept_row> kept_rows = {
     // DDA helmets.json helmet_corinthian: eyes 50/0, nose+cheeks 95/0, lips+chin 75/0 = 84
-    { "helmet_corinthian", { "head", "eyes", "mouth" }, 90, 30, 50, 0, 84, 0 },
+    { "helmet_corinthian", { "head", "eyes", "mouth" }, 60, 30, 50, 0, 84, 0 },
     // DDA helmet_kabuto: eyes 35/0, lips 80/10, cheeks+chin+nose 100/0 = 97
-    { "helmet_kabuto", { "head", "eyes", "mouth" }, 95, 20, 35, 0, 97, 10 },
+    { "helmet_kabuto", { "head", "eyes", "mouth" }, 99, 49, 35, 0, 97, 10 },
     // DDA helmet_motor: eyes visor 100/5; nose, chin, cheeks+lips 100/5 each
-    { "helmet_motor", { "head", "eyes", "mouth" }, 100, 25, 100, 5, 100, 15 },
+    { "helmet_motor", { "head", "eyes", "mouth" }, 76, 34, 100, 5, 100, 15 },
     // DDA mask_gas: eyes 100/10, lips+nose+chin 100/[20,40], cheeks 100/20
-    { "mask_gas", { "mouth", "eyes" }, 0, 0, 100, 10, 100, 40 },
-    { "mask_gas_xl", { "mouth", "eyes" }, 0, 0, 100, 10, 100, 40 },
+    // CDF: HEAD2 adds DDA's head portions (crown+nape 25/0, forehead 100/20): aggregate 26, 20
+    { "mask_gas", { "head", "mouth", "eyes" }, 26, 20, 100, 10, 100, 40 },
+    { "mask_gas_xl", { "head", "mouth", "eyes" }, 26, 20, 100, 10, 100, 40 },
     // DDA mask_ski: lips+cheeks+chin 100/10 = 85
-    { "mask_ski", { "head", "mouth" }, 80, 10, 0, 0, 85, 10 },
+    { "mask_ski", { "head", "mouth" }, 65, 6, 0, 0, 85, 10 },
     // DDA headgear: cheeks+chin 95/0 = 66.5, rounds to 67 (no eyes portion in DDA or CDF)
-    { "headgear", { "head", "mouth" }, 75, 20, 0, 0, 67, 0 },
+    { "headgear", { "head", "mouth" }, 43, 12, 0, 0, 67, 0 },
     // DDA helmet_barbute: eyes 65/0, cheeks 100/0, lips+nose+chin 50/0 = 65. The DDA portion that
-    // lists mouth and head together is a mouth-only portion here (head stays the CDF flat one).
-    { "helmet_barbute", { "head", "eyes", "mouth" }, 90, 30, 65, 0, 65, 0 },
-    { "helmet_barbute_superalloy", { "head", "eyes", "mouth" }, 90, 25, 65, 0, 65, 0 },
-    { "carbon_helmet", { "head", "eyes", "mouth" }, 90, 30, 65, 0, 65, 0 },
+    // lists mouth and head together is a mouth-only portion here (HEAD2 parity row; the head
+    // sub-locations are DDA's other head portions). carbon_helmet follows helmet_barbute (705 g).
+    { "helmet_barbute", { "head", "eyes", "mouth" }, 64, 27, 65, 0, 65, 0 },
+    { "helmet_barbute_superalloy", { "head", "eyes", "mouth" }, 64, 25, 65, 0, 65, 0 },
+    { "carbon_helmet", { "head", "eyes", "mouth" }, 64, 14, 65, 0, 65, 0 },
     // DDA helmet_galea: cheeks+chin 40/0 = 28 (no eyes)
-    { "helmet_galea", { "head", "mouth" }, 85, 10, 0, 0, 28, 0 },
+    { "helmet_galea", { "head", "mouth" }, 60, 30, 0, 0, 28, 0 },
     // DDA helmet_nasal: nose 90/0 = 13.5, rounds to 14. DDA has no eyes portion, so the eyes are
-    // dropped (orchestrator ruling 2026-11-04, placement follows DDA); head 80/10 is the CDF flat
-    // head portion, held for HEAD2
-    { "helmet_nasal", { "head", "mouth" }, 80, 10, 0, 0, 14, 0 },
+    // dropped (orchestrator ruling 2026-11-04, placement follows DDA); head 44/21 is DDA's
+    // head portions (HEAD2)
+    { "helmet_nasal", { "head", "mouth" }, 44, 21, 0, 0, 14, 0 },
 };
 
 } // namespace
@@ -253,7 +255,7 @@ TEST_CASE( "eyemouth1_shapes_leave_gaps", "[armor][eyemouth1]" )
 TEST_CASE( "eyemouth1_flat_items_cover_all_six", "[armor][eyemouth1]" )
 {
     const std::vector<std::string> all_eyes = { "eyes_left", "eyes_right" };
-    for( const char *id : { "balclava", "scarf", "welding_mask", "mask_fsurvivor", "goggles_nv",
+    for( const char *id : { "balclava", "scarf", "mask_fsurvivor", "goggles_nv",
                             "sunglasses"
                           } ) {
         CAPTURE( id );
@@ -312,7 +314,8 @@ TEST_CASE( "eyemouth1_child_numbers", "[armor][eyemouth1]" )
     detached_ptr<item> alloy = item::spawn( itype_id( "helmet_barbute_superalloy" ) );
     detached_ptr<item> carbon = item::spawn( itype_id( "carbon_helmet" ) );
     CHECK( alloy->get_encumber( guy, bodypart_id( "head" ) ) == 25 );
-    CHECK( carbon->get_encumber( guy, bodypart_id( "head" ) ) == 30 );
+    // CDF: carbon_helmet's own weight (705 g) through the head table, HEAD2
+    CHECK( carbon->get_encumber( guy, bodypart_id( "head" ) ) == 14 );
     CHECK( alloy->has_sub_coverage() );
     CHECK( carbon->has_sub_coverage() );
 }
