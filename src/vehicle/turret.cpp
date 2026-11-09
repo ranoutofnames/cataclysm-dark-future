@@ -225,7 +225,16 @@ void turret_data::prepare_fire(Character& who) {
     cached_recoil = who.recoil;
     who.recoil = 0;
 
+    item& gun = *part->base;
+    if (gun.uses_firing_requirements()) {
+        // CDF: prepare_multimag_pockets takes no map argument.
+        mm_bindings_ = vehicle::prepare_multimag_pockets(
+            *veh, gun, gun.gun_get_mode_id(), ammo_current());
+        return;
+    }
+
     // set fuel tank fluid as ammo, if appropriate
+    // CDF: DDA spells the test uses_vehicle_tanks_or_batteries().
     if (part->info().has_flag("USE_TANKS")) {
         auto mode = base().gun_current_mode();
         int qty = mode->ammo_required();
@@ -241,10 +250,40 @@ void turret_data::post_fire(Character& who, int shots) {
 
     auto mode = base().gun_current_mode();
 
+    // Clears item's MAGAZINE_WELL pockets, this gets rid of e.g. flamethrower's
+    // "pressurized tanks", or chemoelectric cartridges etc that are left over after firing.
+    // CDF: item::get_pockets forwards to get_contents().get_pockets(), and
+    // clear_items() returns the detached items instead of void.
+    static const auto clear_mag_wells = [](item& it) {
+        std::vector<item_pocket*> magazine_wells = it.get_pockets(
+            [](const item_pocket& pocket) {
+                return pocket.is_type(pocket_type::MAGAZINE_WELL);
+            });
+        for (item_pocket* pocket : magazine_wells) {
+            static_cast<void>(pocket->clear_items());
+        }
+    };
+
+    item& gun = *part->base;
+    if (gun.uses_firing_requirements()) {
+        // Bill bound pockets, clear only those so player-loaded pockets keep residue.
+        vehicle::drain_back_multimag(*veh, gun, mm_bindings_);
+        for (const auto& b : mm_bindings_) {
+            if (item_pocket* pkt = gun.pocket_by_id(b.first)) {
+                static_cast<void>(pkt->clear_items());
+            }
+        }
+        mm_bindings_.clear();
+        return;
+    }
+
     // handle draining of vehicle tanks and UPS charges, if applicable
+    // CDF: DDA spells the test uses_vehicle_tanks_or_batteries().
     if (part->info().has_flag("USE_TANKS")) {
         veh->drain(ammo_current(), mode->ammo_required() * shots);
         mode->ammo_unset();
+
+        clear_mag_wells(base());
     }
 
     veh->drain(fuel_type_battery, mode->get_gun_ups_drain() * shots);

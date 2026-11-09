@@ -1,3 +1,4 @@
+#include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "coordinates.h"
@@ -434,4 +435,227 @@ TEST_CASE( "preferred_primary_picks_that_tank_first", "[p3][turret]" )
     REQUIRE( fallback.count( "fluid" ) == 1 );
     CHECK( fallback.at( "fluid" ).kind == multimag_pocket_state::source_kind::TANK );
     CHECK( fallback.at( "fluid" ).vpart_index == diesel_tank );
+}
+
+// CDF: P3-8-5a-4 drain and fire-cycle tests. D1-D3 port the drain halves of
+// DDA tests/vehicle_part_test.cpp:272-316, 318-373, 390-420; D4-D6 follow the
+// CDF fire path (turret_data::prepare_fire -> consume -> post_fire).
+TEST_CASE( "drain_back_bills_battery_and_tank_per_pocket", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    const tripoint_bub_ms pos( 65, 65, 0 );
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ), pos, 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    veh->charge_battery( 1000, false );
+    REQUIRE( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int tank_index = static_cast<int>( tanks.begin()->part_index() );
+    veh->part( tank_index ).ammo_set( itype_id( "gasoline" ), 50 );
+    REQUIRE( veh->part( tank_index ).ammo_remaining() == 50 );
+
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_vehicle_combo" ),
+                                           calendar::turn, 0 );
+    REQUIRE( tool->uses_firing_requirements() );
+
+    const auto bindings = vehicle::prepare_multimag_pockets( *veh, *tool );
+    REQUIRE( bindings.count( "power" ) == 1 );
+    REQUIRE( bindings.count( "fluid" ) == 1 );
+
+    REQUIRE( tool->consume_tool_uses( 1, here, pos, nullptr ) == 1 );
+
+    vehicle::drain_back_multimag( *veh, *tool, bindings );
+
+    // CDF: DEFAULT costs power 5 + fluid 2 (TEST_DATA/items.json:2059), so only
+    // the used delta leaves each vehicle store.
+    CHECK( veh->fuel_left( itype_id( "battery" ), true ) == 995 );
+    CHECK( veh->part( tank_index ).ammo_remaining() == 48 );
+}
+
+TEST_CASE( "drain_back_bills_each_bound_tank", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    const tripoint_bub_ms pos( 65, 65, 0 );
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ), pos, 0_degrees, 0, 0 );
+    REQUIRE( veh );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int first_tank = static_cast<int>( tanks.begin()->part_index() );
+    const int second_tank =
+        veh->install_part( tripoint_mnt_veh( 1, 0, 0 ), vpart_id( "tank" ), true );
+    REQUIRE( second_tank >= 0 );
+    REQUIRE( second_tank != first_tank );
+
+    veh->part( first_tank ).ammo_set( itype_id( "gasoline" ), 6 );
+    veh->part( second_tank ).ammo_set( itype_id( "gasoline" ), 6 );
+    REQUIRE( veh->part( first_tank ).ammo_remaining() == 6 );
+    REQUIRE( veh->part( second_tank ).ammo_remaining() == 6 );
+
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_two_fluid" ),
+                                           calendar::turn, 0 );
+    REQUIRE( tool->uses_firing_requirements() );
+
+    const auto bindings = vehicle::prepare_multimag_pockets( *veh, *tool );
+    REQUIRE( bindings.count( "left" ) == 1 );
+    REQUIRE( bindings.count( "right" ) == 1 );
+
+    REQUIRE( tool->consume_tool_uses( 1, here, pos, nullptr ) == 1 );
+
+    vehicle::drain_back_multimag( *veh, *tool, bindings );
+
+    // CDF: each pocket costs 2 (TEST_DATA/items.json:2143), and each bound
+    // pocket must bill its own tank once, not one tank twice.
+    CHECK( veh->part( first_tank ).ammo_remaining() == 4 );
+    CHECK( veh->part( second_tank ).ammo_remaining() == 4 );
+}
+
+TEST_CASE( "drain_back_direct_battery_bills_use_not_pocket", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    const tripoint_bub_ms pos( 65, 65, 0 );
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ), pos, 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    veh->discharge_battery( veh->fuel_left( itype_id( "battery" ), true ) );
+    veh->charge_battery( 1000, false );
+    REQUIRE( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_direct_battery" ),
+                                           calendar::turn, 0 );
+    REQUIRE( tool->uses_firing_requirements() );
+
+    const auto bindings = vehicle::prepare_multimag_pockets( *veh, *tool );
+    REQUIRE( bindings.count( "core" ) == 1 );
+    // CDF: prep only fills the pocket; the pool is untouched (8-5a-2).
+    CHECK( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+
+    REQUIRE( tool->consume_tool_uses( 1, here, pos, nullptr ) == 1 );
+
+    vehicle::drain_back_multimag( *veh, *tool, bindings );
+
+    // CDF: DEFAULT costs 5 (TEST_DATA/items.json:2156), so the pool loses the
+    // use, not the pocket's 40-charge fill.
+    CHECK( veh->fuel_left( itype_id( "battery" ), true ) == 995 );
+}
+
+TEST_CASE( "turret_fire_cycle_bills_vehicle_and_clears_bound_pockets", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    const tripoint_bub_ms pos( 65, 65, 0 );
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ), pos, 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto turret_index = veh->install_part( tripoint_mnt_veh::zero(),
+                              vpart_id( "turret_test_multimag_turret_gun" ), true );
+    REQUIRE( turret_index >= 0 );
+    veh->charge_battery( 1000, false );
+    REQUIRE( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+
+    vehicle_part &turret_part = veh->part( turret_index );
+    item &gun = turret_part.get_base();
+
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    REQUIRE( mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ),
+                          pocket_type::MAGAZINE ).success() );
+    REQUIRE( gun.put_in( std::move( mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun.ammo_remaining_in_pocket( "ammo" ) == 15 );
+
+    auto qry = veh->turret_query( turret_part );
+    REQUIRE( qry );
+
+    avatar &who = get_avatar();
+    qry.prepare_fire( who );
+    // CDF: prep fills the empty power well from the vehicle network; one
+    // DEFAULT shot costs ammo 1 + power 5 (TEST_DATA/items.json:1586).
+    REQUIRE( gun.ammo_remaining_in_pocket( "power" ) >= 5 );
+    REQUIRE( gun.consume_one_shot( here, pos, nullptr ) == 1 );
+
+    qry.post_fire( who, 1 );
+
+    CHECK( veh->fuel_left( itype_id( "battery" ), true ) == 995 );
+    CHECK( gun.ammo_remaining_in_pocket( "power" ) == 0 );
+    REQUIRE( gun.pocket_by_id( "power" ) != nullptr );
+    CHECK( gun.pocket_by_id( "power" )->empty() );
+    // The player-loaded magazine keeps its round: only vehicle-filled pockets
+    // are cleared.
+    CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 14 );
+}
+
+TEST_CASE( "post_fire_without_bindings_leaves_pockets_alone", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    const tripoint_bub_ms pos( 65, 65, 0 );
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ), pos, 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto turret_index = veh->install_part( tripoint_mnt_veh::zero(),
+                              vpart_id( "turret_test_multimag_turret_gun" ), true );
+    REQUIRE( turret_index >= 0 );
+    veh->charge_battery( 1000, false );
+    REQUIRE( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+
+    vehicle_part &turret_part = veh->part( turret_index );
+    item &gun = turret_part.get_base();
+
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    REQUIRE( mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ),
+                          pocket_type::MAGAZINE ).success() );
+    REQUIRE( gun.put_in( std::move( mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun.ammo_remaining_in_pocket( "ammo" ) == 15 );
+
+    auto qry = veh->turret_query( turret_part );
+    REQUIRE( qry );
+
+    // No prepare_fire: mm_bindings_ stays empty, so nothing is billed or cleared.
+    qry.post_fire( get_avatar(), 1 );
+
+    CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 15 );
+    CHECK( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+}
+
+TEST_CASE( "post_fire_empties_leftover_magazine_wells_of_tank_turrets", "[p3][turret]" )
+{
+    // CDF: fixture is the existing mounted flamethrower (USE_TANKS,
+    // data/json/vehicleparts/turret.json:114-127) on test_turret_rig's tank
+    // (TEST_DATA/vehicle.json:9-10), tank-fed as in
+    // tests/vehicle_turrets_test.cpp:80-87. The leftover is an existing
+    // pressurized_tank magazine (data/json/items/magazine/liquid.json:3).
+    clear_all_state();
+    map &here = get_map();
+    const tripoint_bub_ms pos( 65, 65, 0 );
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ), pos, 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto turret_index =
+        veh->install_part( tripoint_mnt_veh::zero(), vpart_id( "flamethrower" ), true );
+    REQUIRE( turret_index >= 0 );
+    REQUIRE( veh->part_flag( turret_index, "USE_TANKS" ) );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int tank_index = static_cast<int>( tanks.begin()->part_index() );
+    veh->part( tank_index ).ammo_set( itype_id( "napalm" ) );
+    REQUIRE( veh->part( tank_index ).ammo_remaining() > 0 );
+
+    vehicle_part &turret_part = veh->part( turret_index );
+    item &gun = turret_part.get_base();
+    // CDF: counts the wells that hold something (the pocket itself always exists)
+    const auto loaded_well_count = [&gun]() {
+        return gun.get_pockets( []( const item_pocket &pocket ) {
+            return pocket.is_type( pocket_type::MAGAZINE_WELL ) && !pocket.empty();
+        } ).size();
+    };
+    REQUIRE( loaded_well_count() == 0 );
+    REQUIRE( gun.put_in( item::spawn( itype_id( "pressurized_tank" ) ),
+                         pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( loaded_well_count() == 1 );
+
+    auto qry = veh->turret_query( turret_part );
+    REQUIRE( qry );
+    qry.post_fire( get_avatar(), 1 );
+
+    CHECK( loaded_well_count() == 0 );
 }

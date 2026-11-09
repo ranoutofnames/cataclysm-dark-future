@@ -2063,12 +2063,33 @@ auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool)
                                     itype_id::NULL_ID());
 }
 
-// CDF: body filled by 8-5a-4 (DDA vehicle_use.cpp:2133-2158).
+// CDF: DDA takes map &here; it is dropped like the other drain entry points
+// (vehicle.h).
 void vehicle::drain_back_multimag(
     vehicle& veh, const item& tool,
     const std::map<std::string, multimag_pocket_state>& bindings) {
+    using state_t = multimag_pocket_state;
     if (!tool.uses_firing_requirements()) {
         return;
+    }
+    for (const std::pair<const std::string, state_t>& b : bindings) {
+        const std::string& pocket_id = b.first;
+        const state_t& st = b.second;
+        const int after = tool.ammo_remaining_in_pocket(pocket_id);
+        const int delta = st.initial_qty - after;
+        if (delta <= 0) {
+            continue;
+        }
+        switch (st.kind) {
+            case state_t::source_kind::BATTERY:
+                veh.discharge_battery(delta);
+                break;
+            case state_t::source_kind::TANK:
+                if (st.vpart_index >= 0) {
+                    veh.drain(st.vpart_index, delta);
+                }
+                break;
+        }
     }
 }
 

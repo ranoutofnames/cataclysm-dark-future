@@ -1599,7 +1599,6 @@ int ranged::fire_gun( Character &who, const tripoint_bub_ms &target, int max_sho
             // Vehicle turret passes nullptr carrier so multimag_drain skips
             // player UPS/bionic. Vehicle is billed via drain_back_multimag
             // in turret_data::post_fire.
-            // CDF: until 8-5 (drain_back_multimag absent): a VEHICLE multimag gun is not billed to the vehicle yet.
             Character *drain_carrier = gun.has_flag( flag_VEHICLE ) ? nullptr : &who;
             if( gun.consume_one_shot( here, who.bub_pos(), drain_carrier ) != 1 ) {
                 debugmsg( "Unexpected shortage of ammo whilst firing %s", gun.tname() );
