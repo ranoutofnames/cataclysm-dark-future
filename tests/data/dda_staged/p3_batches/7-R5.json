@@ -1,0 +1,301 @@
+{
+ "batch": "7-R5",
+ "base": "dcab09ec2c",
+ "dda": "918f396f370ea48fad924fb45a797386a2f6ddb4",
+ "count": 4,
+ "items": {
+  "char_purifier": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "CHARGES",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "charcoal": 150
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 150,
+    "ammo": null
+   },
+   "cap_diff": [
+    {
+     "ammo": "charcoal",
+     "cdf": 150,
+     "dda": 180
+    }
+   ]
+  },
+  "oxygen_cylinder": {
+   "file": "data/json/items/tool/science.json",
+   "class": "CHARGES",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "airtight": true,
+     "watertight": true,
+     "rigid": true,
+     "ammo_restriction": {
+      "oxygen": 300
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 300,
+    "ammo": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)"
+  },
+  "oxygen_tank": {
+   "file": "data/json/items/tool/med.json",
+   "class": "CHARGES",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "airtight": true,
+     "watertight": true,
+     "rigid": true,
+     "ammo_restriction": {
+      "oxygen": 24
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 24,
+    "ammo": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)"
+  },
+  "smoxygen_tank": {
+   "file": "data/json/items/tool/med.json",
+   "class": "CHARGES",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "airtight": true,
+     "watertight": true,
+     "rigid": true,
+     "ammo_restriction": {
+      "oxygen": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 12,
+    "ammo": null
+   }
+  }
+ },
+ "waiting_not_in_batch": {
+  "butane_can": {
+   "file": "data/json/obsoletion/items.json",
+   "stays_because": [
+    "stays on charges: ammotype butane has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 30,
+    "ammo": null
+   }
+  },
+  "butane_tank": {
+   "file": "data/json/obsoletion/items.json",
+   "stays_because": [
+    "stays on charges: ammotype butane has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": null,
+    "ammo": null
+   }
+  },
+  "candle": {
+   "file": "data/json/items/tool/lighting.json",
+   "stays_because": [
+    "stays on charges: ammotype candle_wax has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": null
+   }
+  },
+  "candle_lit": {
+   "file": "data/json/items/tool/lighting.json",
+   "stays_because": [
+    "stays on charges: ammotype candle_wax has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": null
+   }
+  },
+  "extinguisher": {
+   "file": "data/json/items/tool/firefighting.json",
+   "stays_because": [
+    "stays on charges: ammotype extinguishing_agent has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": null,
+    "ammo": null
+   }
+  },
+  "fire_drill": {
+   "file": "data/json/items/tool/fire.json",
+   "stays_because": [
+    "stays on charges: item_restriction id notched_plank absent; item_restriction id notched_stick absent"
+   ],
+   "legacy": {
+    "max_charges": 50,
+    "ammo": null
+   }
+  },
+  "fire_drill_large": {
+   "file": "data/json/items/tool/fire.json",
+   "stays_because": [
+    "stays on charges: item_restriction id notched_plank absent; item_restriction id notched_stick absent"
+   ],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": null
+   }
+  },
+  "glowstick": {
+   "file": "data/json/items/tool/lighting.json",
+   "stays_because": [
+    "stays on charges: ammotype glowstick_juice has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 1400,
+    "ammo": null
+   }
+  },
+  "glowstick_lit": {
+   "file": "data/json/items/tool/lighting.json",
+   "stays_because": [
+    "stays on charges: ammotype glowstick_juice has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 1400,
+    "ammo": null
+   }
+  },
+  "handflare": {
+   "file": "data/json/items/tool/lighting.json",
+   "stays_because": [
+    "stays on charges: ammotype flare_nitrate has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 300,
+    "ammo": null
+   }
+  },
+  "handflare_lit": {
+   "file": "data/json/items/tool/lighting.json",
+   "stays_because": [
+    "stays on charges: ammotype flare_nitrate has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 300,
+    "ammo": null
+   }
+  },
+  "hydrogen_tank": {
+   "file": "data/json/items/tool/science.json",
+   "stays_because": [
+    "stays on charges: ammotype hydrogen has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 24,
+    "ammo": null
+   }
+  },
+  "inhaler": {
+   "file": "data/json/items/tool/med.json",
+   "stays_because": [
+    "stays on charges: ammotype albuterol has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": null
+   }
+  },
+  "matches": {
+   "file": "data/json/items/tool/fire.json",
+   "stays_because": [
+    "stays on charges: ammotype match has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 20,
+    "ammo": null
+   }
+  },
+  "nitrogen_tank": {
+   "file": "data/json/items/tool/science.json",
+   "stays_because": [
+    "stays on charges: ammotype nitrogen has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 24,
+    "ammo": null
+   }
+  },
+  "pen": {
+   "file": "data/json/items/tool/stationary.json",
+   "stays_because": [
+    "stays on charges: ammotype black_pen_ink has no default ammo item (default ''); ammotype blue_pen_ink has no default ammo item (default ''); ammotype green_pen_ink has no default ammo item (default ''); ammotype red_pen_ink has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": null
+   }
+  },
+  "permanent_marker": {
+   "file": "data/json/items/tool/misc.json",
+   "stays_because": [
+    "stays on charges: ammotype permanent_ink has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": null
+   }
+  },
+  "sm_extinguisher": {
+   "file": "data/json/items/tool/firefighting.json",
+   "stays_because": [
+    "stays on charges: ammotype extinguishing_agent has no default ammo item (default '')"
+   ],
+   "legacy": {
+    "max_charges": null,
+    "ammo": null
+   }
+  }
+ },
+ "dda_note": "918f396f370e = the DDA pin, a documented constant: tests/cdf_mag_port_test.cpp:20 requires it; the tool wrote it from `git rev-parse HEAD` of its --dda root (read by the planner on LAPTOP-A0EU66N2 at C:\\CDF\\CDDA SRC, 2026-11-03; see 7-GOLD1-v3 fact 1). b4b62254ae2 is the commit the DDA line numbers in the drafts were read at; data/json/items differs between the two only in six integrated_chitin*/integrated_carapace* ids (armor/integrated.json), none in any 7-* batch. The DDA root of a run is the parameter <DDA_ROOT>."
+}

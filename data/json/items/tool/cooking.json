@@ -146,10 +146,16 @@
     "symbol": ";",
     "color": "light_gray",
     "initial_charges": 150,
-    "max_charges": 150,
     "charges_per_use": 1,
     "use_action": "WATER_PURIFIER",
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "charcoal": 150 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "id": "char_smoker",

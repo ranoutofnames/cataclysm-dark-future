@@ -169,9 +169,18 @@
     "symbol": ";",
     "color": "blue",
     "initial_charges": 300,
-    "max_charges": 300,
     "charges_per_use": 10,
-    "use_action": "OXYGEN_BOTTLE"
+    "use_action": "OXYGEN_BOTTLE",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "airtight": true,
+        "watertight": true,
+        "rigid": true,
+        "ammo_restriction": { "oxygen": 300 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "id": "carbondioxide_tank",
