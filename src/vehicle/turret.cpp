@@ -190,6 +190,18 @@ auto turret_data::can_unload() const -> bool {
 auto turret_data::query() const -> turret_data::status {
     if (!veh || !part) { return status::invalid; }
 
+    if (part->base->uses_firing_requirements()) {
+        // CDF: DDA temp-copies the gun by value (item gun_copy( gun )); CDF has
+        // no value item, so the copy lives in the temporary-item pool instead.
+        // Temp-copy the gun, prep vehicle-backed pockets, then ask the same
+        // mode-aware feasibility the firing path will use. Vehicle is never
+        // mutated by prepare_multimag_pockets (only the temp gun is loaded).
+        item* gun_copy = item::spawn_temporary(*part->base);
+        vehicle::prepare_multimag_pockets(*veh, *gun_copy, gun_copy->gun_get_mode_id(),
+                                          ammo_current());
+        return gun_copy->shots_remaining(get_map(), nullptr) >= 1 ? status::ready : status::no_ammo;
+    }
+
     if (part->info().has_flag("USE_TANKS")) {
         if (veh->fuel_left(ammo_current()) < part->base->ammo_required()) {
             return status::no_ammo;

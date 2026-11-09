@@ -85,6 +85,8 @@ static const itype_id itype_water_clean("water_clean");
 static const itype_id itype_water_purifier("water_purifier");
 static const itype_id itype_welder("welder");
 
+static const ammotype ammo_battery("battery");
+
 static const efftype_id effect_harnessed("harnessed");
 static const efftype_id effect_tied("tied");
 
@@ -1862,9 +1864,8 @@ void vehicle::use_bike_rack(int part) {
     }
 }
 
-// Multimag pseudo-tool support. This packet wires the guards and the pocket
-// loop head only; the battery and tank branches are filled by 8-5a-2 and
-// 8-5a-3.
+// Multimag pseudo-tool support. This packet wires the guards, the pocket loop
+// head and the battery branches; the tank branch is filled by 8-5a-3.
 auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool,
                                        const gun_mode_id& mode,
                                        const itype_id& preferred_primary)
@@ -1885,6 +1886,11 @@ auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool,
         return out;
     }
 
+    // Accumulate "claimed" budget per source so two pockets cannot double-load
+    // the same store. The battery network is a single global pool.
+    // CDF: the per-vpart tank claim map arrives with 8-5a-3 (DDA vehicle_use.cpp:1979).
+    int battery_claimed = 0;
+
     for (const pocket_consumption_entry& pce : *entries) {
         item_pocket* pkt = tool.pocket_by_id(pce.pocket);
         if (pkt == nullptr) {
@@ -1897,6 +1903,50 @@ auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool,
         // Any existing content blocks prep, else drain_back would bill the
         // vehicle for player-owned charges via the initial_qty delta.
         if (!pkt->empty()) {
+            continue;
+        }
+
+        if (tool.pocket_accepts_battery(pkt)) {
+            // CDF: fuel_left replaces DDA's battery_left( here ) and its INT_MAX clamp.
+            const int batt_total = veh.fuel_left(fuel_type_battery, true);
+            const int batt_avail = std::max(0, batt_total - battery_claimed);
+            if (pdat->type == pocket_type::MAGAZINE_WELL) {
+                itype_id mag_type = pdat->default_magazine;
+                if (mag_type.is_null() && !pdat->item_id_restriction.empty()) {
+                    mag_type = *pdat->item_id_restriction.begin();
+                }
+                if (mag_type.is_null()) {
+                    continue;
+                }
+                // CDF: no value item; build the synthetic magazine detached.
+                detached_ptr<item> mag = item::spawn(mag_type);
+                mag->clear_items();
+                const int cap = mag->ammo_capacity(ammo_battery);
+                const int set_qty = std::min(batt_avail, cap);
+                mag->ammo_set(itype_battery, set_qty);
+                if (pkt->insert_item(std::move(mag)).success()) {
+                    battery_claimed += set_qty;
+                    state_t st;
+                    st.kind = state_t::source_kind::BATTERY;
+                    st.initial_qty = tool.ammo_remaining_in_pocket(pce.pocket);
+                    out.emplace(pce.pocket, st);
+                }
+            } else if (pdat->type == pocket_type::MAGAZINE) {
+                // Direct MAGAZINE battery pocket: insert raw battery items
+                // capped by the pocket's own capacity (no synthesized mag).
+                const int set_qty = std::min(batt_avail,
+                                             pkt->remaining_ammo_capacity(ammo_battery));
+                if (set_qty > 0) {
+                    if (pkt->insert_item(item::spawn(itype_battery, calendar::turn, set_qty))
+                        .success()) {
+                        battery_claimed += set_qty;
+                        state_t st;
+                        st.kind = state_t::source_kind::BATTERY;
+                        st.initial_qty = tool.ammo_remaining_in_pocket(pce.pocket);
+                        out.emplace(pce.pocket, st);
+                    }
+                }
+            }
             continue;
         }
     }
