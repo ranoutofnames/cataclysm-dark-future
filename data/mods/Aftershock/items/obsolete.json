@@ -82,6 +82,9 @@
     "material_thickness": 2,
     "encumbrance": 7,
     "storage": "3 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "3000 ml" }
+    ],
     "warmth": 20,
     "environmental_protection": 5,
     "flags": [
@@ -221,6 +224,9 @@
     "coverage": 85,
     "encumbrance": 7,
     "storage": "2500 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "2500 ml" }
+    ],
     "warmth": 15,
     "material_thickness": 3,
     "flags": [ "STURDY", "OUTER" ]

@@ -291,6 +291,17 @@
     "coverage": 40,
     "encumbrance": 10,
     "storage": "25 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "25000 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "material_thickness": 3,
     "flags": [
       "BELTED",

@@ -8,7 +8,44 @@
     "flags": [ "COLLAR", "VARSIZE", "WATERPROOF", "STURDY", "FANCY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_WINGS" ],
     "color": "light_gray",
     "material": [ "neoprene", "kevlar" ],
-    "warmth": 25
+    "warmth": 25,
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1016 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "15 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1016 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "15 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "621 ml",
+        "max_contains_weight": "1500 g",
+        "max_item_length": "18 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "621 ml",
+        "max_contains_weight": "1500 g",
+        "max_item_length": "18 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "226 ml",
+        "max_contains_weight": "1 kg",
+        "max_item_length": "13 cm",
+        "moves": 150
+      }
+    ]
   },
   {
     "id": "crt_pants",
@@ -20,7 +57,51 @@
     "material": [ "neoprene", "kevlar" ],
     "warmth": 25,
     "coverage": 100,
-    "extend": { "flags": [ "WATERPROOF", "STURDY" ] }
+    "extend": { "flags": [ "WATERPROOF", "STURDY" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "437 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "19 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "437 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "19 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "436 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "19 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "436 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "19 cm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "377 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "165 mm",
+        "moves": 100
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "377 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "165 mm",
+        "moves": 100
+      }
+    ]
   },
   {
     "id": "crt_dress_pants",
@@ -116,6 +197,9 @@
     "coverage": 100,
     "encumbrance": 13,
     "storage": "1250 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "1250 ml" }
+    ],
     "warmth": 15,
     "material_thickness": 1,
     "environmental_protection": 2,

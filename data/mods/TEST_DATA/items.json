@@ -586,6 +586,17 @@
     "coverage": 10,
     "encumbrance": 30,
     "storage": "15 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "15000 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "material_thickness": 2,
     "flags": [ "FANCY", "OVERSIZE", "BELTED", "RESTRICT_HANDS", "WATER_FRIENDLY" ]
   },
@@ -752,6 +763,9 @@
     "color": "dark_gray",
     "armor_portion_data": [ { "covers": [ "torso", "legs", "arms" ], "coverage": 95, "encumbrance": [ 12, 25 ] } ],
     "storage": "5 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "5000 ml" }
+    ],
     "warmth": 35,
     "material_thickness": 11,
     "valid_mods": [ "steel_padded" ],
@@ -777,6 +791,9 @@
     "encumbrance": 16,
     "max_encumbrance": 20,
     "storage": "1 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "1000 ml" }
+    ],
     "warmth": 80,
     "material_thickness": 3,
     "valid_mods": [ "steel_padded" ],

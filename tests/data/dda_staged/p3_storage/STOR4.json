@@ -1,0 +1,926 @@
+{
+ "format": 1,
+ "packet": "STOR4",
+ "base": "422dd86356 data (unchanged to e3f1c1022d and, per the orchestrator, b66fd2d088 for item data); PL-31-d 2026-11-04",
+ "rows": [
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 100000,
+     "max_item_length_mm": 651,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 100000
+   },
+   "id": "afs_bag_of_holding",
+   "where": "mod",
+   "file": "mods/Aftershock/items/armor.json",
+   "name": "bag of holding",
+   "storage_ml": 100000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "100000 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 3000,
+     "max_item_length_mm": 198,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 3000
+   },
+   "id": "afs_blatant_half_life_reference",
+   "where": "mod",
+   "file": "mods/Aftershock/items/obsolete.json",
+   "name": "hazardous environment suit",
+   "storage_ml": 3000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "3000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 2500,
+     "max_item_length_mm": 198,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 2500
+   },
+   "id": "afs_mbr_titanium",
+   "where": "mod",
+   "file": "mods/Aftershock/items/obsolete.json",
+   "name": "MBR vest (titanium)",
+   "storage_ml": 2500,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "2500 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 5000,
+     "max_item_length_mm": 240,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 5000
+   },
+   "id": "crt_aarmor",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_armor.json",
+   "name": "C.R.I.T. Armored Anomaly Suit",
+   "storage_ml": 5000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "5000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 1750,
+     "max_item_length_mm": 170,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 1750
+   },
+   "id": "crt_earmor",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_armor.json",
+   "name": "C.R.I.T. Enforcer armor assembly",
+   "storage_ml": 1750,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "1750 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 4500,
+     "max_item_length_mm": 240,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 4500
+   },
+   "id": "crt_iduster",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_armor.json",
+   "name": "C.R.I.T. infantry duster",
+   "storage_ml": 4500,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "4500 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "pockets": [
+     {
+      "volume_ml": 1016,
+      "max_item_length_mm": 150,
+      "max_contains_weight_g": 2000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 1016,
+      "max_item_length_mm": 150,
+      "max_contains_weight_g": 2000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 621,
+      "max_item_length_mm": 180,
+      "max_contains_weight_g": 1500,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 621,
+      "max_item_length_mm": 180,
+      "max_contains_weight_g": 1500,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 226,
+      "max_item_length_mm": 130,
+      "max_contains_weight_g": 1000,
+      "moves": 150,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     }
+    ],
+    "strap": null,
+    "get_storage_ml": 3500
+   },
+   "id": "crt_jacket",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_clothes.json",
+   "name": "C.R.I.T. blouse",
+   "storage_ml": 3500,
+   "copy_from": "jacket_army",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "PARENT-LAYOUT-SHAPE",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "1016 ml",
+     "max_contains_weight": "2 kg",
+     "max_item_length": "15 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "1016 ml",
+     "max_contains_weight": "2 kg",
+     "max_item_length": "15 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "621 ml",
+     "max_contains_weight": "1500 g",
+     "max_item_length": "18 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "621 ml",
+     "max_contains_weight": "1500 g",
+     "max_item_length": "18 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "226 ml",
+     "max_contains_weight": "1 kg",
+     "max_item_length": "13 cm",
+     "moves": 150
+    }
+   ],
+   "note": "child of `jacket_army`: the parent's layout shape scaled to the child's own storage; total unchanged",
+   "dda_layout_ref": "`jacket_army`",
+   "dda_layout_ml": [
+    590,
+    590,
+    361,
+    361,
+    131
+   ],
+   "dda_layout_total_ml": 2033,
+   "scaled_ml": [
+    1016,
+    1016,
+    621,
+    621,
+    226
+   ],
+   "rounding_rule": "largest remainder, ties to lower index",
+   "scale_factor": 1.72159,
+   "strap_pocket_kept": false,
+   "shape_note": "DDA layout of `jacket_army` (5 pockets); volumes scaled so the total equals storage (3500 ml); weight, length and moves as DDA",
+   "rigid_note": "layout pockets keep the DDA shape and carry no `rigid` key (non-rigid; DDA item_pocket.cpp:198 default false); the 10 L strap (storage >= 10 L) is the synthesized form and gets rigid true; owner checklist row: a filled layout garment takes non-rigid volume into its worn encumbrance (DDA behaviour)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 1500,
+     "max_item_length_mm": 156,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 1500
+   },
+   "id": "crt_legrig",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_armor.json",
+   "name": "C.R.I.T. drop leg pouch",
+   "storage_ml": 1500,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "1500 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "pockets": [
+     {
+      "volume_ml": 437,
+      "max_item_length_mm": 190,
+      "max_contains_weight_g": 4000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 437,
+      "max_item_length_mm": 190,
+      "max_contains_weight_g": 4000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 436,
+      "max_item_length_mm": 190,
+      "max_contains_weight_g": 4000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 436,
+      "max_item_length_mm": 190,
+      "max_contains_weight_g": 4000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 377,
+      "max_item_length_mm": 165,
+      "max_contains_weight_g": 4000,
+      "moves": 100,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 377,
+      "max_item_length_mm": 165,
+      "max_contains_weight_g": 4000,
+      "moves": 100,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     }
+    ],
+    "strap": null,
+    "get_storage_ml": 2500
+   },
+   "id": "crt_pants",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_clothes.json",
+   "name": null,
+   "storage_ml": 2500,
+   "copy_from": "pants_army",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "PARENT-LAYOUT-SHAPE",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "437 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "19 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "437 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "19 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "436 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "19 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "436 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "19 cm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "377 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "165 mm",
+     "moves": 100
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "377 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "165 mm",
+     "moves": 100
+    }
+   ],
+   "note": "child of `pants_army`: the parent's layout shape scaled to the child's own storage; total unchanged",
+   "dda_layout_ref": "`pants_army`",
+   "dda_layout_ml": [
+    1250,
+    1250,
+    1250,
+    1250,
+    1080,
+    1080
+   ],
+   "dda_layout_total_ml": 7160,
+   "scaled_ml": [
+    437,
+    437,
+    436,
+    436,
+    377,
+    377
+   ],
+   "rounding_rule": "largest remainder, ties to lower index",
+   "scale_factor": 0.34916,
+   "strap_pocket_kept": false,
+   "shape_note": "DDA layout of `pants_army` (6 pockets); volumes scaled so the total equals storage (2500 ml); weight, length and moves as DDA",
+   "rigid_note": "layout pockets keep the DDA shape and carry no `rigid` key (non-rigid; DDA item_pocket.cpp:198 default false); the 10 L strap (storage >= 10 L) is the synthesized form and gets rigid true; owner checklist row: a filled layout garment takes non-rigid volume into its worn encumbrance (DDA behaviour)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 1250,
+     "max_item_length_mm": 156,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 1250
+   },
+   "id": "crt_rec_duster",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_clothes.json",
+   "name": "C.R.I.T. rec duster",
+   "storage_ml": 1250,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "1250 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 2500,
+     "max_item_length_mm": 198,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 2500
+   },
+   "id": "crt_sarmor",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_armor.json",
+   "name": "C.R.I.T. Soldier Suit",
+   "storage_ml": 2500,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "2500 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 12500,
+     "max_item_length_mm": 325,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 12500
+   },
+   "id": "ds_armor",
+   "where": "mod",
+   "file": "mods/CRT_EXPANSION/items/crt_armor.json",
+   "name": "C.R.I.T. Engineering Suit",
+   "storage_ml": 12500,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "12500 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 25000,
+     "max_item_length_mm": 410,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 25000
+   },
+   "id": "fleshpouch",
+   "where": "mod",
+   "file": "mods/MagicalNights/items/ethereal_items.json",
+   "name": "flesh pouch",
+   "storage_ml": 25000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "25000 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 15000,
+     "max_item_length_mm": 354,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 15000
+   },
+   "id": "test_briefcase",
+   "where": "mod",
+   "file": "mods/TEST_DATA/items.json",
+   "name": "TEST briefcase",
+   "storage_ml": 15000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "15000 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": null,
+   "id": "test_pants_faux_fur",
+   "where": "mod",
+   "file": "mods/TEST_DATA/items.json",
+   "name": null,
+   "storage_ml": 1000,
+   "copy_from": "test_pants_fur",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL-INHERIT",
+   "packet": "STOR4",
+   "proposed_pocket_data": null,
+   "note": "inherits `test_pants_fur` (parent in this table; no own edit)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 1000,
+     "max_item_length_mm": 141,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 1000
+   },
+   "id": "test_pants_fur",
+   "where": "mod",
+   "file": "mods/TEST_DATA/items.json",
+   "name": null,
+   "storage_ml": 1000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "1000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": null,
+   "id": "test_portion_faux_fur_pants_suit",
+   "where": "mod",
+   "file": "mods/TEST_DATA/items.json",
+   "name": null,
+   "storage_ml": 1000,
+   "copy_from": "test_pants_fur",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL-INHERIT",
+   "packet": "STOR4",
+   "proposed_pocket_data": null,
+   "note": "inherits `test_pants_fur` (parent in this table; no own edit)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 5000,
+     "max_item_length_mm": 240,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 5000
+   },
+   "id": "test_swat_armor",
+   "where": "mod",
+   "file": "mods/TEST_DATA/items.json",
+   "name": "SWAT armor",
+   "storage_ml": 5000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "5000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 8000,
+     "max_item_length_mm": 283,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 8000
+   },
+   "id": "xlswat_armor",
+   "where": "mod",
+   "file": "mods/Aftershock/items/armor.json",
+   "name": "Uplifted SWAT armor",
+   "storage_ml": 8000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR4",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "8000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  }
+ ]
+}

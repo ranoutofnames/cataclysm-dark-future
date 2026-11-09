@@ -246,6 +246,9 @@
     "coverage": 100,
     "encumbrance": 18,
     "storage": "4500 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "4500 ml" }
+    ],
     "warmth": 20,
     "material_thickness": 4,
     "environmental_protection": 9,
@@ -304,6 +307,17 @@
     "encumbrance": 25,
     "warmth": 15,
     "storage": "12500 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "12500 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "material_thickness": 3,
     "environmental_protection": 18,
     "use_action": "WEATHER_TOOL",
@@ -329,6 +343,9 @@
     "encumbrance": 25,
     "warmth": 25,
     "storage": "5 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "5000 ml" }
+    ],
     "material_thickness": 6,
     "environmental_protection": 25,
     "flags": [ "VARSIZE", "WATERPROOF", "HOOD", "COLLAR", "RAINPROOF", "STURDY", "RAD_RESIST", "OUTER" ]
@@ -351,6 +368,9 @@
     "coverage": 30,
     "encumbrance": 3,
     "storage": "1500 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "1500 ml" }
+    ],
     "material_thickness": 2,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "BELTED", "COMPACT", "RAINPROOF", "ALLOWS_TAIL_SNAKE" ]
   },
@@ -373,6 +393,9 @@
     "encumbrance": 30,
     "warmth": 20,
     "storage": "1750 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "1750 ml" }
+    ],
     "material_thickness": 5,
     "environmental_protection": 5,
     "flags": [ "VARSIZE", "STURDY", "BELTED", "OVERSIZE" ]
@@ -416,6 +439,9 @@
     "encumbrance": 7,
     "warmth": 10,
     "storage": "2500 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "2500 ml" }
+    ],
     "material_thickness": 2,
     "environmental_protection": 3,
     "flags": [ "VARSIZE", "STURDY" ]
