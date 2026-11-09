@@ -2,6 +2,7 @@
 #include "catch/catch.hpp"
 #include "coordinates.h"
 #include "item.h"
+#include "item_pocket.h"
 #include "map/map.h"
 #include "pocket_type.h"
 #include "ret_val.h"
@@ -11,6 +12,7 @@
 #include "vehicle/veh_type.h"
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
+#include "vehicle/vpart_range.h"
 
 #include <utility>
 
@@ -272,4 +274,164 @@ TEST_CASE( "turret_query_uses_prepared_copy", "[p3][turret]" )
     auto qry_dry = veh->turret_query( veh->part( turret_index ) );
     REQUIRE( qry_dry );
     CHECK( qry_dry.query() == turret_data::status::no_ammo );
+}
+
+// CDF: P3-8-5a-3 tank tests. Fixtures are the test_multimag_* items in
+// TEST_DATA/items.json. test_turret_rig carries the ordinary `tank` part
+// (TEST_DATA/vehicle.json:10), filled through vehicle_part::ammo_set like
+// tests/vehicle_turrets_test.cpp:87.
+TEST_CASE( "prepare_multimag_pockets_fills_fluid_pocket_from_tank", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    veh->charge_battery( 1000, false );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int tank_index = static_cast<int>( tanks.begin()->part_index() );
+    // CDF: 50 gasoline charges; the fluid pocket caps at 40 (items.json:2056).
+    veh->part( tank_index ).ammo_set( itype_id( "gasoline" ), 50 );
+    REQUIRE( veh->part( tank_index ).ammo_remaining() == 50 );
+
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_vehicle_combo" ),
+                                           calendar::turn, 0 );
+    REQUIRE( tool->uses_firing_requirements() );
+
+    const auto bindings = vehicle::prepare_multimag_pockets( *veh, *tool );
+    REQUIRE( bindings.count( "fluid" ) == 1 );
+    CHECK( tool->ammo_remaining_in_pocket( "fluid" ) > 0 );
+    CHECK( bindings.at( "fluid" ).kind == multimag_pocket_state::source_kind::TANK );
+    CHECK( bindings.at( "fluid" ).vpart_index == tank_index );
+    // CDF: prep only fills the pocket; billing the tank is 8-5a-4.
+    CHECK( veh->part( tank_index ).ammo_remaining() == 50 );
+}
+
+TEST_CASE( "well_pocket_synthesizes_magazine_from_tank", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int tank_index = static_cast<int>( tanks.begin()->part_index() );
+    veh->part( tank_index ).ammo_set( itype_id( "gasoline" ), 50 );
+    REQUIRE( veh->part( tank_index ).ammo_remaining() == 50 );
+
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_well_fluid" ),
+                                           calendar::turn, 0 );
+    REQUIRE( tool->uses_firing_requirements() );
+
+    const auto bindings = vehicle::prepare_multimag_pockets( *veh, *tool );
+    REQUIRE( bindings.count( "fuel" ) == 1 );
+    CHECK( bindings.at( "fuel" ).kind == multimag_pocket_state::source_kind::TANK );
+    CHECK( bindings.at( "fuel" ).vpart_index == tank_index );
+    CHECK( bindings.at( "fuel" ).initial_qty > 0 );
+    CHECK( tool->ammo_remaining_in_pocket( "fuel" ) > 0 );
+}
+
+TEST_CASE( "two_same_fuel_tanks_bind_each_pocket_to_its_own_part", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int first_tank = static_cast<int>( tanks.begin()->part_index() );
+    const int second_tank =
+        veh->install_part( tripoint_mnt_veh( 1, 0, 0 ), vpart_id( "tank" ), true );
+    REQUIRE( second_tank >= 0 );
+    REQUIRE( second_tank != first_tank );
+
+    // CDF: 6 charges each, above the 2-per-use cost, so each tank serves one pocket.
+    veh->part( first_tank ).ammo_set( itype_id( "gasoline" ), 6 );
+    veh->part( second_tank ).ammo_set( itype_id( "gasoline" ), 6 );
+    REQUIRE( veh->part( first_tank ).ammo_remaining() == 6 );
+    REQUIRE( veh->part( second_tank ).ammo_remaining() == 6 );
+
+    detached_ptr<item> tool = item::spawn( itype_id( "test_multimag_two_fluid" ),
+                                           calendar::turn, 0 );
+    REQUIRE( tool->uses_firing_requirements() );
+
+    const auto bindings = vehicle::prepare_multimag_pockets( *veh, *tool );
+    REQUIRE( bindings.count( "left" ) == 1 );
+    REQUIRE( bindings.count( "right" ) == 1 );
+    CHECK( bindings.at( "left" ).kind == multimag_pocket_state::source_kind::TANK );
+    CHECK( bindings.at( "right" ).kind == multimag_pocket_state::source_kind::TANK );
+    // Each pocket is backed by a distinct vpart and gets the per-tank budget,
+    // not double the same tank's contents.
+    CHECK( bindings.at( "left" ).vpart_index != bindings.at( "right" ).vpart_index );
+    CHECK( bindings.at( "left" ).initial_qty == 6 );
+    CHECK( bindings.at( "right" ).initial_qty == 6 );
+}
+
+TEST_CASE( "preferred_primary_picks_that_tank_first", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    veh->charge_battery( 1000, false );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int diesel_tank = static_cast<int>( tanks.begin()->part_index() );
+    const int gasoline_tank =
+        veh->install_part( tripoint_mnt_veh( 1, 0, 0 ), vpart_id( "tank" ), true );
+    REQUIRE( gasoline_tank >= 0 );
+    REQUIRE( gasoline_tank != diesel_tank );
+
+    veh->part( diesel_tank ).ammo_set( itype_id( "diesel" ), 50 );
+    veh->part( gasoline_tank ).ammo_set( itype_id( "gasoline" ), 50 );
+    REQUIRE( veh->part( diesel_tank ).ammo_remaining() == 50 );
+    REQUIRE( veh->part( gasoline_tank ).ammo_remaining() == 50 );
+
+    // CDF: the loaded combo fixture restricts `fluid` to gasoline only
+    // (TEST_DATA/items.json:2056) and no loaded fixture has two fuels in one
+    // ammo_restriction, so this test extends the pocket data in memory.
+    // C4 fuel pair: diesel (ammotype diesel) and gasoline (ammotype gasoline).
+    // [UNSURE] the brief assumes a two-fuel fixture; see report.
+    pocket_data two_fuel;
+    detached_ptr<item> preferred_tool =
+        item::spawn( itype_id( "test_multimag_vehicle_combo" ), calendar::turn, 0 );
+    REQUIRE( preferred_tool->uses_firing_requirements() );
+    item_pocket *fluid = preferred_tool->pocket_by_id( "fluid" );
+    REQUIRE( fluid != nullptr );
+    two_fuel = fluid->get_data();
+    two_fuel.ammo_restriction[ammotype( "diesel" )] = 40;
+    fluid->set_data( &two_fuel );
+
+    // Gasoline is the second fuel and the second tank, so the 5-arg call with
+    // that preference must skip the lower-indexed diesel tank.
+    const auto preferred = vehicle::prepare_multimag_pockets(
+        *veh, *preferred_tool, gun_mode_id( "DEFAULT" ), itype_id( "gasoline" ) );
+    REQUIRE( preferred.count( "fluid" ) == 1 );
+    CHECK( preferred.at( "fluid" ).kind == multimag_pocket_state::source_kind::TANK );
+    CHECK( preferred.at( "fluid" ).vpart_index == gasoline_tank );
+
+    // Null preference: pass 0 is skipped, so the first restriction key
+    // (diesel, map order) and its tank win.
+    pocket_data two_fuel_fallback;
+    detached_ptr<item> fallback_tool =
+        item::spawn( itype_id( "test_multimag_vehicle_combo" ), calendar::turn, 0 );
+    REQUIRE( fallback_tool->uses_firing_requirements() );
+    item_pocket *fallback_fluid = fallback_tool->pocket_by_id( "fluid" );
+    REQUIRE( fallback_fluid != nullptr );
+    two_fuel_fallback = fallback_fluid->get_data();
+    two_fuel_fallback.ammo_restriction[ammotype( "diesel" )] = 40;
+    fallback_fluid->set_data( &two_fuel_fallback );
+
+    const auto fallback = vehicle::prepare_multimag_pockets( *veh, *fallback_tool );
+    REQUIRE( fallback.count( "fluid" ) == 1 );
+    CHECK( fallback.at( "fluid" ).kind == multimag_pocket_state::source_kind::TANK );
+    CHECK( fallback.at( "fluid" ).vpart_index == diesel_tank );
 }

@@ -1865,7 +1865,7 @@ void vehicle::use_bike_rack(int part) {
 }
 
 // Multimag pseudo-tool support. This packet wires the guards, the pocket loop
-// head and the battery branches; the tank branch is filled by 8-5a-3.
+// head and the battery and tank branches.
 auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool,
                                        const gun_mode_id& mode,
                                        const itype_id& preferred_primary)
@@ -1887,9 +1887,10 @@ auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool,
     }
 
     // Accumulate "claimed" budget per source so two pockets cannot double-load
-    // the same store. The battery network is a single global pool.
-    // CDF: the per-vpart tank claim map arrives with 8-5a-3 (DDA vehicle_use.cpp:1979).
+    // the same store. Battery network is a single global pool; tanks track
+    // per vpart index so live per-part reads stay accurate.
     int battery_claimed = 0;
+    std::map<int, int> tank_claimed_by_vpart;
 
     for (const pocket_consumption_entry& pce : *entries) {
         item_pocket* pkt = tool.pocket_by_id(pce.pocket);
@@ -1948,6 +1949,105 @@ auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool,
                 }
             }
             continue;
+        }
+        // Resolve which ammo_restriction map to feed from a vehicle tank.
+        // - Direct MAGAZINE: pocket's own ammo_restriction.
+        // - MAGAZINE_WELL: synthesize a magazine of the well's accepted itype
+        //   and use that magazine's MAGAZINE pocket ammo_restriction.
+        const std::map<ammotype, int>* target_restriction = nullptr;
+        itype_id synth_mag_type = itype_id::NULL_ID();
+        if (pdat->type == pocket_type::MAGAZINE && !pdat->ammo_restriction.empty()) {
+            target_restriction = &pdat->ammo_restriction;
+        } else if (pdat->type == pocket_type::MAGAZINE_WELL &&
+                   !pdat->item_id_restriction.empty()) {
+            synth_mag_type = pdat->default_magazine.is_null()
+                             ? *pdat->item_id_restriction.begin()
+                             : pdat->default_magazine;
+            if (!synth_mag_type->magazine) {
+                continue;
+            }
+            // CDF: itype::pockets holds the magazine's pocket list post pocket port.
+            for (const pocket_data& mp : synth_mag_type->pockets) {
+                if (mp.type == pocket_type::MAGAZINE && !mp.ammo_restriction.empty()) {
+                    target_restriction = &mp.ammo_restriction;
+                    break;
+                }
+            }
+            if (target_restriction == nullptr) {
+                continue;
+            }
+        } else {
+            continue;
+        }
+
+        bool placed = false;
+        // Two-pass tank picker: first pass honors `preferred_primary` if set
+        // (ammo_select preference for multi-tank turrets). Second pass falls
+        // back to first-match. Skips entirely if preference is not set.
+        for (int pass = 0; pass < 2 && !placed; pass++) {
+            const bool prefer_only = pass == 0 && !preferred_primary.is_null();
+            if (pass == 0 && preferred_primary.is_null()) {
+                continue;
+            }
+            for (const std::pair<const ammotype, int>& ar : *target_restriction) {
+                // Scan tanks; record the exact vpart and ammo itype so
+                // drain_back_multimag bills the same store with no re-search.
+                for (const vpart_reference& tvp :
+                     veh.get_avail_parts(vpart_bitflags::VPFLAG_FLUIDTANK)) {
+                    // CDF: ammo_current() returns by value, not a reference.
+                    const itype_id tank_ammo = tvp.part().ammo_current();
+                    if (tank_ammo.is_null() || !tank_ammo->ammo) {
+                        continue;
+                    }
+                    if (tank_ammo->ammo->type != ar.first) {
+                        continue;
+                    }
+                    if (prefer_only && tank_ammo != preferred_primary) {
+                        continue;
+                    }
+                    const int vp_idx = static_cast<int>(tvp.part_index());
+                    // Per-part ammo so two same-fuel tanks each have their own
+                    // budget; whole-vehicle fuel_left would let two pockets
+                    // double-claim the same global total.
+                    const int total = tvp.part().ammo_remaining();
+                    const int avail = std::max(0, total - tank_claimed_by_vpart[vp_idx]);
+                    // Skip tanks that cannot fully cover one shot's requirement.
+                    // Otherwise a low tank would bind the pocket and starve a
+                    // sibling tank that could feed the gun. Use effective_qty
+                    // so gunmod ammo_to_fire / energy_drain modifiers count.
+                    if (avail < tool.effective_qty(pce)) {
+                        continue;
+                    }
+                    const int set_qty = std::min(avail, ar.second);
+                    bool inserted = false;
+                    if (synth_mag_type.is_null()) {
+                        // CDF: no value item; spawn the ammo detached.
+                        if (pkt->insert_item(item::spawn(tank_ammo, calendar::turn, set_qty))
+                            .success()) {
+                            inserted = true;
+                        }
+                    } else {
+                        // CDF: no value item; build the synthetic magazine detached.
+                        detached_ptr<item> mag = item::spawn(synth_mag_type);
+                        mag->clear_items();
+                        mag->ammo_set(tank_ammo, set_qty);
+                        inserted = pkt->insert_item(std::move(mag)).success();
+                    }
+                    if (inserted) {
+                        tank_claimed_by_vpart[vp_idx] += set_qty;
+                        state_t st;
+                        st.kind = state_t::source_kind::TANK;
+                        st.vpart_index = vp_idx;
+                        st.initial_qty = tool.ammo_remaining_in_pocket(pce.pocket);
+                        out.emplace(pce.pocket, st);
+                        placed = true;
+                        break;
+                    }
+                }
+                if (placed) {
+                    break;
+                }
+            }
         }
     }
     return out;
