@@ -289,6 +289,28 @@ TEST_CASE( "papr_p8_strap_attaches_and_kit_spawns", "[papr][item]" )
     }
 }
 
+// PAPR1b: the strap carries the blower, so its weight limit follows the LOADED blower (battery cell and
+// filter inside), and the kit's blower spawns loaded (an unloaded kit blower is an obtainability bug)
+TEST_CASE( "papr_p8b_strap_holds_the_loaded_blower_and_kit_blower_is_loaded", "[papr][item]" )
+{
+    clear_all_state();
+    detached_ptr<item> strap_holder = spawn_item( "modular_papr_strap" );
+    item &strap = *strap_holder;
+    bool found_blower = false;
+    for( detached_ptr<item> &it : item_group::items_from( item_group_id( "molle_papr_kit" ) ) ) {
+        if( it->typeId() != itype_id( "molle_papr_blower_off" ) ) {
+            continue;
+        }
+        found_blower = true;
+        CHECK( it->ammo_remaining_in_pocket( "papr_blower_battery" ) > 0 );
+        CHECK( it->ammo_remaining_in_pocket( "papr_blower_filter" ) > 0 );
+        // the loaded blower is heavier than the old 2 kg strap limit
+        REQUIRE( it->weight() > 2_kilogram );
+        CHECK( strap.can_contain( *it ).success() );
+    }
+    CHECK( found_blower );
+}
+
 // amendment E4: off to on keeps the item active (CDF has no SPAWN_ACTIVE reader)
 TEST_CASE( "papr_p9_turn_on_leaves_blower_active", "[papr][iuse]" )
 {

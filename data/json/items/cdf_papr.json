@@ -138,7 +138,7 @@
         "pocket_type": "CONTAINER",
         "item_restriction": [ "molle_papr_blower_off", "molle_papr_blower_on" ],
         "max_contains_volume": "4000 ml",
-        "max_contains_weight": "2 kg",
+        "max_contains_weight": "4 kg",
         "max_item_length": "16 cm",
         "description": "A MOLLE harness for a modular PAPR blower.",
         "moves": 300,
@@ -185,12 +185,21 @@
   },
   {
     "type": "item_group",
+    "id": "molle_papr_blower_loaded",
+    "subtype": "collection",
+    "//": "CDF: PAPR1b, the kit's blower spawns with its battery cell and filter (group-level ammo and magazine chance 100); an unloaded kit blower cannot be used.",
+    "ammo": 100,
+    "magazine": 100,
+    "items": [ { "item": "molle_papr_blower_off" } ]
+  },
+  {
+    "type": "item_group",
     "id": "molle_papr_kit",
     "subtype": "collection",
     "//": "CDF: DDA gear.json molle_papr_kit; papr_kit needs basic_papr_belt_off (PAPR2)",
     "items": [
       { "item": "military_papr_mask" },
-      { "item": "molle_papr_blower_off" },
+      { "group": "molle_papr_blower_loaded" },
       { "group": "wrapped_gasmask_filter" },
       { "item": "modular_papr_strap" }
     ]
