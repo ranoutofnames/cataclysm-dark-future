@@ -1,0 +1,52 @@
+[
+  {
+    "id": "quiver_takedown_bow",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: DDA ammo_pouch.json:585 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.  Based on: https://www.amazon.com/XTACER-Multi-Function-4-Tubes-Training-Takedown/dp/B072K4537K",
+    "name": { "str": "multi-function quiver" },
+    "description": "A large cotton quiver capable of easily storing 16 arrows.  It includes a bag and straps to store a takedown bow, as well as a small pouch for archery accessories.  Use insert to store arrows or bolts and activate to holster/draw your bow.",
+    "weight": "720 g",
+    "volume": "1500 ml",
+    "price": "88 USD",
+    "price_postapoc": "15 USD",
+    "material": [ "cotton" ],
+    "symbol": "[",
+    "looks_like": "quiver",
+    "color": "dark_gray",
+    "material_thickness": 1,
+    "pocket_data": [
+      { "ammo_restriction": { "arrow": 16, "bolt": 16 }, "moves": 20 },
+      {
+        "pocket_type": "CONTAINER",
+        "holster": true,
+        "min_item_volume": "500 ml",
+        "max_contains_volume": "4 L",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "75 cm",
+        "moves": 80,
+        "item_restriction": [ "takedown_recurbow_folded" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "2500 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "35 cm",
+        "moves": 250
+      }
+    ],
+    "flags": [ "BELTED", "OVERSIZE", "WATER_FRIENDLY" ],
+    "use_action": { "type": "holster" },
+    "armor_portion_data": [
+      {
+        "encumbrance": 3,
+        "volume_encumber_modifier": 0.2,
+        "coverage": 30,
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ]
+      }
+    ],
+    "//2": "CDF: DDA 'melee_damage' {bash:4} is written as CDF's flat 'bashing'.",
+    "bashing": 4
+  }
+]

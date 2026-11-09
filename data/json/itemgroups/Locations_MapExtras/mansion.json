@@ -962,6 +962,8 @@
     "type": "item_group",
     "subtype": "distribution",
     "items": [
+      [ "takedown_recurbow", 1 ],
+      [ "quiver_takedown_bow", 1 ],
       [ "bat", 60 ],
       [ "bat_metal", 60 ],
       [ "boxing_gloves", 40 ],

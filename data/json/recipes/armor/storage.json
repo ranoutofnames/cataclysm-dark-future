@@ -658,6 +658,22 @@
     "components": [ [ [ "leather", 8 ] ], [ [ "steel_tiny", 1, "LIST" ], [ "sheet_metal_small", 1 ] ] ]
   },
   {
+    "result": "quiver_takedown_bow",
+    "type": "recipe",
+    "//": "CDF: DDA storage.json:1439.  Dropped: 'proficiencies' (prof_closures, prof_closures_waterproofing; no proficiencies in CDF yet).  DDA's 'using' tailoring_cotton_patchwork 7, fastener_large 2, clasps 2 have no CDF requirement ids, so they are written as CDF components (7 rags, strings for the fasteners) and sewing_standard.  Category and time follow CDF's storage recipes (DDA: nested craft menu, 12 h).",
+    "category": "CC_ARMOR",
+    "subcategory": "CSC_ARMOR_STORAGE",
+    "skill_used": "tailor",
+    "difficulty": 5,
+    "skills_required": [ [ "archery", 1 ] ],
+    "time": "2 h",
+    "autolearn": true,
+    "reversible": true,
+    "book_learn": [ [ "recipe_arrows", 3 ] ],
+    "using": [ [ "sewing_standard", 7 ] ],
+    "components": [ [ [ "rag", 7 ] ], [ [ "string_6", 10 ], [ "cordage_6_leather", 10 ] ] ]
+  },
+  {
     "result": "quiver_large_birchbark",
     "type": "recipe",
     "category": "CC_ARMOR",

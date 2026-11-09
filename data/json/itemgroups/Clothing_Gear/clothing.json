@@ -1798,6 +1798,7 @@
     "id": "bags",
     "subtype": "distribution",
     "entries": [
+      { "item": "quiver_takedown_bow", "prob": 1 },
       { "item": "backpack", "prob": 38 },
       { "item": "backpack_hiking", "prob": 3 },
       { "item": "petpack", "prob": 3 },
@@ -2704,6 +2705,7 @@
     "type": "item_group",
     "id": "survivorzed_extra",
     "items": [
+      [ "quiver_takedown_bow", 1 ],
       [ "mask_lsurvivor", 10 ],
       [ "mask_survivor", 10 ],
       [ "mask_halfsurvivor", 4 ],
@@ -3267,6 +3269,7 @@
     "items": [
       {
         "distribution": [
+          { "item": "quiver_takedown_bow", "prob": 2 },
           { "item": "basket_laundry", "prob": 60 },
           { "item": "straw_basket", "prob": 35 },
           { "item": "suitcase_l", "prob": 15 },

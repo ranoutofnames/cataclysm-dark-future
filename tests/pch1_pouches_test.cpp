@@ -291,8 +291,9 @@ TEST_CASE( "pch1_extra_items_load", "[armor][pch1]" )
         REQUIRE( pockets.size() == 1 );
         CHECK( pockets.front().volume_capacity() == units::from_milliliter( row.pocket_ml ) );
     }
-    // CDF: quiver_takedown_bow (item_restriction takedown_recurbow_folded) and modular_papr_strap
-    // (item_restriction molle_papr_blower_off/on) are not shipped: those items do not exist in CDF (blocked.md)
+    // CDF: modular_papr_strap (item_restriction molle_papr_blower_off/on) is not shipped: that item
+    // does not exist in CDF (blocked.md). quiver_takedown_bow is shipped by TAKEDOWN1, which adds the
+    // takedown_recurbow chain it needs (was: not shipped, CHECK_FALSE)
     CHECK_FALSE( itype_id( "modular_papr_strap" ).is_valid() );
-    CHECK_FALSE( itype_id( "quiver_takedown_bow" ).is_valid() );
+    CHECK( itype_id( "quiver_takedown_bow" ).is_valid() );
 }

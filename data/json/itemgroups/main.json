@@ -344,6 +344,8 @@
     "id": "archery",
     "subtype": "distribution",
     "entries": [
+      { "item": "takedown_recurbow", "prob": 2 },
+      { "item": "quiver_takedown_bow", "prob": 1 },
       { "item": "crossbow", "prob": 70 },
       { "item": "compcrossbow", "prob": 10 },
       { "item": "crossbow_carbon", "prob": 10 },

@@ -193,6 +193,7 @@
     "id": "pawn",
     "items": [
       { "group": "mags_pawnshop", "prob": 300 },
+      [ "quiver_takedown_bow", 1 ],
       [ "mag_fieldrepair", 50 ],
       [ "oxylamp", 50 ],
       [ "bathroom_scale", 50 ],

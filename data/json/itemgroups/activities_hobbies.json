@@ -119,6 +119,7 @@
     "entries": [
       { "group": "sports", "prob": 2290 },
       { "group": "camping", "prob": 1284 },
+      { "item": "quiver_takedown_bow", "prob": 1 },
       { "item": "ski_jacket", "prob": 5 },
       { "item": "sports_drink", "prob": 20 },
       { "group": "book_mag_combat", "prob": 105 },

@@ -4,6 +4,8 @@
     "type": "item_group",
     "subtype": "collection",
     "entries": [
+      { "item": "takedown_recurbow", "prob": 3 },
+      { "item": "quiver_takedown_bow", "prob": 1 },
       { "item": "compbow", "prob": 40 },
       { "item": "compbow_high", "prob": 20 },
       { "item": "compbow_low", "prob": 30 },

@@ -1,0 +1,73 @@
+[
+  {
+    "id": "takedown_recurbow",
+    "copy-from": "bow_base",
+    "type": "GUN",
+    "//": "CDF: DDA archery.json:653 in BN GUN format (DDA 'type ITEM'/'subtypes [ARMOR, GUN]'/'armor' become type GUN/armor_data); stats are DDA's.  Most stats copied from the recurve bow, can be adjusted later to reflect a different model.",
+    "looks_like": "longbow",
+    "name": { "str": "takedown recurve bow" },
+    "description": "A modern fiberglass bow that can be taken down for storage.  For use by those of somewhat above-average strength.  Use it to disassemble it for storage.",
+    "price": "380 USD",
+    "price_postapoc": "22 USD",
+    "//2": "CDF: DDA materials steel + fiberglass; CDF has no fiberglass material, so the bow is steel + plastic (as DDA's armor portion).",
+    "material": [ "steel", "plastic" ],
+    "extend": { "flags": [ "FRAGILE_MELEE", "BELTED", "WATER_FRIENDLY", "SHEATH_BOW" ] },
+    "min_strength": 9,
+    "weight": "540 g",
+    "volume": "2500 ml",
+    "longest_side": "152 cm",
+    "reload_noise_volume": 3,
+    "loudness": 8,
+    "ranged_damage": { "damage_type": "stab", "amount": 6 },
+    "range": 14,
+    "dispersion": 850,
+    "sight_dispersion": 3000,
+    "durability": 6,
+    "clip_size": 1,
+    "valid_mod_locations": [ [ "underbarrel", 1 ], [ "sights", 1 ], [ "stabilizer", 1 ], [ "dampening", 1 ], [ "arrow rest", 1 ] ],
+    "reload": 50,
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "ammo_restriction": { "arrow": 1 }, "open_container": true } ],
+    "use_action": {
+      "need_wielding": true,
+      "type": "transform",
+      "menu_text": "Disassemble",
+      "target": "takedown_recurbow_folded",
+      "msg": "You disassemble your bow.",
+      "//": "CDF: DDA also has ammo_scale 0 here; CDF's transform action has no such key, so it is left out.",
+      "moves": 1500
+    },
+    "bashing": 6,
+    "armor_data": {
+      "material_thickness": 1,
+      "armor_portion_data": [ { "encumbrance": 20, "coverage": 10, "covers": [ "torso" ], "specifically_covers": [ "torso_hanging_back" ] } ]
+    }
+  },
+  {
+    "id": "takedown_recurbow_folded",
+    "copy-from": "bow_base",
+    "type": "GUN",
+    "//": "CDF: DDA archery.json:718 in BN GUN format.  Copies bow_base for the archery skill and base gun fields; the flags below replace the bow's (no BELTED, no firing flags).",
+    "looks_like": "longbow",
+    "name": { "str": "takedown recurve bow (folded)", "str_pl": "takedown recurve bows (folded)" },
+    "description": "A modern fiberglass bow that has been taken down for storage.  For use by those of somewhat above-average strength.  Use it to assemble it into shape.",
+    "price": "380 USD",
+    "price_postapoc": "22 USD",
+    "material": [ "steel", "plastic" ],
+    "flags": [ "FRAGILE_MELEE", "NO_TURRET" ],
+    "weight": "540 g",
+    "volume": "2500 ml",
+    "longest_side": "60 cm",
+    "modes": [ [ "DEFAULT", "disassembled", 0, [ "MELEE" ] ] ],
+    "valid_mod_locations": [ [ "underbarrel", 1 ], [ "sights", 1 ], [ "stabilizer", 1 ], [ "dampening", 1 ], [ "arrow rest", 1 ] ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "ammo_restriction": { "arrow": 1 }, "open_container": true } ],
+    "use_action": {
+      "need_wielding": true,
+      "type": "transform",
+      "menu_text": "Assemble",
+      "target": "takedown_recurbow",
+      "msg": "You assemble your bow.",
+      "moves": 1500
+    },
+    "bashing": 6
+  }
+]
