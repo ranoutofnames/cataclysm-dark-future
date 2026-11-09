@@ -58,12 +58,19 @@
     "material": [ "plastic", "steel" ],
     "symbol": ";",
     "color": "yellow",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "initial_charges": 160,
-    "max_charges": 200,
     "charges_per_use": 5,
     "use_action": [ "CAMERA", "TOGGLE_UPS_CHARGING" ],
-    "flags": [ "CAMERA_PRO", "ALWAYS_TWOHAND", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "CAMERA_PRO", "ALWAYS_TWOHAND", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "cell_phone",
@@ -190,7 +197,7 @@
     "type": "TOOL_ARMOR",
     "id": "wrist_comp_budget",
     "looks_like": "game_watch",
-    "//": "mainlined from tefnut expansion",
+    "//": "mainlined from tefnut expansion CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo",
     "name": { "str": "wrist computer" },
     "category": "clothing",
     "volume": "1000 ml",
@@ -200,7 +207,6 @@
     "color": "light_gray",
     "covers": [ "hand_either" ],
     "initial_charges": 500,
-    "max_charges": 600,
     "charges_per_use": 1,
     "price": "60 USD",
     "price_postapoc": "1 USD",
@@ -259,7 +265,14 @@
     ],
     "coverage": 15,
     "symbol": "[",
-    "ammo": [ "battery" ]
+    "tool_ammo": [ "battery" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 600 }
+      }
+    ]
   },
   {
     "id": "wrist_comp_budget_music",
@@ -285,7 +298,14 @@
       "THERMOMETER",
       "FANCY"
     ],
-    "magazine_well": "250 ml"
+    "magazine_well": "250 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 600 }
+      }
+    ]
   },
   {
     "id": "wrist_comp_budget_flashlight",
@@ -318,6 +338,13 @@
       "NO_RELOAD",
       "THERMOMETER",
       "FANCY"
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 600 }
+      }
     ]
   },
   {
@@ -376,7 +403,15 @@
     "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] },
     "coverage": 15,
     "symbol": "[",
-    "ammo": [ "battery" ]
+    "tool_ammo": [ "battery" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 600 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: renamed ammo->tool_ammo"
   },
   {
     "id": "wrist_comp_control_music",
@@ -387,7 +422,14 @@
     "power_draw": 5000,
     "revert_to": "wrist_comp_control",
     "use_action": [ "MP3_ON" ],
-    "magazine_well": "250 ml"
+    "magazine_well": "250 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 600 }
+      }
+    ]
   },
   {
     "id": "wrist_comp_control_flashlight",
@@ -402,6 +444,13 @@
         "msg": "You deactivate the flashlight app.",
         "menu_text": "Turn off flashlight",
         "type": "transform"
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 600 }
       }
     ]
   },
@@ -455,9 +504,8 @@
     "material": "plastic",
     "symbol": ";",
     "color": "blue",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "initial_charges": 160,
-    "max_charges": 200,
     "charges_per_use": 1,
     "use_action": [
       "EINKTABLETPC",
@@ -475,7 +523,15 @@
       },
       "TOGGLE_UPS_CHARGING"
     ],
-    "flags": [ "WATCH", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "WATCH", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "eink_tablet_pc_music",
@@ -485,7 +541,14 @@
     "description": "This e-ink tablet PC is playing music, steadily raising your morale.  You can't hear anything else while you're listening.",
     "power_draw": 2500,
     "revert_to": "eink_tablet_pc",
-    "use_action": [ "MP3_ON" ]
+    "use_action": [ "MP3_ON" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ]
   },
   {
     "id": "electrohack",
@@ -601,9 +664,8 @@
     "price": "750 USD",
     "price_postapoc": "250 cent",
     "bashing": 6,
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "initial_charges": 500,
-    "max_charges": 700,
     "charges_per_use": 1,
     "use_action": [
       "EINKTABLETPC",
@@ -642,7 +704,15 @@
       },
       "TOGGLE_UPS_CHARGING"
     ],
-    "flags": [ "WATCH", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "WATCH", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 700 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "laptop_music",
@@ -652,7 +722,14 @@
     "power_draw": 7000,
     "revert_to": "laptop",
     "use_action": [ "MP3_ON" ],
-    "flags": [ "WATCH", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "WATCH", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 700 }
+      }
+    ]
   },
   {
     "id": "laptop_screen_lit",
@@ -662,7 +739,14 @@
     "power_draw": 5000,
     "revert_to": "laptop",
     "use_action": { "target": "laptop", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
-    "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 700 }
+      }
+    ]
   },
   {
     "id": "mp3",
@@ -677,9 +761,8 @@
     "material": [ "aluminum", "plastic" ],
     "symbol": ";",
     "color": "dark_gray",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "initial_charges": 160,
-    "max_charges": 200,
     "flags": [ "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "use_action": [
       {
@@ -696,7 +779,15 @@
       },
       "TOGGLE_UPS_CHARGING"
     ],
-    "charges_per_use": 1
+    "charges_per_use": 1,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "mp3_on",
@@ -707,7 +798,14 @@
     "power_draw": 3500,
     "revert_to": "mp3",
     "use_action": [ "MP3_ON" ],
-    "flags": [ "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ]
   },
   {
     "id": "noise_emitter",
@@ -754,12 +852,19 @@
     "material": [ "plastic" ],
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "initial_charges": 160,
-    "max_charges": 200,
     "flags": [ "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "charges_per_use": 1,
-    "use_action": [ "PORTABLE_GAME", "TOGGLE_UPS_CHARGING" ]
+    "use_action": [ "PORTABLE_GAME", "TOGGLE_UPS_CHARGING" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "smart_phone",
@@ -775,9 +880,8 @@
     "looks_like": "cell_phone",
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "initial_charges": 160,
-    "max_charges": 200,
     "charges_per_use": 1,
     "use_action": [
       {
@@ -817,7 +921,15 @@
       "PORTABLE_GAME",
       "TOGGLE_UPS_CHARGING"
     ],
-    "flags": [ "WATCH", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "WATCH", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "smart_phone_music",
@@ -829,7 +941,14 @@
     "revert_to": "smart_phone",
     "use_action": [ "MP3_ON" ],
     "flags": [ "WATCH", "TRADER_AVOID", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
-    "magazine_well": "250 ml"
+    "magazine_well": "250 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ]
   },
   {
     "id": "smart_phone_flashlight",
@@ -844,7 +963,14 @@
       "menu_text": "Turn off flashlight",
       "type": "transform"
     },
-    "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 200 }
+      }
+    ]
   },
   {
     "id": "afs_atomic_smartphone",

@@ -1,0 +1,1882 @@
+{
+ "batch": "7-R4a",
+ "base": "dcab09ec2c",
+ "dda": "918f396f370ea48fad924fb45a797386a2f6ddb4",
+ "dda_note": "918f396f370e = the DDA pin, a documented constant: tests/cdf_mag_port_test.cpp:20 requires it; the tool wrote it from `git rev-parse HEAD` of its --dda root (read by the planner on LAPTOP-A0EU66N2 at C:\\CDF\\CDDA SRC, 2026-11-03; see 7-GOLD1-v3 fact 1). b4b62254ae2 is the commit the DDA line numbers in the drafts were read at; data/json/items differs between the two only in six integrated_chitin*/integrated_carapace* ids (armor/integrated.json), none in any 7-* batch. The DDA root of a run is the parameter <DDA_ROOT>.",
+ "count": 64,
+ "items": {
+  "adv_UPS_off": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-CLASS-WELL-PARKED",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 5000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 5000,
+    "ammo": "battery",
+    "initial_charges": 5000
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": false,
+   "well_not_applied": {
+    "analog": "UPS_off",
+    "dda_cite": "DDA:data/json/items/tool/electronics.json:1046 (id), :1062 (pocket)",
+    "pocket": {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_plus_battery_cell"
+    },
+    "capacity_before_cdf": 5000,
+    "capacity_after_default_cell_cdf": 1500
+   },
+   "note": "answer A1 (audit PL-30b): stays integral, CDF capacity unchanged; the DDA class well is Question Q1; `pockets` is the loaded pocket list at the base (equals the committed golden)"
+  },
+  "anesthetic_kit": {
+   "file": "data/json/items/tool/med.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "watertight": true,
+     "rigid": true,
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "anesthetic": 3000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 3000,
+    "ammo": "anesthetic",
+    "initial_charges": 3000
+   },
+   "cap_diff": [
+    {
+     "ammo": "anesthetic",
+     "cdf": 3000,
+     "dda": 6000
+    }
+   ],
+   "part": "R4a"
+  },
+  "auger": {
+   "file": "data/json/items/tool/workshop.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 2000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 2000,
+    "ammo": "gasoline",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "brick_kiln": {
+   "file": "data/json/items/tool/workshop.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "charcoal": 1000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 1000,
+    "ammo": "charcoal",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "camera_pro": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 200,
+     "dda": 100
+    }
+   ],
+   "part": "R4a"
+  },
+  "chainsaw_off": {
+   "file": "data/json/items/tool/woodworking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "gasoline": 450
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 450,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
+   "part": "R4a"
+  },
+  "chainsaw_on": {
+   "file": "data/json/items/tool/woodworking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "gasoline": 450
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": null,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "char_forge": {
+   "file": "data/json/items/tool/metalworking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "charcoal": 500
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [
+    {
+     "where": "ammo_restriction",
+     "id": "coal",
+     "why": "ammotype undefined in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "charcoal",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "char_smoker": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "charcoal": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
+   "cap_diff": [
+    {
+     "ammo": "charcoal",
+     "cdf": 200,
+     "dda": 2000
+    }
+   ],
+   "part": "R4a"
+  },
+  "charcoal_cooker": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "charcoal": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [
+    {
+     "where": "ammo_restriction",
+     "id": "coal",
+     "why": "ammotype undefined in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "max_charges": 50,
+    "ammo": "charcoal",
+    "initial_charges": 50
+   },
+   "part": "R4a"
+  },
+  "clay_fish_trap": {
+   "file": "data/json/items/tool/fishing.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "fish_bait": 20
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 20,
+    "ammo": "fish_bait",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "eink_tablet_pc": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 200,
+     "dda": 85
+    }
+   ],
+   "part": "R4a"
+  },
+  "eink_tablet_pc_music": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "part": "R4a"
+  },
+  "elec_jackhammer": {
+   "file": "data/json/items/tool/workshop.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 10000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 10000,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 10000,
+     "dda": 7920
+    }
+   ],
+   "part": "R4a"
+  },
+  "elec_shears": {
+   "file": "data/json/items/tool/pets.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-UNTIL-LINK-UP",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": "battery",
+    "initial_charges": 100
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "the DDA twin (DDA:data/json/items/tool/pets.json:94) has no pocket and takes power from a cable (use_action link_up, DDA:...pets.json:109); CDF has no link_up (git grep: 0 hits in src and data/json/items); integral stays until the cable-power port"
+  },
+  "esbit_stove": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "esbit": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 50,
+    "ammo": "esbit",
+    "initial_charges": 50
+   },
+   "cap_diff": [
+    {
+     "ammo": "esbit",
+     "cdf": 50,
+     "dda": 100
+    }
+   ],
+   "part": "R4a"
+  },
+  "fish_trap": {
+   "file": "data/json/items/tool/fishing.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "fish_bait": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 20,
+    "ammo": "fish_bait",
+    "initial_charges": null
+   },
+   "cap_diff": [
+    {
+     "ammo": "fish_bait",
+     "cdf": 20,
+     "dda": 5
+    }
+   ],
+   "part": "R4a"
+  },
+  "gasoline_cooker": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "gasoline": 500,
+      "lighter_fluid": 500
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": [
+     "lighter_fluid",
+     "gasoline"
+    ],
+    "initial_charges": 500
+   },
+   "part": "R4a"
+  },
+  "gasoline_lantern": {
+   "file": "data/json/items/tool/lighting.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "watertight": true,
+     "ammo_restriction": {
+      "gasoline": 500
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "gasoline",
+    "initial_charges": 500
+   },
+   "part": "R4a"
+  },
+  "gasoline_lantern_on": {
+   "file": "data/json/items/tool/lighting.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "watertight": true,
+     "ammo_restriction": {
+      "gasoline": 500
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "gasoline",
+    "initial_charges": 500
+   },
+   "part": "R4a"
+  },
+  "jackhammer": {
+   "file": "data/json/items/tool/workshop.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "watertight": true,
+     "ammo_restriction": {
+      "gasoline": 400
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 400,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
+   "cap_diff": [
+    {
+     "ammo": "gasoline",
+     "cdf": 400,
+     "dda": 1200
+    }
+   ],
+   "part": "R4a"
+  },
+  "laptop": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 700
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 700,
+    "ammo": "battery",
+    "initial_charges": 500
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 700,
+     "dda": 200
+    }
+   ],
+   "part": "R4a"
+  },
+  "laptop_music": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 700
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 700,
+    "ammo": "battery",
+    "initial_charges": 500
+   },
+   "part": "R4a"
+  },
+  "laptop_screen_lit": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 700
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 700,
+    "ammo": "battery",
+    "initial_charges": 500
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 700,
+     "dda": 200
+    }
+   ],
+   "part": "R4a"
+  },
+  "lighter": {
+   "file": "data/json/items/tool/fire.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "airtight": true,
+     "ammo_restriction": {
+      "lighter_fluid": 25
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 25,
+    "ammo": [
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "masonrysaw_off": {
+   "file": "data/json/items/tool/masonry.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "gasoline": 450
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 450,
+    "ammo": [
+     "gasoline"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "masonrysaw_on": {
+   "file": "data/json/items/tool/masonry.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "gasoline": 450
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 450,
+    "ammo": [
+     "gasoline"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "misc_repairkit": {
+   "file": "data/json/items/tool/workshop.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR-KEEP-CDF-INTEGRAL-LEGACY",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "tape": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
+   "part": "R4a",
+   "action_planned_by_tool": "AUTHOR-KEEP-CDF-WELL",
+   "why": "the tool names this action AUTHOR-KEEP-CDF-WELL but authors an integral pocket from ammo/max_charges (the DDA twin has no magazine pocket): audit PL-30 R4-4"
+  },
+  "misc_repairkit_makeshift": {
+   "file": "data/json/items/tool/workshop.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "pitch_wood": 60
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 60,
+    "ammo": "pitch_wood",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "mp3": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 200,
+     "dda": 50
+    }
+   ],
+   "part": "R4a"
+  },
+  "mp3_on": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 200,
+     "dda": 50
+    }
+   ],
+   "part": "R4a"
+  },
+  "needle_bone": {
+   "file": "data/json/items/tool/tailoring.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "thread": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "thread",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "needle_curved": {
+   "file": "data/json/items/tool/tailoring.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "thread": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "thread",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "needle_wood": {
+   "file": "data/json/items/tool/tailoring.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "thread": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "thread",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "oil_cooker": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "lamp_oil": 800
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 800,
+    "ammo": "lamp_oil",
+    "initial_charges": 800
+   },
+   "part": "R4a"
+  },
+  "oil_lamp": {
+   "file": "data/json/items/tool/lighting.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "watertight": true,
+     "ammo_restriction": {
+      "lamp_oil": 750
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 750,
+    "ammo": "lamp_oil",
+    "initial_charges": 750
+   },
+   "part": "R4a"
+  },
+  "oil_lamp_on": {
+   "file": "data/json/items/tool/lighting.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "watertight": true,
+     "ammo_restriction": {
+      "lamp_oil": 750
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 750,
+    "ammo": "lamp_oil",
+    "initial_charges": 750
+   },
+   "part": "R4a"
+  },
+  "popcan_stove": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "conc_alcohol": 500
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "conc_alcohol",
+    "initial_charges": 500
+   },
+   "part": "R4a"
+  },
+  "portable_game": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 200,
+     "dda": 48
+    }
+   ],
+   "part": "R4a"
+  },
+  "ref_lighter": {
+   "file": "data/json/items/tool/fire.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "airtight": true,
+     "ammo_restriction": {
+      "lighter_fluid": 50,
+      "gasoline": 50
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 50,
+    "ammo": [
+     "lighter_fluid",
+     "gasoline"
+    ],
+    "initial_charges": 25
+   },
+   "part": "R4a"
+  },
+  "ref_lighter_on": {
+   "file": "data/json/items/tool/fire.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "airtight": true,
+     "ammo_restriction": {
+      "lighter_fluid": 50,
+      "gasoline": 50
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 50,
+    "ammo": [
+     "lighter_fluid",
+     "gasoline"
+    ],
+    "initial_charges": 25
+   },
+   "part": "R4a"
+  },
+  "rx12_injector": {
+   "file": "data/json/items/tool/med.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "ampoule": 2
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 2,
+    "ammo": "ampoule",
+    "initial_charges": 2
+   },
+   "part": "R4a"
+  },
+  "sewing_kit": {
+   "file": "data/json/items/tool/tailoring.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "thread": 400
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 400,
+    "ammo": "thread",
+    "initial_charges": 50
+   },
+   "cap_diff": [
+    {
+     "ammo": "thread",
+     "cdf": 400,
+     "dda": 200
+    }
+   ],
+   "part": "R4a"
+  },
+  "sewing_machine": {
+   "file": "data/json/items/tool/tailoring.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR-KEEP-CDF-INTEGRAL-LEGACY",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "thread": 800
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 800,
+    "ammo": "thread",
+    "initial_charges": 50
+   },
+   "part": "R4a",
+   "action_planned_by_tool": "AUTHOR-KEEP-CDF-WELL",
+   "why": "the tool names this action AUTHOR-KEEP-CDF-WELL but authors an integral pocket from ammo/max_charges (the DDA twin has no magazine pocket): audit PL-30 R4-4"
+  },
+  "shavingkit": {
+   "file": "data/json/items/tool/toiletries.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "soap": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 10,
+    "ammo": "soap",
+    "initial_charges": 5
+   },
+   "part": "R4a"
+  },
+  "smart_phone": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 200,
+     "dda": 56
+    }
+   ],
+   "part": "R4a"
+  },
+  "smart_phone_flashlight": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 200,
+     "dda": 56
+    }
+   ],
+   "part": "R4a"
+  },
+  "smart_phone_music": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": 160
+   },
+   "part": "R4a"
+  },
+  "soldering_ethanol": {
+   "file": "data/json/items/tool/workshop.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "conc_alcohol": 500
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "conc_alcohol",
+    "initial_charges": 500
+   },
+   "part": "R4a"
+  },
+  "spray_can": {
+   "file": "data/json/items/tool/misc.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "spray_paint": 20
+     },
+     "watertight": true,
+     "rigid": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [
+    {
+     "where": "ammo_restriction",
+     "id": "aerosol_paint",
+     "why": "ammotype undefined in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "max_charges": 20,
+    "ammo": "spray_paint",
+    "initial_charges": 20
+   },
+   "part": "R4a"
+  },
+  "survivor_lighter": {
+   "file": "data/json/items/tool/fire.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "diesel": 25,
+      "lamp_oil": 25,
+      "motor_oil": 25,
+      "jp8": 25
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 25,
+    "ammo": [
+     "diesel",
+     "lamp_oil",
+     "motor_oil",
+     "jp8"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "survivor_mess_kit": {
+   "file": "data/json/items/tool/cooking.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "lamp_oil": 800
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 800,
+    "ammo": "lamp_oil",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "survivor_shavingkit": {
+   "file": "data/json/items/tool/toiletries.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "soap": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 10,
+    "ammo": "soap",
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "tailors_kit": {
+   "file": "data/json/items/tool/tailoring.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "thread": 600
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": "thread",
+    "initial_charges": 50
+   },
+   "cap_diff": [
+    {
+     "ammo": "thread",
+     "cdf": 600,
+     "dda": 400
+    }
+   ],
+   "part": "R4a"
+  },
+  "tinderbox": {
+   "file": "data/json/items/tool/fire.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "tinder": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": "tinder",
+    "initial_charges": null
+   },
+   "cap_diff": [
+    {
+     "ammo": "tinder",
+     "cdf": 100,
+     "dda": 50
+    }
+   ],
+   "part": "R4a"
+  },
+  "tinderbox_on": {
+   "file": "data/json/items/tool/fire.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "tinder": 100
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": "tinder",
+    "initial_charges": null
+   },
+   "cap_diff": [
+    {
+     "ammo": "tinder",
+     "cdf": 100,
+     "dda": 50
+    }
+   ],
+   "part": "R4a"
+  },
+  "trimmer_off": {
+   "file": "data/json/items/tool/landscaping.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "watertight": true,
+     "ammo_restriction": {
+      "gasoline": 600
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
+   "part": "R4a"
+  },
+  "trimmer_on": {
+   "file": "data/json/items/tool/landscaping.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "watertight": true,
+     "ammo_restriction": {
+      "gasoline": 600
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": null,
+    "ammo": null,
+    "initial_charges": null
+   },
+   "part": "R4a"
+  },
+  "wrist_comp_budget": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-DDA-CLASS",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 600
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": [
+     "battery"
+    ],
+    "initial_charges": 500
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "DDA wearable and handheld computers use an integral MAGAZINE pocket: DDA:data/json/items/tool_armor.json:548 smart_watch_adv {battery: 30}, DDA:data/json/items/tool/electronics.json laptop {battery: 200}, smart_phone {battery: 56}; the tool's integral shape is the DDA class shape; CDF keeps 600"
+  },
+  "wrist_comp_budget_flashlight": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-DDA-CLASS",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 600
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": [
+     "battery"
+    ],
+    "initial_charges": 500
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "DDA wearable and handheld computers use an integral MAGAZINE pocket: DDA:data/json/items/tool_armor.json:548 smart_watch_adv {battery: 30}, DDA:data/json/items/tool/electronics.json laptop {battery: 200}, smart_phone {battery: 56}; the tool's integral shape is the DDA class shape; CDF keeps 600"
+  },
+  "wrist_comp_budget_music": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-DDA-CLASS",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 600
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": [
+     "battery"
+    ],
+    "initial_charges": 500
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "DDA wearable and handheld computers use an integral MAGAZINE pocket: DDA:data/json/items/tool_armor.json:548 smart_watch_adv {battery: 30}, DDA:data/json/items/tool/electronics.json laptop {battery: 200}, smart_phone {battery: 56}; the tool's integral shape is the DDA class shape; CDF keeps 600"
+  },
+  "wrist_comp_control": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-DDA-CLASS",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 600
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": [
+     "battery"
+    ],
+    "initial_charges": 500
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "DDA wearable and handheld computers use an integral MAGAZINE pocket: DDA:data/json/items/tool_armor.json:548 smart_watch_adv {battery: 30}, DDA:data/json/items/tool/electronics.json laptop {battery: 200}, smart_phone {battery: 56}; the tool's integral shape is the DDA class shape; CDF keeps 600"
+  },
+  "wrist_comp_control_flashlight": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-DDA-CLASS",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 600
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": [
+     "battery"
+    ],
+    "initial_charges": 500
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "DDA wearable and handheld computers use an integral MAGAZINE pocket: DDA:data/json/items/tool_armor.json:548 smart_watch_adv {battery: 30}, DDA:data/json/items/tool/electronics.json laptop {battery: 200}, smart_phone {battery: 56}; the tool's integral shape is the DDA class shape; CDF keeps 600"
+  },
+  "wrist_comp_control_music": {
+   "file": "data/json/items/tool/electronics.json",
+   "class": "TOOL-INT",
+   "action": "KEEP-INTEGRAL-DDA-CLASS",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 600
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 600,
+    "ammo": [
+     "battery"
+    ],
+    "initial_charges": 500
+   },
+   "hand_fallback": true,
+   "part": "R4a",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "DDA wearable and handheld computers use an integral MAGAZINE pocket: DDA:data/json/items/tool_armor.json:548 smart_watch_adv {battery: 30}, DDA:data/json/items/tool/electronics.json laptop {battery: 200}, smart_phone {battery: 56}; the tool's integral shape is the DDA class shape; CDF keeps 600"
+  }
+ }
+}

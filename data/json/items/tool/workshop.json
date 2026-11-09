@@ -140,9 +140,16 @@
     "material": "steel",
     "symbol": ";",
     "color": "dark_gray",
-    "ammo": "charcoal",
-    "max_charges": 1000,
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "tool_ammo": "charcoal",
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "charcoal": 1000 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "carding_paddles",
@@ -295,12 +302,19 @@
     "material": "steel",
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "initial_charges": 5000,
-    "max_charges": 10000,
     "charges_per_use": 200,
     "use_action": [ "JACKHAMMER", "TOGGLE_UPS_CHARGING" ],
-    "flags": [ "STAB", "DIG_TOOL", "POWERED", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "STAB", "DIG_TOOL", "POWERED", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 10000 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "hacksaw",
@@ -505,11 +519,19 @@
     "material": "steel",
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "gasoline",
-    "max_charges": 400,
+    "tool_ammo": "gasoline",
     "charges_per_use": 10,
     "use_action": "JACKHAMMER",
-    "flags": [ "STAB", "DIG_TOOL", "POWERED" ]
+    "flags": [ "STAB", "DIG_TOOL", "POWERED" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "gasoline": 400 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "auger",
@@ -528,11 +550,18 @@
     "material": "steel",
     "symbol": ";",
     "color": "yellow",
-    "ammo": "gasoline",
-    "max_charges": 2000,
+    "tool_ammo": "gasoline",
     "charges_per_use": 20,
     "qualities": [ [ "DIG", 6 ] ],
-    "flags": [ "POWERED" ]
+    "flags": [ "POWERED" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 2000 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "kiln",
@@ -660,8 +689,7 @@
     "material": [ "steel", "plastic" ],
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "tape",
-    "max_charges": 200,
+    "tool_ammo": "tape",
     "charges_per_use": 5,
     "qualities": [ [ "CUT", 1 ], [ "AXE", 2 ], [ "SAW_W", 2 ], [ "BUTCHER", -90 ] ],
     "use_action": [
@@ -675,7 +703,15 @@
         "move_cost": 1000
       }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "tape": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "misc_repairkit_makeshift",
@@ -691,8 +727,7 @@
     "material": [ "stone", "wood" ],
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "pitch_wood",
-    "max_charges": 60,
+    "tool_ammo": "pitch_wood",
     "charges_per_use": 1,
     "qualities": [ [ "CUT", 1 ], [ "BUTCHER", 11 ], [ "SAW_W", 1 ] ],
     "use_action": [
@@ -706,7 +741,15 @@
         "move_cost": 2000
       }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "pitch_wood": 60 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "mold_plastic",
@@ -1071,13 +1114,12 @@
     "volume": "600 ml",
     "price": "50 USD",
     "price_postapoc": "250 cent",
-    "ammo": "conc_alcohol",
+    "tool_ammo": "conc_alcohol",
     "to_hit": -1,
     "bashing": 4,
     "material": "steel",
     "symbol": ";",
     "initial_charges": 500,
-    "max_charges": 500,
     "charges_per_use": 1,
     "use_action": [
       {
@@ -1090,7 +1132,15 @@
       },
       { "flame": false, "type": "cauterize" }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "conc_alcohol": 500 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "toolbox",

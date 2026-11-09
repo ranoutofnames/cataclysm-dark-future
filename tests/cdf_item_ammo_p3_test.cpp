@@ -907,6 +907,9 @@ TEST_CASE( "visit_items sees ammo inside a tool but not inside a gun",
     u.wear_item( item::spawn( "backpack" ) );
 
     detached_ptr<item> lamp = item::spawn( itype_id( "oil_lamp" ) );
+    // CDF: 7-R4a gave oil_lamp a MAGAZINE pocket (DDA 750), so it spawns full from initial_charges;
+    // empty it before adding the 100 units under test
+    lamp->ammo_unset();
     REQUIRE( lamp->put_in( item::spawn( itype_id( "lamp_oil" ), calendar::turn, 100 ),
                            pocket_type::MAGAZINE ).success() );
     u.i_add( std::move( lamp ) );

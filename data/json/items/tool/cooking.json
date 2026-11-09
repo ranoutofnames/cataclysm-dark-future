@@ -166,9 +166,16 @@
     "material": "steel",
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "charcoal",
-    "max_charges": 200,
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "tool_ammo": "charcoal",
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "charcoal": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "charcoal_cooker",
@@ -185,12 +192,18 @@
     "material": "steel",
     "symbol": ";",
     "color": "green",
-    "ammo": "charcoal",
+    "tool_ammo": "charcoal",
     "sub": "hotplate",
     "initial_charges": 50,
-    "max_charges": 50,
     "charges_per_use": 1,
-    "use_action": "HOTPLATE"
+    "use_action": "HOTPLATE",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "charcoal": 50 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo; ids absent or undefined in CDF left out of the pocket: coal"
   },
   {
     "id": "clay_pot",
@@ -333,12 +346,18 @@
     "material": "aluminum",
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "esbit",
+    "tool_ammo": "esbit",
     "sub": "hotplate",
     "initial_charges": 50,
-    "max_charges": 50,
     "charges_per_use": 1,
-    "use_action": [ "HOTPLATE", "HEAT_FOOD" ]
+    "use_action": [ "HOTPLATE", "HEAT_FOOD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "esbit": 50 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "flask_yeast",
@@ -674,13 +693,21 @@
     "material": "steel",
     "symbol": ";",
     "color": "green",
-    "ammo": [ "lighter_fluid", "gasoline" ],
+    "tool_ammo": [ "lighter_fluid", "gasoline" ],
     "default_ammo": "chem_butane",
     "sub": "hotplate",
     "initial_charges": 500,
-    "max_charges": 500,
     "charges_per_use": 1,
-    "use_action": "HOTPLATE"
+    "use_action": "HOTPLATE",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "gasoline": 500, "lighter_fluid": 500 },
+        "watertight": true,
+        "rigid": true
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "heatpack",
@@ -973,12 +1000,20 @@
     "material": "steel",
     "symbol": ";",
     "color": "green",
-    "ammo": "lamp_oil",
+    "tool_ammo": "lamp_oil",
     "sub": "hotplate",
     "initial_charges": 800,
-    "max_charges": 800,
     "charges_per_use": 1,
-    "use_action": "HOTPLATE"
+    "use_action": "HOTPLATE",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "lamp_oil": 800 },
+        "watertight": true,
+        "rigid": true
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "pastaextruder",
@@ -1026,7 +1061,7 @@
     "type": "TOOL",
     "category": "tools_cooking",
     "name": { "str": "soda can stove kit" },
-    "//": "Should be 20 but currently recipes do not utilize this value",
+    "//": "Should be 20 but currently recipes do not utilize this value CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo",
     "description": "This is an ultra-light alcohol-burning stove with simmer ring.  It comes with a 500 ml container to hold concentrated alcohol fuel.",
     "weight": "45 g",
     "volume": "750 ml",
@@ -1036,12 +1071,19 @@
     "material": "aluminum",
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "conc_alcohol",
+    "tool_ammo": "conc_alcohol",
     "sub": "hotplate",
     "initial_charges": 500,
-    "max_charges": 500,
     "charges_per_use": 1,
-    "use_action": "HOTPLATE"
+    "use_action": "HOTPLATE",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "conc_alcohol": 500 },
+        "watertight": true,
+        "rigid": true
+      }
+    ]
   },
   {
     "id": "pressure_cooker",
@@ -1166,12 +1208,19 @@
     "material": [ "steel", "glass" ],
     "symbol": ";",
     "color": "brown",
-    "ammo": "lamp_oil",
+    "tool_ammo": "lamp_oil",
     "sub": "hotplate",
-    "max_charges": 800,
     "charges_per_use": 1,
     "qualities": [ [ "COOK", 3 ], [ "BOIL", 2 ], [ "CONTAIN", 1 ], [ "CHEM", 1 ] ],
-    "use_action": [ "HOTPLATE", "HEAT_FOOD" ]
+    "use_action": [ "HOTPLATE", "HEAT_FOOD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "lamp_oil": 800 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "teapot",

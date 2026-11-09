@@ -15,9 +15,8 @@
     "material": [ "steel", "plastic" ],
     "symbol": "/",
     "color": "blue",
-    "ammo": [ "gasoline" ],
+    "tool_ammo": [ "gasoline" ],
     "charges_per_use": 75,
-    "max_charges": 450,
     "techniques": [ "SWEEP" ],
     "qualities": [ [ "AXE", 4 ] ],
     "crafting_speed_modifier": 1.25,
@@ -30,7 +29,16 @@
       "transform_charges": 5,
       "need_dry": true
     },
-    "flags": [ "NONCONDUCTIVE", "POWERED", "FRAGILE_MELEE", "COMBAT_NPC_USE" ]
+    "flags": [ "NONCONDUCTIVE", "POWERED", "FRAGILE_MELEE", "COMBAT_NPC_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "gasoline": 450 },
+        "watertight": true,
+        "rigid": true
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "masonrysaw_on",
@@ -48,7 +56,15 @@
     "qualities": [ [ "BUTCHER", -100 ] ],
     "revert_msg": "Your masonry saw goes quiet",
     "use_action": { "type": "transform", "target": "masonrysaw_off", "msg": "You turn off the masonry saw." },
-    "flags": [ "MESSY", "TRADER_AVOID", "NONCONDUCTIVE", "FRAGILE_MELEE", "WATER_DISABLE", "COMBAT_NPC_USE", "COMBAT_NPC_ON" ]
+    "flags": [ "MESSY", "TRADER_AVOID", "NONCONDUCTIVE", "FRAGILE_MELEE", "WATER_DISABLE", "COMBAT_NPC_USE", "COMBAT_NPC_ON" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "gasoline": 450 },
+        "watertight": true,
+        "rigid": true
+      }
+    ]
   },
   {
     "id": "grinder_blade",

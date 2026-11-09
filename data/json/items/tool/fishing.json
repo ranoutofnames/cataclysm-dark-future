@@ -13,9 +13,15 @@
     "material": "plastic",
     "symbol": ";",
     "color": "green",
-    "ammo": "fish_bait",
-    "max_charges": 20,
-    "use_action": "FISH_TRAP"
+    "tool_ammo": "fish_bait",
+    "use_action": "FISH_TRAP",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "fish_bait": 20 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "clay_fish_trap",
@@ -26,7 +32,14 @@
     "weight": "1 kg",
     "material": "clay",
     "color": "brown",
-    "flags": [ "SHATTERS" ]
+    "flags": [ "SHATTERS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "fish_bait": 20 }
+      }
+    ]
   },
   {
     "id": "fishing_hook_basic",

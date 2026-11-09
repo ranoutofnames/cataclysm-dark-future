@@ -91,12 +91,20 @@
     "symbol": ",",
     "color": "blue",
     "rand_charges": [ 1, 2, 3, 4, 5, 6, 11, 12, 17, 19, 21, 25 ],
-    "ammo": [ "lighter_fluid" ],
-    "max_charges": 25,
+    "tool_ammo": [ "lighter_fluid" ],
     "charges_per_use": 1,
     "use_action": { "type": "firestarter", "moves": 50 },
-    "//": "If we gain the ability to specify requiring specific tools to reload an item, allow reloading from butane cans only?",
-    "flags": [ "FIRESTARTER", "NO_RELOAD" ]
+    "//": "If we gain the ability to specify requiring specific tools to reload an item, allow reloading from butane cans only? CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo",
+    "flags": [ "FIRESTARTER", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "airtight": true,
+        "ammo_restriction": { "lighter_fluid": 25 },
+        "watertight": true
+      }
+    ]
   },
   {
     "id": "magnifying_glass",
@@ -148,9 +156,8 @@
     "symbol": ",",
     "color": "light_gray",
     "initial_charges": 25,
-    "ammo": [ "lighter_fluid", "gasoline" ],
+    "tool_ammo": [ "lighter_fluid", "gasoline" ],
     "default_ammo": "chem_butane",
-    "max_charges": 50,
     "charges_per_use": 1,
     "use_action": [
       {
@@ -165,7 +172,17 @@
       },
       { "type": "firestarter", "moves": 50 }
     ],
-    "flags": [ "FIRESTARTER" ]
+    "flags": [ "FIRESTARTER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "airtight": true,
+        "ammo_restriction": { "lighter_fluid": 50, "gasoline": 50 },
+        "watertight": true
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "ref_lighter_on",
@@ -180,10 +197,9 @@
     "material": "aluminum",
     "symbol": ",",
     "color": "light_gray",
-    "ammo": [ "lighter_fluid", "gasoline" ],
+    "tool_ammo": [ "lighter_fluid", "gasoline" ],
     "default_ammo": "chem_butane",
     "initial_charges": 25,
-    "max_charges": 50,
     "charges_per_use": 1,
     "turns_per_charge": 20,
     "revert_to": "ref_lighter",
@@ -198,7 +214,17 @@
         "type": "transform"
       }
     ],
-    "flags": [ "FIRE", "FIRESTARTER", "LIGHT_8", "TRADER_AVOID", "WATER_EXTINGUISH" ]
+    "flags": [ "FIRE", "FIRESTARTER", "LIGHT_8", "TRADER_AVOID", "WATER_EXTINGUISH" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "airtight": true,
+        "ammo_restriction": { "lighter_fluid": 50, "gasoline": 50 },
+        "watertight": true
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "tinderbox",
@@ -213,8 +239,7 @@
     "material": "steel",
     "symbol": ",",
     "color": "light_gray",
-    "ammo": "tinder",
-    "max_charges": 100,
+    "tool_ammo": "tinder",
     "use_action": {
       "target": "tinderbox_on",
       "msg": "You light the tinder.",
@@ -224,7 +249,15 @@
       "need_charges": 1,
       "need_charges_msg": "The ember carrier is out of tinder.",
       "type": "transform"
-    }
+    },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "tinder": 100 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "tinderbox_on",
@@ -244,7 +277,14 @@
         "type": "transform"
       }
     ],
-    "flags": [ "FIRESTARTER", "SLEEP_IGNORE", "WATER_EXTINGUISH", "LIGHT_2" ]
+    "flags": [ "FIRESTARTER", "SLEEP_IGNORE", "WATER_EXTINGUISH", "LIGHT_2" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "tinder": 100 }
+      }
+    ]
   },
   {
     "id": "electric_lighter",
@@ -273,10 +313,17 @@
     "symbol": ",",
     "color": "light_gray",
     "looks_like": "ref_lighter",
-    "ammo": [ "diesel", "lamp_oil", "motor_oil", "jp8" ],
-    "max_charges": 25,
+    "tool_ammo": [ "diesel", "lamp_oil", "motor_oil", "jp8" ],
     "charges_per_use": 1,
     "use_action": [ { "type": "firestarter", "moves": 50 } ],
-    "flags": [ "FIRESTARTER" ]
+    "flags": [ "FIRESTARTER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "diesel": 25, "lamp_oil": 25, "motor_oil": 25, "jp8": 25 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   }
 ]

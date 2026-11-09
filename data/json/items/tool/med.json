@@ -13,10 +13,18 @@
     "material": [ "glass" ],
     "symbol": "!",
     "color": "cyan",
-    "ammo": "anesthetic",
+    "tool_ammo": "anesthetic",
     "initial_charges": 3000,
-    "max_charges": 3000,
-    "qualities": [ [ "ANESTHESIA", 1 ] ]
+    "qualities": [ [ "ANESTHESIA", 1 ] ],
+    "pocket_data": [
+      {
+        "watertight": true,
+        "rigid": true,
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "anesthetic": 3000 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "autoclave",
@@ -71,12 +79,18 @@
     "material": [ "ceramic", "superalloy" ],
     "symbol": ",",
     "color": "light_gray",
-    "ammo": "ampoule",
+    "tool_ammo": "ampoule",
     "initial_charges": 2,
-    "max_charges": 2,
     "charges_per_use": 1,
     "use_action": "JET_INJECTOR",
-    "flags": [ "HOLSTER_PISTOL" ]
+    "flags": [ "HOLSTER_PISTOL" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "ampoule": 2 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "scalpel",

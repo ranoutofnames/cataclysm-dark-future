@@ -69,10 +69,9 @@
     "material": "steel",
     "symbol": ";",
     "color": "dark_gray",
-    "ammo": "charcoal",
+    "tool_ammo": "charcoal",
     "qualities": [ [ "SAW_M", 2 ], [ "SAW_M_FINE", 1 ] ],
     "sub": "forge",
-    "max_charges": 500,
     "charges_per_use": 8,
     "use_action": [
       {
@@ -101,7 +100,15 @@
         "move_cost": 500
       }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "charcoal": 500 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo; ids absent or undefined in CDF left out of the pocket: coal"
   },
   {
     "id": "char_kiln",

@@ -120,11 +120,17 @@
     "material": "plastic",
     "symbol": ";",
     "color": "white",
-    "ammo": "soap",
+    "tool_ammo": "soap",
     "initial_charges": 5,
-    "max_charges": 10,
     "charges_per_use": 1,
-    "use_action": "SHAVEKIT"
+    "use_action": "SHAVEKIT",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "soap": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "sponge",
@@ -174,10 +180,16 @@
     "material": [ "leather", "glass" ],
     "symbol": ";",
     "color": "brown",
-    "ammo": "soap",
-    "max_charges": 10,
+    "tool_ammo": "soap",
     "charges_per_use": 1,
-    "use_action": "SHAVEKIT"
+    "use_action": "SHAVEKIT",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "soap": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "washboard",

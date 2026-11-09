@@ -62,9 +62,8 @@
     "material": [ "bone" ],
     "symbol": ";",
     "color": "white",
-    "ammo": "thread",
+    "tool_ammo": "thread",
     "sub": "sewing_kit",
-    "max_charges": 200,
     "charges_per_use": 1,
     "qualities": [ [ "SEW", 2 ] ],
     "use_action": {
@@ -76,7 +75,14 @@
       "cost_scaling": 0.1,
       "move_cost": 1300
     },
-    "flags": [ "STAB", "ALLOWS_REMOTE_USE", "NO_SALVAGE" ]
+    "flags": [ "STAB", "ALLOWS_REMOTE_USE", "NO_SALVAGE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "thread": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "needle_curved",
@@ -91,9 +97,8 @@
     "material": "steel",
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "thread",
+    "tool_ammo": "thread",
     "sub": "sewing_kit",
-    "max_charges": 200,
     "charges_per_use": 1,
     "qualities": [ [ "SEW_CURVED", 1 ] ],
     "use_action": [
@@ -113,7 +118,14 @@
         "clothing_mods": [ "furred", "wooled", "resized_large", "resized_small", "pocketed" ]
       }
     ],
-    "flags": [ "STAB", "ALLOWS_REMOTE_USE" ]
+    "flags": [ "STAB", "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "thread": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "needle_wood",
@@ -128,9 +140,8 @@
     "material": "wood",
     "symbol": ";",
     "color": "brown",
-    "ammo": "thread",
+    "tool_ammo": "thread",
     "sub": "sewing_kit",
-    "max_charges": 200,
     "charges_per_use": 1,
     "qualities": [ [ "SEW", 1 ] ],
     "use_action": {
@@ -142,7 +153,14 @@
       "cost_scaling": 0.1,
       "move_cost": 1500
     },
-    "flags": [ "STAB", "ALLOWS_REMOTE_USE" ]
+    "flags": [ "STAB", "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "thread": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "sewing_kit",
@@ -158,9 +176,8 @@
     "material": [ "plastic", "steel" ],
     "symbol": ",",
     "color": "red",
-    "ammo": "thread",
+    "tool_ammo": "thread",
     "initial_charges": 50,
-    "max_charges": 400,
     "charges_per_use": 1,
     "qualities": [ [ "SEW", 3 ] ],
     "use_action": [
@@ -180,7 +197,14 @@
         "clothing_mods": [ "furred", "wooled", "resized_large", "resized_small", "pocketed" ]
       }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "thread": 400 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "tailoring_pattern_set",
@@ -210,10 +234,9 @@
     "material": [ "plastic", "steel" ],
     "symbol": ";",
     "color": "red",
-    "ammo": "thread",
+    "tool_ammo": "thread",
     "sub": "sewing_kit",
     "initial_charges": 50,
-    "max_charges": 600,
     "charges_per_use": 1,
     "qualities": [ [ "SEW", 4 ], [ "SEW_CURVED", 1 ], [ "KNIT", 1 ], [ "LEATHER_AWL", 2 ], [ "CUT", 1 ] ],
     "use_action": [
@@ -245,7 +268,14 @@
         ]
       }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "thread": 600 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "sewing_machine",
@@ -262,9 +292,8 @@
     "material": [ "steel", "plastic" ],
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "thread",
+    "tool_ammo": "thread",
     "initial_charges": 50,
-    "max_charges": 800,
     "charges_per_use": 1,
     "crafting_speed_modifier": 1.5,
     "qualities": [ [ "SEW", 5 ] ],
@@ -297,6 +326,14 @@
         ]
       }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE", "NONCONDUCTIVE" ]
+    "flags": [ "ALLOWS_REMOTE_USE", "NONCONDUCTIVE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "thread": 800 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   }
 ]
