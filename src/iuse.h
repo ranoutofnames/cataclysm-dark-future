@@ -110,6 +110,8 @@ int mp3_on( player *, item *, bool, const tripoint_bub_ms & );
 int rpgdie( player *, item *, bool, const tripoint_bub_ms & );
 int dive_tank( player *, item *, bool, const tripoint_bub_ms & );
 int gasmask( player *, item *, bool, const tripoint_bub_ms & );
+int papr_blower( player *, item *, bool, const tripoint_bub_ms & );
+int papr_mask( player *, item *, bool, const tripoint_bub_ms & );
 int portable_game( player *, item *, bool, const tripoint_bub_ms & );
 int vibe( player *, item *, bool, const tripoint_bub_ms & );
 int vortex( player *, item *, bool, const tripoint_bub_ms & );

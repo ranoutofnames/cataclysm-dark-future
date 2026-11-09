@@ -1240,6 +1240,8 @@ class item : public location_visitable<item>, public game_object<item>
 
         /** How much damage has the item sustained? */
         int damage() const;
+        // DDA item_degrade.cpp:212-216: true when a damaged item still works this time (PAPR masks, gas masks)
+        bool activation_success() const;
 
         /**
          * Scale item damage to the given number of levels. This function is

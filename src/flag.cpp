@@ -248,6 +248,7 @@ const flag_id flag_EXOSUIT( "EXOSUIT" );
 const flag_id flag_ORGANIC( "ORGANIC" );
 const flag_id flag_OUTER( "OUTER" );
 const flag_id flag_OVERSIZE( "OVERSIZE" );
+const flag_id flag_PAPR_BLOWER( "PAPR_BLOWER" );
 const flag_id flag_PARTIAL_DEAF( "PARTIAL_DEAF" );
 const flag_id flag_PERFECT_LOCKPICK( "PERFECT_LOCKPICK" );
 const flag_id flag_DURABLE_LOCKPICK( "DURABLE_LOCKPICK" );

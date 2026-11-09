@@ -842,6 +842,12 @@ int item::damage() const
     return damage_;
 }
 
+bool item::activation_success() const
+{
+    // DDA: item_degrade.cpp:212-216; 3999 is damage_max_ - 1 (itype.h damage_max_ = 4000, same scale in CDF)
+    return rng( 0, 3999 ) - damage_ >= 0;
+}
+
 int item::damage_level( int max ) const
 {
     if( damage_ == 0 || max <= 0 ) {
@@ -3455,7 +3461,9 @@ void item::armor_protection_info( std::vector<iteminfo> &info, const iteminfo_qu
                            iteminfo::no_newline, fire_resist() );
         info.emplace_back( "ARMOR", space + _( "Environmental: " ),
                            get_base_env_resist( *this ) );
-        if( type->can_use( "GASMASK" ) || type->can_use( "DIVE_TANK" ) ) {
+        // CDF: PAPR1 adds PAPR_MASK_ACTIVATE (DDA item_info.cpp:2007)
+        if( type->can_use( "GASMASK" ) || type->can_use( "DIVE_TANK" ) ||
+            type->can_use( "PAPR_MASK_ACTIVATE" ) ) {
             info.emplace_back( "ARMOR",
                                _( "<bold>Protection when active</bold>: " ) );
             info.emplace_back( "ARMOR", space + _( "Acid: " ), "",

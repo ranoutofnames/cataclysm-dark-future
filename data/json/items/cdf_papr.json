@@ -1,0 +1,198 @@
+[
+  {
+    "id": "molle_papr_blower_off",
+    "//": "Based on the Avon MP-PAPR. CDF: DDA tool_armor.json 'ITEM'/'subtypes' becomes TOOL_ARMOR/armor_portion_data; material butyl_rubber is not defined in CDF, so rubber stands in; DDA's tool_ammo battery/gasfilter_m is kept for the reload menu.",
+    "type": "TOOL_ARMOR",
+    "category": "clothing",
+    "name": { "str": "modular PAPR blower (off)", "str_pl": "modular PAPR blowers (off)" },
+    "description": "A blower unit for a powered air purifying respirator system, built from a flexible silicon and butyl rubber blend.  Its components are arranged linearly in a narrow strip close to the body and is outfitted with straps to wear it about the waist.  If paired with the appropriate straps, it can also attached to any compatible MOLLE system.  When active and loaded with a charged battery and a filter canister, it can be paired with a prepared PAPR mask to provide excellent protection against chemical, biological, radiological, and nuclear threats.",
+    "weight": "920 g",
+    "volume": "3000 ml",
+    "price": "1600 USD",
+    "price_postapoc": "20 USD",
+    "material": [ "plastic", "rubber" ],
+    "symbol": "[",
+    "looks_like": "backpack",
+    "color": "dark_gray",
+    "material_thickness": 2,
+    "pocket_data": [
+      {
+        "id": "papr_blower_filter",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "flag_restriction": [ "GASFILTER_MED" ],
+        "default_magazine": "gasfilter_med",
+        "rigid": true
+      },
+      {
+        "id": "papr_blower_battery",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_plus_battery_cell"
+      }
+    ],
+    "consumption_per_use": [ { "pocket": "papr_blower_battery", "qty": 1 } ],
+    "use_action": {
+      "type": "transform",
+      "active": true,
+      "msg": "You activate your %s and the fan starts to audibly whoosh.",
+      "target": "molle_papr_blower_on",
+      "need_charges": 1,
+      "need_charges_msg": "The batteries are dead."
+    },
+    "tool_ammo": [ "battery", "gasfilter_m" ],
+    "flags": [ "WATER_FRIENDLY", "BELTED", "OVERSIZE" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 30,
+        "encumbrance": 2
+      }
+    ]
+  },
+  {
+    "id": "molle_papr_blower_on",
+    "copy-from": "molle_papr_blower_off",
+    "//": "Based on the Avon MP-PAPR. CDF: active true on the off item's transform replaces DDA's SPAWN_ACTIVE (no reader in CDF); the use_action is the iuse that also ticks (iuse::papr_blower: t == true is DDA's tick_action, t == false the 'Turn off' transform); ELECTRONIC is not defined in CDF and is dropped.",
+    "type": "TOOL_ARMOR",
+    "name": { "str": "modular PAPR blower (on)", "str_pl": "modular PAPR blowers (on)" },
+    "description": "An active blower unit for a powered air purifying respirator system, built from a flexible silicon and butyl rubber blend.  Its components are arranged linearly in a narrow strip close to the body and is outfitted with straps to wear it about the waist.  If paired with the appropriate straps, it can also attached to any compatible MOLLE system.  When paired with a prepared PAPR mask, this will provide excellent protection against chemical, biological, radiological, and nuclear threats.  The fan is quietly blowing.",
+    "turns_per_charge": 240,
+    "revert_to": "molle_papr_blower_off",
+    "use_action": "PAPR_BLOWER",
+    "flags": [ "WATER_FRIENDLY", "BELTED", "OVERSIZE", "TRADER_AVOID", "PAPR_BLOWER" ]
+  },
+  {
+    "id": "papr_half_mask",
+    "//": "Based on Optrel Swiss Air.",
+    "type": "TOOL_ARMOR",
+    "category": "clothing",
+    "name": { "str": "half-face PAPR mask" },
+    "description": "A lightweight, form-fitting mask that straps over your mouth and nose.  The mask has pre-installed tubing which attaches to a powered air purifying respirator system.  Once activated it will comfortably protect against chemical, biological, radiological, and nuclear threats.  Like a standard gas mask it must be prepared before use; unlike a standard gas mask, it will only function when paired with an active PAPR blower unit.  Safety goggles are advised!",
+    "weight": "400 g",
+    "volume": "500 ml",
+    "price": "300 USD",
+    "price_postapoc": "15 USD 50 cent",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "looks_like": "mask_dust",
+    "color": "light_gray",
+    "warmth": 12,
+    "material_thickness": 2,
+    "environmental_protection": 3,
+    "environmental_protection_with_filter": 16,
+    "use_action": "PAPR_MASK_ACTIVATE",
+    "flags": [ "SLEEP_IGNORE", "PAPR_MASK" ],
+    "armor_portion_data": [ { "covers": [ "mouth" ], "coverage": 100, "encumbrance": 10 } ]
+  },
+  {
+    "id": "military_papr_mask",
+    "//": "Based on the Avon/US military FM54. CDF: eyes and mouth have no sub-locations, so the portions are flat (the DDA mouth_lips/nose/chin portion is used for mouth; mouth_cheeks has the same numbers); DDA's per-portion layers, the MAGAZINE_WELL for CBRN filters, the PANORAMIC pockets and the two mode switches (filter mode, SCBA mode) arrive with PAPR2/PAPR3; material butyl_rubber becomes rubber.",
+    "type": "TOOL_ARMOR",
+    "category": "clothing",
+    "name": { "str": "military respirator mask (PAPR)", "str_pl": "military respirator masks (PAPR)" },
+    "looks_like": "mask_gas",
+    "description": "A black, full-face military respirator made from a silicon and butyl rubber blend, providing decent user comfort in addition to a clear field of view and a secure fit thanks to the mask's single-element visor and 6-point head harness.  This mask is configured for two modes: negative-pressure, using standard CBRN gas mask filter canisters; and positive-pressure, with built-in hardware to accommodate either a powered air-purifying respirator (PAPR) or a self-contained breathing apparatus (SCBA).  Once activated it will comfortably protect against chemical, biological, radiological, and nuclear threats.  It is currently in positive-pressure PAPR mode, so will only function with a powered PAPR blower.",
+    "weight": "490 g",
+    "volume": "1536 ml",
+    "longest_side": "27 cm",
+    "price": "499 USD 50 cent",
+    "price_postapoc": "7 USD 50 cent",
+    "material": [ "rubber", "plastic" ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "warmth": 40,
+    "material_thickness": 2,
+    "environmental_protection": 4,
+    "environmental_protection_with_filter": 16,
+    "use_action": "PAPR_MASK_ACTIVATE",
+    "flags": [ "SLEEP_IGNORE", "VARSIZE", "PADDED", "PAPR_MASK" ],
+    "armor_portion_data": [
+      { "covers": [ "head" ], "specifically_covers": [ "head_crown", "head_nape" ], "coverage": 25, "encumbrance": 0 },
+      { "covers": [ "head" ], "specifically_covers": [ "head_forehead" ], "coverage": 100, "encumbrance": 20 },
+      { "covers": [ "eyes" ], "coverage": 100, "encumbrance": 10 },
+      { "covers": [ "mouth" ], "coverage": 100, "encumbrance": 10 }
+    ]
+  },
+  {
+    "id": "modular_papr_strap",
+    "//": "CDF: DDA ammo_pouch.json modular_papr_strap in BN ARMOR format; DDA's [3, 4] encumbrance range becomes encumbrance 3 + max_encumbrance 4; sided comes from leg_either.",
+    "type": "ARMOR",
+    "category": "armor",
+    "looks_like": "holster",
+    "name": { "str": "modular PAPR strap" },
+    "description": "A patch of velcro and MOLLE straps for attaching a modular PAPR blower to a compatible MOLLE unit.  It can also be strapped to the hip.",
+    "weight": "300 g",
+    "volume": "300 ml",
+    "price": "19 USD 95 cent",
+    "price_postapoc": "1 USD 90 cent",
+    "material": [ "nylon" ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "material_thickness": 0.5,
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "item_restriction": [ "molle_papr_blower_off", "molle_papr_blower_on" ],
+        "max_contains_volume": "4000 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "16 cm",
+        "description": "A MOLLE harness for a modular PAPR blower.",
+        "moves": 300,
+        "volume_encumber_modifier": 0.3
+      }
+    ],
+    "flags": [ "BELTED", "OVERSIZE", "WATER_FRIENDLY", "PALS_LARGE" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "leg_either" ],
+        "specifically_covers": [ "leg_hip_r", "leg_hip_l" ],
+        "coverage": 25,
+        "encumbrance": [ 3, 4 ]
+      }
+    ]
+  },
+  {
+    "id": "wrapping_vacuumed",
+    "//": "CDF: DDA containers/generic.json wrapping_vacuumed in BN CONTAINER format; DDA's sealed_data spoil_multiplier 0.5 is dropped (the wrapper only holds a filter cartridge).",
+    "type": "CONTAINER",
+    "category": "container",
+    "looks_like": "bag_plastic",
+    "name": { "str": "vacuum-sealed package" },
+    "description": "A hermetically sealed article of packaging, made from thick plastic, designed to keep the contents isolated from atmospheric contact.  Shame that its properties melt away after you tear it open to get at the goodies within.",
+    "weight": "6 g",
+    "volume": "25 ml",
+    "price": "0 cent",
+    "price_postapoc": "0 cent",
+    "material": [ "plastic" ],
+    "symbol": "%",
+    "color": "red",
+    "contains": "1 L",
+    "watertight": true,
+    "flags": [ "TRADER_AVOID" ]
+  },
+  {
+    "type": "item_group",
+    "id": "wrapped_gasmask_filter",
+    "subtype": "collection",
+    "ammo": 100,
+    "container-item": "wrapping_vacuumed",
+    "on_overflow": "spill",
+    "items": [ { "item": "gasfilter_med" } ]
+  },
+  {
+    "type": "item_group",
+    "id": "molle_papr_kit",
+    "subtype": "collection",
+    "//": "CDF: DDA gear.json molle_papr_kit; papr_kit needs basic_papr_belt_off (PAPR2)",
+    "items": [
+      { "item": "military_papr_mask" },
+      { "item": "molle_papr_blower_off" },
+      { "group": "wrapped_gasmask_filter" },
+      { "item": "modular_papr_strap" }
+    ]
+  }
+]

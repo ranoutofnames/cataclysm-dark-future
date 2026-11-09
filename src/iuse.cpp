@@ -4129,6 +4129,92 @@ int iuse::gasmask( player *p, item *it, bool t, const tripoint_bub_ms &pos )
     return it->type->charges_to_use();
 }
 
+int iuse::papr_mask( player *p, item *it, bool t, const tripoint_bub_ms & )
+{
+    if( t ) { // Tick: DDA iuse.cpp:3695-3714 (papr_mask)
+        if( p->is_worn( *it ) ) {
+            if( it->activation_success() ) {
+                // In case if failed the previous tick.
+                it->set_var( "overwrite_env_resist", it->get_base_env_resist_w_filter() );
+            } else {
+                p->add_msg_if_player( m_bad, _( "Your damaged %s is leaking." ), it->tname() );
+                it->set_var( "overwrite_env_resist", 0 );
+                return 0;
+            }
+            if( !p->has_item_with_flag( flag_PAPR_BLOWER ) ) {
+                p->add_msg_if_player( m_bad, _( "Your PAPR system stops working!" ) );
+                it->set_var( "overwrite_env_resist", 0 );
+                it->deactivate();
+            }
+        }
+    } else { // Activate: DDA iuse.cpp:3613-3631 (papr_mask_activate)
+        if( !p->has_item_with_flag( flag_PAPR_BLOWER ) ) {
+            p->add_msg_if_player( m_bad,
+                                  _( "You don't have an active PAPR blower unit so the %s fails to function." ),
+                                  it->tname() );
+        } else if( !it->activation_success() ) {
+            p->add_msg_if_player( m_bad, _( "You fail to adjust your damaged %s so it doesn't leak." ),
+                                  it->tname() );
+        } else {
+            p->add_msg_if_player( _( "You prepare your %s." ), it->tname() );
+            it->activate();
+            it->set_var( "overwrite_env_resist", it->get_base_env_resist_w_filter() );
+        }
+    }
+    return 0;
+}
+
+int iuse::papr_blower( player *p, item *it, bool t, const tripoint_bub_ms &pos )
+{
+    if( !t ) { // Turn off: replaces the DDA "Turn off" transform entry (CDF has no tick_action)
+        p->add_msg_if_player( _( "You turn off the %s." ), it->tname() );
+        if( it->type->tool && it->type->tool->revert_to ) {
+            it->convert( *it->type->tool->revert_to );
+        }
+        it->deactivate();
+        return 0;
+    }
+    // Tick: DDA iuse.cpp:3715-3760 (papr_blower)
+    map &here = get_map();
+    // CDF: the DDA tick_action sound entry (sound_volume 12, "whooooo..." humming) lives here
+    sound_event se;
+    se.origin = pos;
+    se.volume = 12;
+    se.category = sounds::sound_t::movement;
+    se.description = _( "whooooo..." );
+    sounds::sound( se );
+    // calculate amount of absorbed gas per filter charge
+    const field &gasfield = here.field_at( pos );
+    for( const auto &dfield : gasfield ) {
+        const field_entry &entry = dfield.second;
+        // CDF: no field intensity "concentration" exists, so the bare factor is added each tick and one charge is
+        // spent at 100, exactly like iuse::gasmask above (DDA: 6000 / ( factor / concentration ), threshold 60)
+        if( entry.get_gas_absorption_factor() > 0 ) {
+            it->set_var( "gas_absorbed", it->get_var( "gas_absorbed", 0 ) + entry.get_gas_absorption_factor() );
+        }
+    }
+    if( it->get_var( "gas_absorbed", 0 ) >= 100 ) {
+        it->ammo_consume_in_pocket( "papr_blower_filter", 1, here, pos );
+        it->set_var( "gas_absorbed", 0 );
+        if( it->ammo_remaining_in_pocket( "papr_blower_filter" ) < 10 ) {
+            p->add_msg_player_or_npc(
+                m_bad,
+                _( "Your %s is struggling to filter gas!" ),
+                _( "<npcname>'s PAPR blower is struggling to filter gas!" )
+                , it->tname() );
+        }
+    }
+    if( it->ammo_remaining_in_pocket( "papr_blower_filter" ) == 0 ) {
+        p->add_msg_player_or_npc(
+            m_bad,
+            _( "Your %s requires new filters!" ),
+            _( "<npcname> needs new PAPR blower filters!" )
+            , it->tname() );
+        it->deactivate();
+    }
+    return 0;
+}
+
 int iuse::portable_game( player *p, item *it, bool t, const tripoint_bub_ms & )
 {
     if( t ) {

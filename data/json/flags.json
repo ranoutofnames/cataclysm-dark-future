@@ -2128,6 +2128,20 @@
     "info": "This item will <good>attach directly</good> to <info>load bearing vests</info>, taking an average amount of space."
   },
   {
+    "id": "PAPR_BLOWER",
+    "type": "json_flag",
+    "context": [ "ARMOR", "TOOL_ARMOR" ],
+    "//": "CDF: PAPR1; DDA flags.json PAPR_BLOWER",
+    "info": "This item functions as a powered air purifying respirator blower."
+  },
+  {
+    "id": "PAPR_MASK",
+    "type": "json_flag",
+    "context": [ "ARMOR", "TOOL_ARMOR" ],
+    "//": "CDF: PAPR1; DDA flags.json PAPR_MASK (HUB01B also lists it: keep one definition on merge)",
+    "info": "This item functions as a powered air purifying respirator."
+  },
+  {
     "id": "PALS_LARGE",
     "type": "json_flag",
     "context": [  ],

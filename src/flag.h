@@ -248,6 +248,7 @@ extern const flag_id flag_EXOSUIT;
 extern const flag_id flag_ORGANIC;
 extern const flag_id flag_OUTER;
 extern const flag_id flag_OVERSIZE;
+extern const flag_id flag_PAPR_BLOWER;
 extern const flag_id flag_PARTIAL_DEAF;
 extern const flag_id flag_PERFECT_LOCKPICK;
 extern const flag_id flag_DURABLE_LOCKPICK;

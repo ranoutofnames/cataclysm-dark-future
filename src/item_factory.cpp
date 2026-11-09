@@ -1670,6 +1670,8 @@ void Item_factory::init()
     add_iuse( "FLUSLEEP", &iuse::flusleep );
     add_iuse( "FOODPERSON", &iuse::foodperson );
     add_iuse( "FUNGICIDE", &iuse::fungicide );
+    add_iuse( "PAPR_BLOWER", &iuse::papr_blower );
+    add_iuse( "PAPR_MASK_ACTIVATE", &iuse::papr_mask );
     add_iuse( "GASMASK", &iuse::gasmask,
               translate_marker( "Can be activated to <good>increase environmental "
                                 "protection</good>.  Will consume charges when active, "
