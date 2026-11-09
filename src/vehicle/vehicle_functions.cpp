@@ -188,7 +188,10 @@ auto try_autoload_turret(vehicle& veh, vehicle_part& pt) -> bool {
         if (cargo_part.is_broken()) { continue; }
 
         for (item* it : cargo_part.get_items()) {
-            const bool is_mag = !gun.magazine_integral() && it->is_magazine();
+            // CDF: D13, P3-3-8d. A gun with a MAGAZINE pocket and (since 4-b2) a tool with max_charges both
+            // answer is_magazine(); neither is a magazine to push into the turret.
+            const bool is_mag =
+                !gun.magazine_integral() && it->is_magazine() && !it->is_gun() && !it->is_tool();
             const bool is_ammo = gun.magazine_integral() && it->is_ammo();
 
             // Check compatibility

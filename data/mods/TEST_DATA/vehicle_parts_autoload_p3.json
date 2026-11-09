@@ -1,0 +1,30 @@
+[
+  {
+    "//": "CDF: P3-3-8d. A turret gun whose MAGAZINE_WELL accepts BOTH a real magazine (glockmag) and, by id, the test pocket gun. can_reload_with() builds its list from the well item_restriction, so an unrestricted well accepts nothing and the autoloader never starts; listing the gun id is what lets a gun in the cargo hold reach the is_mag test, so only the is_gun() guard in try_autoload_turret keeps it out. No shipped gun has such a well. Well volume and length are large so the item-size checks pass for any cargo item.",
+    "id": "p3_autoload_turret_gun",
+    "type": "GUN",
+    "name": { "str": "p3 autoload turret gun" },
+    "description": "Test gun: unrestricted 9mm magazine well, no integral magazine.",
+    "weight": "1000 g",
+    "volume": "1500 ml",
+    "longest_side": "400 mm",
+    "material": [ "steel" ],
+    "symbol": "(",
+    "color": "light_gray",
+    "ammo": [ "9mm" ],
+    "skill": "pistol",
+    "range": 10,
+    "ranged_damage": { "damage_type": "bullet", "amount": 10 },
+    "dispersion": 480,
+    "durability": 10,
+    "pocket_data": [ { "id": "ammo", "pocket_type": "MAGAZINE_WELL", "magazine_well": "5000 ml", "max_item_length": "2 km", "item_restriction": [ "glockmag", "test_multimag_gun_integral_ammo" ] } ]
+  },
+  {
+    "id": "p3_autoload_turret",
+    "copy-from": "turret",
+    "type": "vehicle_part",
+    "name": { "str": "p3 autoload test turret" },
+    "item": "p3_autoload_turret_gun",
+    "folded_volume": "2500 ml"
+  }
+]

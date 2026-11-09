@@ -211,3 +211,90 @@ TEST_CASE("vehicle_turret_iff_allows_clear_shots", "[vehicle][turret][npc][iff]"
     REQUIRE(target.has_value());
     CHECK(&target->get() == &hostile);
 }
+
+// CDF: P3-3-8d (D13). Fixture for the two autoloader guard tests: a turret whose gun has an
+// unrestricted MAGAZINE_WELL (TEST_DATA p3_autoload_turret), an autoloader, a cargo box and power.
+namespace
+{
+struct p3_autoload_fixture {
+    vehicle *veh = nullptr;
+    int turret_index = -1;
+    int cargo_index = -1;
+
+    p3_autoload_fixture() {
+        veh = get_map().add_vehicle(vproto_id("none"), tripoint_bub_ms(65, 65, 0), 270_degrees, 0, 0);
+        REQUIRE(veh);
+        turret_index =
+            veh->install_part(tripoint_mnt_veh::zero(), vpart_id("p3_autoload_turret"), true);
+        REQUIRE(turret_index >= 0);
+        REQUIRE(
+            veh->install_part(tripoint_mnt_veh::zero(), vpart_id("turret_autoloader"), true) >= 0);
+        cargo_index = veh->install_part(tripoint_mnt_veh::zero(), vpart_id("box"), true);
+        REQUIRE(cargo_index >= 0);
+        REQUIRE(veh->install_part(tripoint_mnt_veh::zero(), vpart_id("storage_battery"), true) >= 0);
+        veh->charge_battery(10000);
+        REQUIRE_FALSE(gun().magazine_integral());
+        REQUIRE(gun().magazine_current() == nullptr);
+    }
+
+    auto gun() -> item & { return veh->part(turret_index).get_base(); }
+
+    // The first call only starts a cycle; later calls finish it once the interval has passed.
+    auto run_autoloader() -> void {
+        for (int i = 0; i < 20; ++i) {
+            calendar::turn += 1_minutes;
+            vehicle_funcs::try_autoload_turret(*veh, veh->part(turret_index));
+        }
+    }
+
+    auto cargo_count() -> int {
+        return static_cast<int>(veh->part(cargo_index).get_items().size());
+    }
+};
+} // namespace
+
+TEST_CASE("autoloader_ignores_a_pocket_gun_in_cargo", "[vehicle][turret][autoload][p3]") {
+    clear_all_state();
+    p3_autoload_fixture f;
+
+    // NEGATIVE fixture: a loaded gun with an integral MAGAZINE pocket (is_magazine() is true) and
+    // nothing else in the cargo hold. The turret well has no item restriction.
+    detached_ptr<item> cargo_gun = item::spawn(itype_id("test_multimag_gun_integral_ammo"));
+    cargo_gun->ammo_set(itype_id("9mm"), 5);
+    REQUIRE(cargo_gun->is_gun());
+    REQUIRE(cargo_gun->is_magazine());
+    REQUIRE(cargo_gun->ammo_remaining() > 0);
+    REQUIRE(!f.veh->add_item(f.cargo_index, std::move(cargo_gun)));
+    REQUIRE(f.cargo_count() == 1);
+
+    f.run_autoloader();
+
+    CHECK(f.gun().magazine_current() == nullptr);
+    REQUIRE(f.cargo_count() == 1);
+    CHECK(f.veh->part(f.cargo_index).get_items().front()->typeId() ==
+          itype_id("test_multimag_gun_integral_ammo"));
+}
+
+TEST_CASE("autoloader_still_takes_a_real_magazine", "[vehicle][turret][autoload][p3]") {
+    clear_all_state();
+    p3_autoload_fixture f;
+
+    // Positive control: a loaded glockmag (a real magazine, not a gun or a tool) is taken.
+    detached_ptr<item> mag = item::spawn(itype_id("glockmag"));
+    mag->ammo_set(itype_id("9mm"), 5);
+    REQUIRE(mag->is_magazine());
+    REQUIRE_FALSE(mag->is_gun());
+    REQUIRE_FALSE(mag->is_tool());
+    REQUIRE(mag->ammo_remaining() == 5);
+    REQUIRE(!f.veh->add_item(f.cargo_index, std::move(mag)));
+    // preconditions the autoloader checks before it looks at the cargo
+    REQUIRE_FALSE(f.gun().ammo_sufficient(nullptr));
+    REQUIRE(f.gun().can_reload_with(itype_id("glockmag")));
+
+    f.run_autoloader();
+
+    REQUIRE(f.gun().magazine_current() != nullptr);
+    CHECK(f.gun().magazine_current()->typeId() == itype_id("glockmag"));
+    CHECK(f.gun().magazine_current()->ammo_remaining() == 5);
+    CHECK(f.cargo_count() == 0);
+}
