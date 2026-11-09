@@ -29,6 +29,22 @@ Consumer: `tests/cdf_mag_port_test.cpp` (P3-7): every ported id's loaded pockets
 
 ## p3_batches (7-GOLD1)
 
-`p3_batches/<batch>.json`: `{ "batch": "<name>", "items": { "<id>": { ... } } }`, the ids of one 7-* packet. `tests/p3_golden_batches_test.cpp` (`[p3][golden][batches]`, not hidden) reads only the keys of `items`; other members are free (the 7-* packets put the CDF legacy literals there). A batch id must be a golden id (case `p3 golden batch ids are golden ids`), must load (an unloaded id is counted as skipped and printed, never silent) and must match the golden pockets index by index (`compare_pocket`). `_selftest.json` is the fixture: 19 ids already converted to DDA wells; `p3 golden selftest batch` pins `loaded == 19`, so a batch that loads nothing cannot pass. The class cases `[R1]`..`[R8]` stay hidden until the last batch of a class is in.
+`p3_batches/<batch>.json`: `{ "batch": "<name>", "items": { "<id>": { ... } } }`, the ids of one 7-* packet. `tests/p3_golden_batches_test.cpp` (`[p3][golden][batches]`, not hidden) reads only the keys of `items`; other members are free (the 7-* packets put the CDF legacy literals there). A batch id must be a golden id (case `p3 golden batch ids are golden ids`), must load (an unloaded id is counted as skipped and printed, never silent) and must match the golden pockets index by index (`compare_pocket`). The neg- files are skipped by `read_batches`. `_selftest.json` is the fixture: 19 ids already converted to DDA wells; `p3 golden selftest batch` pins `loaded == 19`, so a batch that loads nothing cannot pass. The class cases `[R1]`..`[R8]` stay hidden until the last batch of a class is in.
+
+### Generic batch cases (P3-7-BATCH1, `[p3][data][batch]`)
+
+`tests/p3_batch_generic_test.cpp` reads every `p3_batches/<batch>.json` (not `neg-*.json`) and every `p3_batches/neg-<batch>.json`, so a 7-* data packet copies its two files here and writes no comparison code. Each case prints `batch <name>: ids N checked M skipped K`; a member a row lacks is skipped and counted, never silent. B1, B2 and B5 fail when they checked nothing at all.
+
+Batch rows: `file, class, action, twin, pockets, dropped_keys, dropped_ids, tags, legacy`, and where present `cap_diff`, `legacy_from`, `hand_fallback`, `applied_by_tool`, `well_not_applied`, `well_diff` (`cdf_added`, `dda_only_kept`, `unfit`), `own_keys`. Top-level `batch` and `items` are read; the rest is free. An `id@file` key names a duplicate id.
+
+| Case | Reads | Asserts |
+|---|---|---|
+| `p3 batch legacy keys gone` (B1) | `file`, `dropped_keys` | the own record (`id` or `abstract` equals the id) in `file` has none of the dropped keys; a row whose `action` ends `-PARKED` or that has `well_not_applied` is skipped, counted and printed (it keeps its legacy keys by the owner's rule) |
+| `p3 batch kept and dropped ids` (B2) | `dropped_ids` (`{where, id}`), `well_diff.cdf_added` | each dropped id is absent from the loaded pocket field named by `where` (`item_restriction`, `allowed_speedloaders`, `ammo_restriction`, `flag_restriction`, `default_magazine`); each `cdf_added` id is in the loaded `item_restriction` |
+| `p3 batch pocket order` (B3) | the batch ids and the golden | ids with two or more golden pockets keep the golden pocket-type order; none in the merged batches yet (`checked 0`) |
+| `p3 batch rows not edited` (B4) | `own_keys` | the own record's top-level key set equals `own_keys`; rows without it are skipped (none of the merged batches has it) |
+| `p3 batch negative mutations` (B5) | `neg-<batch>.json` | see below |
+
+`p3_batches/neg-<batch>.json`: `{ "batch", "mutations": [ { "case", "kind", "id", "pocket", "mutation", "expect" } ] }`. B5 applies each mutation to an in-memory copy of the golden `pockets` of `id` (a golden id; it need not be in the batch) and compares it with the loaded item (`p3_golden_compare_pockets` in `cdf_mag_port_test.cpp`): the unmutated copy must match, the mutated one must report a mismatch, and every mismatch line must start with that id. Kinds: `cap_plus_one` (first backticked ammo type in `mutation`, else the first), `well_volume` (magazine_well to `1 ml`), `drop_restriction_id`, `drop_speedloader` (the backticked id, else the first), `add_bogus_id`, `wrong_default`, `flag` (adds a bogus flag), `pocket_order` (swap pockets 0 and 1), `hand_fallback_integral` (flips MAGAZINE and MAGAZINE_WELL). An unknown kind, or a kind that does not apply to the pocket, fails the case.
 
 `p3_golden_target_ids.json` lists the 1190 regen-target ids with their class plus the 3 TEST_DATA ids added later (`test_fake_noise_tool` TOOL-INT, `test_helmet_eod_p3` WELL, `test_visible_underslung_shotgun` GUN-INT); the golden count itself is read from the file.

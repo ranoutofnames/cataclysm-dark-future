@@ -1,0 +1,47 @@
+{
+  "batch": "7-R4a",
+  "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "cap_plus_one",
+      "id": "adv_UPS_off",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`battery`] 5000 -> 5001",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "hand_fallback_integral",
+      "id": "adv_UPS_off",
+      "pocket": 0,
+      "mutation": "replace the CDF well by an integral MAGAZINE pocket (the owner rule keeps battery wells)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N3",
+      "kind": "cap_plus_one",
+      "id": "anesthetic_kit",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`anesthetic`] 3000 -> 3001",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N4",
+      "kind": "pocket_order",
+      "id": "rm13_armor",
+      "pocket": 0,
+      "mutation": "swap pocket 0 and pocket 1 (magazine/well must stay first, carry pockets after: rule R9)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N5",
+      "kind": "pocket_order",
+      "id": "rm13_armor_on",
+      "pocket": 0,
+      "mutation": "swap pocket 0 and pocket 1 (magazine/well must stay first, carry pockets after: rule R9)",
+      "expect": "mismatch reported for this id only"
+    }
+  ],
+  "pl46_note": "N4 and N5 named exosuit_industrial and exosuit_industrial_on (7-R4b, not merged at 20a4c288a6, no multi-pocket id in any merged batch); re-targeted to rm13_armor and rm13_armor_on (golden pockets MAGAZINE_WELL, MOD, CONTAINER; converted by PLUT1). The id need only be a golden id: the mutation is applied to an in-memory copy of the golden item."
+}

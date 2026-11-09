@@ -1,0 +1,22 @@
+{
+  "batch": "7-R1b",
+  "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "cap_plus_one",
+      "id": "battery_car",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`battery`] 3000 -> 3001",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "cap_plus_one",
+      "id": "battery_motorbike",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`battery`] 600 -> 601",
+      "expect": "mismatch reported for this id only"
+    }
+  ]
+}

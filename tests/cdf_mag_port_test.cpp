@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <set>
+#include <sstream>
 #include <string>
 
 namespace {
@@ -222,6 +223,44 @@ auto compare_pocket(const JsonObject& g, const pocket_data& p) -> std::vector<st
     return diffs;
 }
 
+// Compares one golden item (its `pockets` array) with the loaded item of the same id. Counts the
+// id and appends one line per mismatch to `failures`. Ids absent from the loaded world (mod items)
+// are counted and skipped. Shared by the golden walk and by the in-memory mutation cases of
+// tests/p3_batch_generic_test.cpp.
+void compare_item(const std::string& name, JsonArray gold_pockets, bool order_only,
+                  golden_counts& counts, std::vector<std::string>& failures) {
+    counts.in_golden++;
+    const itype_id id(name);
+    // ids absent from the loaded world (mod items) are counted and skipped
+    if (!id.is_valid()) {
+        counts.skipped.push_back(name);
+        return;
+    }
+    counts.loaded++;
+    const std::vector<const pocket_data*> loaded = golden_view(id.obj());
+    if (loaded.size() != gold_pockets.size()) {
+        failures.push_back(name + ": " + std::to_string(loaded.size()) +
+                           " pockets loaded, golden has " + std::to_string(gold_pockets.size()));
+        return;
+    }
+    size_t index = 0;
+    for (JsonObject gold : gold_pockets) {
+        gold.allow_omitted_members();
+        if (order_only) {
+            if (io::enum_to_string(loaded[index]->type) != gold.get_string("pocket_type")) {
+                failures.push_back(name + ": pocket " + std::to_string(index) + " is " +
+                                   io::enum_to_string(loaded[index]->type) + ", golden " +
+                                   gold.get_string("pocket_type"));
+            }
+        } else {
+            for (const std::string& key : compare_pocket(gold, *loaded[index])) {
+                failures.push_back(name + ": pocket " + std::to_string(index) + " " + key);
+            }
+        }
+        index++;
+    }
+}
+
 // Walks the golden. `cls` empty means every class. `order_only` compares the pocket count and
 // the pocket_type sequence of items with two or more golden pockets and nothing else.
 // `only_ids`, when not null, restricts the walk to those ids (7-GOLD1 batches).
@@ -241,39 +280,7 @@ auto compare_golden(const std::string& cls, bool order_only, golden_counts& coun
         if (only_ids != nullptr && only_ids->count(member.name()) == 0) { continue; }
         JsonArray gold_pockets = item.get_array("pockets");
         if (order_only && gold_pockets.size() < 2) { continue; }
-        counts.in_golden++;
-        const itype_id id(member.name());
-        // ids absent from the loaded world (mod items) are counted and skipped
-        if (!id.is_valid()) {
-            counts.skipped.push_back(member.name());
-            continue;
-        }
-        counts.loaded++;
-        const std::vector<const pocket_data*> loaded =
-            golden_view(id.obj());
-        if (loaded.size() != gold_pockets.size()) {
-            failures.push_back(member.name() + ": " + std::to_string(loaded.size()) +
-                               " pockets loaded, golden has " +
-                               std::to_string(gold_pockets.size()));
-            continue;
-        }
-        size_t index = 0;
-        for (JsonObject gold : gold_pockets) {
-            gold.allow_omitted_members();
-            if (order_only) {
-                if (io::enum_to_string(loaded[index]->type) != gold.get_string("pocket_type")) {
-                    failures.push_back(member.name() + ": pocket " + std::to_string(index) +
-                                       " is " + io::enum_to_string(loaded[index]->type) +
-                                       ", golden " + gold.get_string("pocket_type"));
-                }
-            } else {
-                for (const std::string& key : compare_pocket(gold, *loaded[index])) {
-                    failures.push_back(member.name() + ": pocket " + std::to_string(index) + " " +
-                                       key);
-                }
-            }
-            index++;
-        }
+        compare_item(member.name(), gold_pockets, order_only, counts, failures);
     }
     return failures;
 }
@@ -303,6 +310,33 @@ auto p3_golden_compare_ids(const std::set<std::string>& ids, size_t& in_golden, 
     in_golden = counts.in_golden;
     loaded = counts.loaded;
     skipped = counts.skipped;
+    return failures;
+}
+
+// Used by tests/p3_batch_generic_test.cpp: pocket-type order of the multi-pocket golden items among
+// `ids` (in_golden counts those items only).
+auto p3_golden_order_ids(const std::set<std::string>& ids, size_t& in_golden, size_t& loaded,
+                         std::vector<std::string>& skipped) -> std::vector<std::string> {
+    golden_counts counts;
+    std::vector<std::string> failures = compare_golden("", true, counts, &ids);
+    in_golden = counts.in_golden;
+    loaded = counts.loaded;
+    skipped = counts.skipped;
+    return failures;
+}
+
+// Used by tests/p3_batch_generic_test.cpp: compares the loaded item `id` with a golden `pockets`
+// array given as JSON text (a possibly mutated in-memory copy of the golden item). Returns one
+// line per mismatch; `was_loaded` is false when the id is absent from the loaded world.
+auto p3_golden_compare_pockets(const std::string& id, const std::string& pockets_json,
+                               bool& was_loaded) -> std::vector<std::string> {
+    std::istringstream stream(pockets_json);
+    JsonIn jsin(stream);
+    JsonArray pockets = jsin.get_array();
+    golden_counts counts;
+    std::vector<std::string> failures;
+    compare_item(id, pockets, false, counts, failures);
+    was_loaded = counts.loaded == 1;
     return failures;
 }
 

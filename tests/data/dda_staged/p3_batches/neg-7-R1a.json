@@ -1,0 +1,30 @@
+{
+  "batch": "7-R1a",
+  "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "cap_plus_one",
+      "id": "20x66_10_mag",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`20x66mm`] 10 -> 11",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "cap_plus_one",
+      "id": "20x66_20_mag",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`20x66mm`] 20 -> 21",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N3",
+      "kind": "well_volume",
+      "id": "garandclip",
+      "pocket": 0,
+      "mutation": "magazine_well `20 ml` -> `1 ml`",
+      "expect": "mismatch reported for this id only"
+    }
+  ]
+}

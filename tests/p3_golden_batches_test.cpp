@@ -26,7 +26,12 @@ struct batch_file {
 auto read_batches() -> std::vector<batch_file> {
     std::vector<std::filesystem::path> paths;
     for (const auto& entry : std::filesystem::directory_iterator(P3_BATCH_DIR)) {
-        if (entry.path().extension() == ".json") { paths.push_back(entry.path()); }
+        // neg-<batch>.json (the negative mutation fixtures, tests/p3_batch_generic_test.cpp) have
+        // no `items`
+        if (entry.path().extension() == ".json" &&
+            entry.path().filename().string().rfind("neg-", 0) != 0) {
+            paths.push_back(entry.path());
+        }
     }
     std::sort(paths.begin(), paths.end());
     std::vector<batch_file> out;
