@@ -2,7 +2,9 @@
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "coordinates.h"
+#include "flag.h"
 #include "item.h"
+#include "itype.h"
 #include "item_pocket.h"
 #include "map/map.h"
 #include "pocket_type.h"
@@ -658,4 +660,146 @@ TEST_CASE( "post_fire_empties_leftover_magazine_wells_of_tank_turrets", "[p3][tu
     qry.post_fire( get_avatar(), 1 );
 
     CHECK( loaded_well_count() == 0 );
+}
+
+// CDF: P3-8-5b-1 turret menu tests. E1-E4 port the turret side of the multimag
+// work: the NO_TURRET opt-out, the reload/unload gates, the ammo choice fed by
+// vehicle tanks, and the range/ammo data read off a prepared copy.
+TEST_CASE( "vehicle_turret_filter_multimag_per_gun_opt_out", "[p3][turret]" )
+{
+    clear_all_state();
+    SECTION( "NO_TURRET multimag gun keeps the per-gun opt-out" ) {
+        detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun_consume" ),
+                                              calendar::turn, 0 );
+        REQUIRE( gun->uses_firing_requirements() );
+        CHECK( gun->has_flag( flag_NO_TURRET ) );
+    }
+    SECTION( "multimag gun without NO_TURRET passes the filter" ) {
+        detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_turret_gun" ),
+                                              calendar::turn, 0 );
+        REQUIRE( gun->uses_firing_requirements() );
+        CHECK_FALSE( gun->has_flag( flag_NO_TURRET ) );
+    }
+}
+
+TEST_CASE( "turret_can_reload_and_unload_follow_multimag_pockets", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto turret_index = veh->install_part( tripoint_mnt_veh::zero(),
+                              vpart_id( "turret_test_multimag_turret_gun" ), true );
+    REQUIRE( turret_index >= 0 );
+
+    vehicle_part &turret_part = veh->part( turret_index );
+    item &gun = turret_part.get_base();
+    REQUIRE( gun.uses_firing_requirements() );
+    REQUIRE( gun.pocket_by_id( "ammo" ) != nullptr );
+    REQUIRE( gun.pocket_by_id( "ammo" )->empty() );
+    REQUIRE( gun.pocket_by_id( "power" ) != nullptr );
+    REQUIRE( gun.pocket_by_id( "power" )->empty() );
+
+    {
+        auto qry = veh->turret_query( turret_part );
+        REQUIRE( qry );
+        CHECK( qry.can_reload() );
+        CHECK_FALSE( qry.can_unload() );
+    }
+
+    // The second well is restricted to heavy_battery_cell in the fixture; widen
+    // it in memory so a magazine can sit in the second well only.
+    item_pocket *power_pocket = gun.pocket_by_id( "power" );
+    REQUIRE( power_pocket != nullptr );
+    pocket_data power_data = power_pocket->get_data();
+    power_data.item_id_restriction.insert( itype_id( "glockmag" ) );
+    power_pocket->set_data( &power_data );
+
+    REQUIRE( power_pocket->insert_item( item::spawn( itype_id( "glockmag" ) ) ).success() );
+    REQUIRE( gun.pocket_by_id( "ammo" )->empty() );
+
+    auto qry = veh->turret_query( turret_part );
+    REQUIRE( qry );
+    // The magazine is empty, so ammo_remaining() stays 0 and only a scan of the
+    // wells can see it.
+    CHECK( qry.can_unload() );
+}
+
+TEST_CASE( "turret_ammo_options_list_tank_fuels_for_liquid_pockets", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto turret_index = veh->install_part(
+                                  tripoint_mnt_veh::zero(),
+                                  vpart_id( "turret_test_multimag_turret_flamethrower" ), true );
+    REQUIRE( turret_index >= 0 );
+    veh->charge_battery( 1000, false );
+
+    vehicle_part &turret_part = veh->part( turret_index );
+    item &gun = turret_part.get_base();
+    REQUIRE( gun.uses_firing_requirements() );
+    // A cell in the power well, as the prep would leave it.
+    item_pocket *power_pocket = gun.pocket_by_id( "power" );
+    REQUIRE( power_pocket != nullptr );
+    REQUIRE( power_pocket->insert_item(
+                 item::spawn( itype_id( "heavy_battery_cell" ) ) ).success() );
+
+    auto qry = veh->turret_query( turret_part );
+    REQUIRE( qry );
+    // No fuel in the tank and a battery pocket that is never offered as ammo.
+    CHECK( qry.ammo_options().empty() );
+
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    const int tank_index = static_cast<int>( tanks.begin()->part_index() );
+    veh->part( tank_index ).ammo_set( itype_id( "gasoline" ), 50 );
+    REQUIRE( veh->part( tank_index ).ammo_remaining() == 50 );
+
+    const auto opts = qry.ammo_options();
+    CHECK( opts.count( itype_id( "gasoline" ) ) == 1 );
+    CHECK_FALSE( opts.contains( itype_id( "battery" ) ) );
+    CHECK( opts.size() == 1 );
+}
+
+TEST_CASE( "turret_range_and_ammo_data_come_from_prepared_copy", "[p3][turret]" )
+{
+    clear_all_state();
+    map &here = get_map();
+    vehicle *veh = here.add_vehicle( vproto_id( "test_turret_rig" ),
+                                     tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto turret_index = veh->install_part( tripoint_mnt_veh::zero(),
+                              vpart_id( "turret_test_multimag_turret_gun" ), true );
+    REQUIRE( turret_index >= 0 );
+    veh->charge_battery( 1000, false );
+    REQUIRE( veh->fuel_left( itype_id( "battery" ), true ) == 1000 );
+
+    vehicle_part &turret_part = veh->part( turret_index );
+    item &gun = turret_part.get_base();
+
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    REQUIRE( mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 10 ),
+                          pocket_type::MAGAZINE ).success() );
+    REQUIRE( gun.put_in( std::move( mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun.ammo_remaining_in_pocket( "ammo" ) == 10 );
+
+    auto qry = veh->turret_query( turret_part );
+    REQUIRE( qry );
+
+    const itype *ammo = qry.ammo_data();
+    REQUIRE( ammo != nullptr );
+    CHECK( ammo->get_id() == itype_id( "9mm" ) );
+    // The gun range already counts the loaded magazine's ammo, and the port
+    // adds the ammo bonus on top of it.
+    CHECK( qry.range() == qry.base().gun_range() + ammo->ammo->range );
+
+    // The power well was filled on the copy, not on the mounted gun.
+    REQUIRE( gun.pocket_by_id( "power" ) != nullptr );
+    CHECK( gun.pocket_by_id( "power" )->empty() );
+    CHECK( gun.ammo_remaining_in_pocket( "power" ) == 0 );
+    CHECK( gun.ammo_remaining_in_pocket( "ammo" ) == 10 );
 }

@@ -105,6 +105,14 @@ auto turret_data::ammo_capacity() const -> int {
 
 auto turret_data::ammo_data() const -> const itype* {
     if (!veh || !part) { return nullptr; }
+    if (part->base->uses_firing_requirements()) {
+        // CDF: DDA temp-copies the gun by value; CDF uses the temporary-item
+        // pool, and prepare_multimag_pockets takes no map argument.
+        item* gun_copy = item::spawn_temporary(*part->base);
+        vehicle::prepare_multimag_pockets(*veh, *gun_copy, gun_copy->gun_get_mode_id(),
+                                          ammo_current());
+        return gun_copy->ammo_data();
+    }
     if (part->info().has_flag("USE_TANKS")) {
         return ammo_current().is_null() ? nullptr : &*ammo_current();
     }
@@ -123,6 +131,46 @@ auto turret_data::ammo_options() const -> std::set<itype_id> {
     std::set<itype_id> opts;
 
     if (!veh || !part) { return opts; }
+
+    if (part->base->uses_firing_requirements()) {
+        // Battery pockets are not user-selectable and never enumerated.
+        const item& gun = *part->base;
+        // CDF: TODO(multimag): base itype firing_requirements only; gunmod-owned
+        // modes (mode_firing_requirements) are not resolved for turrets.
+        const std::vector<pocket_consumption_entry>* entries =
+            gun.type->firing_requirements.for_mode(gun.gun_get_mode_id());
+        if (entries == nullptr) { return opts; }
+
+        for (const pocket_consumption_entry& pce : *entries) {
+            const item_pocket* pkt = gun.pocket_by_id(pce.pocket);
+            if (pkt == nullptr) { continue; }
+
+            const pocket_data* pdat = pkt->get_pocket_data();
+            if (pdat == nullptr) { continue; }
+
+            if (gun.pocket_accepts_battery(pkt)) { continue; }
+
+            if (pdat->type == pocket_type::MAGAZINE) {
+                for (const std::pair<const ammotype, int>& ar : pdat->ammo_restriction) {
+                    for (const vpart_reference& tvp :
+                         veh->get_avail_parts(vpart_bitflags::VPFLAG_FLUIDTANK)) {
+                        // CDF: ammo_current() returns by value, not a reference.
+                        const itype_id tank_ammo = tvp.part().ammo_current();
+                        if (tank_ammo.is_null() || !tank_ammo->ammo) { continue; }
+
+                        if (tank_ammo->ammo->type == ar.first) { opts.insert(tank_ammo); }
+                    }
+                }
+
+            } else if (pdat->type == pocket_type::MAGAZINE_WELL) {
+                const itype_id loaded =
+                    gun.ammo_data() ? gun.ammo_data()->get_id() : itype_id::NULL_ID();
+                if (!loaded.is_null()) { opts.insert(loaded); }
+            }
+        }
+
+        return opts;
+    }
 
     if (!part->info().has_flag("USE_TANKS")) {
         if (!part->base->ammo_current().is_null()) { opts.insert(part->base->ammo_current()); }
@@ -150,6 +198,16 @@ auto turret_data::ammo_select(const itype_id& ammo) -> bool {
 
 auto turret_data::ammo_effects() const -> std::set<ammo_effect_str_id> {
     if (!veh || !part) { return std::set<ammo_effect_str_id>(); }
+    if (part->base->uses_firing_requirements()) {
+        // CDF: temp-copy as in ammo_data(); no map argument.
+        item* gun_copy = item::spawn_temporary(*part->base);
+        vehicle::prepare_multimag_pockets(*veh, *gun_copy, gun_copy->gun_get_mode_id(),
+                                          ammo_current());
+        auto res = gun_copy->ammo_effects();
+        const itype* ad = gun_copy->ammo_data();
+        if (ad) { res.insert(ad->ammo->ammo_effects.begin(), ad->ammo->ammo_effects.end()); }
+        return res;
+    }
     auto res = part->base->ammo_effects();
     if (part->info().has_flag("USE_TANKS") && ammo_data()) {
         res.insert(ammo_data()->ammo->ammo_effects.begin(), ammo_data()->ammo->ammo_effects.end());
@@ -159,6 +217,19 @@ auto turret_data::ammo_effects() const -> std::set<ammo_effect_str_id> {
 
 auto turret_data::range() const -> int {
     if (!veh || !part) { return 0; }
+    if (part->base->uses_firing_requirements()) {
+        // CDF: temp-copy as in ammo_data(); no map argument.
+        item* gun_copy = item::spawn_temporary(*part->base);
+        vehicle::prepare_multimag_pockets(*veh, *gun_copy, gun_copy->gun_get_mode_id(),
+                                          ammo_current());
+        const itype* ad = gun_copy->ammo_data();
+        if (ad) {
+            // CDF: same ammo-shape rule as the USE_TANKS branch below.
+            if (ad->ammo->shape) { return ad->ammo->shape->get_range(); }
+            return gun_copy->gun_range() + ad->ammo->range;
+        }
+        return gun_copy->gun_range();
+    }
     if (part->info().has_flag("USE_TANKS") && ammo_data()) {
         if (ammo_data()->ammo->shape) { return ammo_data()->ammo->shape->get_range(); }
         return part->base->gun_range() + ammo_data()->ammo->range;
@@ -174,7 +245,12 @@ auto turret_data::in_range(const tripoint_abs_ms& target) const -> bool {
 }
 
 auto turret_data::can_reload() const -> bool {
-    if (!veh || !part || part->info().has_flag("USE_TANKS")) { return false; }
+    if (!veh || !part) { return false; }
+
+    if (part->base->uses_firing_requirements()) { return part->base->is_reloadable(); }
+
+    if (part->info().has_flag("USE_TANKS")) { return false; }
+
     if (part->base->magazine_default()) {
         // always allow changing of magazines
         return true;
@@ -183,7 +259,17 @@ auto turret_data::can_reload() const -> bool {
 }
 
 auto turret_data::can_unload() const -> bool {
-    if (!veh || !part || part->info().has_flag("USE_TANKS")) { return false; }
+    if (!veh || !part) { return false; }
+
+    if (part->base->uses_firing_requirements()) {
+        // Multimag aggregate: any loaded mag in any well, or any loose ammo
+        // in any direct MAGAZINE pocket. magazine_current() returns only the
+        // first well's mag and would miss the second well.
+        return !part->base->magazines_current().empty() || part->base->ammo_remaining() > 0;
+    }
+
+    if (part->info().has_flag("USE_TANKS")) { return false; }
+
     return part->base->ammo_remaining() > 0;
 }
 

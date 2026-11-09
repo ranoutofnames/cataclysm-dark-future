@@ -235,6 +235,7 @@ const flag_id flag_NO_REPAIR( "NO_REPAIR" );
 const flag_id flag_NO_SALVAGE( "NO_SALVAGE" );
 const flag_id flag_NO_STERILE( "NO_STERILE" );
 const flag_id flag_NO_TAKEOFF( "NO_TAKEOFF" );
+const flag_id flag_NO_TURRET( "NO_TURRET" );
 const flag_id flag_NO_UNLOAD( "NO_UNLOAD" );
 const flag_id flag_NO_UNWIELD( "NO_UNWIELD" );
 const flag_id flag_NPC_ACTIVATE( "NPC_ACTIVATE" );

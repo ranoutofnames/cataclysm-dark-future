@@ -14,5 +14,21 @@
       "install": { "skills": [ [ "mechanics", 5 ], [ "electronics", 5 ] ] },
       "removal": { "skills": [ [ "mechanics", 3 ] ] }
     }
+  },
+  {
+    "//": "CDF: P3-8-5b-1. Copy of the test turret above mounting the liquid-fed test_multimag_turret_flamethrower; no USE_TANKS flag is needed because the multimag prep and ammo list read the gun's own pockets.",
+    "id": "turret_test_multimag_turret_flamethrower",
+    "copy-from": "turret",
+    "type": "vehicle_part",
+    "name": { "str": "test multimag turret flamethrower" },
+    "item": "test_multimag_turret_flamethrower",
+    "folded_volume": "1500 ml",
+    "color": "light_gray",
+    "broken_color": "light_gray",
+    "breaks_into": [ { "item": "scrap", "count": 6 }, { "item": "steel_chunk", "count": 5 }, { "item": "steel_lump", "count": 2 } ],
+    "requirements": {
+      "install": { "skills": [ [ "mechanics", 5 ], [ "electronics", 5 ] ] },
+      "removal": { "skills": [ [ "mechanics", 3 ] ] }
+    }
   }
 ]

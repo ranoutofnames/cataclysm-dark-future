@@ -1638,6 +1638,7 @@
     "ranged_damage": { "damage_type": "bullet", "amount": 10 },
     "dispersion": 480,
     "durability": 10,
+    "flags": [ "NO_TURRET" ],
     "modes": [ [ "DEFAULT", "default", 1 ], [ "BURST", "burst", 3 ] ],
     "valid_mod_locations": [ [ "barrel", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ],
     "pocket_data": [
