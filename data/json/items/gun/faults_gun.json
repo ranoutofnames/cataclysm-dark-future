@@ -86,6 +86,22 @@
     ]
   },
   {
+    "id": "fault_fail_to_feed",
+    "type": "fault",
+    "name": { "str": "Fail to feed" },
+    "description": "This gun did not load the round in the chamber properly.",
+    "mending_methods": [
+      {
+        "id": "mend_fault_fail_to_feed_manual_feed",
+        "name": "Clear the failure to feed",
+        "success_msg": "You clear the failure to feed in the %s.",
+        "time": "1 s",
+        "skills": [  ],
+        "requirements": {  }
+      }
+    ]
+  },
+  {
     "id": "fault_gun_unlubricated",
     "type": "fault",
     "name": { "str": "Unlubricated" },

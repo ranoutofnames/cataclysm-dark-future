@@ -4,6 +4,7 @@
 #include "catch/catch.hpp"
 #include "character.h"
 #include "debug.h"
+#include "fault.h"
 #include "flag.h"
 #include "gun_mode.h"
 #include "item.h"
@@ -43,11 +44,15 @@ auto loaded_gun( const itype_id &id, int gun_damage, int mag_damage ) -> detache
 
 // One seed for the whole run, and dirt is reset before every shot, so the dirt misfire
 // (0 at dirt 0) and the fouling branch stay out of the way and the jam model is the only
-// per-shot randomness left.
-auto count_failures( item &gun, int shots ) -> int {
+// per-shot randomness left. CDF: P3-8-8b: a jam now leaves fault_fail_to_feed on the gun, which
+// refuses every later shot, so the fault is cleared before each shot unless keep_fault is set.
+auto count_failures( item &gun, int shots, bool keep_fault = false ) -> int {
     rng_set_engine_seed( 4242424242 );
     int failures = 0;
     for( int shot = 0; shot < shots; ++shot ) {
+        if( !keep_fault ) {
+            gun.faults.erase( fault_id( "fault_fail_to_feed" ) );
+        }
         gun.set_var( "dirt", 0 );
         if( !ranged::handle_gun_damage( get_player_character(), gun ) ) {
             ++failures;
@@ -698,4 +703,72 @@ TEST_CASE( "cdf_ranged_handle_gun_damage_battery_cell_does_not_crash", "[p3][ran
         static_cast<void>( ranged::handle_gun_damage( you, gun ) );
     }
     SUCCEED();
+}
+
+// CDF: P3-8-8b. The jam arm sets fault_fail_to_feed and the gate refuses the next shots.
+// 4000 on the magazine is level 4: every shot that reaches the jam arm jams.
+TEST_CASE( "jam_sets_the_fail_to_feed_fault", "[p3][ranged]" ) {
+    clear_avatar();
+    const fault_id fail_to_feed( "fault_fail_to_feed" );
+    detached_ptr<item> gun = loaded_gun( itype_id( "m4a1" ), 0, 4000 );
+    REQUIRE( gun->faults_potential().contains( fail_to_feed ) );
+    rng_set_engine_seed( 4242424242 );
+    int with_fault = 0;
+    int returned_true = 0;
+    for( int shot = 0; shot < 300; ++shot ) {
+        gun->faults.erase( fail_to_feed );
+        gun->set_var( "dirt", 0 );
+        if( ranged::handle_gun_damage( get_player_character(), *gun ) ) {
+            ++returned_true;
+        }
+        if( gun->faults.contains( fail_to_feed ) ) {
+            ++with_fault;
+        }
+    }
+    CHECK( returned_true == 0 );
+    // the rest are the durability malfunction that precedes the jam arm (at most 1 in 192)
+    CHECK( with_fault >= 280 );
+}
+
+TEST_CASE( "fail_to_feed_blocks_the_next_shots", "[p3][ranged]" ) {
+    clear_avatar();
+    const fault_id fail_to_feed( "fault_fail_to_feed" );
+    detached_ptr<item> gun = loaded_gun( itype_id( "m4a1" ), 0, 0 );
+    // negative fixture: the same gun without the fault mostly fires
+    CHECK( count_failures( *gun, 300 ) < 30 );
+    gun->faults.insert( fail_to_feed );
+    CHECK( count_failures( *gun, 300, true ) == 300 );
+}
+
+TEST_CASE( "jam_without_the_potential_leaves_no_fault", "[p3][ranged]" ) {
+    clear_avatar();
+    const fault_id fail_to_feed( "fault_fail_to_feed" );
+    detached_ptr<item> gun = loaded_gun( itype_id( "test_jam_gun_no_fail_to_feed" ), 0, 4000 );
+    REQUIRE( !gun->faults_potential().contains( fail_to_feed ) );
+    rng_set_engine_seed( 4242424242 );
+    int failures = 0;
+    int with_fault = 0;
+    for( int shot = 0; shot < 300; ++shot ) {
+        gun->set_var( "dirt", 0 );
+        if( !ranged::handle_gun_damage( get_player_character(), *gun ) ) {
+            ++failures;
+        }
+        if( gun->faults.contains( fail_to_feed ) ) {
+            ++with_fault;
+        }
+    }
+    CHECK( failures == 300 );
+    CHECK( with_fault == 0 );
+}
+
+TEST_CASE( "fail_to_feed_fault_data", "[p3][ranged]" ) {
+    const fault_id fail_to_feed( "fault_fail_to_feed" );
+    REQUIRE( fail_to_feed.is_valid() );
+    detached_ptr<item> semi = item::spawn( itype_id( "m4a1" ) );
+    CHECK( semi->faults_potential().contains( fail_to_feed ) );
+    // CDF: marlin_9a copies rifle_manual (data/json/items/gun/22.json), which sets its own fault list
+    detached_ptr<item> manual = item::spawn( itype_id( "marlin_9a" ) );
+    CHECK( !manual->faults_potential().contains( fail_to_feed ) );
+    const auto &mends = fail_to_feed.obj().mending_methods();
+    CHECK( mends.count( "mend_fault_fail_to_feed_manual_feed" ) == 1 );
 }

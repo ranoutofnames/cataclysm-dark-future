@@ -144,6 +144,7 @@ static const itype_id itype_UPS( "UPS" );
 
 static const trap_str_id tr_practice_target( "tr_practice_target" );
 
+static const fault_id fault_fail_to_feed( "fault_fail_to_feed" );
 static const fault_id fault_gun_blackpowder( "fault_gun_blackpowder" );
 static const fault_id fault_gun_chamber_spent( "fault_gun_chamber_spent" );
 static const fault_id fault_gun_dirt( "fault_gun_dirt" );
@@ -911,7 +912,8 @@ bool ranged::handle_gun_damage( Character &shooter, item &it )
     int dirt = it.get_var( "dirt", 0 );
     int dirtadder = 0;
     double dirt_dbl = static_cast<double>( dirt );
-    if( it.faults.contains( fault_gun_chamber_spent ) ) {
+    // CDF: DDA tests the gun_mechanical_simple fault category; CDF has none, so the fault is tested by id
+    if( it.faults.contains( fault_gun_chamber_spent ) || it.faults.contains( fault_fail_to_feed ) ) {
         return false;
     }
 
@@ -1014,11 +1016,14 @@ bool ranged::handle_gun_damage( Character &shooter, item &it )
 
         // Chance for the weapon to suffer a failure, caused by the magazine size, quality, or condition
     } else if( x_in_y( jam_chance, 1 ) && !it.has_flag( flag_NEVER_JAMS ) ) {
-        // CDF: u_know_round_in_chamber never set in CDF (8-8b revisits it)
         shooter.add_msg_player_or_npc( m_bad, _( "Your %s malfunctions!" ),
                                        _( "<npcname>'s %s malfunctions!" ),
                                        it.tname() );
-        // CDF: fault set deferred to 8-8b (set_random_fault_of_type and gun_mechanical_simple absent)
+        // CDF: DDA's u_know_round_in_chamber test is dropped (nothing in CDF sets that var). The fault is set by id
+        // (guarded) instead of set_random_fault_of_type( gun_mechanical_simple ): CDF has no fault category.
+        if( it.faults_potential().contains( fault_fail_to_feed ) ) {
+            it.faults.insert( fault_fail_to_feed );
+        }
         return false;
 
         // Here we check for a chance for the weapon to suffer a misfire due to

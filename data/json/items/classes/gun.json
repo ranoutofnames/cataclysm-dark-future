@@ -8,7 +8,7 @@
     "durability": 8,
     "to_hit": -1,
     "color": "light_gray",
-    "faults": [ "fault_gun_blackpowder", "fault_gun_dirt", "fault_gun_chamber_spent" ],
+    "faults": [ "fault_gun_blackpowder", "fault_gun_dirt", "fault_gun_chamber_spent", "fault_fail_to_feed" ],
     "handling": 15
   },
   {
