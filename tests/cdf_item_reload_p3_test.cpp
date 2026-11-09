@@ -470,13 +470,17 @@ TEST_CASE( "reload_option_qty_forces_1_for_pocket_targeted_reloads", "[p3][reloa
     }
     REQUIRE( glock_idx >= 0 );
 
-    item_reload_option untargeted( &dummy, &gun, &gun, ammo );
-    untargeted.qty( 1000 );
-    // CDF: P3-4-c-H7: qty() follows DDA now (count() of a magazine is 1, not its rounds), so the
-    // untargeted quantity is no longer > 1 here; the targeted check below keeps the pocket-forces-1 rule.
-    CHECK( untargeted.qty() >= 1 );
+    // CDF: P3-4-c-H7b: qty() follows DDA (count() of a magazine is 1, not its rounds), so a magazine as
+    // the ammo can never show the pocket-forces-1 rule. Loose rounds do: untargeted they give more than
+    // one, targeted at a magazine well they are forced to one (the original REQUIRE strength is restored).
+    detached_ptr<item> loose_det = item::spawn( itype_id( "9mm" ), calendar::turn, 30 );
+    item &loose = dummy.i_add( std::move( loose_det ) );
 
-    item_reload_option opt( &dummy, &gun, &gun, ammo );
+    item_reload_option untargeted( &dummy, &gun, &gun, loose );
+    untargeted.qty( 1000 );
+    REQUIRE( untargeted.qty() > 1 );
+
+    item_reload_option opt( &dummy, &gun, &gun, loose );
     opt.pocket_index = glock_idx;
     opt.qty( 1000 );
     CHECK( opt.qty() == 1 );
