@@ -2471,6 +2471,9 @@ class item : public location_visitable<item>, public game_object<item>
         item *magazine_current();
         const item *magazine_current() const;
 
+        /** Names the ammo of the given type that fits this item; with a gun, shows its damage. */
+        std::string print_ammo( const ammotype &at, const item *gun = nullptr ) const;
+
         // Currently loaded magazines (if any).
         std::vector<item *> magazines_current();
         std::vector<const item *> magazines_current() const;
@@ -2652,6 +2655,11 @@ class item : public location_visitable<item>, public game_object<item>
          * Returns empty instance on non-gun items.
          */
         damage_instance gun_damage( bool with_ammo = true ) const;
+        /**
+         * Summed ranged damage of a gun loaded with the given ammo, including values from mods.
+         * Returns empty instance on non-gun items.
+         */
+        damage_instance gun_damage( const itype_id &ammo ) const;
         /**
          * Summed dispersion of a gun, including values from mods. Returns 0 on non-gun items.
          */

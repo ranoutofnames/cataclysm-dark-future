@@ -648,3 +648,224 @@ TEST_CASE( "gun_info_loaded_bn_integral_gun", "[p3][iteminfo]" )
         CHECK( s.find( "not loaded" ) == std::string::npos );
     }
 }
+
+// Job 9-1c: print_ammo, gun_damage( itype_id ) and the Variants lines (DDA tests: none; barrel_test sections cut, no barrel-length system).
+// Job 08-9-1c: `Variants: ` ammo line for magazines and guns, `item::print_ammo` and
+// `item::gun_damage( const itype_id & )`.
+// DDA source: item_gun_tool_ammo.cpp:2171-2205 (`print_ammo`), :1278-1304
+// (`gun_damage( itype_id )`), item_info.cpp:828-840 and :1370-1380 (the two lines).
+// Expected strings are built from the itypes (`nname( 1 )`), never typed.
+//
+
+namespace
+{
+
+// Same builder shape as tests/cdf_item_ammo_p3_test.cpp:43-49, with the well insert checked.
+auto p3_loaded_m4a1( int rounds ) -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    mag->put_in( item::spawn( itype_id( "556" ), calendar::turn, rounds ) );
+    REQUIRE( gun->put_in( std::move( mag ), pocket_type::MAGAZINE_WELL ).success() );
+    return gun;
+}
+
+// CDF: test_multimag_gun (data/mods/TEST_DATA/items.json:1484-1504) has two wells
+// (glockmag, stanag30) and no firing_requirements.
+auto p3_multimag_gun() -> detached_ptr<item>
+{
+    detached_ptr<item> gun = item::spawn( itype_id( "test_multimag_gun" ) );
+    detached_ptr<item> glock_mag = item::spawn( itype_id( "glockmag" ) );
+    glock_mag->put_in( item::spawn( itype_id( "9mm" ), calendar::turn, 15 ),
+                       pocket_type::MAGAZINE );
+    detached_ptr<item> stanag = item::spawn( itype_id( "stanag30" ) );
+    stanag->put_in( item::spawn( itype_id( "556" ), calendar::turn, 30 ),
+                    pocket_type::MAGAZINE );
+    REQUIRE( gun->put_in( std::move( glock_mag ), pocket_type::MAGAZINE_WELL ).success() );
+    REQUIRE( gun->put_in( std::move( stanag ), pocket_type::MAGAZINE_WELL ).success() );
+    return gun;
+}
+
+// As tests/cdf_item_iteminfo_p3_test.cpp:27-31, but colour tags removed for "contains" checks.
+auto p3_info_plain( const item &it, const std::vector<iteminfo_parts> &parts ) -> std::string
+{
+    return remove_color_tags( it.info_string( iteminfo_query( parts ), 1 ) );
+}
+
+// `<info>NAME(N)</info>` for the gun branch of print_ammo.
+auto p3_gun_variant( const item &gun, const itype_id &ammo ) -> std::string
+{
+    return "<info>" + ammo->nname( 1 ) + "(" +
+           std::to_string( static_cast<int>( gun.gun_damage( ammo ).total_damage() ) ) + ")</info>";
+}
+
+// `<info>NAME</info>(N)` for the magazine-with-gun branch of print_ammo.
+auto p3_mag_variant( const item &gun, const itype_id &ammo ) -> std::string
+{
+    return "<info>" + ammo->nname( 1 ) + "</info>(" +
+           std::to_string( static_cast<int>( gun.gun_damage( ammo ).total_damage() ) ) + ")";
+}
+
+} // namespace
+
+// DDA item_gun_tool_ammo.cpp:2190-2205 (magazine, no gun): names only.
+TEST_CASE( "print_ammo_magazine_lists_ammo", "[p3][iteminfo]" )
+{
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    const std::string s = mag->print_ammo( ammotype( "223" ) );
+    CAPTURE( s );
+    CHECK( s.find( "<info>" + itype_id( "556" )->nname( 1 ) + "</info>" ) != std::string::npos );
+    CHECK( s.find( itype_id( "223" )->nname( 1 ) ) != std::string::npos );
+    CHECK( s.find( itype_id( "556_incendiary" )->nname( 1 ) ) != std::string::npos );
+    CHECK( s.find( itype_id( "9mm" )->nname( 1 ) ) == std::string::npos );
+}
+
+// DDA item_gun_tool_ammo.cpp:2192-2198 (magazine, with the gun): name and damage.
+TEST_CASE( "print_ammo_magazine_with_gun_shows_damage", "[p3][iteminfo]" )
+{
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    detached_ptr<item> gun = p3_loaded_m4a1( 30 );
+    const std::string s = mag->print_ammo( ammotype( "223" ), &*gun );
+    CAPTURE( s );
+    CHECK( s.find( p3_mag_variant( *gun, itype_id( "556" ) ) ) != std::string::npos );
+}
+
+// DDA item_gun_tool_ammo.cpp:2200-2205 (gun, no magazine): name and damage for the gun itself.
+TEST_CASE( "print_ammo_gun_without_magazine", "[p3][iteminfo]" )
+{
+    // A bare m4a1: magazine_current() is null, so the gun branch runs.
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    REQUIRE( gun->magazine_current() == nullptr );
+    const std::string s = gun->print_ammo( ammotype( "223" ) );
+    CAPTURE( s );
+    for( const char *id : { "223", "556", "556_incendiary" } ) {
+        CHECK( s.find( p3_gun_variant( *gun, itype_id( id ) ) ) != std::string::npos );
+    }
+}
+
+// DDA item_gun_tool_ammo.cpp:2184-2188: USES_BIONIC_POWER without a magazine is "energy".
+TEST_CASE( "print_ammo_bionic_energy", "[p3][iteminfo]" )
+{
+    // CDF: toolset is the USES_BIONIC_POWER tool with no ammo and no magazine
+    // (data/json/items/fake.json:32-40); it returns the energy label.
+    detached_ptr<item> toolset = item::spawn( itype_id( "toolset" ) );
+    REQUIRE( toolset->is_tool() );
+    REQUIRE( toolset->magazine_current() == nullptr );
+    CHECK( toolset->print_ammo( ammotype( "223" ) ) == "energy" );
+}
+
+// DDA item_gun_tool_ammo.cpp:2190-2205: a plain ammo item has no list, and a magazine
+// asked for a type it does not take returns nothing.
+TEST_CASE( "print_ammo_empty_for_plain_ammo", "[p3][iteminfo]" )
+{
+    detached_ptr<item> round = item::spawn( itype_id( "556" ) );
+    CHECK( round->print_ammo( ammotype( "223" ) ).empty() );
+
+    // CDF: glockmag takes 9mm only (data/json/items/magazine/9mm.json:59-75).
+    detached_ptr<item> mag = item::spawn( itype_id( "glockmag" ) );
+    CHECK( mag->print_ammo( ammotype( "223" ) ).empty() );
+}
+
+// CDF: DDA item_gun_tool_ammo.cpp:2173 picks magazine_current() (the first loaded well);
+// the multimag adaptation selects the well that takes the requested type.
+TEST_CASE( "print_ammo_multimag_gun_asks_the_right_well", "[p3][iteminfo]" )
+{
+    detached_ptr<item> gun = p3_multimag_gun();
+    REQUIRE( gun->all_magazine_well_pockets().size() == 2 );
+
+    const std::string nine = gun->print_ammo( ammotype( "9mm" ) );
+    CAPTURE( nine );
+    CHECK( nine.find( itype_id( "9mm" )->nname( 1 ) ) != std::string::npos );
+    CHECK( nine.find( itype_id( "223" )->nname( 1 ) ) == std::string::npos );
+    CHECK( nine.find( itype_id( "556" )->nname( 1 ) ) == std::string::npos );
+
+    const std::string two23 = gun->print_ammo( ammotype( "223" ) );
+    CAPTURE( two23 );
+    CHECK( two23.find( itype_id( "223" )->nname( 1 ) ) != std::string::npos );
+    CHECK( two23.find( itype_id( "9mm" )->nname( 1 ) ) == std::string::npos );
+}
+
+// DDA item_gun_tool_ammo.cpp:1278-1304: the id overload agrees with the loaded-ammo overload,
+// including an attached gunmod's damage.
+TEST_CASE( "gun_damage_id_matches_loaded_gun_damage", "[p3][iteminfo]" )
+{
+    detached_ptr<item> gun = p3_loaded_m4a1( 30 );
+    REQUIRE( gun->ammo_current() == itype_id( "556" ) );
+    // CDF: accelerator_gunmod has damage_modifier bullet +10 and fits the m4a1 barrel slot
+    // (data/json/items/gunmod/barrel.json:47-70), so a missing gunmod loop changes the result.
+    REQUIRE( gun->put_in( item::spawn( itype_id( "accelerator_gunmod" ) ),
+                          pocket_type::MOD ).success() );
+    REQUIRE( gun->gunmods().size() == 1 );
+    REQUIRE( itype_id( "accelerator_gunmod" )->gunmod->damage.total_damage() != 0.0f );
+
+    const itype_id loaded = gun->ammo_current();
+    CHECK( gun->gun_damage( loaded ).total_damage() == gun->gun_damage().total_damage() );
+}
+
+// DDA item_gun_tool_ammo.cpp:1278-1304: the given ammo decides the damage, not ammo_data().
+TEST_CASE( "gun_damage_id_uses_the_given_ammo", "[p3][iteminfo]" )
+{
+    // A bare gun has no ammo_data(), so reading it instead of the id would make both equal.
+    detached_ptr<item> gun = item::spawn( itype_id( "m4a1" ) );
+    REQUIRE( gun->ammo_data() == nullptr );
+
+    // CDF: 223 is 42 bullet and 556 is 223 with a relative -5 (data/json/items/ammo/223.json:20,38);
+    // both values are read from the itypes instead of being typed.
+    const float ammo223 = itype_id( "223" )->ammo->damage.total_damage();
+    const float ammo556 = itype_id( "556" )->ammo->damage.total_damage();
+    REQUIRE( ammo223 != ammo556 );
+
+    const float dmg223 = gun->gun_damage( itype_id( "223" ) ).total_damage();
+    const float dmg556 = gun->gun_damage( itype_id( "556" ) ).total_damage();
+    CHECK( dmg223 - dmg556 == ammo223 - ammo556 );
+}
+
+// DDA item_gun_tool_ammo.cpp:1278-1304: an id with no ammo slot contributes no ammo damage.
+TEST_CASE( "gun_damage_id_non_ammo_is_base", "[p3][iteminfo]" )
+{
+    // Loaded, so an implementation that read ammo_data() would add the 556 damage.
+    detached_ptr<item> gun = p3_loaded_m4a1( 30 );
+    REQUIRE( gun->ammo_data() != nullptr );
+
+    // CDF: stanag30 is a magazine itype with no ammo slot; the id overload must stay on the base.
+    const itype_id stanag = itype_id( "stanag30" );
+    REQUIRE( stanag->ammo == nullptr );
+    CHECK( gun->gun_damage( stanag ).total_damage() == gun->gun_damage( false ).total_damage() );
+}
+
+// DDA item_info.cpp:828-840: magazine capacity block appends a Variants line.
+TEST_CASE( "info_shows_variants_for_magazine", "[p3][iteminfo]" )
+{
+    clear_all_state();
+    detached_ptr<item> mag = item::spawn( itype_id( "stanag30" ) );
+    REQUIRE_FALSE( mag->is_tool() );
+    const std::string s = p3_info_plain( *mag, { iteminfo_parts::MAGAZINE_CAPACITY } );
+    CAPTURE( s );
+    CHECK( s.find( "Variants: " ) != std::string::npos );
+    CHECK( s.find( itype_id( "556" )->nname( 1 ) ) != std::string::npos );
+}
+
+// DDA item_info.cpp:1370-1380: the gun capacity block appends Variants with damage, but only
+// when the gun is not an integral-clip gun.
+TEST_CASE( "info_shows_variants_for_gun_with_magazine_well", "[p3][iteminfo]" )
+{
+    clear_all_state();
+    detached_ptr<item> gun = p3_loaded_m4a1( 30 );
+    REQUIRE_FALSE( gun->magazine_integral() );
+    const std::string s = p3_info_plain( *gun, { iteminfo_parts::GUN_CAPACITY } );
+    CAPTURE( s );
+    CHECK( s.find( "Variants: " ) != std::string::npos );
+    // The gun branch prints `<info>NAME(N)</info>`; colour tags are stripped here.
+    CHECK( s.find( itype_id( "556" )->nname( 1 ) + "(" +
+                   std::to_string( static_cast<int>(
+                                      gun->gun_damage( itype_id( "556" ) ).total_damage() ) ) +
+                   ")" ) != std::string::npos );
+
+    // CDF: test_compbow is an integral gun (clip_size 1, data/mods/TEST_DATA/items.json), so the
+    // !magazine_integral() gate keeps Variants off it (tests/iteminfo_test.cpp:710-716).
+    detached_ptr<item> compbow = item::spawn( itype_id( "test_compbow" ) );
+    REQUIRE( compbow->magazine_integral() );
+    const std::string s2 = p3_info_plain( *compbow, { iteminfo_parts::GUN_CAPACITY } );
+    CAPTURE( s2 );
+    CHECK( s2.find( "Variants: " ) == std::string::npos );
+}

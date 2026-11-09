@@ -2417,6 +2417,25 @@ void item::food_info( const item *food_item, std::vector<iteminfo> &info,
     }
 }
 
+namespace
+{
+
+// CDF: DDA keeps this in islot_magazine::cached_ammos / islot_gun::cached_ammos (itype.h:929, 1125),
+// filled from the same walk at item_factory.cpp:632-645, 772-785; computed on demand instead here, as
+// magazine_info's compatible-guns list does (ADV-14 ruling 6). The std::set keeps the order deterministic.
+auto ammo_ids_for( const ammotype &at ) -> std::set<itype_id>
+{
+    std::set<itype_id> res;
+    for( const itype *e : item_controller->all() ) {
+        if( e->ammo != nullptr && e->ammo->type == at && !item_is_blacklisted( e->get_id() ) ) {
+            res.insert( e->get_id() );
+        }
+    }
+    return res;
+}
+
+} // namespace
+
 void item::magazine_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int /*batch*/,
                           bool /*debug*/ ) const
 {
@@ -2462,6 +2481,14 @@ void item::magazine_info( std::vector<iteminfo> &info, const iteminfo_query *par
                                                    at->name() );
             info.emplace_back( "MAGAZINE", _( "Capacity: " ), fmt, iteminfo::no_flags,
                                ammo_capacity() );
+        }
+        // CDF: DDA gates this on iteminfo_parts::MAGAZINE_COMPATABILITY (item_info.cpp:829); CDF has no
+        // such part, so it rides on the capacity block (adding one would edit iteminfo_query.h, OD-6).
+        for( const ammotype &at : ammo_types() ) {
+            const std::string details = print_ammo( at );
+            if( !details.empty() ) {
+                info.emplace_back( "MAGAZINE", _( "Variants: " ), details, iteminfo::no_flags );
+            }
         }
     }
     // CDF: a gun or tool with an integral MAGAZINE pocket is_magazine() but has no islot_magazine
@@ -3060,7 +3087,10 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
                                                        "<num> rounds of %s",
                                                        capacity ), at->name() );
                 info.emplace_back( "GUN", label, fmt, iteminfo::no_flags, capacity );
-                // CDF: DDA item_info.cpp:1375-1378 (print_ammo, "Variants: ") is job 9-1c, not ported here
+                const std::string details = print_ammo( at );
+                if( !details.empty() && !magazine_integral() ) {
+                    info.emplace_back( "GUN", _( "Variants: " ), details, iteminfo::no_flags );
+                }
             }
         }
     } else if( parts->test( iteminfo_parts::GUN_TYPE ) ) {
@@ -9172,6 +9202,38 @@ damage_instance item::gun_damage( bool with_ammo ) const
     return ret;
 }
 
+damage_instance item::gun_damage( const itype_id &ammo ) const
+{
+    if( !is_gun() ) {
+        return damage_instance();
+    }
+    damage_instance ret = type->gun->damage;
+
+    for( const item *mod : gunmods() ) {
+        ret.add( mod->type->gunmod->damage );
+    }
+
+    // CDF: DDA item_gun_tool_ammo.cpp:1301 dereferences ammo->ammo unguarded; guarded like gun_damage( bool ) above.
+    if( ammo->ammo ) {
+        ret.add( ammo->ammo->damage );
+    }
+
+    ret.add( get_ranged_damage_bonus() );
+
+    int item_damage = damage_level( 4 );
+    if( item_damage > 0 ) {
+        // TODO: This isn't a good solution for multi-damage guns/ammos
+        for( damage_unit &du : ret ) {
+            if( du.amount <= 1.0 ) {
+                continue;
+            }
+            du.amount = std::max<float>( 1.0f, du.amount - item_damage * 2 );
+        }
+    }
+
+    return ret;
+}
+
 double item::gun_recoil_multiplier( bool bipod ) const
 {
     double handling = type->gun->handling;
@@ -9578,6 +9640,59 @@ item *item::magazine_current()
 const item *item::magazine_current() const
 {
     return const_cast<item *>( this )->magazine_current();
+}
+
+std::string item::print_ammo( const ammotype &at, const item *gun ) const
+{
+    const item *mag = magazine_current();
+    // CDF: magazine_current() answers with the first loaded well; a multimag gun needs the well that
+    // takes `at` (DDA item_gun_tool_ammo.cpp:2173 has a TODO here; the 5-5a/b name makes the same
+    // choice). uses_firing_requirements() misses the two-well test_multimag_gun, which has no
+    // firing_requirements in TEST_DATA, so a second well selects per pocket too.
+    if( uses_firing_requirements() || all_magazine_well_pockets().size() > 1 ) {
+        const item_pocket *p = pocket_for_ammo( at );
+        mag = p ? p->magazine_current() : nullptr;
+    }
+    if( mag ) {
+        return mag->print_ammo( at, this );
+    } else if( has_flag( flag_USES_BIONIC_POWER ) ) {
+        return _( "energy" );
+    }
+
+    // for magazines if we have a gun in mind display damage as well
+    if( type->magazine ) {
+        // CDF: DDA cannot reach this case (its callers loop over the magazine's own types); the helper
+        // above lists every ammo of the type, so reject a type this magazine does not take.
+        if( !type->magazine->type.contains( at ) ) {
+            return "";
+        }
+        if( gun ) {
+            return enumerate_as_string( ammo_ids_for( at ),
+            [gun]( const itype_id & id ) {
+                return string_format( "<info>%s</info>(%d)", id->nname( 1 ),
+                                      static_cast<int>( gun->gun_damage( id ).total_damage() ) );
+            } );
+        } else {
+            return enumerate_as_string( ammo_ids_for( at ),
+            []( const itype_id & id ) {
+                return string_format( "<info>%s</info>", id->nname( 1 ) );
+            } );
+        }
+    }
+
+    if( type->gun ) {
+        // CDF: same check as the magazine branch above.
+        if( !type->gun->ammo.contains( at ) ) {
+            return "";
+        }
+        return enumerate_as_string( ammo_ids_for( at ),
+        [this]( const itype_id & id ) {
+            return string_format( "<info>%s(%d)</info>", id->nname( 1 ),
+                                  static_cast<int>( gun_damage( id ).total_damage() ) );
+        } );
+    }
+
+    return "";
 }
 
 std::vector<item *> item::gunmods()
