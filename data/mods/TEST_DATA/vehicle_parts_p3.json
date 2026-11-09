@@ -30,5 +30,21 @@
       "install": { "skills": [ [ "mechanics", 5 ], [ "electronics", 5 ] ] },
       "removal": { "skills": [ [ "mechanics", 3 ] ] }
     }
+  },
+  {
+    "//": "CDF: P3-8-5b-fix. Copy of the test turret above mounting an integral-pocket multimag gun (a MAGAZINE pocket that holds loose rounds, no magazine in a well).",
+    "id": "turret_test_multimag_turret_integral",
+    "copy-from": "turret",
+    "type": "vehicle_part",
+    "name": { "str": "test multimag turret integral" },
+    "item": "p3_multimag_gun_integral_ammo",
+    "folded_volume": "1500 ml",
+    "color": "light_gray",
+    "broken_color": "light_gray",
+    "breaks_into": [ { "item": "scrap", "count": 6 }, { "item": "steel_chunk", "count": 5 }, { "item": "steel_lump", "count": 2 } ],
+    "requirements": {
+      "install": { "skills": [ [ "mechanics", 5 ], [ "electronics", 5 ] ] },
+      "removal": { "skills": [ [ "mechanics", 3 ] ] }
+    }
   }
 ]

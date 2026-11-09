@@ -745,8 +745,12 @@ TEST_CASE( "turret_ammo_options_list_tank_fuels_for_liquid_pockets", "[p3][turre
     // A cell in the power well, as the prep would leave it.
     item_pocket *power_pocket = gun.pocket_by_id( "power" );
     REQUIRE( power_pocket != nullptr );
-    REQUIRE( power_pocket->insert_item(
-                 item::spawn( itype_id( "heavy_battery_cell" ) ) ).success() );
+    // CDF (8-5b-fix): a CHARGED cell. Its charge is not "ammo" (the gun reports no ammo_data), which is
+    // why the battery skip in ammo_options is equivalent to dropping it for a well: see the REPORT.
+    detached_ptr<item> cell = item::spawn( itype_id( "heavy_battery_cell" ) );
+    cell->ammo_set( itype_id( "battery" ), 50 );
+    REQUIRE( power_pocket->insert_item( std::move( cell ) ).success() );
+    REQUIRE( gun.ammo_data() == nullptr );
 
     auto qry = veh->turret_query( turret_part );
     REQUIRE( qry );
@@ -899,4 +903,75 @@ TEST_CASE( "multimag_display_state_shows_the_shortfall_on_a_drained_battery",
     const multimag_display_pocket *power = find_row( rows, "power" );
     REQUIRE( power != nullptr );
     CHECK( power->effective_qty < power->per_use_qty );
+}
+
+// CDF (8-5b-fix): the survivors of 13-8-5b / 14-8-5b-2 (E2, E4, E8) get cases that bite.
+TEST_CASE( "turret_can_unload_sees_loose_rounds_in_an_integral_pocket", "[p3][turret]" )
+{
+    clear_all_state();
+    vehicle *veh = get_map().add_vehicle( vproto_id( "test_turret_rig" ),
+                                          tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto idx = veh->install_part( tripoint_mnt_veh::zero(),
+                                        vpart_id( "turret_test_multimag_turret_integral" ), true );
+    REQUIRE( idx >= 0 );
+    vehicle_part &part = veh->part( idx );
+    item &gun = part.get_base();
+    REQUIRE( gun.uses_firing_requirements() );
+    REQUIRE( gun.magazine_current() == nullptr );
+    CHECK_FALSE( veh->turret_query( part ).can_unload() );
+
+    detached_ptr<item> round = item::spawn( itype_id( "9mm" ) );
+    round->charges = 1;
+    REQUIRE( gun.put_in( std::move( round ), pocket_type::MAGAZINE ).success() );
+    REQUIRE( gun.ammo_remaining() == 1 );
+    // No magazine anywhere: only the loose round in the integral pocket can say yes.
+    REQUIRE( gun.magazine_current() == nullptr );
+    CHECK( veh->turret_query( part ).can_unload() );
+}
+
+TEST_CASE( "turret_ammo_data_and_range_need_the_prepared_copy", "[p3][turret]" )
+{
+    clear_all_state();
+    vehicle *veh = get_map().add_vehicle( vproto_id( "test_turret_rig" ),
+                                          tripoint_bub_ms( 65, 65, 0 ), 0_degrees, 0, 0 );
+    REQUIRE( veh );
+    const auto idx = veh->install_part( tripoint_mnt_veh::zero(),
+                                        vpart_id( "turret_test_multimag_turret_flamethrower" ), true );
+    REQUIRE( idx >= 0 );
+    veh->charge_battery( 1000, false );
+    const auto tanks = veh->get_avail_parts( vpart_bitflags::VPFLAG_FLUIDTANK );
+    REQUIRE_FALSE( tanks.empty() );
+    veh->part( static_cast<int>( tanks.begin()->part_index() ) ).ammo_set( itype_id( "gasoline" ), 50 );
+
+    vehicle_part &part = veh->part( idx );
+    item &gun = part.get_base();
+    // The real gun holds nothing: the gasoline exists only on the prepared copy.
+    REQUIRE( gun.ammo_remaining() == 0 );
+    REQUIRE( gun.ammo_data() == nullptr );
+
+    auto qry = veh->turret_query( part );
+    REQUIRE( qry );
+    const itype *ammo = qry.ammo_data();
+    REQUIRE( ammo != nullptr );
+    CHECK( ammo->get_id() == itype_id( "gasoline" ) );
+    // The ammo's range is added on top of the gun's: more than the unprepared real gun reports.
+    CHECK( qry.range() > qry.base().gun_range() );
+    CHECK( gun.ammo_remaining() == 0 );
+}
+
+TEST_CASE( "multimag_display_state_shows_a_partial_battery_as_a_shortfall", "[p3][turret]" )
+{
+    vehicle_part *part = loaded_multimag_rig( 0 );
+    vehicle *veh = &get_map().veh_at( tripoint_bub_ms( 65, 65, 0 ) )->vehicle();
+    veh->charge_battery( 3, false );
+    REQUIRE( veh->fuel_left( itype_id( "battery" ), true ) == 3 );
+    const auto rows = veh->turret_query( *part ).multimag_display_state();
+    const multimag_display_pocket *power = find_row( rows, "power" );
+    REQUIRE( power != nullptr );
+    REQUIRE( power->per_use_qty > 3 );
+    // Prepared: the copy got the 3 charges (more than 0), still short of one shot. Unprepared: 0.
+    CHECK( power->effective_qty > 0 );
+    CHECK( power->effective_qty < power->per_use_qty );
+    CHECK( power->vehicle_bound );
 }
