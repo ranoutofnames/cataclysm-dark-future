@@ -192,6 +192,27 @@ auto cmps_to_mps(int cmps) -> double;
 auto impulse_to_damage(float impulse) -> float;
 auto damage_to_impulse(float damage) -> float;
 
+// Per-pocket source binding from prepare_multimag_pockets, consumed by
+// drain_back_multimag to bill the same vehicle store for one fire cycle.
+struct multimag_pocket_state {
+    enum class source_kind { BATTERY, TANK };
+    int initial_qty = 0;
+    source_kind kind = source_kind::BATTERY;
+    int vpart_index = -1;
+};
+
+// Per-pocket readiness summary for aim UI display of a multimag turret.
+// `effective_qty` is the count after prep would load vehicle-backed pockets;
+// `local_qty` is what the gun already holds without any vehicle help.
+struct multimag_display_pocket {
+    std::string pocket_id;
+    itype_id ammo_itype;
+    int local_qty = 0;
+    int effective_qty = 0;
+    int per_use_qty = 0;
+    bool vehicle_bound = false;
+};
+
 class turret_data {
     friend vehicle;
 
@@ -269,6 +290,8 @@ public:
     auto can_reload() const -> bool;
     auto can_unload() const -> bool;
 
+    auto multimag_display_state() const -> std::vector<multimag_display_pocket>;
+
     enum class status { invalid, no_ammo, no_power, ready };
 
     auto query() const -> status;
@@ -276,6 +299,10 @@ public:
 private:
     turret_data(vehicle* veh, vehicle_part* part): veh(veh), part(part) {}
     double cached_recoil = 0;
+    // Vehicle source bindings populated by prepare_fire for multimag
+    // turrets and consumed by post_fire to bill the same store. Lifetime
+    // is one fire() call; not serialized.
+    std::map<std::string, multimag_pocket_state> mm_bindings_;
 
 protected:
     vehicle* veh = nullptr;
@@ -979,6 +1006,28 @@ public:
      * @return amount of request unfulfilled (0 if totally successful).
      */
     auto discharge_battery(int amount, bool recurse = true) -> int;
+
+    // CDF: DDA vehicle.h:1996-2012; the map &here parameter is dropped like the
+    // other fuel and drain entry points above.
+    // Multimag pseudo-tool support.
+    // Populates every consumption-schema pocket of a multimag tool from
+    // vehicle batteries or tanks and returns per-pocket source bindings
+    // keyed by pocket id. drain_back_multimag must consume the returned
+    // map verbatim to keep prep and drain billing the same store.
+    // Pockets that already hold any content at call time are skipped:
+    // player-loaded pockets keep their ammo and stay unbound. Tank source
+    // picker prefers `preferred_primary` when set and the vehicle holds it.
+    static auto prepare_multimag_pockets(
+        vehicle& veh, item& tool, const gun_mode_id& mode,
+        const itype_id& preferred_primary = itype_id::NULL_ID() )
+        -> std::map<std::string, multimag_pocket_state>;
+    // Backwards-compatible wrapper for pseudo-tool callers that build a
+    // fresh tool every prep cycle and never need mode or ammo preference.
+    static auto prepare_multimag_pockets( vehicle& veh, item& tool )
+        -> std::map<std::string, multimag_pocket_state>;
+    static void drain_back_multimag(
+        vehicle& veh, const item& tool,
+        const std::map<std::string, multimag_pocket_state>& bindings );
 
     /**
      * Mark mass caches and pivot cache as dirty

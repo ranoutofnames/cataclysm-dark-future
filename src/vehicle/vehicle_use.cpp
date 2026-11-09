@@ -1862,6 +1862,66 @@ void vehicle::use_bike_rack(int part) {
     }
 }
 
+// Multimag pseudo-tool support. This packet wires the guards and the pocket
+// loop head only; the battery and tank branches are filled by 8-5a-2 and
+// 8-5a-3.
+auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool,
+                                       const gun_mode_id& mode,
+                                       const itype_id& preferred_primary)
+-> std::map<std::string, multimag_pocket_state>
+{
+    using state_t = multimag_pocket_state;
+    std::map<std::string, state_t> out;
+    if (!tool.uses_firing_requirements()) {
+        return out;
+    }
+    // CDF: TODO(multimag): this reads the base itype firing_requirements and raw
+    // per-pocket qty. It does not resolve gunmod-owned modes
+    // (mode_firing_requirements), nor apply consumption_mods / capacity_mods.
+    // Mods on a vehicle-mounted multimag host are out of scope here.
+    const std::vector<pocket_consumption_entry>* entries =
+        tool.type->firing_requirements.for_mode(mode);
+    if (entries == nullptr) {
+        return out;
+    }
+
+    for (const pocket_consumption_entry& pce : *entries) {
+        item_pocket* pkt = tool.pocket_by_id(pce.pocket);
+        if (pkt == nullptr) {
+            continue;
+        }
+        const pocket_data* pdat = pkt->get_pocket_data();
+        if (pdat == nullptr) {
+            continue;
+        }
+        // Any existing content blocks prep, else drain_back would bill the
+        // vehicle for player-owned charges via the initial_qty delta.
+        if (!pkt->empty()) {
+            continue;
+        }
+    }
+    return out;
+}
+
+// Backwards-compatible wrapper for pseudo-tool callers that build a fresh tool
+// every prep cycle and never need mode or ammo preference.
+auto vehicle::prepare_multimag_pockets(vehicle& veh, item& tool)
+-> std::map<std::string, multimag_pocket_state>
+{
+    // CDF: gun_mode_DEFAULT is absent in CDF (item_gun_tool_ammo.cpp precedent).
+    return prepare_multimag_pockets(veh, tool, gun_mode_id("DEFAULT"),
+                                    itype_id::NULL_ID());
+}
+
+// CDF: body filled by 8-5a-4 (DDA vehicle_use.cpp:2133-2158).
+void vehicle::drain_back_multimag(
+    vehicle& veh, const item& tool,
+    const std::map<std::string, multimag_pocket_state>& bindings) {
+    if (!tool.uses_firing_requirements()) {
+        return;
+    }
+}
+
 // Handles interactions with a vehicle in the examine menu.
 void vehicle::interact_with(const tripoint_bub_ms& pos, int interact_part) {
     avatar& you = get_avatar();

@@ -1,0 +1,18 @@
+[
+  {
+    "//": "CDF: P3-8-5a-1. Hand-written stand-in for the DDA per-gun turret generator (CDF has no generator, fact 9). Key set copied from mounted_hk_g80 in data/json/vehicleparts/turret.json; TURRET comes from the turret abstract.",
+    "id": "turret_test_multimag_turret_gun",
+    "copy-from": "turret",
+    "type": "vehicle_part",
+    "name": { "str": "test multimag turret gun" },
+    "item": "test_multimag_turret_gun",
+    "folded_volume": "1500 ml",
+    "color": "light_gray",
+    "broken_color": "light_gray",
+    "breaks_into": [ { "item": "scrap", "count": 6 }, { "item": "steel_chunk", "count": 5 }, { "item": "steel_lump", "count": 2 } ],
+    "requirements": {
+      "install": { "skills": [ [ "mechanics", 5 ], [ "electronics", 5 ] ] },
+      "removal": { "skills": [ [ "mechanics", 3 ] ] }
+    }
+  }
+]
