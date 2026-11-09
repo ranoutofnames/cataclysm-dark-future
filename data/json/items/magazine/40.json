@@ -13,8 +13,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "40", "10mm" ],
-    "capacity": 6,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 6, "10mm": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "90two40mag",
@@ -30,10 +37,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 12,
     "reliability": 8,
     "reload_time": 140,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 12 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "glock40drum50rd",
@@ -49,7 +63,14 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "40", "357sig" ],
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 50, "357sig": 50 }
+      }
+    ]
   },
   {
     "id": "glock40bigmag",
@@ -65,10 +86,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "40", "357sig" ],
-    "capacity": 22,
     "reliability": 7,
     "reload_time": 140,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 22, "357sig": 22 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "glock40mag",
@@ -84,9 +112,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "40", "357sig" ],
-    "capacity": 15,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 15, "357sig": 15 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "px4_40mag",
@@ -102,10 +137,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 14,
     "reliability": 8,
     "reload_time": 140,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 14 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "sig40mag",
@@ -121,9 +163,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 12,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 12 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "smg_40_mag",
@@ -139,10 +188,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 20,
     "reliability": 1,
     "reload_time": 160,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 20 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "bhp40mag",
@@ -158,9 +214,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 10,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "ppq40mag_10rd",
@@ -176,9 +239,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 10,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "ppq40mag_12rd",
@@ -194,9 +264,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 12,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 12 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "ppq40mag_14rd",
@@ -212,9 +289,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 14,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 14 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "hptjcpmag",
@@ -230,9 +314,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 10,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "ump40mag",
@@ -248,9 +339,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "40",
-    "capacity": 30,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 30 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "kriss_mag",
@@ -266,8 +364,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "40", "357sig" ],
-    "capacity": 32,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40": 32, "357sig": 32 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

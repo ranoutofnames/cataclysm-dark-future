@@ -13,9 +13,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "chemical_spray",
-    "capacity": 800,
     "reliability": 9,
     "reload_time": 1,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "chemical_spray": 800 },
+        "watertight": true
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

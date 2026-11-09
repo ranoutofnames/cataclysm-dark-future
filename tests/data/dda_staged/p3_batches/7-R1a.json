@@ -1,0 +1,5134 @@
+{
+ "batch": "7-R1a",
+ "base": "dcab09ec2c",
+ "dda": "918f396f370ea48fad924fb45a797386a2f6ddb4",
+ "count": 206,
+ "items": {
+  "20x66_10_mag": {
+   "file": "data/json/items/magazine/20x60mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "20x66mm": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "20x66mm"
+   }
+  },
+  "20x66_20_mag": {
+   "file": "data/json/items/magazine/20x60mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "20x66mm": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "20x66mm"
+   }
+  },
+  "20x66_40_mag": {
+   "file": "data/json/items/magazine/20x60mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "20x66mm": 40
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 40,
+    "ammo_type": "20x66mm"
+   }
+  },
+  "22_speedloader8": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "22"
+   }
+  },
+  "3006_clip": {
+   "file": "data/json/items/magazine/3006.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "3006": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "3006"
+   }
+  },
+  "38_speedloader": {
+   "file": "data/json/items/magazine/38.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "357mag": 7,
+      "38": 7
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 7,
+    "ammo_type": [
+     "357mag",
+     "38"
+    ]
+   }
+  },
+  "38_speedloader5": {
+   "file": "data/json/items/magazine/38.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "357mag": 5,
+      "38": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": [
+     "357mag",
+     "38"
+    ]
+   }
+  },
+  "38_speedloader6": {
+   "file": "data/json/items/magazine/38.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "357mag": 6,
+      "38": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": [
+     "357mag",
+     "38"
+    ]
+   }
+  },
+  "40_speedloader6": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 6,
+      "10mm": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": [
+     "40",
+     "10mm"
+    ]
+   }
+  },
+  "44_speedloader6": {
+   "file": "data/json/items/magazine/44.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "44": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": "44"
+   }
+  },
+  "45_speedloader5": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": [
+     "45"
+    ]
+   }
+  },
+  "5x50_100_mag": {
+   "file": "data/json/items/magazine/5x50.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "5x50": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": "5x50"
+   }
+  },
+  "5x50_50_mag": {
+   "file": "data/json/items/magazine/5x50.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "5x50": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "5x50"
+   }
+  },
+  "762R_clip": {
+   "file": "data/json/items/magazine/762R.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "762R": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "762R"
+   }
+  },
+  "762x39_clip": {
+   "file": "data/json/items/magazine/762.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "762": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "762"
+   }
+  },
+  "8x40_100_mag": {
+   "file": "data/json/items/magazine/8x40mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "8x40mm": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": "8x40mm"
+   }
+  },
+  "8x40_10_mag": {
+   "file": "data/json/items/magazine/8x40mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "8x40mm": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "8x40mm"
+   }
+  },
+  "8x40_250_mag": {
+   "file": "data/json/items/magazine/8x40mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "8x40mm": 250
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 250,
+    "ammo_type": "8x40mm"
+   }
+  },
+  "8x40_25_mag": {
+   "file": "data/json/items/magazine/8x40mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "8x40mm": 25
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 25,
+    "ammo_type": "8x40mm"
+   }
+  },
+  "8x40_500_mag": {
+   "file": "data/json/items/magazine/8x40mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "8x40mm": 500
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 500,
+    "ammo_type": "8x40mm"
+   }
+  },
+  "8x40_50_mag": {
+   "file": "data/json/items/magazine/8x40mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "8x40mm": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "8x40mm"
+   }
+  },
+  "8x40_speedloader5": {
+   "file": "data/json/items/magazine/8x40mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "8x40mm": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "8x40mm"
+   }
+  },
+  "90two40mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 12,
+    "ammo_type": "40"
+   }
+  },
+  "9mm_speedloader6": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": [
+     "9mm"
+    ]
+   }
+  },
+  "SVDmag": {
+   "file": "data/json/items/magazine/762R.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "762R": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "762R"
+   }
+  },
+  "USAS10mag": {
+   "file": "data/json/items/magazine/shot.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "shot": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "shot"
+   }
+  },
+  "USAS20mag": {
+   "file": "data/json/items/magazine/shot.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "shot": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "shot"
+   }
+  },
+  "a180mag": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 165
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 165,
+    "ammo_type": "22"
+   }
+  },
+  "akdrum75": {
+   "file": "data/json/items/magazine/762.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "762": 75
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 75,
+    "ammo_type": "762"
+   }
+  },
+  "akmag10": {
+   "file": "data/json/items/magazine/762.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "762": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "762"
+   }
+  },
+  "akmag20": {
+   "file": "data/json/items/magazine/762.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "762": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "762"
+   }
+  },
+  "akmag30": {
+   "file": "data/json/items/magazine/762.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "762": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "762"
+   }
+  },
+  "akmag40": {
+   "file": "data/json/items/magazine/762.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "762": 40
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 40,
+    "ammo_type": "762"
+   }
+  },
+  "ar10_makeshiftmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 5
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "308"
+   }
+  },
+  "ar10mag_20rd": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 20,
+      "277": 20
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": [
+     "308",
+     "277"
+    ]
+   }
+  },
+  "as50mag": {
+   "file": "data/json/items/magazine/50.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "50": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "50"
+   },
+   "cap_diff": [
+    {
+     "ammo": "50",
+     "cdf": 10,
+     "dda": 5
+    }
+   ]
+  },
+  "augmag_100rd": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 100
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": "223"
+   }
+  },
+  "augmag_10rd": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 10
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "223"
+   }
+  },
+  "augmag_30rd": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 30
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "223"
+   }
+  },
+  "augmag_42rd": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 42
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 42,
+    "ammo_type": "223"
+   }
+  },
+  "aux_pressurized_tank": {
+   "file": "data/json/items/magazine/liquid.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "flammable": 500
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 500,
+    "ammo_type": "flammable"
+   }
+  },
+  "belt223": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": false,
+     "ammo_restriction": {
+      "223": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 200,
+    "ammo_type": "223"
+   },
+   "cap_diff": [
+    {
+     "ammo": "223",
+     "cdf": 200,
+     "dda": 500
+    }
+   ]
+  },
+  "belt277": {
+   "file": "data/json/items/magazine/277.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "277": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 200,
+    "ammo_type": "277"
+   }
+  },
+  "belt3006": {
+   "file": "data/json/items/magazine/3006.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "3006": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 200,
+    "ammo_type": "3006"
+   }
+  },
+  "belt308": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": false,
+     "ammo_restriction": {
+      "308": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 200,
+    "ammo_type": "308"
+   },
+   "cap_diff": [
+    {
+     "ammo": "308",
+     "cdf": 200,
+     "dda": 500
+    }
+   ]
+  },
+  "belt40mm": {
+   "file": "data/json/items/magazine/40mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "ammo_restriction": {
+      "40x53mm": 50
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "40x53mm"
+   }
+  },
+  "belt50": {
+   "file": "data/json/items/magazine/50.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": false,
+     "ammo_restriction": {
+      "50": 100
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": "50"
+   }
+  },
+  "belt762R": {
+   "file": "data/json/items/magazine/762R.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "762R": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 200,
+    "ammo_type": "762R"
+   }
+  },
+  "bhp40mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "40"
+   }
+  },
+  "bhp9mag_13rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 13
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 13,
+    "ammo_type": "9mm"
+   }
+  },
+  "bhp9mag_15rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": "9mm"
+   }
+  },
+  "blrmag": {
+   "file": "data/json/items/magazine/3006.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "3006": 4
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 4,
+    "ammo_type": "3006"
+   }
+  },
+  "calicomag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "9mm"
+   }
+  },
+  "carbonmag_223": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 30,
+      "300blk": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "ccpmag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "9mm"
+   }
+  },
+  "cz75mag_12rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 12,
+    "ammo_type": "9mm"
+   }
+  },
+  "cz75mag_20rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "9mm"
+   }
+  },
+  "cz75mag_26rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 26
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 26,
+    "ammo_type": "9mm"
+   }
+  },
+  "deaglemag": {
+   "file": "data/json/items/magazine/44.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "44": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "44"
+   }
+  },
+  "drum_mag50": {
+   "file": "data/json/items/magazine/50.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "50": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "50"
+   }
+  },
+  "fal_makeshiftmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "308"
+   }
+  },
+  "falbigmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "308"
+   }
+  },
+  "falmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "308"
+   }
+  },
+  "fn1910mag": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": "380"
+   }
+  },
+  "g36mag_100rd": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 100
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": "223"
+   }
+  },
+  "g36mag_30rd": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 30
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "223"
+   }
+  },
+  "g3_makeshiftmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 5
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "308"
+   }
+  },
+  "g3bigmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "308"
+   }
+  },
+  "g3mag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "308"
+   }
+  },
+  "garandclip": {
+   "file": "data/json/items/magazine/3006.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "magazine_well": "20 ml",
+     "ammo_restriction": {
+      "3006": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "3006"
+   }
+  },
+  "gasfilter_med": {
+   "file": "data/json/items/magazine/filter.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasfilter_m": 100
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": [
+     "gasfilter_m"
+    ]
+   }
+  },
+  "gasfilter_sm": {
+   "file": "data/json/items/magazine/filter.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasfilter_s": 100
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": [
+     "gasfilter_s"
+    ]
+   }
+  },
+  "gatlingdrum240": {
+   "file": "data/json/items/magazine/4570.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "4570": 240
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 240,
+    "ammo_type": "4570"
+   }
+  },
+  "glock17_17": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 17
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 17,
+    "ammo_type": "9mm"
+   }
+  },
+  "glock17_22": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 22
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 22,
+    "ammo_type": "9mm"
+   }
+  },
+  "glock20bigmag": {
+   "file": "data/json/items/magazine/10mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "10mm": 30
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "10mm"
+   }
+  },
+  "glock20drum50rd": {
+   "file": "data/json/items/magazine/10mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "10mm": 50
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "10mm"
+   }
+  },
+  "glock20mag": {
+   "file": "data/json/items/magazine/10mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "10mm": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": "10mm"
+   }
+  },
+  "glock21drum40rd": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 40
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 40,
+    "ammo_type": "45"
+   }
+  },
+  "glock40bigmag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 22,
+      "357sig": 22
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 22,
+    "ammo_type": [
+     "40",
+     "357sig"
+    ]
+   }
+  },
+  "glock40drum50rd": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 50,
+      "357sig": 50
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": [
+     "40",
+     "357sig"
+    ]
+   }
+  },
+  "glock40mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 15,
+      "357sig": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": [
+     "40",
+     "357sig"
+    ]
+   }
+  },
+  "glock_21mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 13
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 13,
+    "ammo_type": "45"
+   }
+  },
+  "glock_21mag26": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 26
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 26,
+    "ammo_type": "45"
+   }
+  },
+  "glock_drum_100rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": "9mm"
+   }
+  },
+  "glock_drum_50rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "9mm"
+   }
+  },
+  "glockbigmag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "9mm"
+   },
+   "cap_diff": [
+    {
+     "ammo": "9mm",
+     "cdf": 30,
+     "dda": 33
+    }
+   ]
+  },
+  "glockmag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": "9mm"
+   }
+  },
+  "hipoint_3895mag": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "380"
+   }
+  },
+  "hk417_makeshiftmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 5
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "308"
+   }
+  },
+  "hk417mag_10rd": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "308"
+   }
+  },
+  "hk417mag_20rd": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "308"
+   }
+  },
+  "hk_g80mag": {
+   "file": "data/json/items/magazine/12mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "12mm": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "12mm"
+   }
+  },
+  "hptc9mag_10rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "9mm"
+   }
+  },
+  "hptc9mag_15rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": "9mm"
+   }
+  },
+  "hptc9mag_8rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "9mm"
+   }
+  },
+  "hptcf380mag_10rd": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "380"
+   }
+  },
+  "hptcf380mag_8rd": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "380"
+   }
+  },
+  "hptjcpmag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "40"
+   }
+  },
+  "hptjhpmag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 9
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 9,
+    "ammo_type": "45"
+   }
+  },
+  "j22mag": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": "22"
+   }
+  },
+  "kp32mag": {
+   "file": "data/json/items/magazine/32.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "32": 7
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 7,
+    "ammo_type": "32"
+   }
+  },
+  "kp3atmag": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": "380"
+   }
+  },
+  "kpf9mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 7
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 7,
+    "ammo_type": "9mm"
+   }
+  },
+  "kriss_mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 32,
+      "357sig": 32
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 32,
+    "ammo_type": [
+     "40",
+     "357sig"
+    ]
+   }
+  },
+  "kriss_vector_9mm_mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 40
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 40,
+    "ammo_type": "9mm"
+   }
+  },
+  "m107a1mag": {
+   "file": "data/json/items/magazine/50.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "50": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "50"
+   }
+  },
+  "m14_makeshiftmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 5
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "308"
+   }
+  },
+  "m14mag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "308"
+   }
+  },
+  "m14smallmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "308"
+   }
+  },
+  "m1911bigmag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": [
+     "45"
+    ]
+   }
+  },
+  "m1911mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 7
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 7,
+    "ammo_type": [
+     "45"
+    ]
+   }
+  },
+  "m1918bigmag": {
+   "file": "data/json/items/magazine/3006.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "3006": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "3006"
+   }
+  },
+  "m1918mag": {
+   "file": "data/json/items/magazine/3006.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "3006": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "3006"
+   }
+  },
+  "m2010mag": {
+   "file": "data/json/items/magazine/300.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "300": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "300"
+   }
+  },
+  "m74_clip": {
+   "file": "data/json/items/magazine/66mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "m235": 4
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 4,
+    "ammo_type": [
+     "m235"
+    ]
+   }
+  },
+  "m9bigmag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "9mm"
+   }
+  },
+  "m9mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": "9mm"
+   }
+  },
+  "mac10mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "45"
+   }
+  },
+  "mac11mag": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 32
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 32,
+    "ammo_type": "380"
+   }
+  },
+  "marlin_tubeloader": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 19
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 19,
+    "ammo_type": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)"
+  },
+  "mosquitomag": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "22"
+   }
+  },
+  "mp5bigmag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "9mm"
+   }
+  },
+  "mp5mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "9mm"
+   }
+  },
+  "nailmag": {
+   "file": "data/json/items/magazine/nail.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "nail": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "nail"
+   }
+  },
+  "p226mag_12rd_357sig": {
+   "file": "data/json/items/magazine/357sig.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "357sig": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 12,
+    "ammo_type": "357sig"
+   }
+  },
+  "p320mag_13rd_357sig": {
+   "file": "data/json/items/magazine/357sig.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "357sig": 13
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 13,
+    "ammo_type": "357sig"
+   }
+  },
+  "p320mag_17rd_9x19mm": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 17
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 17,
+    "ammo_type": "9mm"
+   }
+  },
+  "p38mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "9mm"
+   }
+  },
+  "ppkmag": {
+   "file": "data/json/items/magazine/32.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "32": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "32"
+   }
+  },
+  "ppq40mag_10rd": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "40"
+   }
+  },
+  "ppq40mag_12rd": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 12,
+    "ammo_type": "40"
+   }
+  },
+  "ppq40mag_14rd": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 14
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 14,
+    "ammo_type": "40"
+   }
+  },
+  "ppq45mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 12,
+    "ammo_type": "45"
+   }
+  },
+  "ppq9mag_10rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "9mm"
+   }
+  },
+  "ppq9mag_15rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": "9mm"
+   }
+  },
+  "ppq9mag_17rd": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 17
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 17,
+    "ammo_type": "9mm"
+   }
+  },
+  "pressurized_tank": {
+   "file": "data/json/items/magazine/liquid.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "flammable": 3000
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 3000,
+    "ammo_type": null
+   },
+   "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
+   "cap_diff": [
+    {
+     "ammo": "flammable",
+     "cdf": 3000,
+     "dda": 8000
+    }
+   ]
+  },
+  "pressurized_tank_chem": {
+   "file": "data/json/items/magazine/chemical_spray.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "chemical_spray": 800
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 800,
+    "ammo_type": "chemical_spray"
+   }
+  },
+  "px4_40mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 14
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 14,
+    "ammo_type": "40"
+   }
+  },
+  "px4mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 17
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 17,
+    "ammo_type": "9mm"
+   }
+  },
+  "rebreather_cartridge_air": {
+   "file": "data/json/items/magazine/filter.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "watertight": true,
+     "rigid": true,
+     "ammo_restriction": {
+      "rebreather_filter": 90
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 90,
+    "ammo_type": "rebreather_filter"
+   }
+  },
+  "rebreather_cartridge_o2": {
+   "file": "data/json/items/magazine/filter.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "watertight": true,
+     "rigid": true,
+     "ammo_restriction": {
+      "rebreather_filter": 180
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 180,
+    "ammo_type": "rebreather_filter"
+   }
+  },
+  "rebreather_cartridge_regen": {
+   "file": "data/json/items/magazine/filter.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "watertight": true,
+     "rigid": true,
+     "ammo_restriction": {
+      "rebreather_o2_regenerator": 360
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 360,
+    "ammo_type": "rebreather_o2_regenerator"
+   }
+  },
+  "rm4502": {
+   "file": "data/json/items/magazine/liquid.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "flammable": 2000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 2000,
+    "ammo_type": "flammable"
+   }
+  },
+  "rm4504": {
+   "file": "data/json/items/magazine/liquid.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "flammable": 4000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 4000,
+    "ammo_type": "flammable"
+   }
+  },
+  "ruger10": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 10
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "223"
+   }
+  },
+  "ruger100": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 100
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": "223"
+   }
+  },
+  "ruger1022bigmag": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 25
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 25,
+    "ammo_type": "22"
+   }
+  },
+  "ruger1022mag": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "22"
+   }
+  },
+  "ruger20": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 20
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "223"
+   }
+  },
+  "ruger30": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "223"
+   }
+  },
+  "ruger5": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "223"
+   }
+  },
+  "ruger90": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 90
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 90,
+    "ammo_type": "223"
+   }
+  },
+  "ruger_makeshiftmag": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 5
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "223"
+   }
+  },
+  "rugerlcpmag": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": "380"
+   }
+  },
+  "saiga10mag": {
+   "file": "data/json/items/magazine/shot.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "shot": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "shot"
+   }
+  },
+  "saiga30mag": {
+   "file": "data/json/items/magazine/shot.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "shot": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "shot"
+   },
+   "cap_diff": [
+    {
+     "ammo": "shot",
+     "cdf": 30,
+     "dda": 20
+    }
+   ]
+  },
+  "saiga410mag_10rd": {
+   "file": "data/json/items/magazine/410shot.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "410shot": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "410shot"
+   }
+  },
+  "saiga410mag_30rd": {
+   "file": "data/json/items/magazine/410shot.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "410shot": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "dda-obsolete"
+   ],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "410shot"
+   }
+  },
+  "scarh_makeshiftmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 5
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "308"
+   }
+  },
+  "scarhbigmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "308"
+   }
+  },
+  "scarhmag": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "308"
+   }
+  },
+  "scarhmag_30rd": {
+   "file": "data/json/items/magazine/308.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "308": 30
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "308"
+   }
+  },
+  "shot_speedloader6": {
+   "file": "data/json/items/magazine/shot.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "shot": 6
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": "shot"
+   }
+  },
+  "shot_speedloader8": {
+   "file": "data/json/items/magazine/shot.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "shot": 8
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": null,
+    "ammo_type": null
+   }
+  },
+  "shotbelt_20": {
+   "file": "data/json/items/magazine/shot.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "shot": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "shot"
+   }
+  },
+  "sig40mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 12,
+    "ammo_type": "40"
+   }
+  },
+  "sigp230mag": {
+   "file": "data/json/items/magazine/32.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "32": 8
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 8,
+    "ammo_type": "32"
+   }
+  },
+  "skorpion61mag": {
+   "file": "data/json/items/magazine/32.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "32": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "32"
+   }
+  },
+  "smg_40_mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "40"
+   }
+  },
+  "smg_45_mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "45"
+   }
+  },
+  "stanag10": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 10,
+      "300blk": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag100": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 100,
+      "300blk": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag100drum": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 100,
+      "300blk": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 100,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag150": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 150,
+      "300blk": 150
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 150,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag20": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 20,
+      "300blk": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag30": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 30,
+      "300blk": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag40": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 40,
+      "300blk": 40
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 40,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag5": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 5,
+      "300blk": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag50": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 50,
+      "300blk": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag60": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 60,
+      "300blk": 60
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 60,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag60drum": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 60,
+      "300blk": 60
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 60,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stanag90": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 90,
+      "300blk": 90
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [
+    {
+     "where": "allowed_speedloaders",
+     "id": "clip223_10rd",
+     "why": "item absent in CDF"
+    }
+   ],
+   "tags": [],
+   "legacy": {
+    "capacity": 90,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "stenmag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 32
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 32,
+    "ammo_type": "9mm"
+   }
+  },
+  "survivor223mag": {
+   "file": "data/json/items/magazine/223.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "223": 5,
+      "300blk": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": [
+     "223",
+     "300blk"
+    ]
+   }
+  },
+  "survivor9mm_mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "9mm"
+   }
+  },
+  "sw22mag": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "22"
+   }
+  },
+  "tac50mag": {
+   "file": "data/json/items/magazine/50.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "50": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 5,
+    "ammo_type": "50"
+   }
+  },
+  "taurus_spectrum_mag": {
+   "file": "data/json/items/magazine/380.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "380": 6
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 6,
+    "ammo_type": "380"
+   }
+  },
+  "tdi_mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "45"
+   }
+  },
+  "tec9mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 32
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 32,
+    "ammo_type": "9mm"
+   }
+  },
+  "thompson_bigmag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "45"
+   }
+  },
+  "thompson_drum": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 50,
+    "ammo_type": "45"
+   }
+  },
+  "thompson_mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "45"
+   }
+  },
+  "thompson_makeshiftmag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 20
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "45"
+   }
+  },
+  "tinyweldtank": {
+   "file": "data/json/items/magazine/weldgas.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "weldgas": 60
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 60,
+    "ammo_type": "weldgas"
+   },
+   "cap_diff": [
+    {
+     "ammo": "weldgas",
+     "cdf": 60,
+     "dda": 100
+    }
+   ]
+  },
+  "ump40mag": {
+   "file": "data/json/items/magazine/40.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "40": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "40"
+   }
+  },
+  "ump45_makeshiftmag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 20
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 20,
+    "ammo_type": "45"
+   }
+  },
+  "ump45mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 25
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 25,
+    "ammo_type": "45"
+   }
+  },
+  "ump9mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 30
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 30,
+    "ammo_type": "9mm"
+   }
+  },
+  "usp45mag": {
+   "file": "data/json/items/magazine/45.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "45": 12
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 12,
+    "ammo_type": "45"
+   }
+  },
+  "usp9mag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 15
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 15,
+    "ammo_type": "9mm"
+   }
+  },
+  "uzimag": {
+   "file": "data/json/items/magazine/9mm.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "9mm": 32
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 32,
+    "ammo_type": "9mm"
+   }
+  },
+  "weldtank": {
+   "file": "data/json/items/magazine/weldgas.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "weldgas": 240
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": null,
+    "ammo_type": null
+   },
+   "cap_diff": [
+    {
+     "ammo": "weldgas",
+     "cdf": 240,
+     "dda": 1400
+    }
+   ]
+  },
+  "wp22mag": {
+   "file": "data/json/items/magazine/22.json",
+   "class": "MAG",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "22": 10
+     }
+    }
+   ],
+   "dropped_keys": [
+    "capacity"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "capacity": 10,
+    "ammo_type": "22"
+   }
+  }
+ },
+ "dda_note": "918f396f370e = the DDA pin, a documented constant: tests/cdf_mag_port_test.cpp:20 requires it; the tool wrote it from `git rev-parse HEAD` of its --dda root (read by the planner on LAPTOP-A0EU66N2 at C:\\CDF\\CDDA SRC, 2026-11-03; see 7-GOLD1-v3 fact 1). b4b62254ae2 is the commit the DDA line numbers in the drafts were read at; data/json/items differs between the two only in six integrated_chitin*/integrated_carapace* ids (armor/integrated.json), none in any 7-* batch. The DDA root of a run is the parameter <DDA_ROOT>."
+}

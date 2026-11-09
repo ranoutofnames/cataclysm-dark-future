@@ -9,7 +9,14 @@
     "capacity": 200,
     "count": 100,
     "default_ammo": "556",
-    "linkage": "ammolink223"
+    "linkage": "ammolink223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": false,
+        "ammo_restriction": { "223": 200 }
+      }
+    ]
   },
   {
     "id": "ruger5",
@@ -25,9 +32,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "223",
-    "capacity": 5,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 5 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "looks_like": "stanag30",
@@ -43,9 +57,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 10,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 10, "300blk": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "ruger10",
@@ -54,7 +75,14 @@
     "type": "MAGAZINE",
     "name": { "str": "Ruger 5.56x45mm 10-round magazine" },
     "description": "A compact 10-round box magazine used with the Ruger Mini-14 rifle.",
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 10 }
+      }
+    ]
   },
   {
     "id": "ruger20",
@@ -63,7 +91,14 @@
     "type": "MAGAZINE",
     "name": { "str": "Ruger 5.56x45mm 20-round magazine" },
     "description": "A 20-round box magazine used with the Ruger Mini-14 rifle.",
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 20 }
+      }
+    ]
   },
   {
     "id": "ruger30",
@@ -79,9 +114,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "223",
-    "capacity": 30,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 30 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "ruger90",
@@ -90,7 +132,14 @@
     "type": "MAGAZINE",
     "name": { "str": "Ruger 5.56x45mm 90-round snail drum magazine" },
     "description": "A bulky 90-round snail drum magazine for use with the Ruger Mini-14 rifle.",
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 90 }
+      }
+    ]
   },
   {
     "id": "ruger100",
@@ -99,7 +148,14 @@
     "type": "MAGAZINE",
     "name": { "str": "Ruger 5.56x45mm 100-round double drum magazine" },
     "description": "A bulky 100-round double drum magazine for use with the Ruger Mini-14 rifle.",
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 100 }
+      }
+    ]
   },
   {
     "id": "stanag5",
@@ -115,9 +171,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 5,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 5, "300blk": 5 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "stanag20",
@@ -133,15 +196,22 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 20,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 20, "300blk": 20 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag30",
     "type": "MAGAZINE",
     "name": { "str": "STANAG 30-round magazine" },
-    "//": "Tileset whitelist for rifle magazines",
+    "//": "Tileset whitelist for rifle magazines CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd",
     "description": "A standard capacity 30-round box magazine for use with STANAG compatible rifles.",
     "weight": "245 g",
     "volume": "500 ml",
@@ -151,9 +221,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 30,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 30, "300blk": 30 }
+      }
+    ]
   },
   {
     "id": "stanag40",
@@ -169,9 +245,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 40,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 40, "300blk": 40 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag50",
@@ -189,10 +272,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 50,
     "reliability": 7,
     "reload_time": 200,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 50, "300blk": 50 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag60",
@@ -208,9 +298,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 60,
     "reliability": 7,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 60, "300blk": 60 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag60drum",
@@ -228,10 +325,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 60,
     "reliability": 7,
     "reload_time": 200,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 60, "300blk": 60 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag90",
@@ -249,10 +353,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 90,
     "reliability": 6,
     "reload_time": 200,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 90, "300blk": 90 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag100",
@@ -268,9 +379,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 100,
     "reliability": 7,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 100, "300blk": 100 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag100drum",
@@ -286,10 +404,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 100,
     "reliability": 6,
     "reload_time": 200,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 100, "300blk": 100 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "stanag150",
@@ -305,10 +430,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 150,
     "reliability": 7,
     "reload_time": 200,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 150, "300blk": 150 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); ids absent or undefined in CDF left out of the pocket: clip223_10rd"
   },
   {
     "id": "g36mag_30rd",
@@ -317,7 +449,14 @@
     "type": "MAGAZINE",
     "name": { "str": "G36 30-round magazine" },
     "description": "A standard capacity box magazine for use with the G36 assault rifle.",
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 30 }
+      }
+    ]
   },
   {
     "id": "g36mag_100rd",
@@ -326,7 +465,14 @@
     "type": "MAGAZINE",
     "name": { "str": "G36 100-round double drum magazine" },
     "description": "A bulky 100-round double drum magazine for use with the G36 assault rifle.",
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 100 }
+      }
+    ]
   },
   {
     "id": "augmag_10rd",
@@ -336,7 +482,14 @@
     "name": { "str": "AUG 10-round magazine" },
     "description": "A compact 10-round box magazine for use with the Steyr AUG assault rifle.",
     "material": [ "steel", "plastic" ],
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 10 }
+      }
+    ]
   },
   {
     "id": "augmag_30rd",
@@ -346,7 +499,14 @@
     "name": { "str": "AUG 30-round magazine" },
     "description": "A standard capacity 30-round box magazine for use with the Steyr AUG assault rifle.",
     "material": [ "steel", "plastic" ],
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 30 }
+      }
+    ]
   },
   {
     "id": "augmag_42rd",
@@ -361,9 +521,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "223",
-    "capacity": 42,
     "reliability": 7,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 42 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "augmag_100rd",
@@ -373,7 +540,14 @@
     "name": { "str": "AUG 100-round double drum magazine" },
     "description": "A bulky 100-round double drum magazine for use with the Steyr AUG assault rifle.",
     "material": [ "steel", "plastic" ],
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 100 }
+      }
+    ]
   },
   {
     "id": "survivor223mag",
@@ -389,10 +563,17 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 5,
     "reliability": 1,
     "reload_time": 150,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 5, "300blk": 5 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "ruger_makeshiftmag",
@@ -401,7 +582,14 @@
     "price_postapoc": "50 cent",
     "name": { "str": "Ruger makeshift magazine" },
     "description": "An improvised 5-round straight single-stack box magazine consisting of little more than a bent sheet of steel held together by duct tape and hope, for use with the Ruger Mini-14 rifle.",
-    "ammo_type": "223"
+    "ammo_type": "223",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 5 }
+      }
+    ]
   },
   {
     "id": "carbonmag_223",
@@ -417,8 +605,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "223", "300blk" ],
-    "capacity": 30,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "223": 30, "300blk": 30 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

@@ -13,8 +13,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "44",
-    "capacity": 6,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "44": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "deaglemag",
@@ -30,8 +37,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "44",
-    "capacity": 8,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "44": 8 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

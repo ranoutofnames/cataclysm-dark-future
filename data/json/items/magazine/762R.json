@@ -4,7 +4,7 @@
     "looks_like": "stanag30",
     "type": "MAGAZINE",
     "name": { "str": "7.62x54mmR clip" },
-    "//": "Provisional.",
+    "//": "Provisional. CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)",
     "description": "A tiny piece of grooved metal designed to allow a shooter to quickly load a bolt-action rifle.",
     "weight": "40 g",
     "volume": "50 ml",
@@ -14,8 +14,13 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "762R",
-    "capacity": 5,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "762R": 5 }
+      }
+    ]
   },
   {
     "id": "SVDmag",
@@ -31,9 +36,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "762R",
-    "capacity": 10,
     "reliability": 10,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762R": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "belt762R",
@@ -45,6 +57,13 @@
     "capacity": 200,
     "count": 100,
     "default_ammo": "762_54R_7n1",
-    "linkage": "ammolink762R"
+    "linkage": "ammolink762R",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762R": 200 }
+      }
+    ]
   }
 ]

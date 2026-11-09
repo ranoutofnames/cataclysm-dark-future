@@ -13,6 +13,13 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "m235" ],
-    "capacity": 4
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "m235": 4 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

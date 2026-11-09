@@ -13,9 +13,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "357sig",
-    "capacity": 12,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357sig": 12 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "p320mag_13rd_357sig",
@@ -31,9 +38,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "357sig",
-    "capacity": 13,
     "reliability": 7,
     "reload_time": 140,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357sig": 13 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

@@ -1,7 +1,7 @@
 [
   {
     "id": "38_speedloader",
-    "//": "Tileset whitelist for speedloaders.",
+    "//": "Tileset whitelist for speedloaders. CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)",
     "type": "MAGAZINE",
     "name": { "str": ".38/.357 7-round speedloader" },
     "description": "This speedloader can hold 7 rounds of .357 Magnum or .38 Special and quickly reload a compatible revolver.",
@@ -13,8 +13,14 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "357mag", "38" ],
-    "capacity": 7,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 7, "38": 7 }
+      }
+    ]
   },
   {
     "id": "38_speedloader5",
@@ -30,8 +36,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "357mag", "38" ],
-    "capacity": 5,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 5, "38": 5 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "38_speedloader6",
@@ -47,7 +60,14 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "357mag", "38" ],
-    "capacity": 6,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 6, "38": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

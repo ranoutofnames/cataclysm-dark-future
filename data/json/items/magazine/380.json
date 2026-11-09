@@ -13,9 +13,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 6,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "fn1910mag",
@@ -31,9 +38,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 6,
     "reliability": 6,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "rugerlcpmag",
@@ -49,9 +63,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 6,
     "reliability": 9,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "mac11mag",
@@ -67,9 +88,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 32,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 32 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "hptcf380mag_8rd",
@@ -85,9 +113,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 8,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 8 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "hptcf380mag_10rd",
@@ -103,9 +138,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 10,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "taurus_spectrum_mag",
@@ -121,9 +163,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 6,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "hipoint_3895mag",
@@ -139,9 +188,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "380",
-    "capacity": 10,
     "reliability": 9,
     "reload_time": 160,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "380": 10 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

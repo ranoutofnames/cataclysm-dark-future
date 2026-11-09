@@ -13,8 +13,15 @@
     "symbol": "#",
     "color": "yellow",
     "ammo_type": "4570",
-    "capacity": 240,
     "reliability": 6,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "4570": 240 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

@@ -9,6 +9,13 @@
     "capacity": 200,
     "count": 100,
     "default_ammo": "277_fmj",
-    "linkage": "ammolink277"
+    "linkage": "ammolink277",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "277": 200 }
+      }
+    ]
   }
 ]

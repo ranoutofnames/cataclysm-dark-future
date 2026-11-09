@@ -9,8 +9,15 @@
     "volume": "110 ml",
     "price": "24 USD",
     "price_postapoc": "1 USD",
-    "capacity": 15,
-    "ammo_type": "10mm"
+    "ammo_type": "10mm",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "10mm": 15 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "glock20bigmag",
@@ -25,7 +32,14 @@
     "material": "plastic",
     "symbol": "#",
     "color": "light_gray",
-    "ammo_type": "10mm"
+    "ammo_type": "10mm",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "10mm": 30 }
+      }
+    ]
   },
   {
     "id": "glock20drum50rd",
@@ -37,6 +51,13 @@
     "volume": "500 ml",
     "price": "25 USD",
     "price_postapoc": "950 cent",
-    "ammo_type": "10mm"
+    "ammo_type": "10mm",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "10mm": 50 }
+      }
+    ]
   }
 ]

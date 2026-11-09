@@ -1155,12 +1155,18 @@ void Item_factory::synthesize_pockets( itype &obj ) const
     if( ( obj.gun || obj.tool ) && !obj.magazines.empty() ) {
         pocket_data pocket( pocket_type::MAGAZINE_WELL );
         units::volume biggest = 0_ml;
+        // CDF: a loaded non-rigid magazine is bigger than its empty template (the rounds add volume
+        // above magazine_well), so the well must not cap on the empty volume
+        bool loose_mag = false;
         for( const auto &mags : obj.magazines ) {
             for( const itype_id &mag : mags.second ) {
                 pocket.item_id_restriction.insert( mag );
                 const auto found = m_templates.find( mag );
                 if( found != m_templates.end() ) {
                     biggest = std::max( biggest, found->second.volume );
+                    for( const pocket_data &mp : found->second.pockets ) {
+                        loose_mag |= mp.type == pocket_type::MAGAZINE && !mp.rigid;
+                    }
                 }
             }
         }
@@ -1177,6 +1183,9 @@ void Item_factory::synthesize_pockets( itype &obj ) const
             pocket.default_magazine = *well_defaults.begin();
         }
         pocket.raw_volume_capacity = std::max( biggest, 1_ml );
+        if( loose_mag && obj.magazine_well > 0_ml ) {
+            pocket.raw_volume_capacity += 200_liter;
+        }
         // per DDA item_factory.cpp:4086: magazine wells take any length
         pocket.max_item_length = 2_km;
         // BN: a magazine adds max( magazine volume - magazine_well, 0 ) to the item.

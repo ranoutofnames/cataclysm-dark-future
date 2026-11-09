@@ -6476,9 +6476,10 @@ units::length item::length() const
     }
 
     // CDF: BN gives every item type at least 1 ml, but a disintegrating belt has no volume of its
-    // own (item::volume); DDA says a volume-less item has a length of -1 mm
+    // own (item::volume); DDA says a volume-less item has a length of -1 mm (a belt whose rounds
+    // add volume has the length of its rounds)
     if( !type->rigid && type->has_flag( flag_MAG_BELT ) &&
-        type->has_flag( flag_MAG_DESTROY ) ) {
+        type->has_flag( flag_MAG_DESTROY ) && volume() == 0_ml ) {
         return -1_mm;
     }
 
