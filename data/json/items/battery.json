@@ -33,7 +33,14 @@
     "ammo_type": "battery",
     "capacity": 50,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "BATTERY_ULTRA_LIGHT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "BATTERY_ULTRA_LIGHT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 50 }
+      }
+    ]
   },
   {
     "id": "light_minus_atomic_battery_cell",
@@ -50,12 +57,18 @@
     "symbol": "=",
     "color": "green",
     "ammo_type": "battery",
-    "capacity": 500,
     "looks_like": "battery",
-    "//": "1% per hour, or ~1.39 watts",
+    "//": "1% per hour, or ~1.39 watts CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)",
     "reloads_like": "light_minus_battery_cell",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 1 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "BATTERY_ULTRA_LIGHT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "BATTERY_ULTRA_LIGHT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 500 }
+      }
+    ]
   },
   {
     "id": "light_minus_disposable_cell",
@@ -75,7 +88,14 @@
     "capacity": 150,
     "looks_like": "battery",
     "reloads_like": "light_minus_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "BATTERY_ULTRA_LIGHT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "BATTERY_ULTRA_LIGHT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 150 }
+      }
+    ]
   },
   {
     "id": "light_battery_cell",
@@ -94,7 +114,14 @@
     "ammo_type": "battery",
     "capacity": 100,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_LIGHT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_LIGHT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 100 }
+      }
+    ]
   },
   {
     "id": "light_plus_battery_cell",
@@ -110,10 +137,17 @@
     "symbol": "=",
     "color": "yellow",
     "ammo_type": "battery",
-    "capacity": 150,
     "looks_like": "battery",
     "reloads_like": "light_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_LIGHT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_LIGHT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 150 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "light_atomic_battery_cell",
@@ -130,12 +164,18 @@
     "symbol": "=",
     "color": "green",
     "ammo_type": "battery",
-    "capacity": 1000,
     "looks_like": "battery",
-    "//": "1% per hour, or ~2.78 watts",
+    "//": "1% per hour, or ~2.78 watts CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)",
     "reloads_like": "light_battery_cell",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 2 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT", "BATTERY_LIGHT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT", "BATTERY_LIGHT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 1000 }
+      }
+    ]
   },
   {
     "id": "light_disposable_cell",
@@ -155,7 +195,14 @@
     "capacity": 300,
     "looks_like": "battery",
     "reloads_like": "light_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT", "BATTERY_LIGHT" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT", "BATTERY_LIGHT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 300 }
+      }
+    ]
   },
   {
     "id": "medium_battery_cell",
@@ -174,7 +221,14 @@
     "ammo_type": "battery",
     "capacity": 500,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_MEDIUM" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_MEDIUM" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 500 }
+      }
+    ]
   },
   {
     "id": "medium_plus_battery_cell",
@@ -190,10 +244,17 @@
     "symbol": "=",
     "color": "yellow",
     "ammo_type": "battery",
-    "capacity": 750,
     "looks_like": "battery",
     "reloads_like": "medium_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_MEDIUM" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_COMPACT", "BATTERY_MEDIUM" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 750 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "medium_atomic_battery_cell",
@@ -210,12 +271,18 @@
     "symbol": "=",
     "color": "green",
     "ammo_type": "battery",
-    "capacity": 5000,
     "looks_like": "battery",
     "reloads_like": "medium_battery_cell",
-    "//": "1% per hour, or ~13.89 watts",
+    "//": "1% per hour, or ~13.89 watts CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 10 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT", "BATTERY_MEDIUM" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_COMPACT", "BATTERY_MEDIUM" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 5000 }
+      }
+    ]
   },
   {
     "id": "medium_disposable_cell",
@@ -235,7 +302,14 @@
     "capacity": 1500,
     "looks_like": "battery",
     "reloads_like": "medium_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT", "BATTERY_MEDIUM" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_COMPACT", "BATTERY_MEDIUM" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 1500 }
+      }
+    ]
   },
   {
     "id": "heavy_battery_cell",
@@ -254,7 +328,14 @@
     "ammo_type": "battery",
     "capacity": 1000,
     "looks_like": "battery",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY", "BATTERY_HEAVY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY", "BATTERY_HEAVY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 1000 }
+      }
+    ]
   },
   {
     "id": "heavy_plus_battery_cell",
@@ -273,7 +354,14 @@
     "capacity": 1500,
     "looks_like": "battery",
     "reloads_like": "heavy_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY", "BATTERY_HEAVY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "RECHARGE", "MAG_BULKY", "BATTERY_HEAVY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 1500 }
+      }
+    ]
   },
   {
     "id": "heavy_atomic_battery_cell",
@@ -295,7 +383,14 @@
     "reloads_like": "heavy_battery_cell",
     "//": "1% per hour, or ~27.78 watts",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 20 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_BULKY", "BATTERY_HEAVY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "LEAK_DAM", "RADIOACTIVE", "MAG_BULKY", "BATTERY_HEAVY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 10000 }
+      }
+    ]
   },
   {
     "id": "huge_atomic_battery_cell",
@@ -315,7 +410,14 @@
     "looks_like": "battery",
     "//": "1% per hour, or ~277.78 watts",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "12 m", "rate": 200 } ] },
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MECH_BAT", "LEAK_DAM", "RADIOACTIVE" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MECH_BAT", "LEAK_DAM", "RADIOACTIVE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 100000 }
+      }
+    ]
   },
   {
     "id": "heavy_disposable_cell",
@@ -335,6 +437,13 @@
     "capacity": 3000,
     "looks_like": "battery",
     "reloads_like": "heavy_battery_cell",
-    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_BULKY", "BATTERY_HEAVY" ]
+    "flags": [ "NO_SALVAGE", "NO_UNLOAD", "MAG_BULKY", "BATTERY_HEAVY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 3000 }
+      }
+    ]
   }
 ]

@@ -15,12 +15,13 @@
 #include <string>
 #include <vector>
 
-// CDF: P3-7-R1a. Batch input: tests/data/dda_staged/p3_batches/7-R1a.json.
+// CDF: P3-7-R1a and P3-7-R1b. Batch inputs: tests/data/dda_staged/p3_batches/7-R1a.json and 7-R1b.json.
 // The golden load of the same ids (pockets, order) is "p3 golden load batches".
 
 namespace {
 
 const std::string R1A_BATCH = "tests/data/dda_staged/p3_batches/7-R1a.json";
+const std::string R1B_BATCH = "tests/data/dda_staged/p3_batches/7-R1b.json";
 
 struct r1a_row {
     std::string id;
@@ -29,8 +30,8 @@ struct r1a_row {
     std::vector<std::string> ammo_types;
 };
 
-auto read_r1a() -> std::vector<r1a_row> {
-    std::ifstream file(R1A_BATCH, std::ios::binary);
+auto read_batch(const std::string& path) -> std::vector<r1a_row> {
+    std::ifstream file(path, std::ios::binary);
     JsonIn jsin(file);
     JsonObject root = jsin.get_object();
     root.allow_omitted_members();
@@ -80,7 +81,7 @@ void check_pocket(const std::string& id, const std::map<std::string, int>& expec
 } // namespace
 
 TEST_CASE("p3 r1a capacity literals", "[p3][data][R1]") {
-    const std::vector<r1a_row> rows = read_r1a();
+    const std::vector<r1a_row> rows = read_batch(R1A_BATCH);
     REQUIRE(rows.size() == 206);
     for (const r1a_row& r : rows) {
         CAPTURE(r.id);
@@ -182,4 +183,63 @@ TEST_CASE("p3 r1a loaded loose magazines fit every well", "[p3][data][R1]") {
     std::sort(sorted_refused.begin(), sorted_refused.end());
     std::sort(sorted_known.begin(), sorted_known.end());
     CHECK(sorted_refused == sorted_known);
+}
+
+TEST_CASE("p3 r1b capacity literals", "[p3][data][R1]") {
+    const std::vector<r1a_row> rows = read_batch(R1B_BATCH);
+    REQUIRE(rows.size() == 28);
+    for (const r1a_row& r : rows) {
+        CAPTURE(r.id);
+        REQUIRE(itype_id(r.id).is_valid());
+        const itype& t = itype_id(r.id).obj();
+        REQUIRE(t.magazine);
+        const pocket_data& p = only_pocket(r.id);
+        REQUIRE(r.has_capacity);
+        // CDF: the number the item had before the port (batch `legacy.capacity`),
+        // now derived by P3-7-PRE from the pocket
+        CHECK(t.magazine->capacity == r.capacity);
+        for (const std::string& a : r.ammo_types) {
+            CAPTURE(a);
+            CHECK(p.ammo_restriction.count(ammotype(a)) == 1);
+            // CDF: the authored pocket number itself is the legacy capacity (not only the derived field)
+            if (r.ammo_types.size() == 1 && p.ammo_restriction.count(ammotype(a)) == 1) {
+                CHECK(p.ammo_restriction.at(ammotype(a)) == r.capacity);
+            }
+        }
+    }
+    // CDF: literal capacities of the battery cells, from data/json/items/battery.json (DDA numbers in comments)
+    const std::map<std::string, int> cells = {
+        {"light_battery_cell", 100},       // DDA 16
+        {"medium_battery_cell", 500},      // DDA 56
+        {"heavy_battery_cell", 1000},      // DDA 259
+        {"light_minus_battery_cell", 50},  // DDA 2
+    };
+    for (const auto& [id, cap] : cells) {
+        CAPTURE(id);
+        REQUIRE(itype_id(id).is_valid());
+        const itype& t = itype_id(id).obj();
+        REQUIRE(t.magazine);
+        CHECK(t.magazine->capacity == cap);
+        const pocket_data& p = only_pocket(id);
+        REQUIRE(p.ammo_restriction.count(ammotype("battery")) == 1);
+        CHECK(p.ammo_restriction.at(ammotype("battery")) == cap);
+    }
+}
+
+TEST_CASE("p3 r1b battery samples", "[p3][data][R1]") {
+    // CDF: data/json/items/battery.json light_battery_cell capacity 100 (DDA has 16)
+    check_pocket("light_battery_cell", {{"battery", 100}}, true);
+    // CDF: battery.json medium_battery_cell capacity 500 (DDA 56)
+    check_pocket("medium_battery_cell", {{"battery", 500}}, true);
+    // CDF: battery.json heavy_battery_cell capacity 1000 (DDA 259)
+    check_pocket("heavy_battery_cell", {{"battery", 1000}}, true);
+    // CDF: battery.json light_minus_battery_cell capacity 50 (DDA 2)
+    check_pocket("light_minus_battery_cell", {{"battery", 50}}, true);
+    // CDF: vehicle/battery.json battery_motorbike capacity 600 (DDA 450)
+    check_pocket("battery_motorbike", {{"battery", 600}}, true);
+    // CDF: vehicle/battery.json small_storage_battery capacity 500 (DDA 1000)
+    check_pocket("small_storage_battery", {{"battery", 500}}, true);
+    // CDF: vehicle/fuel_storage.json fuel_bunker keeps charcoal 2000, not rigid; DDA's coal is dropped
+    check_pocket("fuel_bunker", {{"charcoal", 2000}}, false);
+    CHECK(!itype_id("fuel_bunker").obj().pockets.front().ammo_restriction.count(ammotype("coal")));
 }

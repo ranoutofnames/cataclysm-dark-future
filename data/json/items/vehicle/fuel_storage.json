@@ -13,9 +13,15 @@
     "volume": "55 L",
     "capacity": 2000,
     "reliability": 10,
-    "//": "mods will need to expand",
+    "//": "mods will need to expand CDF: P3-2 DDA magazine port: ids absent or undefined in CDF left out of the pocket: coal",
     "ammo_type": "charcoal",
     "price": "30 USD",
-    "price_postapoc": "1 USD"
+    "price_postapoc": "1 USD",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "charcoal": 2000 }
+      }
+    ]
   }
 ]
