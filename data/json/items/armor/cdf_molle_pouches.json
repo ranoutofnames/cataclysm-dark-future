@@ -42,11 +42,13 @@
         "coverage": 100,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
     ],
-    "//2": " stats taken from: https://www.patriotoutfitters.com/5-11-tactical-molle-radio-pouch?PMSRCH=MOLLE%20GEAR",
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    "//2": " stats taken from: https://www.patriotoutfitters.com/5-11-tactical-molle-radio-pouch?PMSRCH=MOLLE%20GEAR"
   },
   {
     "id": "gadget_pouch",
@@ -91,11 +93,13 @@
         "coverage": 100,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
     ],
-    "//2": " stats taken from: https://www.patriotoutfitters.com/condor-gadget-pouch-tan498-?PMSRCH=MOLLE%20GEAR",
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    "//2": " stats taken from: https://www.patriotoutfitters.com/condor-gadget-pouch-tan498-?PMSRCH=MOLLE%20GEAR"
   },
   {
     "id": "h2o_pouch",
@@ -148,11 +152,13 @@
         "coverage": 100,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
     ],
-    "//2": " stats taken from: https://www.patriotoutfitters.com/condor-h2o-pouch?PMSRCH=MOLLE%20GEAR",
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    "//2": " stats taken from: https://www.patriotoutfitters.com/condor-h2o-pouch?PMSRCH=MOLLE%20GEAR"
   },
   {
     "id": "canteen_pouch",
@@ -198,10 +204,12 @@
         "coverage": 100,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
-    ],
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    ]
   },
   {
     "id": "tool_pouch",
@@ -298,11 +306,13 @@
         "coverage": 100,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
     ],
-    "//2": " stats taken from: https://www.patriotoutfitters.com/condor-flashlight-pouch?PMSRCH=MOLLE%20GEAR liberties were taken with this one so it would hold either flashlight",
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    "//2": " stats taken from: https://www.patriotoutfitters.com/condor-flashlight-pouch?PMSRCH=MOLLE%20GEAR liberties were taken with this one so it would hold either flashlight"
   },
   {
     "id": "tactical_holster",
@@ -486,11 +496,13 @@
         "coverage": 100,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
     ],
-    "//2": " stats taken from: https://www.tacticalassaultgearstore.com/molle-frag-grenade-pouch.html",
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    "//2": " stats taken from: https://www.tacticalassaultgearstore.com/molle-frag-grenade-pouch.html"
   },
   {
     "id": "triple_stacker_pouch",
@@ -645,11 +657,13 @@
         "coverage": 100,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
     ],
-    "//2": " stats taken from: https://condoroutdoor.com/ma12-shotgun-ammo-pouch.html",
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    "//2": " stats taken from: https://condoroutdoor.com/ma12-shotgun-ammo-pouch.html"
   },
   {
     "id": "sustainment_pouch",
@@ -694,10 +708,12 @@
         "coverage": 20,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
     ],
-    "//2": " stats taken from: https://www.varusteleka.com/en/product/us-molle-ii-sustainment-pouch-surplus/63566",
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    "//2": " stats taken from: https://www.varusteleka.com/en/product/us-molle-ii-sustainment-pouch-surplus/63566"
   }
 ]

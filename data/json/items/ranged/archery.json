@@ -432,7 +432,16 @@
     "volume": "2500 ml",
     "price_postapoc": "50 cent",
     "bashing": 6,
-    "armor_data": { "covers": [ "torso" ], "encumbrance": 20 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_back" ],
+          "coverage": 10,
+          "encumbrance": 20
+        }
+      ]
+    },
     "ranged_damage": { "damage_type": "stab", "amount": 21 },
     "range": 8,
     "dispersion": 1250,
@@ -454,7 +463,16 @@
     "volume": "1500 ml",
     "price_postapoc": "5 USD",
     "bashing": 6,
-    "armor_data": { "covers": [ "torso" ], "encumbrance": 10 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_back" ],
+          "coverage": 10,
+          "encumbrance": 14
+        }
+      ]
+    },
     "loudness": 45,
     "ranged_damage": { "damage_type": "stab", "amount": 28 },
     "range": 10,
@@ -569,7 +587,16 @@
     "volume": "3750 ml",
     "price_postapoc": "40 USD",
     "bashing": 12,
-    "armor_data": { "covers": [ "torso" ], "encumbrance": 25 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_back" ],
+          "coverage": 10,
+          "encumbrance": 14
+        }
+      ]
+    },
     "loudness": 55,
     "ranged_damage": { "damage_type": "stab", "amount": 36 },
     "range": 24,
@@ -589,7 +616,15 @@
     "volume": "1750 ml",
     "price_postapoc": "30 USD",
     "bashing": 8,
-    "armor_data": { "covers": [ "torso" ], "encumbrance": 15 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_back" ],
+          "encumbrance": 15
+        }
+      ]
+    },
     "loudness": 45,
     "ranged_damage": { "damage_type": "stab", "amount": 28 },
     "range": 12
@@ -608,7 +643,16 @@
     "volume": "3500 ml",
     "price_postapoc": "30 USD",
     "bashing": 10,
-    "armor_data": { "covers": [ "torso" ], "encumbrance": 20 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_back" ],
+          "coverage": 10,
+          "encumbrance": 20
+        }
+      ]
+    },
     "loudness": 50,
     "ranged_damage": { "damage_type": "stab", "amount": 35 },
     "range": 22,
@@ -627,7 +671,16 @@
     "volume": "5 L",
     "price_postapoc": "20 USD",
     "bashing": 15,
-    "armor_data": { "covers": [ "torso" ], "encumbrance": 25 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_back" ],
+          "coverage": 14,
+          "encumbrance": 25
+        }
+      ]
+    },
     "loudness": 65,
     "reload_noise_volume": "32 dB",
     "ranged_damage": { "damage_type": "stab", "amount": 56, "armor_penetration": 2 },

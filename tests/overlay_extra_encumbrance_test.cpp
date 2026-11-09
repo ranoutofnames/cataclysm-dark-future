@@ -115,8 +115,8 @@ TEST_CASE( "enc1_filled_pocket_adds_encumbrance", "[armor][pocket][enc1]" )
     REQUIRE( main != nullptr );
 
     const int empty_enc = in_ten.get_encumber( u, torso );
-    // CDF: daypack "encumbrance": 4 (data/json/items/armor/storage.json)
-    REQUIRE( empty_enc == 4 );
+    // daypack encumbrance 2 (DDA storage.json:1000, [ 2, 18 ]; TORSO2 takes DDA's portion numbers)
+    REQUIRE( empty_enc == 2 );
     REQUIRE( in_three.get_encumber( u, torso ) == empty_enc );
     REQUIRE( in_main.get_encumber( u, torso ) == empty_enc );
 
@@ -155,8 +155,8 @@ TEST_CASE( "enc1_empty_pocket_adds_nothing", "[armor][pocket][enc1]" )
     std::vector<detached_ptr<item>> keep;
     item &pack = spawn_pack( keep, itype_daypack );
     const int base = pack.get_encumber( u, torso );
-    // CDF: daypack "encumbrance": 4 (data/json/items/armor/storage.json)
-    CHECK( base == 4 );
+    // daypack encumbrance 2 (DDA storage.json:1000, [ 2, 18 ]; TORSO2 takes DDA's portion numbers)
+    CHECK( base == 2 );
 
     item_pocket *big = pocket_with_extra( pack, 10 );
     REQUIRE( big != nullptr );

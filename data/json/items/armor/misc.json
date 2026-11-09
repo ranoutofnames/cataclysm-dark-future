@@ -131,9 +131,14 @@
     "symbol": "(",
     "looks_like": "duffelbag",
     "color": "light_red",
-    "covers": [ "torso" ],
-    "coverage": 10,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 20,
+        "encumbrance": 4
+      }
+    ],
     "material_thickness": 4,
     "flags": [ "OVERSIZE", "BELTED", "COMPACT" ],
     "use_action": { "menu_text": "Unroll", "type": "transform", "target": "sleeping_bag", "msg": "You unroll the sleeping bag." },
@@ -182,9 +187,14 @@
     "symbol": "(",
     "looks_like": "sleeping_bag_roll",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 10,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 20,
+        "encumbrance": 5
+      }
+    ],
     "material_thickness": 5,
     "flags": [ "OVERSIZE", "BELTED", "COMPACT" ],
     "use_action": {

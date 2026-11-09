@@ -60,9 +60,14 @@
     "symbol": "]",
     "looks_like": "cloak",
     "color": "pink",
-    "covers": [ "torso" ],
-    "coverage": 50,
-    "encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 100,
+        "encumbrance": 4
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "flags": [ "OVERSIZE", "BELTED" ]

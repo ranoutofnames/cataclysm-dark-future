@@ -671,9 +671,14 @@
     "bashing": 4,
     "to_hit": -1,
     "use_action": { "type": "firestarter", "moves": 1000, "moves_slow": 25000, "need_sunlight": true },
-    "covers": [ "torso" ],
-    "encumbrance": 2,
-    "coverage": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_front" ],
+        "coverage": 25,
+        "encumbrance": 2
+      }
+    ],
     "material_thickness": 2
   },
   {
@@ -2560,7 +2565,13 @@
     "price_postapoc": "50 cent",
     "material": [ "steel", "cotton" ],
     "flags": [ "WATER_FRIENDLY" ],
-    "coverage": 1,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_neck" ],
+        "coverage": 1
+      }
+    ],
     "symbol": "[",
     "use_action": {
       "type": "manualnoise",
@@ -2581,7 +2592,12 @@
     "category": "tools",
     "weight": "200 g",
     "color": "brown",
-    "covers": [ "head" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_neck" ]
+      }
+    ],
     "max_charges": 1,
     "initial_charges": 1,
     "use_action": {
@@ -2610,7 +2626,14 @@
     "category": "tools",
     "weight": "2500 g",
     "color": "brown",
-    "covers": [ "torso" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_front" ],
+        "coverage": 25,
+        "encumbrance": 27
+      }
+    ],
     "to_hit": 2,
     "max_charges": 1,
     "initial_charges": 1,
@@ -2635,10 +2658,8 @@
     "material": [ "wood" ],
     "volume": "6750 ml",
     "warmth": 2,
-    "encumbrance": 27,
     "bashing": 8,
     "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SLEEP_IGNORE" ],
-    "coverage": 10,
     "material_thickness": 2
   },
   {
@@ -2648,7 +2669,14 @@
     "category": "tools",
     "weight": "2250 g",
     "color": "red",
-    "covers": [ "torso" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_front" ],
+        "coverage": 25,
+        "encumbrance": 27
+      }
+    ],
     "to_hit": 2,
     "max_charges": 1,
     "initial_charges": 1,
@@ -2678,10 +2706,8 @@
     "material": [ "wood", "iron" ],
     "volume": "6750 ml",
     "warmth": 2,
-    "encumbrance": 27,
     "bashing": 8,
     "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SLEEP_IGNORE" ],
-    "coverage": 10,
     "material_thickness": 2
   },
   {
@@ -2691,7 +2717,14 @@
     "category": "tools",
     "weight": "2300 g",
     "color": "green",
-    "covers": [ "torso" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_front" ],
+        "coverage": 25,
+        "encumbrance": 15
+      }
+    ],
     "to_hit": -2,
     "max_charges": 1,
     "initial_charges": 1,
@@ -2719,10 +2752,8 @@
     "price_postapoc": "5 USD",
     "material": [ "leather", "wood" ],
     "volume": "4 L",
-    "encumbrance": 15,
     "bashing": 4,
     "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SLEEP_IGNORE" ],
-    "coverage": 10,
     "material_thickness": 2
   },
   {
@@ -2732,7 +2763,14 @@
     "category": "tools",
     "weight": "10000 g",
     "color": "yellow",
-    "covers": [ "torso" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_front", "torso_hanging_back", "torso_upper" ],
+        "coverage": 65,
+        "encumbrance": 30
+      }
+    ],
     "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SLEEP_IGNORE" ],
     "to_hit": -1,
     "max_charges": 1,
@@ -2756,9 +2794,7 @@
     "price_postapoc": "250 cent",
     "material": [ "iron" ],
     "volume": "12500 ml",
-    "encumbrance": 30,
     "bashing": 13,
-    "coverage": 20,
     "material_thickness": 4
   },
   {
@@ -2768,7 +2804,14 @@
     "category": "tools",
     "weight": "2000 g",
     "color": "yellow",
-    "covers": [ "torso" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_front", "torso_hanging_back", "torso_upper" ],
+        "coverage": 65,
+        "encumbrance": 30
+      }
+    ],
     "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SLEEP_IGNORE" ],
     "to_hit": 1,
     "max_charges": 1,
@@ -2797,9 +2840,7 @@
     "price_postapoc": "250 cent",
     "material": [ "brass" ],
     "volume": "4500 ml",
-    "encumbrance": 30,
     "bashing": 12,
-    "coverage": 20,
     "material_thickness": 4
   },
   {
@@ -2912,10 +2953,15 @@
     "material": [ "plastic", "aluminum" ],
     "weight": "150 g",
     "volume": "250 ml",
-    "covers": [ "torso" ],
-    "encumbrance": 1,
-    "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SAFECRACK" ],
-    "coverage": 5
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_neck" ],
+        "coverage": 50,
+        "encumbrance": 1
+      }
+    ],
+    "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SAFECRACK" ]
   },
   {
     "id": "makeshift_stethoscope",
@@ -2930,10 +2976,15 @@
     "material": [ "plastic" ],
     "weight": "400 g",
     "volume": "500 ml",
-    "covers": [ "torso" ],
-    "encumbrance": 3,
-    "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SAFECRACK" ],
-    "coverage": 8
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_neck" ],
+        "coverage": 40,
+        "encumbrance": 3
+      }
+    ],
+    "flags": [ "BELTED", "OVERSIZE", "COMPACT", "SAFECRACK" ]
   },
   {
     "id": "solarpack",

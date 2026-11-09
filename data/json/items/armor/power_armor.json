@@ -912,10 +912,17 @@
     "type": "ARMOR",
     "name": { "str": "power armor ring holster" },
     "description": "A combination of leather and a metal ring to hold an axe, hammer, or similar tool at your side.  It's been converted to clip onto a power armor exoskeleton.",
-    "encumbrance": 1,
-    "proportional": { "max_encumbrance": 2 },
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 5,
+        "encumbrance": 1
+      }
+    ],
     "relative": { "weight": "500 g" },
-    "extend": { "flags": [ "POWERARMOR_MOD" ] }
+    "extend": { "flags": [ "POWERARMOR_MOD" ] },
+    "//TORSO2": "CDF: the child's own encumbrance 1 and the axe_ring coverage 5 it had (no DDA item) move into a portion; the proportional max_encumbrance of the flat form is dropped (a portion computes its maximum from the pockets)."
   },
   {
     "id": "power_armor_baldric",
@@ -924,10 +931,17 @@
     "name": { "str": "power armor baldric" },
     "description": "A leather scabbard, big enough for anything up to a longsword, or even a bit larger than that.  Designed to be worn at the waist, it's been converted to clip onto a power armor exoskeleton.  Activate to sheath/draw a sword.",
     "material": [ "leather", "wood", "steel" ],
-    "encumbrance": 1,
-    "proportional": { "max_encumbrance": 2 },
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 10,
+        "encumbrance": 1
+      }
+    ],
     "relative": { "weight": "500 g" },
-    "extend": { "flags": [ "POWERARMOR_MOD" ] }
+    "extend": { "flags": [ "POWERARMOR_MOD" ] },
+    "//TORSO2": "CDF: the child's own coverage 10 and encumbrance 1 (no DDA item) move into a portion; the proportional max_encumbrance of the flat form is dropped (a portion computes its maximum from the pockets)."
   },
   {
     "id": "power_armor_bscabbard",

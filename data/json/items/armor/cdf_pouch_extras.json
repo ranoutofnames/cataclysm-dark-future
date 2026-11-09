@@ -186,10 +186,12 @@
         "coverage": 30,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_hanging_back"
         ]
       }
     ],
-    "//3": "CDF: sub-locations torso_hanging_back do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage.",
     "bashing": 12,
     "//4": "CDF: dropped or converted: 'sided' is not read by CDF; DDA 'melee_damage' {bash:12} is written as CDF's flat 'bashing' (as the CDF quiver does)."
   },
@@ -235,10 +237,12 @@
         "coverage": 30,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_hanging_back"
         ]
       }
     ],
-    "//3": "CDF: sub-locations torso_hanging_back do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage.",
     "//4": "CDF: dropped or converted: 'sided' is not read by CDF."
   },
   {
@@ -329,12 +333,12 @@
           "torso"
         ],
         "specifically_covers": [
+          "torso_hanging_front",
           "torso_upper"
         ],
         "volume_encumber_modifier": 0.25
       }
-    ],
-    "//3": "CDF: sub-locations torso_hanging_front do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    ]
   },
   {
     "id": "heavy_load_bearing_vest_sling",
@@ -382,13 +386,14 @@
           "torso"
         ],
         "specifically_covers": [
+          "torso_hanging_front",
+          "torso_waist",
           "torso_upper",
           "torso_lower"
         ],
         "volume_encumber_modifier": 0.2
       }
-    ],
-    "//3": "CDF: sub-locations torso_hanging_front, torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    ]
   },
   {
     "id": "ammo_satchel_leather",
@@ -441,10 +446,12 @@
         "coverage": 20,
         "covers": [
           "torso"
+        ],
+        "specifically_covers": [
+          "torso_waist"
         ]
       }
-    ],
-    "//3": "CDF: sub-locations torso_waist do not exist in CDF (only torso_upper and torso_lower, data/json/body_parts_sub.json) and are dropped; a portion left with none covers the whole torso at DDA's coverage."
+    ]
   },
   {
     "id": "chestpouch_leather",

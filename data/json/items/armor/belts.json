@@ -14,8 +14,14 @@
     "symbol": "[",
     "looks_like": "holster",
     "color": "yellow",
-    "covers": [ "torso" ],
-    "encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 50,
+        "encumbrance": [ 2, 5 ]
+      }
+    ],
     "use_action": { "type": "holster", "holster_prompt": "Attach what to belt loop?", "holster_msg": "You clip your %s to your %s" },
     "valid_mods": [ "resized_large", "resized_small" ],
     "flags": [ "FANCY", "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
@@ -147,8 +153,13 @@
     "material": [ "leather" ],
     "symbol": "[",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 50
+      }
+    ],
     "material_thickness": 1,
     "use_action": { "type": "holster", "holster_prompt": "Stick what into your belt", "holster_msg": "You tuck your %s into your %s" },
     "valid_mods": [ "resized_large", "resized_small" ],
@@ -246,8 +257,13 @@
     "symbol": "[",
     "looks_like": "fireman_belt",
     "color": "brown",
-    "covers": [ "torso" ],
-    "encumbrance": 6,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 50
+      }
+    ],
     "use_action": { "type": "holster", "holster_prompt": "Attach what to holder?", "holster_msg": "You attach your %s to your %s." },
     "valid_mods": [ "resized_large", "resized_small" ],
     "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],
@@ -317,9 +333,14 @@
     "symbol": "[",
     "looks_like": "holster",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 15,
-    "encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 100,
+        "encumbrance": [ 2, 6 ]
+      }
+    ],
     "material_thickness": 2,
     "use_action": { "type": "holster", "holster_prompt": "Store tool or blade", "holster_msg": "You put your %1$s in your %2$s" },
     "flags": [ "WATER_FRIENDLY", "STURDY", "WAIST", "COMPACT", "OVERSIZE" ],
@@ -418,9 +439,14 @@
     "symbol": "[",
     "looks_like": "holster",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 20,
-    "encumbrance": 6,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 100,
+        "encumbrance": [ 2, 12 ]
+      }
+    ],
     "material_thickness": 2,
     "use_action": { "type": "holster", "holster_prompt": "Store tool or blade", "holster_msg": "You put your %1$s in your %2$s" },
     "valid_mods": [ "resized_large", "resized_small" ],
@@ -523,8 +549,14 @@
     "symbol": "[",
     "looks_like": "leather_belt",
     "color": "yellow",
-    "covers": [ "torso" ],
-    "encumbrance": 1,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 50,
+        "encumbrance": 1
+      }
+    ],
     "use_action": { "type": "holster", "holster_prompt": "Store tool or blade", "holster_msg": "You put your %1$s in your %2$s" },
     "valid_mods": [ "resized_large", "resized_small" ],
     "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ],

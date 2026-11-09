@@ -17,7 +17,17 @@
     "contains": "2500 ml",
     "seals": true,
     "watertight": true,
-    "armor_data": { "covers": [ "torso" ], "coverage": 10, "encumbrance": 4, "material_thickness": 2 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_front" ],
+          "coverage": 10,
+          "encumbrance": 4
+        }
+      ],
+      "material_thickness": 2
+    },
     "flags": [ "WAIST", "COMPACT", "OVERSIZE", "WATER_FRIENDLY", "COLLAPSE_CONTENTS" ]
   },
   {
@@ -27,7 +37,16 @@
     "name": { "str": "power armor 2.5L canteen" },
     "description": "A large plastic water canteen, with a 2.5 liter capacity.  It's been converted to clip onto power armor.",
     "material": [ "plastic", "steel" ],
-    "armor_data": { "encumbrance": 8 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_front" ],
+          "coverage": 10,
+          "encumbrance": 8
+        }
+      ]
+    },
     "relative": { "weight": "500 g" },
     "extend": { "flags": [ "POWERARMOR_MOD" ] }
   },
@@ -491,7 +510,17 @@
     "contains": "2 L",
     "seals": true,
     "watertight": true,
-    "armor_data": { "covers": [ "torso" ], "coverage": 15, "storage": "1 L", "material_thickness": 1 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_back" ],
+          "coverage": 30
+        }
+      ],
+      "storage": "1 L",
+      "material_thickness": 1
+    },
     "flags": [ "BELTED", "ALLOWS_WINGS", "COLLAPSE_CONTENTS" ]
   },
   {
@@ -1179,7 +1208,17 @@
     "contains": "1500 ml",
     "seals": true,
     "watertight": true,
-    "armor_data": { "covers": [ "torso" ], "coverage": 5, "encumbrance": 5, "material_thickness": 2 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_front" ],
+          "coverage": 5,
+          "encumbrance": 5
+        }
+      ],
+      "material_thickness": 2
+    },
     "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
   },
   {
@@ -1243,7 +1282,16 @@
     "contains": "3 L",
     "seals": true,
     "watertight": true,
-    "armor_data": { "covers": [ "torso" ], "coverage": 10, "material_thickness": 2 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_front" ],
+          "coverage": 10
+        }
+      ],
+      "material_thickness": 2
+    },
     "flags": [ "WAIST", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
   },
   {
@@ -1265,7 +1313,16 @@
     "contains": "5 L",
     "seals": true,
     "watertight": true,
-    "armor_data": { "covers": [ "torso" ], "coverage": 15, "material_thickness": 2 },
+    "armor_data": {
+      "armor_portion_data": [
+        {
+          "covers": [ "torso" ],
+          "specifically_covers": [ "torso_hanging_front" ],
+          "coverage": 40
+        }
+      ],
+      "material_thickness": 2
+    },
     "flags": [ "BELTED", "COMPACT", "WATER_FRIENDLY", "ALLOWS_WINGS" ]
   },
   {

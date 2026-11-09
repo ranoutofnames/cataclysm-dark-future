@@ -15,10 +15,14 @@
     "symbol": "[",
     "looks_like": "pouch",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 10,
-    "encumbrance": 1,
-    "max_encumbrance": 3,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 100,
+        "encumbrance": 2
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "WAIST", "OVERSIZE", "WATER_FRIENDLY", "COMPACT" ],
     "pocket_data": [
@@ -88,10 +92,14 @@
     "symbol": "[",
     "looks_like": "ragpouch",
     "color": "dark_gray",
-    "covers": [ "torso" ],
-    "coverage": 20,
-    "encumbrance": 1,
-    "max_encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 100,
+        "encumbrance": 1
+      }
+    ],
     "material_thickness": 2,
     "//": "Able to hold up to a fully-loaded .308 or .50 BMG ammo belt",
     "use_action": { "type": "holster", "holster_prompt": "Stash ammo", "holster_msg": "You stash your %s." },
@@ -218,10 +226,14 @@
     "symbol": "[",
     "looks_like": "quiver",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 30,
-    "encumbrance": 2,
-    "max_encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 60,
+        "encumbrance": 5
+      }
+    ],
     "material_thickness": 4,
     "use_action": { "type": "holster", "holster_prompt": "Stash javelins", "holster_msg": "You stash your %s." },
     "flags": [ "WATER_FRIENDLY", "OVERSIZE", "BELTED", "COMPACT" ],
@@ -428,9 +440,14 @@
     "symbol": "[",
     "looks_like": "quiver",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 15,
-    "encumbrance": 3,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 30,
+        "encumbrance": 3
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "BELTED", "COMPACT", "OVERSIZE", "WATER_FRIENDLY" ],
     "pocket_data": [ { "ammo_restriction": { "arrow": 60, "bolt": 60 }, "moves": 20 } ]
@@ -449,9 +466,14 @@
     "symbol": "[",
     "looks_like": "quiver_birchbark",
     "color": "light_gray",
-    "covers": [ "torso" ],
-    "coverage": 15,
-    "encumbrance": 14,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 30,
+        "encumbrance": 14
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "BELTED", "COMPACT", "VARSIZE", "OVERSIZE", "WATER_FRIENDLY" ],
     "pocket_data": [ { "ammo_restriction": { "arrow": 60, "bolt": 60 }, "moves": 20 } ]

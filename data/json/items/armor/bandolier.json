@@ -103,9 +103,14 @@
     "symbol": "[",
     "looks_like": "leather_belt",
     "color": "dark_gray",
-    "covers": [ "torso" ],
-    "coverage": 10,
-    "encumbrance": 2,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 100,
+        "encumbrance": 2
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "WATER_FRIENDLY", "WAIST", "COMPACT", "OVERSIZE" ],
     "pocket_data": [
@@ -147,9 +152,14 @@
     "symbol": "[",
     "looks_like": "ammo_pouch",
     "color": "dark_gray",
-    "covers": [ "torso" ],
-    "coverage": 10,
-    "encumbrance": 2,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 100,
+        "encumbrance": 2
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "WATER_FRIENDLY", "WAIST", "COMPACT", "OVERSIZE" ],
     "pocket_data": [

@@ -13,9 +13,13 @@
     "symbol": "[",
     "looks_like": "sheath",
     "color": "brown",
-    "covers": [ "leg_either" ],
-    "coverage": 5,
-    "max_encumbrance": 2,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 50
+      }
+    ],
     "material_thickness": 1,
     "use_action": { "type": "holster", "holster_prompt": "Sheathe axe", "holster_msg": "You sheathe your %s" },
     "flags": [ "NONCONDUCTIVE", "WAIST", "COMPACT", "OVERSIZE", "WATER_FRIENDLY", "ALLOWS_TAIL_SNAKE", "BELT_CLIP" ],
@@ -45,10 +49,15 @@
     "symbol": "[",
     "looks_like": "sheath",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_waist" ],
+        "coverage": 100,
+        "encumbrance": 2
+      }
+    ],
     "rigid": false,
-    "max_encumbrance": 3,
     "material_thickness": 1,
     "use_action": { "type": "holster", "holster_prompt": "Sheathe sword", "holster_msg": "You sheathe your %s" },
     "flags": [ "WAIST", "COMPACT", "OVERSIZE", "WATER_FRIENDLY" ],
@@ -193,11 +202,15 @@
     "symbol": "[",
     "looks_like": "baldric",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 20,
+        "encumbrance": [ 6, 10 ]
+      }
+    ],
     "rigid": false,
-    "encumbrance": 3,
-    "max_encumbrance": 5,
     "material_thickness": 1,
     "use_action": { "type": "holster", "holster_prompt": "Sheathe sword", "holster_msg": "You sheathe your %s" },
     "flags": [ "BELTED", "COMPACT", "OVERSIZE", "WATER_FRIENDLY" ],
@@ -315,9 +328,14 @@
     "symbol": "[",
     "looks_like": "bscabbard",
     "color": "brown",
-    "covers": [ "torso" ],
-    "coverage": 5,
-    "max_encumbrance": 3,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 10,
+        "encumbrance": 1
+      }
+    ],
     "material_thickness": 1,
     "use_action": { "type": "holster", "holster_prompt": "Holster spear", "holster_msg": "You holster your %s." },
     "flags": [ "BELTED", "COMPACT", "OVERSIZE", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY" ],
