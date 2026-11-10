@@ -38,6 +38,8 @@
 #include "flat_set.h"
 #include "game.h"
 #include "game_inventory.h"
+// CDF: LINKUP1a; optional() for link_up_actor::load().
+#include "generic_factory.h"
 #include "handle_liquid.h"
 #include "hsv_color.h"
 #include "iexamine.h"
@@ -8569,4 +8571,240 @@ auto iuse_paint_stuff::clone() const -> std::unique_ptr<iuse_actor>
 auto iuse_paint_stuff_config::clone() const -> std::unique_ptr<iuse_actor>
 {
     return std::make_unique<iuse_paint_stuff_config>( *this );
+}
+
+// CDF: LINKUP1a, DDA iuse_actor.cpp:4842-4851 (load), 4853-4864 (clone/get_name),
+// 4866-4925 (info), 4928-5146 (use) and 5245-5346 (link_to_veh_app). The BN use() signature
+// returns an int instead of DDA's std::optional<int>, and only the power-source connection is
+// here: the detach/reel, extension, tow, CBM, UPS and solar pack entries are LINKUP1b.
+
+void link_up_actor::load( const JsonObject &jo )
+{
+    optional( jo, false, "cable_length", cable_length, -1 );
+    // CDF: DDA reads units::power ("800 W", "2 kW"); CDF has no units::power (its
+    // islot_tool::power_draw is an int in mW), so parse the same strings into milliwatts.
+    if( jo.has_string( "charge_rate" ) ) {
+        std::istringstream power_in( jo.get_string( "charge_rate" ) );
+        double value = 0.0;
+        std::string unit;
+        power_in >> value >> unit;
+        if( unit == "kW" ) {
+            charge_rate = static_cast<int>( value * 1000000.0 );
+        } else if( unit == "mW" ) {
+            charge_rate = static_cast<int>( value );
+        } else {
+            charge_rate = static_cast<int>( value * 1000.0 );
+        }
+    } else {
+        optional( jo, false, "charge_rate", charge_rate, 0 );
+    }
+    optional( jo, false, "efficiency", efficiency, 0.85f );
+    optional( jo, false, "move_cost", move_cost, 5 );
+    optional( jo, false, "menu_text", menu_text );
+    // CDF: CDF's JsonIn has no std::set reader (DDA reads the set directly), so read the string
+    // arrays and map them here.
+    if( jo.has_member( "targets" ) ) {
+        targets.clear();
+        for( const std::string &target : jo.get_string_array( "targets" ) ) {
+            targets.insert( io::string_to_enum<link_state>( target ) );
+        }
+    } else {
+        // CDF: DDA's optional() default; the enumerators are not visible in iuse_actor.h.
+        targets = { link_state::no_link, link_state::vehicle_port };
+    }
+    if( jo.has_member( "can_extend" ) ) {
+        can_extend = jo.get_tags( "can_extend" );
+    }
+}
+
+std::unique_ptr<iuse_actor> link_up_actor::clone() const
+{
+    return std::make_unique<link_up_actor>( *this );
+}
+
+std::string link_up_actor::get_name() const
+{
+    if( !menu_text.empty() ) {
+        return menu_text.translated();
+    }
+    return iuse_actor::get_name();
+}
+
+void link_up_actor::info( const item &it, std::vector<iteminfo> &dump ) const
+{
+    std::vector<std::string> targets_strings;
+    bool appliance = false;
+    if( targets.count( link_state::vehicle_port ) > 0 ) {
+        targets_strings.emplace_back( _( "vehicle controls" ) );
+        appliance = true;
+    }
+    if( targets.count( link_state::vehicle_battery ) > 0 ) {
+        targets_strings.emplace_back( _( "vehicle battery" ) );
+        appliance = true;
+    }
+    if( appliance ) {
+        targets_strings.emplace_back( _( "appliance" ) );
+    }
+    if( targets.count( link_state::bio_cable ) > 0 ) {
+        targets_strings.emplace_back( _( "bionic" ) );
+    }
+    if( targets.count( link_state::ups ) > 0 ) {
+        targets_strings.emplace_back( _( "UPS" ) );
+    }
+    if( targets.count( link_state::solarpack ) > 0 ) {
+        targets_strings.emplace_back( _( "solar pack" ) );
+    }
+    if( targets.count( link_state::vehicle_tow ) > 0 ) {
+        dump.emplace_back( "TOOL", _( "<bold>Can tow a vehicle</bold>." ) );
+    }
+    if( !targets_strings.empty() ) {
+        std::string targets_string = enumerate_as_string( targets_strings, enumeration_conjunction::or_ );
+        dump.emplace_back( "TOOL",
+                           string_format( _( "<bold>Can be plugged into</bold>: %s." ), targets_string ) );
+    }
+
+    const bool no_extensions = it.cables().empty();
+    item dummy( it );
+    dummy.update_link_traits();
+
+    std::string length_all_info = string_format( _( "<bold>Cable length</bold>: %d" ),
+                                  dummy.max_link_length() );
+    std::string length_solo_info = no_extensions ? "" : string_format( _( " (%d without extensions)" ),
+                                   cable_length != -1 ? cable_length : dummy.type->maximum_charges() );
+    dump.emplace_back( "TOOL", length_all_info, length_solo_info );
+
+    if( charge_rate != 0 ) {
+        //~ Power in watts. %+4.1f is a 4 digit number with 1 decimal point (ex: 4737.3 W)
+        dump.emplace_back( "TOOL", _( "<bold>Wattage</bold>: " ), string_format( _( "%+4.1f W" ),
+                           charge_rate / 1000.f ) );
+    }
+
+    if( !can_extend.empty() ) {
+        std::vector<std::string> cable_types;
+        cable_types.reserve( can_extend.size() );
+        for( const std::string &cable_type : can_extend ) {
+            cable_types.emplace_back( cable_type == "ELECTRICAL_DEVICES" ? _( "electrical device cables" ) :
+                                      itype_id( cable_type )->nname( 1 ) );
+        }
+        std::string cable_type_list = enumerate_as_string( cable_types, enumeration_conjunction::or_ );
+        dump.emplace_back( "TOOL", string_format( _( "<bold>Can extend</bold>: %s" ), cable_type_list ) );
+    }
+}
+
+auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) const -> int
+{
+    if( targets.empty() ) {
+        debugmsg( "Link up action for %s doesn't have any targets!", it.tname() );
+        return 0;
+    }
+
+    uilist link_menu;
+    link_menu.text = string_format( _( "What to do with the %s?" ), it.link_name() );
+    if( targets.count( link_state::vehicle_port ) > 0 ) {
+        link_menu.addentry( 0, true, -1,
+                            _( "Attach to dashboard, electronics control unit or appliance" ) );
+    }
+    if( targets.count( link_state::vehicle_battery ) > 0 ) {
+        link_menu.addentry( 1, true, -1, _( "Attach to vehicle battery or appliance" ) );
+    }
+
+    if( link_menu.entries.empty() ) {
+        p.add_msg_if_player( m_info, _( "The %s has no available connections." ), it.link_name() );
+        return 0;
+    }
+
+    int choice = -1;
+    if( link_menu.entries.size() == 1 ) {
+        choice = link_menu.entries.begin()->retval;
+    } else {
+        link_menu.query();
+        choice = link_menu.ret;
+    }
+
+    if( choice < 0 ) {
+        // Cancelled selection.
+        return 0;
+    }
+
+    if( choice == 0 || choice == 1 ) {
+        // Selection: Attach electrical cable to vehicle ports / appliances, OR vehicle batteries.
+        return link_to_veh_app( p, it, choice == 0 ).value_or( 0 );
+    }
+    return 0;
+}
+
+std::optional<int> link_up_actor::link_to_veh_app( player &p, item &it, const bool to_ports ) const
+{
+    map &here = get_map();
+    // Selection: Attach electrical cable to vehicle ports / appliances, OR vehicle batteries.
+
+    const auto can_link = [&here, &to_ports]( const tripoint_bub_ms & point ) {
+        const optional_vpart_position ovp = here.veh_at( point );
+        return ovp && ovp->vehicle().avail_linkable_part( ovp->mount(), to_ports ) != -1;
+    };
+    // CDF: CDF's choose_adjacent_highlight takes no map and no action id (DDA passes both).
+    const std::optional<tripoint_bub_ms> pnt_ = choose_adjacent_highlight(
+                _( "Attach the cable where?" ), "", can_link, false );
+    if( !pnt_ ) {
+        p.add_msg_if_player( _( "Never mind." ) );
+        return std::nullopt;
+    }
+    const tripoint_bub_ms &selection = *pnt_;
+    const optional_vpart_position sel_vp = here.veh_at( selection );
+    if( !sel_vp ) {
+        p.add_msg_if_player( _( "There's no vehicle there." ) );
+        return std::nullopt;
+    }
+
+    // You used to be able to plug cables in anywhere on a vehicle, so there's extra effort here
+    // to inform players that they can only plug them into dashboards or electrical controls now.
+    if( !can_link( selection ) ) {
+        if( to_ports && sel_vp->vehicle().has_part( "CABLE_PORTS" ) ) {
+            p.add_msg_if_player( m_info,
+                                 _( "You can't attach it there - try the dashboard or electronics controls." ) );
+        } else if( !to_ports && !sel_vp->vehicle().battery_parts.empty() ) {
+            // CDF: DDA reads `batteries`; CDF's vehicle keeps `battery_parts`.
+            p.add_msg_if_player( m_info,
+                                 _( "You can't attach it there - try the battery." ) );
+        } else {
+            p.add_msg_if_player( m_info, _( "You can't attach it there." ) );
+        }
+        return std::nullopt;
+    }
+
+    if( !it.link_has_state( link_state::vehicle_port ) &&
+        !it.link_has_state( link_state::vehicle_battery ) ) {
+
+        // Starting a new connection to a vehicle or connecting a cable CBM to a vehicle.
+        const bool had_bio_link = it.link_has_state( link_state::bio_cable );
+        ret_val<void> result = it.link_to( sel_vp, to_ports ? link_state::vehicle_port :
+                                           link_state::vehicle_battery );
+        if( !result.success() ) {
+            p.add_msg_if_player( m_bad, result.str() );
+            return 0;
+        }
+
+        // Get the part name for the connection message, using the vehicle name as a fallback.
+        const int part_index = sel_vp->vehicle().avail_linkable_part( sel_vp->mount(), to_ports );
+        const std::string sel_vp_name = part_index == -1 ? sel_vp->vehicle().name :
+                                        sel_vp->vehicle().part( part_index ).name( false );
+
+        if( had_bio_link ) {
+            p.add_msg_if_player( m_good, _( "You are now plugged into the %s." ), sel_vp_name );
+            it.link().source = link_state::bio_cable;
+        } else {
+            p.add_msg_if_player( _( "You connect the %1$s to the %2$s." ), it.type_name(), sel_vp_name );
+        }
+
+        // CDF: item::process is a static detached_ptr API in CDF (no member process( here, p, pos ));
+        // LINKUP1b adds the per-turn link processing.
+        it.update_link_traits();
+        p.mod_moves( -move_cost );
+        return 0;
+
+    }
+
+    // CDF: LINKUP1b ports DDA iuse_actor.cpp:5312-5345, connecting two vehicles/appliances.
+    p.add_msg_if_player( m_info, _( "The %s is already connected." ), it.link_name() );
+    return std::nullopt;
 }

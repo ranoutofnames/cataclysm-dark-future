@@ -99,6 +99,10 @@ class item_contents
         /** gets all gunmods in the item */
         std::vector<const item *> gunmods() const;
 
+        // CDF: LINKUP1a, DDA item_contents.h:178-179: the cables in the CABLE pockets
+        std::vector<item *> cables();
+        std::vector<const item *> cables() const;
+
         /**
          * this is an artifact of the previous code using
          * front() everywhere for contents. this is to aid

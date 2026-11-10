@@ -35,6 +35,9 @@ enum body_part : int;
 class JsonObject;
 struct furn_t;
 struct itype;
+// CDF: LINKUP1a; the enum is defined in item.h (DDA has it in enums.h:516). An opaque scoped
+// enum with a fixed underlying type is complete enough for the std::set in link_up_actor.
+enum class link_state : int;
 
 /**
  * Transform an item into a specific type.
@@ -1617,6 +1620,37 @@ class iuse_portal_link : public iuse_actor
         auto can_use( const Character &, const item &it, bool,
                       const tripoint_bub_ms &pos ) const -> ret_val<bool> override;
         auto clone() const -> std::unique_ptr<iuse_actor> override;
+};
+
+// CDF: LINKUP1a, DDA iuse_actor.h:1161-1194. The actor's data and the "connect this tool to a
+// power source" use; tow cables, extensions and appliance part flags are LINKUP1b.
+class link_up_actor : public iuse_actor
+{
+    public:
+        /** Maximum length of the cable. At -1, will use the item type's max_charges. */
+        int cable_length = -1;
+        /** Charge rate in milliwatts. CDF: an int, CDF has no units::power (see islot_tool::power_draw). */
+        int charge_rate = 0;
+        /** (this) out of 1.0 chance to successfully add 1 charge every charge interval */
+        float efficiency = 0.85f;
+        /** (Optional) The move cost to attach the cable. */
+        int move_cost = 5;
+        /** (Optional) Text displayed in the activation screen, defaults to "Plug in / Manage cables". */
+        translation menu_text;
+
+        std::set<link_state> targets;
+        std::set<std::string> can_extend;
+
+        std::optional<int> link_to_veh_app( player &p, item &it, bool to_ports ) const;
+
+        link_up_actor() : iuse_actor( "link_up" ) {}
+
+        ~link_up_actor() override = default;
+        void load( const JsonObject &jo ) override;
+        std::unique_ptr<iuse_actor> clone() const override;
+        std::string get_name() const override;
+        void info( const item &, std::vector<iteminfo> & ) const override;
+        auto use( player &p, item &it, bool, const tripoint_bub_ms &pos ) const -> int override;
 };
 
 class iuse_paint_stuff_config : public iuse_actor

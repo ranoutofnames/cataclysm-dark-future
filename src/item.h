@@ -57,6 +57,9 @@ struct itype;
 struct pocket_consumption_entry;
 struct item_comp;
 class item_drop_token;
+// CDF: LINKUP1a; item::link_data holds a raw vehicle pointer and link_to() takes a vehicle pos.
+class vehicle;
+class optional_vpart_position;
 template<typename CompType>
 struct comp_selection;
 struct tool_comp;
@@ -229,6 +232,24 @@ enum class item_location_type : int {
     vehicle = 3,
     container = 4,
     monster = 5,
+};
+
+// CDF: LINKUP1a; DDA enums.h:516-531. The LINKUP1a brief names item.h for link_state.
+enum class link_state : int {
+    no_link = 0,     // No connection, the default state
+    needs_reeling,   // Cable has been disconnected and needs to be manually reeled in before it can be used again
+    ups,             // Linked to a UPS the cable holder is holding
+    solarpack,       // Linked to a solarpack the cable holder is wearing
+    vehicle_port,    // Linked to a vehicle's cable ports / electrical controls or an appliance
+    vehicle_battery, // Linked to a vehicle's battery or an appliance
+    bio_cable,       // Linked to the cable holder's cable system bionic - source if connected to a vehicle, target otherwise
+    vehicle_tow,     // Linked to a valid tow point on a vehicle - source if it's the towing vehicle, target if the towed one
+    automatic,       // Use in link_to() to automatically set the type of connection based on the connected vehicle part. Is always true as a link_has_states() parameter.
+    last
+};
+template<>
+struct enum_traits<link_state> {
+    static constexpr link_state last = link_state::last;
 };
 
 class item : public location_visitable<item>, public game_object<item>
@@ -1349,6 +1370,110 @@ class item : public location_visitable<item>, public game_object<item>
          * Helper to bring a cable back to its initial state.
          */
         void reset_cable( Character *who = nullptr );
+
+        // CDF: LINKUP1a, DDA item.h:1608-1636. The vehicle half of the cable system (tow,
+        // extensions, appliance part flags) is LINKUP1b.
+        struct link_data {
+            /// State of the link's source connection, the end usually represented by the device/cable item itself. @ref link_state.
+            link_state source = link_state::no_link;
+            /// State of the link's target connection, the end represented by t_abs_pos. @ref link_state.
+            link_state target = link_state::no_link;
+            /// The link's target vehicle. CDF: a raw pointer, not DDA's safe_reference<vehicle>:
+            /// CDF's safe_reference is only instantiated for item (safe_reference.cpp:317) and the
+            /// vehicle is re-found from t_abs_pos on load (savegame_json.cpp).
+            vehicle *t_veh = nullptr; // NOLINT(cata-serialize)
+            /// Absolute position of the linked target vehicle/appliance.
+            tripoint_abs_ms t_abs_pos = tripoint_abs_ms::min();
+            /// The linked part's mount offset on the target vehicle.
+            /// CDF: tripoint_mnt_veh, CDF vehicle mounts are 3D (DDA uses point_rel_ms).
+            tripoint_mnt_veh t_mount = tripoint_mnt_veh::zero();
+            /// Absolute position of the link's source cable item when the length was last checked.
+            tripoint_abs_ms s_abs_pos = tripoint_abs_ms::min(); // NOLINT(cata-serialize)
+            /// The last turn process_link was called on this cable. Used to find how much time the cable spends outside the reality bubble.
+            time_point last_processed = calendar::turn;
+            /// The current slack of the cable.
+            int length = 0;
+            /// The maximum length of the cable.
+            int max_length = 2;
+            /// The cable's power capacity in milliwatts, affects battery charge rate.
+            /// CDF: an int in mW, DDA's units::power is absent from CDF (see islot_tool::power_draw).
+            int charge_rate = 0;
+            /// (this) out of 1.0 chance to successfully add 1 charge every charge interval.
+            float efficiency = 0.0f;
+            /// How long it takes to charge 1 kW, the unit batteries use.
+            int charge_interval = 0;
+
+            void serialize( JsonOut &jsout ) const;
+            void deserialize( const JsonObject &data );
+        };
+        /// Disconnecting a cable beyond this length will leave it unspooled, requiring respooling to be usable again.
+        static const int LINK_RESPOOL_THRESHOLD = 6;
+
+        /// Gets the item's link data, initializing it if needed. Will throw an error if used on items that fail can_link_up().
+        /// To avoid unnecessary link_data initialization, simple boolean link functions should be used instead if possible.
+        item::link_data &link();
+        const item::link_data &link() const;
+        /// Returns true if the item has valid link_data. Does not mean the link actually connects to anything; use has_no_links() for that.
+        bool has_link_data() const;
+        /// Returns true if the item is/has a cable that can link up to other things. Should usually be called before using link().
+        bool can_link_up() const;
+
+        /// Returns true if either of the link's ends have the specified state.
+        bool link_has_state( link_state state ) const;
+        /// Returns true if both of the item's link connections match the specified states.
+        /// link_state::automatic will always match.
+        bool link_has_states( link_state source, link_state target ) const;
+        /// Returns true if the item has no active link, or if both link states are link_state::no_link.
+        bool has_no_links() const;
+
+        /// Name to use for describing the link, whether it's its own item, like "extension cord", or secondary, like "smart phone's cable".
+        std::string link_name() const;
+
+        /**
+         * @brief Initializes the item's link_data and starts a connection to the specified vehicle position.
+         * @param linked_vp An optional_vpart_position to connect the item to.
+         * @param link_type What type of connection to make. If set to link_state::automatic, will automatically determine which type to use. Defaults to link_state::no_link.
+         * @return true if the item was successfully connected.
+         */
+        ret_val<void> link_to( const optional_vpart_position &linked_vp,
+                               link_state link_type = link_state::no_link );
+        /**
+         * @brief Initializes the item's link_data and starts a connection to the specified vehicle and mount point.
+         * @param veh The vehicle to connect the item to.
+         * @param mount The mount point of the part being connected to.
+         * @param link_type What type of connection to make. If set to link_state::automatic, will automatically determine which type to use. Defaults to link_state::no_link.
+         * @return true if the item was successfully connected.
+         */
+        ret_val<void> link_to( vehicle &veh, const tripoint_mnt_veh &mount,
+                               link_state link_type = link_state::no_link );
+
+        /**
+         * @brief Updates all parts of the item's link_data that don't have to do with its connection. Initializes the link if needed.
+         * @brief * max_length is set to the sum of the cable and all its extensions' lengths.
+         * @brief * efficiency is set to the product of the cable and all its extensions' efficiencies multiplied together.
+         */
+        void update_link_traits();
+
+        /**
+         * @return The link's current length.
+         * @return `-1` if the item has link_data but needs reeling.
+         * @return `-2` if the item has no active link.
+         */
+        int link_length() const;
+
+        /**
+         * @return The item's maximum possible link length, including extensions. Item doesn't need an active link.
+         * @return `-2` if the item has no active link or extensions.
+         */
+        int max_link_length() const;
+
+        /**
+         * Value used for sorting linked items in inventory lists.
+         */
+        int link_sort_key() const;
+
+        // CDF: LINKUP1a, DDA item.h:2951: the cables in this item's CABLE pockets
+        std::vector<const item *> cables() const;
 
         /**
          * Whether the item should be processed (by calling @ref process).
@@ -3106,6 +3231,7 @@ class item : public location_visitable<item>, public game_object<item>
         mutable faction_id old_owner = faction_id::NULL_ID();
         int damage_ = 0;
         light_emission light = nolight;
+        mutable cata::value_ptr<link_data> link_;
 
     public:
         char invlet = 0;      // Inventory letter

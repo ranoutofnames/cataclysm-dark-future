@@ -2920,6 +2920,39 @@ damage_instance
 
 } // namespace
 
+// CDF: LINKUP1a, DDA savegame_json.cpp:3067-3100
+void item::link_data::serialize( JsonOut &jsout ) const
+{
+    jsout.start_object();
+    jsout.member( "link_i_state", source );
+    jsout.member( "link_t_state", target );
+    jsout.member( "link_t_abs_pos", t_abs_pos );
+    jsout.member( "link_t_mount", t_mount );
+    jsout.member( "link_length", length );
+    jsout.member( "link_max_length", max_length );
+    jsout.member( "link_last_processed", last_processed );
+    jsout.member( "link_charge_rate", charge_rate );
+    jsout.member( "link_charge_efficiency", efficiency );
+    jsout.member( "link_charge_interval", charge_interval );
+    jsout.end_object();
+}
+
+void item::link_data::deserialize( const JsonObject &data )
+{
+    data.allow_omitted_members();
+
+    data.read( "link_i_state", source );
+    data.read( "link_t_state", target );
+    data.read( "link_t_abs_pos", t_abs_pos );
+    data.read( "link_t_mount", t_mount );
+    data.read( "link_length", length );
+    data.read( "link_max_length", max_length );
+    data.read( "link_last_processed", last_processed );
+    data.read( "link_charge_rate", charge_rate );
+    data.read( "link_charge_efficiency", efficiency );
+    data.read( "link_charge_interval", charge_interval );
+}
+
 template<typename Archive>
 void item::io( Archive &archive )
 {
@@ -3020,6 +3053,10 @@ void item::io( Archive &archive )
     static const cata::value_ptr<relic> null_relic_ptr = nullptr;
     archive.io( "relic_data", relic_data, null_relic_ptr );
 
+    // CDF: LINKUP1a, DDA savegame_json.cpp:3258-3265
+    static const cata::value_ptr<link_data> null_link_ptr = nullptr;
+    archive.io( "link_data", link_, null_link_ptr );
+
     if constexpr( Archive::is_input::value ) {
         auto dim = dimension_info{};
         if( archive.read( "pocket_dim", dim ) ) {
@@ -3032,6 +3069,17 @@ void item::io( Archive &archive )
     archive.io( "drop_token", drop_token, decltype( drop_token )() );
 
     item_controller->migrate_item( orig, *this );
+
+    // CDF: LINKUP1a, DDA savegame_json.cpp:3260-3265. The vehicle pointer is not saved; find it
+    // again from t_abs_pos (CDF keeps a raw pointer, see item.h).
+    if constexpr( Archive::is_input::value ) {
+        if( has_link_data() ) {
+            const optional_vpart_position vp = get_map().veh_at( link().t_abs_pos );
+            if( vp ) {
+                link().t_veh = &vp.value().vehicle();
+            }
+        }
+    }
 
     if( !Archive::is_input::value ) {
         return;

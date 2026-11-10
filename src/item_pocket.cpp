@@ -60,6 +60,7 @@ std::string enum_to_string<pocket_type>( pocket_type data )
         case pocket_type::MOD: return "MOD";
         case pocket_type::CORPSE: return "CORPSE";
         case pocket_type::SOFTWARE: return "SOFTWARE";
+        case pocket_type::CABLE: return "CABLE";
         case pocket_type::MIGRATION: return "MIGRATION";
         // *INDENT-ON*
         case pocket_type::LAST:
@@ -1299,6 +1300,16 @@ ret_val<item_pocket::contain_code> item_pocket::is_compatible( const item &it ) 
         return ret_val<item_pocket::contain_code>::make_success();
     }
 
+    // CDF: LINKUP1a, DDA item_pocket.cpp:1376-1384
+    if( data->type == pocket_type::CABLE ) {
+        if( it.has_flag( flag_CABLE_SPOOL ) ) {
+            return ret_val<item_pocket::contain_code>::make_success();
+        } else {
+            return ret_val<item_pocket::contain_code>::make_failure(
+                       contain_code::ERR_MOD, _( "only cables can go into cable pocket" ) );
+        }
+    }
+
     if( it.has_flag( flag_NO_UNWIELD ) ) {
         return ret_val<item_pocket::contain_code>::make_failure(
                    contain_code::ERR_MOD, _( "cannot unwield item" ) );
@@ -1637,7 +1648,8 @@ detached_ptr<item> move_to_parent_pocket_recursive( const tripoint_bub_ms &pos,
 
 void item_pocket::overflow( const tripoint_bub_ms &pos, item *parent_item, Character *carrier )
 {
-    if( is_type( pocket_type::MOD ) || is_type( pocket_type::CORPSE ) ) {
+    if( is_type( pocket_type::MOD ) || is_type( pocket_type::CORPSE ) ||
+        is_type( pocket_type::CABLE ) ) {
         return;
     }
     if( empty() ) {
@@ -1778,7 +1790,7 @@ void item_pocket::on_contents_changed()
 
 bool item_pocket::spill_contents( const tripoint_bub_ms &pos )
 {
-    if( is_type( pocket_type::CORPSE ) ) {
+    if( is_type( pocket_type::CORPSE ) || is_type( pocket_type::CABLE ) ) {
         return false;
     }
 

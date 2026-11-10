@@ -1007,6 +1007,15 @@ public:
      */
     auto discharge_battery(int amount, bool recurse = true) -> int;
 
+    // CDF: LINKUP1a, DDA vehicle.cpp:5542-5557: (remaining, capacity) of this vehicle's own
+    // batteries. LINKUP1b adds connected_battery_power_level() for the appliance graph.
+    auto battery_power_level() const -> std::pair<int, int>;
+
+    // CDF: LINKUP1a, DDA vehicle.cpp:3120-3131: the index of the part a cable can connect to at
+    // this mount, or -1. `to_ports` picks the CABLE_PORTS part flag over the BATTERY one.
+    // CDF: tripoint_mnt_veh, CDF mounts are 3D (DDA uses point_rel_ms).
+    auto avail_linkable_part( const tripoint_mnt_veh &pt, bool to_ports ) const -> int;
+
     // CDF: DDA vehicle.h:1996-2012; the map &here parameter is dropped like the
     // other fuel and drain entry points above.
     // Multimag pseudo-tool support.

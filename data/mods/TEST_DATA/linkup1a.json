@@ -1,0 +1,35 @@
+[
+  {
+    "//": "CDF: LINKUP1a test fixture. DDA data/json/items/tool/workshop.json:55-77 (angle_grinder) target shape: a TOOL whose use_action is link_up, no battery pocket of its own. charges_per_use gives ammo_required() 1 so ammo_sufficient() reads the link (item_gun_tool_ammo.cpp).",
+    "id": "test_linkup_welder",
+    "type": "TOOL",
+    "name": { "str": "test link-up welder" },
+    "description": "A test tool that draws power through a cable.",
+    "weight": "1 kg",
+    "volume": "500 ml",
+    "price": 0,
+    "material": [ "steel" ],
+    "symbol": ";",
+    "color": "light_gray",
+    "charges_per_use": 1,
+    "use_action": {
+      "type": "link_up",
+      "cable_length": 3,
+      "charge_rate": "800 W"
+    }
+  },
+  {
+    "//": "CDF: LINKUP1a test fixture for the negative half of can_link_up(): same tool, no link_up action.",
+    "id": "test_linkup_plain_tool",
+    "type": "TOOL",
+    "name": { "str": "test plain tool" },
+    "description": "A test tool without a cable.",
+    "weight": "1 kg",
+    "volume": "500 ml",
+    "price": 0,
+    "material": [ "steel" ],
+    "symbol": ";",
+    "color": "light_gray",
+    "charges_per_use": 1
+  }
+]

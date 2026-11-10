@@ -2993,6 +2993,19 @@ auto vehicle::has_part(const std::string& flag, bool enabled) const -> bool {
     });
 }
 
+// CDF: LINKUP1a, DDA vehicle.cpp:3120-3131. CDF: tripoint_mnt_veh mounts.
+auto vehicle::avail_linkable_part(const tripoint_mnt_veh& pt, bool to_ports) const -> int {
+    const std::string link_flag = to_ports ? "CABLE_PORTS" : "BATTERY";
+    for (const int p : parts_at_relative(pt, /* use_cache = */ false)) {
+        const vehicle_part& vp_here = cpart(p);
+        if (!vp_here.is_broken() &&
+            (vp_here.info().has_flag("APPLIANCE") || vp_here.info().has_flag(link_flag))) {
+            return p;
+        }
+    }
+    return -1;
+}
+
 auto vehicle::has_part(const vpart_bitflags& flag, bool enabled) const -> bool {
     return std::ranges::any_of(parts, [&flag, &enabled](const vehicle_part& e) {
         return !e.removed && (!enabled || e.enabled) && !e.is_broken() && e.info().has_flag(flag);
@@ -5544,6 +5557,22 @@ auto vehicle::charge_battery(int amount, bool include_other_vehicles) -> int {
 
 
     return amount;
+}
+
+// CDF: LINKUP1a, DDA vehicle.cpp:5542-5557. CDF sums `battery_parts` (DDA's `batteries`).
+auto vehicle::battery_power_level() const -> std::pair<int, int> {
+    int total_epower_capacity = 0;
+    int remaining_epower = 0;
+
+    for (const int bi : battery_parts) {
+        const vehicle_part& b = cpart(bi);
+        if (b.is_available()) {
+            remaining_epower += b.ammo_remaining();
+            total_epower_capacity += b.ammo_capacity();
+        }
+    }
+
+    return std::make_pair(remaining_epower, total_epower_capacity);
 }
 
 auto vehicle::discharge_battery(int amount, bool recurse) -> int {

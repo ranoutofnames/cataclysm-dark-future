@@ -1,6 +1,7 @@
 #include "item.h"
 
 #include <algorithm>
+#include <cmath>
 #include <set>
 #include <vector>
 
@@ -10,11 +11,20 @@
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
+// CDF: LINKUP1a; item::link_to()/update_link_traits() read the link_up actor.
+#include "iuse_actor.h"
 // CDF: needed for the free get_map() used as the dummy map argument below.
 #include "map/map.h"
+// CDF: LINKUP1a; vehicle::battery_power_level()/avail_linkable_part() for the link branches.
+#include "vehicle/vehicle.h"
+// CDF: LINKUP1a; optional_vpart_position::mount() in item::link_to().
+#include "vehicle/vpart_position.h"
 
 // CDF: defined below (AUTO-26 O1 / D14 legacy direct-charges guard).
 static bool cdf_legacy_direct_charges( const item &it );
+
+// CDF: LINKUP1a, DDA item_gun_tool_ammo.cpp:123
+static constexpr float MIN_LINK_EFFICIENCY = 0.001f;
 
 bool item::allows_speedloader( const itype_id &speedloader_id ) const
 {
@@ -228,12 +238,19 @@ int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const
         }
     }
 
-    // CDF: cable link block (DDA 1474-1484) omitted: CDF has no link API
-    // (link(), link_length(), connected_battery_power_level() are absent).
-    // Unblock: 4-b2 (cable tail) or an owner decision on a cable port.
-    // `here` and `include_linked` are kept for signature parity.
-    static_cast<void>( here );
-    static_cast<void>( include_linked );
+    // CDF: cable link block (DDA 1474-1484). LINKUP1a; the vehicle read is DDA's
+    // link().t_veh->connected_battery_power_level(), which arrives with LINKUP1b: CDF has no
+    // connected-vehicle traversal yet, so read the linked vehicle's own battery.
+    if( include_linked && link_length() >= 0 && link().efficiency >= MIN_LINK_EFFICIENCY ) {
+        if( link().t_veh ) {
+            ret += link().t_veh->battery_power_level().first;
+        } else {
+            const optional_vpart_position vp = here.veh_at( link().t_abs_pos );
+            if( vp ) {
+                ret += vp->vehicle().battery_power_level().first;
+            }
+        }
+    }
 
     // Non ammo using item that uses charges (DDA 1486-1489), plus the CDF legacy guard.
     // CDF: is_ammo() excluded: BN returned 0 for an ammo item's own charges (iteminfo "Ammunition type").
@@ -381,10 +398,11 @@ int item::remaining_ammo_capacity( int well_idx ) const
 
 int item::ammo_capacity( const ammotype &ammo, bool include_linked ) const
 {
-    // CDF: cable link block (DDA 1722-1726) omitted: CDF has no link API.
-    // Unblock: 4-b2 (cable tail) or an owner decision on a cable port.
-    // `include_linked` is kept for signature parity.
-    static_cast<void>( include_linked );
+    // CDF: cable link block (DDA 1722-1726). LINKUP1a; the connected-vehicle form of
+    // battery_power_level() arrives with LINKUP1b.
+    if( include_linked && has_link_data() ) {
+        return link().t_veh ? link().t_veh->battery_power_level().second : 0;
+    }
 
     // Route per-ammotype lookup through the matching pocket; magazine_current()
     // returns the first loaded mag regardless of ammotype and misreports here.
@@ -982,9 +1000,19 @@ int item::ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Characte
     // absent from CDF (flag.h/cpp, flags.json) and Character::crafting_inventory()
     // is non-const here. Unblock: 7-R4/R5.
 
-    // CDF: cable link discharge (DDA 1861-1870) deferred: CDF has no link API
-    // (has_link_data()/link() absent). Unblock: 4-b2 (cable tail) or an owner
-    // decision on a cable port.
+    // CDF: cable link discharge (DDA 1861-1870). LINKUP1a.
+    if( has_link_data() ) {
+        if( link().t_veh && link().efficiency >= MIN_LINK_EFFICIENCY ) {
+            // CDF: CDF's discharge_battery( int, bool ) takes no map (DDA's map-taking form is
+            // newer) and returns the unfulfilled remainder, like DDA's.
+            qty = link().t_veh->discharge_battery( qty, true );
+        } else {
+            const optional_vpart_position vp = here.veh_at( link().t_abs_pos );
+            if( vp ) {
+                qty = vp->vehicle().discharge_battery( qty, true );
+            }
+        }
+    }
 
     // Consume charges loaded in the item or its magazines
     // CDF: a tool with a parked magazine drains that magazine only (see ammo_remaining).
@@ -1861,4 +1889,190 @@ int item::activation_consume( int qty, const tripoint_bub_ms &pos, Character *ca
         return consume_tool_uses( qty, get_map(), pos, carrier );
     }
     return ammo_consume( qty * ammo_required(), pos, carrier );
+}
+
+// CDF: LINKUP1a. DDA item_gun_tool_ammo.cpp:3610-3672 and 3674-3693 (the two links that only
+// need the vehicle/part the caller already picked), 3850-3905 (traits and lengths) and 3014
+// (item::cables). The two-vehicle cable connection (DDA :3695-3848), process_link,
+// charge_linked_batteries and reset_link arrive with LINKUP1b.
+
+item::link_data &item::link()
+{
+    if( link_ ) {
+        return *link_;
+    }
+    if( !can_link_up() ) {
+        debugmsg( "%s is creating link_data even though it doesn't have a link_up action!  can_link_up() should be checked before using link().",
+                  tname() );
+    }
+    return *( link_ = cata::make_value<item::link_data>() );
+}
+
+const item::link_data &item::link() const
+{
+    if( link_ ) {
+        return *link_;
+    }
+    if( !can_link_up() ) {
+        debugmsg( "%s is creating link_data even though it doesn't have a link_up action!  can_link_up() should be checked before using link().",
+                  tname() );
+    }
+    return *( link_ = cata::make_value<item::link_data>() );
+}
+
+bool item::has_link_data() const
+{
+    return !!link_;
+}
+
+bool item::can_link_up() const
+{
+    const bool can_link = has_link_data() || type->can_use( "link_up" );
+    if( can_link && !get_use( "link_up" ) ) {
+        debugmsg( "can_link_up() found no link_up use function for %s. Most likely missing link_up in item transform",
+                  type_name() );
+        return false;
+    }
+    return can_link;
+}
+
+bool item::link_has_state( link_state state ) const
+{
+    return !has_link_data() ? state == link_state::no_link :
+           link_->source == state || link_->target == state;
+}
+
+bool item::link_has_states( link_state source, link_state target ) const
+{
+    return !has_link_data() ? source == link_state::no_link && target == link_state::no_link :
+           ( link_->source == source || link_->source == link_state::automatic ) &&
+           ( link_->target == target || link_->target == link_state::automatic );
+}
+
+bool item::has_no_links() const
+{
+    return !has_link_data() ? true :
+           link_->source == link_state::no_link && link_->target == link_state::no_link;
+}
+
+std::string item::link_name() const
+{
+    return has_flag( flag_CABLE_SPOOL ) ? label( 1 ) : string_format( _( " %s's cable" ), label( 1 ) );
+}
+
+ret_val<void> item::link_to( const optional_vpart_position &linked_vp, link_state link_type )
+{
+    return linked_vp ? link_to( linked_vp->vehicle(), linked_vp->mount(), link_type ) :
+           ret_val<void>::make_failure();
+}
+
+ret_val<void> item::link_to( vehicle &veh, const tripoint_mnt_veh &mount, link_state link_type )
+{
+    if( !can_link_up() ) {
+        return ret_val<void>::make_failure( _( "The %s doesn't have a cable!" ), type_name() );
+    }
+
+    // First, check if the desired link is actually possible.
+    // CDF: LINKUP1b adds the vehicle_tow branch; 1a only connects to power sources.
+    const link_up_actor *it_actor = static_cast<const link_up_actor *>
+                                    ( get_use( "link_up" )->get_actor_ptr() );
+    bool can_link_port = ( link_type == link_state::vehicle_port ||
+                           link_type == link_state::automatic ) &&
+                         it_actor->targets.find( link_state::vehicle_port ) != it_actor->targets.end() &&
+                         veh.avail_linkable_part( mount, true ) != -1;
+
+    bool can_link_battery = ( link_type == link_state::vehicle_battery ||
+                              link_type == link_state::automatic ) &&
+                            it_actor->targets.find( link_state::vehicle_battery ) != it_actor->targets.end() &&
+                            veh.avail_linkable_part( mount, false ) != -1;
+
+    if( !can_link_port && !can_link_battery ) {
+        return ret_val<void>::make_failure( _( "The %s can't connect to that." ), type_name() );
+    } else if( link_type == link_state::automatic ) {
+        link_type = can_link_port ? link_state::vehicle_port : link_state::vehicle_battery;
+    }
+
+    bool bio_link = link_has_states( link_state::no_link, link_state::bio_cable );
+    if( bio_link || has_no_links() ) {
+
+        // No link exists, so start a new link to a vehicle/appliance.
+
+        link().source = bio_link ? link_state::bio_cable : link_state::no_link;
+        link().target = link_type;
+        link().t_veh = &veh;
+        // CDF: CDF's vehicle has no pos_abs(); bub_to_abs() is the map helper (DDA vehicle::pos_abs()).
+        link().t_abs_pos = bub_to_abs( veh.bub_ms_location() );
+        link().t_mount = mount;
+        link().s_abs_pos = tripoint_abs_ms::min(); // Forces item to check length during process_link
+
+        update_link_traits();
+        return ret_val<void>::make_success();
+    }
+
+    // CDF: LINKUP1b ports DDA item_gun_tool_ammo.cpp:3752-3848, the connection of two
+    // vehicles/appliances by a cable item (it needs the cable vehicle parts and tow_data).
+    debugmsg( "Linking the %s to a second vehicle needs LINKUP1b.", tname() );
+    return ret_val<void>::make_failure();
+}
+
+void item::update_link_traits()
+{
+    if( !can_link_up() ) {
+        return;
+    }
+
+    const link_up_actor *it_actor = static_cast<const link_up_actor *>
+                                    ( get_use( "link_up" )->get_actor_ptr() );
+    link().max_length = it_actor->cable_length == -1 ? type->maximum_charges() : it_actor->cable_length;
+    link().efficiency = it_actor->efficiency < MIN_LINK_EFFICIENCY ? 0.0f : it_actor->efficiency;
+    // reset s_abs_pos to force a length check in process_link
+    link().s_abs_pos = tripoint_abs_ms::min();
+    link().last_processed = calendar::turn;
+
+    for( const item *cable : cables() ) {
+        if( !cable->can_link_up() ) {
+            continue;
+        }
+        const link_up_actor *actor = static_cast<const link_up_actor *>
+                                     ( cable->get_use( "link_up" )->get_actor_ptr() );
+        link().max_length += actor->cable_length == -1 ? cable->type->maximum_charges() :
+                             actor->cable_length;
+        link().efficiency = link().efficiency < MIN_LINK_EFFICIENCY ? 0.0f :
+                            link().efficiency * actor->efficiency;
+    }
+
+    if( link().efficiency >= MIN_LINK_EFFICIENCY ) {
+        link().charge_rate = it_actor->charge_rate;
+        // Convert charge_rate to how long it takes to charge 1 kW, the unit batteries use.
+        // 0 means batteries won't be charged, but it can still provide power to devices unless efficiency is also 0.
+        if( it_actor->charge_rate != 0 ) {
+            double charge_rate = std::floor( 1000000.0 / std::abs( it_actor->charge_rate ) + 0.5 );
+            link().charge_interval = std::max( 1, static_cast<int>( charge_rate ) );
+        }
+    }
+}
+
+int item::link_length() const
+{
+    return has_no_links() ? -2 :
+           link_has_state( link_state::needs_reeling ) ? -1 : link().length;
+}
+
+int item::max_link_length() const
+{
+    return !has_link_data() ? -2 :
+           link().max_length != -1 ? link().max_length : type->maximum_charges();
+}
+
+int item::link_sort_key() const
+{
+    const int length = link_length();
+    int key = length >= 0 ? -1000000000 : length == -1 ? 0 : 1000000000;
+    key += max_link_length() * 100000;
+    return key - length;
+}
+
+std::vector<const item *> item::cables() const
+{
+    return contents.cables();
 }

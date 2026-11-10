@@ -1887,6 +1887,8 @@ void Item_factory::init()
     add_actor( std::make_unique<molle_attach_actor>() );
     add_actor( std::make_unique<molle_detach_actor>() );
     add_actor( std::make_unique<install_bionic_actor>() );
+    // CDF: LINKUP1a, DDA item_factory.cpp:2240
+    add_actor( std::make_unique<link_up_actor>() );
     add_actor( std::make_unique<detach_gunmods_actor>() );
     add_actor( std::make_unique<modify_gunmods_actor>() );
     add_actor( std::make_unique<mutagen_actor>() );
@@ -4929,6 +4931,29 @@ std::optional<JsonArray> Item_factory::extend_has_member( const JsonObject &jo,
 
 namespace io
 {
+// CDF: LINKUP1a, DDA item_factory.cpp:4231-4260
+template<>
+std::string enum_to_string<link_state>( link_state data )
+{
+    switch( data ) {
+        // *INDENT-OFF*
+        case link_state::no_link: return "no_link";
+        case link_state::needs_reeling: return "needs_reeling";
+        case link_state::automatic: return "automatic";
+        case link_state::vehicle_port: return "vehicle_port";
+        case link_state::vehicle_battery: return "vehicle_battery";
+        case link_state::vehicle_tow: return "vehicle_tow";
+        case link_state::bio_cable: return "bio_cable";
+        case link_state::ups: return "ups";
+        case link_state::solarpack: return "solarpack";
+        // *INDENT-ON*
+        case link_state::last:
+            break;
+    }
+    debugmsg( "Invalid link_state" );
+    abort();
+}
+
 template<>
 std::string enum_to_string<phase_id>( phase_id data )
 {

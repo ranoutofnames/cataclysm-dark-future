@@ -19,6 +19,9 @@ enum class pocket_type : int {
     CORPSE,
     // software on a storage device
     SOFTWARE,
+    // CDF: LINKUP1a, DDA pocket_type.h:15: pocket for storing power/data cables and handling
+    // their connections. The extension cable content arrives with LINKUP1b.
+    CABLE,
     // items that have no proper home in the item's current pockets
     MIGRATION,
     LAST

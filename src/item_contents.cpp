@@ -1244,6 +1244,29 @@ std::vector<const item *> item_contents::gunmods() const
     return res;
 }
 
+// CDF: LINKUP1a, DDA item_contents.cpp:2147-2173
+std::vector<item *> item_contents::cables()
+{
+    std::vector<item *> cables;
+    for( item_pocket &pocket : get_pockets() ) {
+        if( pocket.is_type( pocket_type::CABLE ) ) {
+            for( item *it : pocket.items() ) {
+                cables.emplace_back( it );
+            }
+        }
+    }
+    return cables;
+}
+
+std::vector<const item *> item_contents::cables() const
+{
+    std::vector<const item *> cables;
+    for( const item *it : const_cast<item_contents *>( this )->cables() ) {
+        cables.emplace_back( it );
+    }
+    return cables;
+}
+
 item &item_contents::front()
 {
     const std::vector<item *> &items = all_items_top();
