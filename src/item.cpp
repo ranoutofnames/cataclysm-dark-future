@@ -6436,6 +6436,17 @@ units::mass item::weight( bool include_contents, bool integral ) const
         if( !magazine_integral() && magazine_current() ) {
             ret += std::max( magazine_current()->weight(), 0_gram );
         }
+        // CDF: R2a. DDA item.cpp:2076-2078 adds contents.item_weight_modifier() for every item,
+        // so rounds in an integral MAGAZINE pocket weigh in DDA; CDF's gun branch is BN's, which
+        // dropped the contents (the direct-charges arm above was the only growth). Gunmods (MOD
+        // pockets) and the well magazine are added above, so only MAGAZINE pockets are added here.
+        if( include_contents ) {
+            for( const item_pocket *pocket : contents.get_pockets( []( const item_pocket & q ) {
+            return q.is_type( pocket_type::MAGAZINE );
+            } ) ) {
+                ret += pocket->item_weight_modifier();
+            }
+        }
 
         // clamp: prevent negative/zero weight from aggressive mod combinations
         ret = std::max( ret, type->weight / 100 );
@@ -8804,7 +8815,15 @@ bool item::is_reloadable_with( const itype_id &ammo ) const
 bool item::is_reloadable_helper( const itype_id &ammo, bool now ) const
 {
     // empty ammo is passed for listing possible ammo apparently, so it needs to return true.
-    if( !is_reloadable() ) {
+    // CDF: R2a. DDA item::is_reloadable() (item_gun_tool_ammo.cpp:4453-4485) also answers "is there
+    // room right now" (a full integral MAGAZINE pocket is not reloadable). This itype overload with
+    // now == false is the compatibility-only answer (find_ammo_helper keeps a full gun's ammo
+    // source, reload_selection_test "matching ammunition for a full gun"), so the room test only
+    // applies to now == true. NO_RELOAD and a gun without default ammo still answer false always.
+    if( ( has_flag( flag_NO_RELOAD ) && !has_flag( flag_VEHICLE ) ) ||
+        ( is_gun() && !ammo_default() ) ) {
+        return false;
+    } else if( now && !is_reloadable() ) {
         return false;
     } else if( is_watertight_container() ) {
         if( ammo.is_empty() ) {
@@ -8820,6 +8839,14 @@ bool item::is_reloadable_helper( const itype_id &ammo, bool now ) const
         } else {
             return now ? ( is_container_empty() || contents.front().typeId() == ammo ) : true;
         }
+    } else if( ammo->has_flag( flag_SPEEDLOADER ) || ammo->has_flag( flag_SPEEDLOADER_CLIP ) ) {
+        // CDF: R2a. DDA has no itype-level answer: a speedloader is accepted per pocket through
+        // item_pocket::can_reload_with's allows_speedloader arms (DDA item_pocket.cpp:1665-1677),
+        // and the R2 integral-magazine guns carry allowed_speedloaders in their MAGAZINE pocket
+        // instead of the legacy `magazines` table. The itype carries no round count, so the exact
+        // "now" answer (room, the loader's rounds, the ammo inside it) stays with the item-level
+        // item::can_reload_with( const item &, now ).
+        return contents.allows_speedloader( ammo );
     } else if( magazine_integral() ) {
         if( !ammo.is_empty() ) {
             if( now && ammo_data() ) {

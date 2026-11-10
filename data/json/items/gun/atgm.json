@@ -19,7 +19,14 @@
     "clip_size": 1,
     "reload": 600,
     "valid_mod_locations": [ [ "sling", 1 ], [ "rail", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ],
-    "extend": { "flags": [ "RELOAD_EJECT", "MOUNTED_GUN" ] }
+    "extend": { "flags": [ "RELOAD_EJECT", "MOUNTED_GUN" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "atgm": 1 }
+      }
+    ]
   },
   {
     "id": "atgm_turret",
@@ -44,6 +51,13 @@
     "clip_size": 2,
     "reload": 1200,
     "ups_charges": 75,
-    "flags": [ "MOUNTED_GUN", "NEVER_JAMS", "NO_RELOAD", "RELOAD_EJECT", "RELOAD_ONE", "PYROMANIAC_WEAPON" ]
+    "flags": [ "MOUNTED_GUN", "NEVER_JAMS", "NO_RELOAD", "RELOAD_EJECT", "RELOAD_ONE", "PYROMANIAC_WEAPON" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "atgm": 2 }
+      }
+    ]
   }
 ]

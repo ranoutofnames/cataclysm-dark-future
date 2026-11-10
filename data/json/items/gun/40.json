@@ -156,7 +156,6 @@
     "ammo": [ "10mm", "40" ],
     "ranged_damage": { "damage_type": "bullet", "amount": 1 },
     "dispersion": 320,
-    "magazines": [ [ "40", [ "40_speedloader6" ] ] ],
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "barrel", 1 ],
@@ -167,7 +166,16 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "10mm": 6, "40": 6 },
+        "allowed_speedloaders": [ "40_speedloader6" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "hi_power_40",

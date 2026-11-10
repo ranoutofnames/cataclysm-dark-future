@@ -1,0 +1,3920 @@
+{
+  "batch": "7-R2a",
+  "base": "c7bf62a582",
+  "dda": "b4b62254ae2",
+  "count": 135,
+  "items": {
+    "1895sbl": {
+      "file": "data/json/items/gun/4570.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "4570": 7
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "4570",
+          "cdf": 7,
+          "dda": 6
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "25mm_autocannon_sawn": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "25mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "25mm_cannon_crude": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "25mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "2_shot_special": {
+      "file": "data/json/items/gun/pipe_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "38": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "AT4": {
+      "file": "data/json/items/gun/84x246mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "84x246mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "LAW": {
+      "file": "data/json/items/gun/66mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "66mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "M24": {
+      "file": "data/json/items/gun/308.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "308": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "RPG": {
+      "file": "data/json/items/gun/rpg.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "RPG-7": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "SPAS_12": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 9
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 9
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "afs_bionic_rocket": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "40x46mm": 3,
+            "40x53mm": 3
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 3
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "anomaly_thrown_rock": {
+      "file": "data/json/items/gun/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "rock": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ashot": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "atgm_launcher": {
+      "file": "data/json/items/gun/atgm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "atgm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "atgm_turret": {
+      "file": "data/json/items/gun/atgm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "atgm": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 2
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "barb_launcher": {
+      "file": "data/json/items/gun/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "barb": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "bfg50": {
+      "file": "data/json/items/gun/50.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "50": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "bfr": {
+      "file": "data/json/items/gun/4570.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "4570": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "bio_shotgun_gun": {
+      "file": "data/json/items/gun/bio.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 8
+      },
+      "cap_diff": [
+        {
+          "ammo": "shot",
+          "cdf": 8,
+          "dda": 1
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "blunderbuss": {
+      "file": "data/json/items/gun/blunderbuss.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "blunderbuss": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "bola_net_launcher": {
+      "file": "data/json/items/gun/misc.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "bola_launcher": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "bond_410": {
+      "file": "data/json/items/gun/45colt.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "45colt": 2,
+            "410shot": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 2
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "browning_a5": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "shot",
+          "cdf": 5,
+          "dda": 4
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "cannon_3in_makeshift": {
+      "file": "data/json/items/gun/cannon.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "cannon": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "cannon_3in_ordnance": {
+      "file": "data/json/items/gun/cannon.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "cannon": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "carbine_flintlock": {
+      "file": "data/json/items/gun/flintlock.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "flintlock": 1,
+            "flintlockshot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "carbine_flintlock_double": {
+      "file": "data/json/items/gun/flintlock.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "flintlock": 2,
+            "flintlockshot": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "colt_army": {
+      "file": "data/json/items/gun/44paper.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "44paper": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "colt_lightning": {
+      "file": "data/json/items/gun/45colt.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "45colt": 14
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "colt_navy": {
+      "file": "data/json/items/gun/36paper.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "36paper": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "colt_python": {
+      "file": "data/json/items/gun/38.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "357mag": 6,
+            "38": 6
+          },
+          "allowed_speedloaders": [
+            "38_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "38",
+            [
+              "38_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "colt_ring": {
+      "file": "data/json/items/gun/44paper.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "44paper": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 8
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "colt_ring_36": {
+      "file": "data/json/items/gun/36paper.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "36paper": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 8
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "colt_saa": {
+      "file": "data/json/items/gun/45colt.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "45colt": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "combination_gun": {
+      "file": "data/json/items/gun/combination.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "3006": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "cop_38": {
+      "file": "data/json/items/gun/38.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "357mag": 4,
+            "38": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 4
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "dp-12": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 7
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 7
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "feral_human_thrown_rock": {
+      "file": "data/json/items/gun/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "rock": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "cap_diff": [
+        {
+          "ammo": "rock",
+          "cdf": 1,
+          "dda": 5
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "feral_jackboot_gun": {
+      "file": "data/json/items/gun/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "feral_pa_boss_grenade": {
+      "file": "data/json/items/gun/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 3,
+            "40x53mm": 3
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 3
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "flamethrower_crude": {
+      "file": "data/json/items/gun/flammable.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "gasoline": 100
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 100
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "flamethrower_simple": {
+      "file": "data/json/items/gun/flammable.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "gasoline": 100
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 100
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "flaregun": {
+      "file": "data/json/items/gun/signal_flare.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "signal_flare": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "handmade_carbine": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "3006": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "handmade_revolver": {
+      "file": "data/json/items/gun/38.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "357mag": 6,
+            "38": 6
+          },
+          "allowed_speedloaders": [
+            "38_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "38",
+            [
+              "38_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "heavy_rail_rifle": {
+      "file": "data/json/items/gun/metal_rail.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "metal_rail": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 20
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hellfire_launcher": {
+      "file": "data/json/items/gun/hellfire.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "hellfire": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 4
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "henry_big_boy": {
+      "file": "data/json/items/gun/44.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "44": 10
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "howitzer_gun": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "155mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "howitzer_gun_crude": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "155mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ksg": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 7
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "shot",
+          "cdf": 7,
+          "dda": 14
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ksg-25": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 12
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ksub2000_turret_fake": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 300
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [],
+        "magazine_well": null,
+        "clip_size": 300
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "laser_maxim": {
+      "file": "data/json/items/gun/ups.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "water": 80
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 80
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "launcher_simple": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "lemat_revolver": {
+      "file": "data/json/items/gun/44paper.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "44paper": 9
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 9
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "longrifle_flintlock": {
+      "file": "data/json/items/gun/flintlock.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "flintlock": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1014": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "shot",
+          "cdf": 8,
+          "dda": 7
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m14ebr_turret_fake": {
+      "file": "data/json/items/gun/308.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "308": 300
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [],
+        "magazine_well": null,
+        "clip_size": 300
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m16a4_turret_fake": {
+      "file": "data/json/items/gun/223.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "223": 300
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [],
+        "magazine_well": "150 ml",
+        "clip_size": 300
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1903": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "3006": 5
+          },
+          "allowed_speedloaders": [
+            "3006_clip"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "3006",
+            [
+              "3006_clip"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m2browning_sawn": {
+      "file": "data/json/items/gun/50.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "50": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [],
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m2browning_turret_fake": {
+      "file": "data/json/items/gun/50.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "50": 300
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [],
+        "magazine_well": null,
+        "clip_size": 300
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m320": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m3_carlgustav": {
+      "file": "data/json/items/gun/84x246mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "84x246mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m6_asw": {
+      "file": "data/json/items/gun/combination.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "22": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m79": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mark19_turret_fake": {
+      "file": "data/json/items/gun/40x53mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x53mm": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [],
+        "magazine_well": null,
+        "clip_size": 20
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "marlin_1894c": {
+      "file": "data/json/items/gun/38.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "357mag": 9,
+            "38": 9
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 9
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "marlin_9a": {
+      "file": "data/json/items/gun/22.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "22": 19
+          },
+          "allowed_speedloaders": [
+            "marlin_tubeloader"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "marlin_tubeloader"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mgl": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mininuke_launcher": {
+      "file": "data/json/items/gun/mininuke_mod.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "mininuke_mod": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "model_10_revolver": {
+      "file": "data/json/items/gun/38.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "38": 6
+          },
+          "allowed_speedloaders": [
+            "38_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "38",
+            [
+              "38_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mosin44": {
+      "file": "data/json/items/gun/762R.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762R": 5
+          },
+          "allowed_speedloaders": [
+            "762R_clip"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mosin44_ebr": {
+      "file": "data/json/items/gun/762R.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762R": 5
+          },
+          "allowed_speedloaders": [
+            "762R_clip"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mosin91_30": {
+      "file": "data/json/items/gun/762R.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762R": 5
+          },
+          "allowed_speedloaders": [
+            "762R_clip"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762R",
+            [
+              "762R_clip"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mosin91_30_ebr": {
+      "file": "data/json/items/gun/762R.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762R": 5
+          },
+          "allowed_speedloaders": [
+            "762R_clip"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "moss_brownie": {
+      "file": "data/json/items/gun/22.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "22": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 4
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mossberg_500": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mossberg_500_security": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mossberg_590": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 9
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mossberg_930": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "nailgun": {
+      "file": "data/json/items/gun/nail.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "nail": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "paintballgun": {
+      "file": "data/json/items/gun/paintball.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "paintball": 50
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 50
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "pipe_combination_gun": {
+      "file": "data/json/items/gun/combination.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "3006": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "pipe_double_shotgun": {
+      "file": "data/json/items/gun/pipe_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "pipe_pistol": {
+      "file": "data/json/items/gun/pipe_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "38": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "pipe_rifle": {
+      "file": "data/json/items/gun/pipe_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "22": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "pipe_shotgun": {
+      "file": "data/json/items/gun/pipe_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "pistol_flintlock": {
+      "file": "data/json/items/gun/flintlock.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "flintlock": 1,
+            "flintlockshot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "plasma_gun": {
+      "file": "data/json/items/gun/plasma.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plasma": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 30
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "plasma_rifle": {
+      "file": "data/json/items/gun/plasma.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plasma": 25
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 25
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "pseudo_m203": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rebar_railgun": {
+      "file": "data/json/items/gun/metal_rail.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "metal_rail": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 20
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rebar_rifle": {
+      "file": "data/json/items/gun/metal_rail.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "metal_rail": 12
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 12
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "remington_1100": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 10
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "shot",
+          "cdf": 10,
+          "dda": 4
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "remington_700": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "3006": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "remington_870": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "remington_870_breacher": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 4
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "remington_870_express": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 7
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "revolver_shotgun": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rifle_flintlock": {
+      "file": "data/json/items/gun/flintlock.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "flintlock": 1,
+            "flintlockshot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm120c": {
+      "file": "data/json/items/gun/20x66mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "20x66mm": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm802": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 4,
+            "40x53mm": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 4
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm99_pistol": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "8x40mm": 5
+          },
+          "allowed_speedloaders": [
+            "8x40_speedloader5"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_speedloader5"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ruger_lcr_22": {
+      "file": "data/json/items/gun/22.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "22": 8
+          },
+          "allowed_speedloaders": [
+            "22_speedloader8"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "22_speedloader8"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 8
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ruger_lcr_38": {
+      "file": "data/json/items/gun/38.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "38": 5
+          },
+          "allowed_speedloaders": [
+            "38_speedloader5"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "38",
+            [
+              "38_speedloader5"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ruger_redhawk": {
+      "file": "data/json/items/gun/44.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "44": 6
+          },
+          "allowed_speedloaders": [
+            "44_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "44",
+            [
+              "44_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "savage_111f": {
+      "file": "data/json/items/gun/308.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "308": 3
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 3
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sharps": {
+      "file": "data/json/items/gun/4570.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "4570": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "shotgun_410": {
+      "file": "data/json/items/gun/410shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "410shot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "shotgun_d": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "shotgun_paper": {
+      "file": "data/json/items/gun/shotpaper.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shotpaper": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "shotgun_s": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sks": {
+      "file": "data/json/items/gun/762.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762": 10
+          },
+          "allowed_speedloaders": [
+            "762x39_clip"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762",
+            [
+              "762x39_clip"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "streetsweeper": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 12
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 12
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "super_soaker": {
+      "file": "data/json/items/gun/misc.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "water": 8,
+            "acid": 8,
+            "lubricant": 8,
+            "glue": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 8
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "surv_rocket_launcher": {
+      "file": "data/json/items/gun/misc.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "homebrew_rocket": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sw629": {
+      "file": "data/json/items/gun/44.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "44": 6
+          },
+          "allowed_speedloaders": [
+            "44_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "44",
+            [
+              "44_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sw_610": {
+      "file": "data/json/items/gun/40.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "10mm": 6,
+            "40": 6
+          },
+          "allowed_speedloaders": [
+            "40_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "40_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sw_619": {
+      "file": "data/json/items/gun/38.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "357mag": 7,
+            "38": 7
+          },
+          "allowed_speedloaders": [
+            "38_speedloader"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "38",
+            [
+              "38_speedloader"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 7
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tank_gun_auto": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "120mm_usable": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tank_gun_auto_monster": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "120mm_usable": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tank_gun_crude": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "120mm_usable": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tank_gun_crude_105mm": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "105mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tank_gun_manual": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "120mm_usable": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tank_gun_manual_105mm": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "105mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "taurus_judge": {
+      "file": "data/json/items/gun/45colt.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "410shot": 5,
+            "45colt": 5
+          },
+          "allowed_speedloaders": [
+            "454_speedloader5"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tavor_12": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "shot",
+          "cdf": 5,
+          "dda": 15
+        }
+      ],
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "triple_launcher_simple": {
+      "file": "data/json/items/gun/40x46mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 3
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 3
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "watercannon": {
+      "file": "data/json/items/gun/misc.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "water": 100,
+            "acid": 100,
+            "lubricant": 100,
+            "glue": 100
+          },
+          "watertight": true
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 100
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "weatherby_5": {
+      "file": "data/json/items/gun/300.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "300": 3
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "win70": {
+      "file": "data/json/items/gun/300.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "300": 3
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "winchester_1887": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "winchester_1897": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "zombie_swat_thrown_teargas": {
+      "file": "data/json/items/gun/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    }
+  }
+}

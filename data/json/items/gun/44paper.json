@@ -13,7 +13,14 @@
     "material": [ "steel", "wood" ],
     "ammo": "44paper",
     "dispersion": 400,
-    "durability": 7
+    "durability": 7,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "44paper": 6 }
+      }
+    ]
   },
   {
     "id": "lemat_revolver",
@@ -43,7 +50,14 @@
       [ "rail", 1 ],
       [ "sights", 1 ]
     ],
-    "built_in_mods": [ "lemat_revolver_shotgun" ]
+    "built_in_mods": [ "lemat_revolver_shotgun" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "44paper": 9 }
+      }
+    ]
   },
   {
     "id": "colt_ring",
@@ -62,6 +76,13 @@
     "ranged_damage": { "damage_type": "bullet", "amount": 8 },
     "range": 4,
     "dispersion": 280,
-    "clip_size": 8
+    "clip_size": 8,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "44paper": 8 }
+      }
+    ]
   }
 ]

@@ -26,6 +26,13 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 4, "38": 4 }
+      }
     ]
   },
   {
@@ -43,7 +50,15 @@
     "material": [ "steel", "wood" ],
     "color": "dark_gray",
     "ammo": "38",
-    "magazines": [ [ "38", [ "38_speedloader6" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "38": 6 },
+        "allowed_speedloaders": [ "38_speedloader6" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "ruger_lcr_38",
@@ -62,7 +77,6 @@
     "ranged_damage": { "damage_type": "bullet", "amount": -2 },
     "durability": 10,
     "clip_size": 5,
-    "magazines": [ [ "38", [ "38_speedloader5" ] ] ],
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "barrel", 1 ],
@@ -74,12 +88,21 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "38": 5 },
+        "allowed_speedloaders": [ "38_speedloader5" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "sw_619",
     "copy-from": "pistol_revolver",
-    "//": "Tileset whitelist for revolvers.",
+    "//": "Tileset whitelist for revolvers. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "type": "GUN",
     "name": { "str_sp": "S&W 619" },
     "description": "A seven-round .38 revolver sold by Smith & Wesson.  It features a fixed rear sight and a reinforced frame.",
@@ -96,7 +119,6 @@
     "dispersion": 320,
     "durability": 10,
     "clip_size": 7,
-    "magazines": [ [ "38", [ "38_speedloader" ] ] ],
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "barrel", 1 ],
@@ -108,6 +130,14 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 7, "38": 7 },
+        "allowed_speedloaders": [ "38_speedloader" ]
+      }
     ]
   },
   {
@@ -126,7 +156,6 @@
     "price_postapoc": "20 USD",
     "material": [ "steel", "wood" ],
     "ammo": [ "357mag", "38" ],
-    "magazines": [ [ "38", [ "38_speedloader6" ] ] ],
     "dispersion": 280,
     "durability": 10,
     "bashing": 9,
@@ -142,7 +171,16 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 6, "38": 6 },
+        "allowed_speedloaders": [ "38_speedloader6" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "marlin_1894c",
@@ -177,6 +215,13 @@
       [ "stock", 1 ],
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 9, "38": 9 }
+      }
     ]
   },
   {
@@ -196,7 +241,6 @@
     "ranged_damage": { "damage_type": "bullet", "amount": -1 },
     "dispersion": 620,
     "durability": 6,
-    "magazines": [ [ "38", [ "38_speedloader6" ] ] ],
     "reload": 285,
     "loudness": 2,
     "valid_mod_locations": [
@@ -211,6 +255,15 @@
       [ "rail", 1 ]
     ],
     "flags": [ "RELOAD_ONE", "NEVER_JAMS", "RELOAD_EJECT" ],
-    "delete": { "faults": "fault_gun_chamber_spent" }
+    "delete": { "faults": "fault_gun_chamber_spent" },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "357mag": 6, "38": 6 },
+        "allowed_speedloaders": [ "38_speedloader6" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   }
 ]

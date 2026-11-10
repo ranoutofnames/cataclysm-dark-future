@@ -154,7 +154,7 @@ class pocket_data
         bool forbidden = false;
         /** DDA `material_restriction`: loaded, no consumer yet. */
         cata::flat_set<material_id> material_restriction;
-        /** DDA `allowed_speedloaders`: loaded, no consumer yet (P3). */
+        /** DDA `allowed_speedloaders`: read by item_pocket::allows_speedloader. */
         cata::flat_set<itype_id> allowed_speedloaders;
         /** DDA `default_magazine`: loaded, no consumer yet. */
         itype_id default_magazine = itype_id::NULL_ID();

@@ -22,6 +22,13 @@
     "clip_size": 4,
     "reload": 5000,
     "ups_charges": 75,
-    "flags": [ "MOUNTED_GUN", "NEVER_JAMS", "NO_RELOAD", "RELOAD_ONE", "PYROMANIAC_WEAPON" ]
+    "flags": [ "MOUNTED_GUN", "NEVER_JAMS", "NO_RELOAD", "RELOAD_ONE", "PYROMANIAC_WEAPON" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "hellfire": 4 }
+      }
+    ]
   }
 ]

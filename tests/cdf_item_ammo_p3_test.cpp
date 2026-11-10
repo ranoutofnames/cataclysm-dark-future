@@ -286,7 +286,9 @@ TEST_CASE( "ammo_remaining returns charges for a charges-only tool", "[p3][ammo]
 // // CDF: guard, D14; tools left it in 4-b2 and own an integral MAGAZINE pocket instead).
 TEST_CASE( "ammo_remaining keeps direct charges on an ammo gun with no magazine pocket",
            "[p3][ammo]" ) {
-    detached_ptr<item> gun = item::spawn( itype_id( "pipe_pistol" ) );
+    // CDF: 7-R2a; the ported pipe_pistol has an integral MAGAZINE pocket, the TEST_DATA fixture keeps
+    // the pre-port legacy shape (clip_size, no pocket, direct charges).
+    detached_ptr<item> gun = item::spawn( itype_id( "legacy_pipe_pistol" ) );
     REQUIRE( gun->is_gun() );
     REQUIRE_FALSE( gun->ammo_types().empty() );
     REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
@@ -481,7 +483,8 @@ TEST_CASE( "uses_magazine is true for a gun with a magazine well", "[p3][ammo]" 
 // ammo_consume must drain them (G-6, OD-3).
 TEST_CASE( "ammo_consume drains a legacy gun's direct charges", "[p3][ammo]" ) {
     clear_map();
-    detached_ptr<item> gun = item::spawn( itype_id( "pipe_pistol" ) );
+    // CDF: 7-R2a; legacy_pipe_pistol is the TEST_DATA fixture without the ported MAGAZINE pocket.
+    detached_ptr<item> gun = item::spawn( itype_id( "legacy_pipe_pistol" ) );
     REQUIRE( gun->is_gun() );
     REQUIRE_FALSE( gun->ammo_types().empty() );
     REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
@@ -1101,7 +1104,9 @@ TEST_CASE( "shots_remaining_ammo_part_divides_ammo_by_required", "[p3][ammo][3-4
     // CDF: a gun with ammo_to_fire > 1, so the ammo part must divide: 41
     // gasoline charges are 2 shots, not 820.
     // CDF: flamethrower_simple ammo_to_fire 20 (data/json/items/gun/flammable.json:94).
-    detached_ptr<item> flamer = item::spawn( itype_id( "flamethrower_simple" ) );
+    // CDF: 7-R2a; its ported MAGAZINE pocket is restricted to `flammable` while the gun's ammo is
+    // gasoline, so the legacy fixture (no pocket, direct charges) is the gun under test here.
+    detached_ptr<item> flamer = item::spawn( itype_id( "legacy_flamethrower_simple" ) );
     flamer->ammo_set( itype_id( "gasoline" ), 41 );
     REQUIRE( flamer->ammo_required() == 20 );
     CHECK( flamer->shots_remaining( get_map(), &c ) == 2 );

@@ -29,6 +29,13 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "45colt": 2, "410shot": 2 }
+      }
     ]
   },
   {
@@ -52,7 +59,14 @@
     "handling": 30,
     "blackpowder_tolerance": 72,
     "reload_noise": "chik chik.",
-    "flags": [ "RELOAD_ONE" ]
+    "flags": [ "RELOAD_ONE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "45colt": 14 }
+      }
+    ]
   },
   {
     "id": "colt_saa",
@@ -70,7 +84,14 @@
     "ammo": "45colt",
     "dispersion": 360,
     "blackpowder_tolerance": 72,
-    "proportional": { "reload": 1.5 }
+    "proportional": { "reload": 1.5 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "45colt": 6 }
+      }
+    ]
   },
   {
     "id": "taurus_judge",
@@ -101,6 +122,13 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "durability": 6
+    "durability": 6,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "410shot": 5, "45colt": 5 },
+        "allowed_speedloaders": [ "454_speedloader5" ]
+      }
+    ]
   }
 ]

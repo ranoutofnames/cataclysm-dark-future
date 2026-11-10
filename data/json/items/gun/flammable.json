@@ -93,7 +93,14 @@
     "ammo_to_fire": 100,
     "ranged_damage": { "damage_type": "heat", "amount": 3 },
     "valid_mod_locations": [ [ "sling", 1 ], [ "stock", 1 ], [ "rail", 1 ] ],
-    "relative": { "reload": 4 }
+    "relative": { "reload": 4 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 100 }
+      }
+    ]
   },
   {
     "id": "flamethrower_simple",
@@ -113,6 +120,13 @@
     "ammo_to_fire": 20,
     "durability": 6,
     "relative": { "reload": 2 },
-    "ranged_damage": { "damage_type": "heat", "amount": 6 }
+    "ranged_damage": { "damage_type": "heat", "amount": 6 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 100 }
+      }
+    ]
   }
 ]

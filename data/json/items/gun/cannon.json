@@ -22,7 +22,14 @@
     "clip_size": 1,
     "reload": 3000,
     "valid_mod_locations": [  ],
-    "flags": [ "MOUNTED_GUN", "NEVER_JAMS", "STR_RELOAD" ]
+    "flags": [ "MOUNTED_GUN", "NEVER_JAMS", "STR_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "cannon": 1 }
+      }
+    ]
   },
   {
     "id": "cannon_3in_makeshift",
@@ -37,6 +44,13 @@
     "ranged_damage": { "damage_type": "bullet", "damage_multiplier": 0.9 },
     "relative": { "durability": -2 },
     "proportional": { "bashing": 0.5, "dispersion": 1.25 },
-    "extend": { "flag": [ "NO_REPAIR" ] }
+    "extend": { "flag": [ "NO_REPAIR" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "cannon": 1 }
+      }
+    ]
   }
 ]

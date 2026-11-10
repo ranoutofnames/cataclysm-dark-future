@@ -51,6 +51,12 @@
     "clip_size": 1,
     "reload": 150,
     "default_mods": [ "shoulder_strap" ],
-    "valid_mod_locations": [ [ "accessories", 1 ], [ "sling", 1 ], [ "grip", 1 ], [ "rail", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ]
+    "valid_mod_locations": [ [ "accessories", 1 ], [ "sling", 1 ], [ "grip", 1 ], [ "rail", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "66mm": 1 }
+      }
+    ]
   }
 ]

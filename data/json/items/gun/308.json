@@ -126,7 +126,14 @@
     "name": { "str_sp": "M14 EBR-RI" },
     "description": "If you see it - it is bug!",
     "clip_size": 300,
-    "magazines": [  ]
+    "magazines": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "308": 300 }
+      }
+    ]
   },
   {
     "id": "m1a",
@@ -273,7 +280,14 @@
     "durability": 9,
     "clip_size": 3,
     "barrel_volume": "750 ml",
-    "flags": [ "RELOAD_ONE", "NEVER_JAMS" ]
+    "flags": [ "RELOAD_ONE", "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "308": 3 }
+      }
+    ]
   },
   {
     "id": "scar_h",
@@ -329,7 +343,14 @@
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "flags": [ "RELOAD_ONE", "NEVER_JAMS" ]
+    "flags": [ "RELOAD_ONE", "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "308": 5 }
+      }
+    ]
   },
   {
     "id": "hk417_13",

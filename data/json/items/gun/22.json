@@ -48,8 +48,16 @@
     "dispersion": 90,
     "blackpowder_tolerance": 72,
     "clip_size": 19,
-    "magazines": [ [ "22", [ "marlin_tubeloader" ] ] ],
-    "flags": [ "RELOAD_ONE" ]
+    "flags": [ "RELOAD_ONE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "22": 19 },
+        "allowed_speedloaders": [ "marlin_tubeloader" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "moss_brownie",
@@ -83,7 +91,14 @@
       [ "underbarrel", 1 ]
     ],
     "faults": [ "fault_gun_blackpowder", "fault_gun_dirt" ],
-    "flags": [ "RELOAD_ONE", "NEVER_JAMS", "RELOAD_EJECT" ]
+    "flags": [ "RELOAD_ONE", "NEVER_JAMS", "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "22": 4 }
+      }
+    ]
   },
   {
     "id": "ruger_1022",
@@ -124,7 +139,15 @@
     "handling": 20,
     "ammo": "22",
     "clip_size": 8,
-    "magazines": [ [ "22", [ "22_speedloader8" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "22": 8 },
+        "allowed_speedloaders": [ "22_speedloader8" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "sig_mosquito",

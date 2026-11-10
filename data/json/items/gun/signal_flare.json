@@ -26,6 +26,13 @@
       [ "underbarrel", 1 ]
     ],
     "extend": { "flags": [ "WATERPROOF_GUN", "PYROMANIAC_WEAPON" ] },
-    "faults": [  ]
+    "faults": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "signal_flare": 1 }
+      }
+    ]
   }
 ]

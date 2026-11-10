@@ -371,7 +371,14 @@
     "description": "If you see it - it is bug!",
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "clip_size": 300,
-    "magazines": [  ]
+    "magazines": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "9mm": 300 }
+      }
+    ]
   },
   {
     "id": "m9",

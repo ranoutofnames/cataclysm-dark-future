@@ -20,7 +20,14 @@
     "clip_size": 8,
     "modes": [ [ "DEFAULT", "single shot", 1 ], [ "burst", "double", 2 ], [ "AUTO", "auto", 4 ] ],
     "reload": 200,
-    "flags": [ "NEVER_JAMS", "NO_DROP", "RELOAD_EJECT", "NO_UNWIELD", "TRADER_AVOID" ]
+    "flags": [ "NEVER_JAMS", "NO_DROP", "RELOAD_EJECT", "NO_UNWIELD", "TRADER_AVOID" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 8 }
+      }
+    ]
   },
   {
     "id": "bio_emp_gun",

@@ -22,7 +22,14 @@
     "reload": 200,
     "loudness": 155,
     "ammo_effects": [ "INCENDIARY" ],
-    "extend": { "flags": [ "MOUNTED_GUN" ] }
+    "extend": { "flags": [ "MOUNTED_GUN" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "metal_rail": 20 }
+      }
+    ]
   },
   {
     "id": "rebar_rifle",
@@ -47,7 +54,14 @@
     "ups_charges": 40,
     "loudness": 150,
     "ammo_effects": [ "INCENDIARY" ],
-    "extend": { "flags": [ "RELOAD_ONE" ] }
+    "extend": { "flags": [ "RELOAD_ONE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "metal_rail": 12 }
+      }
+    ]
   },
   {
     "id": "rebar_railgun",
@@ -72,6 +86,13 @@
     "ups_charges": 20,
     "loudness": 120,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "BURST", "burst", 2 ] ],
-    "ammo_effects": [ "INCENDIARY" ]
+    "ammo_effects": [ "INCENDIARY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "metal_rail": 20 }
+      }
+    ]
   }
 ]

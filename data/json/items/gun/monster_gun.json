@@ -30,7 +30,14 @@
     "loudness": 40,
     "range": 12,
     "dispersion": 100,
-    "durability": 8
+    "durability": 8,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "barb": 1 }
+      }
+    ]
   },
   {
     "id": "feral_human_thrown_rock",
@@ -64,7 +71,14 @@
     "loudness": 40,
     "range": 6,
     "dispersion": 6000,
-    "durability": 8
+    "durability": 8,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "rock": 1 }
+      }
+    ]
   },
   {
     "id": "feral_jackboot_gun",
@@ -84,7 +98,14 @@
     "bashing": 3,
     "dispersion": 6500,
     "range": 30,
-    "durability": 9
+    "durability": 9,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 6 }
+      }
+    ]
   },
   {
     "id": "emp_frond",
@@ -163,7 +184,14 @@
     "loudness": 40,
     "range": 8,
     "dispersion": 2000,
-    "durability": 8
+    "durability": 8,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40x46mm": 1 }
+      }
+    ]
   },
   {
     "id": "feral_pa_boss_grenade",
@@ -184,7 +212,14 @@
     "clip_size": 3,
     "reload": 150,
     "loudness": -20,
-    "flags": [ "NEVER_JAMS", "NO_UNWIELD", "TRADER_AVOID", "RELOAD_ONE" ]
+    "flags": [ "NEVER_JAMS", "NO_UNWIELD", "TRADER_AVOID", "RELOAD_ONE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40x46mm": 3, "40x53mm": 3 }
+      }
+    ]
   },
   {
     "id": "talon_m249",
@@ -276,6 +311,13 @@
     "loudness": 40,
     "range": 40,
     "dispersion": 1000,
-    "durability": 8
+    "durability": 8,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "rock": 1 }
+      }
+    ]
   }
 ]

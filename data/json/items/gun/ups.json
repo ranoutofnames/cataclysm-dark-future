@@ -211,7 +211,14 @@
     "clip_size": 80,
     "reload": 300,
     "extend": { "flags": [ "MOUNTED_GUN", "NO_RECOVER_AMMO" ] },
-    "delete": { "flags": [ "NO_UNLOAD" ] }
+    "delete": { "flags": [ "NO_UNLOAD" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "water": 80 }
+      }
+    ]
   },
   {
     "id": "unbio_blaster_gun",

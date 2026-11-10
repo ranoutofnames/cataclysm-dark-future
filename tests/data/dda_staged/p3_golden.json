@@ -6533,9 +6533,6 @@
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
-          "max_contains_volume": "200 L",
-          "max_contains_weight": "400 kg",
-          "max_item_length": "2000 m",
           "ammo_restriction": {
             "rock": 1
           }
@@ -6706,7 +6703,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "flammable": 100
+            "gasoline": 100
           }
         }
       ],
@@ -6724,7 +6721,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "flammable": 100
+            "gasoline": 100
           }
         }
       ],

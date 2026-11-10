@@ -31,6 +31,13 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "38": 1 }
+      }
     ]
   },
   {
@@ -66,7 +73,14 @@
       [ "sling", 1 ],
       [ "stock", 1 ]
     ],
-    "delete": { "flags": "NEVER_JAMS" }
+    "delete": { "flags": "NEVER_JAMS" },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "38": 2 }
+      }
+    ]
   },
   {
     "id": "pipe_rifle",
@@ -96,6 +110,13 @@
       [ "rail", 1 ],
       [ "sights", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "22": 1 }
+      }
     ]
   },
   {
@@ -130,7 +151,14 @@
       [ "sights", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ]
+    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 1 }
+      }
+    ]
   },
   {
     "id": "pipe_double_shotgun",
@@ -154,6 +182,13 @@
       [ "sights", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "extend": { "flags": [ "RELOAD_ONE" ] }
+    "extend": { "flags": [ "RELOAD_ONE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 2 }
+      }
+    ]
   }
 ]

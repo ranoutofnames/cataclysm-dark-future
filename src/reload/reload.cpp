@@ -16,6 +16,21 @@
 namespace {
 const auto ammo_plutonium = ammotype("plutonium");
 
+// CDF: R2a. Character::can_reload is DDA's compatibility question (now == false,
+// character_ammo.cpp:73 in DDA). A full integral MAGAZINE pocket answers it true, and CDF has no
+// game::reload pre-check (DDA game.cpp:7069-7100) that drops an already full target, so for an
+// integral-magazine gun (MAGAZINE pocket, no well: the 7-R2a shape) the pockets are asked "now"
+// as well. Detachable wells keep the DDA answer: discovery still offers an identical empty
+// magazine (*_detachable_target_order). Legacy direct-charges guns already answer "now"
+// (item_gun_tool_ammo.cpp:67-73), so they are unchanged.
+bool can_reload_now(const player* who, item* target, const item& ammo) {
+    const bool integral_gun = target->is_gun() &&
+                              target->contents.has_pocket_type(pocket_type::MAGAZINE) &&
+                              !target->contents.has_pocket_type(pocket_type::MAGAZINE_WELL);
+    return (!integral_gun || target->can_reload_with(ammo, true)) &&
+           who->can_reload(*target, &ammo);
+}
+
 // CDF: P3-4-d-b (DDA character_ammo.cpp:96-167). Per-well targets: one option per
 // MAGAZINE_WELL of base and of each gunmod, plus one per loaded magazine, in DDA order.
 // DDA carries item_location through the loop; CDF has no item_location handle, so the
@@ -86,7 +101,7 @@ auto discover_per_well(const Character& who, item& base, const reload::discovery
             }
             const auto emit = targeted_well != nullptr
                                   ? targeted_well->can_reload_with(*ammo, true)
-                                  : who.as_player()->can_reload(*target, ammo);
+                                  : can_reload_now(who.as_player(), target, *ammo);
             if (emit) {
                 result.options.emplace_back(
                     who.as_player(), target, &base, *ammo, entry.pocket_index);
@@ -265,7 +280,7 @@ auto discover_ammo(const Character& who, item& base, discovery_options options)
                 }
             }
             if ((options.include_potential && can_reload_with)
-                || who.as_player()->can_reload(*target, reload_ammo)
+                || can_reload_now(who.as_player(), target, *reload_ammo)
                 || target->has_flag(flag_RELOAD_AND_SHOOT)) {
                 result.options.emplace_back(who.as_player(), target, &base, *ammo);
             }

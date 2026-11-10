@@ -685,7 +685,9 @@ TEST_CASE( "reload_weapon_prefers_wielded_then_compatible_then_gun_then_speed", 
         // rounds) has remaining_ammo_capacity() 0 (probed), which is the DDA key 0, where capacity minus loaded
         // gives 7 and 70 * 7 = 490. The glock_19 holding 12 of 15 rounds has 3 left either way, 100 * 3 = 300. So
         // the DDA key puts the empty revolver first and the capacity-minus-loaded key puts the glock first.
-        item &empty_gun = who.i_add( item::spawn( "sw_619", bday, 0 ) );
+        // CDF: 7-R2a; the ported sw_619 has an integral MAGAZINE pocket (remaining_ammo_capacity 7),
+        // this DDA key needs the legacy direct-charges shape (remaining_ammo_capacity 0).
+        item &empty_gun = who.i_add( item::spawn( "legacy_sw_619", bday, 0 ) );
         detached_ptr<item> mag_det = item::spawn( "glockmag", bday, 0 );
         REQUIRE( mag_det->put_in( item::spawn( "9mm", bday, 12 ), pocket_type::MAGAZINE ).success() );
         detached_ptr<item> glock_det = item::spawn( "glock_19", bday, 0 );

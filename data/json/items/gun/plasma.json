@@ -22,7 +22,14 @@
     "dispersion": 90,
     "durability": 6,
     "clip_size": 30,
-    "reload": 700
+    "reload": 700,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "plasma": 30 }
+      }
+    ]
   },
   {
     "id": "plasma_rifle",
@@ -56,6 +63,13 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "plasma": 25 }
+      }
     ]
   }
 ]

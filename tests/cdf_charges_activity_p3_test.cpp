@@ -306,7 +306,9 @@ TEST_CASE( "reload_option_qty_of_a_speedloader_is_its_rounds", "[p3][charges][ac
     const int rounds = loader.ammo_remaining();
     REQUIRE( rounds == 7 );
 
-    detached_ptr<item> gun_owner = item::spawn( itype_id( "sw_619" ), bday, false );
+    // CDF: 7-R2a; the ported sw_619 has an integral MAGAZINE pocket, the legacy fixture keeps the
+    // direct-charges shape this test sets (`gun.charges = 2`) and ammo_capacity() 7.
+    detached_ptr<item> gun_owner = item::spawn( itype_id( "legacy_sw_619" ), bday, false );
     item &gun = *gun_owner;
     REQUIRE( gun.ammo_remaining() == 0 );
     REQUIRE( gun.ammo_capacity() == 7 );

@@ -75,7 +75,14 @@
     "description": "If you see it - it is bug!",
     "clip_size": 300,
     "dispersion": 900,
-    "magazines": [  ]
+    "magazines": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "50": 300 }
+      }
+    ]
   },
   {
     "id": "m2browning_sawn",
@@ -113,7 +120,14 @@
     ],
     "magazines": [  ],
     "clip_size": 1,
-    "flags": [ "RELOAD_EJECT" ]
+    "flags": [ "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "50": 1 }
+      }
+    ]
   },
   {
     "id": "as50",
@@ -193,6 +207,13 @@
     "barrel_volume": "1250 ml",
     "default_mods": [ "bipod", "rifle_scope", "muzzle_brake" ],
     "clip_size": 1,
-    "flags": [ "NEVER_JAMS", "RELOAD_ONE" ]
+    "flags": [ "NEVER_JAMS", "RELOAD_ONE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "50": 1 }
+      }
+    ]
   }
 ]

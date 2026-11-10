@@ -15,7 +15,15 @@
       "ranged_damage": { "damage_type": "bullet", "amount": -3 },
       "dispersion": 60,
       "barrel_volume": "-500 ml"
-    }
+    },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762R": 5 },
+        "allowed_speedloaders": [ "762R_clip" ]
+      }
+    ]
   },
   {
     "id": "mosin44_ebr",
@@ -40,7 +48,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "relative": { "price": "100 USD" }
+    "relative": { "price": "100 USD" },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762R": 5 },
+        "allowed_speedloaders": [ "762R_clip" ]
+      }
+    ]
   },
   {
     "id": "mosin91_30",
@@ -71,8 +87,16 @@
       [ "sling", 1 ],
       [ "stock", 1 ]
     ],
-    "magazines": [ [ "762R", [ "762R_clip" ] ] ],
-    "flags": [ "RELOAD_ONE" ]
+    "flags": [ "RELOAD_ONE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762R": 5 },
+        "allowed_speedloaders": [ "762R_clip" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mosin91_30_ebr",
@@ -97,7 +121,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "relative": { "price": "100 USD" }
+    "relative": { "price": "100 USD" },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762R": 5 },
+        "allowed_speedloaders": [ "762R_clip" ]
+      }
+    ]
   },
   {
     "id": "SVD",

@@ -18,7 +18,13 @@
     "durability": 5,
     "clip_size": 1,
     "reload": 800,
-    "valid_mod_locations": [ [ "sling", 1 ], [ "grip", 1 ], [ "rail", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ], [ "grip", 1 ], [ "rail", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "homebrew_rocket": 1 }
+      }
+    ]
   },
   {
     "id": "watercannon",
@@ -46,7 +52,14 @@
     "clip_size": 100,
     "reload": 500,
     "loudness": 50,
-    "valid_mod_locations": [ [ "sling", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "water": 100, "acid": 100, "lubricant": 100, "glue": 100 },
+        "watertight": true
+      }
+    ]
   },
   {
     "id": "super_soaker",
@@ -73,7 +86,14 @@
     "clip_size": 8,
     "reload": 180,
     "loudness": 12,
-    "valid_mod_locations": [ [ "sling", 1 ], [ "grip", 1 ], [ "stock", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ], [ "grip", 1 ], [ "stock", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "water": 8, "acid": 8, "lubricant": 8, "glue": 8 }
+      }
+    ]
   },
   {
     "id": "bola_net_launcher",
@@ -92,7 +112,14 @@
     "durability": 8,
     "clip_size": 1,
     "reload": 200,
-    "flags": [ "PRIMITIVE_RANGED_WEAPON", "NON_FOULING", "NEVER_JAMS" ]
+    "flags": [ "PRIMITIVE_RANGED_WEAPON", "NON_FOULING", "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bola_launcher": 1 }
+      }
+    ]
   },
   {
     "id": "oldguard_rifle",

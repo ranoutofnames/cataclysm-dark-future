@@ -322,7 +322,7 @@
     "copy-from": "pistol_revolver",
     "type": "GUN",
     "name": { "str": "RM99 revolver" },
-    "//": "Bear in mind that most revolvers don't reach $1K.  Expensive.",
+    "//": "Bear in mind that most revolvers don't reach $1K.  Expensive. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "description": "Considered overkill by some, the Rivtech M99 remains an exceedingly powerful addition to the arsenal of any gunslinger.",
     "weight": "1204 g",
     "volume": "750 ml",
@@ -338,8 +338,15 @@
     "reload": 100,
     "color": "dark_gray",
     "clip_size": 5,
-    "magazines": [ [ "8x40mm", [ "8x40_speedloader5" ] ] ],
     "extend": { "flags": [ "WATERPROOF_GUN" ] },
-    "faults": [  ]
+    "faults": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "8x40mm": 5 },
+        "allowed_speedloaders": [ "8x40_speedloader5" ]
+      }
+    ]
   }
 ]

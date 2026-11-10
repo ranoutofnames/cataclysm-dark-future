@@ -28,6 +28,13 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ],
       [ "rail", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "3006": 1 }
+      }
     ]
   },
   {
@@ -47,7 +54,14 @@
     "price_postapoc": "1250 cent",
     "barrel_volume": "500 ml",
     "built_in_mods": [ "combination_gun_shotgun_pipe" ],
-    "extend": { "flags": "NEVER_JAMS" }
+    "extend": { "flags": "NEVER_JAMS" },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "3006": 1 }
+      }
+    ]
   },
   {
     "id": "m6_asw",
@@ -80,6 +94,13 @@
       [ "sling", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "flags": [ "NEEDS_UNFOLD" ]
+    "flags": [ "NEEDS_UNFOLD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "22": 1 }
+      }
+    ]
   }
 ]
