@@ -815,6 +815,33 @@
     },
     "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
     "magazine_well": "250 ml",
+    "//": "CDF: storage as native pocket (PL-31 STOR5); the list is the synthesis order (well, MOD, layout) and the cell set is the one the synthesized well had (reloads_like expansion)",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_contains_volume": "100 ml",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell", "light_atomic_battery_cell", "light_minus_atomic_battery_cell", "light_disposable_cell", "light_minus_disposable_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      {
+        "pocket_type": "MOD",
+        "rigid": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "2 kg",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "2 kg",
+        "moves": 80
+      }
+    ],
     "extend": { "flags": [ "FANCY" ] }
   },
   {

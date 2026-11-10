@@ -170,7 +170,22 @@
     "environmental_protection": 2,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded", "resized_large", "resized_small" ],
     "flags": [ "OUTER" ],
-    "qualities": [ [ "SLEEP_AID", 4 ] ]
+    "qualities": [ [ "SLEEP_AID", 4 ] ],
+    "//": "CDF: storage as native pocket (PL-31 STOR5); DDA:fursuit layout 500/500 ml, non-rigid",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "2 kg",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "2 kg",
+        "moves": 80
+      }
+    ]
   },
   {
     "id": "wool_suit",

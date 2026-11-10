@@ -1,0 +1,174 @@
+{
+ "format": 1,
+ "packet": "STOR5",
+ "base": "PL-31-d STOR5 v2 slice (targets/storage-garments.json), re-derived on 5746faa58f (2026-11-10)",
+ "rows": [
+  {
+   "expected": {
+    "get_storage_ml": 1000,
+    "pockets": [
+     {
+      "pocket_type": "CONTAINER",
+      "volume_ml": 500,
+      "max_item_length_mm": 113,
+      "max_contains_weight_g": 2000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "pocket_type": "CONTAINER",
+      "volume_ml": 500,
+      "max_item_length_mm": 113,
+      "max_contains_weight_g": 2000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     }
+    ],
+    "strap": null
+   },
+   "id": "wolfsuit",
+   "where": "base",
+   "file": "json/items/armor/suits_clothes.json",
+   "name": "wolf suit",
+   "storage_ml": 1000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "MIGRATION",
+   "dda_ref_id": "fursuit",
+   "class_": "COUPLED-PARENT-LAYOUT",
+   "packet": "STOR5",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "500 ml",
+     "max_contains_weight": "2 kg",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "500 ml",
+     "max_contains_weight": "2 kg",
+     "moves": 80
+    }
+   ],
+   "note": "CDF: DDA:fursuit (suits_clothes.json:753, pockets :770-772) 500/500 ml, 2 kg, moves 80, no rigid key; the volumes sum to the unchanged CDF storage 1 L."
+  },
+  {
+   "expected": {
+    "get_storage_ml": 1000,
+    "pockets": [
+     {
+      "pocket_type": "MAGAZINE_WELL",
+      "volume_ml": 100,
+      "max_item_length_mm": 2000000,
+      "rigid": true,
+      "magazine_well_ml": 0,
+      "item_restriction": [
+       "light_plus_battery_cell",
+       "light_battery_cell",
+       "light_minus_battery_cell",
+       "light_atomic_battery_cell",
+       "light_minus_atomic_battery_cell",
+       "light_disposable_cell",
+       "light_minus_disposable_cell"
+      ],
+      "default_magazine": "light_plus_battery_cell"
+     },
+     {
+      "pocket_type": "MOD"
+     },
+     {
+      "pocket_type": "CONTAINER",
+      "volume_ml": 500,
+      "max_item_length_mm": 113,
+      "max_contains_weight_g": 2000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "pocket_type": "CONTAINER",
+      "volume_ml": 500,
+      "max_item_length_mm": 113,
+      "max_contains_weight_g": 2000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     }
+    ],
+    "strap": null
+   },
+   "id": "sparkledogsuit",
+   "where": "base",
+   "file": "json/items/tool_armor.json",
+   "name": "sparkledog suit",
+   "storage_ml": 1000,
+   "copy_from": "wolfsuit",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "class_": "COUPLED-TOOL-ARMOR-WELL",
+   "packet": "STOR5",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_contains_volume": "100 ml",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "item_restriction": [
+      "light_plus_battery_cell",
+      "light_battery_cell",
+      "light_minus_battery_cell",
+      "light_atomic_battery_cell",
+      "light_minus_atomic_battery_cell",
+      "light_disposable_cell",
+      "light_minus_disposable_cell"
+     ],
+     "default_magazine": "light_plus_battery_cell"
+    },
+    {
+     "pocket_type": "MOD",
+     "rigid": true
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "500 ml",
+     "max_contains_weight": "2 kg",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "500 ml",
+     "max_contains_weight": "2 kg",
+     "moves": 80
+    }
+   ],
+   "note": "CDF: explicit list in synthesis order: the well and MOD that the legacy magazines/ammo keys build today (item_factory.cpp:1162-1215), then the wolfsuit layout. The well reproduces the synthesized shape (100 ml, rigid, no magazine_well: 250 ml >= the 100 ml cell, item_factory.cpp:1203-1208); STOR5-before.json is its red-run record. The golden entry (WELL) omits MOD by convention."
+  },
+  {
+   "expected": {
+    "get_storage_ml": 1000,
+    "inherits": "sparkledogsuit"
+   },
+   "id": "sparkledogsuit_on",
+   "where": "base",
+   "file": "json/items/tool_armor.json",
+   "name": "sparkledog suit (on)",
+   "storage_ml": 1000,
+   "copy_from": "sparkledogsuit",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "class_": "COUPLED-TOOL-ARMOR-WELL",
+   "packet": "STOR5",
+   "proposed_pocket_data": null,
+   "note": "CDF: no edit; copy-from sparkledogsuit carries the whole list (test S3)."
+  }
+ ]
+}

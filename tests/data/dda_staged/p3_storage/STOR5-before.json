@@ -1,0 +1,46 @@
+{
+ "format": 1,
+ "id": "sparkledogsuit",
+ "note": "loaded pockets before STOR5: synthesized MAGAZINE_WELL, MOD, one 1 L CONTAINER (red step 0)",
+ "pockets": [
+  {
+   "pocket_type": "MAGAZINE_WELL",
+   "volume_ml": 100,
+   "max_item_length_mm": 2000000,
+   "max_contains_weight_g": 2000000000,
+   "moves": 100,
+   "magazine_well_ml": 0,
+   "carry": false,
+   "holster": false,
+   "rigid": true,
+   "item_restriction": ["light_battery_cell", "light_minus_battery_cell", "light_disposable_cell", "light_minus_atomic_battery_cell", "light_minus_disposable_cell", "light_plus_battery_cell", "light_atomic_battery_cell"],
+   "default_magazine": "light_plus_battery_cell"
+  },
+  {
+   "pocket_type": "MOD",
+   "volume_ml": 200000000,
+   "max_item_length_mm": 0,
+   "max_contains_weight_g": 2000000000,
+   "moves": 100,
+   "magazine_well_ml": 0,
+   "carry": false,
+   "holster": false,
+   "rigid": true,
+   "item_restriction": [],
+   "default_magazine": "null"
+  },
+  {
+   "pocket_type": "CONTAINER",
+   "volume_ml": 1000,
+   "max_item_length_mm": 141,
+   "max_contains_weight_g": 2000000000,
+   "moves": 100,
+   "magazine_well_ml": 0,
+   "carry": true,
+   "holster": false,
+   "rigid": true,
+   "item_restriction": [],
+   "default_magazine": "null"
+  }
+ ]
+}

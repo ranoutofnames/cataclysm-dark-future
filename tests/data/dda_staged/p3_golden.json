@@ -18922,18 +18922,29 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
+          "max_contains_volume": "100 ml",
+          "max_item_length": "2 km",
+          "rigid": true,
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
-            "light_minus_battery_cell"
+            "light_minus_battery_cell",
+            "light_atomic_battery_cell",
+            "light_minus_atomic_battery_cell",
+            "light_disposable_cell",
+            "light_minus_disposable_cell"
           ],
           "default_magazine": "light_plus_battery_cell"
         },
         {
           "pocket_type": "CONTAINER",
           "carry": true,
-          "max_contains_volume": "1 L"
+          "max_contains_volume": "500 ml"
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "carry": true,
+          "max_contains_volume": "500 ml"
         }
       ],
       "cdf_kept_ids": [],
@@ -18948,18 +18959,29 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
+          "max_contains_volume": "100 ml",
+          "max_item_length": "2 km",
+          "rigid": true,
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
-            "light_minus_battery_cell"
+            "light_minus_battery_cell",
+            "light_atomic_battery_cell",
+            "light_minus_atomic_battery_cell",
+            "light_disposable_cell",
+            "light_minus_disposable_cell"
           ],
           "default_magazine": "light_plus_battery_cell"
         },
         {
           "pocket_type": "CONTAINER",
           "carry": true,
-          "max_contains_volume": "1 L"
+          "max_contains_volume": "500 ml"
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "carry": true,
+          "max_contains_volume": "500 ml"
         }
       ],
       "cdf_kept_ids": [],
