@@ -1118,10 +1118,30 @@
     "material": [ "carbide" ],
     "weight": "1250 g",
     "volume": "4500 ml",
+    "//": "CDF: PLUT2. The plutonium fuel pack (plut_pack_medium, 2500) is the well; initial_charges 1000 still sets the spawn load through default_ammo. The 8 L carry pocket is explicit (no synthesized garment pocket).",
     "storage": "8 L",
-    "ammo": "plutonium",
-    "max_charges": 2500,
     "initial_charges": 1000,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "plut_pack_medium" ],
+        "default_magazine": "plut_pack_medium"
+      },
+      {
+        "pocket_type": "MOD"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "8000 ml",
+        "rigid": true,
+        "moves": 100
+      }
+    ],
+    "tool_ammo": "plutonium",
+    "default_ammo": "plut_cell_charge",
+    "magazines": [ [ "plutonium", [ "plut_pack_medium" ] ] ],
     "use_action": {
       "type": "transform",
       "msg": "Initiating\nRunning suit integrity diagnostics…\nAll systems operational.",

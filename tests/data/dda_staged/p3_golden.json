@@ -14045,22 +14045,26 @@
       "storage": false
     },
     "phase_immersion_suit": {
-      "class": "TOOL-INT",
-      "rule": "R4",
-      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "plutonium": 2500
-          }
+          "item_restriction": [
+            "plut_pack_medium"
+          ],
+          "default_magazine": "plut_pack_medium"
         },
         {
           "pocket_type": "CONTAINER",
           "carry": true,
-          "max_contains_volume": "8 L"
+          "max_contains_volume": "8 L",
+          "rigid": true,
+          "moves": 100
         }
       ],
       "cdf_kept_ids": [],
@@ -14068,22 +14072,26 @@
       "storage": true
     },
     "phase_immersion_suit_on": {
-      "class": "TOOL-INT",
-      "rule": "R4",
-      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "plutonium": 2500
-          }
+          "item_restriction": [
+            "plut_pack_medium"
+          ],
+          "default_magazine": "plut_pack_medium"
         },
         {
           "pocket_type": "CONTAINER",
           "carry": true,
-          "max_contains_volume": "8 L"
+          "max_contains_volume": "8 L",
+          "rigid": true,
+          "moves": 100
         }
       ],
       "cdf_kept_ids": [],

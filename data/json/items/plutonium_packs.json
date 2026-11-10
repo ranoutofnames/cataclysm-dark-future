@@ -56,5 +56,25 @@
     "default_ammo": "plut_cell_charge",
     "looks_like": "medium_atomic_battery_cell",
     "flags": [ "NO_SALVAGE", "LEAK_DAM", "RADIOACTIVE" ]
+  },
+  {
+    "//": "CDF: PLUT2. Body numbers: half of medium_atomic_battery_cell (750 g, 500 ml), so 375 g and 250 ml; capacity 2500 is 5 cells.",
+    "type": "MAGAZINE",
+    "id": "plut_pack_medium",
+    "category": "spare_parts",
+    "name": { "str": "medium plutonium fuel pack" },
+    "description": "A shielded pack that holds up to five plutonium fuel cells worth of fuel.  Load a plutonium fuel cell into it to refill it; unloading it gives back whole cells.",
+    "weight": "375 g",
+    "volume": "250 ml",
+    "price": "750 USD",
+    "price_postapoc": "7 USD",
+    "material": [ "iron", "plastic" ],
+    "symbol": "=",
+    "color": "green",
+    "ammo_type": "plutonium",
+    "capacity": 2500,
+    "default_ammo": "plut_cell_charge",
+    "looks_like": "medium_atomic_battery_cell",
+    "flags": [ "NO_SALVAGE", "LEAK_DAM", "RADIOACTIVE" ]
   }
 ]

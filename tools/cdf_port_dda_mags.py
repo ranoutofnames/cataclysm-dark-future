@@ -1618,6 +1618,8 @@ ACT_KEEP_WELL = "AUTHOR-KEEP-CDF-WELL"      # DDA twin has no magazine pocket: C
 # well of their twin: the plan is the well they have, so --check and the golden agree with the data.
 PLUT_WELL_IDS = frozenset((
     "dimensional_anchor", "dimensional_anchor_on", "holo_cloak", "rm13_armor", "rm13_armor_on",
+    # CDF: PLUT2, the phase suit takes the medium pack the same way
+    "phase_immersion_suit", "phase_immersion_suit_on",
 ))
 
 

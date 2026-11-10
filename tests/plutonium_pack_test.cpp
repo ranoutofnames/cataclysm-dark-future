@@ -34,6 +34,7 @@ const itype_id itype_plut_cell( "plut_cell" );
 const itype_id itype_plut_cell_charge( "plut_cell_charge" );
 const itype_id itype_plut_pack_small( "plut_pack_small" );
 const itype_id itype_plut_pack_large( "plut_pack_large" );
+const itype_id itype_plut_pack_medium( "plut_pack_medium" );
 
 auto give_cells( avatar &you, int cells ) -> void
 {
@@ -333,24 +334,13 @@ TEST_CASE( "plutonium wells take their pack and nothing else", "[plut][pocket]" 
     CHECK_FALSE( accepts( *laptop, "plut_pack_large" ) );
 }
 
-// T10
-TEST_CASE( "the phase suit and the minireactor stay on the integral plutonium path", "[plut][pocket][reload]" )
+// T10'
+TEST_CASE( "the minireactor stays on the integral plutonium path", "[plut][pocket][reload]" )
 {
     clear_all_state();
     avatar &you = get_avatar();
     clear_avatar();
 
-    SECTION( "phase_immersion_suit: one cell is 500 charges, capped at 2500" ) {
-        item &suit = you.i_add( item::spawn( itype_id( "phase_immersion_suit" ) ) );
-        // CDF: tool_armor.json phase_immersion_suit max_charges 2500, initial_charges 1000
-        REQUIRE( suit.type->tool->max_charges == 2500 );
-        REQUIRE( suit.ammo_remaining() == 1000 );
-        give_cells( you, 20 );
-        REQUIRE( suit.reload( you, cell_stack( you ), 1 ) );
-        CHECK( suit.ammo_remaining() == 1500 );
-        REQUIRE( suit.reload( you, cell_stack( you ), 20 ) );
-        CHECK( suit.ammo_remaining() == 2500 );
-    }
     SECTION( "minireactor: one cell is 500 charges, capped at 10000" ) {
         item &reactor = you.i_add( item::spawn( itype_id( "minireactor" ) ) );
         // CDF: vehicle/utilities.json minireactor max_charges 10000
@@ -418,6 +408,111 @@ TEST_CASE( "rm13_armor keeps its 8 L carry pocket", "[plut][pocket][armor]" )
         CHECK( armor->get_storage() == 8000_ml );
         // CDF: AMENDMENT-v3 pocket list: MAGAZINE_WELL, MOD, CONTAINER, in that order
         const std::vector<pocket_data> &pockets = armor->type->pockets;
+        REQUIRE( pockets.size() == 3 );
+        CHECK( pockets[0].type == pocket_type::MAGAZINE_WELL );
+        CHECK( pockets[1].type == pocket_type::MOD );
+        CHECK( pockets[2].type == pocket_type::CONTAINER );
+    }
+}
+
+// U1
+TEST_CASE( "phase_immersion_suit_spawns_with_a_1000_charge_medium_pack", "[plut][pocket][tool][armor]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    clear_avatar();
+    item &suit = you.i_add( item::spawn( itype_id( "phase_immersion_suit" ) ) );
+    REQUIRE( suit.magazine_current() != nullptr );
+    // CDF: tool_armor.json phase_immersion_suit initial_charges 1000, pack plut_pack_medium (2500)
+    CHECK( suit.magazine_current()->typeId() == itype_plut_pack_medium );
+    CHECK( suit.ammo_remaining() == 1000 );
+    suit.ammo_consume( 1, tripoint_bub_ms::zero(), &you );
+    CHECK( suit.ammo_remaining() == 999 );
+}
+
+// U2
+TEST_CASE( "phase_immersion_suit_switches_on_only_with_charge_and_keeps_the_pack", "[plut][pocket][tool][iuse]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    clear_avatar();
+
+    SECTION( "a 0-charge pack: the minimal power message and no transform" ) {
+        item &suit = you.i_add( item::spawn( itype_id( "phase_immersion_suit" ) ) );
+        suit.ammo_set( itype_plut_cell_charge, 0 );
+        REQUIRE( suit.ammo_remaining() == 0 );
+        suit.type->invoke( you, suit, you.bub_pos() );
+        CHECK( suit.typeId() == itype_id( "phase_immersion_suit" ) );
+        // CDF: messages are unobservable in tests (fake_messages.cpp), so check the actor data that carries the text
+        const use_function *use = suit.type->get_use( "transform" );
+        REQUIRE( use != nullptr );
+        const iuse_transform *actor = dynamic_cast<const iuse_transform *>( use->get_actor_ptr() );
+        REQUIRE( actor != nullptr );
+        CHECK( actor->need_charges == 1 );
+        CHECK( actor->need_charges_msg.translated().find( "minimal power" ) != std::string::npos );
+    }
+    SECTION( "one charge: it transforms to the _on form and keeps the pack" ) {
+        item &suit = you.i_add( item::spawn( itype_id( "phase_immersion_suit" ) ) );
+        suit.ammo_set( itype_plut_cell_charge, 1 );
+        REQUIRE( suit.ammo_remaining() == 1 );
+        suit.type->invoke( you, suit, you.bub_pos() );
+        CHECK( suit.typeId() == itype_id( "phase_immersion_suit_on" ) );
+        REQUIRE( suit.magazine_current() != nullptr );
+        CHECK( suit.magazine_current()->typeId() == itype_plut_pack_medium );
+        CHECK( suit.ammo_remaining() == 1 );
+    }
+}
+
+// U3
+TEST_CASE( "a medium plutonium pack takes five cells and no more", "[plut][pocket][reload]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    clear_avatar();
+
+    SECTION( "five cells fill it to 2500 and none are left" ) {
+        item &pack = give_pack( you, itype_plut_pack_medium, 0 );
+        give_cells( you, 5 );
+        REQUIRE( pack.reload( you, cell_stack( you ), 5 ) );
+        // CDF: 5 cells * PLUTONIUM_CHARGES (500) = 2500, the medium pack capacity
+        CHECK( pack.ammo_remaining() == 2500 );
+        CHECK( you.charges_of( itype_plut_cell ) == 0 );
+    }
+    SECTION( "six cells into an empty medium pack: five go in, one stays" ) {
+        item &pack = give_pack( you, itype_plut_pack_medium, 0 );
+        give_cells( you, 6 );
+        REQUIRE( pack.reload( you, cell_stack( you ), 6 ) );
+        CHECK( pack.ammo_remaining() == 2500 );
+        CHECK( you.charges_of( itype_plut_cell ) == 1 );
+    }
+}
+
+// U4
+TEST_CASE( "the medium pack fits the suit's well and the small and large packs do not", "[plut][pocket][tool]" )
+{
+    clear_all_state();
+    const item *suit = empty_tool( "phase_immersion_suit" );
+    CHECK( accepts( *suit, "plut_pack_medium" ) );
+    // the 8 L carry pocket takes the small and large packs too, so only the well's restriction is checked
+    const std::vector<const pocket_data *> wells = wells_of( *suit->type );
+    REQUIRE( wells.size() == 1 );
+    CHECK( wells.front()->item_id_restriction.contains( itype_plut_pack_medium ) );
+    CHECK_FALSE( wells.front()->item_id_restriction.contains( itype_plut_pack_small ) );
+    CHECK_FALSE( wells.front()->item_id_restriction.contains( itype_plut_pack_large ) );
+    CHECK_FALSE( accepts( *empty_tool( "holo_cloak" ), "plut_pack_medium" ) );
+}
+
+// U5
+TEST_CASE( "phase_immersion_suit keeps its 8 L carry pocket", "[plut][pocket][armor]" )
+{
+    clear_all_state();
+    for( const char *id : { "phase_immersion_suit", "phase_immersion_suit_on" } ) {
+        CAPTURE( id );
+        detached_ptr<item> suit = item::spawn( itype_id( id ) );
+        // CDF: p3_golden.json phase_immersion_suit CONTAINER carry 8 L
+        CHECK( suit->get_storage() == 8000_ml );
+        // CDF: explicit pocket list (no synthesized garment pocket): MAGAZINE_WELL, MOD, CONTAINER, as rm13_armor
+        const std::vector<pocket_data> &pockets = suit->type->pockets;
         REQUIRE( pockets.size() == 3 );
         CHECK( pockets[0].type == pocket_type::MAGAZINE_WELL );
         CHECK( pockets[1].type == pocket_type::MOD );
