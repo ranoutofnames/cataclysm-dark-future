@@ -238,7 +238,14 @@
     "dispersion": 210,
     "durability": 6,
     "reload": 60,
-    "valid_mod_locations": [ [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ] ]
+    "valid_mod_locations": [ [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "arrow": 1 }
+      }
+    ]
   },
   {
     "id": "boulder_anvil",

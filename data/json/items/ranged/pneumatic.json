@@ -32,6 +32,12 @@
       [ "grip", 1 ],
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "BB": 150 }
+      }
     ]
   },
   {
@@ -55,7 +61,14 @@
     "durability": 7,
     "clip_size": 10,
     "loudness": 65,
-    "extend": { "flags": [ "RELOAD_ONE" ] }
+    "extend": { "flags": [ "RELOAD_ONE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt": 10 }
+      }
+    ]
   },
   {
     "id": "tihar",
@@ -78,7 +91,14 @@
     "recoil": 300,
     "clip_size": 20,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 3 ] ],
-    "loudness": 62
+    "loudness": 62,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "pebble": 20 }
+      }
+    ]
   },
   {
     "id": "pneumatic_shotgun",
@@ -117,6 +137,13 @@
       [ "stock", 1 ],
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shotcanister": 2 }
+      }
     ]
   }
 ]

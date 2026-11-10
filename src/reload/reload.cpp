@@ -241,7 +241,11 @@ auto discover_ammo(const Character& who, item& base, discovery_options options)
             const auto can_reload_with = target->can_reload_with(id);
             if (can_reload_with) {
                 // Skip if the magazine is inside a gun/mod that can't fire its ammunition.
-                if (target->is_magazine() && target->parent_item()
+                // CDF: why: a gunmod with its own MAGAZINE pocket (DDA integral pocket, e.g.
+                // combination_gun_shotgun) is_magazine() through the pocket clause but is not a
+                // removable magazine; it fires its own ammo, so the parent gun's ammo list does not
+                // apply. Real magazines (which also hold ammo in a MAGAZINE pocket) are still checked.
+                if (target->is_magazine() && !target->is_gunmod() && target->parent_item()
                 && (target->parent_item()->is_gun() || target->parent_item()->is_gunmod())) {
                     const auto ammo_type =
                         (ammo->is_ammo_container() || ammo->is_container())

@@ -371,6 +371,12 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "pebble": 1 }
+      }
     ]
   },
   {
@@ -392,7 +398,14 @@
     "dispersion": 500,
     "durability": 5,
     "reload": 300,
-    "valid_mod_locations": [ [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ] ]
+    "valid_mod_locations": [ [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "hand_crossbow",
@@ -407,7 +420,13 @@
     "volume": "500 ml",
     "bashing": 4,
     "loudness": 40,
-    "ranged_damage": { "damage_type": "stab", "amount": 40 }
+    "ranged_damage": { "damage_type": "stab", "amount": 40 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "crossbow",
@@ -430,7 +449,13 @@
     "dispersion": 375,
     "durability": 6,
     "reload": 800,
-    "valid_mod_locations": [ [ "sling", 1 ], [ "dampening", 1 ], [ "accessories", 1 ], [ "mechanism", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ], [ "dampening", 1 ], [ "accessories", 1 ], [ "mechanism", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "compositecrossbow",
@@ -451,7 +476,13 @@
     "loudness": 50,
     "dispersion": 350,
     "durability": 6,
-    "reload": 1200
+    "reload": 1200,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "compcrossbow",
@@ -481,6 +512,12 @@
       [ "sling", 1 ],
       [ "underbarrel", 1 ],
       [ "mechanism", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "bolt": 1 }
+      }
     ]
   },
   {
@@ -504,7 +541,13 @@
     "recoil": 30,
     "durability": 6,
     "reload": 6000,
-    "valid_mod_locations": [ [ "sling", 1 ], [ "dampening", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ], [ "dampening", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "rep_crossbow",
@@ -529,7 +572,13 @@
     "durability": 6,
     "clip_size": 10,
     "reload": 200,
-    "valid_mod_locations": [ [ "sling", 1 ], [ "dampening", 1 ], [ "grip", 1 ], [ "mechanism", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ], [ "dampening", 1 ], [ "grip", 1 ], [ "mechanism", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "bolt": 10 }
+      }
+    ]
   },
   {
     "id": "crossbow_carbon",
@@ -548,7 +597,14 @@
       [ "underbarrel", 1 ],
       [ "dampening", 1 ]
     ],
-    "proportional": { "weight": 0.7, "price": 2, "price_postapoc": 2 }
+    "proportional": { "weight": 0.7, "price": 2, "price_postapoc": 2 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt": 10 }
+      }
+    ]
   },
   {
     "type": "AMMO",
@@ -624,6 +680,13 @@
     "clip_size": 1,
     "reload": 7000,
     "valid_mod_locations": [  ],
-    "flags": [ "PRIMITIVE_RANGED_WEAPON", "FIRE_TWOHAND", "MOUNTED_GUN", "NEVER_JAMS", "STR_RELOAD" ]
+    "flags": [ "PRIMITIVE_RANGED_WEAPON", "FIRE_TWOHAND", "MOUNTED_GUN", "NEVER_JAMS", "STR_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt_heavy": 1, "rock": 1 }
+      }
+    ]
   }
 ]

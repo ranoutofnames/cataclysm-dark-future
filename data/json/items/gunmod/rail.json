@@ -25,7 +25,14 @@
       "clip_size": 1
     },
     "dispersion_modifier": 60,
-    "flags": [ "STR_RELOAD", "NON_FOULING" ]
+    "flags": [ "STR_RELOAD", "NON_FOULING" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "gun_crossbow_mod",
@@ -43,6 +50,13 @@
       [ "ROCKET_LAUNCHERS" ],
       [ "FLAMETHROWERS" ],
       [ "SPRAY_GUNS" ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt": 1 }
+      }
     ]
   },
   {

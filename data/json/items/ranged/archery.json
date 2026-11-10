@@ -446,7 +446,14 @@
     "range": 8,
     "dispersion": 1250,
     "durability": 4,
-    "valid_mod_locations": [ [ "dampening", 1 ] ]
+    "valid_mod_locations": [ [ "dampening", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "shortbow",
@@ -477,7 +484,14 @@
     "ranged_damage": { "damage_type": "stab", "amount": 28 },
     "range": 10,
     "dispersion": 1000,
-    "durability": 6
+    "durability": 6,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "compbow",
@@ -516,6 +530,13 @@
         "msg": "You loosen the limbs, decreasing the strength of the bow.",
         "internal_name": "loosen_limbs"
       }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
     ]
   },
   {
@@ -543,6 +564,13 @@
         "msg": "You loosen the limbs, decreasing the strength of the bow.",
         "internal_name": "tighten_limbs_medium"
       }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
     ]
   },
   {
@@ -569,6 +597,13 @@
         "qualities_needed": { "SCREW_FINE": 1 },
         "msg": "You tighten the limbs, increasing the strength of the bow significantly.",
         "internal_name": "tighten_limbs_high"
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
       }
     ]
   },
@@ -601,7 +636,14 @@
     "ranged_damage": { "damage_type": "stab", "amount": 36 },
     "range": 24,
     "dispersion": 950,
-    "durability": 6
+    "durability": 6,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "compositebow_short",
@@ -627,7 +669,14 @@
     },
     "loudness": 45,
     "ranged_damage": { "damage_type": "stab", "amount": 28 },
-    "range": 12
+    "range": 12,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "arrow": 1 }
+      }
+    ]
   },
   {
     "id": "longbow",
@@ -657,7 +706,14 @@
     "ranged_damage": { "damage_type": "stab", "amount": 35 },
     "range": 22,
     "dispersion": 1000,
-    "durability": 6
+    "durability": 6,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "woodgreatbow",
@@ -687,7 +743,14 @@
     "range": 26,
     "dispersion": 1190,
     "durability": 8,
-    "valid_mod_locations": [ [ "grip", 1 ], [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ], [ "stabilizer", 1 ], [ "dampening", 1 ] ]
+    "valid_mod_locations": [ [ "grip", 1 ], [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ], [ "stabilizer", 1 ], [ "dampening", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "compgreatbow",
@@ -711,6 +774,13 @@
     "ranged_damage": { "damage_type": "stab", "amount": 60, "armor_penetration": 2 },
     "range": 28,
     "dispersion": 990,
-    "valid_mod_locations": [ [ "grip", 1 ], [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ], [ "stabilizer", 1 ], [ "dampening", 1 ] ]
+    "valid_mod_locations": [ [ "grip", 1 ], [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ], [ "stabilizer", 1 ], [ "dampening", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
+    ]
   }
 ]

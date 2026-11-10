@@ -1,0 +1,30 @@
+{
+  "batch": "7-R2b",
+  "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "cap_plus_one",
+      "id": "M6_shotgun",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`410shot`] 1 -> 2",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "cap_plus_one",
+      "id": "TANK",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`120mm`] 1 -> 2",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N3",
+      "kind": "drop_speedloader",
+      "id": "surv_six_shooter",
+      "pocket": 0,
+      "mutation": "remove `40_speedloader6` from allowed_speedloaders",
+      "expect": "mismatch reported for this id only"
+    }
+  ]
+}

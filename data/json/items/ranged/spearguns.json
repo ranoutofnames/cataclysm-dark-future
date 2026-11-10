@@ -103,6 +103,12 @@
       [ "stock", 1 ],
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "fishspear": 4 }
+      }
     ]
   },
   {
@@ -119,7 +125,14 @@
     "weight": "840 g",
     "volume": "1 L",
     "clip_size": 1,
-    "loudness": 60
+    "loudness": 60,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "fishspear": 1 }
+      }
+    ]
   },
   {
     "id": "speargun",
@@ -137,7 +150,13 @@
     "ranged_damage": { "damage_type": "stab", "amount": 6 },
     "range": 4,
     "clip_size": 1,
-    "loudness": 60
+    "loudness": 60,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "fishspear": 1 }
+      }
+    ]
   },
   {
     "id": "doublespeargun",
@@ -158,6 +177,12 @@
     "durability": 7,
     "clip_size": 2,
     "modes": [ [ "DEFAULT", "single", 1 ], [ "DOUBLE", "double", 2 ] ],
-    "loudness": 65
+    "loudness": 65,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "fishspear": 2 }
+      }
+    ]
   }
 ]

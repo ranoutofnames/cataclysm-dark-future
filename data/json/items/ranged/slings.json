@@ -19,7 +19,14 @@
     "ranged_damage": { "damage_type": "bash", "amount": 6 },
     "range": 8,
     "dispersion": 150,
-    "durability": 6
+    "durability": 6,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "pebble": 1, "rock": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "staff_sling",
@@ -44,7 +51,14 @@
     "bashing": 18,
     "range": 10,
     "dispersion": 200,
-    "durability": 8
+    "durability": 8,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "rock": 1, "pebble": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "slingshot",
@@ -64,7 +78,14 @@
     "range": 5,
     "dispersion": 75,
     "durability": 6,
-    "loudness": 40
+    "loudness": 40,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "pebble": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "wristrocket",
@@ -84,7 +105,14 @@
     "range": 8,
     "dispersion": 45,
     "durability": 7,
-    "loudness": 45
+    "loudness": 45,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "pebble": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "id": "slingshot_cannon",
@@ -111,7 +139,14 @@
     "valid_mod_locations": [ [ "accessories", 2 ], [ "sights", 1 ], [ "sling", 1 ] ],
     "delete": { "flags": [ "WATERPROOF_GUN", "UNDERWATER_GUN" ] },
     "extend": { "flags": [ "PRIMITIVE_RANGED_WEAPON" ] },
-    "loudness": 60
+    "loudness": 60,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "rock": 1 }
+      }
+    ]
   },
   {
     "id": "atlatl",
@@ -132,6 +167,13 @@
     "dispersion": 1000,
     "durability": 6,
     "reload": 100,
-    "extend": { "flags": [ "BELT_CLIP" ] }
+    "extend": { "flags": [ "BELT_CLIP" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "atlatl": 1 },
+        "open_container": true
+      }
+    ]
   }
 ]

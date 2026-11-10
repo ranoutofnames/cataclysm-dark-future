@@ -75,7 +75,13 @@
       "clip_size": 2,
       "modes": [ [ "DEFAULT", "single", 1 ], [ "DOUBLE", "double", 2 ] ]
     },
-    "flags": [ "IRREMOVABLE", "RELOAD_ONE", "RELOAD_EJECT" ]
+    "flags": [ "IRREMOVABLE", "RELOAD_ONE", "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "shot": 2 }
+      }
+    ]
   },
   {
     "id": "combination_gun_shotgun_pipe",
@@ -101,7 +107,14 @@
       "clip_size": 2,
       "modes": [ [ "DEFAULT", "single", 1 ], [ "DOUBLE", "double", 2 ] ]
     },
-    "flags": [ "IRREMOVABLE", "RELOAD_ONE", "NEVER_JAMS", "RELOAD_EJECT" ]
+    "flags": [ "IRREMOVABLE", "RELOAD_ONE", "NEVER_JAMS", "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 2 }
+      }
+    ]
   },
   {
     "id": "grip",
@@ -198,7 +211,14 @@
       "blackpowder_tolerance": 48,
       "reload": 120
     },
-    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ]
+    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 7 }
+      }
+    ]
   },
   {
     "id": "ksg25_aux_shotgun",
@@ -224,7 +244,14 @@
       "blackpowder_tolerance": 48,
       "reload": 120
     },
-    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ]
+    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 12 }
+      }
+    ]
   },
   {
     "id": "dp12_aux_shotgun",
@@ -251,7 +278,14 @@
       "blackpowder_tolerance": 48,
       "reload": 120
     },
-    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ]
+    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 7 }
+      }
+    ]
   },
   {
     "id": "ts12_aux_shotgun",
@@ -277,7 +311,14 @@
       "clip_size": 5,
       "reload": 120
     },
-    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ]
+    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 5 }
+      }
+    ]
   },
   {
     "id": "ts12_aux_shotgun2",
@@ -303,7 +344,14 @@
       "clip_size": 5,
       "reload": 120
     },
-    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ]
+    "flags": [ "RELOAD_ONE", "IRREMOVABLE", "USE_PARENT_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 5 }
+      }
+    ]
   },
   {
     "id": "laser_sight",
@@ -362,7 +410,14 @@
       "blackpowder_tolerance": 96,
       "clip_size": 1
     },
-    "flags": [ "RELOAD_ONE", "NO_UNLOAD", "IRREMOVABLE" ]
+    "flags": [ "RELOAD_ONE", "NO_UNLOAD", "IRREMOVABLE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shotpaper": 1 }
+      }
+    ]
   },
   {
     "id": "m203",
@@ -380,7 +435,13 @@
     "location": "underbarrel",
     "mod_target_category": [ [ "RIFLES" ], [ "MACHINE_GUNS" ], [ "GATLING_GUNS" ], [ "M_XBOWS" ] ],
     "gun_data": { "ammo": "40x46mm", "skill": "launcher", "dispersion": 300, "durability": 10, "clip_size": 1 },
-    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ]
+    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "40x46mm": 1 }
+      }
+    ]
   },
   {
     "id": "m203_mod",
@@ -399,6 +460,12 @@
       [ "ROCKET_LAUNCHERS" ],
       [ "FLAMETHROWERS" ],
       [ "SPRAY_GUNS" ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "40x46mm": 1 }
+      }
     ]
   },
   {
@@ -417,7 +484,13 @@
     "location": "underbarrel",
     "mod_target_category": [ [ "RIFLES" ], [ "MACHINE_GUNS" ], [ "GATLING_GUNS" ], [ "M_XBOWS" ] ],
     "gun_data": { "ammo": "40x46mm", "skill": "launcher", "dispersion": 270, "durability": 10, "clip_size": 1 },
-    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ]
+    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "40x46mm": 1 }
+      }
+    ]
   },
   {
     "id": "m320_mod_mod",
@@ -436,6 +509,12 @@
       [ "ROCKET_LAUNCHERS" ],
       [ "FLAMETHROWERS" ],
       [ "SPRAY_GUNS" ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "40x46mm": 1 }
+      }
     ]
   },
   {
@@ -460,7 +539,14 @@
       "blackpowder_tolerance": 72,
       "clip_size": 1
     },
-    "flags": [ "RELOAD_EJECT" ]
+    "flags": [ "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "410shot": 1 }
+      }
+    ]
   },
   {
     "id": "makeshift_bayonet",
@@ -501,7 +587,13 @@
     "location": "underbarrel",
     "mod_target_category": [ [ "RIFLES" ], [ "MACHINE_GUNS" ], [ "GATLING_GUNS" ], [ "M_XBOWS" ] ],
     "gun_data": { "ammo": "shot", "skill": "shotgun", "dispersion": 330, "durability": 10, "blackpowder_tolerance": 72, "clip_size": 4 },
-    "flags": [ "RELOAD_ONE" ]
+    "flags": [ "RELOAD_ONE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "shot": 4 }
+      }
+    ]
   },
   {
     "id": "masterkey_mod",
@@ -520,6 +612,12 @@
       [ "ROCKET_LAUNCHERS" ],
       [ "FLAMETHROWERS" ],
       [ "SPRAY_GUNS" ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "shot": 4 }
+      }
     ]
   },
   {
@@ -548,7 +646,14 @@
       [ "FLAMETHROWERS" ],
       [ "SPRAY_GUNS" ]
     ],
-    "gun_data": { "ammo": "40x46mm", "skill": "launcher", "dispersion": 450, "durability": 10, "clip_size": 1 }
+    "gun_data": { "ammo": "40x46mm", "skill": "launcher", "dispersion": 450, "durability": 10, "clip_size": 1 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40x46mm": 1 }
+      }
+    ]
   },
   {
     "id": "pistol_bayonet",
@@ -646,7 +751,13 @@
       "clip_size": 2,
       "modes": [ [ "DEFAULT", "single", 1 ], [ "DOUBLE", "double", 2 ] ]
     },
-    "flags": [ "RELOAD_ONE" ]
+    "flags": [ "RELOAD_ONE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "shot": 2 }
+      }
+    ]
   },
   {
     "id": "u_shotgun_mod",
@@ -665,6 +776,13 @@
       [ "ROCKET_LAUNCHERS" ],
       [ "FLAMETHROWERS" ],
       [ "SPRAY_GUNS" ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 2 }
+      }
     ]
   }
 ]
