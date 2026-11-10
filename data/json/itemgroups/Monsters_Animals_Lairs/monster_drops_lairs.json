@@ -332,7 +332,7 @@
       { "item": "bot_flashbang_hack", "prob": 1 },
       { "item": "bot_gasbomb_hack", "prob": 1 },
       { "group": "used_UPS", "prob": 5 },
-      { "item": "adv_UPS_off", "prob": 3, "charges": [ 0, 2000 ] },
+      { "item": "adv_UPS_off", "prob": 3, "charges": [ 0, 1500 ] },
       { "item": "bio_power_storage", "prob": 10 },
       { "item": "bio_flashlight", "prob": 10 },
       { "item": "bio_lighter", "prob": 10 },

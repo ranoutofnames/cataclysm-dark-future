@@ -1618,6 +1618,123 @@ PLUT_WELL_IDS = frozenset((
 ))
 
 
+# CDF: 7-R4a2 (AUTO-233 #16, AUTO-236, AUTO-239). The battery tools take DDA's wells and DDA's
+# numbers; the cells keep CDF's capacities (light 100, medium 500, heavy 1000, heavy_plus 1500).
+# Class wells: the DDA analog's MAGAZINE_WELL is copied as it is (flag_restriction and
+# default_magazine, no CDF flag added; CDF adds the explicit `max_item_length` every well has) and the flags that make a well dead data are dropped.
+CLASS_WELL_ANALOG = {
+    "adv_UPS_off": "UPS_off",
+    "scouter": "goggles_nv", "scouter_nv_on": "goggles_nv",
+    "mil_scouter": "goggles_nv", "mil_scouter_nv_on": "goggles_nv",
+    "exosuit_survivor": "robofac_resonance_suit", "exosuit_survivor_on": "robofac_resonance_suit",
+    "exosuit_military": "robofac_resonance_suit", "exosuit_military_on": "robofac_resonance_suit",
+    "exosuit_industrial": "robofac_resonance_suit", "exosuit_industrial_on": "robofac_resonance_suit",
+}
+CLASS_WELL_DROP_FLAGS = ("NO_RELOAD", "NO_UNLOAD", "RECHARGE")
+CLASS_WELL_DROP_KEYS = ("ammo", "tool_ammo", "max_charges", "initial_charges")
+# Integral rows that take the DDA twin's number instead of CDF's (Q-WRIST: the six wrist_comp_*
+# rows keep 600 and are not listed). id -> DDA id the number is read from (a twinless music row
+# reads its base item, as DDA's smart_watch_music copies smart_watch).
+DDA_NUMBER_SRC = {
+    "camera_pro": "camera_pro", "eink_tablet_pc": "eink_tablet_pc",
+    "elec_jackhammer": "elec_jackhammer", "laptop": "laptop",
+    "laptop_screen_lit": "laptop_screen_lit", "mp3": "mp3", "mp3_on": "mp3_on",
+    "portable_game": "portable_game", "smart_phone": "smart_phone",
+    "smart_phone_flashlight": "smart_phone_flashlight", "laptop_boris": "laptop_boris",
+    "laptop_music": "laptop", "eink_tablet_pc_music": "eink_tablet_pc",
+    "smart_phone_music": "smart_phone",
+}
+# BATT2 rows: CDF has a battery well, the DDA twin has an integral MAGAZINE: plan the twin's pocket.
+BATT2_INTEGRAL_IDS = frozenset((
+    "camera", "cell_phone", "cell_phone_flashlight", "vibrator", "electric_lighter",
+    "electric_lantern", "electric_lantern_on", "reading_light", "reading_light_on",
+    "smart_lamp", "smart_lamp_on",
+))
+NO_POCKET_IDS = frozenset(("fake_firestarter",))   # DDA's twin (fake.json) has no pocket
+
+
+def _dda_mag_pockets(ctx, iid):
+    twin = ctx.dda.items.get(iid)
+    return [p for p in pocket_list(twin["eff"]) if p.get("pocket_type") == "MAGAZINE"]         if twin else []
+
+
+def _drop_item_keys(ctx, rec, out, keys, reason):
+    have = set(d["key"] for d in out["dropped_keys"]) | set(k["key"] for k in out["inherited_keys"])
+    for k in keys:
+        if k not in have:
+            move_item_key(ctx, rec, out, k, reason)
+
+
+def apply_battery_rulings(ctx, rec, out):
+    """7-R4a2: post-process one planned record (see the constants above). The action stays the
+    golden's known HAND-FALLBACK (a known action, in EDIT_ACTIONS), the plan is the data."""
+    iid = rec["id"]
+    pk = out["pocket_data"]
+    if iid in CLASS_WELL_ANALOG:
+        wells = []
+        for p in pocket_list(ctx.dda.items[CLASS_WELL_ANALOG[iid]]["eff"]):
+            if p.get("pocket_type") == "MAGAZINE_WELL":
+                q = collections.OrderedDict()
+                q["pocket_type"] = "MAGAZINE_WELL"
+                # CDF: every battery well carries an explicit length limit (tests/item_length_test.cpp
+                # "magazine wells have an explicit length limit"); not a DDA key
+                q["max_item_length"] = "2 km"
+                q.update((k, copy.deepcopy(v)) for k, v in p.items() if k != "pocket_type")
+                wells.append(q)
+        new, placed = [], False
+        for p in pk:
+            if p.get("pocket_type") in ("MAGAZINE", "MAGAZINE_WELL"):
+                if not placed:
+                    new += wells
+                    placed = True
+            else:
+                new.append(p)
+        out["pocket_data"] = new if placed else wells + new
+        out["action"] = "HAND-FALLBACK"
+        out["fallback"] = "authored"
+        out["renamed_keys"] = []
+        out["set_keys"] = {}
+        out["dropped_keys"] = [d for d in out["dropped_keys"] if d["key"] not in CLASS_WELL_DROP_KEYS]
+        _drop_item_keys(ctx, rec, out, CLASS_WELL_DROP_KEYS, "the well holds its cell's capacity")
+        out["drop_flags"] = [f for f in CLASS_WELL_DROP_FLAGS
+                             if f in (rec["raw"].get("flags") or [])]
+        out["diff"].append("well(class)")
+        out["notes"].append("7-R4a2 class well: DDA %s well copied as it is (%s); a battery well "
+                            "holds its cell's capacity (CDF cell sizes, no rescale); dead-data "
+                            "flags dropped: %s" % (CLASS_WELL_ANALOG[iid], compact(wells),
+                                                   ",".join(out["drop_flags"]) or "none own"))
+    elif iid in DDA_NUMBER_SRC:
+        src = _dda_mag_pockets(ctx, DDA_NUMBER_SRC[iid])
+        mine = [p for p in pk if p.get("pocket_type") == "MAGAZINE"
+                and isinstance(p.get("ammo_restriction"), dict)]
+        if src and len(mine) == 1 and "battery" in src[0].get("ammo_restriction", {}):
+            n = src[0]["ammo_restriction"]["battery"]
+            old = mine[0]["ammo_restriction"].get("battery")
+            mine[0]["ammo_restriction"]["battery"] = n
+            out["diff"].append("number(dda)")
+            out["notes"].append("7-R4a2: DDA %s number %s instead of CDF's %s (capacity moves to "
+                                "DDA, per-use drain stays CDF)" % (DDA_NUMBER_SRC[iid], n, old))
+    elif iid in BATT2_INTEGRAL_IDS:
+        src = _dda_mag_pockets(ctx, iid)
+        if src:
+            out["pocket_data"] = [pocket_out(src[0])]
+            out["action"] = "HAND-FALLBACK"
+            out["fallback"] = "authored"
+            out["diff"].append("int(dda)")
+            out["notes"].append("7-R4a2 plan (BATT2 applies): integral MAGAZINE %s as the DDA twin"
+                                % compact(out["pocket_data"]))
+    elif iid in NO_POCKET_IDS:
+        out["pocket_data"] = []
+        out["action"] = "HAND-FALLBACK"
+        out["fallback"] = "authored"
+        out["renamed_keys"] = []
+        out["set_keys"] = {}
+        _drop_item_keys(ctx, rec, out, ("ammo", "tool_ammo", "max_charges", "initial_charges"),
+                        "DDA's twin has no battery pocket")
+        out["diff"].append("nopocket")
+        out["notes"].append("7-R4a2 plan (7-R4b applies): no battery pocket, as DDA's twin")
+
+
 def build_records(ctx, classes, ids):
     records = []
     for iid, rec in ctx.cdf.items.items():
@@ -1666,6 +1783,7 @@ def build_records(ctx, classes, ids):
             out["ammo_diff"] = {}
             out["well_diff"] = {"cdf_added": [], "dda_only_kept": [], "unfit": []}
             out["notes"].append("PLUT1: plutonium fuel pack well kept (CDF, not the DDA battery well)")
+        apply_battery_rulings(ctx, rec, out)
         for p in out["pocket_data"]:
             out["violations"] += check_pocket(p, ctx)
         records.append(out)
@@ -2227,6 +2345,12 @@ def edit_object(t, rec, ctx, eol, base_indent):
         if d["key"] in own:
             t = remove_key(t, d["key"])
             own.discard(d["key"])
+    if rec.get("drop_flags") and "flags" in own:   # 7-R4a2: flags that are dead data on a well
+        e = _find(t, "flags")
+        fl = json.loads(t[e["vs"]:e["ve"]])
+        if isinstance(fl, list) and any(f in rec["drop_flags"] for f in fl):
+            t = replace_value(t, "flags", fmt_json([f for f in fl if f not in rec["drop_flags"]],
+                                                   ind, unit, eol))
     eff_pd = pocket_list(ctx.cdf.items[rec["id"]]["eff"])
     emitted = copy.deepcopy(rec["pocket_data"])
     wd = rec.get("well_diff")
@@ -2511,9 +2635,14 @@ def check_record(rec, ctx_chk):
             return "pending", rec["rule"], "not ported yet"
         return "fail", "a", "effective pocket_data != emitted: %s" % first_diff(
             check_norm(pockets), check_norm(emitted))
+    if present and n_keys > 0 and len(present) == n_keys and not emitted and             not mag_pockets(pockets):
+        return "pending", rec["rule"], "not ported yet"   # 7-R4a2: a plan of "no pocket" (fake_firestarter)
     # (d) dropped keys
     if present:
         return "fail", "d", "dropped key remains: %s" % ", ".join(present)
+    left = [f for f in rec.get("drop_flags", []) if f in (eff.get("flags") or [])]
+    if left:   # 7-R4a2: class-well flags
+        return "fail", "d", "dropped flag remains: %s" % ", ".join(left)
     for k, v in rec["set_keys"].items():
         got = eff.get(k)
         gd = eff.get("gun_data")

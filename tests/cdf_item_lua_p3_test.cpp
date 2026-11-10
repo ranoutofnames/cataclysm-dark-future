@@ -295,7 +295,7 @@ TEST_CASE( "lua_item_pocket_by_id_handle_goes_stale", "[p3][lua]" ) {
 // ebook_lua reads the tablet battery through ammo_remaining(), not item.charges.
 TEST_CASE( "ebook_lua_battery_arithmetic_uses_ammo_remaining", "[p3][lua]" ) {
     clear_all_state();
-    // CDF: literals from electronics.json:440-443 (initial_charges 160, max_charges 200)
+    // CDF: literals from electronics.json eink_tablet_pc: initial_charges 68, pocket 85 (DDA twin number; 7-R4a2)
     detached_ptr<item> tablet = item::spawn( itype_id( "eink_tablet_pc" ) );
 
     auto lua = make_lua_state();
@@ -312,11 +312,11 @@ TEST_CASE( "ebook_lua_battery_arithmetic_uses_ammo_remaining", "[p3][lua]" ) {
     )", sol::script_pass_on_error );
     REQUIRE( res.valid() );
     const auto out = res.get<sol::table>();
-    CHECK( out.get<int>( "remaining" ) == 160 );
-    CHECK( out.get<int>( "capacity" ) == 200 );
+    CHECK( out.get<int>( "remaining" ) == 68 );
+    CHECK( out.get<int>( "capacity" ) == 85 );
     CHECK( out.get<int>( "pct" ) == 80 );
-    CHECK( out.get<int>( "limit" ) == 16 );
-    CHECK( out.get<int>( "after" ) == 180 );
+    CHECK( out.get<int>( "limit" ) == 6 );
+    CHECK( out.get<int>( "after" ) == 85 );
 }
 
 // main.lua must not read the battery from charges; book charges stay.

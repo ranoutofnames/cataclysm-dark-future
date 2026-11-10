@@ -518,6 +518,22 @@ well and an integral magazine); a pocket that other fields refer to needs an `id
 name (see "Gun", "Gunmod" and "Tools"). The size flags `BATTERY_ULTRA_LIGHT`, `BATTERY_LIGHT`,
 `BATTERY_MEDIUM` and `BATTERY_HEAVY` mark which battery wells an item fits in.
 
+A battery well names the size flags it accepts and a default cell, and nothing else:
+
+```json
+"pocket_data": [
+  {
+    "pocket_type": "MAGAZINE_WELL",
+    "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+    "default_magazine": "light_battery_cell"
+  }
+]
+```
+
+A battery well holds the capacity of the cell in it, so the tool's charges are the cell's `capacity` (CDF
+cell sizes: `light_battery_cell` 100, `medium_battery_cell` 500, `heavy_battery_cell` 1000,
+`heavy_plus_battery_cell` 1500). The item carries no `ammo`, `max_charges` or `initial_charges` of its own.
+
 `allowed_speedloaders` lists the ammo items that can fill the pocket as a speedloader. An ammo item
 with the flag `SPEEDLOADER` empties its rounds into the pocket only if all of them fit;
 with `SPEEDLOADER_CLIP` the pocket doesn't need room for all of them at once.

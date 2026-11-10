@@ -1176,11 +1176,12 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
-          "rigid": true,
-          "ammo_restriction": {
-            "battery": 5000
-          }
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "flag_restriction": [
+            "BATTERY_HEAVY"
+          ],
+          "default_magazine": "heavy_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -3312,14 +3313,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_plus_battery_cell",
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_plus_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 50
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -3336,7 +3334,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 100
           }
         }
       ],
@@ -3574,14 +3572,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "100 ml",
-          "item_restriction": [
-            "light_plus_battery_cell",
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_plus_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 17
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -3595,14 +3590,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "100 ml",
-          "item_restriction": [
-            "light_plus_battery_cell",
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_plus_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 17
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -5871,7 +5863,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 85
           }
         }
       ],
@@ -5889,7 +5881,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 85
           }
         }
       ],
@@ -5964,7 +5956,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 10000
+            "battery": 7920
           }
         }
       ],
@@ -6035,13 +6027,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "light_minus_battery_cell",
-            "light_battery_cell"
-          ],
-          "default_magazine": "light_minus_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 58
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -6055,13 +6045,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "light_minus_battery_cell",
-            "light_battery_cell"
-          ],
-          "default_magazine": "light_minus_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 58
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -6075,12 +6063,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "50 ml",
-          "item_restriction": [
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_minus_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 30
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -6277,11 +6264,13 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 500
-          }
+          "flag_restriction": [
+            "BATTERY_HEAVY"
+          ],
+          "default_magazine": "heavy_battery_cell"
         },
         {
           "pocket_type": "CONTAINER",
@@ -6308,11 +6297,13 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 500
-          }
+          "flag_restriction": [
+            "BATTERY_HEAVY"
+          ],
+          "default_magazine": "heavy_battery_cell"
         },
         {
           "pocket_type": "CONTAINER",
@@ -6339,11 +6330,13 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 500
-          }
+          "flag_restriction": [
+            "BATTERY_HEAVY"
+          ],
+          "default_magazine": "heavy_battery_cell"
         },
         {
           "pocket_type": "CONTAINER",
@@ -6362,11 +6355,13 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 500
-          }
+          "flag_restriction": [
+            "BATTERY_HEAVY"
+          ],
+          "default_magazine": "heavy_battery_cell"
         },
         {
           "pocket_type": "CONTAINER",
@@ -6385,11 +6380,13 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 500
-          }
+          "flag_restriction": [
+            "BATTERY_HEAVY"
+          ],
+          "default_magazine": "heavy_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -6403,11 +6400,13 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 500
-          }
+          "flag_restriction": [
+            "BATTERY_HEAVY"
+          ],
+          "default_magazine": "heavy_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -6419,15 +6418,7 @@
       "rule": "R4",
       "action": "HAND-FALLBACK",
       "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE",
-          "rigid": true,
-          "ammo_restriction": {
-            "battery": 10000
-          }
-        }
-      ],
+      "pockets": [],
       "cdf_kept_ids": [],
       "dropped_ids": [],
       "storage": false
@@ -10175,7 +10166,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 700
+            "battery": 200
           }
         }
       ],
@@ -10193,7 +10184,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 700
+            "battery": 200
           }
         }
       ],
@@ -10211,7 +10202,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 700
+            "battery": 200
           }
         }
       ],
@@ -10229,7 +10220,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 700
+            "battery": 200
           }
         }
       ],
@@ -12729,11 +12720,14 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 200
-          }
+          "flag_restriction": [
+            "BATTERY_LIGHT",
+            "BATTERY_ULTRA_LIGHT"
+          ],
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -12747,11 +12741,14 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 200
-          }
+          "flag_restriction": [
+            "BATTERY_LIGHT",
+            "BATTERY_ULTRA_LIGHT"
+          ],
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -13226,7 +13223,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 50
           }
         }
       ],
@@ -13244,7 +13241,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 50
           }
         }
       ],
@@ -14377,7 +14374,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 48
           }
         }
       ],
@@ -15248,13 +15245,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "100 ml",
-          "item_restriction": [
-            "light_minus_disposable_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_minus_disposable_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 13
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -15268,13 +15263,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "100 ml",
-          "item_restriction": [
-            "light_minus_disposable_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_minus_disposable_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 13
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -17428,11 +17421,14 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 200
-          }
+          "flag_restriction": [
+            "BATTERY_LIGHT",
+            "BATTERY_ULTRA_LIGHT"
+          ],
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -17446,11 +17442,14 @@
       "twin": false,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
           "rigid": true,
-          "ammo_restriction": {
-            "battery": 200
-          }
+          "flag_restriction": [
+            "BATTERY_LIGHT",
+            "BATTERY_ULTRA_LIGHT"
+          ],
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -18545,13 +18544,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 33
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -18565,13 +18562,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 33
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -18588,7 +18583,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 56
           }
         }
       ],
@@ -18606,7 +18601,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 56
           }
         }
       ],
@@ -18624,7 +18619,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "battery": 200
+            "battery": 56
           }
         }
       ],
@@ -21898,13 +21893,11 @@
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_battery_cell"
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 58
+          }
         }
       ],
       "cdf_kept_ids": [],

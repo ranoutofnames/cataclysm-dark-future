@@ -4,18 +4,18 @@
   "mutations": [
     {
       "case": "N1",
-      "kind": "cap_plus_one",
+      "kind": "wrong_default",
       "id": "adv_UPS_off",
       "pocket": 0,
-      "mutation": "ammo_restriction[`battery`] 5000 -> 5001",
+      "mutation": "default_magazine `heavy_plus_battery_cell` -> `heavy_battery_cell`",
       "expect": "mismatch reported for this id only"
     },
     {
       "case": "N2",
       "kind": "hand_fallback_integral",
-      "id": "adv_UPS_off",
+      "id": "laptop",
       "pocket": 0,
-      "mutation": "replace the CDF well by an integral MAGAZINE pocket (the owner rule keeps battery wells)",
+      "mutation": "replace the integral MAGAZINE pocket by a MAGAZINE_WELL (the kind flips MAGAZINE and MAGAZINE_WELL)",
       "expect": "mismatch reported for this id only"
     },
     {

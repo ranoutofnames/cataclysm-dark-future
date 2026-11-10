@@ -14,15 +14,20 @@
     "material": [ "aluminum", "plastic" ],
     "symbol": ";",
     "color": "light_green",
-    "ammo": "battery",
-    "initial_charges": 5000,
-    "max_charges": 5000,
     "ups_eff_mult": 2,
     "ups_recharge_rate": 10,
     "looks_like": "battery",
-    "//": "Twice the recharge rate, half the size of a heavy plutonium battery.",
+    "//": "Twice the recharge rate, half the size of a heavy plutonium battery. CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges, initial_charges (now in pocket_data)",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 m", "rate": 4 } ] },
-    "flags": [ "IS_UPS", "LEAK_DAM", "RADIOACTIVE", "NO_RELOAD", "NO_UNLOAD" ]
+    "flags": [ "IS_UPS", "LEAK_DAM", "RADIOACTIVE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_plus_battery_cell"
+      }
+    ]
   },
   {
     "id": "camera",
@@ -59,7 +64,7 @@
     "symbol": ";",
     "color": "yellow",
     "tool_ammo": "battery",
-    "initial_charges": 160,
+    "initial_charges": 80,
     "charges_per_use": 5,
     "use_action": [ "CAMERA", "TOGGLE_UPS_CHARGING" ],
     "flags": [ "CAMERA_PRO", "ALWAYS_TWOHAND", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
@@ -67,7 +72,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 100 }
       }
     ],
     "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
@@ -505,7 +510,7 @@
     "symbol": ";",
     "color": "blue",
     "tool_ammo": "battery",
-    "initial_charges": 160,
+    "initial_charges": 68,
     "charges_per_use": 1,
     "use_action": [
       "EINKTABLETPC",
@@ -528,7 +533,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 85 }
       }
     ],
     "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
@@ -546,7 +551,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 85 }
       }
     ]
   },
@@ -665,7 +670,7 @@
     "price_postapoc": "250 cent",
     "bashing": 6,
     "tool_ammo": "battery",
-    "initial_charges": 500,
+    "initial_charges": 143,
     "charges_per_use": 1,
     "use_action": [
       "EINKTABLETPC",
@@ -709,7 +714,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 700 }
+        "ammo_restriction": { "battery": 200 }
       }
     ],
     "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
@@ -727,7 +732,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 700 }
+        "ammo_restriction": { "battery": 200 }
       }
     ]
   },
@@ -744,7 +749,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 700 }
+        "ammo_restriction": { "battery": 200 }
       }
     ]
   },
@@ -762,7 +767,7 @@
     "symbol": ";",
     "color": "dark_gray",
     "tool_ammo": "battery",
-    "initial_charges": 160,
+    "initial_charges": 40,
     "flags": [ "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "use_action": [
       {
@@ -784,7 +789,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 50 }
       }
     ],
     "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
@@ -803,7 +808,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 50 }
       }
     ]
   },
@@ -853,7 +858,7 @@
     "symbol": ";",
     "color": "light_gray",
     "tool_ammo": "battery",
-    "initial_charges": 160,
+    "initial_charges": 38,
     "flags": [ "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "charges_per_use": 1,
     "use_action": [ "PORTABLE_GAME", "TOGGLE_UPS_CHARGING" ],
@@ -861,7 +866,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 48 }
       }
     ],
     "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
@@ -881,7 +886,7 @@
     "symbol": ";",
     "color": "light_gray",
     "tool_ammo": "battery",
-    "initial_charges": 160,
+    "initial_charges": 45,
     "charges_per_use": 1,
     "use_action": [
       {
@@ -926,7 +931,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 56 }
       }
     ],
     "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
@@ -946,7 +951,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 56 }
       }
     ]
   },
@@ -968,7 +973,7 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "battery": 200 }
+        "ammo_restriction": { "battery": 56 }
       }
     ]
   },

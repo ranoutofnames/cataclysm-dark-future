@@ -2142,7 +2142,7 @@
     "items": [
       { "item": "radio", "prob": 5, "charges": [ 0, 300 ] },
       { "item": "two_way_radio", "prob": 20, "charges": [ 0, 300 ] },
-      { "item": "adv_UPS_off", "prob": 20, "charges": [ 0, 2000 ] },
+      { "item": "adv_UPS_off", "prob": 20, "charges": [ 0, 1500 ] },
       { "group": "used_UPS", "prob": 5 },
       { "item": "goggles_nv", "prob": 20, "charges": [ 0, 150 ] },
       { "item": "goggles_nv_enhanced", "prob": 5, "charges": [ 0, 150 ] },
@@ -2363,7 +2363,7 @@
       [ "chestpouch", 9 ],
       [ "ammo_satchel", 4 ],
       { "group": "used_UPS", "prob": 5 },
-      { "item": "adv_UPS_off", "prob": 3, "charges": [ 0, 2000 ] },
+      { "item": "adv_UPS_off", "prob": 3, "charges": [ 0, 1500 ] },
       [ "tacvest", 10 ],
       [ "molle_pack", 8 ],
       [ "legrig", 10 ],
