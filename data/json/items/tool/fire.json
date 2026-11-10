@@ -288,8 +288,14 @@
   },
   {
     "id": "electric_lighter",
-    "copy-from": "crude_firestarter",
     "type": "TOOL",
+    "category": "tools_cooking",
+    "price": "1 USD",
+    "price_postapoc": "10 cent",
+    "material": "steel",
+    "symbol": ",",
+    "color": "light_gray",
+    "tool_ammo": "battery",
     "name": { "str": "electric lighter" },
     "description": "A battery-powered lighter.  More efficient than a crude electric firestarter, its batteries last for quite a while.",
     "weight": "14 g",
@@ -297,8 +303,9 @@
     "looks_like": "lighter",
     "charges_per_use": 1,
     "use_action": { "type": "firestarter", "moves": 50 },
-    "magazine_well": "50 ml",
-    "magazines": [ [ "battery", [ "light_minus_battery_cell" ] ] ]
+    "flags": [ "FIRESTARTER", "CAN_HAVE_CHARGES", "NO_RELOAD", "NO_UNLOAD" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 30 } } ],
+    "//": "CDF: P3-BATT2: standalone (was copy-from crude_firestarter): a copy-from cannot drop its ammo, magazines and magazine_well, and this tool now takes the DDA integral battery pocket (30). Base fields below are crude_firestarter's."
   },
   {
     "id": "survivor_lighter",

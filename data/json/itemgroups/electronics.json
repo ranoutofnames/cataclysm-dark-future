@@ -129,7 +129,7 @@
     "id": "phones",
     "items": [
       { "item": "cell_phone", "prob": 3, "charges-min": 0, "charges-max": 15 },
-      { "item": "cell_phone", "prob": 1, "charges-min": 150, "charges-max": 150 },
+      { "item": "cell_phone", "prob": 1, "charges-min": 17, "charges-max": 17 },
       { "item": "smart_phone", "prob": 40, "charges-min": 0, "charges-max": 15 },
       { "item": "smart_phone", "prob": 15, "charges-min": 130, "charges-max": 250 },
       { "item": "wrist_comp_budget", "prob": 10, "charges-min": 0, "charges-max": 15 },

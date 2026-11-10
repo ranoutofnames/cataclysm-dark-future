@@ -155,7 +155,7 @@
     "material": [ "plastic" ],
     "symbol": ";",
     "color": "green",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "use_action": {
       "type": "transform",
       "target": "electric_lantern_on",
@@ -165,9 +165,9 @@
       "need_charges": 1,
       "need_charges_msg": "The lantern has no batteries."
     },
-    "flags": [ "RADIO_MODABLE", "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "light_minus_battery_cell", "light_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "flags": [ "RADIO_MODABLE", "ALLOWS_REMOTE_USE", "NO_RELOAD", "NO_UNLOAD" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 58 } } ],
+    "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
   },
   {
     "id": "electric_lantern_on",
@@ -177,7 +177,7 @@
     "power_draw": 3500,
     "revert_to": "electric_lantern",
     "use_action": { "menu_text": "Turn off", "type": "transform", "target": "electric_lantern", "msg": "You turn the lamp off." },
-    "flags": [ "RADIO_MODABLE", "LIGHT_20", "TRADER_AVOID", "ALLOWS_REMOTE_USE" ]
+    "flags": [ "RADIO_MODABLE", "LIGHT_20", "TRADER_AVOID", "ALLOWS_REMOTE_USE", "NO_RELOAD", "NO_UNLOAD" ]
   },
   {
     "id": "flashlight",
@@ -560,7 +560,7 @@
     "material": [ "plastic", "aluminum" ],
     "symbol": ";",
     "color": "white",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "use_action": {
       "target": "reading_light_on",
       "msg": "You switch on the reading light.",
@@ -570,8 +570,9 @@
       "need_charges_msg": "The reading light winks out.",
       "type": "transform"
     },
-    "magazines": [ [ "battery", [ "light_minus_disposable_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "100 ml"
+    "flags": [ "NO_RELOAD", "NO_UNLOAD" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 13 } } ],
+    "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
   },
   {
     "id": "reading_light_on",
@@ -582,7 +583,7 @@
     "power_draw": 4000,
     "revert_to": "reading_light",
     "use_action": { "target": "reading_light", "msg": "You switch off the reading light.", "menu_text": "Turn off", "type": "transform" },
-    "flags": [ "LIGHT_20" ]
+    "flags": [ "LIGHT_20", "NO_RELOAD", "NO_UNLOAD" ]
   },
   {
     "id": "smart_lamp",
@@ -599,7 +600,7 @@
     "material": [ "plastic", "aluminum" ],
     "symbol": "&",
     "color": "blue",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "use_action": {
       "target": "smart_lamp_on",
       "msg": "You turn the smart lamp on.",
@@ -609,9 +610,9 @@
       "need_charges_msg": "The smart lamp batteries are dead.",
       "type": "transform"
     },
-    "flags": [ "RADIO_ACTIVATION", "RADIOSIGNAL_2" ],
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "flags": [ "RADIO_ACTIVATION", "RADIOSIGNAL_2", "NO_RELOAD", "NO_UNLOAD" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 33 } } ],
+    "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
   },
   {
     "id": "smart_lamp_on",
@@ -622,8 +623,7 @@
     "power_draw": 8500,
     "revert_to": "smart_lamp",
     "use_action": { "target": "smart_lamp", "msg": "Your smart lamp turned off", "menu_text": "Turn off", "type": "transform" },
-    "flags": [ "RADIO_ACTIVATION", "RADIOSIGNAL_2", "LIGHT_240", "TRADER_AVOID" ],
-    "magazine_well": "250 ml"
+    "flags": [ "RADIO_ACTIVATION", "RADIOSIGNAL_2", "LIGHT_240", "TRADER_AVOID", "NO_RELOAD", "NO_UNLOAD" ]
   },
   {
     "id": "torch",

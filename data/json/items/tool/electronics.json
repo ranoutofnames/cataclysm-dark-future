@@ -43,11 +43,12 @@
     "material": [ "plastic", "steel" ],
     "symbol": ";",
     "color": "yellow",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "charges_per_use": 5,
     "use_action": "CAMERA",
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "flags": [ "NO_RELOAD", "NO_UNLOAD" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 50 } } ],
+    "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
   },
   {
     "id": "camera_pro",
@@ -90,7 +91,7 @@
     "material": [ "plastic", "aluminum" ],
     "symbol": ";",
     "color": "light_gray",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "charges_per_use": 1,
     "use_action": {
       "target": "cell_phone_flashlight",
@@ -101,9 +102,9 @@
       "need_charges_msg": "The cellphone's batteries need more charge.",
       "type": "transform"
     },
-    "flags": [ "WATCH", "ALARMCLOCK" ],
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "100 ml"
+    "flags": [ "WATCH", "ALARMCLOCK", "NO_RELOAD", "NO_UNLOAD" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 17 } } ],
+    "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
   },
   {
     "id": "cell_phone_flashlight",
@@ -113,7 +114,7 @@
     "power_draw": 2500,
     "revert_to": "cell_phone",
     "use_action": { "target": "cell_phone", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
-    "flags": [ "WATCH", "LIGHT_8", "TRADER_AVOID" ]
+    "flags": [ "WATCH", "LIGHT_8", "TRADER_AVOID", "NO_RELOAD", "NO_UNLOAD" ]
   },
   {
     "id": "control_laptop",
@@ -1082,10 +1083,11 @@
     "material": [ "aluminum", "plastic" ],
     "symbol": ";",
     "color": "dark_gray",
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "use_action": { "type": "sex_toy", "moves": 60000 },
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "flags": [ "NO_RELOAD", "NO_UNLOAD" ],
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 58 } } ],
+    "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
   },
   {
     "id": "bullet_vibrator",

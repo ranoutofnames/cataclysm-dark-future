@@ -352,7 +352,8 @@ TEST_CASE("p3 r4a2 out-of-packet rows and cells unchanged", "[p3][data][R4]") {
     // CDF: laptop_boris (copy-from laptop) is 7-R4b's: its own record has no pocket here
     CHECK(own_keys_present("data/json/npcs/refugee_center/surface_refugees/NPC_Boris_Borichenko.json",
                            "laptop_boris", {"pocket_data", "max_charges"}).empty());
-    // CDF: the 11 BATT2 rows keep their battery well until BATT2
+    // CDF: the 11 BATT2 rows are integral at the DDA number since P3-BATT2 ("p3 batt2" cases in
+    // p3_data_batt2_test.cpp): no well, one integral MAGAZINE pocket
     for (const std::string id : {"camera", "cell_phone", "cell_phone_flashlight", "vibrator",
                                  "electric_lighter", "electric_lantern", "electric_lantern_on",
                                  "reading_light", "reading_light_on", "smart_lamp",
@@ -364,8 +365,8 @@ TEST_CASE("p3 r4a2 out-of-packet rows and cells unchanged", "[p3][data][R4]") {
             wells += p.type == pocket_type::MAGAZINE_WELL ? 1 : 0;
             integral += p.type == pocket_type::MAGAZINE ? 1 : 0;
         }
-        CHECK(wells == 1);
-        CHECK(integral == 0);
+        CHECK(wells == 0);
+        CHECK(integral == 1);
     }
     // CDF: fake_firestarter keeps max_charges 10000 until 7-R4b; elec_shears waits for the cable port
     REQUIRE(itype_id("fake_firestarter").obj().tool);
