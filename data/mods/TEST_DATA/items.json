@@ -830,9 +830,26 @@
     "type": "MAGAZINE"
   },
   {
-    "id": "glock_19",
-    "copy-from": "glock_19",
-    "name": { "str": "Glock 19" },
+    "//": "CDF P3-7-R3a: glock_19 is ported to an explicit well (no legacy magazines key). These two guns keep the legacy copy-from extend of `magazines` under test, with glock_19's seven magazines.",
+    "id": "glock_19_legacy_base",
+    "copy-from": "pistol_base",
+    "type": "GUN",
+    "name": { "str": "Glock 19 legacy" },
+    "description": "Test gun.",
+    "ammo": "9mm",
+    "magazine_well": "250 ml",
+    "magazines": [
+      [
+        "9mm",
+        [ "glockmag", "glockbigmag", "glock17_17", "glock17_22", "glock_drum_50rd", "glock_drum_100rd", "kriss_vector_9mm_mag" ]
+      ]
+    ]
+  },
+  {
+    "id": "glock_19_legacy_ext",
+    "copy-from": "glock_19_legacy_base",
+    "name": { "str": "Glock 19 legacy ext" },
+    "description": "Test gun.",
     "type": "GUN",
     "extend": { "magazines": [ [ "9mm", [ "glockmag_test" ] ] ] }
   },

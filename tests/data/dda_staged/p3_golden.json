@@ -5139,18 +5139,19 @@
           "magazine_well": "250 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
-            "cz75mag_10rd",
-            "cz75mag_16rd",
+            "cz75mag_12rd",
             "cz75mag_20rd",
-            "cz75mag_26rd",
-            "cz75mag_12rd"
+            "cz75mag_26rd"
           ]
         }
       ],
       "cdf_kept_ids": [
         "cz75mag_12rd"
       ],
-      "dropped_ids": [],
+      "dropped_ids": [
+        "cz75mag_10rd",
+        "cz75mag_16rd"
+      ],
       "storage": false
     },
     "cz75mag_10rd": {

@@ -13,11 +13,19 @@
     "dispersion": 395,
     "durability": 7,
     "barrel_volume": "750 ml",
-    "magazine_well": "250 ml",
     "ammo": "410shot",
     "blackpowder_tolerance": 24,
-    "magazines": [ [ "410shot", [ "saiga410mag_10rd", "saiga410mag_30rd" ] ] ],
-    "flags": [ "NEVER_JAMS" ]
+    "flags": [ "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "saiga410mag_10rd", "saiga410mag_30rd" ],
+        "default_magazine": "saiga410mag_10rd"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "shotgun_410",

@@ -293,6 +293,9 @@ class Tree:
                 continue
             ents, errs = load_tree(str(r))
             for o, rel in ents:
+                # test fixtures do not define ids for the port (P3-7-R3a ruling AUTO-248)
+                if sub == "mods" and rel.replace("\\", "/").startswith("TEST_DATA/"):
+                    continue
                 entries.append((o, "data/%s/%s" % (sub, rel)))
             self.errors += ["data/%s/%s" % (sub, e[0]) + ": " + e[1] for e in errs]
         self.idx = build_index(entries)

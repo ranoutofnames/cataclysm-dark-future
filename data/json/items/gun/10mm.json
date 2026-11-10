@@ -19,8 +19,16 @@
     "ammo": "10mm",
     "blackpowder_tolerance": 24,
     "min_cycle_recoil": 570,
-    "magazine_well": "150 ml",
-    "magazines": [ [ "10mm", [ "glock20mag", "glock20bigmag", "glock20drum50rd" ] ] ]
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: glock20mag, glock20bigmag, glock20drum50rd",
+        "magazine_well": "150 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "glock20mag", "glock20bigmag", "glock20drum50rd" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: glock_20mag_10, glock_20mag, tdi_10mm_mag"
   },
   {
     "id": "asr_10mm",
@@ -44,7 +52,15 @@
     "durability": 10,
     "min_cycle_recoil": 500,
     "barrel_volume": "250 ml",
-    "magazine_well": "150 ml",
-    "magazines": [ [ "10mm", [ "glock20mag", "glock20bigmag", "glock20drum50rd" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [ "glock20mag", "glock20bigmag", "glock20drum50rd" ],
+        "default_magazine": "glock20mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

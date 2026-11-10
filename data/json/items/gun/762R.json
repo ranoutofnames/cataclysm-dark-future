@@ -117,9 +117,17 @@
     "ranged_damage": { "damage_type": "bullet", "amount": -1 },
     "dispersion": 110,
     "min_cycle_recoil": 2500,
-    "magazine_well": "50 ml",
     "default_mods": [ "rifle_scope" ],
-    "magazines": [ [ "762R", [ "SVDmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "50 ml",
+        "item_restriction": [ "SVDmag" ],
+        "default_magazine": "SVDmag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "PKM",
@@ -155,7 +163,15 @@
       [ "sling", 1 ],
       [ "stock", 1 ]
     ],
-    "magazine_well": "25 ml",
-    "magazines": [ [ "762R", [ "belt762R" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "25 ml",
+        "item_restriction": [ "belt762R" ],
+        "default_magazine": "belt762R"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

@@ -23,8 +23,16 @@
     "min_cycle_recoil": 540,
     "built_in_mods": [ "folding_stock" ],
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "BURST", "burst", 2 ], [ "AUTO", "auto", 6 ] ],
-    "magazine_well": "500 ml",
-    "magazines": [ [ "45", [ "tdi_mag", "glock_21mag", "glock_21mag26", "glock21drum40rd" ] ] ]
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: glock21drum40rd",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "tdi_mag", "glock_21mag", "glock_21mag26", "glock21drum40rd" ],
+        "magazine_well": "500 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: glock_21mag_10"
   },
   {
     "id": "hk_ump45",
@@ -49,15 +57,23 @@
     "blackpowder_tolerance": 24,
     "built_in_mods": [ "folding_stock" ],
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "100 ml",
-    "magazines": [ [ "45", [ "ump45mag", "ump45_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "100 ml",
+        "item_restriction": [ "ump45mag", "ump45_makeshiftmag" ],
+        "default_magazine": "ump45mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m1911",
     "copy-from": "pistol_base",
     "type": "GUN",
     "name": { "str": "M1911" },
-    "//": "You can get 'em for over US$1K if you want.  This is a fairly cheap remake.",
+    "//": "You can get 'em for over US$1K if you want.  This is a fairly cheap remake. CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "description": "The M1911 was the US Military standard-issue sidearm for most of the 20th Century.  It remains one of the most popular .45 pistols today.",
     "weight": "1120 g",
     "volume": "500 ml",
@@ -72,8 +88,14 @@
     "durability": 7,
     "min_cycle_recoil": 540,
     "blackpowder_tolerance": 24,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "45", [ "m1911mag", "m1911bigmag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "m1911mag", "m1911bigmag" ]
+      }
+    ]
   },
   {
     "id": "m1911_MEU",
@@ -85,7 +107,16 @@
     "price": "1699 USD",
     "price_postapoc": "2750 cent",
     "color": "brown_yellow",
-    "dispersion": 420
+    "dispersion": 420,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "m1911mag", "m1911bigmag" ],
+        "default_magazine": "m1911mag"
+      }
+    ]
   },
   {
     "id": "mac_10",
@@ -110,8 +141,15 @@
     "min_cycle_recoil": 540,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 5 ] ],
     "built_in_mods": [ "wire_stock" ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "45", [ "mac10mag", "smg_45_mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "mac10mag", "smg_45_mag" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "tommygun",
@@ -134,7 +172,14 @@
     "min_cycle_recoil": 540,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "barrel_volume": "500 ml",
-    "magazines": [ [ "45", [ "thompson_mag", "thompson_bigmag", "thompson_drum", "thompson_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "thompson_mag", "thompson_bigmag", "thompson_drum", "thompson_makeshiftmag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "usp_45",
@@ -146,7 +191,15 @@
     "price_postapoc": "25 USD",
     "ranged_damage": { "damage_type": "bullet", "amount": 0 },
     "built_in_mods": [ "match_trigger" ],
-    "magazines": [ [ "45", [ "usp45mag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "usp45mag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mk23",
@@ -160,7 +213,16 @@
     "ranged_damage": { "damage_type": "bullet", "amount": 1 },
     "range": 1,
     "default_mods": [ "suppressor", "laser_sight" ],
-    "flags": [ "WATERPROOF_GUN", "NEVER_JAMS" ]
+    "flags": [ "WATERPROOF_GUN", "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "usp45mag" ],
+        "default_magazine": "usp45mag"
+      }
+    ]
   },
   {
     "id": "walther_ppq_45",
@@ -177,8 +239,15 @@
     "color": "dark_gray",
     "ammo": "45",
     "durability": 9,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "45", [ "ppq45mag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "ppq45mag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "hptjhp",
@@ -195,8 +264,15 @@
     "color": "dark_gray",
     "ammo": "45",
     "durability": 7,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "45", [ "hptjhpmag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "hptjhpmag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "glock_21",
@@ -215,8 +291,16 @@
     "ammo": "45",
     "blackpowder_tolerance": 24,
     "min_cycle_recoil": 450,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "45", [ "glock_21mag", "glock_21mag26", "glock21drum40rd", "tdi_mag" ] ] ]
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: glock21drum40rd, tdi_mag",
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "glock_21mag", "glock_21mag26", "glock21drum40rd", "tdi_mag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: glock_21mag_10"
   },
   {
     "id": "mkg_guard",
@@ -239,7 +323,15 @@
     "dispersion": 170,
     "durability": 10,
     "min_cycle_recoil": 400,
-    "magazine_well": "150 ml",
-    "magazines": [ [ "45", [ "glock_21mag", "glock_21mag26", "glock21drum40rd" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [ "glock_21mag", "glock_21mag26", "glock21drum40rd" ],
+        "default_magazine": "glock_21mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

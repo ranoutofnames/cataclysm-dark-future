@@ -24,7 +24,16 @@
       [ "underbarrel", 1 ],
       [ "muzzle", 1 ]
     ],
-    "magazines": [ [ "flammable", [ "pressurized_tank" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "1196 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": false,
+        "item_restriction": [ "pressurized_tank" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data); ids absent or undefined in CDF left out of the pocket: pressurized_tank_modern"
   },
   {
     "id": "rm451_flamethrower",
@@ -54,7 +63,17 @@
     ],
     "ammo_to_fire": 20,
     "extend": { "flags": [ "MODE_BURST", "NON_FOULING" ] },
-    "magazines": [ [ "flammable", [ "rm4502", "rm4504" ] ] ]
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: rm4502, rm4504",
+        "magazine_well": "1196 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": false,
+        "item_restriction": [ "pressurized_tank", "rm4502", "rm4504" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data); ids absent or undefined in CDF left out of the pocket: pressurized_tank_modern"
   },
   {
     "id": "flamethrower_crude",

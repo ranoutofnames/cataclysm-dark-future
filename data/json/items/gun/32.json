@@ -29,19 +29,26 @@
       [ "underbarrel", 1 ]
     ],
     "delete": { "faults": "fault_gun_chamber_spent" },
-    "magazine_well": "250 ml",
-    "magazines": [ [ "32", [ "sigp230mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "sigp230mag" ],
+        "default_magazine": "sigp230mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "skorpion_61",
     "copy-from": "smg_base",
     "type": "GUN",
     "name": { "str": "Skorpion Vz. 61" },
-    "//": "Total unloaded weight of gun 1301.81 grams, rounded to 1302.  Current weight of folding stock 200 grams.",
+    "//": "Total unloaded weight of gun 1301.81 grams, rounded to 1302.  Current weight of folding stock 200 grams. CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "description": "The Skorpion Vz. 61 is a Czechoslovak submachine gun from the 1950s, chambered in .32 ACP.",
     "weight": "1300 g",
     "volume": "788 ml",
-    "magazine_well": "80 ml",
     "price": "1500 USD",
     "price_postapoc": "25 USD",
     "to_hit": -2,
@@ -56,7 +63,15 @@
     "min_cycle_recoil": 135,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 5 ] ],
     "built_in_mods": [ "folding_stock" ],
-    "magazines": [ [ "32", [ "skorpion61mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "80 ml",
+        "item_restriction": [ "skorpion61mag" ],
+        "default_magazine": "skorpion61mag"
+      }
+    ]
   },
   {
     "id": "walther_ppk",
@@ -88,8 +103,15 @@
       [ "sling", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "32", [ "ppkmag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "ppkmag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "kp32",
@@ -105,8 +127,16 @@
     "material": [ "steel", "plastic", "aluminum" ],
     "color": "dark_gray",
     "ammo": "32",
-    "magazine_well": "41 ml",
     "min_cycle_recoil": 135,
-    "magazines": [ [ "32", [ "kp32mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "41 ml",
+        "item_restriction": [ "kp32mag" ],
+        "default_magazine": "kp32mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

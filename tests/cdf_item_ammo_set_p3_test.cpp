@@ -20,7 +20,7 @@
 #include "value_ptr.h"
 
 static const itype_id itype_box_small( "box_small" );
-static const itype_id itype_cz75( "cz75" );
+static const itype_id itype_cz75( "cz75_ammo_set_test" );
 static const itype_id itype_cz75mag_10rd( "cz75mag_10rd" );
 static const itype_id itype_cz75mag_16rd( "cz75mag_16rd" );
 static const itype_id itype_cz75mag_20rd( "cz75mag_20rd" );
@@ -239,7 +239,7 @@ TEST_CASE( "ammo_set_items_with_MAGAZINE_WELL_pockets_with_magazine",
                 cz75.ammo_set( ammo308_id, 15 );
             } );
             THEN( "get debugmsg with \"Tried to set invalid ammo of 308 for cz75\"" ) {
-                CHECK_THAT( dmsg, Catch::Matchers::EndsWith( "Tried to set invalid ammo of 308 for cz75" ) );
+                CHECK_THAT( dmsg, Catch::Matchers::EndsWith( "Tried to set invalid ammo of 308 for cz75_ammo_set_test" ) );
                 AND_THEN( "gun has 0 round of null" ) {
                     CHECK( cz75.ammo_remaining( ) == 0 );
                     CHECK( cz75.ammo_current().is_null() );
@@ -319,7 +319,7 @@ TEST_CASE( "ammo_set_items_with_MAGAZINE_WELL_pockets_without_magazine",
             } );
             THEN( "get debugmsg with \"Tried to set invalid ammo of 308 for cz75\"" ) {
                 REQUIRE( !dmsg.empty() );
-                CHECK_THAT( dmsg, Catch::Matchers::EndsWith( "Tried to set invalid ammo of 308 for cz75" ) );
+                CHECK_THAT( dmsg, Catch::Matchers::EndsWith( "Tried to set invalid ammo of 308 for cz75_ammo_set_test" ) );
                 AND_THEN( "gun w/o magazine has 0 round of null" ) {
                     CHECK( cz75.ammo_remaining( ) == 0 );
                     CHECK( cz75.ammo_current().is_null() );

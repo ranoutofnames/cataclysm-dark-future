@@ -104,10 +104,18 @@
       [ "GATLING_GUNS" ]
     ],
     "gun_data": { "ammo": "flammable", "skill": "launcher", "dispersion": 300, "durability": 10, "reload_noise": "slosh." },
-    "magazine_well": "250 ml",
-    "magazines": [ [ "flammable", [ "aux_pressurized_tank" ] ] ],
     "min_skills": [ [ "weapon", 2 ], [ "launcher", 1 ] ],
-    "flags": [ "FIRE_100", "PUMP_RAIL_COMPATIBLE", "NON_FOULING" ]
+    "flags": [ "FIRE_100", "PUMP_RAIL_COMPATIBLE", "NON_FOULING" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "aux_pressurized_tank" ],
+        "default_magazine": "aux_pressurized_tank"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "barrel_takedown_kit",

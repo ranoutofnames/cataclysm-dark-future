@@ -55,9 +55,16 @@
     "reload": 200,
     "loudness": -2,
     "valid_mod_locations": [ [ "accessories", 4 ], [ "sights", 1 ], [ "rail", 1 ] ],
-    "magazine_well": "50 ml",
-    "magazines": [ [ "shot", [ "shotbelt_20" ] ] ],
-    "flags": [ "MOUNTED_GUN" ]
+    "flags": [ "MOUNTED_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "shotbelt_20" ],
+        "magazine_well": "50 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "browning_a5",
@@ -442,7 +449,6 @@
     "dispersion": 395,
     "durability": 7,
     "barrel_volume": "250 ml",
-    "magazine_well": "250 ml",
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "sling", 1 ],
@@ -456,7 +462,15 @@
       [ "underbarrel", 1 ]
     ],
     "blackpowder_tolerance": 24,
-    "magazines": [ [ "shot", [ "saiga10mag", "saiga30mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "saiga10mag", "saiga30mag" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "shotgun_d",
@@ -634,7 +648,15 @@
       [ "underbarrel", 1 ]
     ],
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 5 ] ],
-    "magazines": [ [ "shot", [ "USAS10mag", "USAS20mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "USAS10mag", "USAS20mag" ],
+        "default_magazine": "USAS10mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "winchester_1887",
@@ -720,7 +742,6 @@
     "dispersion": 425,
     "durability": 7,
     "barrel_volume": "250 ml",
-    "magazine_well": "250 ml",
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "sling", 1 ],
@@ -734,6 +755,15 @@
       [ "underbarrel", 1 ]
     ],
     "blackpowder_tolerance": 24,
-    "magazines": [ [ "shot", [ "saiga10mag", "saiga30mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "saiga10mag", "saiga30mag" ],
+        "default_magazine": "saiga10mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

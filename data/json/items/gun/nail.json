@@ -28,7 +28,7 @@
     "copy-from": "rifle_magnetic",
     "type": "GUN",
     "name": { "str": "coilgun" },
-    "//": "Hard to make, plentiful and cheap ammo, and silent - people will want this thing.",
+    "//": "Hard to make, plentiful and cheap ammo, and silent - people will want this thing. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "description": "A homemade gun, using electromagnets to accelerate a small ferromagnetic projectile to high velocity.  Powered by UPS.",
     "weight": "3341 g",
     "volume": "2750 ml",
@@ -45,7 +45,13 @@
     "loudness": 60,
     "durability": 5,
     "ups_charges": 20,
-    "magazines": [ [ "nail", [ "nailmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "nailmag" ]
+      }
+    ]
   },
   {
     "id": "nailrifle",
@@ -72,8 +78,16 @@
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazines": [ [ "nail", [ "nailmag" ] ] ],
     "relative": { "weight": "1 kg", "volume": "1500 ml", "range": 3, "ranged_damage": { "damage_type": "stab", "amount": 4 } },
-    "proportional": { "price": 3, "dispersion": 0.5 }
+    "proportional": { "price": 3, "dispersion": 0.5 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "nailmag" ],
+        "default_magazine": "nailmag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   }
 ]

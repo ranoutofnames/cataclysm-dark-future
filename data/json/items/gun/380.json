@@ -13,7 +13,15 @@
     "ammo": "380",
     "min_cycle_recoil": 270,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 6 ] ],
-    "magazines": [ [ "380", [ "mac11mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "mac11mag" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "kp3at",
@@ -27,9 +35,17 @@
     "price": "250 USD",
     "price_postapoc": "1750 cent",
     "ammo": "380",
-    "magazine_well": "44 ml",
     "min_cycle_recoil": 270,
-    "magazines": [ [ "380", [ "kp3atmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "44 ml",
+        "item_restriction": [ "kp3atmag" ],
+        "default_magazine": "kp3atmag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "fn1910",
@@ -47,8 +63,16 @@
     "durability": 7,
     "min_cycle_recoil": 270,
     "blackpowder_tolerance": 24,
-    "magazine_well": "75 ml",
-    "magazines": [ [ "380", [ "fn1910mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "75 ml",
+        "item_restriction": [ "fn1910mag" ],
+        "default_magazine": "fn1910mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "rugerlcp",
@@ -65,8 +89,15 @@
     "color": "dark_gray",
     "ammo": "380",
     "min_cycle_recoil": 270,
-    "magazine_well": "75 ml",
-    "magazines": [ [ "380", [ "rugerlcpmag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "75 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "rugerlcpmag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "hptcf380",
@@ -83,8 +114,15 @@
     "color": "dark_gray",
     "ammo": "380",
     "durability": 7,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "380", [ "hptcf380mag_8rd", "hptcf380mag_10rd" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "hptcf380mag_8rd", "hptcf380mag_10rd" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "taurus_spectrum",
@@ -103,8 +141,16 @@
     "ammo": "380",
     "durability": 7,
     "min_cycle_recoil": 225,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "380", [ "taurus_spectrum_mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "taurus_spectrum_mag" ],
+        "default_magazine": "taurus_spectrum_mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "hipoint_3895",
@@ -126,7 +172,15 @@
     "range": 15,
     "min_cycle_recoil": 180,
     "barrel_volume": "500 ml",
-    "magazine_well": "250 ml",
-    "magazines": [ [ "380", [ "hipoint_3895mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "hipoint_3895mag" ],
+        "default_magazine": "hipoint_3895mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

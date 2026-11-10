@@ -116,10 +116,11 @@
     "min_cycle_recoil": 1550,
     "reload": 200,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -133,13 +134,8 @@
           "stanag100drum",
           "stanag150",
           "carbonmag_223",
-          "survivor223mag"
-        ]
-      ],
-      [ "277", [ "ar10mag_20rd" ] ],
-      [
-        "308",
-        [
+          "survivor223mag",
+          "ar10mag_20rd",
           "falbigmag",
           "falmag",
           "fal_makeshiftmag",
@@ -156,30 +152,14 @@
           "hk417mag_20rd",
           "hk417mag_10rd",
           "hk417_makeshiftmag",
-          "ar10mag_20rd",
-          "ar10_makeshiftmag"
-        ]
-      ],
-      [
-        "300blk",
-        [
-          "stanag30",
-          "stanag5",
-          "stanag10",
-          "stanag20",
-          "stanag40",
-          "stanag50",
-          "stanag60",
-          "stanag60drum",
-          "stanag90",
-          "stanag100",
-          "stanag100drum",
-          "stanag150",
-          "carbonmag_223",
-          "survivor223mag"
-        ]
-      ],
-      [ "3006", [ "m1918bigmag", "m1918mag", "blrmag" ] ]
-    ]
+          "ar10_makeshiftmag",
+          "m1918bigmag",
+          "m1918mag",
+          "blrmag"
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   }
 ]

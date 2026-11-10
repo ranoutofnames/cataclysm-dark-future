@@ -4,7 +4,7 @@
     "copy-from": "rifle_base",
     "type": "GUN",
     "name": { "str_sp": "Barrett M107A1" },
-    "//": "Price based on unit cost quote for fiscal year 2005 listed at inetres.com, with gunmod modifiers to be added later.",
+    "//": "Price based on unit cost quote for fiscal year 2005 listed at inetres.com, with gunmod modifiers to be added later. CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "description": "A large, shoulder-fired, .50 caliber anti-materiel rifle.  Its large size, recoil, and noise is offset by its damage and range.",
     "weight": "12500 g",
     "volume": "3500 ml",
@@ -17,9 +17,16 @@
     "dispersion": 130,
     "barrel_volume": "1250 ml",
     "default_mods": [ "bipod", "rifle_scope", "muzzle_brake" ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "50", [ "m107a1mag", "drum_mag50" ] ] ],
-    "flags": [ "NEVER_JAMS" ]
+    "flags": [ "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: drum_mag50",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "m107a1mag", "drum_mag50" ],
+        "magazine_well": "250 ml"
+      }
+    ]
   },
   {
     "id": "m2browning",
@@ -49,9 +56,16 @@
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "50 ml",
-    "magazines": [ [ "50", [ "belt50" ] ] ],
-    "flags": [ "MOUNTED_GUN" ]
+    "flags": [ "MOUNTED_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "belt50" ],
+        "magazine_well": "50 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m2browning_turret_fake",
@@ -121,9 +135,16 @@
     "reload": 400,
     "barrel_volume": "1250 ml",
     "default_mods": [ "bipod", "rifle_scope", "muzzle_brake" ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "50", [ "as50mag" ] ] ],
-    "flags": [ "NEVER_JAMS" ]
+    "flags": [ "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "as50mag" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "tac50",
@@ -143,9 +164,16 @@
     "reload": 450,
     "barrel_volume": "1250 ml",
     "default_mods": [ "recoil_stock", "bipod", "rifle_scope", "muzzle_brake" ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "50", [ "tac50mag" ] ] ],
-    "flags": [ "NEVER_JAMS" ]
+    "flags": [ "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "tac50mag" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "bfg50",

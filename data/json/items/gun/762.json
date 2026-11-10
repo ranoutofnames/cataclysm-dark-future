@@ -31,15 +31,22 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "100 ml",
-    "magazines": [ [ "762", [ "akmag30", "akmag10", "akmag20", "akmag40", "akdrum75" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "akmag30", "akmag10", "akmag20", "akmag40", "akdrum75" ],
+        "magazine_well": "100 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "arx160",
     "copy-from": "rifle_manual",
     "type": "GUN",
     "name": { "str_sp": "Beretta ARX-160" },
-    "//": "Total unloaded weight of gun 3000 grams.  Current weight of folding stock 200 grams.",
+    "//": "Total unloaded weight of gun 3000 grams.  Current weight of folding stock 200 grams. CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "description": "The Beretta ARX-160 was a Phase II contender in the United States Army Individual Carbine competition to replace the M4 carbine.  It failed to replace it, but it is widely used by military all around the world.  This version is chambered for 7.62x39mm.",
     "weight": "3450 g",
     "volume": "1750 ml",
@@ -54,8 +61,15 @@
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "barrel_volume": "250 ml",
     "default_mods": [ "folding_stock" ],
-    "magazine_well": "100 ml",
-    "magazines": [ [ "762", [ "akmag30", "akmag10", "akmag20", "akmag40" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "100 ml",
+        "item_restriction": [ "akmag30", "akmag10", "akmag20", "akmag40" ],
+        "default_magazine": "akmag30"
+      }
+    ]
   },
   {
     "id": "sks",
@@ -111,8 +125,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "100 ml",
-    "magazines": [ [ "762", [ "akmag30", "akmag10", "akmag20", "akmag40", "akdrum75" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "akmag30", "akmag10", "akmag20", "akmag40", "akdrum75" ],
+        "magazine_well": "100 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "draco",
@@ -148,7 +169,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "100 ml",
-    "magazines": [ [ "762", [ "akmag30", "akmag10", "akmag20", "akmag40", "akdrum75" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "100 ml",
+        "item_restriction": [ "akmag30", "akmag10", "akmag20", "akmag40", "akdrum75" ],
+        "default_magazine": "akmag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

@@ -16,8 +16,15 @@
     "dispersion": 90,
     "durability": 7,
     "barrel_volume": "500 ml",
-    "magazine_well": "250 ml",
-    "magazines": [ [ "3006", [ "blrmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "blrmag" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "garand",
@@ -49,8 +56,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "3006", [ "garandclip" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "garandclip" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m1903",
@@ -103,15 +117,22 @@
     "min_cycle_recoil": 3420,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 3 ] ],
     "barrel_volume": "1000 ml",
-    "magazine_well": "100 ml",
-    "magazines": [ [ "3006", [ "m1918mag", "m1918bigmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "m1918mag", "m1918bigmag" ],
+        "magazine_well": "100 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m1919browning",
     "copy-from": "m2browning",
     "looks_like": "m2browning",
     "type": "GUN",
-    "//": "Not select-fire, still requires mounting because no stock.",
+    "//": "Not select-fire, still requires mounting because no stock. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "name": { "str_sp": "M1919A4 Browning machine gun" },
     "description": "A medium machine gun used by the US Military during WWII onward, chambered in .30-06 Springfield.  While rarely used today, it can still serve survivors as faithful as its heavier .50 caliber sibling can.",
     "weight": "14 kg",
@@ -120,7 +141,15 @@
     "ammo": "3006",
     "range": 55,
     "modes": [ [ "DEFAULT", "auto", 3 ] ],
-    "magazines": [ [ "3006", [ "belt3006" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "50 ml",
+        "item_restriction": [ "belt3006" ],
+        "default_magazine": "belt3006"
+      }
+    ]
   },
   {
     "id": "m1919browning_stinger",
@@ -146,6 +175,15 @@
       [ "muzzle", 1 ],
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "50 ml",
+        "item_restriction": [ "belt3006" ],
+        "default_magazine": "belt3006"
+      }
     ]
   },
   {

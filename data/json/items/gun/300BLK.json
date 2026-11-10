@@ -18,11 +18,12 @@
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "barrel_volume": "250 ml",
     "built_in_mods": [ "folding_stock" ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "300blk",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -37,9 +38,11 @@
           "stanag150",
           "survivor223mag",
           "carbonmag_223"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "iwi_tavor_x95_300blk",
@@ -71,11 +74,44 @@
       [ "sling", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "300blk",
-        [
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: carbonmag_223",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [
+          "stanag30",
+          "stanag5",
+          "stanag10",
+          "stanag20",
+          "stanag40",
+          "stanag50",
+          "stanag60",
+          "stanag60drum",
+          "stanag90",
+          "stanag100",
+          "stanag100drum",
+          "stanag150",
+          "survivor223mag",
+          "carbonmag_223"
+        ],
+        "magazine_well": "150 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
+  },
+  {
+    "id": "ar15_retool_300blk",
+    "copy-from": "ar15",
+    "type": "GUN",
+    "name": { "str": "AR-15" },
+    "default_mods": [ "retool_ar15_300blk" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -90,16 +126,10 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
+        ],
+        "default_magazine": "stanag30"
+      }
     ]
-  },
-  {
-    "id": "ar15_retool_300blk",
-    "copy-from": "ar15",
-    "type": "GUN",
-    "name": { "str": "AR-15" },
-    "default_mods": [ "retool_ar15_300blk" ]
   },
   {
     "id": "sig_mcx",
@@ -120,11 +150,12 @@
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "barrel_volume": "250 ml",
     "built_in_mods": [ "folding_stock" ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "300blk",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -139,8 +170,10 @@
           "stanag150",
           "survivor223mag",
           "carbonmag_223"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

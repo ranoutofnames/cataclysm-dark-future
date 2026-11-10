@@ -785,13 +785,24 @@ void item::ammo_set( const itype_id &ammo, int qty )
             // if default magazine too small fetch instead closest available match
             if( mag->magazine->capacity < qty ) {
                 // as above call to magazine_default successful can infer minimum one option exists
-                auto iter = type->magazines.find( ammo_type );
-                if( iter == type->magazines.end() ) {
+                // CDF: pocket-first: the live well answers; the legacy `magazines` map only for a gun
+                // that still has one
+                std::vector<itype_id> opts;
+                const auto iter = type->magazines.find( ammo_type );
+                if( iter != type->magazines.end() ) {
+                    opts.assign( iter->second.begin(), iter->second.end() );
+                } else {
+                    for( const itype_id &compatible : magazine_compatible() ) {
+                        if( compatible->magazine && compatible->magazine->type.contains( ammo_type ) ) {
+                            opts.push_back( compatible );
+                        }
+                    }
+                }
+                if( opts.empty() ) {
                     debugmsg( "%s doesn't have a magazine for %s",
                               typeId(), ammo );
                     return;
                 }
-                std::vector<itype_id> opts( iter->second.begin(), iter->second.end() );
                 std::ranges::sort( opts, []( const itype_id & lhs, const itype_id & rhs ) {
                     return lhs->magazine->capacity < rhs->magazine->capacity;
                 } );

@@ -584,9 +584,17 @@
     "location": "underbarrel",
     "mod_target_category": [ [ "RIFLES" ], [ "MACHINE_GUNS" ], [ "GATLING_GUNS" ], [ "M_XBOWS" ] ],
     "gun_data": { "ammo": "20x66mm", "skill": "shotgun", "dispersion": 320, "durability": 9, "reload": 125 },
-    "magazine_well": "250 ml",
-    "magazines": [ [ "20x66mm", [ "20x66_10_mag" ] ] ],
-    "flags": [ "WATERPROOF_GUN", "NEVER_JAMS" ]
+    "flags": [ "WATERPROOF_GUN", "NEVER_JAMS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "20x66_10_mag" ],
+        "default_magazine": "20x66_10_mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "rm121aux_mod",
@@ -605,6 +613,15 @@
       [ "ROCKET_LAUNCHERS" ],
       [ "FLAMETHROWERS" ],
       [ "SPRAY_GUNS" ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "20x66_10_mag" ],
+        "default_magazine": "20x66_10_mag"
+      }
     ]
   },
   {

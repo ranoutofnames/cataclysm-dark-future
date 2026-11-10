@@ -29,9 +29,16 @@
       [ "underbarrel", 1 ]
     ],
     "modes": [ [ "DEFAULT", "semi", 1, "NPC_AVOID" ], [ "AUTO", "auto", 2, "NPC_AVOID" ] ],
-    "magazine_well": "75 ml",
-    "magazines": [ [ "40x53mm", [ "belt40mm" ] ] ],
-    "flags": [ "MOUNTED_GUN" ]
+    "flags": [ "MOUNTED_GUN" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "belt40mm" ],
+        "magazine_well": "75 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "mark19_turret_fake",

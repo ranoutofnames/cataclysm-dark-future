@@ -17,8 +17,16 @@
     "min_cycle_recoil": 2700,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "barrel_volume": "500 ml",
-    "magazine_well": "50 ml",
-    "magazines": [ [ "308", [ "falmag", "falbigmag", "fal_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "50 ml",
+        "item_restriction": [ "falmag", "falbigmag", "fal_makeshiftmag" ],
+        "default_magazine": "falmag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "hk_g3",
@@ -38,8 +46,15 @@
     "dispersion": 150,
     "min_cycle_recoil": 2700,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "BURST", "burst", 3 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "50 ml",
-    "magazines": [ [ "308", [ "g3mag", "g3bigmag", "g3_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "g3mag", "g3bigmag", "g3_makeshiftmag" ],
+        "magazine_well": "50 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m134",
@@ -59,9 +74,16 @@
     "ranged_damage": { "damage_type": "bullet", "amount": -1 },
     "durability": 9,
     "modes": [ [ "DEFAULT", "low auto", 6 ], [ "AUTO", "high auto", 18 ] ],
-    "magazines": [ [ "308", [ "belt308" ] ] ],
-    "magazine_well": "25 ml",
-    "extend": { "flags": [ "NEVER_JAMS" ] }
+    "extend": { "flags": [ "NEVER_JAMS" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "belt308" ],
+        "magazine_well": "25 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m14ebr",
@@ -87,6 +109,14 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "m14mag", "m14smallmag", "m14_makeshiftmag" ],
+        "magazine_well": "50 ml"
+      }
     ]
   },
   {
@@ -129,8 +159,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "50 ml",
-    "magazines": [ [ "308", [ "m14mag", "m14smallmag", "m14_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "m14mag", "m14smallmag", "m14_makeshiftmag" ],
+        "magazine_well": "50 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m240",
@@ -166,8 +203,15 @@
       [ "sling", 1 ],
       [ "stock", 1 ]
     ],
-    "magazine_well": "25 ml",
-    "magazines": [ [ "308", [ "belt308" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "belt308" ],
+        "magazine_well": "25 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m60",
@@ -202,8 +246,15 @@
       [ "sling", 1 ],
       [ "stock", 1 ]
     ],
-    "magazine_well": "25 ml",
-    "magazines": [ [ "308", [ "belt308" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "belt308" ],
+        "magazine_well": "25 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "savage_111f",
@@ -235,8 +286,15 @@
     "ammo": "308",
     "ranged_damage": { "damage_type": "bullet", "amount": -3 },
     "min_cycle_recoil": 2700,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "308", [ "scarhmag", "scarhbigmag", "scarhmag_30rd", "scarh_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "scarhmag", "scarhbigmag", "scarhmag_30rd", "scarh_makeshiftmag" ],
+        "magazine_well": "250 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: scarhmag_10"
   },
   {
     "id": "M24",
@@ -292,8 +350,15 @@
     "min_cycle_recoil": 2700,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "default_mods": [ "adjustable_stock" ],
-    "magazine_well": "150 ml",
-    "magazines": [ [ "308", [ "hk417mag_20rd", "hk417mag_10rd", "hk417_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "hk417mag_20rd", "hk417mag_10rd", "hk417_makeshiftmag" ],
+        "magazine_well": "150 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m110a1",
@@ -313,8 +378,15 @@
     "dispersion": 120,
     "min_cycle_recoil": 2700,
     "default_mods": [ "adjustable_stock", "bipod", "rifle_scope", "suppressor" ],
-    "magazine_well": "150 ml",
-    "magazines": [ [ "308", [ "hk417mag_20rd", "hk417mag_10rd", "hk417_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "hk417mag_20rd", "hk417mag_10rd", "hk417_makeshiftmag" ],
+        "magazine_well": "150 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "ar10",
@@ -334,7 +406,14 @@
     "dispersion": 150,
     "durability": 7,
     "min_cycle_recoil": 2700,
-    "magazine_well": "150 ml",
-    "magazines": [ [ "308", [ "ar10mag_20rd", "ar10_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "ar10mag_20rd", "ar10_makeshiftmag" ],
+        "magazine_well": "150 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: ar10mag_10rd, ar10mag_25rd, ar10mag_50rd"
   }
 ]

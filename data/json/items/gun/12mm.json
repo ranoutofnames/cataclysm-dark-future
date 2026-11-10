@@ -16,7 +16,14 @@
     "ups_charges": 5,
     "loudness": 60,
     "modes": [ [ "DEFAULT", "semi-auto", 1 ], [ "BURST", "auto", 3 ] ],
-    "magazine_well": "150 ml",
-    "magazines": [ [ "12mm", [ "hk_g80mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [ "hk_g80mag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

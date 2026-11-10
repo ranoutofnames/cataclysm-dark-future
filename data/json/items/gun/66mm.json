@@ -16,11 +16,19 @@
     "dispersion": 300,
     "durability": 7,
     "modes": [ [ "DEFAULT", "single shot", 1, "NPC_AVOID" ], [ "BURST", "all barrels", 4, "NPC_AVOID" ] ],
-    "magazines": [ [ "m235", [ "m74_clip" ] ] ],
     "reload": 600,
     "valid_mod_locations": [ [ "accessories", 4 ], [ "sling", 1 ], [ "barrel", 1 ], [ "grip", 1 ], [ "sling", 1 ] ],
     "flags": [ "BACKBLAST", "NEVER_JAMS", "PYROMANIAC_WEAPON" ],
-    "faults": [  ]
+    "faults": [  ],
+    "pocket_data": [
+      {
+        "magazine_well": "500 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "m74_clip" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "LAW",

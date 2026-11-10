@@ -114,8 +114,15 @@
     "blackpowder_tolerance": 72,
     "valid_mod_locations": [ [ "brass catcher", 1 ], [ "rail", 1 ], [ "sights", 1 ] ],
     "modes": [ [ "DEFAULT", "single", 1 ], [ "AUTO", "burst", 3 ] ],
-    "//": "If speedloaders get fixed to allow topping off a partially-loaded gun, adding the more common Bruce feed (40 round feed tray topped off with 20-round blocks) would be an option.",
-    "magazines": [ [ "4570", [ "gatlingdrum240" ] ] ],
-    "extend": { "flags": [ "NEVER_JAMS", "FIRE_TWOHAND" ] }
+    "//": "If speedloaders get fixed to allow topping off a partially-loaded gun, adding the more common Bruce feed (40 round feed tray topped off with 20-round blocks) would be an option. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
+    "extend": { "flags": [ "NEVER_JAMS", "FIRE_TWOHAND" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "gatlingdrum240" ],
+        "default_magazine": "gatlingdrum240"
+      }
+    ]
   }
 ]

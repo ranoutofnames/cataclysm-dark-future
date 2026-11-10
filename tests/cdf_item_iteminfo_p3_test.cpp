@@ -94,7 +94,10 @@ TEST_CASE( "gun_or_other_ranged_weapon_attributes", "[p3][iteminfo][weapon][gun]
         // glockbigmag, glockmag, kriss_vector_9mm_mag; names from data/json/items/magazine/9mm.json).
         // The real list has an eighth entry, TEST_DATA `glockmag_test` (items.json 810, name
         // `TEST Magazine`, copy-from glockmag), which sorts between glockmag and kriss_vector_9mm_mag.
-        CHECK( iteminfo_p3_str( glock, allowed_mags ) ==
+        // CDF P3-7-R3a: glock_19 is ported (seven ids, no TEST Magazine); the eight-entry list is read from
+        // the TEST_DATA legacy gun glock_19_legacy_ext (same seven ids plus glockmag_test).
+        const item glock_legacy_ext( itype_id( "glock_19_legacy_ext" ) );
+        CHECK( iteminfo_p3_str( glock_legacy_ext, allowed_mags ) ==
                "--\n"
                "<color_c_white>Compatible magazines</color>:\n"
                "<color_c_white>Types</color>: Glock 17 17-round magazine, Glock 17 22-round magazine, "

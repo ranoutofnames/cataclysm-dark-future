@@ -21,10 +21,18 @@
     "durability": 9,
     "barrel_volume": "250 ml",
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "BURST", "5 rd.", 5 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "5x50", [ "5x50_100_mag", "5x50_50_mag" ] ] ],
     "flags": [ "WATERPROOF_GUN", "NEVER_JAMS" ],
-    "faults": [  ]
+    "faults": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "5x50_100_mag", "5x50_50_mag" ],
+        "default_magazine": "5x50_100_mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "needlepistol",
@@ -44,9 +52,17 @@
     "dispersion": 280,
     "durability": 9,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "BURST", "2 rd.", 2 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "5x50", [ "5x50_50_mag", "5x50_100_mag" ] ] ],
     "flags": [ "WATERPROOF_GUN", "NEVER_JAMS" ],
-    "faults": [  ]
+    "faults": [  ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "5x50_50_mag", "5x50_100_mag" ],
+        "default_magazine": "5x50_50_mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

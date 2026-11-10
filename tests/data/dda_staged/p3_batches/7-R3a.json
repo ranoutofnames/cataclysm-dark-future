@@ -1,0 +1,7913 @@
+{
+  "batch": "7-R3a",
+  "base": "c7bf62a582",
+  "dda": "b4b62254ae2",
+  "count": 158,
+  "items": {
+    "25mm_autocannon": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "75 ml",
+          "item_restriction": [
+            "belt25mm"
+          ],
+          "default_magazine": "belt25mm"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "25mm",
+            [
+              "belt25mm"
+            ]
+          ]
+        ],
+        "magazine_well": "75 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "25mm_rotary_cannon": {
+      "file": "data/json/items/gun/tankguns.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "75 ml",
+          "item_restriction": [
+            "belt25mm"
+          ],
+          "default_magazine": "belt25mm"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "25mm",
+            [
+              "belt25mm"
+            ]
+          ]
+        ],
+        "magazine_well": "75 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "90two": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "m9mag",
+            "m9bigmag"
+          ],
+          "default_magazine": "m9mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "m9mag",
+              "m9bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "90two40": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "90two40mag"
+          ],
+          "default_magazine": "90two40mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "90two40mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "BP_12": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "saiga10mag",
+            "saiga30mag"
+          ],
+          "default_magazine": "saiga10mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "shot",
+            [
+              "saiga10mag",
+              "saiga30mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "PKM": {
+      "file": "data/json/items/gun/762R.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "25 ml",
+          "item_restriction": [
+            "belt762R"
+          ],
+          "default_magazine": "belt762R"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762R",
+            [
+              "belt762R"
+            ]
+          ]
+        ],
+        "magazine_well": "25 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "SVD": {
+      "file": "data/json/items/gun/762R.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "50 ml",
+          "item_restriction": [
+            "SVDmag"
+          ],
+          "default_magazine": "SVDmag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762R",
+            [
+              "SVDmag"
+            ]
+          ]
+        ],
+        "magazine_well": "50 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "TDI": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "tdi_mag",
+            "glock_21mag",
+            "glock_21mag26",
+            "glock21drum40rd"
+          ],
+          "magazine_well": "500 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glock_21mag_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "tdi_mag",
+              "glock_21mag",
+              "glock_21mag26",
+              "glock21drum40rd"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "glock21drum40rd"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "USAS_12": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "USAS10mag",
+            "USAS20mag"
+          ],
+          "default_magazine": "USAS10mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "shot",
+            [
+              "USAS10mag",
+              "USAS20mag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "acr": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "acr_300blk": {
+      "file": "data/json/items/gun/300BLK.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "survivor223mag",
+            "carbonmag_223"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "300blk",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "survivor223mag",
+              "carbonmag_223"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ak47": {
+      "file": "data/json/items/gun/762.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "akmag30",
+            "akmag10",
+            "akmag20",
+            "akmag40",
+            "akdrum75"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762",
+            [
+              "akmag30",
+              "akmag10",
+              "akmag20",
+              "akmag40",
+              "akdrum75"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "aksemi": {
+      "file": "data/json/items/gun/762.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "akmag30",
+            "akmag10",
+            "akmag20",
+            "akmag40",
+            "akdrum75"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762",
+            [
+              "akmag30",
+              "akmag10",
+              "akmag20",
+              "akmag40",
+              "akdrum75"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "american_180": {
+      "file": "data/json/items/gun/22.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "a180mag"
+          ],
+          "default_magazine": "a180mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "a180mag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ar10": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ar10mag_20rd",
+            "ar10_makeshiftmag"
+          ],
+          "magazine_well": "150 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "ar10mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "ar10mag_25rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "ar10mag_50rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "ar10mag_20rd",
+              "ar10_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ar15": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ar15_retool_300blk": {
+      "file": "data/json/items/gun/300BLK.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ar_357sig": {
+      "file": "data/json/items/gun/357sig.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "glock40mag",
+            "glock40bigmag",
+            "glock40drum50rd"
+          ],
+          "default_magazine": "glock40mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "357sig",
+            [
+              "glock40mag",
+              "glock40bigmag",
+              "glock40drum50rd"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ar_pistol": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "arx160": {
+      "file": "data/json/items/gun/762.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "akmag30",
+            "akmag10",
+            "akmag20",
+            "akmag40"
+          ],
+          "default_magazine": "akmag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762",
+            [
+              "akmag30",
+              "akmag10",
+              "akmag20",
+              "akmag40"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "as50": {
+      "file": "data/json/items/gun/50.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "as50mag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "50",
+            [
+              "as50mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "asr_10mm": {
+      "file": "data/json/items/gun/10mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "glock20mag",
+            "glock20bigmag",
+            "glock20drum50rd"
+          ],
+          "default_magazine": "glock20mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "10mm",
+            [
+              "glock20mag",
+              "glock20bigmag",
+              "glock20drum50rd"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "aux_flamer": {
+      "file": "data/json/items/gunmod/barrel.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "aux_pressurized_tank"
+          ],
+          "default_magazine": "aux_pressurized_tank"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "flammable",
+            [
+              "aux_pressurized_tank"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "bigun": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "shotbelt_20"
+          ],
+          "magazine_well": "50 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "shot",
+            [
+              "shotbelt_20"
+            ]
+          ]
+        ],
+        "magazine_well": "50 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "briefcase_smg": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "rigid": true,
+          "item_restriction": [
+            "mp5mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_15rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_20rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "mp5mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "browning_blr": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "blrmag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "3006",
+            [
+              "blrmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "calico": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "calicomag"
+          ],
+          "default_magazine": "calicomag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "calicomag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "carbon_pistol": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "glockmag",
+            "glockbigmag",
+            "glock17_17",
+            "glock17_22",
+            "glock_drum_50rd",
+            "glock_drum_100rd"
+          ],
+          "default_magazine": "glockmag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "glockmag",
+              "glockbigmag",
+              "glock17_17",
+              "glock17_22",
+              "glock_drum_50rd",
+              "glock_drum_100rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "carbon_rifle": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "chemical_thrower": {
+      "file": "data/json/items/gun/chemical_spray.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "2 L",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "pressurized_tank_chem"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "chemical_spray",
+            [
+              "pressurized_tank_chem"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "coilgun": {
+      "file": "data/json/items/gun/nail.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "nailmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "nail",
+            [
+              "nailmag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "cx4": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "m9bigmag",
+            "m9mag"
+          ],
+          "default_magazine": "m9bigmag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "m9bigmag",
+              "m9mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "cz75": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "cz75mag_12rd",
+            "cz75mag_20rd",
+            "cz75mag_26rd"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "cz75mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "cz75mag_16rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "cz75mag_12rd",
+              "cz75mag_20rd",
+              "cz75mag_26rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "cz75mag_12rd"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "deagle_44": {
+      "file": "data/json/items/gun/44.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "deaglemag"
+          ],
+          "default_magazine": "deaglemag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "44",
+            [
+              "deaglemag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "draco": {
+      "file": "data/json/items/gun/762.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "akmag30",
+            "akmag10",
+            "akmag20",
+            "akmag40",
+            "akdrum75"
+          ],
+          "default_magazine": "akmag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762",
+            [
+              "akmag30",
+              "akmag10",
+              "akmag20",
+              "akmag40",
+              "akdrum75"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "famas": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "flamethrower": {
+      "file": "data/json/items/gun/flammable.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "1196 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "rigid": false,
+          "item_restriction": [
+            "pressurized_tank"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "pressurized_tank_modern",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "flammable",
+            [
+              "pressurized_tank"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "fn1910": {
+      "file": "data/json/items/gun/380.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "75 ml",
+          "item_restriction": [
+            "fn1910mag"
+          ],
+          "default_magazine": "fn1910mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "380",
+            [
+              "fn1910mag"
+            ]
+          ]
+        ],
+        "magazine_well": "75 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "fn_fal": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "50 ml",
+          "item_restriction": [
+            "falmag",
+            "falbigmag",
+            "fal_makeshiftmag"
+          ],
+          "default_magazine": "falmag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "falmag",
+              "falbigmag",
+              "fal_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "50 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "garand": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "garandclip"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "3006",
+            [
+              "garandclip"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "glock_17": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "glock17_17",
+            "glock17_22",
+            "glock_drum_50rd",
+            "glock_drum_100rd",
+            "glockbigmag",
+            "kriss_vector_9mm_mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glock17_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "glock17_17",
+              "glock17_22",
+              "glock_drum_50rd",
+              "glock_drum_100rd",
+              "glockbigmag",
+              "kriss_vector_9mm_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "kriss_vector_9mm_mag"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "glock_18c": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "glock17_17",
+            "glock17_22",
+            "glock_drum_50rd",
+            "glock_drum_100rd",
+            "glockbigmag",
+            "kriss_vector_9mm_mag"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glock17_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "kriss_vector_9mm_mag"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "glock_19": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "glockmag",
+            "glockbigmag",
+            "glock17_17",
+            "glock17_22",
+            "glock_drum_50rd",
+            "glock_drum_100rd",
+            "kriss_vector_9mm_mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glockmag_10",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "glock17_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "glockmag",
+              "glockbigmag",
+              "glock17_17",
+              "glock17_22",
+              "glock_drum_50rd",
+              "glock_drum_100rd",
+              "kriss_vector_9mm_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "kriss_vector_9mm_mag"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "glock_20": {
+      "file": "data/json/items/gun/10mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "150 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "glock20mag",
+            "glock20bigmag",
+            "glock20drum50rd"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glock_20mag_10",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "glock_20mag",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "tdi_10mm_mag",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "10mm",
+            [
+              "glock20mag",
+              "glock20bigmag",
+              "glock20drum50rd"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "glock20mag",
+          "glock20bigmag",
+          "glock20drum50rd"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "glock_21": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "glock_21mag",
+            "glock_21mag26",
+            "glock21drum40rd",
+            "tdi_mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glock_21mag_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "glock_21mag",
+              "glock_21mag26",
+              "glock21drum40rd",
+              "tdi_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "glock21drum40rd",
+          "tdi_mag"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "glock_22": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "glock40mag",
+            "glock40bigmag",
+            "glock40drum50rd",
+            "kriss_mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glock40mag_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "glock40mag",
+              "glock40bigmag",
+              "glock40drum50rd",
+              "kriss_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "glock40drum50rd",
+          "kriss_mag"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "glock_31": {
+      "file": "data/json/items/gun/357sig.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "glock40mag",
+            "glock40bigmag",
+            "glock40drum50rd",
+            "kriss_mag"
+          ],
+          "default_magazine": "glock40mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "357sig",
+            [
+              "glock40mag",
+              "glock40bigmag",
+              "glock40drum50rd",
+              "kriss_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "h&k416a5": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hi_power_40": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "bhp40mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "bhp40mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hi_power_9mm": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "bhp9mag_13rd",
+            "bhp9mag_15rd"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "bhp9mag_13rd",
+              "bhp9mag_15rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hipoint_3895": {
+      "file": "data/json/items/gun/380.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "hipoint_3895mag"
+          ],
+          "default_magazine": "hipoint_3895mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "380",
+            [
+              "hipoint_3895mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk417_13": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "hk417mag_20rd",
+            "hk417mag_10rd",
+            "hk417_makeshiftmag"
+          ],
+          "magazine_well": "150 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "hk417mag_20rd",
+              "hk417mag_10rd",
+              "hk417_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_g3": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "g3mag",
+            "g3bigmag",
+            "g3_makeshiftmag"
+          ],
+          "magazine_well": "50 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "g3mag",
+              "g3bigmag",
+              "g3_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "50 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_g36": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "g36mag_30rd",
+            "g36mag_100rd"
+          ],
+          "default_magazine": "g36mag_30rd"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "g36mag_30rd",
+              "g36mag_100rd"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_g80": {
+      "file": "data/json/items/gun/12mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "hk_g80mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "12mm",
+            [
+              "hk_g80mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_mp5": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "mp5mag",
+            "mp5bigmag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_15rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_20rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_38rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_40rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_100rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "mp5mag",
+              "mp5bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_mp5_semi_pistol": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "mp5mag",
+            "mp5bigmag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_15rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_20rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_38rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_40rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_100rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_mp5k": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "mp5mag",
+            "mp5bigmag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_15rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_20rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_38rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_40rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_100rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_mp5sd": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "mp5mag",
+            "mp5bigmag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_15rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_20rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_38rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_40rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "mp5mag_100rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_ump45": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "ump45mag",
+            "ump45_makeshiftmag"
+          ],
+          "default_magazine": "ump45mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "ump45mag",
+              "ump45_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_ump45_retool_40": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "ump45mag",
+            "ump45_makeshiftmag"
+          ],
+          "default_magazine": "ump45mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "ump45mag",
+              "ump45_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hk_ump45_retool_9mm": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "ump45mag",
+            "ump45_makeshiftmag"
+          ],
+          "default_magazine": "ump45mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "ump45mag",
+              "ump45_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hptc9": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "hptc9mag_8rd",
+            "hptc9mag_10rd",
+            "hptc9mag_15rd"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "hptc9mag_8rd",
+              "hptc9mag_10rd",
+              "hptc9mag_15rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hptcf380": {
+      "file": "data/json/items/gun/380.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "hptcf380mag_8rd",
+            "hptcf380mag_10rd"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "380",
+            [
+              "hptcf380mag_8rd",
+              "hptcf380mag_10rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hptjcp": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "hptjcpmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "hptjcpmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "hptjhp": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "hptjhpmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "hptjhpmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "iwi_tavor_x95_300blk": {
+      "file": "data/json/items/gun/300BLK.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "survivor223mag",
+            "carbonmag_223"
+          ],
+          "magazine_well": "150 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "300blk",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "carbonmag_223"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "j22": {
+      "file": "data/json/items/gun/22.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "75 ml",
+          "item_restriction": [
+            "j22mag"
+          ],
+          "default_magazine": "j22mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "j22mag"
+            ]
+          ]
+        ],
+        "magazine_well": "75 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "kp32": {
+      "file": "data/json/items/gun/32.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "41 ml",
+          "item_restriction": [
+            "kp32mag"
+          ],
+          "default_magazine": "kp32mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "32",
+            [
+              "kp32mag"
+            ]
+          ]
+        ],
+        "magazine_well": "41 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "kp3at": {
+      "file": "data/json/items/gun/380.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "44 ml",
+          "item_restriction": [
+            "kp3atmag"
+          ],
+          "default_magazine": "kp3atmag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "380",
+            [
+              "kp3atmag"
+            ]
+          ]
+        ],
+        "magazine_well": "44 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "kpf9": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "65 ml",
+          "item_restriction": [
+            "kpf9mag"
+          ],
+          "default_magazine": "kpf9mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "kpf9mag"
+            ]
+          ]
+        ],
+        "magazine_well": "65 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "kriss_vector": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "500 ml",
+          "item_restriction": [
+            "kriss_mag",
+            "glock40mag",
+            "glock40bigmag",
+            "glock40drum50rd"
+          ],
+          "default_magazine": "kriss_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "kriss_mag",
+              "glock40mag",
+              "glock40bigmag",
+              "glock40drum50rd"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "kriss_vector_9mm": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "500 ml",
+          "item_restriction": [
+            "kriss_vector_9mm_mag",
+            "glock17_17",
+            "glock17_22",
+            "glock_drum_50rd",
+            "glock_drum_100rd",
+            "glockbigmag"
+          ],
+          "default_magazine": "kriss_vector_9mm_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "kriss_vector_9mm_mag",
+              "glock17_17",
+              "glock17_22",
+              "glock_drum_50rd",
+              "glock_drum_100rd",
+              "glockbigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ksub2000": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "glockmag",
+            "glockbigmag",
+            "glock17_17",
+            "glock17_22",
+            "glock_drum_50rd",
+            "glock_drum_100rd"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "glockmag_10",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "glock17_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "glockmag",
+              "glockbigmag",
+              "glock17_17",
+              "glock17_22",
+              "glock_drum_50rd",
+              "glock_drum_100rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m107a1": {
+      "file": "data/json/items/gun/50.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m107a1mag",
+            "drum_mag50"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "50",
+            [
+              "m107a1mag",
+              "drum_mag50"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "drum_mag50"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m110a1": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "hk417mag_20rd",
+            "hk417mag_10rd",
+            "hk417_makeshiftmag"
+          ],
+          "magazine_well": "150 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "hk417mag_20rd",
+              "hk417mag_10rd",
+              "hk417_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m134": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "belt308"
+          ],
+          "magazine_well": "25 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "belt308"
+            ]
+          ]
+        ],
+        "magazine_well": "25 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m14ebr": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m14mag",
+            "m14smallmag",
+            "m14_makeshiftmag"
+          ],
+          "magazine_well": "50 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m16a4": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m17": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "p320mag_17rd_9x19mm"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "p320mag_21rd_9x19mm",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "p320mag_10rd_9x19mm",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "p320mag_17rd_9x19mm"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1874_gatling": {
+      "file": "data/json/items/gun/4570.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "gatlingdrum240"
+          ],
+          "default_magazine": "gatlingdrum240"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "4570",
+            [
+              "gatlingdrum240"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1911": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m1911mag",
+            "m1911bigmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "m1911mag",
+              "m1911bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1911_MEU": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "m1911mag",
+            "m1911bigmag"
+          ],
+          "default_magazine": "m1911mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1918": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m1918mag",
+            "m1918bigmag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "3006",
+            [
+              "m1918mag",
+              "m1918bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1919browning": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "50 ml",
+          "item_restriction": [
+            "belt3006"
+          ],
+          "default_magazine": "belt3006"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "3006",
+            [
+              "belt3006"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1919browning_stinger": {
+      "file": "data/json/items/gun/3006.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "50 ml",
+          "item_restriction": [
+            "belt3006"
+          ],
+          "default_magazine": "belt3006"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "3006",
+            [
+              "belt3006"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1a": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m14mag",
+            "m14smallmag",
+            "m14_makeshiftmag"
+          ],
+          "magazine_well": "50 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "m14mag",
+              "m14smallmag",
+              "m14_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "50 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m2010": {
+      "file": "data/json/items/gun/300.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m2010mag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "300",
+            [
+              "m2010mag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m202_flash": {
+      "file": "data/json/items/gun/66mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "500 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m74_clip"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "m235",
+            [
+              "m74_clip"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m240": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "belt308"
+          ],
+          "magazine_well": "25 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "belt308"
+            ]
+          ]
+        ],
+        "magazine_well": "25 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m249": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "belt223",
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "survivor223mag",
+            "carbonmag_223"
+          ],
+          "magazine_well": "25 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "belt223",
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag100",
+              "stanag100drum",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "25 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "carbonmag_223"
+        ],
+        "dda_only_kept": [
+          "stanag90",
+          "stanag150"
+        ],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m250": {
+      "file": "data/json/items/gun/277.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "25 ml",
+          "item_restriction": [
+            "belt277"
+          ],
+          "default_magazine": "belt277"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "277",
+            [
+              "belt277"
+            ]
+          ]
+        ],
+        "magazine_well": "25 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m27iar": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m2browning": {
+      "file": "data/json/items/gun/50.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "belt50"
+          ],
+          "magazine_well": "50 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "50",
+            [
+              "belt50"
+            ]
+          ]
+        ],
+        "magazine_well": "50 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m4a1": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m60": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "belt308"
+          ],
+          "magazine_well": "25 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "belt308"
+            ]
+          ]
+        ],
+        "magazine_well": "25 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m7": {
+      "file": "data/json/items/gun/277.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "ar10mag_20rd"
+          ],
+          "default_magazine": "ar10mag_20rd"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "277",
+            [
+              "ar10mag_20rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m9": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m9mag",
+            "m9bigmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "m9mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "m9mag_17rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "m9mag_18rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "m9mag_20rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "m9mag_32rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "m9mag_35rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "m9mag",
+              "m9bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mac_10": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "mac10mag",
+            "smg_45_mag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "mac10mag",
+              "smg_45_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mac_11": {
+      "file": "data/json/items/gun/380.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "mac11mag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "380",
+            [
+              "mac11mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mark19": {
+      "file": "data/json/items/gun/40x53mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "belt40mm"
+          ],
+          "magazine_well": "75 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40x53mm",
+            [
+              "belt40mm"
+            ]
+          ]
+        ],
+        "magazine_well": "75 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mk23": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "usp45mag"
+          ],
+          "default_magazine": "usp45mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "usp45mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mkg_banshee": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "glock40mag",
+            "glock40bigmag",
+            "glock40drum50rd"
+          ],
+          "default_magazine": "glock40mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "glock40mag",
+              "glock40bigmag",
+              "glock40drum50rd"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mkg_guard": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "glock_21mag",
+            "glock_21mag26",
+            "glock21drum40rd"
+          ],
+          "default_magazine": "glock_21mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "glock_21mag",
+              "glock_21mag26",
+              "glock21drum40rd"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "nailrifle": {
+      "file": "data/json/items/gun/nail.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "nailmag"
+          ],
+          "default_magazine": "nailmag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "nail",
+            [
+              "nailmag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 0
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "needlegun": {
+      "file": "data/json/items/gun/5x50.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "5x50_100_mag",
+            "5x50_50_mag"
+          ],
+          "default_magazine": "5x50_100_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "5x50",
+            [
+              "5x50_100_mag",
+              "5x50_50_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "needlepistol": {
+      "file": "data/json/items/gun/5x50.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "5x50_50_mag",
+            "5x50_100_mag"
+          ],
+          "default_magazine": "5x50_50_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "5x50",
+            [
+              "5x50_50_mag",
+              "5x50_100_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "oa93": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "oldguard_rifle": {
+      "file": "data/json/items/gun/misc.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag",
+            "ar10mag_20rd",
+            "falbigmag",
+            "falmag",
+            "fal_makeshiftmag",
+            "g3bigmag",
+            "g3mag",
+            "g3_makeshiftmag",
+            "m14mag",
+            "m14smallmag",
+            "m14_makeshiftmag",
+            "scarhbigmag",
+            "scarhmag_30rd",
+            "scarhmag",
+            "scarh_makeshiftmag",
+            "hk417mag_20rd",
+            "hk417mag_10rd",
+            "hk417_makeshiftmag",
+            "ar10_makeshiftmag",
+            "m1918bigmag",
+            "m1918mag",
+            "blrmag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ],
+          [
+            "277",
+            [
+              "ar10mag_20rd"
+            ]
+          ],
+          [
+            "308",
+            [
+              "falbigmag",
+              "falmag",
+              "fal_makeshiftmag",
+              "g3bigmag",
+              "g3mag",
+              "g3_makeshiftmag",
+              "m14mag",
+              "m14smallmag",
+              "m14_makeshiftmag",
+              "scarhbigmag",
+              "scarhmag_30rd",
+              "scarhmag",
+              "scarh_makeshiftmag",
+              "hk417mag_20rd",
+              "hk417mag_10rd",
+              "hk417_makeshiftmag",
+              "ar10mag_20rd",
+              "ar10_makeshiftmag"
+            ]
+          ],
+          [
+            "300blk",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ],
+          [
+            "3006",
+            [
+              "m1918bigmag",
+              "m1918mag",
+              "blrmag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "p226_357sig": {
+      "file": "data/json/items/gun/357sig.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "p226mag_12rd_357sig"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "357sig",
+            [
+              "p226mag_12rd_357sig"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "p320_357sig": {
+      "file": "data/json/items/gun/357sig.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "p320mag_13rd_357sig"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "357sig",
+            [
+              "p320mag_13rd_357sig"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "professional_chemical_thrower": {
+      "file": "data/json/items/gun/chemical_spray.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "pressurized_tank_chem"
+          ],
+          "default_magazine": "pressurized_tank_chem"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "chemical_spray",
+            [
+              "pressurized_tank_chem"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "px4": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "px4mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "px4mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "px4mag_15rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "px4mag_20rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "px4mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "px4_40": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "px4_40mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "px4_40mag_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "px4_40mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm103a_pistol": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "8x40_10_mag",
+            "8x40_25_mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_10_mag",
+              "8x40_25_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm11b_sniper_rifle": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "8x40_10_mag",
+            "8x40_25_mag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_10_mag",
+              "8x40_25_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm121aux": {
+      "file": "data/json/items/gunmod/underbarrel.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "20x66_10_mag"
+          ],
+          "default_magazine": "20x66_10_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "20x66mm",
+            [
+              "20x66_10_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm121aux_mod": {
+      "file": "data/json/items/gunmod/underbarrel.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "20x66_10_mag"
+          ],
+          "default_magazine": "20x66_10_mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "20x66mm",
+            [
+              "20x66_10_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm20": {
+      "file": "data/json/items/gun/20x66mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "500 ml",
+          "item_restriction": [
+            "20x66_20_mag",
+            "20x66_40_mag"
+          ],
+          "default_magazine": "20x66_20_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "20x66mm",
+            [
+              "20x66_20_mag",
+              "20x66_40_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm2000_smg": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "8x40_25_mag",
+            "8x40_10_mag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_25_mag",
+              "8x40_10_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm228": {
+      "file": "data/json/items/gun/20x66mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "20x66_10_mag"
+          ],
+          "default_magazine": "20x66_10_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "20x66mm",
+            [
+              "20x66_10_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm298": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "1500 ml",
+          "item_restriction": [
+            "8x40_500_mag",
+            "8x40_250_mag"
+          ],
+          "default_magazine": "8x40_500_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_500_mag",
+              "8x40_250_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "1500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm451_flamethrower": {
+      "file": "data/json/items/gun/flammable.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "1196 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "rigid": false,
+          "item_restriction": [
+            "pressurized_tank",
+            "rm4502",
+            "rm4504"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "pressurized_tank_modern",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "flammable",
+            [
+              "rm4502",
+              "rm4504"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "rm4502",
+          "rm4504"
+        ],
+        "dda_only_kept": [
+          "pressurized_tank"
+        ],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm51_assault_rifle": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "8x40_50_mag",
+            "8x40_100_mag"
+          ],
+          "magazine_well": "500 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_50_mag",
+              "8x40_100_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm614_lmg": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "500 ml",
+          "item_restriction": [
+            "8x40_250_mag",
+            "8x40_500_mag"
+          ],
+          "default_magazine": "8x40_250_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_250_mag",
+              "8x40_500_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm88_battle_rifle": {
+      "file": "data/json/items/gun/8x40mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "500 ml",
+          "item_restriction": [
+            "8x40_100_mag",
+            "8x40_50_mag",
+            "8x40_250_mag"
+          ],
+          "default_magazine": "8x40_100_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "8x40mm",
+            [
+              "8x40_100_mag",
+              "8x40_50_mag",
+              "8x40_250_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ruger_1022": {
+      "file": "data/json/items/gun/22.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ruger1022mag",
+            "ruger1022bigmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "ruger1022mag_15",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "ruger1022mag_30",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "ruger1022mag_32",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "ruger1022mag_55",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "ruger1022mag_70",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "ruger1022mag_110",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "ruger1022mag",
+              "ruger1022bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ruger_mini": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ruger20",
+            "ruger5",
+            "ruger10",
+            "ruger30",
+            "ruger90",
+            "ruger100",
+            "ruger_makeshiftmag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "ruger20",
+              "ruger5",
+              "ruger10",
+              "ruger30",
+              "ruger90",
+              "ruger100",
+              "ruger_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rugerlcp": {
+      "file": "data/json/items/gun/380.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "75 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "rugerlcpmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "380",
+            [
+              "rugerlcpmag"
+            ]
+          ]
+        ],
+        "magazine_well": "75 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "saiga_12": {
+      "file": "data/json/items/gun/shot.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "saiga10mag",
+            "saiga30mag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "shot",
+            [
+              "saiga10mag",
+              "saiga30mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "saiga_410": {
+      "file": "data/json/items/gun/410shot.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "saiga410mag_10rd",
+            "saiga410mag_30rd"
+          ],
+          "default_magazine": "saiga410mag_10rd"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "410shot",
+            [
+              "saiga410mag_10rd",
+              "saiga410mag_30rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "scar_h": {
+      "file": "data/json/items/gun/308.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "scarhmag",
+            "scarhbigmag",
+            "scarhmag_30rd",
+            "scarh_makeshiftmag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "scarhmag_10",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "308",
+            [
+              "scarhmag",
+              "scarhbigmag",
+              "scarhmag_30rd",
+              "scarh_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "scar_l": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "survivor223mag",
+            "carbonmag_223"
+          ],
+          "magazine_well": "150 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "carbonmag_223"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sig552": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sig_40": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "sig40mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "sig40mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sig_mcx": {
+      "file": "data/json/items/gun/300BLK.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "survivor223mag",
+            "carbonmag_223"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "300blk",
+            [
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag90",
+              "stanag100",
+              "stanag100drum",
+              "stanag150",
+              "survivor223mag",
+              "carbonmag_223"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sig_mosquito": {
+      "file": "data/json/items/gun/22.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "mosquitomag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "mosquitomag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sig_p230": {
+      "file": "data/json/items/gun/32.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "sigp230mag"
+          ],
+          "default_magazine": "sigp230mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "32",
+            [
+              "sigp230mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "skorpion_61": {
+      "file": "data/json/items/gun/32.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "80 ml",
+          "item_restriction": [
+            "skorpion61mag"
+          ],
+          "default_magazine": "skorpion61mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "32",
+            [
+              "skorpion61mag"
+            ]
+          ]
+        ],
+        "magazine_well": "80 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "smg_luty": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "survivor9mm_mag",
+            "stenmag"
+          ],
+          "default_magazine": "survivor9mm_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "survivor9mm_mag",
+              "stenmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sten": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "stenmag",
+            "survivor9mm_mag"
+          ],
+          "magazine_well": "100 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "stenmag",
+              "survivor9mm_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "steyr_aug": {
+      "file": "data/json/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "augmag_30rd",
+            "augmag_10rd",
+            "augmag_42rd",
+            "augmag_100rd"
+          ],
+          "magazine_well": "150 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "augmag_30rd",
+              "augmag_10rd",
+              "augmag_42rd",
+              "augmag_100rd"
+            ]
+          ]
+        ],
+        "magazine_well": "150 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "sw_22": {
+      "file": "data/json/items/gun/22.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "sw22mag"
+          ],
+          "default_magazine": "sw22mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "sw22mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tac50": {
+      "file": "data/json/items/gun/50.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "tac50mag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "50",
+            [
+              "tac50mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "talon_m249": {
+      "file": "data/json/items/gun/monster_gun.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "25 ml",
+          "item_restriction": [
+            "belt223",
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag100",
+            "stanag100drum",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "belt223"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "belt223",
+              "stanag30",
+              "stanag5",
+              "stanag10",
+              "stanag20",
+              "stanag40",
+              "stanag50",
+              "stanag60",
+              "stanag60drum",
+              "stanag100",
+              "stanag100drum",
+              "carbonmag_223",
+              "survivor223mag"
+            ]
+          ]
+        ],
+        "magazine_well": "25 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "taurus_spectrum": {
+      "file": "data/json/items/gun/380.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "taurus_spectrum_mag"
+          ],
+          "default_magazine": "taurus_spectrum_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "380",
+            [
+              "taurus_spectrum_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tec9": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "tec9mag"
+          ],
+          "default_magazine": "tec9mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "tec9mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tommygun": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "thompson_mag",
+            "thompson_bigmag",
+            "thompson_drum",
+            "thompson_makeshiftmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "thompson_mag",
+              "thompson_bigmag",
+              "thompson_drum",
+              "thompson_makeshiftmag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "usp_45": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "usp45mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "usp45mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "usp_9mm": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "usp9mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "usp9mag_10rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "usp9mag_18rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "usp9mag_20rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "usp9mag_32rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "usp9mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "uzi": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "uzimag"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "uzimag_20rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "uzimag_25rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "uzimag_40rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "uzimag_50rd",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "uzimag_100rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "uzimag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "walther_ccp": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ccpmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "ccpmag_9rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "ccpmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "walther_p22": {
+      "file": "data/json/items/gun/22.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "wp22mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "wp22mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "walther_p38": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "p38mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "p38mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "walther_ppk": {
+      "file": "data/json/items/gun/32.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ppkmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "32",
+            [
+              "ppkmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "walther_ppq_40": {
+      "file": "data/json/items/gun/40.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "ppq40mag_10rd",
+            "ppq40mag_12rd",
+            "ppq40mag_14rd"
+          ],
+          "default_magazine": "ppq40mag_10rd"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "ppq40mag_10rd",
+              "ppq40mag_12rd",
+              "ppq40mag_14rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "walther_ppq_45": {
+      "file": "data/json/items/gun/45.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ppq45mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "ppq45mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "walther_ppq_9mm": {
+      "file": "data/json/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ppq9mag_10rd",
+            "ppq9mag_15rd",
+            "ppq9mag_17rd"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "ppq9mag_10rd",
+              "ppq9mag_15rd",
+              "ppq9mag_17rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    }
+  }
+}

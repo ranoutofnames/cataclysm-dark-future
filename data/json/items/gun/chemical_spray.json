@@ -14,7 +14,15 @@
     "dispersion": 300,
     "durability": 6,
     "loudness": 40,
-    "magazines": [ [ "chemical_spray", [ "pressurized_tank_chem" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "2 L",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "pressurized_tank_chem" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "professional_chemical_thrower",
@@ -31,6 +39,14 @@
     "dispersion": 250,
     "durability": 8,
     "loudness": 40,
-    "magazines": [ [ "chemical_spray", [ "pressurized_tank_chem" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "pressurized_tank_chem" ],
+        "default_magazine": "pressurized_tank_chem"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   }
 ]

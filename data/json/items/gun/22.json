@@ -19,7 +19,15 @@
     "min_cycle_recoil": 39,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 6 ] ],
     "barrel_volume": "250 ml",
-    "magazines": [ [ "22", [ "a180mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "a180mag" ],
+        "default_magazine": "a180mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "marlin_9a",
@@ -96,8 +104,15 @@
     "dispersion": 110,
     "min_cycle_recoil": 39,
     "barrel_volume": "500 ml",
-    "magazine_well": "250 ml",
-    "magazines": [ [ "22", [ "ruger1022mag", "ruger1022bigmag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "ruger1022mag", "ruger1022bigmag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: ruger1022mag_15, ruger1022mag_30, ruger1022mag_32, ruger1022mag_55, ruger1022mag_70, ruger1022mag_110"
   },
   {
     "id": "ruger_lcr_22",
@@ -144,8 +159,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "22", [ "mosquitomag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "mosquitomag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "sw_22",
@@ -166,8 +188,16 @@
     "ammo": "22",
     "durability": 7,
     "min_cycle_recoil": 39,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "22", [ "sw22mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "sw22mag" ],
+        "default_magazine": "sw22mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "j22",
@@ -182,11 +212,19 @@
     "material": [ "budget_steel" ],
     "color": "dark_gray",
     "ammo": "22",
-    "magazine_well": "75 ml",
     "dispersion": 600,
     "durability": 5,
     "min_cycle_recoil": 39,
-    "magazines": [ [ "22", [ "j22mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "75 ml",
+        "item_restriction": [ "j22mag" ],
+        "default_magazine": "j22mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "walther_p22",
@@ -206,7 +244,14 @@
     "ammo": "22",
     "durability": 7,
     "min_cycle_recoil": 39,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "22", [ "wp22mag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "wp22mag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

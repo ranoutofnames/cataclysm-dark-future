@@ -13,8 +13,15 @@
     "color": "dark_gray",
     "ammo": "357sig",
     "durability": 7,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "357sig", [ "p226mag_12rd_357sig" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "p226mag_12rd_357sig" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "glock_31",
@@ -27,7 +34,16 @@
     "volume": "443 ml",
     "price_postapoc": "2250 cent",
     "ammo": "357sig",
-    "magazines": [ [ "357sig", [ "glock40mag", "glock40bigmag", "glock40drum50rd", "kriss_mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "glock40mag", "glock40bigmag", "glock40drum50rd", "kriss_mag" ],
+        "default_magazine": "glock40mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "p320_357sig",
@@ -45,8 +61,15 @@
     "color": "dark_gray",
     "ammo": "357sig",
     "durability": 6,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "357sig", [ "p320mag_13rd_357sig" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "p320mag_13rd_357sig" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "ar_357sig",
@@ -69,7 +92,15 @@
     "durability": 10,
     "handling": 30,
     "min_cycle_recoil": 400,
-    "magazine_well": "150 ml",
-    "magazines": [ [ "357sig", [ "glock40mag", "glock40bigmag", "glock40drum50rd" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [ "glock40mag", "glock40bigmag", "glock40drum50rd" ],
+        "default_magazine": "glock40mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

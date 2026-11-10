@@ -18,11 +18,12 @@
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "barrel_volume": "250 ml",
     "built_in_mods": [ "folding_stock" ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -37,16 +38,18 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "ar15",
     "copy-from": "rifle_semi",
     "type": "GUN",
     "name": { "str": "AR-15" },
-    "//": "This is assumed to be the standard model matching the (currently not in-game) M16. Tileset whitelist for rifles",
+    "//": "This is assumed to be the standard model matching the (currently not in-game) M16. Tileset whitelist for rifles CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "description": "This ubiquitous rifle is the forefather of M16 rifle series.  It is lightweight and accurate, but will malfunction if not properly maintained.  This one is a semi-automatic civilian version.",
     "weight": "3500 g",
     "volume": "2 L",
@@ -59,11 +62,12 @@
     "dispersion": 150,
     "durability": 7,
     "min_cycle_recoil": 1350,
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -78,8 +82,9 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
+        ],
+        "default_magazine": "stanag30"
+      }
     ]
   },
   {
@@ -105,11 +110,12 @@
     "durability": 6,
     "min_cycle_recoil": 1350,
     "loudness": 4,
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -124,9 +130,11 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "famas",
@@ -159,11 +167,12 @@
       [ "sling", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -174,16 +183,18 @@
           "stanag60drum",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "h&k416a5",
     "copy-from": "rifle_auto",
     "type": "GUN",
     "name": { "str": "H&K416 A5" },
-    "//": "*Current* milspec gear is now ridiculously overpriced, as seen with the M2010 IRL.",
+    "//": "*Current* milspec gear is now ridiculously overpriced, as seen with the M2010 IRL. CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "description": "Designed to replace the M4A1, the Heckler and Koch 416A5 features most of the former's strengths, while being considerably more durable.",
     "weight": "3490 g",
     "volume": "1750 ml",
@@ -197,11 +208,12 @@
     "dispersion": 180,
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -216,8 +228,9 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
+        ],
+        "default_magazine": "stanag30"
+      }
     ]
   },
   {
@@ -237,8 +250,16 @@
     "dispersion": 150,
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "150 ml",
-    "magazines": [ [ "223", [ "g36mag_30rd", "g36mag_100rd" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [ "g36mag_30rd", "g36mag_100rd" ],
+        "default_magazine": "g36mag_30rd"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m249",
@@ -246,7 +267,7 @@
     "type": "GUN",
     "name": { "str": "M249" },
     "description": "The M249 is a mountable machine gun used by the US military and SWAT teams.  Quite inaccurate and difficult to control, the M249 is designed to fire many rounds very quickly.",
-    "//": "Has a STANAG magwell to accept 5.56 STANAG magazines for emergency use that does not fit snail or very large 150rnd drum mags.",
+    "//": "Has a STANAG magwell to accept 5.56 STANAG magazines for emergency use that does not fit snail or very large 150rnd drum mags. CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "weight": "7330 g",
     "volume": "3 L",
     "barrel_volume": "250 ml",
@@ -261,7 +282,6 @@
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "burst", 4 ] ],
     "built_in_mods": [ "bipod" ],
-    "magazine_well": "25 ml",
     "valid_mod_locations": [
       [ "accessories", 4 ],
       [ "barrel", 1 ],
@@ -275,10 +295,12 @@
       [ "sling", 1 ],
       [ "stock", 1 ]
     ],
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: carbonmag_223",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [
           "belt223",
           "stanag30",
           "stanag5",
@@ -288,12 +310,15 @@
           "stanag50",
           "stanag60",
           "stanag60drum",
+          "stanag90",
           "stanag100",
           "stanag100drum",
-          "carbonmag_223",
-          "survivor223mag"
-        ]
-      ]
+          "stanag150",
+          "survivor223mag",
+          "carbonmag_223"
+        ],
+        "magazine_well": "25 ml"
+      }
     ]
   },
   {
@@ -305,10 +330,13 @@
     "description": "A H&K416 carbine outfitted with a heavier barrel to enable higher amounts of suppressive fire while retaining a good degree of mobility.",
     "weight": "3710 g",
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazines": [
-      [
-        "223",
-        [
+    "relative": { "ranged_damage": { "damage_type": "bullet", "amount": 1 }, "durability": 1 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -323,10 +351,11 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
+        ],
+        "default_magazine": "stanag30"
+      }
     ],
-    "relative": { "ranged_damage": { "damage_type": "bullet", "amount": 1 }, "durability": 1 }
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "m4a1",
@@ -348,11 +377,12 @@
     "durability": 6,
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -367,9 +397,11 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m16a4",
@@ -389,11 +421,12 @@
     "durability": 7,
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "BURST", "burst", 3 ] ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -408,9 +441,11 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m16a4_turret_fake",
@@ -444,11 +479,12 @@
     "dispersion": 380,
     "durability": 6,
     "min_cycle_recoil": 1350,
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -463,9 +499,11 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "ruger_mini",
@@ -499,8 +537,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "100 ml",
-    "magazines": [ [ "223", [ "ruger20", "ruger5", "ruger10", "ruger30", "ruger90", "ruger100", "ruger_makeshiftmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "ruger20", "ruger5", "ruger10", "ruger30", "ruger90", "ruger100", "ruger_makeshiftmag" ],
+        "magazine_well": "100 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "scar_l",
@@ -521,11 +566,12 @@
     "dispersion": 150,
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "//": "CDF: CDF-only magazines kept in item_restriction: carbonmag_223",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -538,11 +584,13 @@
           "stanag100",
           "stanag100drum",
           "stanag150",
-          "carbonmag_223",
-          "survivor223mag"
-        ]
-      ]
-    ]
+          "survivor223mag",
+          "carbonmag_223"
+        ],
+        "magazine_well": "150 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "sig552",
@@ -563,11 +611,12 @@
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "BURST", "burst", 3 ], [ "AUTO", "auto", 4 ] ],
     "built_in_mods": [ "folding_stock" ],
-    "magazine_well": "100 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "100 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -582,9 +631,11 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "steyr_aug",
@@ -618,8 +669,15 @@
       [ "sling", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "150 ml",
-    "magazines": [ [ "223", [ "augmag_30rd", "augmag_10rd", "augmag_42rd", "augmag_100rd" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "augmag_30rd", "augmag_10rd", "augmag_42rd", "augmag_100rd" ],
+        "magazine_well": "150 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "carbon_rifle",
@@ -638,11 +696,12 @@
     "dispersion": 150,
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 3 ] ],
-    "magazine_well": "150 ml",
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "150 ml",
+        "item_restriction": [
           "stanag30",
           "stanag5",
           "stanag10",
@@ -657,8 +716,10 @@
           "stanag150",
           "carbonmag_223",
           "survivor223mag"
-        ]
-      ]
-    ]
+        ],
+        "default_magazine": "stanag30"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]
