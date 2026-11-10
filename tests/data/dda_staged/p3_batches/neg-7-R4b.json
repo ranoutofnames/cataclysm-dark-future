@@ -1,0 +1,46 @@
+{
+  "batch": "7-R4b",
+  "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "wrong_default",
+      "id": "scouter",
+      "pocket": 0,
+      "mutation": "default_magazine `light_battery_cell` -> bogus id",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "flag",
+      "id": "exosuit_survivor",
+      "pocket": 0,
+      "mutation": "flag_restriction gains P3_BOGUS_FLAG",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N3",
+      "kind": "pocket_order",
+      "id": "exosuit_industrial",
+      "pocket": 0,
+      "mutation": "swap pocket 0 and pocket 1 (the well must stay first, carry pockets after: rule R9)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N4",
+      "kind": "pocket_order",
+      "id": "exosuit_military_on",
+      "pocket": 0,
+      "mutation": "swap pocket 0 and pocket 1 (the well must stay first, carry pockets after: rule R9)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N5",
+      "kind": "hand_fallback_integral",
+      "id": "mil_scouter",
+      "pocket": 0,
+      "mutation": "replace the MAGAZINE_WELL by an integral MAGAZINE pocket (the kind flips MAGAZINE and MAGAZINE_WELL)",
+      "expect": "mismatch reported for this id only"
+    }
+  ]
+}

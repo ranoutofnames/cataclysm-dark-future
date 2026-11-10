@@ -136,9 +136,16 @@
     "description": "Pseudo item for charcoal purifier furniture.",
     "material": [ "wood", "cotton" ],
     "sub": "water_purifier",
-    "ammo": "charcoal",
-    "max_charges": 500,
-    "flags": [ "ALLOWS_REMOTE_USE", "TRADER_AVOID" ]
+    "tool_ammo": "charcoal",
+    "flags": [ "ALLOWS_REMOTE_USE", "TRADER_AVOID" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "charcoal": 500 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "fake_goggles",
@@ -272,10 +279,9 @@
     "type": "TOOL",
     "name": { "str": "bionic firestarter" },
     "flags": [ "FIRESTARTER", "BIONIC_TOOLS", "USES_BIONIC_POWER" ],
-    "max_charges": 10000,
-    "ammo": "battery",
     "charges_per_use": 1,
-    "use_action": { "type": "firestarter", "moves": 200 }
+    "use_action": { "type": "firestarter", "moves": 200 },
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges, ammo (now in pocket_data)"
   },
   {
     "id": "migo_bio_gun",

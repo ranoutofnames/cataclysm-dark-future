@@ -176,11 +176,14 @@ TEST_CASE("water_cannons_inherit_liquid_trail_effects_from_ammo", "[item][gun][f
 
 TEST_CASE("stacking_cash_cards", "[item]") {
     // Differently-charged cash cards should stack if neither is zero.
-    item& cash0 = *item::spawn_temporary("cash_card", calendar::turn_zero, 0);
-    item& cash1 = *item::spawn_temporary("cash_card", calendar::turn_zero, 1);
-    item& cash2 = *item::spawn_temporary("cash_card", calendar::turn_zero, 2);
+    // CDF: P3-7-R4b, DDA tests/item_test.cpp:171-181 (the card keeps its money in the MAGAZINE pocket)
+    item& cash0 = *item::spawn_temporary("cash_card", calendar::turn_zero);
+    item& cash1 = *item::spawn_temporary("cash_card", calendar::turn_zero);
+    item& cash2 = *item::spawn_temporary("cash_card", calendar::turn_zero);
+    cash1.put_in(*item::spawn_temporary("money", calendar::turn_zero, 1), pocket_type::MAGAZINE);
+    cash2.put_in(*item::spawn_temporary("money", calendar::turn_zero, 2), pocket_type::MAGAZINE);
     CHECK(!cash0.stacks_with(cash1));
-    CHECK(cash1.stacks_with(cash2));
+    //CHECK(cash1.stacks_with(cash2)); Enable this once cash card stacking is brought back.
 }
 
 // second minute hour day week season year

@@ -1532,9 +1532,8 @@
     "weight": "1260 g",
     "volume": "1500 ml",
     "to_hit": -3,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
+    "tool_ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "covers": [ "mouth", "eyes" ],
     "warmth": 30,
@@ -1543,7 +1542,15 @@
     "encumbrance": 20,
     "coverage": 100,
     "qualities": [ [ "GLARE", 2 ] ],
-    "material_thickness": 3
+    "material_thickness": 3,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasfilter_m": 100 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "mask_hsurvivor",
@@ -1677,9 +1684,8 @@
     "price": "240 USD",
     "price_postapoc": "1750 cent",
     "to_hit": -3,
-    "max_charges": 100,
     "initial_charges": 100,
-    "ammo": "gasfilter_m",
+    "tool_ammo": "gasfilter_m",
     "use_action": "GASMASK",
     "material": [ "kevlar", "fur" ],
     "symbol": "[",
@@ -1692,7 +1698,15 @@
     "environmental_protection": 1,
     "environmental_protection_with_filter": 15,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ]
+    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasfilter_m": 100 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "goggles_nv",
@@ -1877,11 +1891,18 @@
     "flags": [ "OVERSIZE" ],
     "weight": "364 g",
     "volume": "750 ml",
-    "max_charges": 2,
     "charges_per_use": 1,
-    "ammo": "ampoule",
+    "tool_ammo": "ampoule",
     "use_action": "JET_INJECTOR",
-    "material_thickness": 3
+    "material_thickness": 3,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "ampoule": 2 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "rx11_stimpack",
@@ -1897,12 +1918,19 @@
     "flags": [ "OVERSIZE" ],
     "weight": "212 g",
     "volume": "750 ml",
-    "max_charges": 5,
     "initial_charges": 5,
     "charges_per_use": 1,
-    "ammo": "stimpack_ammo",
+    "tool_ammo": "stimpack_ammo",
     "use_action": "STIMPACK",
-    "material_thickness": 3
+    "material_thickness": 3,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "stimpack_ammo": 5 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "mask_h20survivor",
@@ -3233,8 +3261,7 @@
     "symbol": ";",
     "color": "light_gray",
     "initial_charges": 60,
-    "max_charges": 60,
-    "ammo": "nitrox",
+    "tool_ammo": "nitrox",
     "covers": [ "torso" ],
     "flags": [ "WATER_FRIENDLY", "BELTED", "ONLY_ONE", "STURDY", "NO_UNLOAD", "ALLOWS_WINGS" ],
     "environmental_protection": 1,
@@ -3242,7 +3269,17 @@
     "encumbrance": 30,
     "coverage": 25,
     "material_thickness": 4,
-    "use_action": "DIVE_TANK"
+    "use_action": "DIVE_TANK",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "airtight": true,
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "nitrox": 60 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "scuba_tank_on",
@@ -3261,10 +3298,9 @@
     "material": [ "steel", "plastic" ],
     "symbol": ";",
     "color": "light_gray",
-    "max_charges": 60,
     "charges_per_use": 1,
     "turns_per_charge": 60,
-    "ammo": "nitrox",
+    "tool_ammo": "nitrox",
     "covers": [ "torso", "mouth" ],
     "flags": [ "WATER_FRIENDLY", "BELTED", "ONLY_ONE", "STURDY", "NO_UNLOAD", "ALLOWS_WINGS" ],
     "environmental_protection": 1,
@@ -3272,7 +3308,17 @@
     "encumbrance": 30,
     "coverage": 25,
     "material_thickness": 4,
-    "use_action": "DIVE_TANK"
+    "use_action": "DIVE_TANK",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "airtight": true,
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "nitrox": 60 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "small_scuba_tank",
@@ -3291,8 +3337,7 @@
     "symbol": ";",
     "color": "light_gray",
     "initial_charges": 20,
-    "max_charges": 20,
-    "ammo": "nitrox",
+    "tool_ammo": "nitrox",
     "covers": [ "torso" ],
     "flags": [ "WATER_FRIENDLY", "BELTED", "ONLY_ONE", "STURDY", "NO_UNLOAD", "ALLOWS_WINGS" ],
     "environmental_protection": 1,
@@ -3300,7 +3345,17 @@
     "encumbrance": 30,
     "coverage": 25,
     "material_thickness": 4,
-    "use_action": "DIVE_TANK"
+    "use_action": "DIVE_TANK",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "airtight": true,
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "nitrox": 20 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "small_scuba_tank_on",
@@ -3319,10 +3374,9 @@
     "material": [ "aluminum", "plastic" ],
     "symbol": ";",
     "color": "light_gray",
-    "max_charges": 20,
     "charges_per_use": 1,
     "turns_per_charge": 60,
-    "ammo": "nitrox",
+    "tool_ammo": "nitrox",
     "covers": [ "torso", "mouth" ],
     "flags": [ "WATER_FRIENDLY", "BELTED", "ONLY_ONE", "STURDY", "NO_UNLOAD", "ALLOWS_WINGS" ],
     "environmental_protection": 1,
@@ -3330,7 +3384,17 @@
     "encumbrance": 30,
     "coverage": 25,
     "material_thickness": 4,
-    "use_action": "DIVE_TANK"
+    "use_action": "DIVE_TANK",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "airtight": true,
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "nitrox": 20 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "electric_blanket",
@@ -3501,16 +3565,11 @@
       "WINDMETER",
       "TWO_WAY_RADIO",
       "ZOOM",
-      "POWERARMOR_COMPATIBLE",
-      "RECHARGE",
-      "NO_UNLOAD",
-      "NO_RELOAD"
+      "POWERARMOR_COMPATIBLE"
     ],
     "coverage": 50,
     "symbol": "[",
-    "ammo": "battery",
     "charges_per_use": 1,
-    "max_charges": 200,
     "use_action": [
       "PORTABLE_GAME",
       "WEATHER_TOOL",
@@ -3526,7 +3585,17 @@
         "need_charges_msg": "The %s's batteries are dead."
       },
       "TOGGLE_UPS_CHARGING"
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "default_magazine": "light_battery_cell"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data)"
   },
   {
     "id": "scouter_nv_on",
@@ -3538,7 +3607,16 @@
     "power_draw": 375,
     "extend": { "flags": [ "GNV_EFFECT" ] },
     "revert_to": "scouter",
-    "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "Your %s deactivates.", "target": "scouter" }
+    "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "Your %s deactivates.", "target": "scouter" },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "default_magazine": "light_battery_cell"
+      }
+    ]
   },
   {
     "id": "mil_scouter",
@@ -3563,7 +3641,16 @@
       },
       "TOGGLE_UPS_CHARGING"
     ],
-    "extend": { "flags": [ "DRONE_CAM" ] }
+    "extend": { "flags": [ "DRONE_CAM" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "default_magazine": "light_battery_cell"
+      }
+    ]
   },
   {
     "id": "mil_scouter_nv_on",
@@ -3575,7 +3662,16 @@
     "power_draw": 375,
     "extend": { "flags": [ "GNV_EFFECT" ] },
     "revert_to": "mil_scouter",
-    "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "Your %s deactivates.", "target": "mil_scouter" }
+    "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "Your %s deactivates.", "target": "mil_scouter" },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "default_magazine": "light_battery_cell"
+      }
+    ]
   },
   {
     "id": "nature_ghillie",

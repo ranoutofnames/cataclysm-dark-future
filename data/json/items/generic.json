@@ -2790,7 +2790,6 @@
     "weight": "6 g",
     "volume": "5 ml",
     "to_hit": -3,
-    "max_charges": 200000000,
     "rand_charges": [
       0,
       1,
@@ -2831,8 +2830,16 @@
       50000,
       100000
     ],
-    "ammo": "money",
-    "category": "valuables"
+    "tool_ammo": "money",
+    "category": "valuables",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "money": 200000000 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "robofac_test_data",

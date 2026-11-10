@@ -1533,8 +1533,7 @@
     "material": [ "plastic", "steel" ],
     "symbol": "/",
     "color": "red",
-    "ammo": "gasoline",
-    "max_charges": 800,
+    "tool_ammo": "gasoline",
     "charges_per_use": 75,
     "techniques": [ "WBLOCK_1", "SPIN", "SWEEP" ],
     "qualities": [ [ "AXE", 4 ] ],
@@ -1548,7 +1547,15 @@
       "transform_charges": 5,
       "need_dry": true
     },
-    "flags": [ "NONCONDUCTIVE", "POWERED", "ALWAYS_TWOHAND", "COMBAT_NPC_USE" ]
+    "flags": [ "NONCONDUCTIVE", "POWERED", "ALWAYS_TWOHAND", "COMBAT_NPC_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 800 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "cs_lajatang_on",
@@ -1574,6 +1581,13 @@
       "WATER_DISABLE",
       "COMBAT_NPC_USE",
       "COMBAT_NPC_ON"
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 800 }
+      }
     ]
   },
   {
@@ -1757,9 +1771,8 @@
     "material": [ "steel", "aluminum" ],
     "symbol": "/",
     "color": "light_gray",
-    "ammo": "gasoline",
+    "tool_ammo": "gasoline",
     "charges_per_use": 75,
-    "max_charges": 450,
     "qualities": [ [ "AXE", 4 ] ],
     "crafting_speed_modifier": 1.25,
     "use_action": {
@@ -1772,7 +1785,15 @@
       "need_dry": true
     },
     "techniques": [ "WBLOCK_1", "SWEEP" ],
-    "flags": [ "ALWAYS_TWOHAND", "POWERED", "COMBAT_NPC_USE" ]
+    "flags": [ "ALWAYS_TWOHAND", "POWERED", "COMBAT_NPC_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 450 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "combatsaw_on",
@@ -1788,7 +1809,14 @@
     "qualities": [ [ "BUTCHER", -120 ] ],
     "revert_msg": "Your combat chainsaw goes quiet",
     "use_action": { "type": "transform", "target": "combatsaw_off", "msg": "You turn off the combat chainsaw." },
-    "flags": [ "MESSY", "DURABLE_MELEE", "TRADER_AVOID", "ALWAYS_TWOHAND", "WATER_DISABLE", "COMBAT_NPC_USE", "COMBAT_NPC_ON" ]
+    "flags": [ "MESSY", "DURABLE_MELEE", "TRADER_AVOID", "ALWAYS_TWOHAND", "WATER_DISABLE", "COMBAT_NPC_USE", "COMBAT_NPC_ON" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 450 }
+      }
+    ]
   },
   {
     "id": "e_combatsaw_off",
@@ -2034,9 +2062,8 @@
     "description": "This is a large blade with a fuel pipe on the side, and a small tank and igniter built into the insulated hilt.  When filled with gasoline, the blade can be made scorching hot to singe enemies and light your way.  Use to ignite.",
     "relative": { "volume": "500 ml", "weight": "750 g" },
     "proportional": { "price": 1.25, "price_postapoc": 1.25 },
-    "ammo": [ "gasoline", "lighter_fluid" ],
+    "tool_ammo": [ "gasoline", "lighter_fluid" ],
     "charges_per_use": 1,
-    "max_charges": 250,
     "use_action": {
       "type": "fireweapon_off",
       "target_id": "shishkebab_on",
@@ -2046,7 +2073,15 @@
       "failure_message": "The igniter clicks, but nothing catches.",
       "lacks_fuel_message": "You hear a sputter—it's dry. No fuel left."
     },
-    "extend": { "flags": [ "COMBAT_NPC_USE" ] }
+    "extend": { "flags": [ "COMBAT_NPC_USE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "shishkebab_on",
@@ -2085,7 +2120,14 @@
       },
       { "type": "firestarter", "moves": 30 }
     ],
-    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] }
+    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 }
+      }
+    ]
   },
   {
     "id": "firekatana_off",
@@ -2095,9 +2137,8 @@
     "description": "This is a katana with a nozzle just behind the cutting edge of the blade.  People love fire, and people love katanas, so why not put them together?  The gas burners attached to this blade can really turn up the heat on your foes.  Use to ignite.",
     "relative": { "volume": "500 ml", "weight": "750 g" },
     "proportional": { "price": 1.25, "price_postapoc": 1.25 },
-    "ammo": [ "gasoline", "lighter_fluid" ],
+    "tool_ammo": [ "gasoline", "lighter_fluid" ],
     "charges_per_use": 1,
-    "max_charges": 250,
     "use_action": {
       "type": "fireweapon_off",
       "target_id": "firekatana_on",
@@ -2105,7 +2146,16 @@
       "success_message": "The Sun rises.",
       "lacks_fuel_message": "Time stands still."
     },
-    "extend": { "flags": [ "COMBAT_NPC_USE" ] }
+    "extend": { "flags": [ "COMBAT_NPC_USE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 },
+        "watertight": true
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "firekatana_on",
@@ -2141,7 +2191,15 @@
       },
       { "type": "firestarter", "moves": 30 }
     ],
-    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] }
+    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 },
+        "watertight": true
+      }
+    ]
   },
   {
     "id": "broadfire_off",
@@ -2151,9 +2209,8 @@
     "description": "This is a combination of two classic methods of conflict resolution, the broadsword and the torch.  Use to light it up and show those heathen zombies who's Lord around here.",
     "relative": { "volume": "500 ml", "weight": "750 g" },
     "proportional": { "price": 1.25, "price_postapoc": 1.25 },
-    "ammo": [ "gasoline", "lighter_fluid" ],
+    "tool_ammo": [ "gasoline", "lighter_fluid" ],
     "charges_per_use": 1,
-    "max_charges": 250,
     "use_action": {
       "type": "fireweapon_off",
       "target_id": "broadfire_on",
@@ -2161,7 +2218,15 @@
       "success_message": "Charge!",
       "lacks_fuel_message": "No strength to fight!"
     },
-    "extend": { "flags": [ "COMBAT_NPC_USE" ] }
+    "extend": { "flags": [ "COMBAT_NPC_USE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "broadfire_on",
@@ -2197,20 +2262,26 @@
       },
       { "type": "firestarter", "moves": 30 }
     ],
-    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] }
+    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 }
+      }
+    ]
   },
   {
     "id": "zweifire_off",
     "copy-from": "zweihander",
     "type": "TOOL",
     "name": { "str": "flammenschwert", "str_pl": "flammenschwerter" },
-    "//": "All of this is SUPPOSED to be in German.",
+    "//": "All of this is SUPPOSED to be in German. CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo",
     "description": "Ein großes zweihaendiges Schwert aus Deutschland, an dessen Klinge sich, unter Zufuehrung von Benzin, eine anhaltende Flamme erzeugen laesst.  Es ist eine sehr maechtige Waffe.",
     "relative": { "volume": "500 ml", "weight": "750 g" },
     "proportional": { "price": 1.25, "price_postapoc": 1.25 },
-    "ammo": [ "gasoline", "lighter_fluid" ],
+    "tool_ammo": [ "gasoline", "lighter_fluid" ],
     "charges_per_use": 1,
-    "max_charges": 250,
     "use_action": {
       "type": "fireweapon_off",
       "target_id": "zweifire_on",
@@ -2218,7 +2289,15 @@
       "success_message": "Die Klinge deines Schwertes brennt!",
       "lacks_fuel_message": "Dein Flammenschwert hat keinen Brennstoff mehr."
     },
-    "extend": { "flags": [ "COMBAT_NPC_USE" ] }
+    "extend": { "flags": [ "COMBAT_NPC_USE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 },
+        "watertight": true
+      }
+    ]
   },
   {
     "id": "zweifire_on",
@@ -2255,7 +2334,15 @@
       },
       { "type": "firestarter", "moves": 30 }
     ],
-    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] }
+    "extend": { "flags": [ "FIRE", "LIGHT_240", "CHARGEDIM", "TRADER_AVOID", "COMBAT_NPC_ON" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "gasoline": 250, "lighter_fluid": 250 },
+        "watertight": true
+      }
+    ]
   },
   {
     "id": "radiant_blade",

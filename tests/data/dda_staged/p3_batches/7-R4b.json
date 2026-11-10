@@ -1,0 +1,1127 @@
+{
+ "batch": "7-R4b",
+ "base": "f1c422b578",
+ "dda": "918f396f370ea48fad924fb45a797386a2f6ddb4",
+ "dda_note": "918f396f370e = the DDA pin, a documented constant: tests/cdf_mag_port_test.cpp:20 requires it; the tool wrote it from `git rev-parse HEAD` of its --dda root (read by the planner on LAPTOP-A0EU66N2 at C:\\CDF\\CDDA SRC, 2026-11-03; see 7-GOLD1-v3 fact 1). b4b62254ae2 is the commit the DDA line numbers in the drafts were read at; data/json/items differs between the two only in six integrated_chitin*/integrated_carapace* ids (armor/integrated.json), none in any 7-* batch. The DDA root of a run is the parameter <DDA_ROOT>.",
+ "count": 37,
+ "items": {
+  "broadfire_off": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "broadfire_on": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "cash_card": {
+   "file": "data/json/items/generic.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "money": 200000000
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200000000,
+    "ammo": "money",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "char_purifier_fake": {
+   "file": "data/json/items/fake.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "charcoal": 500
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "charcoal",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "combatsaw_off": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 450
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 450,
+    "ammo": "gasoline",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "combatsaw_on": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 450
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 450,
+    "ammo": "gasoline",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "cs_lajatang_off": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 800
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 800,
+    "ammo": "gasoline",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "cs_lajatang_on": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 800
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 800,
+    "ammo": "gasoline",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "exosuit_industrial": {
+   "file": "data/json/items/armor/power_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "carry": true,
+     "max_contains_volume": "15 L"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "carry": true,
+     "holster": true,
+     "max_contains_volume": "10 L",
+     "max_item_volume": "10 L",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "STORAGE"
+   ],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of robofac_resonance_suit (DDA:data/json/items/armor/suits_protection.json:3570 (id), :3722 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "exosuit_industrial_on": {
+   "file": "data/json/items/armor/power_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "carry": true,
+     "max_contains_volume": "15 L"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "carry": true,
+     "holster": true,
+     "max_contains_volume": "10 L",
+     "max_item_volume": "10 L",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "STORAGE"
+   ],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of robofac_resonance_suit (DDA:data/json/items/armor/suits_protection.json:3570 (id), :3722 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "exosuit_military": {
+   "file": "data/json/items/armor/power_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "carry": true,
+     "max_contains_volume": "7 L"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "STORAGE"
+   ],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of robofac_resonance_suit (DDA:data/json/items/armor/suits_protection.json:3570 (id), :3722 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "exosuit_military_on": {
+   "file": "data/json/items/armor/power_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "carry": true,
+     "max_contains_volume": "7 L"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "STORAGE"
+   ],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of robofac_resonance_suit (DDA:data/json/items/armor/suits_protection.json:3570 (id), :3722 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "exosuit_survivor": {
+   "file": "data/json/items/armor/power_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of robofac_resonance_suit (DDA:data/json/items/armor/suits_protection.json:3570 (id), :3722 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "exosuit_survivor_on": {
+   "file": "data/json/items/armor/power_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 500,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of robofac_resonance_suit (DDA:data/json/items/armor/suits_protection.json:3570 (id), :3722 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "fake_firestarter": {
+   "file": "data/json/items/fake.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": true,
+   "pockets": [],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 10000,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "why": "the DDA twin (DDA:data/json/items/fake.json:253) has no pocket (USES_BIONIC_POWER); CDF reads bionic power for such tools (CDF:src/item.cpp:9299, item_gun_tool_ammo.cpp:265, :419) so its 10000 integral store is unused; the DDA shape is no pocket; see packet open point",
+   "applied_by_tool": true,
+   "note": "7-R4b: the DDA twin (fake.json) has no pocket (USES_BIONIC_POWER); no battery pocket (PL-48 G6)"
+  },
+  "firekatana_off": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "firekatana_on": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "firemachete_off": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 50,
+    "ammo": "gasoline",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "firemachete_on": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 50
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 50,
+    "ammo": "gasoline",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "hobo_stove_on": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "tinder": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": "tinder",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "laptop_boris": {
+   "file": "data/json/npcs/refugee_center/surface_refugees/NPC_Boris_Borichenko.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "battery": 200
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 700,
+    "ammo": "battery",
+    "initial_charges": 500
+   },
+   "cap_diff": [
+    {
+     "ammo": "battery",
+     "cdf": 700,
+     "dda": 200
+    }
+   ],
+   "part": "R4b",
+   "note": "7-R4b: no edit; copy-from laptop, which 7-R4a2 set to the DDA number 200 (the twin has none of its own)"
+  },
+  "mask_bunker": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR-KEEP-CDF-INTEGRAL-LEGACY",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasfilter_m": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": "gasfilter_m",
+    "initial_charges": 100
+   },
+   "part": "R4b",
+   "action_planned_by_tool": "AUTHOR-KEEP-CDF-WELL",
+   "why": "the tool names this action AUTHOR-KEEP-CDF-WELL but authors an integral pocket from ammo/max_charges (the DDA twin has no magazine pocket): audit PL-30 R4-4"
+  },
+  "mask_wsurvivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasfilter_m": 100
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 100,
+    "ammo": "gasfilter_m",
+    "initial_charges": 100
+   },
+   "part": "R4b"
+  },
+  "mil_scouter": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_LIGHT",
+      "BATTERY_ULTRA_LIGHT"
+     ],
+     "default_magazine": "light_battery_cell"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of goggles_nv (DDA:data/json/items/tool_armor.json:2363 (id), :2393 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "mil_scouter_nv_on": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_LIGHT",
+      "BATTERY_ULTRA_LIGHT"
+     ],
+     "default_magazine": "light_battery_cell"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of goggles_nv (DDA:data/json/items/tool_armor.json:2363 (id), :2393 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "rx11_stimpack": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "stimpack_ammo": 5
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 5,
+    "ammo": "stimpack_ammo",
+    "initial_charges": 5
+   },
+   "part": "R4b"
+  },
+  "scouter": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_LIGHT",
+      "BATTERY_ULTRA_LIGHT"
+     ],
+     "default_magazine": "light_battery_cell"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of goggles_nv (DDA:data/json/items/tool_armor.json:2363 (id), :2393 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "scouter_nv_on": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "HAND-FALLBACK",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "max_item_length": "2 km",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_LIGHT",
+      "BATTERY_ULTRA_LIGHT"
+     ],
+     "default_magazine": "light_battery_cell"
+    }
+   ],
+   "dropped_keys": [
+    "ammo",
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 200,
+    "ammo": "battery",
+    "initial_charges": null
+   },
+   "hand_fallback": true,
+   "part": "R4b",
+   "action_planned_by_tool": "HAND-FALLBACK",
+   "applied_by_tool": true,
+   "note": "7-R4b (AUTO-233 #16, AUTO-236): DDA class well of goggles_nv (DDA:data/json/items/tool_armor.json:2363 (id), :2393 (pocket)), flags and default cell from the analog; NO_RELOAD/NO_UNLOAD dropped; cell keeps its CDF size"
+  },
+  "scuba_tank": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "airtight": true,
+     "rigid": true,
+     "watertight": true,
+     "ammo_restriction": {
+      "nitrox": 60
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 60,
+    "ammo": "nitrox",
+    "initial_charges": 60
+   },
+   "part": "R4b"
+  },
+  "scuba_tank_on": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "airtight": true,
+     "rigid": true,
+     "watertight": true,
+     "ammo_restriction": {
+      "nitrox": 60
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 60,
+    "ammo": "nitrox",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "shishkebab_off": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "shishkebab_on": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     }
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "small_scuba_tank": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "airtight": true,
+     "rigid": true,
+     "watertight": true,
+     "ammo_restriction": {
+      "nitrox": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 20,
+    "ammo": "nitrox",
+    "initial_charges": 20
+   },
+   "part": "R4b"
+  },
+  "small_scuba_tank_on": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "airtight": true,
+     "rigid": true,
+     "watertight": true,
+     "ammo_restriction": {
+      "nitrox": 20
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 20,
+    "ammo": "nitrox",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "wearable_rx12": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "ampoule": 2
+     }
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 2,
+    "ammo": "ampoule",
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "zweifire_off": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [
+    "max_charges"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  },
+  "zweifire_on": {
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "class": "TOOL-INT",
+   "action": "COPY-TWIN-KEEP-CDF-AMMO",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "ammo_restriction": {
+      "gasoline": 250,
+      "lighter_fluid": 250
+     },
+     "watertight": true
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "max_charges": 250,
+    "ammo": [
+     "gasoline",
+     "lighter_fluid"
+    ],
+    "initial_charges": null
+   },
+   "part": "R4b"
+  }
+ }
+}

@@ -1084,8 +1084,6 @@
     "material_thickness": 8,
     "environmental_protection": 3,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded", "resized_large", "resized_small" ],
-    "max_charges": 500,
-    "ammo": "battery",
     "relic_data": { "passive_effects": [ { "conditions": [ "WORN", "ACTIVE" ], "values": [ { "value": "STRENGTH", "add": 2 } ] } ] },
     "use_action": {
       "type": "transform",
@@ -1095,7 +1093,17 @@
       "need_worn": true,
       "need_charges": 1
     },
-    "flags": [ "USE_UPS", "NAT_UPS", "STURDY", "NO_UNLOAD", "NO_RELOAD", "OUTER", "ONLY_ONE", "COMBAT_NPC_USE" ]
+    "flags": [ "USE_UPS", "NAT_UPS", "STURDY", "OUTER", "ONLY_ONE", "COMBAT_NPC_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_battery_cell"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data)"
   },
   {
     "id": "exosuit_survivor_on",
@@ -1109,7 +1117,16 @@
     "revert_to": "exosuit_survivor",
     "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "The %s disengages.", "target": "exosuit_survivor" },
     "encumbrance": 10,
-    "weight_capacity_bonus": "34 kg"
+    "weight_capacity_bonus": "34 kg",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_battery_cell"
+      }
+    ]
   },
   {
     "id": "exosuit_military",
@@ -1130,8 +1147,6 @@
     "encumbrance": 20,
     "storage": "7 L",
     "material_thickness": 8,
-    "max_charges": 500,
-    "ammo": "battery",
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
     "relic_data": {
       "passive_effects": [
@@ -1151,8 +1166,6 @@
       "NAT_UPS",
       "COMPACT",
       "STURDY",
-      "NO_UNLOAD",
-      "NO_RELOAD",
       "BELTED",
       "EXOSUIT",
       "OVERSIZE",
@@ -1162,7 +1175,22 @@
       "ALLOWS_TAIL",
       "ALLOWS_WINGS",
       "COMBAT_NPC_USE"
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_battery_cell"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "7 L"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data)"
   },
   {
     "id": "exosuit_military_on",
@@ -1178,7 +1206,21 @@
     "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "The %s disengages.", "target": "exosuit_military" },
     "covers": [ "torso", "arms", "hands", "legs", "feet" ],
     "encumbrance": 0,
-    "weight_capacity_bonus": "20 kg"
+    "weight_capacity_bonus": "20 kg",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_battery_cell"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "7 L"
+      }
+    ]
   },
   {
     "id": "exosuit_industrial",
@@ -1201,8 +1243,6 @@
     "encumbrance": 25,
     "storage": "15 L",
     "material_thickness": 8,
-    "max_charges": 500,
-    "ammo": "battery",
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
     "relic_data": {
       "passive_effects": [
@@ -1222,8 +1262,6 @@
       "NAT_UPS",
       "STURDY",
       "ELECTRIC_IMMUNE",
-      "NO_UNLOAD",
-      "NO_RELOAD",
       "COMPACT",
       "BELTED",
       "EXOSUIT",
@@ -1234,7 +1272,30 @@
       "ALLOWS_TAIL",
       "ALLOWS_WINGS",
       "COMBAT_NPC_USE"
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_battery_cell"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "15 L"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "holster": true,
+        "max_contains_volume": "10 L",
+        "max_item_volume": "10 L",
+        "max_item_length": "150 cm"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data)"
   },
   {
     "id": "exosuit_industrial_on",
@@ -1249,6 +1310,28 @@
     "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "The %s disengages.", "target": "exosuit_industrial" },
     "covers": [ "torso", "arms", "hands", "legs", "feet" ],
     "encumbrance": 5,
-    "weight_capacity_bonus": "25 kg"
+    "weight_capacity_bonus": "25 kg",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "default_magazine": "heavy_battery_cell"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "15 L"
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "holster": true,
+        "max_contains_volume": "10 L",
+        "max_item_volume": "10 L",
+        "max_item_length": "150 cm"
+      }
+    ]
   }
 ]

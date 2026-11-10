@@ -339,16 +339,7 @@ TEST_CASE("p3 r4a2 wrist rows stay 600", "[p3][data][R4]") {
 }
 
 TEST_CASE("p3 r4a2 out-of-packet rows and cells unchanged", "[p3][data][R4]") {
-    // CDF: the 10 G1 rows are 7-R4b's: integral battery number as at the base
-    check_tool_pocket("scouter", {{"battery", 200}});
-    check_tool_pocket("scouter_nv_on", {{"battery", 200}});
-    check_tool_pocket("mil_scouter", {{"battery", 200}});
-    check_tool_pocket("mil_scouter_nv_on", {{"battery", 200}});
-    for (const std::string id : {"exosuit_survivor", "exosuit_survivor_on", "exosuit_military",
-                                 "exosuit_military_on", "exosuit_industrial",
-                                 "exosuit_industrial_on"}) {
-        check_tool_pocket(id, {{"battery", 500}});
-    }
+    // CDF: the 10 G1 rows are DDA class wells since P3-7-R4b ("p3 r4b" cases in p3_data_r4b_test.cpp)
     // CDF: laptop_boris (copy-from laptop) is 7-R4b's: its own record has no pocket here
     CHECK(own_keys_present("data/json/npcs/refugee_center/surface_refugees/NPC_Boris_Borichenko.json",
                            "laptop_boris", {"pocket_data", "max_charges"}).empty());
@@ -368,9 +359,7 @@ TEST_CASE("p3 r4a2 out-of-packet rows and cells unchanged", "[p3][data][R4]") {
         CHECK(wells == 0);
         CHECK(integral == 1);
     }
-    // CDF: fake_firestarter keeps max_charges 10000 until 7-R4b; elec_shears waits for the cable port
-    REQUIRE(itype_id("fake_firestarter").obj().tool);
-    CHECK(itype_id("fake_firestarter").obj().tool->max_charges == 10000);
+    // CDF: fake_firestarter has no battery pocket since P3-7-R4b (p3 r4b cases); elec_shears waits for the cable port
     check_tool_pocket("elec_shears", {{"battery", 100}});
     // AUTO-236: CDF cell sizes, no rescale (DDA 16 / 259 / 503)
     const std::map<std::string, int> cells = {{"light_battery_cell", 100},

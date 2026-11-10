@@ -159,14 +159,13 @@ TEST_CASE("magazine mag_jam_mult default", "[p3][loader]") {
     CHECK(item("stanag30").type->magazine->mag_jam_mult == 1.0);
 }
 
-// CDF: fake_firestarter (data/json/items/fake.json) is a TOOL that still uses BN's "ammo" key,
-// so this exercises the tool_ammo alias through the real loader. No CDF JSON uses "tool_ammo"
-// and "pocket_mods" has no loaded file (pocket_mods_test.json.p3 arrives with job 2-d), so
-// neither key has loaded-data coverage until then.
+// CDF: talking_doll (data/json/items/generic/toys_and_sports.json) is a TOOL that still uses BN's "ammo"
+// key (fake_firestarter did until P3-7-R4b removed its battery pocket), so this exercises the
+// tool_ammo alias through the real loader.
 TEST_CASE("tool ammo alias fills ammo_id", "[p3][loader]") {
-    REQUIRE(item("fake_firestarter").type->tool);
-    CHECK_FALSE(item("fake_firestarter").type->tool->ammo_id.empty());
-    CHECK(item("fake_firestarter").type->tool->ammo_id.count(ammotype("battery")) == 1);
+    REQUIRE(item("talking_doll").type->tool);
+    CHECK_FALSE(item("talking_doll").type->tool->ammo_id.empty());
+    CHECK(item("talking_doll").type->tool->ammo_id.count(ammotype("battery")) == 1);
 }
 
 TEST_CASE("islot_mod add_pockets defaults empty", "[p3][loader]") {

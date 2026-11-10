@@ -7743,7 +7743,7 @@
           "aviators"
         ],
         "entries": [
-          { "item": "mil_scouter", "charges": 200 },
+          { "item": "mil_scouter", "charges": 100 },
           { "group": "charged_headseat", "custom-flags": [ "no_auto_equip" ] },
           { "item": "m17", "ammo-item": "9mm", "container-item": "holster", "charges": 17 },
           { "item": "chestrig", "contents-group": "army_mags_m17" }
