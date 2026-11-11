@@ -14,14 +14,18 @@
     "weight": "1250 g",
     "volume": "4500 ml",
     "ammo": "battery",
-    "magazines": [
-      [
-        "battery",
-        [ "medium_battery_cell", "medium_plus_battery_cell", "medium_atomic_battery_cell", "medium_disposable_cell" ]
-      ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell", "medium_plus_battery_cell", "medium_atomic_battery_cell", "medium_disposable_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
     ],
     "rigid": true,
-    "magazine_well": "250 ml",
     "use_action": {
       "type": "transform",
       "msg": "You activate your %s.",

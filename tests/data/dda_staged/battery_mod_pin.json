@@ -1,0 +1,360 @@
+{
+ "format": 1,
+ "packet": "BATT5",
+ "source": "outbox/PL-33b/targets/battery-tools.json (rows packet BATT5); capacity = the CDF default cell's number (AUTO-236: cells keep CDF sizes); item_restriction = the target cells, target default first (loader rule)",
+ "rows": [
+  {
+   "id": "afs_hev_helmet",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/Aftershock/items/obsolete.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "afs_hev_helmet",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "afs_hev_helmet_on",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/Aftershock/items/obsolete.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "afs_hev_helmet",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "afs_cryopod_bodyglove",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/Aftershock/items/tool_armor.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "afs_cryopod_bodyglove",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell",
+    "medium_plus_battery_cell",
+    "medium_atomic_battery_cell",
+    "medium_disposable_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell",
+    "medium_plus_battery_cell",
+    "medium_atomic_battery_cell",
+    "medium_disposable_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "afs_cryopod_bodyglove_on",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/Aftershock/items/tool_armor.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "afs_cryopod_bodyglove",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell",
+    "medium_plus_battery_cell",
+    "medium_atomic_battery_cell",
+    "medium_disposable_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell",
+    "medium_plus_battery_cell",
+    "medium_atomic_battery_cell",
+    "medium_disposable_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "coalescent_converter",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/Arcana_BN/items/tools.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "coalescent_converter",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_storage_battery",
+   "item_restriction": [
+    "medium_storage_battery",
+    "storage_battery",
+    "large_storage_battery",
+    "medium_atomic_battery_cell",
+    "heavy_disposable_cell",
+    "heavy_atomic_battery_cell",
+    "huge_atomic_battery_cell"
+   ],
+   "target_item_restriction": [
+    "medium_storage_battery",
+    "storage_battery",
+    "large_storage_battery",
+    "huge_atomic_battery_cell"
+   ],
+   "old_cells": [
+    "medium_storage_battery",
+    "storage_battery",
+    "large_storage_battery",
+    "medium_atomic_battery_cell",
+    "heavy_disposable_cell",
+    "heavy_atomic_battery_cell",
+    "huge_atomic_battery_cell"
+   ],
+   "capacity_before": 10000,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_gasmask",
+   "group": "M-SYNTH-INT-NO-TWIN",
+   "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+   "packet": "BATT5",
+   "kind": "integral",
+   "integral": 200,
+   "ammo": "battery",
+   "max_charges": 200,
+   "initial_charges": 200,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_gasmask_on",
+   "group": "M-SYNTH-INT-NO-TWIN",
+   "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+   "packet": "BATT5",
+   "kind": "integral",
+   "integral": 250,
+   "ammo": "battery",
+   "max_charges": 250,
+   "initial_charges": 0,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_helmet",
+   "group": "M-SYNTH-INT-NO-TWIN",
+   "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+   "packet": "BATT5",
+   "kind": "integral",
+   "integral": 100,
+   "ammo": "battery",
+   "max_charges": 100,
+   "initial_charges": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_helmet_on",
+   "group": "M-SYNTH-INT-NO-TWIN",
+   "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+   "packet": "BATT5",
+   "kind": "integral",
+   "integral": 100,
+   "ammo": "battery",
+   "max_charges": 100,
+   "initial_charges": 0,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "jumppad_deployer",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/Jump Pad/items/jump_pad.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "jumppad_deployer",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_battery_cell",
+   "item_restriction": [
+    "light_minus_battery_cell",
+    "light_minus_disposable_cell",
+    "light_battery_cell",
+    "light_disposable_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_battery_cell",
+    "light_minus_disposable_cell",
+    "light_battery_cell",
+    "light_disposable_cell"
+   ],
+   "capacity_before": 50,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "smart_house_remote",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/smart_house_remotes/item.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "smart_house_remote",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "teleporter_controller",
+   "group": "M-SYNTH-WELL-NO-TWIN",
+   "file": "data/mods/teleportation_mod/item.json",
+   "packet": "BATT5",
+   "kind": "well",
+   "source_id": "teleporter_controller",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_plus_battery_cell",
+    "light_minus_battery_cell",
+    "light_atomic_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_minus_disposable_cell",
+    "light_disposable_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  }
+ ]
+}

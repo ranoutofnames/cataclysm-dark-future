@@ -16,10 +16,13 @@
     "ammo": "battery",
     "charges_per_use": 1,
     "use_action": "SMART_HOUSE_REMOTE",
-    "magazines": [
-      [
-        "battery",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [
           "light_battery_cell",
           "light_plus_battery_cell",
           "light_minus_battery_cell",
@@ -27,9 +30,10 @@
           "light_minus_atomic_battery_cell",
           "light_minus_disposable_cell",
           "light_disposable_cell"
-        ]
-      ]
-    ],
-    "magazine_well": "250 ml"
+        ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   }
 ]

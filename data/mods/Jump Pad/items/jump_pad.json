@@ -16,11 +16,16 @@
     "color": "blue",
     "ammo": "battery",
     "use_action": { "type": "deploy_furn", "furn_type": "f_jumppad" },
-    "magazines": [
-      [
-        "battery",
-        [ "light_minus_battery_cell", "light_minus_disposable_cell", "light_battery_cell", "light_disposable_cell" ]
-      ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_minus_battery_cell", "light_minus_disposable_cell", "light_battery_cell", "light_disposable_cell" ],
+        "default_magazine": "light_minus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
     ]
   },
   {

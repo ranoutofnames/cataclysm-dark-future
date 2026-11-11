@@ -13,6 +13,7 @@
     "max_charges": 200,
     "initial_charges": 200,
     "ammo": "battery",
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 200 } }, { "pocket_type": "MOD" } ],
     "use_action": [
       {
         "type": "transform",
@@ -77,6 +78,7 @@
     "initial_charges": 0,
     "turns_per_charge": 1,
     "ammo": "battery",
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 250 } }, { "pocket_type": "MOD" } ],
     "revert_to": "crt_gasmask",
     "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "C.R.T HUD deactivating.", "target": "crt_gasmask" },
     "material": [ "plastic", "kevlar" ],
@@ -251,6 +253,7 @@
     "max_charges": 100,
     "initial_charges": 100,
     "ammo": "battery",
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 100 } }, { "pocket_type": "MOD" } ],
     "use_action": [
       {
         "type": "transform",
@@ -293,6 +296,7 @@
     "charges_per_use": 1,
     "turns_per_charge": 20,
     "ammo": "battery",
+    "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 100 } }, { "pocket_type": "MOD" } ],
     "use_action": { "type": "transform", "msg": "You turn the %s off.", "target": "crt_helmet" }
   },
   {

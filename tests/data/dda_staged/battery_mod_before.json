@@ -1,0 +1,234 @@
+{
+ "format": 1,
+ "packet": "BATT5",
+ "note": "before-snapshot (draft step 0): the pockets the loader synthesizes for every BATT5 row before the port, minus the well/integral entry the pin file replaces. Mod items, so derived from the legacy keys and the item records (the test binary loads no mods).",
+ "rows": [
+  {
+   "id": "afs_hev_helmet",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell",
+     "light_plus_battery_cell",
+     "light_minus_atomic_battery_cell",
+     "light_atomic_battery_cell",
+     "light_minus_disposable_cell",
+     "light_disposable_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "afs_hev_helmet_on",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell",
+     "light_plus_battery_cell",
+     "light_minus_atomic_battery_cell",
+     "light_atomic_battery_cell",
+     "light_minus_disposable_cell",
+     "light_disposable_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "afs_cryopod_bodyglove",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell",
+     "medium_plus_battery_cell",
+     "medium_atomic_battery_cell",
+     "medium_disposable_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "afs_cryopod_bodyglove_on",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell",
+     "medium_plus_battery_cell",
+     "medium_atomic_battery_cell",
+     "medium_disposable_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "coalescent_converter",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_storage_battery",
+     "storage_battery",
+     "large_storage_battery",
+     "medium_atomic_battery_cell",
+     "heavy_disposable_cell",
+     "heavy_atomic_battery_cell",
+     "huge_atomic_battery_cell"
+    ],
+    "default_magazine": "medium_storage_battery",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_gasmask",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE",
+    "ammo_restriction": {
+     "battery": 200
+    },
+    "note": "the synthesized integral MAGAZINE pocket, rewritten by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_gasmask_on",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE",
+    "ammo_restriction": {
+     "battery": 250
+    },
+    "note": "the synthesized integral MAGAZINE pocket, rewritten by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_helmet",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE",
+    "ammo_restriction": {
+     "battery": 100
+    },
+    "note": "the synthesized integral MAGAZINE pocket, rewritten by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crt_helmet_on",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE",
+    "ammo_restriction": {
+     "battery": 100
+    },
+    "note": "the synthesized integral MAGAZINE pocket, rewritten by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "jumppad_deployer",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_battery_cell",
+     "light_minus_disposable_cell",
+     "light_battery_cell",
+     "light_disposable_cell"
+    ],
+    "default_magazine": "light_minus_battery_cell",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "smart_house_remote",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_plus_battery_cell",
+     "light_minus_battery_cell",
+     "light_atomic_battery_cell",
+     "light_minus_atomic_battery_cell",
+     "light_minus_disposable_cell",
+     "light_disposable_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "teleporter_controller",
+   "old_pocket": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_plus_battery_cell",
+     "light_minus_battery_cell",
+     "light_atomic_battery_cell",
+     "light_minus_atomic_battery_cell",
+     "light_minus_disposable_cell",
+     "light_disposable_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by the pin file"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  }
+ ]
+}

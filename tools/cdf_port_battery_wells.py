@@ -7,7 +7,11 @@ well in `pocket_data`. This tool replaces the legacy keys of the 117 BATT1 rows 
 with the DDA well form and keeps the pockets the loader synthesizes today (the MOD pocket of a
 tool, and the storage CONTAINER of a worn garment).
 
-Reads ONLY the target file (outbox/PL-33b/targets/battery-tools.json, rows `packet` BATT1 and
+BATT5 (PL-33b TASK-draft-BATT5-v1) reuses the same rules for the 12 mod rows: 8 synthesized wells
+and 4 integral tools (`crt_gasmask(_on)`, `crt_helmet(_on)`; NO_UNLOAD, DDA class integral) that get
+the explicit DDA MAGAZINE pocket at their own CDF `max_charges`, with the MOD pocket behind it.
+
+Reads ONLY the target file (outbox/PL-33b/targets/battery-tools.json, rows `packet` BATT1/BATT5 and
 "BATT1 test") and the target item files; writes the item files, the test pin and the
 before-snapshot.
 
@@ -52,8 +56,9 @@ def _mags():
 
 MAGS = _mags()
 
-PACKETS = ("BATT1", "BATT1 test")
+PACKETS = ("BATT1", "BATT1 test", "BATT5")
 N1_PACKET = "BATT1 test"
+INTEGRAL_METHOD = "NO-TWIN-integral-NO_UNLOAD"
 UNIT = "  "
 
 
@@ -61,6 +66,11 @@ def read_target(path):
     with open(path, encoding="utf-8") as fh:
         data = json.load(fh)
     return [r for r in data if r.get("packet") in PACKETS]
+
+
+def is_integral(row):
+    """BATT5: a tool without a DDA twin that carries NO_UNLOAD stays integral (draft step 2)."""
+    return bool(row.get("target_int")) or (row.get("method") or "") == INTEGRAL_METHOD
 
 
 def own_objects(root, rel):
@@ -151,6 +161,17 @@ def volume_ml(text):
 
 def expected_pockets(row, others):
     """The pocket_data list the row's own record must carry."""
+    if is_integral(row):
+        # CDF: BATT5 draft step 2. A tool without a DDA twin that carries NO_UNLOAD stays integral:
+        # the DDA integral MAGAZINE form (rigid + the ammo count, as R4a/R4b/BATT2), then the MOD
+        # pocket the tool has today. Capacity is the object's own `max_charges` (CDF number).
+        mag = {"pocket_type": "MAGAZINE", "rigid": True,
+               "ammo_restriction": {"battery": int(row["target_int"])}}
+        pockets = [mag]
+        for p in others:
+            if p["pocket_type"] == "MOD":
+                pockets.append({"pocket_type": "MOD"})
+        return pockets
     # CDF: the old `magazines` list stays in item_restriction, order default-cell-first. The draft's
     # subset (target_item_restriction) covers only the cells DDA's flags exclude, but CDF's
     # untargeted reload (item::is_reloadable_helper -> magazine_compatible) reads item_restriction
@@ -177,24 +198,30 @@ def expected_pockets(row, others):
     return pockets
 
 
+def fmt_pocket(p, indent, eol):
+    """BN-style pocket entry: MOD and the integral MAGAZINE inline, a well multi-line."""
+    if p.get("pocket_type") == "MOD":
+        return '{ "pocket_type": "MOD" }'
+    if p.get("pocket_type") == "MAGAZINE":
+        return ('{ "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": '
+                '{ "battery": %d } }' % p["ammo_restriction"]["battery"])
+    inner = indent + UNIT
+    fields = []
+    for k, x in p.items():
+        if isinstance(x, bool):
+            text = "true" if x else "false"
+        elif isinstance(x, list):
+            text = "[ " + ", ".join(json.dumps(i) for i in x) + " ]"
+        else:
+            text = json.dumps(x, ensure_ascii=False)
+        fields.append(inner + UNIT + json.dumps(k) + ": " + text)
+    return "{" + eol + ("," + eol).join(fields) + eol + inner + "}"
+
+
 def fmt_value(v, indent, eol):
     """BN-style layout: pockets multi-line, short key lists inline, MOD inline."""
     inner = indent + UNIT
-    body = []
-    for p in v:
-        if p == {"pocket_type": "MOD"}:
-            body.append(inner + '{ "pocket_type": "MOD" }')
-            continue
-        fields = []
-        for k, x in p.items():
-            if isinstance(x, bool):
-                text = "true" if x else "false"
-            elif isinstance(x, list):
-                text = "[ " + ", ".join(json.dumps(i) for i in x) + " ]"
-            else:
-                text = json.dumps(x, ensure_ascii=False)
-            fields.append(inner + UNIT + json.dumps(k) + ": " + text)
-        body.append(inner + "{" + eol + ("," + eol).join(fields) + eol + inner + "}")
+    body = [inner + fmt_pocket(p, indent, eol) for p in v]
     return "[" + eol + ("," + eol).join(body) + eol + indent + "]"
 
 
@@ -211,6 +238,21 @@ def edit_row(seg, row, others, eol):
     seg = seg[:e["ks"]] + json.dumps("pocket_data") + seg[e["ke"]:]
     seg = MAGS.remove_key(seg, "magazine_well")
     return seg, "edited"
+
+
+def edit_integral_row(seg, row, others, eol):
+    """Insert `pocket_data` after the `ammo` key of an integral tool (no `magazines` key to replace)."""
+    e = MAGS._find(seg, "ammo")
+    if e is None:
+        return None
+    nl = seg.find(eol, e["ve"])
+    if nl < 0:
+        return None
+    ls = seg.rfind(eol, 0, e["ks"]) + len(eol)
+    indent = seg[ls:e["ks"]] if not seg[ls:e["ks"]].strip() else MAGS_INDENT
+    value = fmt_value(expected_pockets(row, others), indent, eol)
+    line = indent + json.dumps("pocket_data") + ": " + value + "," + eol
+    return seg[:nl + len(eol)] + line + seg[nl + len(eol):]
 
 
 MAGS_INDENT = "    "
@@ -234,8 +276,12 @@ def apply_file(root, rel, rows, dry_run):
         if MAGS._find(seg, "pocket_data") is not None:
             skipped.append((r["id"], "already has pocket_data"))
             continue
-        new, why = edit_row(seg, r, others, eol)
-        if new != seg:
+        if is_integral(r):
+            new = edit_integral_row(seg, r, others, eol)
+            why = "no ammo key"
+        else:
+            new, why = edit_row(seg, r, others, eol)
+        if new is not None and new != seg:
             text = text[:s] + new + text[e:]
             done.append(r["id"])
         else:
@@ -268,6 +314,8 @@ def check(root, rows):
             if "magazines" in o:
                 problems.append((r["id"], "own magazines still present"))
             if "pocket_data" not in o:
+                if is_integral(r):
+                    problems.append((r["id"], "no own pocket_data"))
                 continue
             want = expected_pockets(r, before_other_pockets(root, r))
             if norm(o["pocket_data"]) != norm(want):
@@ -307,10 +355,40 @@ def effective_source(root, row, by_id):
     return row
 
 
+def own_object(root, row):
+    _text, _eol, objs = own_objects(root, row["file"])
+    for iid, _s, _e, o in objs:
+        if iid == row["id"]:
+            return o
+    return None
+
+
+def packet_label(rows):
+    names = sorted({r["packet"] for r in rows})
+    if names == ["BATT1", "BATT1 test"]:
+        return "BATT1"
+    return "/".join(names)
+
+
 def write_pin(path, rows, root):
     by_id = {r["id"]: r for r in rows}
     out = []
     for r in rows:
+        if is_integral(r):
+            o = own_object(root, r) or {}
+            out.append({
+                "id": r["id"],
+                "group": r["group"],
+                "file": r["file"],
+                "packet": r["packet"],
+                "kind": "integral",
+                "integral": int(r["target_int"]),
+                "ammo": o.get("ammo"),
+                "max_charges": o.get("max_charges"),
+                "initial_charges": o.get("initial_charges", 0),
+                "other_pockets": before_other_pockets(root, r),
+            })
+            continue
         src = effective_source(root, r, by_id)
         others = before_other_pockets(root, r)
         out.append({
@@ -318,6 +396,7 @@ def write_pin(path, rows, root):
             "group": r["group"],
             "file": r["file"],
             "packet": r["packet"],
+            "kind": "well",
             "source_id": src["id"],
             "flags": list(src.get("target_flags") or []),
             "default": src["target_default"],
@@ -329,12 +408,13 @@ def write_pin(path, rows, root):
             "capacity_before": src["capacity_before"],
             "other_pockets": others,
         })
+    label = packet_label(rows)
     doc = {
         "format": 1,
-        "packet": "BATT1",
-        "source": "outbox/PL-33b/targets/battery-tools.json (rows packet BATT1 / BATT1 test); "
+        "packet": label,
+        "source": "outbox/PL-33b/targets/battery-tools.json (rows packet %s); "
                   "capacity = the CDF default cell's number (AUTO-236: cells keep CDF sizes); "
-                  "item_restriction = the target cells, target default first (loader rule)",
+                  "item_restriction = the target cells, target default first (loader rule)" % label,
         "rows": out,
     }
     Path(path).write_bytes((json.dumps(doc, indent=1, ensure_ascii=False) + "\n").encode("utf-8"))
@@ -343,21 +423,32 @@ def write_pin(path, rows, root):
 def write_before(path, rows, root):
     out = []
     for r in rows:
-        out.append({
-            "id": r["id"],
-            "old_well": {
+        if is_integral(r):
+            old = {
+                "pocket_type": "MAGAZINE",
+                "ammo_restriction": {"battery": int(r["target_int"])},
+                "note": "the synthesized integral MAGAZINE pocket, rewritten by the pin file",
+            }
+        else:
+            old = {
                 "pocket_type": "MAGAZINE_WELL",
                 "item_restriction": list(r.get("cdf_list") or []),
                 "default_magazine": r.get("cdf_default"),
-                "note": "the synthesized well replaced by batt1_pin.json",
-            },
+                "note": "the synthesized well replaced by the pin file",
+            }
+        out.append({
+            "id": r["id"],
+            "old_pocket": old,
             "other_pockets": before_other_pockets(root, r),
         })
+    label = packet_label(rows)
     doc = {
         "format": 1,
-        "packet": "BATT1",
-        "note": "before-snapshot (draft step 0): the loaded pockets of every BATT1 row before the "
-                "port, minus the well entry, which batt1_pin.json replaces. Read from the base tree.",
+        "packet": label,
+        "note": "before-snapshot (draft step 0): the pockets the loader synthesizes for every %s row "
+                "before the port, minus the well/integral entry the pin file replaces. Mod items, so "
+                "derived from the legacy keys and the item records (the test binary loads no mods)."
+                % label,
         "rows": out,
     }
     Path(path).write_bytes((json.dumps(doc, indent=1, ensure_ascii=False) + "\n").encode("utf-8"))
@@ -372,12 +463,15 @@ def main():
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--only", nargs="*", default=None, help="restrict --apply to these files")
+    ap.add_argument("--packets", nargs="*", default=None, help="restrict rows to these packet labels")
     ap.add_argument("--pin", help="write the expected-tuple pin file")
     ap.add_argument("--before", help="write the before-snapshot file")
     args = ap.parse_args()
 
     root = Path(args.root).resolve()
     rows = read_target(args.target)
+    if args.packets:
+        rows = [r for r in rows if r["packet"] in args.packets]
     print("rows: %d (%d edits, %d N1 checks)" % (
         len(rows), sum(1 for r in rows if r["packet"] != N1_PACKET),
         sum(1 for r in rows if r["packet"] == N1_PACKET)))
