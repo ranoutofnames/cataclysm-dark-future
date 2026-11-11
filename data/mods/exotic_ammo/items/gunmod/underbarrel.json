@@ -37,7 +37,14 @@
     "description": "Leadworks built-in minimalist pump action shotgun module.  It allows 4 shotgun shells to be loaded and fired.",
     "weight": "0 g",
     "volume": "0 ml",
-    "flags": [ "RELOAD_ONE", "IRREMOVABLE" ]
+    "flags": [ "RELOAD_ONE", "IRREMOVABLE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 4 }
+      }
+    ]
   },
   {
     "id": "lead_glm",
@@ -47,6 +54,13 @@
     "description": "The Leadworks built-in Grenade Launcher Module offers the functionality of larger launchers in a very small package.",
     "weight": "0 g",
     "volume": "0 ml",
-    "flags": [ "NEVER_JAMS", "RELOAD_EJECT", "IRREMOVABLE" ]
+    "flags": [ "NEVER_JAMS", "RELOAD_EJECT", "IRREMOVABLE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "40x46mm": 1 }
+      }
+    ]
   }
 ]

@@ -100,6 +100,13 @@
     "barrel_volume": "500 ml",
     "valid_mod_locations": [ [ "mechanism", 1 ] ],
     "flags": [ "UNARMED_WEAPON", "DURABLE_MELEE", "NEVER_JAMS", "RELOAD_EJECT", "RELOAD_ONE" ],
-    "faults": [ "fault_gun_blackpowder", "fault_gun_dirt" ]
+    "faults": [ "fault_gun_blackpowder", "fault_gun_dirt" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 2 }
+      }
+    ]
   }
 ]

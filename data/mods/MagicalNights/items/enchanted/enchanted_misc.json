@@ -16,7 +16,6 @@
     "qualities": [ [ "HAMMER", 1 ] ],
     "flags": [ "ALLOWS_REMOTE_USE", "FIRE" ],
     "initial_charges": 60,
-    "max_charges": 60,
     "charges_per_use": 1,
     "sub": "hotplate",
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
@@ -33,7 +32,15 @@
       },
       { "type": "firestarter" },
       { "flame": false, "type": "cauterize" }
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "holster": true,
+        "ammo_restriction": { "crystallized_mana": 60 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "id": "heat_cube_torch_on",
@@ -45,7 +52,14 @@
     "revert_to": "heat_cube",
     "use_action": { "target": "heat_cube", "msg": "The torch flame is extinguished.", "menu_text": "Turn off", "type": "transform" },
     "emits": [ "emit_hot_air2_stream" ],
-    "flags": [ "LIGHT_15", "TRADER_AVOID", "ALLOWS_REMOTE_USE" ]
+    "flags": [ "LIGHT_15", "TRADER_AVOID", "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "holster": true,
+        "ammo_restriction": { "crystallized_mana": 60 }
+      }
+    ]
   },
   {
     "id": "mkey_opening",
@@ -143,7 +157,6 @@
     "price": "1000 USD",
     "material": [ "steel" ],
     "initial_charges": 500,
-    "max_charges": 1000,
     "charges_per_use": 1,
     "relic_data": { "recharge_scheme": [ { "type": "time", "req": "none", "interval": "1 h", "rate": 1 } ] },
     "sub": "sewing_kit",
@@ -205,7 +218,15 @@
         ]
       }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "thread": 1000 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "id": "mspider_box",
@@ -219,10 +240,17 @@
     "material": [ "glass" ],
     "symbol": ";",
     "color": "red",
-    "ammo": "thread",
+    "tool_ammo": "thread",
     "initial_charges": 500,
-    "max_charges": 1000,
-    "relic_data": { "recharge_scheme": [ { "type": "time", "req": "none", "interval": "1 h", "rate": 1 } ] }
+    "relic_data": { "recharge_scheme": [ { "type": "time", "req": "none", "interval": "1 h", "rate": 1 } ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "thread": 1000 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "glow_light_off",
@@ -331,8 +359,16 @@
     "symbol": ";",
     "color": "dark_gray",
     "ammo": "crystallized_mana",
-    "magazines": [ [ "crystallized_mana", [ "small_mana_crystal" ] ] ],
     "use_action": { "type": "sex_toy", "moves": 60000 },
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "small_mana_crystal" ],
+        "default_magazine": "small_mana_crystal"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

@@ -107,9 +107,16 @@
     "description": "An ornate silver ring engraved with daggers that conjures a near perfect throwing knife into your hand on activation.",
     "use_action": { "type": "cast_spell", "spell_id": "conj_throwing_blade1", "no_fail": true, "level": 1, "need_worn": true },
     "initial_charges": 5,
-    "max_charges": 5,
     "charges_per_use": 1,
-    "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] }
+    "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "holster": true,
+        "ammo_restriction": { "crystallized_mana": 5 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "copy-from": "mring_silver",

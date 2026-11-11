@@ -32,7 +32,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "46", [ "hk46mag", "hk46smallmag", "hk46bigmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "hk46mag", "hk46smallmag", "hk46bigmag" ],
+        "default_magazine": "hk46mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

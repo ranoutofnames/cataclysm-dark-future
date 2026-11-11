@@ -27,10 +27,17 @@
     "description": "A mask with no facial features at all, just eye and mouth holes, upon activation it makes everything ignore your presence for a while.",
     "copy-from": "mmask",
     "initial_charges": 12,
-    "max_charges": 12,
     "charges_per_use": 12,
     "use_action": { "type": "cast_spell", "spell_id": "invisibility", "no_fail": true, "level": 15, "need_worn": true },
-    "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] }
+    "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "holster": true,
+        "ammo_restriction": { "crystallized_mana": 12 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "type": "TOOL_ARMOR",

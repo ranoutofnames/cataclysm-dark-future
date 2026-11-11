@@ -69,14 +69,21 @@
     "name": { "str": "lesser bracer of lightning", "str_pl": "lesser bracers of lightning" },
     "description": "A light but extremely sturdy steel bracer with an ornate bundle of lightning bolts engraved on the top, silver accentuates the intricate design.  It protects your body with a light aura to reduce electrical damage you take, as well as being able to release a Jolt spell 3 times a day.",
     "initial_charges": 72,
-    "max_charges": 72,
     "charges_per_use": 24,
     "flags": [ "BELTED", "STURDY", "BLOCK_WHILE_WORN" ],
     "relic_data": {
       "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "ARMOR_ELECTRIC", "add": -5 } ] } ],
       "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ]
     },
-    "use_action": { "type": "cast_spell", "spell_id": "jolt", "no_fail": true, "level": 15, "need_worn": true }
+    "use_action": { "type": "cast_spell", "spell_id": "jolt", "no_fail": true, "level": 15, "need_worn": true },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "holster": true,
+        "ammo_restriction": { "crystallized_mana": 72 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "copy-from": "mbracer_steel_single",
@@ -85,13 +92,20 @@
     "name": { "str": "greater bracer of lightning", "str_pl": "greater bracers of lightning" },
     "description": "A light but extremely sturdy steel bracer with an ornate bundle of lightning bolts engraved on the top, gold accentuates the intricate design.  It protects your body with a strong aura to reduce electrical damage you take, as well as being able to release a Lightning Bolt spell 3 times a day.",
     "initial_charges": 72,
-    "max_charges": 72,
     "charges_per_use": 24,
     "flags": [ "BELTED", "STURDY", "BLOCK_WHILE_WORN" ],
     "relic_data": {
       "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "ARMOR_ELECTRIC", "add": -10 } ] } ],
       "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ]
     },
-    "use_action": { "type": "cast_spell", "spell_id": "lightning_bolt", "no_fail": true, "level": 15, "need_worn": true }
+    "use_action": { "type": "cast_spell", "spell_id": "lightning_bolt", "no_fail": true, "level": 15, "need_worn": true },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "holster": true,
+        "ammo_restriction": { "crystallized_mana": 72 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   }
 ]

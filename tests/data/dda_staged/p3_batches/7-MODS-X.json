@@ -1,0 +1,4035 @@
+{
+  "batch": "7-MODS-X",
+  "base": "5f4e3be668",
+  "dda": "b4b62254ae2",
+  "note": "117 rows of 7-MODS-X (the 118 ids less the KEEP adaptor lwfeed, which is not a golden id and sits in not_edited): the target pockets of PL-43 7-MODS-X-target.json re-planned on base 5f4e3be668. rune_druid_weapon is not_edited (its copy-from parent compositebow is already ported, the effective pocket is the golden one). Mod ids are not loaded by the unit-test world (core+test_data), so S1-S3 in tests/p3_data_modsx_test.cpp check the own records at JSON level and G2 prints them as skipped; fn57/fn_p90 keep their dropped id in json_dropped_ids because the generic B2 needs a loaded item. lua_refs is empty: data/mods/MagicalNights has no .lua files.",
+  "count": 118,
+  "lua_refs": {},
+  "items": {
+    "223_speedloader5": {
+      "file": "data/mods/exotic_ammo/items/magazine/223.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "223": 5
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 5
+      }
+    },
+    "360_200_mag": {
+      "file": "data/mods/exotic_ammo/items/magazine/22.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "22": 200
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 200
+      }
+    },
+    "360_400_mag": {
+      "file": "data/mods/exotic_ammo/items/magazine/22.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "22": 400
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 400
+      }
+    },
+    "454_speedloader5": {
+      "file": "data/mods/exotic_ammo/magazine/454.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "454": 5,
+            "45colt": 5
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 5
+      }
+    },
+    "454_speedloader6": {
+      "file": "data/mods/exotic_ammo/magazine/454.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "454": 6,
+            "45colt": 6,
+            "410shot": 6
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 6
+      }
+    },
+    "460_speedloader6": {
+      "file": "data/mods/exotic_ammo/items/magazine/460.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "460": 6,
+            "45": 6
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 6
+      }
+    },
+    "500_speedloader5": {
+      "file": "data/mods/exotic_ammo/magazine/500.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "500": 5
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 5
+      }
+    },
+    "9mm_speedloader7": {
+      "file": "data/mods/exotic_ammo/items/magazine/9mm.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 7
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 7
+      }
+    },
+    "af2011a1_38super": {
+      "file": "data/mods/exotic_ammo/gun/38super.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "500 ml",
+          "item_restriction": [
+            "af2011a1mag"
+          ],
+          "default_magazine": "af2011a1mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "38super",
+            [
+              "af2011a1mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "af2011a1mag": {
+      "file": "data/mods/exotic_ammo/magazine/38super.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "38super": 16
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 16
+      }
+    },
+    "ak74": {
+      "file": "data/mods/exotic_ammo/gun/545x39.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "ak74mag",
+            "rpk74mag"
+          ],
+          "default_magazine": "ak74mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "545x39",
+            [
+              "ak74mag",
+              "rpk74mag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ak74mag": {
+      "file": "data/mods/exotic_ammo/magazine/545x39.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "545x39": 30
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 30
+      }
+    },
+    "an94": {
+      "file": "data/mods/exotic_ammo/gun/545x39.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "ak74mag",
+            "rpk74mag"
+          ],
+          "default_magazine": "ak74mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "545x39",
+            [
+              "ak74mag",
+              "rpk74mag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ar57": {
+      "file": "data/mods/exotic_ammo/gun/57.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "500 ml",
+          "item_restriction": [
+            "fnp90mag"
+          ],
+          "default_magazine": "fnp90mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "57",
+            [
+              "fnp90mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "bh_m89": {
+      "file": "data/mods/exotic_ammo/gun/500.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "500": 7
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 7
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "demon_forge": {
+      "file": "data/mods/MagicalNights/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "alumentum": 500
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 500
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "druid_recurve": {
+      "file": "data/mods/MagicalNights/items/ethereal_items.json",
+      "class": "DDA-POCKET",
+      "rule": "R8",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "arrow": 1
+          },
+          "open_container": true
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "fn57": {
+      "file": "data/mods/exotic_ammo/gun/57.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "fn57mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "json_dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "fn57mag_10rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "57",
+            [
+              "fn57mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "fn57mag": {
+      "file": "data/mods/exotic_ammo/magazine/57.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "57": 20
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 20
+      }
+    },
+    "fn_p90": {
+      "file": "data/mods/exotic_ammo/gun/57.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "500 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "fnp90mag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "json_dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "fnp90mag_10rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "57",
+            [
+              "fnp90mag"
+            ]
+          ]
+        ],
+        "magazine_well": "500 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "fnp90mag": {
+      "file": "data/mods/exotic_ammo/magazine/57.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "57": 50
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 50
+      }
+    },
+    "gunblade": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "shot": 3
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 3
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "heat_cube": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_misc.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 60
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 60
+      }
+    },
+    "heat_cube_torch_on": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_misc.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 60
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "hk46bigmag": {
+      "file": "data/mods/exotic_ammo/magazine/46.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "46": 40
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 40
+      }
+    },
+    "hk46mag": {
+      "file": "data/mods/exotic_ammo/magazine/46.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "46": 30
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 30
+      }
+    },
+    "hk46smallmag": {
+      "file": "data/mods/exotic_ammo/magazine/46.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "46": 20
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 20
+      }
+    },
+    "hk_mp7": {
+      "file": "data/mods/exotic_ammo/gun/46.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "hk46mag",
+            "hk46smallmag",
+            "hk46bigmag"
+          ],
+          "default_magazine": "hk46mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "46",
+            [
+              "hk46mag",
+              "hk46smallmag",
+              "hk46bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ichaival": {
+      "file": "data/mods/MagicalNights/items/archery.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "arrow_orichalcum": 1,
+            "arrow": 1
+          },
+          "open_container": true
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_bak_223": {
+      "file": "data/mods/exotic_ammo/items/gun/223.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "223": 5
+          },
+          "allowed_speedloaders": [
+            "223_speedloader5"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "223_speedloader5"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_base_223": {
+      "file": "data/mods/exotic_ammo/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "lw223mag",
+            "lw223bigmag"
+          ],
+          "default_magazine": "lw223mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "lw223mag",
+              "lw223bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_car_223": {
+      "file": "data/mods/exotic_ammo/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "lw223mag",
+            "lw223bigmag"
+          ],
+          "default_magazine": "lw223mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "lw223mag",
+              "lw223bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_dsr_223": {
+      "file": "data/mods/exotic_ammo/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "lw223mag",
+            "lw223bigmag"
+          ],
+          "default_magazine": "lw223mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "lw223mag",
+              "lw223bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_enforcer_45": {
+      "file": "data/mods/exotic_ammo/items/gun/460.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "460": 6,
+            "45": 6
+          },
+          "allowed_speedloaders": [
+            "460_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "460",
+            [
+              "460_speedloader6"
+            ]
+          ],
+          [
+            "45",
+            [
+              "460_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_lmg_223": {
+      "file": "data/mods/exotic_ammo/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "lw223mag",
+            "lw223bigmag",
+            "belt223"
+          ],
+          "default_magazine": "lw223mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "lw223mag",
+              "lw223bigmag",
+              "belt223"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_long_45": {
+      "file": "data/mods/exotic_ammo/items/gun/460.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "460": 12,
+            "45": 12
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 12
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_lookout_9mm": {
+      "file": "data/mods/exotic_ammo/items/gun/9mm.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 7
+          },
+          "allowed_speedloaders": [
+            "9mm_speedloader7"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "9mm_speedloader7"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 7
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_mbr_223": {
+      "file": "data/mods/exotic_ammo/items/gun/223.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "100 ml",
+          "item_restriction": [
+            "lw223mag",
+            "lw223bigmag"
+          ],
+          "default_magazine": "lw223mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "lw223mag",
+              "lw223bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "100 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_mp_45": {
+      "file": "data/mods/exotic_ammo/items/gun/460.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "lw12mag"
+          ],
+          "default_magazine": "lw12mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "460",
+            [
+              "lw12mag"
+            ]
+          ],
+          [
+            "45",
+            [
+              "lw12mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_mp_9mm": {
+      "file": "data/mods/exotic_ammo/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "lw21mag",
+            "lw12mag"
+          ],
+          "default_magazine": "lw21mag"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "lw21mag"
+            ]
+          ],
+          [
+            "460",
+            [
+              "lw12mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_sp_45": {
+      "file": "data/mods/exotic_ammo/items/gun/460.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "lw12mag"
+          ],
+          "default_magazine": "lw12mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "460",
+            [
+              "lw12mag"
+            ]
+          ],
+          [
+            "45",
+            [
+              "lw12mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "l_sp_9mm": {
+      "file": "data/mods/exotic_ammo/items/gun/9mm.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "lw21mag",
+            "lw12mag"
+          ],
+          "default_magazine": "lw21mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "lw21mag"
+            ]
+          ],
+          [
+            "460",
+            [
+              "lw12mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "lead_glm": {
+      "file": "data/mods/exotic_ammo/items/gunmod/underbarrel.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "40x46mm": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "lead_u_shotgun": {
+      "file": "data/mods/exotic_ammo/items/gunmod/underbarrel.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "lw12mag": {
+      "file": "data/mods/exotic_ammo/items/magazine/460.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "460": 12,
+            "45": 12
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 12
+      }
+    },
+    "lw21mag": {
+      "file": "data/mods/exotic_ammo/items/magazine/9mm.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 21
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 21
+      }
+    },
+    "lw223bigmag": {
+      "file": "data/mods/exotic_ammo/items/magazine/223.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "223": 56
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 56
+      }
+    },
+    "lw223mag": {
+      "file": "data/mods/exotic_ammo/items/magazine/223.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "223": 32
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 32
+      }
+    },
+    "m1911-460": {
+      "file": "data/mods/exotic_ammo/gun/460.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "m1911mag",
+            "m1911bigmag"
+          ],
+          "default_magazine": "m1911mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "460",
+            [
+              "m1911mag",
+              "m1911bigmag"
+            ]
+          ],
+          [
+            "45",
+            [
+              "m1911mag",
+              "m1911bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1911a1_38super": {
+      "file": "data/mods/exotic_ammo/gun/38super.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "m1911mag_10rd_38super"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "38super",
+            [
+              "m1911mag_10rd_38super"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "m1911mag_10rd_38super": {
+      "file": "data/mods/exotic_ammo/magazine/38super.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "38super": 9
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 9
+      }
+    },
+    "m47a1": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "9mm": 6,
+            "380": 6,
+            "357mag": 6,
+            "38": 6,
+            "357sig": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "makarov": {
+      "file": "data/mods/exotic_ammo/gun/9x18.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "makarovmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9x18",
+            [
+              "makarovmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "makarovmag": {
+      "file": "data/mods/exotic_ammo/magazine/9x18.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9x18": 8
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 8
+      }
+    },
+    "mboots_escape": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_boots.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "crystallized_mana": 24
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 24
+      },
+      "cap_diff": [
+        {
+          "ammo": "crystallized_mana",
+          "cdf": 24,
+          "dda": 1
+        }
+      ]
+    },
+    "mbracer_lightning_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_bracers.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 72
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 72
+      },
+      "cap_diff": [
+        {
+          "ammo": "crystallized_mana",
+          "cdf": 72,
+          "dda": 3
+        }
+      ]
+    },
+    "mbracer_lightning_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_bracers.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 72
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 72
+      },
+      "cap_diff": [
+        {
+          "ammo": "crystallized_mana",
+          "cdf": 72,
+          "dda": 3
+        }
+      ]
+    },
+    "mmask_disappearance": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_masks.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 12
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 12
+      },
+      "cap_diff": [
+        {
+          "ammo": "crystallized_mana",
+          "cdf": 12,
+          "dda": 1
+        }
+      ]
+    },
+    "mring_blades_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_rings.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 5
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 5
+      }
+    },
+    "mspider_box": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_misc.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "thread": 1000
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 1000
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "mtailors_kit": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_misc.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "thread": 1000
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 1000
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ppsh": {
+      "file": "data/mods/exotic_ammo/gun/762x25.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "ppshmag",
+            "ppshdrum"
+          ],
+          "default_magazine": "ppshmag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "762x25",
+            [
+              "ppshmag",
+              "ppshdrum"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "ppshdrum": {
+      "file": "data/mods/exotic_ammo/magazine/762x25.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762x25": 71
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 71
+      }
+    },
+    "ppshmag": {
+      "file": "data/mods/exotic_ammo/magazine/762x25.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762x25": 35
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 35
+      }
+    },
+    "raging_bull": {
+      "file": "data/mods/exotic_ammo/gun/454.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "454": 5,
+            "45colt": 5
+          },
+          "allowed_speedloaders": [
+            "454_speedloader5"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "454",
+            [
+              "454_speedloader5"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "raging_judge": {
+      "file": "data/mods/exotic_ammo/gun/454.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "454": 6,
+            "410shot": 6,
+            "45colt": 6
+          },
+          "allowed_speedloaders": [
+            "454_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "454",
+            [
+              "454_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "remington700_270": {
+      "file": "data/mods/exotic_ammo/gun/270win.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "270win": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 4
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rm360_carbine": {
+      "file": "data/mods/exotic_ammo/items/gun/22.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "360_200_mag",
+            "360_400_mag"
+          ],
+          "default_magazine": "360_200_mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "22",
+            [
+              "360_200_mag",
+              "360_400_mag"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "rpk74mag": {
+      "file": "data/mods/exotic_ammo/magazine/545x39.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "545x39": 45
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 45
+      }
+    },
+    "rune_druid_weapon": {
+      "file": "data/mods/MagicalNights/items/class_items.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "arrow": 1
+          },
+          "open_container": true
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ],
+      "not_edited": true,
+      "already_converted": "compositebow (P3-2 MAGAZINE pocket)",
+      "own_keys": [
+        "//",
+        "armor_data",
+        "color",
+        "copy-from",
+        "description",
+        "extend",
+        "id",
+        "min_strength",
+        "name",
+        "price",
+        "type"
+      ]
+    },
+    "shotcestus": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_unarmed.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "dda-obsolete"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 2
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "skorpion82mag": {
+      "file": "data/mods/exotic_ammo/magazine/9x18.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9x18": 20
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 20
+      }
+    },
+    "skorpion_82": {
+      "file": "data/mods/exotic_ammo/gun/9x18.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "80 ml",
+          "item_restriction": [
+            "skorpion82mag"
+          ],
+          "default_magazine": "skorpion82mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9x18",
+            [
+              "skorpion82mag"
+            ]
+          ]
+        ],
+        "magazine_well": "80 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "small_mana_crystal": {
+      "file": "data/mods/MagicalNights/items/mana_crystals.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "crystallized_mana": 50
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "sw_500": {
+      "file": "data/mods/exotic_ammo/gun/500.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "500": 5
+          },
+          "allowed_speedloaders": [
+            "500_speedloader5"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "500",
+            [
+              "500_speedloader5"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 5
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tokarev": {
+      "file": "data/mods/exotic_ammo/gun/762x25.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "magazine_well": "250 ml",
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "tokarevmag"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "762x25",
+            [
+              "tokarevmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "tokarevmag": {
+      "file": "data/mods/exotic_ammo/magazine/762x25.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "762x25": 8
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 8
+      }
+    },
+    "trex_gun": {
+      "file": "data/mods/exotic_ammo/gun/700nx.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "700nx": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 2
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "vibrator_mana": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_misc.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "default_magazine": "small_mana_crystal"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_cone_cold_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_cone_cold_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_cone_cold_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_disp_cone_cold_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_cone_cold_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_cone_cold_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_fireball_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_fireball_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_fireball_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_hoaryblast_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_hoaryblast_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_hoaryblast_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_magic_missile_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_magic_missile_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_magic_missile_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_mana_beam_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_mana_beam_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_mana_beam_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_point_flare_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_point_flare_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_disp_point_flare_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "holster": true,
+          "ammo_restriction": {
+            "crystallized_mana": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "wand_fireball": {
+      "file": "data/mods/MagicalNights/items/obsolete.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "default_magazine": "small_mana_crystal"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_fireball_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_fireball_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_fireball_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_hoaryblast_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_hoaryblast_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_hoaryblast_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_magic_missile": {
+      "file": "data/mods/MagicalNights/items/obsolete.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "default_magazine": "small_mana_crystal"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_magic_missile_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_magic_missile_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_magic_missile_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_mana_beam_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_mana_beam_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_mana_beam_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_point_flare_greater": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_point_flare_lesser": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "wand_point_flare_minor": {
+      "file": "data/mods/MagicalNights/items/enchanted/enchanted_wands.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "small_mana_crystal"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "crystallized_mana",
+            [
+              "small_mana_crystal"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    }
+  },
+  "not_edited": {
+    "lwfeed": {
+      "file": "data/mods/exotic_ammo/items/gunmod/magazine.json",
+      "class": "ADAPTOR",
+      "action": "KEEP",
+      "twin": false,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "acceptable_ammo",
+        "color",
+        "description",
+        "flags",
+        "id",
+        "install_time",
+        "integral_volume",
+        "location",
+        "magazine_adaptor",
+        "material",
+        "min_skills",
+        "mod_target_category",
+        "name",
+        "price",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    }
+  }
+}

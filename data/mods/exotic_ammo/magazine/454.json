@@ -13,8 +13,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": [ "454", "45colt" ],
-    "capacity": 5,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "454": 5, "45colt": 5 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "454_speedloader6",
@@ -23,6 +30,13 @@
     "name": { "str": ".454 6-round speedloader" },
     "description": "This speedloader can hold 6 rounds of .454, .45 Colt or .410 bore and quickly reload a compatible revolver.",
     "ammo_type": [ "454", "45colt", "410shot" ],
-    "capacity": 6
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "454": 6, "45colt": 6, "410shot": 6 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

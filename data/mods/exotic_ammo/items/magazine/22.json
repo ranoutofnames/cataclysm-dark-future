@@ -12,10 +12,17 @@
     "symbol": "#",
     "color": "dark_gray",
     "ammo_type": "22",
-    "capacity": 200,
     "reliability": 10,
     "reload_time": 60,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "22": 200 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "360_400_mag",
@@ -30,9 +37,16 @@
     "symbol": "#",
     "color": "dark_gray",
     "ammo_type": "22",
-    "capacity": 400,
     "reliability": 10,
     "reload_time": 60,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "22": 400 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

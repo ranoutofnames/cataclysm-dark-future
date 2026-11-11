@@ -12,8 +12,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "9mm",
-    "capacity": 7,
-    "flags": [ "SPEEDLOADER" ]
+    "flags": [ "SPEEDLOADER" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "9mm": 7 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "lw21mag",
@@ -28,9 +35,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "9mm",
-    "capacity": 21,
     "reliability": 10,
     "reload_time": 140,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "9mm": 21 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

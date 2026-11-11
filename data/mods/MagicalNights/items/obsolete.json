@@ -15,8 +15,16 @@
     "charges_per_use": 1,
     "ammo": "crystallized_mana",
     "use_action": { "type": "cast_spell", "spell_id": "fireball", "no_fail": true, "level": 5, "need_wielding": true },
-    "magazines": [ [ "crystallized_mana", [ "small_mana_crystal" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "small_mana_crystal" ],
+        "default_magazine": "small_mana_crystal"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "wand_magic_missile",
@@ -34,8 +42,16 @@
     "charges_per_use": 1,
     "ammo": "crystallized_mana",
     "use_action": { "type": "cast_spell", "spell_id": "magic_missile", "no_fail": true, "level": 10, "need_wielding": true },
-    "magazines": [ [ "crystallized_mana", [ "small_mana_crystal" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "small_mana_crystal" ],
+        "default_magazine": "small_mana_crystal"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "bio_fuel_cell_blood",

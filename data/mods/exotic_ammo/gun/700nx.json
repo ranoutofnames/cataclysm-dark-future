@@ -29,6 +29,13 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "extend": { "flags": [ "RELOAD_ONE" ] }
+    "extend": { "flags": [ "RELOAD_ONE" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "700nx": 2 }
+      }
+    ]
   }
 ]

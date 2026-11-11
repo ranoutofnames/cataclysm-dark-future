@@ -382,7 +382,15 @@
     "range": 12,
     "dispersion": 950,
     "durability": 6,
-    "volume": "2500 ml"
+    "volume": "2500 ml",
+    "tool_ammo": [ "arrow" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "arrow": 1 },
+        "open_container": true
+      }
+    ]
   },
   {
     "type": "TOOL",

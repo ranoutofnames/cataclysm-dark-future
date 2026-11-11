@@ -18,7 +18,6 @@
     "range": -2,
     "dispersion": 280,
     "clip_size": 5,
-    "magazines": [ [ "454", [ "454_speedloader5" ] ] ],
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "grip", 1 ],
@@ -27,7 +26,15 @@
       [ "sights", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "454": 5, "45colt": 5 },
+        "allowed_speedloaders": [ "454_speedloader5" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "raging_judge",
@@ -39,6 +46,14 @@
     "volume": "1175 ml",
     "ammo": [ "454", "410shot", "45colt" ],
     "clip_size": 6,
-    "magazines": [ [ "454", [ "454_speedloader6" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "454": 6, "410shot": 6, "45colt": 6 },
+        "allowed_speedloaders": [ "454_speedloader6" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   }
 ]

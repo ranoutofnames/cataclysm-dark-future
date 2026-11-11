@@ -29,8 +29,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "57", [ "fn57mag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "fn57mag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: fn57mag_10rd"
   },
   {
     "id": "fn_p90",
@@ -63,8 +70,15 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "500 ml",
-    "magazines": [ [ "57", [ "fnp90mag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "500 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "fnp90mag" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data); ids absent or undefined in CDF left out of the pocket: fnp90mag_10rd"
   },
   {
     "id": "ar57",
@@ -78,7 +92,15 @@
     "ranged_damage": { "damage_type": "bullet", "amount": 2 },
     "range": 10,
     "min_cycle_recoil": 81,
-    "magazine_well": "500 ml",
-    "magazines": [ [ "57", [ "fnp90mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "500 ml",
+        "item_restriction": [ "fnp90mag" ],
+        "default_magazine": "fnp90mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

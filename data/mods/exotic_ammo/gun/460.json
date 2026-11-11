@@ -9,8 +9,17 @@
     "price": "1668 USD",
     "price_postapoc": "3250 cent",
     "ammo": [ "460", "45" ],
-    "magazines": [ [ "460", [ "m1911mag", "m1911bigmag" ] ], [ "45", [ "m1911mag", "m1911bigmag" ] ] ],
     "relative": { "durability": -1 },
-    "built_in_mods": [ "barrel_ported" ]
+    "built_in_mods": [ "barrel_ported" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "m1911mag", "m1911bigmag" ],
+        "default_magazine": "m1911mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data); CDF: keeps the 250 ml well volume inherited from m1911 (the plan on the moved base omits it)"
   }
 ]

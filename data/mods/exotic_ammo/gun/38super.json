@@ -34,8 +34,16 @@
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazine_well": "500 ml",
-    "magazines": [ [ "38super", [ "af2011a1mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "magazine_well": "500 ml",
+        "item_restriction": [ "af2011a1mag" ],
+        "default_magazine": "af2011a1mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "m1911a1_38super",
@@ -53,8 +61,15 @@
     "color": "light_gray",
     "ammo": "38super",
     "durability": 7,
-    "magazine_well": "250 ml",
     "blackpowder_tolerance": 24,
-    "magazines": [ [ "38super", [ "m1911mag_10rd_38super" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "m1911mag_10rd_38super" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   }
 ]

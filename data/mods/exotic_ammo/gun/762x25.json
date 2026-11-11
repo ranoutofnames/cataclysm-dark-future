@@ -32,14 +32,22 @@
       [ "underbarrel", 1 ],
       [ "rail", 1 ]
     ],
-    "magazines": [ [ "762x25", [ "ppshmag", "ppshdrum" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "ppshmag", "ppshdrum" ],
+        "default_magazine": "ppshmag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "tokarev",
     "copy-from": "pistol_base",
     "type": "GUN",
     "name": { "str_sp": "Tokarev TT-33" },
-    "//": "And it's therefore expensive.",
+    "//": "And it's therefore expensive. CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)",
     "description": "The Tokarev TT-33 is an antique Russian semiautomatic pistol, famous for its durability, accuracy, and uncomfortable grip angle.  It was chambered for the 7.62x25mm due to the popularity of the C96 pistol among Russian revolutionaries.",
     "weight": "870 g",
     "volume": "251 ml",
@@ -52,7 +60,13 @@
     "dispersion": 225,
     "durability": 7,
     "min_cycle_recoil": 270,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "762x25", [ "tokarevmag" ] ] ]
+    "pocket_data": [
+      {
+        "magazine_well": "250 ml",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "tokarevmag" ]
+      }
+    ]
   }
 ]

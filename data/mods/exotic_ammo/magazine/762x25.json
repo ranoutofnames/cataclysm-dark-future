@@ -4,7 +4,7 @@
     "looks_like": "mp5mag",
     "type": "MAGAZINE",
     "name": { "str": "PPSh 71-round drum magazine" },
-    "//": "Provisional.",
+    "//": "Provisional. CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)",
     "description": "A high-capacity drum magazine for the PPSh-41.",
     "weight": "1760 g",
     "volume": "911 ml",
@@ -14,10 +14,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "762x25",
-    "capacity": 71,
     "reliability": 7,
     "reload_time": 190,
-    "flags": [ "MAG_BULKY" ]
+    "flags": [ "MAG_BULKY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762x25": 71 }
+      }
+    ]
   },
   {
     "id": "ppshmag",
@@ -33,9 +39,16 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "762x25",
-    "capacity": 35,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762x25": 35 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   },
   {
     "id": "tokarevmag",
@@ -51,8 +64,15 @@
     "symbol": "#",
     "color": "light_gray",
     "ammo_type": "762x25",
-    "capacity": 8,
     "reliability": 8,
-    "flags": [ "MAG_COMPACT" ]
+    "flags": [ "MAG_COMPACT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "762x25": 8 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
   }
 ]

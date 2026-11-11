@@ -29,6 +29,13 @@
       [ "stock", 1 ],
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "500": 7 }
+      }
     ]
   },
   {
@@ -48,7 +55,6 @@
     "ammo": "500",
     "dispersion": 280,
     "clip_size": 5,
-    "magazines": [ [ "500", [ "500_speedloader5" ] ] ],
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "grip", 1 ],
@@ -57,6 +63,15 @@
       [ "sights", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "500": 5 },
+        "allowed_speedloaders": [ "500_speedloader5" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   }
 ]
