@@ -99,11 +99,19 @@
     "symbol": "/",
     "looks_like": "circsaw_off",
     "color": "light_red",
-    "ammo": [ "gasoline" ],
-    "max_charges": 500,
+    "tool_ammo": [ "gasoline" ],
     "charges_per_use": 1,
     "use_action": { "target": "afs_power_cutter_on", "msg": "You rev up the power cutter!", "active": true, "type": "transform" },
-    "flags": [ "ALWAYS_TWOHAND", "NONCONDUCTIVE" ]
+    "flags": [ "ALWAYS_TWOHAND", "NONCONDUCTIVE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "gasoline": 500 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "afs_power_cutter_on",
@@ -116,7 +124,15 @@
     "revert_to": "afs_power_cutter",
     "use_action": { "target": "afs_power_cutter", "msg": "Your power cutter falls quiet.", "menu_text": "Turn off", "type": "transform" },
     "qualities": [ [ "CUT", 1 ], [ "SAW_M", 5 ], [ "SAW_M_FINE", 1 ], [ "BUTCHER", -70 ] ],
-    "flags": [ "ALWAYS_TWOHAND", "MESSY", "TRADER_AVOID", "NONCONDUCTIVE" ]
+    "flags": [ "ALWAYS_TWOHAND", "MESSY", "TRADER_AVOID", "NONCONDUCTIVE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "gasoline": 500 }
+      }
+    ]
   },
   {
     "id": "afs_murdersaw",
@@ -134,11 +150,19 @@
     "symbol": "/",
     "looks_like": "circsaw_off",
     "color": "yellow",
-    "ammo": [ "gasoline" ],
-    "max_charges": 500,
+    "tool_ammo": [ "gasoline" ],
     "charges_per_use": 1,
     "use_action": { "target": "afs_murdersaw_on", "msg": "You rev up the murdersaw!", "active": true, "type": "transform" },
-    "flags": [ "ALWAYS_TWOHAND", "NONCONDUCTIVE" ]
+    "flags": [ "ALWAYS_TWOHAND", "NONCONDUCTIVE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "gasoline": 500 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "afs_murdersaw_on",
@@ -152,7 +176,15 @@
     "revert_to": "afs_murdersaw",
     "use_action": { "target": "afs_murdersaw", "msg": "Your murdersaw falls quiet.", "menu_text": "Turn off", "type": "transform" },
     "qualities": [ [ "CUT", 1 ], [ "SAW_M", 1 ], [ "BUTCHER", -50 ] ],
-    "flags": [ "ALWAYS_TWOHAND", "MESSY", "TRADER_AVOID", "NONCONDUCTIVE" ]
+    "flags": [ "ALWAYS_TWOHAND", "MESSY", "TRADER_AVOID", "NONCONDUCTIVE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "watertight": true,
+        "ammo_restriction": { "gasoline": 500 }
+      }
+    ]
   },
   {
     "id": "afs_rope_lighter",

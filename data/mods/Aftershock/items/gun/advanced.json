@@ -33,6 +33,12 @@
     "ammo": "metal_rail",
     "skill": "rifle",
     "modes": [ [ "DEFAULT", "semi-auto", 1 ], [ "BURST", "2 rd.", 2 ] ],
-    "ammo_effects": [ "TRAIL" ]
+    "ammo_effects": [ "TRAIL" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "metal_rail": 30 }
+      }
+    ]
   }
 ]

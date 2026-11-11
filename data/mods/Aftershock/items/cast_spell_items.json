@@ -22,11 +22,17 @@
     "name": { "str": "hologram transposition caster" },
     "copy-from": "afs_caster",
     "description": "A small metallic sphere with a recessed bottom up top.  When activated it will allow you to swap positions with an existing hologram.",
-    "max_charges": 15,
     "initial_charges": 15,
     "charges_per_use": 1,
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
-    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_transposition", "no_fail": true, "level": 1 }
+    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_transposition", "no_fail": true, "level": 1 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "battery": 15 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "id": "afs_holo_flare_caster",
@@ -34,11 +40,17 @@
     "copy-from": "afs_caster",
     "name": { "str": "hologram flare caster" },
     "description": "A small metallic sphere with a recessed bottom up top.  When activated it will allow you to select an hologram, which will explode in a blinding flash, stunning anything nearby.",
-    "max_charges": 15,
     "initial_charges": 15,
     "charges_per_use": 1,
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
-    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_flare", "no_fail": true, "level": 1 }
+    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_flare", "no_fail": true, "level": 1 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "battery": 15 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "id": "afs_holo_decoy_caster",
@@ -46,11 +58,17 @@
     "copy-from": "afs_caster",
     "name": { "str": "decoy caster" },
     "description": "A small metallic sphere with a recessed bottom up top.  When activated it will a holographic decoy in a location of your choosing.",
-    "max_charges": 2,
     "initial_charges": 2,
     "charges_per_use": 1,
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
-    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_decoy", "no_fail": true, "level": 1 }
+    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_decoy", "no_fail": true, "level": 1 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "battery": 2 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   },
   {
     "id": "afs_holo_field_caster",
@@ -58,10 +76,16 @@
     "copy-from": "afs_caster",
     "name": { "str": "decoy field caster" },
     "description": "A small metallic sphere with a recessed bottom up top.  When activated it will create several holographic decoys around you.",
-    "max_charges": 1,
     "initial_charges": 1,
     "charges_per_use": 1,
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
-    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_field", "no_fail": true, "level": 1 }
+    "use_action": { "type": "cast_spell", "spell_id": "afs_holo_field", "no_fail": true, "level": 1 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "ammo_restriction": { "battery": 1 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
   }
 ]

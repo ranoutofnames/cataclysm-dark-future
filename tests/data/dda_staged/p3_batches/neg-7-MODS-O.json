@@ -1,0 +1,102 @@
+{
+  "batch": "7-MODS-O",
+  "note": "in-memory mutations of the golden pockets; the comparison must report a mismatch for exactly the named id and no other. The 7-MODS-O ids are mod items and the unit-test world (core+TEST_DATA) does not load the mods, so B5 names loaded golden ids of the same pocket shapes instead: MAGAZINE ammo cap and type flip (glockmag, glockbigmag, pipe_pistol), MAGAZINE_WELL item_restriction/default/volume (m1911, skorpion_61), flag_restriction (exosuit_military), allowed_speedloaders (m1903) and pocket order (robofac_head_rig).",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "cap_plus_one",
+      "id": "glockmag",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`9mm`] 15 -> 16",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "cap_plus_one",
+      "id": "glockbigmag",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`9mm`] 30 -> 31",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N3",
+      "kind": "drop_restriction_id",
+      "id": "m1911",
+      "pocket": 0,
+      "mutation": "remove `m1911bigmag` from item_restriction",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N4",
+      "kind": "add_bogus_id",
+      "id": "m1911",
+      "pocket": 0,
+      "mutation": "append `p3_bogus_item_id` to item_restriction",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N5",
+      "kind": "wrong_default",
+      "id": "skorpion_61",
+      "pocket": 0,
+      "mutation": "set default_magazine to `p3_bogus_item_id` (was `skorpion61mag`)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N6",
+      "kind": "well_volume",
+      "id": "m1911",
+      "pocket": 0,
+      "mutation": "magazine_well `250 ml` -> `1 ml`",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N7",
+      "kind": "drop_restriction_id",
+      "id": "skorpion_61",
+      "pocket": 0,
+      "mutation": "remove `skorpion61mag` from item_restriction",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N8",
+      "kind": "drop_speedloader",
+      "id": "m1903",
+      "pocket": 0,
+      "mutation": "remove `3006_clip` from allowed_speedloaders",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N9",
+      "kind": "flag",
+      "id": "exosuit_military",
+      "pocket": 0,
+      "mutation": "add the bogus `P3_BOGUS_FLAG` to flag_restriction",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N10",
+      "kind": "hand_fallback_integral",
+      "id": "pipe_pistol",
+      "pocket": 0,
+      "mutation": "flip the integral MAGAZINE to MAGAZINE_WELL",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N11",
+      "kind": "cap_plus_one",
+      "id": "pipe_pistol",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`38`] 1 -> 2",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N12",
+      "kind": "pocket_order",
+      "id": "robofac_head_rig",
+      "pocket": 0,
+      "mutation": "swap the CONTAINER and the MAGAZINE_WELL pockets",
+      "expect": "mismatch reported for this id only"
+    }
+  ]
+}

@@ -309,7 +309,15 @@
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "ammo_effects": [ "TRAIL" ]
+    "ammo_effects": [ "TRAIL" ],
+    "pocket_data": [
+      {
+        "id": "ammo",
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "metal_rail": 1 }
+      }
+    ]
   },
   {
     "id": "xlballistic_vest_empty",

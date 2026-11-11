@@ -29,7 +29,14 @@
     "ranged_damage": { "damage_type": "stab", "amount": 28 },
     "range": 10,
     "dispersion": 3000,
-    "durability": 6
+    "durability": 6,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "arrow": 1 }
+      }
+    ]
   },
   {
     "id": "civilian_survivor_crossbow_gun",
@@ -52,7 +59,14 @@
     "dispersion": 1875,
     "durability": 6,
     "reload": 800,
-    "valid_mod_locations": [ [ "dampening", 1 ], [ "rail mount", 1 ], [ "sights mount", 1 ], [ "underbarrel mount", 1 ] ]
+    "valid_mod_locations": [ [ "dampening", 1 ], [ "rail mount", 1 ], [ "sights mount", 1 ], [ "underbarrel mount", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "civilian_survivor_pistol_gun",
@@ -74,8 +88,15 @@
     "dispersion": 2400,
     "min_cycle_recoil": 540,
     "blackpowder_tolerance": 48,
-    "magazine_well": "250 ml",
-    "magazines": [ [ "45", [ "m1911mag", "m1911bigmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "m1911mag", "m1911bigmag" ],
+        "default_magazine": "m1911mag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "civilian_survivor_guardian_shotgun_gun",
@@ -106,7 +127,14 @@
       [ "sights mount", 1 ],
       [ "underbarrel mount", 1 ]
     ],
-    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ]
+    "flags": [ "NEVER_JAMS", "RELOAD_EJECT" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "shot": 1 }
+      }
+    ]
   },
   {
     "id": "civilian_survivor_guardian_smg_gun",
@@ -129,8 +157,15 @@
     "min_cycle_recoil": 450,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
     "built_in_mods": [ "folding_stock" ],
-    "magazine_well": "250 ml",
-    "magazines": [ [ "9mm", [ "uzimag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "magazine_well": "250 ml",
+        "item_restriction": [ "uzimag" ],
+        "default_magazine": "uzimag"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines, magazine_well (now in pocket_data)"
   },
   {
     "id": "civilian_survivor_elite_bow_gun",
@@ -149,7 +184,14 @@
     "loudness": 6,
     "ranged_damage": { "damage_type": "stab", "amount": 28 },
     "dispersion": 2850,
-    "range": 12
+    "range": 12,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "arrow": 1 }
+      }
+    ]
   },
   {
     "id": "civilian_survivor_elite_crossbow_gun",
@@ -170,7 +212,14 @@
     "loudness": 8,
     "dispersion": 1750,
     "durability": 6,
-    "reload": 1200
+    "reload": 1200,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "bolt": 1 }
+      }
+    ]
   },
   {
     "id": "civilian_survivor_elite_pistol_gun",
@@ -190,7 +239,6 @@
     "ammo": "44",
     "dispersion": 1400,
     "blackpowder_tolerance": 56,
-    "magazines": [ [ "44", [ "44_speedloader6" ] ] ],
     "valid_mod_locations": [
       [ "accessories", 2 ],
       [ "barrel", 1 ],
@@ -201,7 +249,16 @@
       [ "sights", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "44": 6 },
+        "allowed_speedloaders": [ "44_speedloader6" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "civilian_survivor_guardian_elite_rifle_gun",
@@ -240,6 +297,13 @@
     "dispersion": 750,
     "min_cycle_recoil": 1350,
     "modes": [ [ "DEFAULT", "semi", 1 ], [ "AUTO", "auto", 4 ] ],
-    "magazines": [ [ "223", [ "g36mag_30rd", "g36mag_100rd" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "item_restriction": [ "g36mag_30rd", "g36mag_100rd" ],
+        "default_magazine": "g36mag_30rd"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   }
 ]

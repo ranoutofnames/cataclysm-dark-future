@@ -13,10 +13,9 @@
     "flags": [ "NO_SALVAGE", "LEAK_DAM", "RADIOACTIVE", "ALLOWS_REMOTE_USE" ],
     "symbol": ")",
     "color": "blue",
-    "ammo": [ "plant_fertilizer" ],
+    "tool_ammo": [ "plant_fertilizer" ],
     "looks_like": "plastic_pot_flower",
     "initial_charges": 0,
-    "max_charges": 60,
     "use_action": {
       "type": "flowerpot_plant",
       "growth_rate": 1.5,
@@ -32,7 +31,15 @@
         "portable_planter_l_mature",
         "portable_planter_l_harvest"
       ]
-    }
+    },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "plant_fertilizer": 60 }
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "portable_planter_l_seed",
@@ -40,27 +47,55 @@
     "name": { "str": "POWER-GRO planter MK-II (seed)" },
     "description": "The POWER-GRO planter MK-II is the ultimate solution for indoors growing. A whole farm right at your kitchen.\nBy reading this label you agree that POWER-GRO is not liable for any radiation related incidents, and waive any rights to sue POWER-GRO.\nThis one has a seed in it.",
     "copy-from": "portable_planter_l",
-    "extend": { "flags": [ "LIGHT_8" ] }
+    "extend": { "flags": [ "LIGHT_8" ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "plant_fertilizer": 60 }
+      }
+    ]
   },
   {
     "id": "portable_planter_l_seedling",
     "type": "TOOL",
     "name": { "str": "POWER-GRO planter MK-II (seedling)" },
     "description": "The POWER-GRO planter MK-II is the ultimate solution for indoors growing. A whole farm right at your kitchen.\nBy reading this label you agree that POWER-GRO is not liable for any radiation related incidents, and waive any rights to sue POWER-GRO.\nThe seed is sprouting.",
-    "copy-from": "portable_planter_l_seed"
+    "copy-from": "portable_planter_l_seed",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "plant_fertilizer": 60 }
+      }
+    ]
   },
   {
     "id": "portable_planter_l_mature",
     "type": "TOOL",
     "name": { "str": "POWER-GRO planter MK-II (mature)" },
     "description": "The POWER-GRO planter MK-II is the ultimate solution for indoors growing. A whole farm right at your kitchen.\nBy reading this label you agree that POWER-GRO is not liable for any radiation related incidents, and waive any rights to sue POWER-GRO.\nShould bear fruit soon.",
-    "copy-from": "portable_planter_l_seedling"
+    "copy-from": "portable_planter_l_seedling",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "plant_fertilizer": 60 }
+      }
+    ]
   },
   {
     "id": "portable_planter_l_harvest",
     "type": "TOOL",
     "name": { "str": "POWER-GRO planter MK-II (harvest)" },
     "description": "The POWER-GRO planter MK-II is the ultimate solution for indoors growing. A whole farm right at your kitchen.\nBy reading this label you agree that POWER-GRO is not liable for any radiation related incidents, and waive any rights to sue POWER-GRO.\nFresh produce right at your fingertips.",
-    "copy-from": "portable_planter_l_mature"
+    "copy-from": "portable_planter_l_mature",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "plant_fertilizer": 60 }
+      }
+    ]
   }
 ]

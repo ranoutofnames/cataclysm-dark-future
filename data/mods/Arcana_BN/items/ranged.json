@@ -47,7 +47,14 @@
       "MAGIC_FOCUS",
       "NO_SALVAGE"
     ],
-    "use_action": "MEDITATE"
+    "use_action": "MEDITATE",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_type": 5 }
+      }
+    ]
   },
   {
     "id": "bloodscourge",
@@ -111,6 +118,13 @@
       "USE_PLAYER_ENERGY",
       "PYROMANIAC_WEAPON",
       "SHEATH_SPEAR"
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_blood_type": 15 }
+      }
     ]
   },
   {
@@ -179,7 +193,14 @@
       "target": "shrike_misericorde",
       "msg": "The weapon splinters and unfurls, reforming into its blade form.",
       "need_wielding": true
-    }
+    },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "flintlock": 2, "flintlockshot": 2 }
+      }
+    ]
   },
   {
     "id": "ethereal_crossbow",
@@ -210,7 +231,14 @@
     "ammo_to_fire": 15,
     "ammo_effects": [ "WIDE", "ARCANA_WRAITHSLAYER_BEAM", "BEANBAG", "BLINDS_EYES" ],
     "flags": [ "NEVER_JAMS", "PRIMITIVE_RANGED_WEAPON", "NO_SALVAGE", "CROSSBOW" ],
-    "valid_mod_locations": [ [ "sling", 1 ], [ "rail", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ], [ "rail", 1 ], [ "sights", 1 ], [ "underbarrel", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_dull_type": 60 }
+      }
+    ]
   },
   {
     "id": "ethereal_hand_crossbow",
@@ -240,7 +268,14 @@
     "ammo_to_fire": 10,
     "ammo_effects": [ "WIDE", "ARCANA_WRAITHSLAYER_BEAM", "BEANBAG", "BLINDS_EYES" ],
     "flags": [ "NEVER_JAMS", "PRIMITIVE_RANGED_WEAPON", "NO_SALVAGE", "CROSSBOW" ],
-    "valid_mod_locations": [ [ "sling", 1 ], [ "grip", 1 ], [ "rail", 1 ], [ "sights", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ], [ "grip", 1 ], [ "rail", 1 ], [ "sights", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_dull_type": 50 }
+      }
+    ]
   },
   {
     "id": "ethereal_huge_crossbow",
@@ -271,7 +306,14 @@
     "ammo_to_fire": 40,
     "ammo_effects": [ "WIDE", "ARCANA_WRAITHSLAYER_BEAM_GREATER", "LARGE_BEANBAG", "BLINDS_EYES" ],
     "flags": [ "NEVER_JAMS", "PRIMITIVE_RANGED_WEAPON", "NO_SALVAGE", "CROSSBOW" ],
-    "valid_mod_locations": [ [ "sling", 1 ] ]
+    "valid_mod_locations": [ [ "sling", 1 ] ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_dull_type": 120 }
+      }
+    ]
   },
   {
     "id": "hand_of_armok",
@@ -342,6 +384,13 @@
       "USE_PLAYER_ENERGY",
       "PYROMANIAC_WEAPON",
       "NO_SALVAGE"
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_pure_type": 1 }
+      }
     ]
   },
   {
@@ -402,6 +451,13 @@
       "MAGIC_FOCUS",
       "SHEATH_SPEAR",
       "MISSION_ITEM"
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_blood_type": 8 }
+      }
     ]
   },
   {
@@ -487,6 +543,13 @@
       [ "sling", 1 ],
       [ "stock", 1 ],
       [ "underbarrel", 1 ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "essence_pure_type": 1 }
+      }
     ]
   },
   {

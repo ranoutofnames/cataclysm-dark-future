@@ -1,0 +1,3060 @@
+{
+  "batch": "7-MODS-O",
+  "base": "d8174c3832",
+  "dda": "b4b62254ae2",
+  "note": "7-MODS-O part 1 (the 119 non-CRT rows of the packet): 106 converted rows in items + 2 converted rows in unloaded_pockets (robe_shadow, robe_shadow_on: their golden pocket list has more than one pocket, they are mod items and the generic B3 counts every multi-pocket golden id of a batch as loaded, so S1 reads them here; their order is still pinned by S1) + 2 rows that need no edit because the effective pocket comes from an already ported copy-from parent (civilian_cop_glock22, plasma_ejector) + 1 LEAVE row (afs_hardlight_longbow, not a golden id) in not_edited. The 8 BATT5 ids of these mods are not repeated here, and CRT_EXPANSION (18 rows) is part 2 (AUTO-262). Two rows are hand rows (afs_eidolon_derringer, laser_rifle_dino2: AUTO-239 #3 and #6, hand_fallback true). Mod ids are not loaded by the unit-test world (core+TEST_DATA), so G2 prints them as skipped and S1-S3 in tests/p3_data_modso_test.cpp check the own records at JSON level; dropped ids only the JSON level can see are in json_dropped_ids.",
+  "count": 108,
+  "lua_refs": {},
+  "items": {
+    "afs_eidolon_derringer": {
+      "file": "data/mods/Aftershock/items/gun/5x50.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "HAND-FALLBACK",
+      "hand_fallback": true,
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "5x50": 4
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "json_dropped_ids": [
+        {
+          "where": "ammo_restriction",
+          "id": "afs_5x50",
+          "why": "ammotype absent in CDF; the CDF ammo 5x50 is kept (owner rule)"
+        }
+      ],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "5x50",
+            [
+              "5x50_50_mag",
+              "5x50_100_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": 4
+      }
+    },
+    "afs_energy_saber_off": {
+      "file": "data/mods/Aftershock/items/weapons.json",
+      "class": "DDA-POCKET",
+      "rule": "R8",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "light_battery_cell",
+            "light_minus_battery_cell",
+            "light_minus_disposable_cell"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "afs_energy_saber_on": {
+      "file": "data/mods/Aftershock/items/weapons.json",
+      "class": "DDA-POCKET",
+      "rule": "R8",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "light_battery_cell",
+            "light_minus_battery_cell",
+            "light_minus_disposable_cell"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "afs_holo_cloak_mk2": {
+      "file": "data/mods/Aftershock/items/armor.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "battery": 15
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 15
+      }
+    },
+    "afs_holo_decoy_caster": {
+      "file": "data/mods/Aftershock/items/cast_spell_items.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "battery": 2
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 2
+      }
+    },
+    "afs_holo_field_caster": {
+      "file": "data/mods/Aftershock/items/cast_spell_items.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "battery": 1
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 1
+      }
+    },
+    "afs_holo_flare_caster": {
+      "file": "data/mods/Aftershock/items/cast_spell_items.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "battery": 15
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 15
+      }
+    },
+    "afs_holo_transposition_caster": {
+      "file": "data/mods/Aftershock/items/cast_spell_items.json",
+      "class": "CHARGES",
+      "rule": "R5",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "battery": 15
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 15
+      }
+    },
+    "afs_murdersaw": {
+      "file": "data/mods/Aftershock/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "watertight": true,
+          "ammo_restriction": {
+            "gasoline": 500
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 500
+      }
+    },
+    "afs_murdersaw_on": {
+      "file": "data/mods/Aftershock/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "watertight": true,
+          "ammo_restriction": {
+            "gasoline": 500
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "afs_power_cutter": {
+      "file": "data/mods/Aftershock/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "watertight": true,
+          "ammo_restriction": {
+            "gasoline": 500
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 500
+      }
+    },
+    "afs_power_cutter_on": {
+      "file": "data/mods/Aftershock/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "watertight": true,
+          "ammo_restriction": {
+            "gasoline": 500
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "afs_rebar_rifle": {
+      "file": "data/mods/Aftershock/items/obsolete.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "id": "ammo",
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "metal_rail": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "arcana_mech_power_cell": {
+      "file": "data/mods/Arcana_BN/items/magazine.json",
+      "class": "MAG",
+      "rule": "R1",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 120000
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "armor_wyrm": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "holster": true,
+          "watertight": true,
+          "max_contains_volume": "200 L",
+          "max_contains_weight": "2000000 kg",
+          "max_item_length": "2 km",
+          "ammo_restriction": {
+            "essence_blood_type": 16
+          }
+        },
+        {
+          "pocket_type": "MOD"
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 16
+      }
+    },
+    "armor_wyrm_berserker": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 30
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 30
+      }
+    },
+    "armor_wyrm_berserker_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "bio_skullgun_gun": {
+      "file": "data/mods/Aftershock/items/gun/projectile.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN-KEEP-CDF-AMMO",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "40": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "bloodaxe": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 5
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 5
+      }
+    },
+    "bloodaxe_act": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 5
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 5
+      }
+    },
+    "bloodscourge": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 15
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 15
+      }
+    },
+    "civilian_cop_glock22": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "40",
+            [
+              "glock40mag",
+              "glock40bigmag",
+              "glock40drum50rd",
+              "kriss_mag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "own_keys": [
+        "copy-from",
+        "description",
+        "dispersion",
+        "durability",
+        "id",
+        "looks_like",
+        "name",
+        "type"
+      ],
+      "not_edited": true
+    },
+    "civilian_survivor_bow_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "arrow": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "civilian_survivor_crossbow_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "bolt": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "civilian_survivor_elite_bow_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "arrow": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "civilian_survivor_elite_crossbow_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "bolt": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "civilian_survivor_elite_pistol_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "44": 6
+          },
+          "allowed_speedloaders": [
+            "44_speedloader6"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "44",
+            [
+              "44_speedloader6"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": 6
+      }
+    },
+    "civilian_survivor_guardian_elite_AR_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "item_restriction": [
+            "g36mag_30rd",
+            "g36mag_100rd"
+          ],
+          "default_magazine": "g36mag_30rd"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "223",
+            [
+              "g36mag_30rd",
+              "g36mag_100rd"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "civilian_survivor_guardian_shotgun_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "civilian_survivor_guardian_smg_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "uzimag"
+          ],
+          "default_magazine": "uzimag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "uzimag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      }
+    },
+    "civilian_survivor_pistol_gun": {
+      "file": "data/mods/Civilians/monster_gun.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "250 ml",
+          "item_restriction": [
+            "m1911mag",
+            "m1911bigmag"
+          ],
+          "default_magazine": "m1911mag"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "45",
+            [
+              "m1911mag",
+              "m1911bigmag"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      }
+    },
+    "cleric_ring": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 10
+      }
+    },
+    "cleric_ring_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "cyclopean_mirror": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 25
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 25
+      }
+    },
+    "cyclopean_mirror_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 25
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "divine_sealing_charm": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_pure_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 10
+      }
+    },
+    "draconic_heart_mutator": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 10
+      }
+    },
+    "dull_essence_UPS": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 6000
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 6000
+      }
+    },
+    "essence_blood_surge_generator_item": {
+      "file": "data/mods/Arcana_BN/items/vehiclepart_items.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 3000
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 3000
+      }
+    },
+    "essence_dull_surge_generator_item": {
+      "file": "data/mods/Arcana_BN/items/vehiclepart_items.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 30000
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 30000
+      }
+    },
+    "essence_pure_surge_generator_item": {
+      "file": "data/mods/Arcana_BN/items/vehiclepart_items.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_pure_type": 100
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 100
+      }
+    },
+    "essence_surge_generator_item": {
+      "file": "data/mods/Arcana_BN/items/vehiclepart_items.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 1000
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 1000
+      }
+    },
+    "ethereal_crossbow": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 60
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 60
+      }
+    },
+    "ethereal_hand_crossbow": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 50
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 50
+      }
+    },
+    "ethereal_huge_crossbow": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 120
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 120
+      }
+    },
+    "gauntlets_necro": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 4
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 4
+      }
+    },
+    "gauntlets_necro_xl": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 4
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 4
+      }
+    },
+    "gilded_aegis": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 60
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 60
+      }
+    },
+    "hand_of_armok": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_pure_type": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "hauberk_jade": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 300
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 300
+      }
+    },
+    "hauberk_jade_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 300
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "hexenhammer": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 3
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 3
+      }
+    },
+    "jade_wreath": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 30
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 30
+      }
+    },
+    "jade_wreath_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "laser_cannon_xray": {
+      "file": "data/mods/Aftershock/items/weapons.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "xray_laser_barrel": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "laser_rifle_dino2": {
+      "file": "data/mods/DinoMod/items/laser_items.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "HAND-FALLBACK",
+      "hand_fallback": true,
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "holster": true,
+          "max_contains_volume": "1 L",
+          "max_contains_weight": "1 kg",
+          "item_restriction": [
+            "light_minus_battery_cell"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "clip_size"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "lichhook": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 8
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 8
+      }
+    },
+    "lucern_hexenhammer": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 10
+      }
+    },
+    "meteoric_talisman": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 300
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 300
+      }
+    },
+    "meteoric_talisman_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 300
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "moonstone_fang": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 10
+      }
+    },
+    "moonstone_fang_on": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "orb_veil": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_pure_type": 1
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 1
+      }
+    },
+    "plasma_ejector": {
+      "file": "data/mods/Aftershock/items/gun/advanced.json",
+      "class": "GUN-INT",
+      "action": "KEEP",
+      "twin": false,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 30
+      },
+      "own_keys": [
+        "ammo_effects",
+        "copy-from",
+        "id",
+        "modes",
+        "name",
+        "skill",
+        "type"
+      ],
+      "not_edited": true
+    },
+    "portable_planter_l": {
+      "file": "data/mods/flowerpots_plus/items/planter_l.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 60
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 60
+      }
+    },
+    "portable_planter_l_harvest": {
+      "file": "data/mods/flowerpots_plus/items/planter_l.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 60
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_l_mature": {
+      "file": "data/mods/flowerpots_plus/items/planter_l.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 60
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_l_seed": {
+      "file": "data/mods/flowerpots_plus/items/planter_l.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 60
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_l_seedling": {
+      "file": "data/mods/flowerpots_plus/items/planter_l.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 60
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_m": {
+      "file": "data/mods/flowerpots_plus/items/planter_m.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 30
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 30
+      }
+    },
+    "portable_planter_m_harvest": {
+      "file": "data/mods/flowerpots_plus/items/planter_m.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_m_mature": {
+      "file": "data/mods/flowerpots_plus/items/planter_m.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_m_seed": {
+      "file": "data/mods/flowerpots_plus/items/planter_m.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_m_seedling": {
+      "file": "data/mods/flowerpots_plus/items/planter_m.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_s": {
+      "file": "data/mods/flowerpots_plus/items/planter_s.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 15
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 15
+      }
+    },
+    "portable_planter_s_harvest": {
+      "file": "data/mods/flowerpots_plus/items/planter_s.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 15
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_s_mature": {
+      "file": "data/mods/flowerpots_plus/items/planter_s.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 15
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_s_seed": {
+      "file": "data/mods/flowerpots_plus/items/planter_s.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 15
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "portable_planter_s_seedling": {
+      "file": "data/mods/flowerpots_plus/items/planter_s.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plant_fertilizer": 15
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "railgun": {
+      "file": "data/mods/Aftershock/items/gun/advanced.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "metal_rail": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 30
+      }
+    },
+    "revenant_crown": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 6
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 6
+      }
+    },
+    "revenant_crown_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "rift_focus_cannon": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_pure_type": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      }
+    },
+    "robe_shadow_xl": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 20
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 20
+      }
+    },
+    "robe_shadow_xl_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "sanguine_staff_lifesbane": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 30
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 30
+      }
+    },
+    "scourge_moonstone": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 24
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 24
+      }
+    },
+    "scourge_moonstone_on": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 24
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "scourge_staff": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 8
+      }
+    },
+    "shrike_misericorde": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "flintlock": 2,
+            "flintlockshot": 2
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 2
+      }
+    },
+    "shrike_misericorde_folded": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "flintlock": 2,
+            "flintlockshot": 2
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 2
+      }
+    },
+    "somen_clairvoyance": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 24
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 24
+      }
+    },
+    "somen_clairvoyance_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 24
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "somen_clairvoyance_xl": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 24
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 24
+      }
+    },
+    "somen_clairvoyance_xl_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 24
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "spatial_displacer": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 20
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 20
+      }
+    },
+    "spear_pestilence": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 9
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 9
+      }
+    },
+    "staff_druidic": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 300
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 300
+      }
+    },
+    "stormbringer": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 9
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 9
+      }
+    },
+    "stormbringer_on": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_blood_type": 9
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 9
+      }
+    },
+    "sun_sword": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 20
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 20
+      }
+    },
+    "sun_sword_on": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "thermic_essence_cutter": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_dull_type": 300
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 300
+      }
+    },
+    "thunder_sigil": {
+      "file": "data/mods/Arcana_BN/items/ranged.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 5
+      }
+    },
+    "veilblade": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_pure_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 10
+      }
+    },
+    "verge_meteoric": {
+      "file": "data/mods/Arcana_BN/items/tools.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 10
+      }
+    },
+    "vibrating_blaster": {
+      "file": "data/mods/Aftershock/items/bioparts.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "acidic_bore": 80
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 80
+      }
+    },
+    "yeet_cannon": {
+      "file": "data/mods/CrazyCataclysm/crazy_items.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "hptc9mag_8rd",
+            "hptc9mag_10rd",
+            "hptc9mag_15rd"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "9mm",
+            [
+              "hptc9mag_8rd",
+              "hptc9mag_10rd",
+              "hptc9mag_15rd"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      }
+    }
+  },
+  "not_edited": {
+    "afs_hardlight_longbow": {
+      "file": "data/mods/Aftershock/items/weapons.json",
+      "class": "DDA-POCKET",
+      "action": "LEAVE",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "armor_data",
+        "bashing",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "flags",
+        "id",
+        "looks_like",
+        "loudness",
+        "material",
+        "min_strength",
+        "name",
+        "price",
+        "price_postapoc",
+        "range",
+        "ranged_damage",
+        "reload",
+        "reload_noise_volume",
+        "skill",
+        "symbol",
+        "type",
+        "ups_charges",
+        "valid_mod_locations",
+        "volume",
+        "weapon_category",
+        "weight"
+      ]
+    }
+  },
+  "unloaded_pockets": {
+    "robe_shadow": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "1 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 20
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 20
+      }
+    },
+    "robe_shadow_on": {
+      "file": "data/mods/Arcana_BN/items/tool_armor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "2 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "max_contains_volume": "800 ml",
+          "max_contains_weight": "1 kg",
+          "max_item_length": "13 cm",
+          "moves": 120
+        },
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "essence_type": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    }
+  }
+}

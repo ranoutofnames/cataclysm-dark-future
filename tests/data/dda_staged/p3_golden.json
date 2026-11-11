@@ -1304,19 +1304,16 @@
       "storage": false
     },
     "afs_eidolon_derringer": {
-      "class": "WELL",
-      "rule": "R3",
+      "class": "GUN-INT",
+      "rule": "R2",
       "action": "HAND-FALLBACK",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "5x50_50_mag",
-            "5x50_100_mag"
-          ],
-          "default_magazine": "5x50_50_mag"
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "5x50": 4
+          }
         }
       ],
       "cdf_kept_ids": [],
@@ -10110,17 +10107,20 @@
       "storage": false
     },
     "laser_rifle_dino2": {
-      "class": "GUN-INT",
-      "rule": "R2",
+      "class": "WELL",
+      "rule": "R3",
       "action": "HAND-FALLBACK",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
-          "rigid": true,
-          "ammo_restriction": {
-            "battery": 1
-          }
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "holster": true,
+          "max_contains_volume": "1 L",
+          "max_contains_weight": "1 kg",
+          "item_restriction": [
+            "light_minus_battery_cell"
+          ]
         }
       ],
       "cdf_kept_ids": [],
