@@ -1,0 +1,1797 @@
+{
+  "batch": "7-MODS-T",
+  "base": "807be48307",
+  "dda": "b4b62254ae2",
+  "note": "50 rows of 7-MODS-T: the 21 converted rows that are golden ids plus the 2 rows already converted by a merged packet (glockmag_test via glockmag, p3_sw_610) in `items`; the 26 KEEP rows and the 3 legacy-path fixtures (kept, _fixture_keep.json) in `not_edited`, because a batch id must be a golden id (tests/p3_golden_batches_test.cpp) and those ids are not in the staged golden.",
+  "count": 50,
+  "items": {
+    "cz75mag_10rd": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "MAG",
+      "action": "DROP-KEY",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 10
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 10
+      }
+    },
+    "cz75mag_16rd": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "MAG",
+      "action": "DROP-KEY",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 16
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 16
+      }
+    },
+    "glockmag_test": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "MAG",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 15
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "already_converted": "7-R1a (glockmag pocket)"
+    },
+    "p3_sw_610": {
+      "file": "data/mods/TEST_DATA/reload_speedloader_p3.json",
+      "class": "GUN-INT",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "10mm": 6,
+            "40": 6
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": [],
+        "magazine_well": null,
+        "clip_size": 6
+      },
+      "already_converted": "7-R2a"
+    },
+    "stanag20_beowulf": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "MAG",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "50beowulf": 20,
+            "223": 20,
+            "300blk": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [
+        {
+          "where": "allowed_speedloaders",
+          "id": "clip223_10rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "50beowulf",
+          "cdf": 20,
+          "dda": 7
+        }
+      ]
+    },
+    "stanag30_beowulf": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "MAG",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "50beowulf": 30,
+            "223": 30,
+            "300blk": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [
+        {
+          "where": "allowed_speedloaders",
+          "id": "clip223_10rd",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "50beowulf",
+          "cdf": 30,
+          "dda": 10
+        }
+      ]
+    },
+    "test_ammo_scale_plain_tool": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "TOOL-INT",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 200
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_ammo_scale_tool": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "TOOL-INT",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 200
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_battery_tool": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "WELL",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "rigid": true,
+          "item_restriction": [
+            "light_minus_battery_cell",
+            "light_battery_cell",
+            "light_plus_battery_cell",
+            "light_atomic_battery_cell",
+            "light_minus_atomic_battery_cell",
+            "light_minus_disposable_cell",
+            "light_disposable_cell"
+          ],
+          "default_magazine": "light_minus_battery_cell"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "light_minus_battery_cell",
+              "light_battery_cell",
+              "light_plus_battery_cell",
+              "light_atomic_battery_cell",
+              "light_minus_atomic_battery_cell",
+              "light_minus_disposable_cell",
+              "light_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_boltcutter_elec": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "WELL",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "rigid": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "light_minus_battery_cell",
+            "light_battery_cell",
+            "light_plus_battery_cell",
+            "light_atomic_battery_cell",
+            "light_minus_atomic_battery_cell",
+            "light_minus_disposable_cell",
+            "light_disposable_cell"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "test_battery_disposable",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "light_minus_battery_cell",
+              "light_battery_cell",
+              "light_plus_battery_cell",
+              "light_atomic_battery_cell",
+              "light_minus_atomic_battery_cell",
+              "light_minus_disposable_cell",
+              "light_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "light_minus_battery_cell",
+          "light_battery_cell",
+          "light_plus_battery_cell",
+          "light_atomic_battery_cell",
+          "light_minus_atomic_battery_cell",
+          "light_minus_disposable_cell",
+          "light_disposable_cell"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_compbow": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "GUN-INT",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "ammo_restriction": {
+            "arrow": 1
+          },
+          "open_container": true
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 1
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_hacksaw_elec": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "WELL",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "rigid": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "light_minus_battery_cell",
+            "light_battery_cell",
+            "light_plus_battery_cell",
+            "light_atomic_battery_cell",
+            "light_minus_atomic_battery_cell",
+            "light_minus_disposable_cell",
+            "light_disposable_cell"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "test_battery_disposable",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "light_minus_battery_cell",
+              "light_battery_cell",
+              "light_plus_battery_cell",
+              "light_atomic_battery_cell",
+              "light_minus_atomic_battery_cell",
+              "light_minus_disposable_cell",
+              "light_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "light_minus_battery_cell",
+          "light_battery_cell",
+          "light_plus_battery_cell",
+          "light_atomic_battery_cell",
+          "light_minus_atomic_battery_cell",
+          "light_minus_disposable_cell",
+          "light_disposable_cell"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_item_group_water_gun": {
+      "file": "data/mods/TEST_DATA/item_group_ammo.json",
+      "class": "GUN-INT",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "water": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 8
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_jam_gun_mult_high": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "WELL",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_jam_gun_mult_zero": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "WELL",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "magazine_well": "150 ml",
+          "item_restriction": [
+            "stanag30",
+            "stanag5",
+            "stanag10",
+            "stanag20",
+            "stanag40",
+            "stanag50",
+            "stanag60",
+            "stanag60drum",
+            "stanag90",
+            "stanag100",
+            "stanag100drum",
+            "stanag150",
+            "carbonmag_223",
+            "survivor223mag"
+          ],
+          "default_magazine": "stanag30"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_mag_jam_mult_high": {
+      "file": "data/mods/TEST_DATA/multimag_p3.json",
+      "class": "MAG",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "223": 30,
+            "300blk": 30
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    },
+    "test_oxytorch": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "WELL",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "test_weldtank",
+            "weldtank"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "weldgas",
+            [
+              "weldtank",
+              "test_weldtank"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "weldtank"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_relic_armor_recharge_fatigue_cts": {
+      "file": "data/mods/TEST_DATA/relic_test.json",
+      "class": "TOOL-INT",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "thread": 20
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_shotgun": {
+      "file": "data/mods/TEST_DATA/ranged_aoe.json",
+      "class": "GUN-INT",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": 8
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_soldering_iron": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "WELL",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "holster": true,
+          "max_contains_volume": "20 L",
+          "max_contains_weight": "20 kg",
+          "item_restriction": [
+            "light_minus_battery_cell",
+            "light_battery_cell",
+            "light_plus_battery_cell",
+            "light_atomic_battery_cell",
+            "light_minus_atomic_battery_cell",
+            "light_minus_disposable_cell",
+            "light_disposable_cell"
+          ],
+          "magazine_well": "250 ml"
+        }
+      ],
+      "dropped_keys": [
+        "magazine_well",
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "test_battery_disposable",
+          "why": "item absent in CDF"
+        },
+        {
+          "where": "item_restriction",
+          "id": "test_battery_rechargable",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "light_minus_battery_cell",
+              "light_battery_cell",
+              "light_plus_battery_cell",
+              "light_atomic_battery_cell",
+              "light_minus_atomic_battery_cell",
+              "light_minus_disposable_cell",
+              "light_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": "250 ml",
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [
+          "light_minus_battery_cell",
+          "light_battery_cell",
+          "light_plus_battery_cell",
+          "light_atomic_battery_cell",
+          "light_minus_atomic_battery_cell",
+          "light_minus_disposable_cell",
+          "light_disposable_cell"
+        ],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "test_weldtank": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "MAG",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "weldgas": 240
+          },
+          "watertight": true
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      }
+    }
+  },
+  "not_edited": {
+    "debug_gun_with_mag_well": {
+      "file": "data/mods/TEST_DATA/pocket_mods_test.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "copy-from",
+        "id",
+        "name",
+        "pocket_data",
+        "type"
+      ]
+    },
+    "debug_retool_mag_well": {
+      "file": "data/mods/TEST_DATA/pocket_mods_test.json",
+      "class": "ADAPTOR",
+      "action": "KEEP-REVIEW",
+      "twin": true,
+      "pockets": [],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "add_mod",
+        "ammo_modifier",
+        "color",
+        "description",
+        "id",
+        "install_time",
+        "integral_longest_side",
+        "integral_volume",
+        "integral_weight",
+        "location",
+        "longest_side",
+        "magazine_adaptor",
+        "material",
+        "mod_targets",
+        "name",
+        "pocket_mods",
+        "price",
+        "price_postapoc",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "diving_flashlight_small_hipower": {
+      "file": "data/mods/TEST_DATA/battery_mod_p3.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "//",
+        "ammo",
+        "charges_per_use",
+        "color",
+        "description",
+        "flags",
+        "id",
+        "longest_side",
+        "looks_like",
+        "material",
+        "name",
+        "pocket_data",
+        "price",
+        "price_postapoc",
+        "symbol",
+        "type",
+        "use_action",
+        "volume",
+        "weight"
+      ]
+    },
+    "diving_flashlight_small_hipower_on": {
+      "file": "data/mods/TEST_DATA/battery_mod_p3.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "copy-from",
+        "flags",
+        "id",
+        "looks_like",
+        "name",
+        "power_draw",
+        "revert_to",
+        "type",
+        "use_action"
+      ]
+    },
+    "p3pre_mag": {
+      "file": "data/mods/TEST_DATA/derive_counts_p3.json",
+      "class": "MAG",
+      "action": "HAND-FALLBACK",
+      "twin": false,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "hand_fallback": true,
+      "reason": "legacy derive fixture: `pocket_data` without `capacity`, the loader derives the magazine capacity (tests/cdf_loader_p3_test.cpp derive_magazine_capacity)",
+      "own_keys": [
+        "//",
+        "ammo_type",
+        "color",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "p3pre_mag_legacy": {
+      "file": "data/mods/TEST_DATA/derive_counts_p3.json",
+      "class": "MAG",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 7
+          }
+        }
+      ],
+      "dropped_keys": [
+        "capacity"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "capacity": 7
+      },
+      "reason": "legacy key fixture: the own record keeps `capacity` 7 (tests/cdf_loader_p3_test.cpp:439 pins it)",
+      "own_keys": [
+        "capacity",
+        "copy-from",
+        "id",
+        "name",
+        "pocket_data",
+        "type"
+      ]
+    },
+    "p3pre_tool_legacy": {
+      "file": "data/mods/TEST_DATA/derive_counts_p3.json",
+      "class": "TOOL-INT",
+      "action": "HAND-FALLBACK",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 9
+          }
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null,
+        "max_charges": 9
+      },
+      "hand_fallback": true,
+      "reason": "legacy key fixture: the own record keeps `max_charges` 9 (tests/cdf_loader_p3_test.cpp:440 pins it)",
+      "own_keys": [
+        "ammo",
+        "copy-from",
+        "id",
+        "max_charges",
+        "name",
+        "pocket_data",
+        "type"
+      ]
+    },
+    "test_flashlight": {
+      "file": "data/mods/TEST_DATA/dda_pocket_items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "charges_per_use",
+        "color",
+        "description",
+        "flags",
+        "id",
+        "longest_side",
+        "material",
+        "name",
+        "pocket_data",
+        "price",
+        "price_postapoc",
+        "symbol",
+        "type",
+        "use_action",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_glock": {
+      "file": "data/mods/TEST_DATA/dda_pocket_items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "bashing",
+        "blackpowder_tolerance",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "id",
+        "material",
+        "min_cycle_recoil",
+        "name",
+        "pocket_data",
+        "price",
+        "price_postapoc",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_glockmag": {
+      "file": "data/mods/TEST_DATA/dda_pocket_items.json",
+      "class": "MAG",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo_type",
+        "capacity",
+        "color",
+        "description",
+        "flags",
+        "id",
+        "looks_like",
+        "material",
+        "name",
+        "pocket_data",
+        "price",
+        "price_postapoc",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_aux_gun": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "//",
+        "color",
+        "description",
+        "gun_data",
+        "id",
+        "install_time",
+        "location",
+        "longest_side",
+        "material",
+        "mod_targets",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_direct_battery": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_gun": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "id",
+        "longest_side",
+        "material",
+        "name",
+        "pocket_data",
+        "range",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_gun_consume": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "firing_requirements",
+        "flags",
+        "id",
+        "longest_side",
+        "material",
+        "modes",
+        "name",
+        "pocket_data",
+        "range",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "valid_mod_locations",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_gun_integral_ammo": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "firing_requirements",
+        "id",
+        "longest_side",
+        "material",
+        "name",
+        "pocket_data",
+        "range",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "valid_mod_locations",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_gun_same_type": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "id",
+        "longest_side",
+        "material",
+        "name",
+        "pocket_data",
+        "range",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_mixed_battery": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_tool_consume": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_tool_factor": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "legacy_charges_per_use_factor",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_tool_throttled": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "turns_per_charge",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_turret_flamethrower": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "firing_requirements",
+        "id",
+        "longest_side",
+        "material",
+        "modes",
+        "name",
+        "pocket_data",
+        "range",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_turret_gun": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "firing_requirements",
+        "id",
+        "longest_side",
+        "material",
+        "modes",
+        "name",
+        "pocket_data",
+        "range",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_turret_gun_ups": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "ammo",
+        "color",
+        "description",
+        "dispersion",
+        "durability",
+        "firing_requirements",
+        "flags",
+        "id",
+        "longest_side",
+        "material",
+        "modes",
+        "name",
+        "pocket_data",
+        "range",
+        "ranged_damage",
+        "skill",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_two_battery": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_two_fluid": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_vehicle_combo": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_vehicle_welder": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "flags",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_well_fluid": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "DDA-POCKET",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "own_keys": [
+        "color",
+        "consumption_per_use",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    },
+    "test_multimag_well_fluid_mag": {
+      "file": "data/mods/TEST_DATA/items.json",
+      "class": "MAG",
+      "action": "KEEP",
+      "twin": true,
+      "pockets": null,
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": null,
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "cap_diff": [
+        {
+          "ammo": "gasoline",
+          "cdf": 0,
+          "dda": 40
+        }
+      ],
+      "own_keys": [
+        "ammo_type",
+        "color",
+        "description",
+        "id",
+        "material",
+        "name",
+        "pocket_data",
+        "symbol",
+        "type",
+        "volume",
+        "weight"
+      ]
+    }
+  },
+  "fixture_keep": [
+    "p3pre_mag",
+    "p3pre_mag_legacy",
+    "p3pre_tool_legacy"
+  ]
+}

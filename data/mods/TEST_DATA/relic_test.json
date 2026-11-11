@@ -142,6 +142,9 @@
     "copy-from": "test_relic_tool_armor",
     "name": "TEST relic armor recharge fatigue skin",
     "ammo": [ "thread" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "thread": 20 } }
+    ],
     "relic_data": {
       "recharge_scheme": [
         {

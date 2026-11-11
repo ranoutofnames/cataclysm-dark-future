@@ -1,0 +1,72 @@
+{
+  "batch": "7-MODS-T",
+  "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others. CDF: P3-7-MODS-T: N3 names test_battery_tool, not the draft's p3pre_mag: a neg fixture must name a golden id (tests/p3_batch_generic_test.cpp golden_item_pockets) and p3pre_mag is kept on the legacy path and is not in p3_golden.json.",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "cap_plus_one",
+      "id": "cz75mag_10rd",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`9mm`] 10 -> 11",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "cap_plus_one",
+      "id": "cz75mag_16rd",
+      "pocket": 0,
+      "mutation": "ammo_restriction[`9mm`] 16 -> 17",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N3",
+      "kind": "hand_fallback_integral",
+      "id": "test_battery_tool",
+      "pocket": 0,
+      "mutation": "replace the CDF well by an integral MAGAZINE pocket (the owner rule keeps battery wells)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N4",
+      "kind": "drop_restriction_id",
+      "id": "test_battery_tool",
+      "pocket": 0,
+      "mutation": "remove `light_disposable_cell` from item_restriction",
+      "expect": "mismatch reported for this id only",
+      "removed": "light_disposable_cell"
+    },
+    {
+      "case": "N5",
+      "kind": "add_bogus_id",
+      "id": "test_battery_tool",
+      "pocket": 0,
+      "mutation": "append `zz_not_a_mag` to item_restriction",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N6",
+      "kind": "wrong_default",
+      "id": "test_battery_tool",
+      "pocket": 0,
+      "mutation": "set default_magazine to `zz_not_a_mag` (was `light_minus_battery_cell`)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N7",
+      "kind": "drop_restriction_id",
+      "id": "test_boltcutter_elec",
+      "pocket": 0,
+      "mutation": "remove `light_disposable_cell` from item_restriction",
+      "expect": "mismatch reported for this id only",
+      "removed": "light_disposable_cell"
+    },
+    {
+      "case": "N8",
+      "kind": "well_volume",
+      "id": "test_jam_gun_mult_high",
+      "pocket": 0,
+      "mutation": "magazine_well `150 ml` -> `1 ml`",
+      "expect": "mismatch reported for this id only"
+    }
+  ]
+}

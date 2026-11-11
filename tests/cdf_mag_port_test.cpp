@@ -11,6 +11,12 @@ namespace {
 const std::string P3_GOLDEN_FILENAME = "tests/data/dda_staged/p3_golden.json";
 const std::string P3_GOLDEN_TARGET_IDS_FILENAME =
     "tests/data/dda_staged/p3_golden_target_ids.json";
+// CDF: P3-7-MODS-T. The TEST_DATA rows the packet keeps on the legacy path (the 7-PRE derive
+// fixtures; tests/data/dda_staged/p3_batches/_fixture_keep.json, `{ "ids": { id: reason } }`).
+// The class cases below skip exactly these ids and print them, so the un-hidden cases stay green
+// while the legacy fixtures keep their shape (tests/p3_data_modst_test.cpp S1 pins that shape).
+const std::string P3_FIXTURE_KEEP_FILENAME =
+    "tests/data/dda_staged/p3_batches/_fixture_keep.json";
 
 } // namespace
 
@@ -127,6 +133,28 @@ struct golden_counts {
     size_t loaded = 0;
     std::vector<std::string> skipped;
 };
+
+// CDF: P3-7-MODS-T: read `tests/data/dda_staged/p3_batches/_fixture_keep.json` once. A missing
+// file is an empty list (no packet keeps a fixture).
+auto fixture_keep_ids() -> const std::set<std::string>& {
+    static std::set<std::string> ids;
+    static bool read = false;
+    if (!read) {
+        read = true;
+        std::ifstream file(P3_FIXTURE_KEEP_FILENAME, std::ios::binary);
+        if (!file.good()) { return ids; }
+        JsonIn jsin(file);
+        JsonObject root = jsin.get_object();
+        root.allow_omitted_members();
+        if (root.has_object("ids")) {
+            for (const JsonMember member : root.get_object("ids")) {
+                member.get_string();
+                ids.insert(member.name());
+            }
+        }
+    }
+    return ids;
+}
 
 // Loaded pockets as the golden sees them. The golden never lists MOD, CORPSE or SOFTWARE pockets
 // (the loader synthesizes the MOD pocket of guns itself, per DDA), so those are dropped here;
@@ -268,8 +296,10 @@ void compare_item(const std::string& name, JsonArray gold_pockets, bool order_on
 // Walks the golden. `cls` empty means every class. `order_only` compares the pocket count and
 // the pocket_type sequence of items with two or more golden pockets and nothing else.
 // `only_ids`, when not null, restricts the walk to those ids (7-GOLD1 batches).
+// `skip`, when not null, leaves out the fixture-keep ids of P3-7-MODS-T and counts them.
 auto compare_golden(const std::string& cls, bool order_only, golden_counts& counts,
-                    const std::set<std::string>* only_ids = nullptr) -> std::vector<std::string> {
+                    const std::set<std::string>* only_ids = nullptr,
+                    const std::set<std::string>* skip = nullptr) -> std::vector<std::string> {
     std::ifstream file(P3_GOLDEN_FILENAME, std::ios::binary);
     JsonIn jsin(file);
     JsonObject golden = jsin.get_object();
@@ -282,6 +312,7 @@ auto compare_golden(const std::string& cls, bool order_only, golden_counts& coun
         item.allow_omitted_members();
         if (!cls.empty() && item.get_string("class") != cls) { continue; }
         if (only_ids != nullptr && only_ids->count(member.name()) == 0) { continue; }
+        if (skip != nullptr && skip->count(member.name()) != 0) { continue; }
         JsonArray gold_pockets = item.get_array("pockets");
         if (order_only && gold_pockets.size() < 2) { continue; }
         compare_item(member.name(), gold_pockets, order_only, counts, failures);
@@ -296,11 +327,35 @@ void report_failures(const std::vector<std::string>& failures) {
     CHECK(failures.empty());
 }
 
+// CDF: P3-7-MODS-T: the fixture-keep ids of `cls` (the class case skips and prints them).
+auto class_fixture_keep(const std::string& cls) -> std::vector<std::string> {
+    const std::set<std::string>& skip = fixture_keep_ids();
+    std::vector<std::string> out;
+    if (skip.empty()) { return out; }
+    std::ifstream file(P3_GOLDEN_FILENAME, std::ios::binary);
+    JsonIn jsin(file);
+    JsonObject golden = jsin.get_object();
+    golden.allow_omitted_members();
+    JsonObject items = golden.get_object("items");
+    for (const JsonMember member : items) {
+        JsonObject item = member.get_object();
+        item.allow_omitted_members();
+        if (item.get_string("class") != cls) { continue; }
+        if (skip.count(member.name()) != 0) { out.push_back(member.name()); }
+    }
+    return out;
+}
+
 void check_class(const std::string& cls) {
     golden_counts counts;
-    const std::vector<std::string> failures = compare_golden(cls, false, counts);
+    const std::set<std::string>& skip = fixture_keep_ids();
+    const std::vector<std::string> kept = class_fixture_keep(cls);
+    const std::vector<std::string> failures =
+        compare_golden(cls, false, counts, nullptr, &skip);
     std::cout << "p3 golden " << cls << ": golden=" << counts.in_golden
-              << " loaded=" << counts.loaded << " skipped=" << counts.skipped.size() << std::endl;
+              << " loaded=" << counts.loaded << " skipped=" << counts.skipped.size()
+              << " fixture-kept=" << kept.size() << std::endl;
+    for (const std::string& id : kept) { std::cout << "  fixture-keep " << id << "\n"; }
     report_failures(failures);
 }
 
@@ -344,19 +399,23 @@ auto p3_golden_compare_pockets(const std::string& id, const std::string& pockets
     return failures;
 }
 
-TEST_CASE("p3 golden load R1 MAG", "[.][p3][golden][load][R1]") { check_class("MAG"); }
+// CDF: P3-7-MODS-T un-hides R1, R4, R5, R6 and R8: the TEST_DATA rows of those classes are ported
+// and the kept legacy fixtures are skipped by name (_fixture_keep.json). R2 and R3 stay hidden: the
+// class still has rows outside this packet (R2 `test_visible_underslung_shotgun`; R3 the merged
+// packets' wells against the staged golden), see the packet REPORT `## Blocked`.
+TEST_CASE("p3 golden load R1 MAG", "[p3][golden][load][R1]") { check_class("MAG"); }
 
 TEST_CASE("p3 golden load R2 GUN-INT", "[.][p3][golden][load][R2]") { check_class("GUN-INT"); }
 
 TEST_CASE("p3 golden load R3 WELL", "[.][p3][golden][load][R3]") { check_class("WELL"); }
 
-TEST_CASE("p3 golden load R4 TOOL-INT", "[.][p3][golden][load][R4]") { check_class("TOOL-INT"); }
+TEST_CASE("p3 golden load R4 TOOL-INT", "[p3][golden][load][R4]") { check_class("TOOL-INT"); }
 
-TEST_CASE("p3 golden load R5 CHARGES", "[.][p3][golden][load][R5]") { check_class("CHARGES"); }
+TEST_CASE("p3 golden load R5 CHARGES", "[p3][golden][load][R5]") { check_class("CHARGES"); }
 
-TEST_CASE("p3 golden load R6 ADAPTOR", "[.][p3][golden][load][R6]") { check_class("ADAPTOR"); }
+TEST_CASE("p3 golden load R6 ADAPTOR", "[p3][golden][load][R6]") { check_class("ADAPTOR"); }
 
-TEST_CASE("p3 golden load R8 DDA-POCKET", "[.][p3][golden][load][R8]") {
+TEST_CASE("p3 golden load R8 DDA-POCKET", "[p3][golden][load][R8]") {
     check_class("DDA-POCKET");
 }
 

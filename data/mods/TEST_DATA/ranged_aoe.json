@@ -68,6 +68,9 @@
     "dispersion": 0,
     "durability": 10,
     "clip_size": 8,
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "shot": 8 } }
+    ],
     "flags": [ "NEVER_JAMS" ]
   },
   {

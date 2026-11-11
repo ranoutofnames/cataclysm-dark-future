@@ -233,10 +233,15 @@
       { "flame": false, "type": "cauterize" }
     ],
     "flags": [ "STAB", "BELT_CLIP", "ALLOWS_REMOTE_USE" ],
-    "magazines": [
-      [
-        "battery",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "holster": true,
+        "rigid": true,
+        "max_contains_volume": "20 L",
+        "max_contains_weight": "20 kg",
+        "item_restriction": [
           "light_minus_battery_cell",
           "light_battery_cell",
           "light_plus_battery_cell",
@@ -244,10 +249,10 @@
           "light_minus_atomic_battery_cell",
           "light_minus_disposable_cell",
           "light_disposable_cell"
-        ]
-      ]
-    ],
-    "magazine_well": "250 ml"
+        ],
+        "magazine_well": "250 ml"
+      }
+    ]
   },
   {
     "id": "test_battery_tool",
@@ -261,10 +266,12 @@
     "symbol": ",",
     "color": "light_gray",
     "ammo": "battery",
-    "magazines": [
-      [
-        "battery",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [
           "light_minus_battery_cell",
           "light_battery_cell",
           "light_plus_battery_cell",
@@ -272,8 +279,9 @@
           "light_minus_atomic_battery_cell",
           "light_minus_disposable_cell",
           "light_disposable_cell"
-        ]
-      ]
+        ],
+        "default_magazine": "light_minus_battery_cell"
+      }
     ]
   },
   {
@@ -408,6 +416,9 @@
     "dispersion": 850,
     "durability": 6,
     "clip_size": 1,
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "ammo_restriction": { "arrow": 1 }, "open_container": true }
+    ],
     "reload": 110,
     "valid_mod_locations": [ [ "underbarrel", 1 ], [ "sights", 1 ], [ "accessories", 2 ], [ "stabilizer", 1 ], [ "dampening", 1 ] ],
     "use_action": {
@@ -662,7 +673,10 @@
     "ammo_type": "weldgas",
     "capacity": 240,
     "count": 240,
-    "flags": [ "NO_UNLOAD", "NO_RELOAD" ]
+    "flags": [ "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "watertight": true, "ammo_restriction": { "weldgas": 240 } }
+    ]
   },
   {
     "type": "TOOL",
@@ -676,7 +690,16 @@
     "qualities": [ [ "WELD", 10 ] ],
     "charges_per_use": 4,
     "use_action": [ "OXYTORCH" ],
-    "magazines": [ [ "weldgas", [ "weldtank", "test_weldtank" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "holster": true,
+        "max_contains_volume": "20 L",
+        "max_contains_weight": "20 kg",
+        "item_restriction": [ "test_weldtank", "weldtank" ]
+      }
+    ]
   },
   {
     "type": "TOOL",
@@ -695,10 +718,15 @@
     "description": "Test bolt cutters which uses batteries.",
     "charges_per_use": 1,
     "ammo": "battery",
-    "magazines": [
-      [
-        "battery",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "holster": true,
+        "rigid": true,
+        "max_contains_volume": "20 L",
+        "max_contains_weight": "20 kg",
+        "item_restriction": [
           "light_minus_battery_cell",
           "light_battery_cell",
           "light_plus_battery_cell",
@@ -707,7 +735,7 @@
           "light_minus_disposable_cell",
           "light_disposable_cell"
         ]
-      ]
+      }
     ]
   },
   {
@@ -728,10 +756,15 @@
     "description": "Test hacksaw which uses batteries.",
     "charges_per_use": 1,
     "ammo": "battery",
-    "magazines": [
-      [
-        "battery",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "holster": true,
+        "rigid": true,
+        "max_contains_volume": "20 L",
+        "max_contains_weight": "20 kg",
+        "item_restriction": [
           "light_minus_battery_cell",
           "light_battery_cell",
           "light_plus_battery_cell",
@@ -740,7 +773,7 @@
           "light_minus_disposable_cell",
           "light_disposable_cell"
         ]
-      ]
+      }
     ]
   },
   {
@@ -2211,7 +2244,6 @@
     "color": "light_gray",
     "ammo_type": [ "9mm" ],
     "flags": [ "MAG_COMPACT" ],
-    "capacity": 16,
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 16 } } ]
   },
   {
@@ -2221,7 +2253,6 @@
     "name": { "str": "CZ 75 10-round magazine" },
     "description": "A 10-round steel box magazine for use with the CZ 75.",
     "copy-from": "cz75mag_16rd",
-    "capacity": 10,
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "9mm": 10 } } ]
   },
   {
@@ -2351,6 +2382,7 @@
     "armor_portion_data": [ { "encumbrance": [ 0, 0 ], "covers": [ "torso" ] } ]
   },
   {
+    "//": "CDF: P3-7-MODS-T; keeps CDF's 20-round Beowulf capacity (the DDA twin has 7).",
     "id": "stanag20_beowulf",
     "copy-from": "stanag20",
     "type": "MAGAZINE",
@@ -2368,7 +2400,7 @@
         "pocket_type": "MAGAZINE",
         "rigid": true,
         "ammo_restriction": {
-          "50beowulf": 7,
+          "50beowulf": 20,
           "223": 20,
           "300blk": 20
         }
@@ -2376,6 +2408,7 @@
     ]
   },
   {
+    "//": "CDF: P3-7-MODS-T; keeps CDF's 30-round Beowulf capacity (the DDA twin has 10).",
     "id": "stanag30_beowulf",
     "copy-from": "stanag30",
     "type": "MAGAZINE",
@@ -2393,7 +2426,7 @@
         "pocket_type": "MAGAZINE",
         "rigid": true,
         "ammo_restriction": {
-          "50beowulf": 10,
+          "50beowulf": 30,
           "223": 30,
           "300blk": 30
         }
@@ -2401,10 +2434,14 @@
     ]
   },
   {
+    "//": "CDF: P3-7-MODS-T; keeps the fixture's own 200-charge capacity (the inherited smart_phone_music pocket holds 56 since BATT2).",
     "id": "test_ammo_scale_tool",
     "copy-from": "smart_phone_music",
     "type": "TOOL",
     "name": { "str": "test ammo scale tool" },
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 200 } }
+    ],
     "use_action": [
       { "type": "transform", "target": "rag", "msg": "x", "ammo_scale": 3 },
       [ "CROWBAR", 2 ],
@@ -2413,10 +2450,14 @@
     ]
   },
   {
+    "//": "CDF: P3-7-MODS-T; keeps the fixture's own 200-charge capacity (the inherited smart_phone_music pocket holds 56 since BATT2).",
     "id": "test_ammo_scale_plain_tool",
     "copy-from": "smart_phone_music",
     "type": "TOOL",
     "name": { "str": "test ammo scale plain tool" },
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 200 } }
+    ],
     "use_action": [ [ "CROWBAR", 1 ] ]
   },
   {"id":"test_energy_gun","type":"GUN","name":{"str":"test energy gun"},"description":"Test gun: energy_drain 5 kJ, one battery well, no ammo type.","weight":"1000 g","volume":"1 L","longest_side":"300 mm","material":["steel"],"symbol":"(","color":"light_gray","skill":"pistol","range":10,"ranged_damage":{"damage_type":"bullet","amount":10},"dispersion":480,"durability":10,"modes":[["DEFAULT","default",1]],"valid_mod_locations":[["sights",1]],"energy_drain":"5 kJ","pocket_data":[{"id":"power","magazine_well":"500 ml","pocket_type":"MAGAZINE_WELL","max_item_length":"2 km","item_restriction":["battery_test","heavy_battery_cell"]},{"pocket_type":"MOD"}]},

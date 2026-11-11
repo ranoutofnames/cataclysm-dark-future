@@ -1,0 +1,10 @@
+{
+  "batch": "_fixture_keep",
+  "note": "P3-7-MODS-T: the TEST_DATA rows kept on the legacy path, with the reason; tests/cdf_mag_port_test.cpp class cases skip exactly these ids and print them, tests/p3_data_modst_test.cpp S1 pins their key shape. This is not a batch: `items` is empty so the merged batch readers (tests/p3_golden_batches_test.cpp, tests/p3_batch_generic_test.cpp) see a batch with no ids, and the ids live in `ids` (a batch id must be a golden id, and p3pre_mag is not one).",
+  "items": {},
+  "ids": {
+    "p3pre_mag": "legacy derive fixture: `pocket_data` without `capacity`, the loader derives the magazine capacity (tests/cdf_loader_p3_test.cpp derive_magazine_capacity)",
+    "p3pre_mag_legacy": "legacy key fixture: the own record keeps `capacity` 7 (tests/cdf_loader_p3_test.cpp:439 pins it)",
+    "p3pre_tool_legacy": "legacy key fixture: the own record keeps `max_charges` 9 (tests/cdf_loader_p3_test.cpp:440 pins it)"
+  }
+}
