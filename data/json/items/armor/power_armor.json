@@ -19,6 +19,9 @@
     "coverage": 100,
     "encumbrance": 15,
     "storage": "4 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "4000 ml" }
+    ],
     "warmth": 25,
     "material_thickness": 1,
     "environmental_protection": 6,
@@ -102,6 +105,9 @@
     "coverage": 100,
     "encumbrance": 30,
     "storage": "4 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "4000 ml" }
+    ],
     "warmth": 50,
     "material_thickness": 6,
     "environmental_protection": 6,
@@ -156,6 +162,9 @@
     "coverage": 100,
     "encumbrance": 30,
     "storage": "4 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "4000 ml" }
+    ],
     "warmth": 30,
     "material_thickness": 1,
     "environmental_protection": 10,
@@ -283,6 +292,9 @@
     "coverage": 100,
     "encumbrance": 25,
     "storage": "4 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "4000 ml" }
+    ],
     "warmth": 30,
     "material_thickness": 1,
     "environmental_protection": 10,
@@ -410,6 +422,9 @@
     "coverage": 100,
     "encumbrance": 20,
     "storage": "4 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "4000 ml" }
+    ],
     "warmth": 30,
     "material_thickness": 1,
     "environmental_protection": 10,
@@ -720,6 +735,17 @@
     "coverage": 30,
     "encumbrance": 5,
     "storage": "40 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "40000 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "material_thickness": 10,
     "valid_mods": [ "resized_large", "resized_small" ],
     "flags": [ "POWERARMOR_MOD", "COMPACT", "STURDY", "BELTED", "ONLY_ONE" ]
@@ -743,6 +769,17 @@
     "coverage": 10,
     "encumbrance": 0,
     "storage": "40 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "40000 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "material_thickness": 10,
     "valid_mods": [ "resized_large", "resized_small" ],
     "flags": [ "POWERARMOR_MOD", "COMPACT", "STURDY", "BELTED", "ONLY_ONE" ]
@@ -1187,10 +1224,11 @@
       {
         "pocket_type": "CONTAINER",
         "carry": true,
+        "rigid": true,
         "max_contains_volume": "7 L"
       }
     ],
-    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data)"
+    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data); storage as native pocket (PL-31 STOR7)"
   },
   {
     "id": "exosuit_military_on",
@@ -1218,6 +1256,7 @@
       {
         "pocket_type": "CONTAINER",
         "carry": true,
+        "rigid": true,
         "max_contains_volume": "7 L"
       }
     ]
@@ -1284,18 +1323,19 @@
       {
         "pocket_type": "CONTAINER",
         "carry": true,
+        "rigid": true,
         "max_contains_volume": "15 L"
       },
       {
         "pocket_type": "CONTAINER",
-        "carry": true,
+        "rigid": true,
         "holster": true,
         "max_contains_volume": "10 L",
         "max_item_volume": "10 L",
         "max_item_length": "150 cm"
       }
     ],
-    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data)"
+    "//": "CDF: P3-2 DDA magazine port: dropped keys ammo, max_charges (now in pocket_data); storage as native pocket (PL-31 STOR7)"
   },
   {
     "id": "exosuit_industrial_on",
@@ -1322,11 +1362,12 @@
       {
         "pocket_type": "CONTAINER",
         "carry": true,
+        "rigid": true,
         "max_contains_volume": "15 L"
       },
       {
         "pocket_type": "CONTAINER",
-        "carry": true,
+        "rigid": true,
         "holster": true,
         "max_contains_volume": "10 L",
         "max_item_volume": "10 L",

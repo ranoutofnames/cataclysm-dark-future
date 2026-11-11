@@ -1,0 +1,121 @@
+{
+ "format": 1,
+ "packet": "STOR7",
+ "note": "loaded pockets of the guard / exosuits before the packet edit (red-first snapshot)",
+ "items": {
+  "exosuit_industrial": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 15000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 354
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 10000,
+     "max_item_volume_ml": 10000,
+     "carry": true,
+     "holster": true,
+     "rigid": false,
+     "max_item_length_mm": 1500
+    },
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  "exosuit_industrial_on": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 15000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 354
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 10000,
+     "max_item_volume_ml": 10000,
+     "carry": true,
+     "holster": true,
+     "rigid": false,
+     "max_item_length_mm": 1500
+    },
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  "exosuit_military": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 7000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 269
+    },
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  "exosuit_military_on": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [
+      "BATTERY_HEAVY"
+     ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 7000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 269
+    },
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  }
+ }
+}

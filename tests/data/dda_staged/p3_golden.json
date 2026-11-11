@@ -6280,7 +6280,6 @@
         },
         {
           "pocket_type": "CONTAINER",
-          "carry": true,
           "holster": true,
           "max_contains_volume": "10 L",
           "max_item_volume": "10 L",
@@ -6313,7 +6312,6 @@
         },
         {
           "pocket_type": "CONTAINER",
-          "carry": true,
           "holster": true,
           "max_contains_volume": "10 L",
           "max_item_volume": "10 L",

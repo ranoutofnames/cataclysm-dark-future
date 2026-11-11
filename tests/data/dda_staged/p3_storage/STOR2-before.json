@@ -1,0 +1,43 @@
+{
+ "format": 1,
+ "packet": "STOR2",
+ "note": "loaded pockets of the guard / exosuits before the packet edit (red-first snapshot)",
+ "items": {
+  "armor_wyrm": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "holster": true,
+     "watertight": true,
+     "volume_ml": 200000,
+     "max_contains_weight_g": 2000000000,
+     "max_item_length_mm": 2000000,
+     "ammo_restriction": {
+      "essence_blood_type": 16
+     }
+    },
+    {
+     "pocket_type": "MOD"
+    }
+   ],
+   "container_pockets": 0,
+   "get_storage_ml": 0
+  },
+  "armor_blarmor": {
+   "pockets": [
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 1000,
+     "max_item_length_mm": 141,
+     "carry": true,
+     "holster": false,
+     "rigid": true,
+     "moves": 100
+    }
+   ],
+   "container_pockets": 1,
+   "get_storage_ml": 1000
+  }
+ }
+}

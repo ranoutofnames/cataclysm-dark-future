@@ -61,6 +61,9 @@
     "coverage": 90,
     "encumbrance": 22,
     "storage": "1 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "1000 ml" }
+    ],
     "warmth": 20,
     "material_thickness": 5,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
@@ -145,6 +148,9 @@
     "coverage": 90,
     "encumbrance": 20,
     "storage": "2 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "2000 ml" }
+    ],
     "warmth": 25,
     "material_thickness": 4,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
@@ -202,6 +208,17 @@
     "coverage": 95,
     "encumbrance": 20,
     "storage": "20 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "20000 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "warmth": 20,
     "material_thickness": 5,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
@@ -226,6 +243,17 @@
     "coverage": 80,
     "encumbrance": 16,
     "storage": "12500 ml",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "12500 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
@@ -361,6 +389,17 @@
     "coverage": 100,
     "encumbrance": 30,
     "storage": "20 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "20000 ml" },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "warmth": 30,
     "material_thickness": 8,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
@@ -635,6 +674,20 @@
     "material": [ "kevlar", "superalloy" ],
     "color": "light_cyan",
     "encumbrance": 26,
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "max_contains_volume": "5000 ml", "max_contains_weight": "6 kg", "moves": 80 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "5000 ml", "max_contains_weight": "6 kg", "moves": 80 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "2500 ml", "max_contains_weight": "3 kg", "moves": 120 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "2500 ml", "max_contains_weight": "3 kg", "moves": 120 },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
   },
   {
@@ -646,6 +699,20 @@
     "material": [ "kevlar", "superalloy", "cotton" ],
     "color": "light_cyan",
     "encumbrance": 23,
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "max_contains_volume": "4286 ml", "max_contains_weight": "6 kg", "moves": 80 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "4286 ml", "max_contains_weight": "6 kg", "moves": 80 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "3214 ml", "max_contains_weight": "3 kg", "moves": 120 },
+      { "pocket_type": "CONTAINER", "max_contains_volume": "3214 ml", "max_contains_weight": "3 kg", "moves": 120 },
+      {
+        "pocket_type": "CONTAINER",
+        "rigid": true,
+        "holster": true,
+        "max_contains_volume": "10000 ml",
+        "max_item_volume": "10000 ml",
+        "max_item_length": "150 cm"
+      }
+    ],
     "material_thickness": 6,
     "resistance": { "bullet": 30 },
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
@@ -806,6 +873,9 @@
     "color": "dark_gray",
     "armor_portion_data": [ { "covers": [ "torso", "legs", "arms" ], "coverage": 95, "encumbrance": 25 } ],
     "storage": "5 L",
+    "pocket_data": [
+      { "pocket_type": "CONTAINER", "rigid": true, "max_contains_volume": "5000 ml" }
+    ],
     "warmth": 35,
     "material_thickness": 11,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],

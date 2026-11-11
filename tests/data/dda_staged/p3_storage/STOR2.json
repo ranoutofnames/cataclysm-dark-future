@@ -1,0 +1,978 @@
+{
+ "format": 1,
+ "packet": "STOR2",
+ "base": "8d172a40c7 data (PL-31-e targets; re-derived on the tree: no target has pocket_data, no ammo/magazines)",
+ "rows": [
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 1000,
+     "max_item_length_mm": 141,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 1000
+   },
+   "id": "armor_blarmor",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "boiled leather armor",
+   "storage_ml": 1000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "TWIN",
+   "dda_ref_id": "armor_blarmor",
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "1000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 2000,
+     "max_item_length_mm": 184,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 2000
+   },
+   "id": "armor_larmor",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "leather body armor",
+   "storage_ml": 2000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "TWIN",
+   "dda_ref_id": "armor_larmor",
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "2000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 20000,
+     "max_item_length_mm": 382,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 20000
+   },
+   "id": "armor_nomad",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "nomad gear",
+   "storage_ml": 20000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "TWIN",
+   "dda_ref_id": "armor_nomad",
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "20000 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 12500,
+     "max_item_length_mm": 325,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 12500
+   },
+   "id": "armor_nomad_light",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "light nomad gear",
+   "storage_ml": 12500,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "TWIN",
+   "dda_ref_id": "armor_nomad_light",
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "12500 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": null,
+   "id": "armor_plarmor",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "plated leather armor",
+   "storage_ml": 2000,
+   "copy_from": "armor_larmor",
+   "own_storage": false,
+   "dda_ref_kind": "TWIN",
+   "dda_ref_id": "armor_plarmor",
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL-INHERIT",
+   "packet": "STOR2",
+   "proposed_pocket_data": null,
+   "note": "inherits `armor_larmor` (parent in this table; no own edit)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 20000,
+     "max_item_length_mm": 382,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 20000
+   },
+   "id": "armor_scavenger",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "scavenger gear",
+   "storage_ml": 20000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "20000 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": null,
+   "id": "armor_scute",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "scaleskin armor",
+   "storage_ml": 2000,
+   "copy_from": "armor_larmor",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL-INHERIT",
+   "packet": "STOR2",
+   "proposed_pocket_data": null,
+   "note": "inherits `armor_larmor` (parent in this table; no own edit)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 4000,
+     "max_item_length_mm": 226,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 4000
+   },
+   "id": "depowered_armor",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "salvaged power armor suit",
+   "storage_ml": 4000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "MIGRATION",
+   "dda_ref_id": "combat_exoskeleton_light_salvaged",
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "4000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 4000,
+     "max_item_length_mm": 226,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 4000
+   },
+   "id": "depowered_exo",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "salvaged power armor exoskeleton",
+   "storage_ml": 4000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "4000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 40000,
+     "max_item_length_mm": 481,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 40000
+   },
+   "id": "heavy_power_armor_frame",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "advanced power armor hauling frame",
+   "storage_ml": 40000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "40000 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 4000,
+     "max_item_length_mm": 226,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 4000
+   },
+   "id": "power_armor_exo_1",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "prototype power armor exoskeleton",
+   "storage_ml": 4000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "4000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": null,
+   "id": "power_armor_exo_1_on",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "prototype power armor exoskeleton (active)",
+   "storage_ml": 4000,
+   "copy_from": "power_armor_exo_1",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL-INHERIT",
+   "packet": "STOR2",
+   "proposed_pocket_data": null,
+   "note": "inherits `power_armor_exo_1` (parent in this table; no own edit)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 4000,
+     "max_item_length_mm": 226,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 4000
+   },
+   "id": "power_armor_exo_2",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "power armor exoskeleton",
+   "storage_ml": 4000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "4000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": null,
+   "id": "power_armor_exo_2_on",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "power armor exoskeleton (active)",
+   "storage_ml": 4000,
+   "copy_from": "power_armor_exo_2",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL-INHERIT",
+   "packet": "STOR2",
+   "proposed_pocket_data": null,
+   "note": "inherits `power_armor_exo_2` (parent in this table; no own edit)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 4000,
+     "max_item_length_mm": 226,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 4000
+   },
+   "id": "power_armor_exo_3",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "advanced power armor exoskeleton",
+   "storage_ml": 4000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "4000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": null,
+   "id": "power_armor_exo_3_on",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "advanced power armor exoskeleton (active)",
+   "storage_ml": 4000,
+   "copy_from": "power_armor_exo_3",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL-INHERIT",
+   "packet": "STOR2",
+   "proposed_pocket_data": null,
+   "note": "inherits `power_armor_exo_3` (parent in this table; no own edit)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 40000,
+     "max_item_length_mm": 481,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 40000
+   },
+   "id": "power_armor_frame",
+   "where": "base",
+   "file": "json/items/armor/power_armor.json",
+   "name": "power armor hauling frame",
+   "storage_ml": 40000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "MIGRATION",
+   "dda_ref_id": "qt_steel_chunk",
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "40000 ml"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  },
+  {
+   "expected": {
+    "pockets": [
+     {
+      "volume_ml": 4286,
+      "max_item_length_mm": 226,
+      "max_contains_weight_g": 6000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 4286,
+      "max_item_length_mm": 226,
+      "max_contains_weight_g": 6000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 3214,
+      "max_item_length_mm": 212,
+      "max_contains_weight_g": 3000,
+      "moves": 120,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 3214,
+      "max_item_length_mm": 212,
+      "max_contains_weight_g": 3000,
+      "moves": 120,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     }
+    ],
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 15000
+   },
+   "id": "salsurvivor_suit",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "light superalloy survivor suit",
+   "storage_ml": 15000,
+   "copy_from": "lsurvivor_suit",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "PARENT-LAYOUT-SHAPE",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "4286 ml",
+     "max_contains_weight": "6 kg",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "4286 ml",
+     "max_contains_weight": "6 kg",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "3214 ml",
+     "max_contains_weight": "3 kg",
+     "moves": 120
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "3214 ml",
+     "max_contains_weight": "3 kg",
+     "moves": 120
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "child of `lsurvivor_suit`: the parent's layout shape scaled to the child's own storage; total unchanged",
+   "dda_layout_ref": "`lsurvivor_suit`",
+   "dda_layout_ml": [
+    2000,
+    2000,
+    1500,
+    1500
+   ],
+   "dda_layout_total_ml": 7000,
+   "scaled_ml": [
+    4286,
+    4286,
+    3214,
+    3214
+   ],
+   "rounding_rule": "largest remainder, ties to lower index",
+   "scale_factor": 2.14286,
+   "strap_pocket_kept": true,
+   "shape_note": "DDA layout of `lsurvivor_suit` (4 pockets); volumes scaled so the total equals storage (15000 ml); weight, length and moves as DDA",
+   "rigid_note": "layout pockets keep the DDA shape and carry no `rigid` key (non-rigid; DDA item_pocket.cpp:198 default false); the 10 L strap (storage >= 10 L) is the synthesized form and gets rigid true; owner checklist row: a filled layout garment takes non-rigid volume into its worn encumbrance (DDA behaviour)"
+  },
+  {
+   "expected": {
+    "pockets": [
+     {
+      "volume_ml": 5000,
+      "max_item_length_mm": 240,
+      "max_contains_weight_g": 6000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 5000,
+      "max_item_length_mm": 240,
+      "max_contains_weight_g": 6000,
+      "moves": 80,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 2500,
+      "max_item_length_mm": 198,
+      "max_contains_weight_g": 3000,
+      "moves": 120,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     },
+     {
+      "volume_ml": 2500,
+      "max_item_length_mm": 198,
+      "max_contains_weight_g": 3000,
+      "moves": 120,
+      "carry": true,
+      "holster": false,
+      "rigid": false
+     }
+    ],
+    "strap": {
+     "volume_ml": 10000,
+     "max_item_length_mm": 1500,
+     "carry": false,
+     "holster": true,
+     "rigid": true
+    },
+    "get_storage_ml": 15000
+   },
+   "id": "sasurvivor_suit",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "superalloy survivor suit",
+   "storage_ml": 15000,
+   "copy_from": "hsurvivor_suit",
+   "own_storage": false,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": true,
+   "class_": "PARENT-LAYOUT-SHAPE",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "5000 ml",
+     "max_contains_weight": "6 kg",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "5000 ml",
+     "max_contains_weight": "6 kg",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "2500 ml",
+     "max_contains_weight": "3 kg",
+     "moves": 120
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "2500 ml",
+     "max_contains_weight": "3 kg",
+     "moves": 120
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "holster": true,
+     "max_contains_volume": "10000 ml",
+     "max_item_volume": "10000 ml",
+     "max_item_length": "150 cm"
+    }
+   ],
+   "note": "child of `hsurvivor_suit`: the parent's layout shape scaled to the child's own storage; total unchanged",
+   "dda_layout_ref": "`hsurvivor_suit`",
+   "dda_layout_ml": [
+    2000,
+    2000,
+    1000,
+    1000
+   ],
+   "dda_layout_total_ml": 6000,
+   "scaled_ml": [
+    5000,
+    5000,
+    2500,
+    2500
+   ],
+   "rounding_rule": "largest remainder, ties to lower index",
+   "scale_factor": 2.5,
+   "strap_pocket_kept": true,
+   "shape_note": "DDA layout of `hsurvivor_suit` (4 pockets); volumes scaled so the total equals storage (15000 ml); weight, length and moves as DDA",
+   "rigid_note": "layout pockets keep the DDA shape and carry no `rigid` key (non-rigid; DDA item_pocket.cpp:198 default false); the 10 L strap (storage >= 10 L) is the synthesized form and gets rigid true; owner checklist row: a filled layout garment takes non-rigid volume into its worn encumbrance (DDA behaviour)"
+  },
+  {
+   "expected": {
+    "main": {
+     "volume_ml": 5000,
+     "max_item_length_mm": 240,
+     "carry": true,
+     "holster": false,
+     "moves": 100,
+     "rigid": true
+    },
+    "strap": null,
+    "get_storage_ml": 5000
+   },
+   "id": "swat_armor",
+   "where": "base",
+   "file": "json/items/armor/suits_protection.json",
+   "name": "SWAT armor",
+   "storage_ml": 5000,
+   "copy_from": null,
+   "own_storage": true,
+   "dda_ref_kind": "NONE",
+   "dda_ref_id": null,
+   "dda_ref_container_ml": 0,
+   "coupled_with_ammo_or_magazines": false,
+   "strap_pocket_today": false,
+   "class_": "NEUTRAL",
+   "packet": "STOR2",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "CONTAINER",
+     "rigid": true,
+     "max_contains_volume": "5000 ml"
+    }
+   ],
+   "note": "",
+   "rigid_note": "synthesized form: rigid true on every pocket (item_factory.cpp:1159 and :1170 take `obj.rigid`, itype default true, itype.h:1260); the JSON key is required because a pocket without it loads non-rigid (pocket_data.cpp:141)"
+  }
+ ],
+ "companions": [
+  {
+   "id": "armor_wyrm",
+   "where": "mod",
+   "file": "mods/Arcana_BN/items/tool_armor.json",
+   "line_id": 197,
+   "copy_from": "armor_blarmor",
+   "storage_ml": 0,
+   "packet": "STOR2",
+   "class_": "GUARD-MOD-CHILD",
+   "note": "excluded from the 89 by the rule storage > 0. It copies `armor_blarmor` (STOR2 edit). It is a TOOL_ARMOR with `max_charges` 16 and `ammo` essence_blood_type, so it HAS pockets today: the integral MAGAZINE pocket from add_integral_magazine_pocket (item_factory.cpp:887-915) and a MOD pocket (:1129-1132); no CONTAINER (its `storage` is 0 L). After `armor_blarmor` gets explicit pocket_data the child would inherit the 1000 ml carry pocket and lose both. The guard edit is an explicit list that reproduces the pockets it has today.",
+   "proposed_pocket_data": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "holster": true,
+     "watertight": true,
+     "max_contains_volume": "200 L",
+     "max_contains_weight": "2000000 kg",
+     "max_item_length": "2 km",
+     "ammo_restriction": {
+      "essence_blood_type": 16
+     }
+    },
+    {
+     "pocket_type": "MOD"
+    }
+   ],
+   "proposed_note": "starting literal only: the red test dumps the loaded pockets of armor_wyrm before the edit (before-snapshot); the helper adjusts the keys until the loaded pockets equal the snapshot (the 7-R4 AUTHOR form is { pocket_type MAGAZINE, rigid true, ammo_restriction }).",
+   "expected": {
+    "pockets": [
+     {
+      "pocket_type": "MAGAZINE",
+      "rigid": true,
+      "holster": true,
+      "watertight": true,
+      "volume_ml": 200000,
+      "ammo_restriction": {
+       "essence_blood_type": 16
+      }
+     },
+     {
+      "pocket_type": "MOD"
+     }
+    ],
+    "container_pockets": 0,
+    "get_storage_ml": 0
+   },
+   "golden": "the committed golden entry for armor_wyrm (MAGAZINE, rigid true, essence_blood_type 16) shows 0 changes"
+  }
+ ],
+ "before": {
+  "armor_wyrm": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE",
+     "rigid": true,
+     "holster": true,
+     "watertight": true,
+     "volume_ml": 200000,
+     "max_contains_weight_g": 2000000000,
+     "max_item_length_mm": 2000000,
+     "ammo_restriction": {
+      "essence_blood_type": 16
+     }
+    },
+    {
+     "pocket_type": "MOD"
+    }
+   ],
+   "container_pockets": 0,
+   "get_storage_ml": 0
+  },
+  "armor_blarmor": {
+   "pockets": [
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 1000,
+     "max_item_length_mm": 141,
+     "carry": true,
+     "holster": false,
+     "rigid": true,
+     "moves": 100
+    }
+   ],
+   "container_pockets": 1,
+   "get_storage_ml": 1000
+  }
+ }
+}

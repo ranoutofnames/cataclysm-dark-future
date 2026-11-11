@@ -1,0 +1,225 @@
+{
+ "format": 1,
+ "packet": "STOR7",
+ "base": "8d172a40c7 data (7-R4b already wrote the MAGAZINE_WELL and the storage CONTAINER pockets; STOR7 edits pockets 1.. in place)",
+ "rows": [
+  {
+   "id": "exosuit_industrial",
+   "file": "json/items/armor/power_armor.json",
+   "storage_ml": 15000,
+   "get_storage_ml": 15000,
+   "inherits_from": null,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 15000,
+     "carry": true,
+     "holster": false,
+     "rigid": true,
+     "max_item_length_mm": 354
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 10000,
+     "max_item_volume_ml": 10000,
+     "carry": false,
+     "holster": true,
+     "rigid": true,
+     "max_item_length_mm": 1500
+    },
+    { "pocket_type": "MOD" }
+   ]
+  },
+  {
+   "id": "exosuit_industrial_on",
+   "file": "json/items/armor/power_armor.json",
+   "storage_ml": 15000,
+   "get_storage_ml": 15000,
+   "inherits_from": "exosuit_industrial",
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 15000,
+     "carry": true,
+     "holster": false,
+     "rigid": true,
+     "max_item_length_mm": 354
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 10000,
+     "max_item_volume_ml": 10000,
+     "carry": false,
+     "holster": true,
+     "rigid": true,
+     "max_item_length_mm": 1500
+    },
+    { "pocket_type": "MOD" }
+   ]
+  },
+  {
+   "id": "exosuit_military",
+   "file": "json/items/armor/power_armor.json",
+   "storage_ml": 7000,
+   "get_storage_ml": 7000,
+   "inherits_from": null,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 7000,
+     "carry": true,
+     "holster": false,
+     "rigid": true,
+     "max_item_length_mm": 269
+    },
+    { "pocket_type": "MOD" }
+   ]
+  },
+  {
+   "id": "exosuit_military_on",
+   "file": "json/items/armor/power_armor.json",
+   "storage_ml": 7000,
+   "get_storage_ml": 7000,
+   "inherits_from": "exosuit_military",
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 7000,
+     "carry": true,
+     "holster": false,
+     "rigid": true,
+     "max_item_length_mm": 269
+    },
+    { "pocket_type": "MOD" }
+   ]
+  }
+ ],
+ "before": {
+  "exosuit_industrial": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 15000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 354
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 10000,
+     "max_item_volume_ml": 10000,
+     "carry": true,
+     "holster": true,
+     "rigid": false,
+     "max_item_length_mm": 1500
+    },
+    { "pocket_type": "MOD" }
+   ]
+  },
+  "exosuit_industrial_on": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 15000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 354
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 10000,
+     "max_item_volume_ml": 10000,
+     "carry": true,
+     "holster": true,
+     "rigid": false,
+     "max_item_length_mm": 1500
+    },
+    { "pocket_type": "MOD" }
+   ]
+  },
+  "exosuit_military": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 7000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 269
+    },
+    { "pocket_type": "MOD" }
+   ]
+  },
+  "exosuit_military_on": {
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "max_item_length_mm": 2000000,
+     "flag_restriction": [ "BATTERY_HEAVY" ],
+     "default_magazine": "heavy_battery_cell"
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 7000,
+     "carry": true,
+     "holster": false,
+     "rigid": false,
+     "max_item_length_mm": 269
+    },
+    { "pocket_type": "MOD" }
+   ]
+  }
+ }
+}

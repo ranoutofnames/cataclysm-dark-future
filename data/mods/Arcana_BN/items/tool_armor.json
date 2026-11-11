@@ -223,6 +223,20 @@
     "coverage": 95,
     "encumbrance": 9,
     "storage": "0 L",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "holster": true,
+        "watertight": true,
+        "max_contains_volume": "200 L",
+        "max_contains_weight": "2000000 kg",
+        "max_item_length": "2 km",
+        "ammo_restriction": { "essence_blood_type": 16 }
+      },
+      { "pocket_type": "MOD" }
+    ],
+    "//": "CDF: P3-STOR2 guard: the parent `armor_blarmor` has explicit pocket_data, so this child must list the integral essence MAGAZINE and MOD pockets it would otherwise lose.",
     "environmental_protection": 10,
     "use_action": [ { "type": "cast_spell", "spell_id": "arcana_item_wyrmskin_acid", "no_fail": true, "level": 0, "need_worn": true } ],
     "relative": { "weight": "722 g", "volume": "1500 ml" },
