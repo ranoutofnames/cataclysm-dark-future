@@ -1,5 +1,5 @@
 {
-  "note": "ids of the 7-GOLD1 regen target (1170) with their class, plus the 3 TEST_DATA ids added to the tree later; G1 asserts these against p3_golden.json. LINKUP1c removed 20 cable tools from the target: they have no battery pocket in DDA and none in CDF now, so the plan tool emits no row for them",
+  "note": "ids of the 7-GOLD1 regen target (1167) with their class, plus the 3 TEST_DATA ids added to the tree later; G1 asserts these against p3_golden.json. LINKUP1c removed 20 cable tools from the target and BATT4 mess_kit, crt_mess_kit and voltmeter: they have no battery pocket in DDA and none in CDF now, so the plan tool emits no row for them",
   "target": {
     "1895sbl": "GUN-INT",
     "20x66_10_mag": "MAG",
@@ -253,7 +253,6 @@
     "crt_gasmask_on": "TOOL-INT",
     "crt_helmet": "TOOL-INT",
     "crt_helmet_on": "TOOL-INT",
-    "crt_mess_kit": "TOOL-INT",
     "crt_pelletgun": "GUN-INT",
     "crt_pelletsniper": "GUN-INT",
     "crt_solarpack": "TOOL-INT",
@@ -638,7 +637,6 @@
     "medium_disposable_cell": "MAG",
     "medium_plus_battery_cell": "MAG",
     "medium_storage_battery": "MAG",
-    "mess_kit": "WELL",
     "meteoric_talisman": "TOOL-INT",
     "meteoric_talisman_on": "TOOL-INT",
     "mgl": "GUN-INT",
@@ -1101,7 +1099,6 @@
     "vibrating_blaster": "GUN-INT",
     "vibrator": "WELL",
     "vibrator_mana": "WELL",
-    "voltmeter": "WELL",
     "walther_ccp": "WELL",
     "walther_p22": "WELL",
     "walther_p38": "WELL",

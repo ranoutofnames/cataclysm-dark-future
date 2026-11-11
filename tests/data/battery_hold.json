@@ -1,0 +1,479 @@
+{
+ "note": "BATT4 exemption/deferred list (PL-33b TASK-draft-BATT4-v2, revised by AUTO-265/266). Boundary: a base TOOL/TOOL_ARMOR item may have a battery well or an integral battery pocket only through explicit `pocket_data` (the DDA form) unless it is listed here. Kinds: native (CDF well, no DDA twin), filter (filter/cartridge well, not a battery tool), integral (DDA class integral / BATT2 integral pocket), parked (legacy well, waiting for the appliance packet), retired (obsoletion id MIG1 deletes), no-pocket (DDA has no battery pocket). Not listed: plutonium pack wells (PLUT1) and weld-tank wells, which are not battery storage. LINKUP1c converted the 20 live hold tools; BATT4 removed the mess_kit, crt_mess_kit and voltmeter stores (DDA heats food for free; DDA's voltmeter has no power).",
+ "count": 67,
+ "scan": "data/json/items + data/json/obsoletion, TOOL and TOOL_ARMOR, core mod (\"bn\") items only (TEST_DATA fixtures and runtime test itypes excluded)",
+ "items": {
+  "control_laptop": {
+   "kind": "native",
+   "packet": "none (stays)",
+   "group": "W3-native",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "CDF-native battery well; DDA has no twin (PL-33b T2 a), stays"
+  },
+  "control_laptop_screen_lit": {
+   "kind": "native",
+   "packet": "none (stays)",
+   "group": "W3-native",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "CDF-native battery well; DDA has no twin (PL-33b T2 a), stays"
+  },
+  "control_laptop_music": {
+   "kind": "native",
+   "packet": "none (stays)",
+   "group": "W3-native",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "CDF-native battery well; DDA has no twin (PL-33b T2 a), stays"
+  },
+  "helmet_scavenger": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/armor/helmets.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_filter": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_fsurvivor": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_gas": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_gas_xl": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_h20survivor": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_h20survivor_on": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_halfsurvivor": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_hsurvivor": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_lsurvivor": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_sasurvivor": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "mask_survivor": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "molle_papr_blower_off": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/cdf_papr.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "molle_papr_blower_on": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/cdf_papr.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "rebreather": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "rebreather_on": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "rebreather_xl": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "rebreather_xl_on": {
+   "kind": "filter",
+   "packet": "FILT1 / R3C",
+   "group": "filter/cartridge",
+   "file": "data/json/items/tool_armor.json",
+   "note": "filter/cartridge well, not a battery tool (PL-33b T2 b), stays"
+  },
+  "camera": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "camera_pro": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "cell_phone": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "cell_phone_flashlight": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "eink_tablet_pc": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "eink_tablet_pc_music": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-music",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "elec_jackhammer": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/workshop.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "electric_lantern": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/lighting.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "electric_lantern_on": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/lighting.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "electric_lighter": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/fire.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "laptop": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "laptop_boris": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/npcs/refugee_center/surface_refugees/NPC_Boris_Borichenko.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "laptop_music": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-music",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "laptop_screen_lit": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "mp3": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "mp3_on": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "portable_game": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "reading_light": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/lighting.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "reading_light_on": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/lighting.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "smart_lamp": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/lighting.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "smart_lamp_on": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/lighting.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "smart_phone": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "smart_phone_flashlight": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W4",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "smart_phone_music": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-music",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "vibrator": {
+   "kind": "integral",
+   "packet": "BATT2",
+   "group": "W2",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA integral battery pocket (BATT2); capacity at the DDA number, cells keep CDF sizes (AUTO-236)"
+  },
+  "wrist_comp_budget": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-wrist",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "wrist_comp_budget_flashlight": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-wrist",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "wrist_comp_budget_music": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-wrist",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "wrist_comp_control": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-wrist",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "wrist_comp_control_flashlight": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-wrist",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "wrist_comp_control_music": {
+   "kind": "integral",
+   "packet": "R4a/R4b (already authored)",
+   "group": "W5-wrist",
+   "file": "data/json/items/tool/electronics.json",
+   "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
+  },
+  "autoclave": {
+   "kind": "parked",
+   "packet": "appliance packet (after LINKUP1d)",
+   "group": "W3",
+   "file": "data/json/items/tool/med.json",
+   "dda_cite": "DDA:data/json/items/appliances.json:212",
+   "note": "DDA makes it a disconnected appliance; parked until the appliance port lands (AUTO-265, DEFERRED-REGISTER)"
+  },
+  "hydraulic_press": {
+   "kind": "parked",
+   "packet": "appliance packet (after LINKUP1d)",
+   "group": "W3",
+   "file": "data/json/items/tool/metalworking.json",
+   "dda_cite": "DDA:data/json/items/appliances.json:185",
+   "note": "DDA makes it a disconnected appliance; parked until the appliance port lands (AUTO-265, DEFERRED-REGISTER)"
+  },
+  "closed_loop_extractor_large": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "closed_loop_extractor_large_on": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "closed_loop_extractor_small": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "closed_loop_extractor_small_on": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "dab_pen_on": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "vac_oven_small": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "vac_oven_small_done": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "vac_oven_small_full": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "vac_oven_small_on": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "vac_pump": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "vac_pump_on": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "welder_crude": {
+   "kind": "retired",
+   "packet": "MIG1",
+   "group": "W3/W7-retired",
+   "file": "data/json/obsoletion/items.json",
+   "note": "retired obsoletion id; MIG1 deletes it (MIG1 merged without deleting: still pending; edits this list)"
+  },
+  "fake_firestarter": {
+   "kind": "no-pocket",
+   "packet": "R4b",
+   "group": "W6",
+   "file": "data/json/items/fake.json",
+   "dda_cite": "DDA:data/json/items/fake.json:253",
+   "note": "DDA has no battery pocket; R4b removed the CDF integral pocket (AUTO-251); bionic power only"
+  }
+ }
+}

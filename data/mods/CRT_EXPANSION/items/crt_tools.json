@@ -15,13 +15,12 @@
     "color": "green",
     "ammo": "battery",
     "sub": "hotplate",
-    "initial_charges": 75,
-    "max_charges": 75,
-    "charges_per_use": 1,
+    "charges_per_use": 0,
     "qualities": [ [ "COOK", 2 ], [ "BOIL", 2 ], [ "CONTAIN", 1 ] ],
     "relic_data": { "recharge_scheme": [ { "type": "solar", "interval": "10 m", "rate": 1 } ] },
     "use_action": "HOTPLATE",
-    "flags": [ "RECHARGE", "NO_UNLOAD" ]
+    "flags": [ "RECHARGE", "NO_UNLOAD" ],
+    "//": "CDF: BATT4. Follows the mess kit and DDA: the battery store (max_charges/initial_charges) is gone, the HOTPLATE iuse costs 0 charges; the solar flavour keys stay inert."
   },
   {
     "id": "knife_crt",

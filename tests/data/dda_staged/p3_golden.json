@@ -4845,24 +4845,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "crt_mess_kit": {
-      "class": "TOOL-INT",
-      "rule": "R4",
-      "action": "HAND-FALLBACK",
-      "twin": false,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE",
-          "rigid": true,
-          "ammo_restriction": {
-            "battery": 75
-          }
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "crt_pelletgun": {
       "class": "GUN-INT",
       "rule": "R2",
@@ -12304,25 +12286,6 @@
           "ammo_restriction": {
             "battery": 10000
           }
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "mess_kit": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -21599,26 +21562,6 @@
             "small_mana_crystal"
           ],
           "default_magazine": "small_mana_crystal"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "voltmeter": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],

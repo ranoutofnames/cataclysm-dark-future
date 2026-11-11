@@ -883,11 +883,10 @@
     "color": "green",
     "ammo": "battery",
     "sub": "hotplate",
-    "charges_per_use": 5,
+    "charges_per_use": 0,
     "qualities": [ [ "COOK", 2 ], [ "BOIL", 2 ], [ "CONTAIN", 1 ] ],
     "use_action": [ "HOTPLATE", "HEAT_FOOD" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "//": "CDF: BATT4. DDA's mess kit heats food for free (HEAT_ALL_ITEMS, no power), so the battery well is gone and the HOTPLATE iuse costs 0 charges."
   },
   {
     "id": "mess_tin",

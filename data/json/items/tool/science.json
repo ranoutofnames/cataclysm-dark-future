@@ -422,8 +422,7 @@
     "use_action": [ "VOLTMETER" ],
     "flags": [ "BELT_CLIP" ],
     "qualities": [ [ "VOLT_MEASURE", 1 ] ],
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "//": "CDF: BATT4. DDA's voltmeter has no power source (no pocket, no tool_ammo), so the battery well is gone; the charge-free Lua VOLTMETER action stays."
   },
   {
     "id": "melting_point",
