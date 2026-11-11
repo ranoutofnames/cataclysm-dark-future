@@ -33,10 +33,10 @@ const std::string MODST_FIXTURE_KEEP_PATH =
     "tests/data/dda_staged/p3_batches/_fixture_keep.json";
 const std::string MODST_GOLDEN_PATH = "tests/data/dda_staged/p3_golden.json";
 
-// CDF: the un-hidden class cases (tests/cdf_mag_port_test.cpp): R1, R4, R5, R6 and R8. R2 and R3
-// stay hidden (rows outside this packet, REPORT `## Blocked`).
+// CDF: the un-hidden class cases (tests/cdf_mag_port_test.cpp): R1, R4, R5, R6 and R8, plus R2
+// after P3-MODSFIX (u_shotgun rigid; the MODSFIX REPORT `## Blocked` keeps R3 hidden).
 const std::vector<std::string> MODST_UNHIDDEN_CLASSES = {
-    "MAG", "TOOL-INT", "CHARGES", "ADAPTOR", "DDA-POCKET",
+    "MAG", "GUN-INT", "TOOL-INT", "CHARGES", "ADAPTOR", "DDA-POCKET",
 };
 
 struct modst_row {

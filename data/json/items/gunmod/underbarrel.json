@@ -755,6 +755,7 @@
     "pocket_data": [
       {
         "pocket_type": "MAGAZINE",
+        "rigid": true,
         "ammo_restriction": { "shot": 2 }
       }
     ]

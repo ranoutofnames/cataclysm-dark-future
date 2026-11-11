@@ -261,6 +261,8 @@ TEST_CASE( "p3 batt1 pocket completeness", "[battery][wells][batt1]" ) {
     // T6: the list after the port is the before-snapshot with only the well entry replaced: the
     // MOD pocket (and the sparkledogsuit CONTAINER) stay. Mutation: drop the CONTAINER from
     // sparkledogsuit (a dropped MOD is re-added by MOD1, so it is no longer a mutation).
+    // CDF: P3-MODSFIX. The loader's CABLE pocket (LINKUP1e link_up, e.g. electric_blanket) is
+    // skipped: it is added after the JSON pocket_data and is not part of the before-snapshot.
     const std::map<std::string, std::vector<before_pocket>> before = read_before();
     // CDF: the 115 BATT1 rows plus the 3 N1 rows the snapshot was taken on
     REQUIRE( before.size() == 118 );
@@ -273,6 +275,11 @@ TEST_CASE( "p3 batt1 pocket completeness", "[battery][wells][batt1]" ) {
         for( const pocket_data &p : t.pockets ) {
             if( p.type == pocket_type::MAGAZINE_WELL ) {
                 ++wells;
+            } else if( p.type == pocket_type::CABLE ) {
+                // CDF: P3-MODSFIX. LINKUP1e gives every link_up tool a CABLE pocket in the loader
+                // (src/item_factory.cpp add_cable_pocket), so it is not in the before-snapshot;
+                // tests/p3_data_linkup1e_test.cpp pins it (the golden_view rule).
+                continue;
             } else if( p.type == pocket_type::MOD || p.type == pocket_type::CONTAINER ) {
                 loaded.push_back( &p );
             } else {
@@ -292,4 +299,17 @@ TEST_CASE( "p3 batt1 pocket completeness", "[battery][wells][batt1]" ) {
             }
         }
     }
+}
+
+TEST_CASE( "p3 batt1 soldering fixture well has no rigid override", "[battery][wells][pocket][modsfix]" ) {
+    // CDF: P3-MODSFIX. test_soldering_iron's well carried `rigid` and `magazine_well` together, so
+    // every run logged "warnings for type test_soldering_iron: pocket 0 (MAGAZINE_WELL): rigid
+    // overrides magazine_well" and init failed (src/pocket_data.cpp:259). DDA's TEST_DATA soldering
+    // iron well is not rigid; the CDF fixture keeps the 250 ml well the staged golden pins.
+    // Mutation: put "rigid": true back on that well.
+    const std::vector<const pocket_data *> wells = wells_of( itype_id( "test_soldering_iron" ).obj() );
+    REQUIRE( wells.size() == 1 );
+    CHECK( wells[0]->magazine_well == 250_ml );
+    CHECK_FALSE( wells[0]->rigid );
+    CHECK( wells[0]->max_item_length >= 2_km );
 }

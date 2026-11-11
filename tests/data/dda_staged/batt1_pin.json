@@ -159,7 +159,11 @@
     "BATTERY_ULTRA_LIGHT"
    ],
    "default": "light_minus_battery_cell",
-   "item_restriction": [],
+   "item_restriction": [
+    "light_minus_battery_cell",
+    "light_minus_atomic_battery_cell",
+    "light_minus_disposable_cell"
+   ],
    "target_item_restriction": [],
    "old_cells": [],
    "capacity_before": 50,
