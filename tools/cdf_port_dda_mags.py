@@ -2508,6 +2508,18 @@ def check_norm(v):
     return v
 
 
+def well_length_agnostic(pockets):
+    """CDF: every explicit magazine well states `max_item_length` "2 km" (the CDF loader gives a
+    restricted well a volume-derived limit otherwise; tests/item_length_test.cpp "magazine wells
+    have an explicit length limit"). The key is not a DDA key, so the checks below ignore it on
+    MAGAZINE_WELL pockets only (a container's length limit is still compared)."""
+    out = copy.deepcopy(pockets)
+    for p in out:
+        if p.get("pocket_type") == "MAGAZINE_WELL":
+            p.pop("max_item_length", None)
+    return out
+
+
 def first_diff(a, b, path="pocket_data"):
     """Short description of the first difference between two normalised JSON values."""
     if isinstance(a, dict) and isinstance(b, dict):
@@ -2608,7 +2620,7 @@ def allowed_twin_view(rec, twin_pockets, tree_pockets):
             ar = p.get("ammo_restriction")
             if isinstance(ar, dict) and row["ammo"] in ar:
                 ar[row["ammo"]] = row["dda"]
-    return want, got
+    return well_length_agnostic(want), well_length_agnostic(got)
 
 
 def check_record(rec, ctx_chk):
@@ -2633,7 +2645,7 @@ def check_record(rec, ctx_chk):
         if key_site(raw, eff, r["from"]) == "own" and key_site(raw, eff, r["to"]) is None:
             present.append("%s (own, not renamed to %s)" % (r["from"], r["to"]))
     n_keys = len(rec["dropped_keys"]) + len(renames)
-    if check_norm(pockets) != check_norm(emitted):
+    if check_norm(well_length_agnostic(pockets)) != check_norm(well_length_agnostic(emitted)):
         untouched = (n_keys > 0 and len(present) == n_keys) or \
             (n_keys == 0 and not mag_pockets(pockets))
         if untouched:

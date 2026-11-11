@@ -1,0 +1,72 @@
+{
+  "batch": "7-R3b",
+  "note": "PL-43-b re-cut 2026-11-10: mutations moved onto the 8 remaining ids (all are golden ids). in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+  "mutations": [
+    {
+      "case": "N1",
+      "kind": "wrong_default",
+      "id": "control_laptop",
+      "pocket": 0,
+      "mutation": "set default_magazine to `p3_bogus_item_id` (was `medium_battery_cell`)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N2",
+      "kind": "drop_restriction_id",
+      "id": "control_laptop_music",
+      "pocket": 0,
+      "mutation": "remove `medium_battery_cell` from item_restriction",
+      "expect": "mismatch reported for this id only",
+      "removed": "medium_battery_cell"
+    },
+    {
+      "case": "N3",
+      "kind": "flag",
+      "id": "control_laptop_screen_lit",
+      "pocket": 0,
+      "mutation": "append `P3_BOGUS_FLAG` to flag_restriction (was ['BATTERY_MEDIUM'])",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N4",
+      "kind": "hand_fallback_integral",
+      "id": "plastic_jack_o_lantern",
+      "pocket": 0,
+      "mutation": "replace the battery well by an integral MAGAZINE pocket (the golden keeps the well)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N5",
+      "kind": "wrong_default",
+      "id": "plastic_jack_o_lantern_lit",
+      "pocket": 0,
+      "mutation": "set default_magazine to `p3_bogus_item_id` (was `light_battery_cell`)",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N6",
+      "kind": "drop_restriction_id",
+      "id": "oxy_torch",
+      "pocket": 0,
+      "mutation": "remove `weldtank` from item_restriction",
+      "expect": "mismatch reported for this id only",
+      "removed": "weldtank"
+    },
+    {
+      "case": "N7",
+      "kind": "add_bogus_id",
+      "id": "oxylamp",
+      "pocket": 0,
+      "mutation": "append `p3_bogus_item_id` to item_restriction",
+      "expect": "mismatch reported for this id only"
+    },
+    {
+      "case": "N8",
+      "kind": "hand_fallback_integral",
+      "id": "oxylamp_on",
+      "pocket": 0,
+      "mutation": "replace the tank well by an integral MAGAZINE pocket",
+      "expect": "mismatch reported for this id only"
+    }
+  ]
+}

@@ -851,8 +851,15 @@
     "charges_per_use": 2,
     "use_action": "OXYTORCH",
     "qualities": [ [ "WELD", 2 ] ],
-    "magazines": [ [ "weldgas", [ "weldtank", "tinyweldtank" ] ] ],
-    "flags": [ "ALLOWS_REMOTE_USE" ]
+    "flags": [ "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "weldtank", "tinyweldtank" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data); ids absent or undefined in CDF left out of the pocket: smallweldtank"
   },
   {
     "id": "paint_brush",

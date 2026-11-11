@@ -1,17 +1,7 @@
 [
   {
     "id": "plastic_jack_o_lantern",
-    "pocket_data": [
-      {
-        "pocket_type": "MAGAZINE_WELL",
-        "max_item_length": "2 km",
-        "rigid": true,
-        "flag_restriction": [ "BATTERY_LIGHT" ],
-        "default_magazine": "light_battery_cell"
-      }
-    ],
     "tool_ammo": [ "battery" ],
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_plus_battery_cell", "light_atomic_battery_cell", "light_disposable_cell" ] ] ],
     "type": "TOOL",
     "name": { "str": "jack o'lantern" },
     "description": "This is a plastic lantern that is painted to look like a pumpkin with a face.  It has a candle inside it, that can be replaced when burnt down.  It doesn't provide very much light, but it can burn for quite a long time.  You'll need a lighter or matches to light it.",
@@ -32,7 +22,17 @@
       "transform_charges": 1,
       "menu_text": "Light",
       "type": "transform"
-    }
+    },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT" ],
+        "default_magazine": "light_battery_cell"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "plastic_jack_o_lantern_lit",
@@ -58,7 +58,16 @@
       "msg": "The candle winks out inside the lantern.",
       "menu_text": "Extinguish"
     },
-    "flags": [ "LIGHT_6", "TRADER_AVOID" ]
+    "flags": [ "LIGHT_6", "TRADER_AVOID" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT" ],
+        "default_magazine": "light_battery_cell"
+      }
+    ]
   },
   {
     "id": "decorative_wreath",

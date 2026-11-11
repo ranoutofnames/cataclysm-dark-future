@@ -118,19 +118,9 @@
   },
   {
     "id": "control_laptop",
-    "pocket_data": [
-      {
-        "pocket_type": "MAGAZINE_WELL",
-        "max_item_length": "2 km",
-        "rigid": true,
-        "flag_restriction": [ "BATTERY_MEDIUM" ],
-        "default_magazine": "medium_battery_cell"
-      }
-    ],
     "tool_ammo": "battery",
-    "magazines": [ [ "battery", [ "medium_battery_cell", "medium_plus_battery_cell", "medium_atomic_battery_cell", "medium_disposable_cell" ] ] ],
     "type": "TOOL",
-    "//": "CDF: standalone (was copy-from laptop): a copy-from cannot drop the laptop's ammo and max_charges, and this tool now takes a DDA magazine well. Base fields below are the laptop's.",
+    "//": "CDF: standalone (was copy-from laptop): a copy-from cannot drop the laptop's ammo and max_charges, and this tool now takes a DDA magazine well. Base fields below are the laptop's. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "category": "electronics",
     "symbol": ",",
     "color": "dark_gray",
@@ -173,7 +163,16 @@
     ],
     "initial_charges": 500,
     "flags": [ "WATCH", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
-    "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] }
+    "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "default_magazine": "medium_battery_cell"
+      }
+    ]
   },
   {
     "id": "control_laptop_screen_lit",
@@ -185,7 +184,16 @@
     "revert_to": "control_laptop",
     "use_action": { "target": "control_laptop", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
     "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
-    "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] }
+    "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "default_magazine": "medium_battery_cell"
+      }
+    ]
   },
   {
     "id": "control_laptop_music",
@@ -197,7 +205,21 @@
     "revert_to": "control_laptop",
     "use_action": [ "MP3_ON" ],
     "flags": [ "WATCH", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
-    "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] }
+    "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [
+          "medium_battery_cell",
+          "medium_plus_battery_cell",
+          "medium_atomic_battery_cell",
+          "medium_disposable_cell"
+        ],
+        "default_magazine": "medium_battery_cell"
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",

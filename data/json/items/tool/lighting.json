@@ -553,7 +553,14 @@
       "need_charges": 1,
       "need_charges_msg": "The %s must be attached to a gas cylinder to light."
     },
-    "magazines": [ [ "weldgas", [ "weldtank", "tinyweldtank" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "tinyweldtank", "weldtank" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data); ids absent or undefined in CDF left out of the pocket: smallweldtank"
   },
   {
     "id": "oxylamp_on",
@@ -563,7 +570,15 @@
     "turns_per_charge": 240,
     "revert_to": "oxylamp",
     "use_action": { "menu_text": "Turn off", "type": "transform", "msg": "The %s is extinguished", "target": "oxylamp" },
-    "flags": [ "LIGHT_30" ]
+    "flags": [ "LIGHT_30" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "tinyweldtank", "weldtank" ]
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: ids absent or undefined in CDF left out of the pocket: smallweldtank"
   },
   {
     "id": "reading_light",

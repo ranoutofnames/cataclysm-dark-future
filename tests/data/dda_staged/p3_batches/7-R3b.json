@@ -1,0 +1,376 @@
+{
+  "batch": "7-R3b",
+  "base": "83486fc197",
+  "dda": "b4b62254ae2",
+  "count": 8,
+  "recut": "PL-43-b re-cut 2026-11-10: 93 BATT-owned rows (BATT1/BATT2 merged, BATT4/LINKUP1 hold) dropped; 8 rows remain. CDF: every well carries the explicit max_item_length 2 km (tests/item_length_test.cpp); not a DDA key",
+  "items": {
+    "control_laptop": {
+      "file": "data/json/items/tool/electronics.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "flag_restriction": [
+            "BATTERY_MEDIUM"
+          ],
+          "default_magazine": "medium_battery_cell"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "medium_battery_cell",
+              "medium_plus_battery_cell",
+              "medium_atomic_battery_cell",
+              "medium_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      }
+    },
+    "control_laptop_music": {
+      "file": "data/json/items/tool/electronics.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR",
+      "twin": false,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "item_restriction": [
+            "medium_battery_cell",
+            "medium_plus_battery_cell",
+            "medium_atomic_battery_cell",
+            "medium_disposable_cell"
+          ],
+          "default_magazine": "medium_battery_cell"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "medium_battery_cell",
+              "medium_plus_battery_cell",
+              "medium_atomic_battery_cell",
+              "medium_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      }
+    },
+    "control_laptop_screen_lit": {
+      "file": "data/json/items/tool/electronics.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "flag_restriction": [
+            "BATTERY_MEDIUM"
+          ],
+          "default_magazine": "medium_battery_cell"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "medium_battery_cell",
+              "medium_plus_battery_cell",
+              "medium_atomic_battery_cell",
+              "medium_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      }
+    },
+    "oxy_torch": {
+      "file": "data/json/items/tool/workshop.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "item_restriction": [
+            "weldtank",
+            "tinyweldtank"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "smallweldtank",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "weldgas",
+            [
+              "weldtank",
+              "tinyweldtank"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "oxylamp": {
+      "file": "data/json/items/tool/lighting.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "item_restriction": [
+            "tinyweldtank",
+            "weldtank"
+          ]
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "smallweldtank",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "weldgas",
+            [
+              "weldtank",
+              "tinyweldtank"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "oxylamp_on": {
+      "file": "data/json/items/tool/lighting.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "item_restriction": [
+            "tinyweldtank",
+            "weldtank"
+          ]
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [
+        {
+          "where": "item_restriction",
+          "id": "smallweldtank",
+          "why": "item absent in CDF"
+        }
+      ],
+      "tags": [],
+      "legacy": {
+        "magazines": [
+          [
+            "weldgas",
+            [
+              "weldtank",
+              "tinyweldtank"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      },
+      "synth_lost": [
+        "MOD"
+      ]
+    },
+    "plastic_jack_o_lantern": {
+      "file": "data/json/items/items_holiday.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "flag_restriction": [
+            "BATTERY_LIGHT"
+          ],
+          "default_magazine": "light_battery_cell"
+        }
+      ],
+      "dropped_keys": [
+        "magazines"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "light_battery_cell",
+              "light_plus_battery_cell",
+              "light_atomic_battery_cell",
+              "light_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      }
+    },
+    "plastic_jack_o_lantern_lit": {
+      "file": "data/json/items/items_holiday.json",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "COPY-TWIN",
+      "twin": true,
+      "pockets": [
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "flag_restriction": [
+            "BATTERY_LIGHT"
+          ],
+          "default_magazine": "light_battery_cell"
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [
+        "EXPLICIT"
+      ],
+      "legacy": {
+        "magazines": [
+          [
+            "battery",
+            [
+              "light_battery_cell",
+              "light_plus_battery_cell",
+              "light_atomic_battery_cell",
+              "light_disposable_cell"
+            ]
+          ]
+        ],
+        "magazine_well": null,
+        "clip_size": null
+      },
+      "well_diff": {
+        "cdf_added": [],
+        "dda_only_kept": [],
+        "unfit": []
+      }
+    }
+  }
+}
