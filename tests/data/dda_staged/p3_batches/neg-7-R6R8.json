@@ -1,0 +1,46 @@
+{
+ "batch": "7-R6R8",
+ "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+ "mutations": [
+  {
+   "case": "N1",
+   "kind": "wrong_default",
+   "id": "helmet_nomad",
+   "pocket": 0,
+   "mutation": "set default_magazine to `zz_not_a_mag` (was `gasfilter_sm`)",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N2",
+   "kind": "flag",
+   "id": "helmet_nomad",
+   "pocket": 0,
+   "mutation": "flag_restriction -> [`BATTERY_NOPE`] (was ['GASFILTER_SM'])",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N3",
+   "kind": "add_bogus_id",
+   "id": "robofac_armor_anchor",
+   "pocket": 7,
+   "mutation": "append `zz_not_a_mag` to item_restriction",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N4",
+   "kind": "pocket_order",
+   "id": "exosuit_industrial",
+   "pocket": 0,
+   "mutation": "swap pocket 0 and pocket 1 (magazine/well must stay first, carry pockets after: rule R9)",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N5",
+   "kind": "pocket_order",
+   "id": "robofac_head_rig",
+   "pocket": 0,
+   "mutation": "swap pocket 0 and pocket 1 (magazine/well must stay first, carry pockets after: rule R9)",
+   "expect": "mismatch reported for this id only"
+  }
+ ]
+}

@@ -422,7 +422,7 @@
     "id": "robofac_armor_anchor",
     "type": "ARMOR",
     "copy-from": "robofac_armor_rig",
-    "//": "CDF: DDA robofac_armor.json:127. Plain armor: the TOOL subtype, MAGAZINE_WELL battery pocket, use_action and tool_ammo are dropped (orchestrator 2026-10-29, option a), and the robofac_armor_anchor_on state item is out of scope (the DIMENSIONAL_ANCHOR flag is on that item only), so this does nothing special in play. Per-portion materials (nylon, kevlar, ceramic) become one list; torso encumbrance [6, 10] is DDA's. Pockets are the rig's.",
+    "//": "CDF: DDA robofac_armor.json:127. Plain armor: the TOOL subtype, use_action and tool_ammo stay dropped (orchestrator 2026-10-29, option a; CDF's ARMOR slot rejects tool_ammo), and the robofac_armor_anchor_on state item is out of scope (the DIMENSIONAL_ANCHOR flag is on that item only), so this does nothing special in play. 7-R8 adds the twin's BATTERY_MEDIUM well (2 km, the CDF well length) after the rig's pockets. Per-portion materials (nylon, kevlar, ceramic) become one list; torso encumbrance [6, 10] is DDA's.",
     "name": {
       "str": "Hub 01 modular defense anchor"
     },
@@ -482,12 +482,96 @@
           4
         ]
       }
+    ],
+    "pocket_data": [
+      {
+        "description": "Watertight internal reservoir.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1500 ml",
+        "max_item_volume": "32 ml",
+        "watertight": true,
+        "spoil_multiplier": 0.8,
+        "max_contains_weight": "4 kg",
+        "moves": 120
+      },
+      {
+        "description": "Watertight internal reservoir.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1500 ml",
+        "max_item_volume": "32 ml",
+        "watertight": true,
+        "spoil_multiplier": 0.8,
+        "max_contains_weight": "4 kg",
+        "moves": 120
+      },
+      {
+        "description": "Quick access pouches.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "270 mm",
+        "moves": 80
+      },
+      {
+        "description": "Quick access pouches.",
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "4 kg",
+        "max_item_length": "270 mm",
+        "moves": 80
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "7000 ml",
+        "max_contains_weight": "11 kg",
+        "moves": 200,
+        "description": "Hooks for an armored mantle.",
+        "flag_restriction": [ "ABLATIVE_MANTLE" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "4000 ml",
+        "max_contains_weight": "4 kg",
+        "moves": 200,
+        "description": "Hooks for an armored skirt.",
+        "flag_restriction": [ "ABLATIVE_SKIRT" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "1100 g",
+        "max_item_length": "70 cm",
+        "moves": 200,
+        "holster": true,
+        "description": "Strap for a gun barrel."
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "4000 ml",
+        "max_contains_weight": "900 g",
+        "moves": 200,
+        "description": "Grommets for a poncho liner.",
+        "item_restriction": [ "robofac_poncho_liner" ]
+      },
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "default_magazine": "medium_battery_cell"
+      }
     ]
   },
   {
     "id": "robofac_head_rig",
     "type": "ARMOR",
-    "//": "CDF: DDA robofac_armor.json:303 as plain armor (orchestrator 2026-10-29, option a): the TOOL and ARTIFACT subtypes, MAGAZINE_WELL battery pocket, use_action (transform to robofac_head_rig_nv), charges_per_use, tool_ammo, the encumbrance_modifiers NONE entry and the MUNDANE flag (CDF lacks it) are dropped. Technique WBLOCK_1 is kept.",
+    "//": "CDF: DDA robofac_armor.json:303 as plain armor (orchestrator 2026-10-29, option a): the TOOL and ARTIFACT subtypes, use_action (transform to robofac_head_rig_nv), charges_per_use, tool_ammo, the encumbrance_modifiers NONE entry and the MUNDANE flag (CDF lacks it) are dropped (CDF's ARMOR slot rejects tool_ammo). 7-R8 adds the twin's BATTERY_MEDIUM well (2 km, the CDF well length) after the ablative pocket. Technique WBLOCK_1 is kept.",
     "category": "armor",
     "name": {
       "str_sp": "Hub 01 modular recon headgear"
@@ -538,6 +622,13 @@
         "flag_restriction": [
           "ABLATIVE_HELMET"
         ]
+      },
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "default_magazine": "medium_battery_cell"
       }
     ]
   },

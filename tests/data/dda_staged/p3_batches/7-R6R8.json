@@ -1,0 +1,754 @@
+{
+ "batch": "7-R6R8",
+ "base": "d185c2bc77",
+ "dda": "b4b62254ae2",
+ "note": "23 rows of 7-R6R8: 6 golden ids in `items` (3 COPY-TWIN R8, 3 KEEP-REVIEW R6); the 16 KEEP and the 1 LEAVE row in `not_edited` (not golden ids, checked by tests/p3_data_r6r8_test.cpp S2/S4).",
+ "count": 23,
+ "items": {
+  "arredondo_chute": {
+   "file": "data/json/items/gunmod/loading_port.json",
+   "class": "ADAPTOR",
+   "rule": "R6",
+   "action": "KEEP-REVIEW",
+   "twin": true,
+   "pockets": [],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": null,
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "not_edited": true,
+   "own_keys": [
+    "acceptable_ammo",
+    "color",
+    "description",
+    "id",
+    "install_time",
+    "integral_volume",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "mod_target_category",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "helmet_nomad": {
+   "file": "data/json/items/armor/helmets.json",
+   "class": "DDA-POCKET",
+   "rule": "R8",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "GASFILTER_SM"
+     ],
+     "default_magazine": "gasfilter_sm"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": null,
+    "magazine_well": null,
+    "clip_size": null
+   }
+  },
+  "magazine_battery_mod": {
+   "file": "data/json/items/toolmod.json",
+   "class": "ADAPTOR",
+   "rule": "R6",
+   "action": "KEEP-REVIEW",
+   "twin": true,
+   "pockets": [],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": null,
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "not_edited": true,
+   "own_keys": [
+    "acceptable_ammo",
+    "category",
+    "color",
+    "copy-from",
+    "description",
+    "id",
+    "magazine_adaptor",
+    "name",
+    "pocket_mods",
+    "type"
+   ]
+  },
+  "retool_ar15_300blk": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "rule": "R6",
+   "action": "KEEP-REVIEW",
+   "twin": true,
+   "pockets": [],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": null,
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "not_edited": true,
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "robofac_armor_anchor": {
+   "file": "data/json/items/armor/cdf_hub01_armor.json",
+   "class": "DDA-POCKET",
+   "rule": "R8",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "description": "Watertight internal reservoir.",
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "1500 ml",
+     "max_item_volume": "32 ml",
+     "watertight": true,
+     "spoil_multiplier": 0.8,
+     "max_contains_weight": "4 kg",
+     "moves": 120
+    },
+    {
+     "description": "Watertight internal reservoir.",
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "1500 ml",
+     "max_item_volume": "32 ml",
+     "watertight": true,
+     "spoil_multiplier": 0.8,
+     "max_contains_weight": "4 kg",
+     "moves": 120
+    },
+    {
+     "description": "Quick access pouches.",
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "1000 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "270 mm",
+     "moves": 80
+    },
+    {
+     "description": "Quick access pouches.",
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "1000 ml",
+     "max_contains_weight": "4 kg",
+     "max_item_length": "270 mm",
+     "moves": 80
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "ablative": true,
+     "volume_encumber_modifier": 0,
+     "max_contains_volume": "7000 ml",
+     "max_contains_weight": "11 kg",
+     "moves": 200,
+     "description": "Hooks for an armored mantle.",
+     "flag_restriction": [
+      "ABLATIVE_MANTLE"
+     ]
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "ablative": true,
+     "volume_encumber_modifier": 0,
+     "max_contains_volume": "4000 ml",
+     "max_contains_weight": "4 kg",
+     "moves": 200,
+     "description": "Hooks for an armored skirt.",
+     "flag_restriction": [
+      "ABLATIVE_SKIRT"
+     ]
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "max_contains_volume": "500 ml",
+     "max_contains_weight": "1100 g",
+     "max_item_length": "70 cm",
+     "moves": 200,
+     "holster": true,
+     "description": "Strap for a gun barrel."
+    },
+    {
+     "pocket_type": "CONTAINER",
+     "ablative": true,
+     "volume_encumber_modifier": 0,
+     "max_contains_volume": "4000 ml",
+     "max_contains_weight": "900 g",
+     "moves": 200,
+     "description": "Grommets for a poncho liner.",
+     "item_restriction": [
+      "robofac_poncho_liner"
+     ]
+    },
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_MEDIUM"
+     ],
+     "default_magazine": "medium_battery_cell"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": null,
+    "magazine_well": null,
+    "clip_size": null
+   }
+  },
+  "robofac_head_rig": {
+   "file": "data/json/items/armor/cdf_hub01_armor.json",
+   "class": "DDA-POCKET",
+   "rule": "R8",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "CONTAINER",
+     "ablative": true,
+     "volume_encumber_modifier": 0,
+     "max_contains_volume": "5000 ml",
+     "max_contains_weight": "5 kg",
+     "moves": 200,
+     "description": "Hooks for an armored helm plate.",
+     "flag_restriction": [
+      "ABLATIVE_HELMET"
+     ]
+    },
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_MEDIUM"
+     ],
+     "default_magazine": "medium_battery_cell"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": null,
+    "magazine_well": null,
+    "clip_size": null
+   }
+  }
+ },
+ "not_edited": {
+  "aug_nato_conversion": {
+   "file": "data/json/items/gunmod/mechanism.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "acceptable_ammo",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "beltfeed": {
+   "file": "data/json/items/gunmod/mechanism.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "acceptable_ammo",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "integral_volume",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_target_category",
+    "name",
+    "price",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "g36_stanag_adapter": {
+   "file": "data/json/items/gunmod/mechanism.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "acceptable_ammo",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "hc_bar_mag_adapter": {
+   "file": "data/json/items/gunmod/mechanism.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "acceptable_ammo",
+    "color",
+    "description",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "laser_rifle_cheap": {
+   "file": "data/json/items/gun/ups.json",
+   "class": "DDA-POCKET",
+   "action": "LEAVE",
+   "own_keys": [
+    "ammo_effects",
+    "bashing",
+    "color",
+    "copy-from",
+    "description",
+    "dispersion",
+    "durability",
+    "id",
+    "loudness",
+    "material",
+    "name",
+    "price",
+    "range",
+    "ranged_damage",
+    "symbol",
+    "type",
+    "ups_charges",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_hc_223": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_hc_308": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_hmr_40": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_hmr_44": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_hmr_45": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_hmr_9mm": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_luty_40": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_luty_45": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "flags",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_mcx_223": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "id",
+    "install_time",
+    "integral_volume",
+    "location",
+    "looks_like",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_mcx_762": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "//",
+    "ammo_modifier",
+    "color",
+    "description",
+    "id",
+    "install_time",
+    "integral_volume",
+    "location",
+    "looks_like",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_ump45_40": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  },
+  "retool_ump45_9mm": {
+   "file": "data/json/items/gunmod/conversions.json",
+   "class": "ADAPTOR",
+   "action": "KEEP",
+   "own_keys": [
+    "ammo_modifier",
+    "color",
+    "description",
+    "id",
+    "install_time",
+    "integral_volume",
+    "integral_weight",
+    "location",
+    "magazine_adaptor",
+    "material",
+    "min_skills",
+    "mod_targets",
+    "name",
+    "price",
+    "price_postapoc",
+    "symbol",
+    "type",
+    "volume",
+    "weight"
+   ]
+  }
+ },
+ "waiting_not_in_batch": [
+  "butane_can",
+  "butane_tank",
+  "candle",
+  "candle_lit",
+  "extinguisher",
+  "fire_drill",
+  "fire_drill_large",
+  "glowstick",
+  "glowstick_lit",
+  "handflare",
+  "handflare_lit",
+  "hydrogen_tank",
+  "inhaler",
+  "matches",
+  "nitrogen_tank",
+  "pen",
+  "permanent_marker",
+  "sm_extinguisher"
+ ],
+ "waiting_note": "18 charge-only tools that wait for ammotypes (see 7-R5); laser_rifle_cheap (LEAVE) is in items, not_edited"
+}

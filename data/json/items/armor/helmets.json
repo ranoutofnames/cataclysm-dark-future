@@ -968,7 +968,16 @@
     "material_thickness": 3,
     "environmental_protection": 4,
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ],
-    "flags": [ "VARSIZE", "WATERPROOF", "SUN_GLASSES", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS", "ALLOWS_MUZZLE" ]
+    "flags": [ "VARSIZE", "WATERPROOF", "SUN_GLASSES", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS", "ALLOWS_MUZZLE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "GASFILTER_SM" ],
+        "default_magazine": "gasfilter_sm"
+      }
+    ]
   },
   {
     "id": "helmet_plate",
