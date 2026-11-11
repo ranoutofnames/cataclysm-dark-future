@@ -74,8 +74,8 @@ struct auto_extinguish_guard {
 
 } // namespace
 
-// H1: S0010, activity_handlers.cpp:2554. CDF: soldering_iron takes a battery and has a
-// medium_battery_cell well (data/json/items/tool/workshop.json:1074-1100, battery.json:208-231).
+// H1: S0010, activity_handlers.cpp:2554. CDF: test_battery_tool takes a battery and has a
+// well (TEST_DATA/items.json). CDF: LINKUP1c. soldering_iron is a cable tool now (no well).
 TEST_CASE( "fake_tool_from_vehicle_gets_battery_in_its_pocket", "[p3][charges][activity]" ) {
     clear_all_state();
     build_test_map( ter_id( "t_pavement" ) );
@@ -91,7 +91,7 @@ TEST_CASE( "fake_tool_from_vehicle_gets_battery_in_its_pocket", "[p3][charges][a
     REQUIRE( m.veh_at( part_pos ) );
 
     player_activity act = make_repair_activity();
-    hack::patch_activity_for_vehicle( act, part_pos, *veh, 0, itype_id( "soldering_iron" ) );
+    hack::patch_activity_for_vehicle( act, part_pos, *veh, 0, itype_id( "test_battery_tool" ) );
 
     item *fake = hack::get_fake_tool( hack::hack_type_t::vehicle, act );
     REQUIRE( fake != nullptr );
@@ -116,7 +116,7 @@ TEST_CASE( "discharge_bills_what_the_tool_used", "[p3][charges][activity]" ) {
     REQUIRE( m.veh_at( part_pos ) );
 
     player_activity act = make_repair_activity();
-    hack::patch_activity_for_vehicle( act, part_pos, *veh, 0, itype_id( "soldering_iron" ) );
+    hack::patch_activity_for_vehicle( act, part_pos, *veh, 0, itype_id( "test_battery_tool" ) );
 
     item *fake = hack::get_fake_tool( hack::hack_type_t::vehicle, act );
     REQUIRE( fake != nullptr );

@@ -100,18 +100,19 @@
     "color": "yellow",
     "ammo": "battery",
     "charges_per_use": 5,
-    "use_action": {
-      "type": "transform",
-      "active": true,
-      "target": "carver_on",
-      "msg": "You turn on the electric carver.",
-      "moves": 80,
-      "transform_charges": 1,
-      "need_dry": true
-    },
-    "flags": [ "SHEATH_SWORD", "NONCONDUCTIVE", "COMBAT_NPC_USE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": [
+      {
+        "type": "transform",
+        "active": true,
+        "target": "carver_on",
+        "msg": "You turn on the electric carver.",
+        "moves": 80,
+        "transform_charges": 1,
+        "need_dry": true
+      },
+      { "type": "link_up", "cable_length": 2, "charge_rate": "120 W" }
+    ],
+    "flags": [ "SHEATH_SWORD", "NONCONDUCTIVE", "COMBAT_NPC_USE" ]
   },
   {
     "id": "carver_on",
@@ -126,9 +127,11 @@
     "revert_to": "carver_off",
     "qualities": [ [ "CUT", 1 ], [ "BUTCHER", 25 ] ],
     "revert_msg": "Your electric carver goes quiet",
-    "use_action": { "type": "transform", "target": "carver_off", "msg": "You turn off the electric carver." },
-    "flags": [ "MESSY", "TRADER_AVOID", "NONCONDUCTIVE", "WATER_DISABLE", "COMBAT_NPC_USE", "COMBAT_NPC_ON" ],
-    "magazine_well": "500 ml"
+    "use_action": [
+      { "type": "transform", "target": "carver_off", "msg": "You turn off the electric carver." },
+      { "type": "link_up", "cable_length": 2, "charge_rate": "120 W" }
+    ],
+    "flags": [ "MESSY", "TRADER_AVOID", "NONCONDUCTIVE", "WATER_DISABLE", "COMBAT_NPC_USE", "COMBAT_NPC_ON" ]
   },
   {
     "id": "char_purifier",
@@ -289,9 +292,7 @@
     "ammo": "battery",
     "charges_per_use": 10,
     "qualities": [ [ "BOIL", 1 ] ],
-    "use_action": "HOTPLATE",
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": [ "HOTPLATE", { "type": "link_up", "cable_length": 2, "charge_rate": "1 kW" } ]
   },
   {
     "id": "dehydrator",
@@ -310,8 +311,7 @@
     "color": "blue",
     "ammo": "battery",
     "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": { "type": "link_up", "cable_length": 2, "charge_rate": "600 W" }
   },
   {
     "id": "eggs_ferment",
@@ -642,8 +642,7 @@
     "color": "white",
     "ammo": "battery",
     "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": { "type": "link_up", "cable_length": 2, "charge_rate": "450 W" }
   },
   {
     "id": "soda_machine",
@@ -759,9 +758,7 @@
     "color": "green",
     "ammo": "battery",
     "charges_per_use": 5,
-    "use_action": "HOTPLATE",
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": [ "HOTPLATE", { "type": "link_up", "cable_length": 3, "charge_rate": "1 kW" } ]
   },
   {
     "id": "afs_atompot",
@@ -867,7 +864,7 @@
     "color": "white",
     "ammo": "battery",
     "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ]
+    "use_action": { "type": "link_up", "cable_length": 4, "charge_rate": "55 W" }
   },
   {
     "id": "mess_kit",
@@ -984,10 +981,9 @@
         "time_mult": 1,
         "subcategories": [ "CSC_FOOD_MEAT", "CSC_FOOD_VEGGI", "CSC_FOOD_PASTA" ],
         "temporary_tools": [ "tongs", "toolset", "pot" ]
-      }
-    ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+      },
+      { "type": "link_up", "cable_length": 2, "charge_rate": "1000 W" }
+    ]
   },
   {
     "id": "multi_cooker_improved",
@@ -1006,7 +1002,8 @@
         "recipes": [ "water_clean" ],
         "subcategories": [ "CSC_FOOD_MEAT", "CSC_FOOD_VEGGI", "CSC_FOOD_PASTA" ],
         "temporary_tools": [ "tongs", "toolset", "pot" ]
-      }
+      },
+      { "type": "link_up", "cable_length": 2, "charge_rate": "1000 W" }
     ]
   },
   {
@@ -1281,8 +1278,7 @@
     "color": "white",
     "ammo": "battery",
     "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": { "type": "link_up", "cable_length": 2, "charge_rate": "110 W" }
   },
   {
     "id": "waffleiron",
@@ -1318,10 +1314,8 @@
     "color": "light_blue",
     "ammo": "battery",
     "charges_per_use": 1,
-    "use_action": "WATER_PURIFIER",
-    "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "use_action": [ "WATER_PURIFIER", { "type": "link_up", "cable_length": 2, "charge_rate": "30 W" } ],
+    "flags": [ "ALLOWS_REMOTE_USE" ]
   },
   {
     "type": "GENERIC",

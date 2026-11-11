@@ -1,0 +1,174 @@
+{
+  "format": 1,
+  "packet": "LINKUP1c",
+  "source": "outbox/PL-33e/targets/linkup-uses.tsv, rows group=hold (19 direct link_up twins) plus multi_cooker_improved (copy-from multi_cooker). cable_length/charge_rate are the DDA twin's link_up values read at b4b62254ae2 (charge_rate_mw = the loader's milliwatts: W x 1000, kW x 1000000).",
+  "converted": [
+    {
+      "id": "analytical_set_basic",
+      "file": "data/json/items/tool/science.json",
+      "cable_length": 3,
+      "charge_rate": "1 kW",
+      "charge_rate_mw": 1000000
+    },
+    {
+      "id": "carver_off",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "120 W",
+      "charge_rate_mw": 120000
+    },
+    {
+      "id": "carver_on",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "120 W",
+      "charge_rate_mw": 120000
+    },
+    {
+      "id": "chemistry_set",
+      "file": "data/json/items/tool/science.json",
+      "cable_length": 7,
+      "charge_rate": "1 kW",
+      "charge_rate_mw": 1000000
+    },
+    {
+      "id": "coffeemaker",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "1 kW",
+      "charge_rate_mw": 1000000
+    },
+    {
+      "id": "dehydrator",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "600 W",
+      "charge_rate_mw": 600000
+    },
+    {
+      "id": "elec_shears",
+      "file": "data/json/items/tool/pets.json",
+      "cable_length": 5,
+      "charge_rate": null,
+      "charge_rate_mw": 0
+    },
+    {
+      "id": "food_processor",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "450 W",
+      "charge_rate_mw": 450000
+    },
+    {
+      "id": "forge",
+      "file": "data/json/items/tool/metalworking.json",
+      "cable_length": 2,
+      "charge_rate": "1400 W",
+      "charge_rate_mw": 1400000
+    },
+    {
+      "id": "hotplate",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 3,
+      "charge_rate": "1 kW",
+      "charge_rate_mw": 1000000
+    },
+    {
+      "id": "kiln",
+      "file": "data/json/items/tool/workshop.json",
+      "cable_length": 2,
+      "charge_rate": "1500 W",
+      "charge_rate_mw": 1500000
+    },
+    {
+      "id": "lightstrip_inactive",
+      "file": "data/json/items/tool/lighting.json",
+      "cable_length": 9,
+      "charge_rate": "5 W",
+      "charge_rate_mw": 5000
+    },
+    {
+      "id": "makeshift_sealer",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 4,
+      "charge_rate": "55 W",
+      "charge_rate_mw": 55000
+    },
+    {
+      "id": "melting_point",
+      "file": "data/json/items/tool/science.json",
+      "cable_length": 3,
+      "charge_rate": "1 kW",
+      "charge_rate_mw": 1000000
+    },
+    {
+      "id": "multi_cooker",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "1000 W",
+      "charge_rate_mw": 1000000
+    },
+    {
+      "id": "multi_cooker_improved",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "1000 W",
+      "charge_rate_mw": 1000000
+    },
+    {
+      "id": "soldering_iron",
+      "file": "data/json/items/tool/workshop.json",
+      "cable_length": 3,
+      "charge_rate": "70 W",
+      "charge_rate_mw": 70000
+    },
+    {
+      "id": "vac_sealer",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "110 W",
+      "charge_rate_mw": 110000
+    },
+    {
+      "id": "water_purifier",
+      "file": "data/json/items/tool/cooking.json",
+      "cable_length": 2,
+      "charge_rate": "30 W",
+      "charge_rate_mw": 30000
+    },
+    {
+      "id": "welder",
+      "file": "data/json/items/tool/workshop.json",
+      "cable_length": 7,
+      "charge_rate": "3000 W",
+      "charge_rate_mw": 3000000
+    }
+  ],
+  "deferred": [
+    {
+      "id": "autoclave",
+      "file": "data/json/items/tool/med.json",
+      "reason": "Step-0 correction: the DDA twin is the disconnected appliance item (data/json/items/appliances.json:212) with no link_up, no tool_ammo and no battery; the working autoclave is a vehicle appliance part, and CDF has no appliance port. A cable value cannot be copied; blocked."
+    },
+    {
+      "id": "crt_mess_kit",
+      "file": "data/mods/CRT_EXPANSION/items/crt_tools.json",
+      "reason": "CDF-only child of mess_kit (HAND-FALLBACK, no DDA twin). It can only copy its parent, and the parent has no DDA link_up (deferred with mess_kit)."
+    },
+    {
+      "id": "hydraulic_press",
+      "file": "data/json/items/tool/metalworking.json",
+      "reason": "Step-0 correction: the DDA twin is the disconnected appliance item (data/json/items/appliances.json:185) with no link_up and no use_action; the working press is an appliance part and CDF has no appliance port. Blocked."
+    },
+    {
+      "id": "mess_kit",
+      "file": "data/json/items/tool/cooking.json",
+      "reason": "Step-0 correction: the DDA twin (data/json/items/tool/cooking.json:499) has no link_up, no tool_ammo and no battery pocket; it heats with the zero-charge HEAT_ALL_ITEMS. Deleting the CDF well would make the CDF HOTPLATE (charges_per_use 5) unusable. Blocked."
+    },
+    {
+      "id": "voltmeter",
+      "file": "data/json/items/tool/science.json",
+      "reason": "Step-0 correction: the DDA twin (data/json/items/tool/science.json:1025) has no link_up, no tool_ammo and no battery; CDF has no VOLTMETER iuse either. Deleting only the well is DDA-faithful but is not this packet's rule (no cable value to copy). Blocked."
+    }
+  ]
+}

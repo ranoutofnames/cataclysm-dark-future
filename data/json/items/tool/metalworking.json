@@ -223,11 +223,10 @@
         "tool_quality": 8,
         "cost_scaling": 0.1,
         "move_cost": 500
-      }
+      },
+      { "type": "link_up", "cable_length": 2, "charge_rate": "1400 W" }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "heavy_battery_cell" ] ] ],
-    "magazine_well": "1000 ml"
+    "flags": [ "ALLOWS_REMOTE_USE" ]
   },
   {
     "id": "hydraulic_press",

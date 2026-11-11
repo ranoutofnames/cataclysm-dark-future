@@ -668,17 +668,19 @@ TEST_CASE( "pocket_is_primary_ammo true for the gun's ammo pocket, false for a b
     CHECK( gun->pocket_is_primary_ammo( well ) );
     CHECK_FALSE( gun->pocket_is_primary_ammo( nullptr ) );
 
-    detached_ptr<item> carver = item::spawn( itype_id( "carver_off" ) );
-    const item_pocket *battery_well = carver->primary_ammo_pocket();
+    // CDF: LINKUP1c. carver_off is a cable tool now (no battery pocket), so the battery-well
+    // exemplar is TEST_DATA/test_battery_tool (a TOOL with a synthesized battery well).
+    detached_ptr<item> battery_tool = item::spawn( itype_id( "test_battery_tool" ) );
+    const item_pocket *battery_well = battery_tool->primary_ammo_pocket();
     REQUIRE( battery_well != nullptr );
     CHECK_FALSE( gun->pocket_is_primary_ammo( battery_well ) );
 }
 
 TEST_CASE( "pocket_accepts_battery true for a battery well, false for an ammo well",
            "[p3][ammo]" ) {
-    detached_ptr<item> carver = item::spawn( itype_id( "carver_off" ) );
+    detached_ptr<item> battery_tool = item::spawn( itype_id( "test_battery_tool" ) );
     const item_pocket *battery_well = nullptr;
-    for( const item_pocket *p : carver->get_pockets( []( const item_pocket & ) {
+    for( const item_pocket *p : battery_tool->get_pockets( []( const item_pocket & ) {
     return true;
 } ) ) {
         if( p->is_type( pocket_type::MAGAZINE_WELL ) ) {
@@ -686,7 +688,7 @@ TEST_CASE( "pocket_accepts_battery true for a battery well, false for an ammo we
         }
     }
     REQUIRE( battery_well != nullptr );
-    CHECK( carver->pocket_accepts_battery( battery_well ) );
+    CHECK( battery_tool->pocket_accepts_battery( battery_well ) );
 
     detached_ptr<item> gun = loaded_m4a1( 30 );
     const item_pocket *ammo_well = gun->primary_ammo_pocket();

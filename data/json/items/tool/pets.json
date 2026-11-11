@@ -68,16 +68,9 @@
     "color": "dark_gray",
     "qualities": [ [ "SHEAR", 3 ] ],
     "tool_ammo": "battery",
-    "initial_charges": 100,
     "charges_per_use": 25,
-    "pocket_data": [
-      {
-        "pocket_type": "MAGAZINE",
-        "rigid": true,
-        "ammo_restriction": { "battery": 100 }
-      }
-    ],
-    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
+    "use_action": { "type": "link_up", "cable_length": 5 },
+    "//": "CDF: LINKUP1c. DDA elec_shears has no battery pocket and draws from a cable (cable_length 5); tool_ammo kept."
   },
   {
     "id": "horse_tack",

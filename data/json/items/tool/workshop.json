@@ -607,8 +607,7 @@
     "color": "dark_gray",
     "ammo": "battery",
     "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "heavy_battery_cell" ] ] ],
-    "magazine_well": "1000 ml"
+    "use_action": { "type": "link_up", "cable_length": 2, "charge_rate": "1500 W" }
   },
   {
     "id": "large_repairkit",
@@ -1158,11 +1157,10 @@
         "cost_scaling": 0.1,
         "move_cost": 1500
       },
-      { "flame": false, "type": "cauterize" }
+      { "flame": false, "type": "cauterize" },
+      { "type": "link_up", "cable_length": 3, "charge_rate": "70 W" }
     ],
-    "flags": [ "STAB", "BELT_CLIP", "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "light_minus_battery_cell", "light_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "flags": [ "STAB", "BELT_CLIP", "ALLOWS_REMOTE_USE" ]
   },
   {
     "id": "soldering_ethanol",
@@ -1342,11 +1340,10 @@
         ],
         "skill": "fabrication",
         "clothing_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded", "resized_large", "resized_small" ]
-      }
+      },
+      { "type": "link_up", "cable_length": 7, "charge_rate": "3000 W" }
     ],
-    "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "flags": [ "ALLOWS_REMOTE_USE" ]
   },
   {
     "id": "wood_smoother",

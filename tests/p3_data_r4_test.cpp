@@ -11,7 +11,8 @@
 #include <string>
 #include <vector>
 
-// CDF: P3-7-R4a. Batch input: tests/data/dda_staged/p3_batches/7-R4a.json (64 rows of items/tool).
+// CDF: P3-7-R4a. Batch input: tests/data/dda_staged/p3_batches/7-R4a.json (63 rows of items/tool;
+// elec_shears was row 64 until LINKUP1c moved it to the DDA cable tool, pinned in p3_linkup1c_test).
 // The golden load of the same ids (pockets, order) is "p3 golden load batches".
 
 namespace {
@@ -150,7 +151,7 @@ void check_tool_pocket(const std::string& id, const std::map<std::string, int>& 
 
 TEST_CASE("p3 r4a charges literals", "[p3][data][R4]") {
     const std::vector<r4a_row> rows = read_r4a_batch();
-    REQUIRE(rows.size() == 64);
+    REQUIRE(rows.size() == 63);
     for (const r4a_row& r : rows) {
         CAPTURE(r.id);
         REQUIRE(itype_id(r.id).is_valid());
@@ -188,7 +189,7 @@ TEST_CASE("p3 r4a spawn is behaviour neutral", "[p3][data][R4]") {
         {"char_smoker", 200, 100, "charcoal"},
         {"sewing_machine", 800, 50, "thread"},
         {"wrist_comp_control", 600, 500, "battery"},
-        {"elec_shears", 100, 100, "battery"},
+        // CDF: elec_shears left this case in LINKUP1c (cable tool: no integral pocket)
         // CDF: adv_UPS_off is a DDA well since 7-R4a2 (1500 from the default cell, was integral 5000):
         // see "p3 r4a2 adv_UPS_off has the DDA well"
     };
@@ -216,8 +217,7 @@ TEST_CASE("p3 r4a samples", "[p3][data][R4]") {
     check_tool_pocket("lighter", {{"lighter_fluid", 25}});
     // CDF: wrist_comp_budget 600, integral (DDA class shape: smart_watch_adv, 30)
     check_tool_pocket("wrist_comp_budget", {{"battery", 600}});
-    // CDF: elec_shears 100, integral until the DDA cable-power port
-    check_tool_pocket("elec_shears", {{"battery", 100}});
+    // CDF: elec_shears is a DDA cable tool since LINKUP1c (no integral pocket)
 }
 
 TEST_CASE("p3 r4a dropped ids", "[p3][data][R4]") {
@@ -359,8 +359,18 @@ TEST_CASE("p3 r4a2 out-of-packet rows and cells unchanged", "[p3][data][R4]") {
         CHECK(wells == 0);
         CHECK(integral == 1);
     }
-    // CDF: fake_firestarter has no battery pocket since P3-7-R4b (p3 r4b cases); elec_shears waits for the cable port
-    check_tool_pocket("elec_shears", {{"battery", 100}});
+    // CDF: fake_firestarter has no battery pocket since P3-7-R4b (p3 r4b cases); elec_shears is a
+    // DDA cable tool since LINKUP1c: no battery pocket, a link_up action (p3 linkup1c cases)
+    {
+        int battery_pockets = 0;
+        for (const pocket_data& p : itype_id("elec_shears").obj().pockets) {
+            if (p.type == pocket_type::MAGAZINE || p.type == pocket_type::MAGAZINE_WELL) {
+                ++battery_pockets;
+            }
+        }
+        CHECK(battery_pockets == 0);
+        CHECK(itype_id("elec_shears").obj().get_use("link_up") != nullptr);
+    }
     // AUTO-236: CDF cell sizes, no rescale (DDA 16 / 259 / 503)
     const std::map<std::string, int> cells = {{"light_battery_cell", 100},
         {"medium_battery_cell", 500}, {"heavy_battery_cell", 1000},

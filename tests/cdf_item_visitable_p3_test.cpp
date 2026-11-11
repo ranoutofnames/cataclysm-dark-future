@@ -41,15 +41,17 @@ TEST_CASE( "cdf_visitable_legacy_bionic_pool_counts_power", "[p3][visitable]" ) 
 // charges even when the avatar has bionic power.
 TEST_CASE( "cdf_visitable_legacy_tool_without_bionic_flag_ignores_power", "[p3][visitable]" ) {
     clear_all_state();
-    detached_ptr<item> hotplate = item::spawn( itype_id( "hotplate" ),
-                             calendar::start_of_cataclysm, 7 );
-    REQUIRE( hotplate->is_tool() );
-    REQUIRE_FALSE( hotplate->has_flag( flag_USES_BIONIC_POWER ) );
+    // CDF: LINKUP1c. hotplate is a cable tool now (no battery pocket), so the charges-of-a-well
+    // exemplar is TEST_DATA/test_battery_tool.
+    detached_ptr<item> battery_tool = item::spawn( itype_id( "test_battery_tool" ),
+                                   calendar::start_of_cataclysm, 7 );
+    REQUIRE( battery_tool->is_tool() );
+    REQUIRE_FALSE( battery_tool->has_flag( flag_USES_BIONIC_POWER ) );
 
     get_avatar().set_max_power_level( 100_kJ );
     get_avatar().set_power_level( 50_kJ );
 
-    CHECK( hotplate->charges_of( itype_id( "hotplate" ) ) == 7 );
+    CHECK( battery_tool->charges_of( itype_id( "test_battery_tool" ) ) == 7 );
 }
 
 // 8-3a guard: two USE_UPS tools share one UPS and the UPS is billed once

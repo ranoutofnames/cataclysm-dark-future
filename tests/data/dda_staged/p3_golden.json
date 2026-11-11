@@ -1824,25 +1824,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "analytical_set_basic": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "anesthetic_kit": {
       "class": "TOOL-INT",
       "rule": "R4",
@@ -3491,44 +3472,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "carver_off": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "carver_on": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "cash_card": {
       "class": "TOOL-INT",
       "rule": "R4",
@@ -3743,25 +3686,6 @@
           "item_restriction": [
             "pressurized_tank_chem"
           ]
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "chemistry_set": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -4194,25 +4118,6 @@
             "huge_atomic_battery_cell"
           ],
           "default_magazine": "medium_storage_battery"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "coffeemaker": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -5425,25 +5330,6 @@
         }
       }
     },
-    "dehydrator": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "demon_forge": {
       "class": "TOOL-INT",
       "rule": "R4",
@@ -5958,24 +5844,6 @@
           "rigid": true,
           "ammo_restriction": {
             "battery": 7920
-          }
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "elec_shears": {
-      "class": "TOOL-INT",
-      "rule": "R4",
-      "action": "HAND-FALLBACK",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE",
-          "rigid": true,
-          "ammo_restriction": {
-            "battery": 100
           }
         }
       ],
@@ -6935,25 +6803,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "food_processor": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "foodperson_mask": {
       "class": "WELL",
       "rule": "R3",
@@ -6986,25 +6835,6 @@
             "BATTERY_MEDIUM"
           ],
           "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "forge": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "1000 ml",
-          "item_restriction": [
-            "heavy_battery_cell"
-          ],
-          "default_magazine": "heavy_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -9027,25 +8857,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "hotplate": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "howitzer_gun": {
       "class": "GUN-INT",
       "rule": "R2",
@@ -9515,25 +9326,6 @@
             "light_disposable_cell"
           ],
           "default_magazine": "light_minus_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "kiln": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "1000 ml",
-          "item_restriction": [
-            "heavy_battery_cell"
-          ],
-          "default_magazine": "heavy_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -10620,26 +10412,6 @@
             "lighter_fluid": 25
           },
           "watertight": true
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "lightstrip_inactive": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "rigid": true,
-          "item_restriction": [
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -11987,25 +11759,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "makeshift_sealer": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "rigid": true,
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "mark19": {
       "class": "WELL",
       "rule": "R3",
@@ -12551,26 +12304,6 @@
           "ammo_restriction": {
             "battery": 10000
           }
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "melting_point": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -13335,49 +13068,11 @@
       "dropped_ids": [],
       "storage": false
     },
-    "multi_cooker": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "multi_cooker_filled": {
       "class": "WELL",
       "rule": "R3",
       "action": "AUTHOR",
       "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "multi_cooker_improved": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR",
-      "twin": false,
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
@@ -18797,26 +18492,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "soldering_iron": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_minus_battery_cell",
-            "light_battery_cell"
-          ],
-          "default_magazine": "light_minus_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "somen_clairvoyance": {
       "class": "TOOL-INT",
       "rule": "R4",
@@ -21840,25 +21515,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "vac_sealer": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "veilblade": {
       "class": "TOOL-INT",
       "rule": "R4",
@@ -22842,26 +22498,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "water_purifier": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
-          "item_restriction": [
-            "light_battery_cell",
-            "light_minus_battery_cell"
-          ],
-          "default_magazine": "light_battery_cell"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "watercannon": {
       "class": "GUN-INT",
       "rule": "R2",
@@ -22971,25 +22607,6 @@
           "ammo_restriction": {
             "300": 3
           }
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "welder": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],

@@ -3,7 +3,7 @@
  "base": "dcab09ec2c",
  "dda": "918f396f370ea48fad924fb45a797386a2f6ddb4",
  "dda_note": "918f396f370e = the DDA pin, a documented constant: tests/cdf_mag_port_test.cpp:20 requires it; the tool wrote it from `git rev-parse HEAD` of its --dda root (read by the planner on LAPTOP-A0EU66N2 at C:\\CDF\\CDDA SRC, 2026-11-03; see 7-GOLD1-v3 fact 1). b4b62254ae2 is the commit the DDA line numbers in the drafts were read at; data/json/items differs between the two only in six integrated_chitin*/integrated_carapace* ids (armor/integrated.json), none in any 7-* batch. The DDA root of a run is the parameter <DDA_ROOT>.",
- "count": 64,
+ "count": 63,
  "items": {
   "adv_UPS_off": {
    "file": "data/json/items/tool/electronics.json",
@@ -404,35 +404,6 @@
    "legacy_from": "tool report dropped_keys (own key; copy-from chain not resolvable by the planner script)",
    "part": "R4a",
    "note": "7-R4a2 (AUTO-239 Q-DRAIN): DDA twin number 7920 instead of CDF's 10000 (per-use drain stays CDF); own initial_charges lowered to the old fill ratio where it was above the number; `pockets` is the loaded pocket list (equals the golden)"
-  },
-  "elec_shears": {
-   "file": "data/json/items/tool/pets.json",
-   "class": "TOOL-INT",
-   "action": "KEEP-INTEGRAL-UNTIL-LINK-UP",
-   "twin": true,
-   "pockets": [
-    {
-     "pocket_type": "MAGAZINE",
-     "rigid": true,
-     "ammo_restriction": {
-      "battery": 100
-     }
-    }
-   ],
-   "dropped_keys": [
-    "max_charges"
-   ],
-   "dropped_ids": [],
-   "tags": [],
-   "legacy": {
-    "max_charges": 100,
-    "ammo": "battery",
-    "initial_charges": 100
-   },
-   "hand_fallback": true,
-   "part": "R4a",
-   "action_planned_by_tool": "HAND-FALLBACK",
-   "why": "the DDA twin (DDA:data/json/items/tool/pets.json:94) has no pocket and takes power from a cable (use_action link_up, DDA:...pets.json:109); CDF has no link_up (git grep: 0 hits in src and data/json/items); integral stays until the cable-power port"
   },
   "esbit_stove": {
    "file": "data/json/items/tool/cooking.json",

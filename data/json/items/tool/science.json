@@ -55,9 +55,7 @@
     "sub": "hotplate",
     "charges_per_use": 1,
     "qualities": [ [ "DISTILL", 1 ], [ "CHEM", 3 ], [ "BOIL", 1 ] ],
-    "use_action": "HOTPLATE",
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": [ "HOTPLATE", { "type": "link_up", "cable_length": 7, "charge_rate": "1 kW" } ]
   },
   {
     "id": "chemistry_set_basic",
@@ -330,8 +328,7 @@
     "symbol": ";",
     "color": "light_gray",
     "qualities": [ [ "ANALYSIS", 1 ] ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "use_action": { "type": "link_up", "cable_length": 3, "charge_rate": "1 kW" }
   },
   {
     "id": "balance_small",
@@ -443,8 +440,7 @@
     "material": [ "plastic", "glass" ],
     "symbol": ";",
     "color": "light_gray",
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "use_action": { "type": "link_up", "cable_length": 3, "charge_rate": "1 kW" }
   },
   {
     "id": "vortex",

@@ -466,14 +466,16 @@
     "description": "This is a light-emitting circuit that can be wired directly to a battery.  It provides some weak light and can't be turned off until the battery dies.",
     "color": "white",
     "ammo": "battery",
-    "use_action": {
-      "target": "lightstrip",
-      "msg": "You irreversibly activate the lightstrip.",
-      "active": true,
-      "need_charges": 1,
-      "type": "transform"
-    },
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ]
+    "use_action": [
+      {
+        "target": "lightstrip",
+        "msg": "You irreversibly activate the lightstrip.",
+        "active": true,
+        "need_charges": 1,
+        "type": "transform"
+      },
+      { "type": "link_up", "cable_length": 9, "charge_rate": "5 W" }
+    ]
   },
   {
     "id": "oil_lamp",

@@ -189,9 +189,10 @@ TEST_CASE( "legacy_defaults_unchanged", "[p3][magazine][pocket]" )
         }
     }
     // CDF: P3-BATT1 and 7-R2a moved guns and tools off the legacy `magazines` key (96 items left here);
-    // 7-R3c moved the 22 filter/cartridge and obsolete rows off it as well (74 left). The floor only
-    // guards against the population going empty, the per-item comparison stays strict
-    CHECK( checked > 60 );
+    // 7-R3c moved the 22 filter/cartridge and obsolete rows off it as well, and LINKUP1c the 19
+    // hold-list cable tools (46 left). The floor only guards against the population going empty, the
+    // per-item comparison stays strict
+    CHECK( checked > 30 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     WARN( "T4 items with a guard-G mod built in, skipped: " << skipped );
@@ -245,9 +246,9 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
         }
     }
     // CDF: P3-BATT1 moved 72 tools and 7-R2a/STOR27 more off the legacy `magazines` key (157 -> 71 items
-    // compared here); the floor only guards against the population going empty, the per-item comparison below
-    // stays strict
-    CHECK( checked > 60 );
+    // compared here); LINKUP1c moved the 19 hold-list cable tools too (43 left). The floor only guards
+    // against the population going empty, the per-item comparison below stays strict
+    CHECK( checked > 30 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     CAPTURE( bad_well );
