@@ -1017,7 +1017,6 @@
       }
     ],
     "tool_ammo": "gasfilter_s",
-    "magazines": [ [ "gasfilter_s", [ "gasfilter_sm" ] ] ],
     "type": "TOOL_ARMOR",
     "name": { "str": "scavenger cowl" },
     "description": "A sturdy protective cowl extending down to the neck, fitted with a respirator, helmet, certain level of glare and eye protection.  For dangerous scavenging ventures.",
@@ -1067,7 +1066,8 @@
       "ALLOWS_HORNS",
       "ALLOWS_MUZZLE",
       "SLEEP_IGNORE"
-    ]
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "helmet_scrap",

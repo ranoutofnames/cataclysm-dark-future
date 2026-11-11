@@ -4359,7 +4359,7 @@
     "copy-from": "rifle_manual",
     "type": "GUN",
     "name": { "str": "handmade heavy carbine" },
-    "//": "It's amongst the smallest of the 7.62x51mm(.308) firearms, and a scrap weapon as well. This means a short handmade barrel, and considerable loss of energy.",
+    "//": "It's amongst the smallest of the 7.62x51mm(.308) firearms, and a scrap weapon as well. This means a short handmade barrel, and considerable loss of energy. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "description": "A homemade lever-action magazine-fed smoothbore rifle.  While still a primitive pipe and 2x4 design, some minor improvements have been made, such as being able to accept G3 compatible magazines, and chambering the more powerful 7.62x51mm (.308) rounds.",
     "weight": "2311 g",
     "volume": "2 L",
@@ -4389,14 +4389,21 @@
       [ "rail", 1 ],
       [ "underbarrel", 1 ]
     ],
-    "magazines": [ [ "308", [ "g3_makeshiftmag", "g3mag", "g3bigmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "g3_makeshiftmag", "g3mag", "g3bigmag" ],
+        "default_magazine": "g3_makeshiftmag"
+      }
+    ]
   },
   {
     "id": "surv_carbine_223",
     "copy-from": "rifle_manual",
     "type": "GUN",
     "name": { "str": "handmade carbine" },
-    "//": "It's smaller than an M4A1, plus it's a homemade firearm.",
+    "//": "It's smaller than an M4A1, plus it's a homemade firearm. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "description": "A well-designed improvised lever-action carbine with a shortened barrel.  Accepting crude detachable magazines or STANAG magazines, this is one of the better homemade weapons.",
     "weight": "1950 g",
     "volume": "1500 ml",
@@ -4424,10 +4431,11 @@
       [ "rail", 1 ],
       [ "sights", 1 ]
     ],
-    "magazines": [
-      [
-        "223",
-        [
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [
           "survivor223mag",
           "carbonmag_223",
           "stanag30",
@@ -4442,8 +4450,9 @@
           "stanag100",
           "stanag100drum",
           "stanag150"
-        ]
-      ]
+        ],
+        "default_magazine": "survivor223mag"
+      }
     ]
   },
   {
@@ -4452,7 +4461,7 @@
     "type": "GUN",
     "name": { "str": "Luty SMG: 9x19mm", "str_pl": "Luty SMGs: 9x19mm" },
     "description": "A Luty pattern makeshift smoothbore SMG crudely constructed out of various steel parts using some of the more advanced powered hand tools; likely one of the most complex guns that are feasible to make outside of a machine shop, but still very unreliable.  This one is chambered for 9x19mm cartridges and accepts STEN compatible magazines.",
-    "//": "Crafting recipe must make use of angle grinder, bench grinder, set square and vise, which don't yet exist in game.",
+    "//": "Crafting recipe must make use of angle grinder, bench grinder, set square and vise, which don't yet exist in game. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "weight": "3274 g",
     "volume": "1750 ml",
     "price": "200 USD",
@@ -4469,7 +4478,13 @@
     "loudness": 0,
     "modes": [ [ "DEFAULT", "burst", 5 ] ],
     "barrel_volume": "250 ml",
-    "magazines": [ [ "9mm", [ "survivor9mm_mag", "stenmag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "survivor9mm_mag", "stenmag" ]
+      }
+    ]
   },
   {
     "id": "smg_40",
@@ -4477,7 +4492,7 @@
     "type": "GUN",
     "name": { "str": "Luty SMG: .40 S&W", "str_pl": "Luty SMGs: .40 S&W" },
     "description": "A Luty pattern makeshift smoothbore SMG crudely constructed out of various steel parts using some of the more advanced powered hand tools; likely one of the most complex guns that are feasible to make outside of a machine shop, but still very unreliable.  This one is chambered for .40 S&W cartridges and accepts custom-made makeshift magazines.",
-    "//": "Crafting recipe must make use of angle grinder, bench grinder, set square and vise, which don't yet exist in game. No factory mags until UMP40, mp5/40, or other straight .40 mags are implemented.",
+    "//": "Crafting recipe must make use of angle grinder, bench grinder, set square and vise, which don't yet exist in game. No factory mags until UMP40, mp5/40, or other straight .40 mags are implemented. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "weight": "3274 g",
     "volume": "1750 ml",
     "price": "200 USD",
@@ -4494,7 +4509,13 @@
     "loudness": 0,
     "modes": [ [ "DEFAULT", "burst", 5 ] ],
     "barrel_volume": "250 ml",
-    "magazines": [ [ "40", [ "smg_40_mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "smg_40_mag" ]
+      }
+    ]
   },
   {
     "id": "smg_45",
@@ -4502,7 +4523,7 @@
     "type": "GUN",
     "name": { "str": "Luty SMG: .45", "str_pl": "Luty SMGs: .45" },
     "description": "A Luty pattern makeshift smoothbore SMG crudely constructed out of various steel parts using some of the more advanced powered hand tools; likely one of the most complex guns that are feasible to make outside of a machine shop, but still very unreliable.  This one is chambered for .45 ACP cartridges and accepts MAC-10 compatible magazines.",
-    "//": "Crafting recipe must make use of angle grinder, bench grinder, set square and vise, which don't yet exist in game.",
+    "//": "Crafting recipe must make use of angle grinder, bench grinder, set square and vise, which don't yet exist in game. CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)",
     "weight": "3274 g",
     "volume": "1750 ml",
     "price": "200 USD",
@@ -4519,7 +4540,13 @@
     "barrel_volume": "250 ml",
     "handling": 20,
     "loudness": 0,
-    "magazines": [ [ "45", [ "smg_45_mag", "mac10mag" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "item_restriction": [ "mac10mag", "smg_45_mag" ]
+      }
+    ]
   },
   {
     "id": "surv_six_shooter",

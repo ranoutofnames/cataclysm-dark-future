@@ -1,0 +1,983 @@
+{
+ "batch": "7-R3c",
+ "base": "83486fc197",
+ "dda": "b4b62254ae2",
+ "recut_note": "7-R3c RE-CUT (orchestration 2026-11-11). The 93-row v2 target was cut at c7bf62a582; 71 ids are no longer this packet's (61 BATT-owned: BATT1/BATT2/BATT4 hold, 2 STOR-owned by STOR5, 8 RETIRED by MIG1). Remaining 22 rows: 16 filter/cartridge wells, 1 CHECK-ONLY native well (game_watch), 5 obsolete guns in no battery/storage target. recut_check_v2.py: 58 differences, all on BATT/STOR ids; no difference on any of the 22 rows kept here. No golden row is edited: the 22 golden entries already equal these pockets.",
+ "count": 22,
+ "items": {
+  "game_watch": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "BATTERY_ULTRA_LIGHT"
+     ],
+     "item_restriction": [
+      "light_minus_battery_cell",
+      "light_minus_atomic_battery_cell",
+      "light_minus_disposable_cell"
+     ],
+     "default_magazine": "light_minus_battery_cell"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "battery",
+      [
+       "light_minus_battery_cell",
+       "light_minus_atomic_battery_cell",
+       "light_minus_disposable_cell"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [
+     "light_minus_battery_cell",
+     "light_minus_atomic_battery_cell",
+     "light_minus_disposable_cell"
+    ],
+    "dda_only_kept": [],
+    "unfit": []
+   },
+   "cdf_note": "CDF: the legacy `magazines` cells sit beside the DDA BATTERY_ULTRA_LIGHT flag (Q-R3-1 shape, as the 72 BATT1 rows): the smart watch spawns with 80 charges, above the default cell's 50, so item::ammo_set's fallback needs a bigger cell id to find (src/item.cpp:791-816)."
+  },
+  "helmet_scavenger": {
+   "file": "data/json/items/armor/helmets.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "GASFILTER_SM"
+     ],
+     "default_magazine": "gasfilter_sm"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_s",
+      [
+       "gasfilter_sm"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_filter": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "GASFILTER_SM"
+     ],
+     "default_magazine": "gasfilter_sm"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_s",
+      [
+       "gasfilter_sm"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_fsurvivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "GASFILTER_MED"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_gas": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "flag_restriction": [
+      "GASFILTER_MED"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_gas_xl": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "flag_restriction": [
+      "GASFILTER_MED"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_h20survivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "REBREATHER_CART"
+     ],
+     "default_magazine": "rebreather_cartridge_o2"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "rebreather_filter",
+      [
+       "rebreather_cartridge_o2",
+       "rebreather_cartridge_air"
+      ]
+     ],
+     [
+      "rebreather_o2_regenerator",
+      [
+       "rebreather_cartridge_regen"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_h20survivor_on": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "REBREATHER_CART"
+     ],
+     "default_magazine": "rebreather_cartridge_o2"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "rebreather_filter",
+      [
+       "rebreather_cartridge_o2",
+       "rebreather_cartridge_air"
+      ]
+     ],
+     [
+      "rebreather_o2_regenerator",
+      [
+       "rebreather_cartridge_regen"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_halfsurvivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "item_restriction": [
+      "gasfilter_med"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_hsurvivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "flag_restriction": [
+      "GASFILTER_MED"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_lsurvivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "GASFILTER_MED"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_sasurvivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "item_restriction": [
+      "gasfilter_med"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "mask_survivor": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "GASFILTER_MED"
+     ],
+     "default_magazine": "gasfilter_med"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "gasfilter_m",
+      [
+       "gasfilter_med"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "rebreather": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "REBREATHER_CART"
+     ],
+     "default_magazine": "rebreather_cartridge_o2"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "rebreather_filter",
+      [
+       "rebreather_cartridge_o2",
+       "rebreather_cartridge_air"
+      ]
+     ],
+     [
+      "rebreather_o2_regenerator",
+      [
+       "rebreather_cartridge_regen"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "rebreather_on": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "REBREATHER_CART"
+     ],
+     "default_magazine": "rebreather_cartridge_o2"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "rebreather_filter",
+      [
+       "rebreather_cartridge_o2",
+       "rebreather_cartridge_air"
+      ]
+     ],
+     [
+      "rebreather_o2_regenerator",
+      [
+       "rebreather_cartridge_regen"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "rebreather_xl": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "REBREATHER_CART"
+     ],
+     "default_magazine": "rebreather_cartridge_o2"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "rebreather_filter",
+      [
+       "rebreather_cartridge_o2",
+       "rebreather_cartridge_air"
+      ]
+     ],
+     [
+      "rebreather_o2_regenerator",
+      [
+       "rebreather_cartridge_regen"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "rebreather_xl_on": {
+   "file": "data/json/items/tool_armor.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "rigid": true,
+     "flag_restriction": [
+      "REBREATHER_CART"
+     ],
+     "default_magazine": "rebreather_cartridge_o2"
+    }
+   ],
+   "dropped_keys": [],
+   "dropped_ids": [],
+   "tags": [
+    "EXPLICIT"
+   ],
+   "legacy": {
+    "magazines": [
+     [
+      "rebreather_filter",
+      [
+       "rebreather_cartridge_o2",
+       "rebreather_cartridge_air"
+      ]
+     ],
+     [
+      "rebreather_o2_regenerator",
+      [
+       "rebreather_cartridge_regen"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   }
+  },
+  "rifle_308": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "item_restriction": [
+      "g3_makeshiftmag",
+      "g3mag",
+      "g3bigmag"
+     ],
+     "default_magazine": "g3_makeshiftmag"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": [
+     [
+      "308",
+      [
+       "g3_makeshiftmag",
+       "g3mag",
+       "g3bigmag"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   },
+   "synth_lost": [
+    "MOD"
+   ]
+  },
+  "smg_40": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "item_restriction": [
+      "smg_40_mag"
+     ]
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": [
+     [
+      "40",
+      [
+       "smg_40_mag"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   },
+   "synth_lost": [
+    "MOD"
+   ]
+  },
+  "smg_45": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "item_restriction": [
+      "mac10mag",
+      "smg_45_mag"
+     ]
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": [
+     [
+      "45",
+      [
+       "smg_45_mag",
+       "mac10mag"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   },
+   "synth_lost": [
+    "MOD"
+   ]
+  },
+  "smg_9mm": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "COPY-TWIN",
+   "twin": true,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "item_restriction": [
+      "survivor9mm_mag",
+      "stenmag"
+     ]
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": [
+     [
+      "9mm",
+      [
+       "survivor9mm_mag",
+       "stenmag"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   },
+   "synth_lost": [
+    "MOD"
+   ]
+  },
+  "surv_carbine_223": {
+   "file": "data/json/obsoletion/items.json",
+   "class": "WELL",
+   "rule": "R3",
+   "action": "AUTHOR",
+   "twin": false,
+   "pockets": [
+    {
+     "pocket_type": "MAGAZINE_WELL",
+     "item_restriction": [
+      "survivor223mag",
+      "carbonmag_223",
+      "stanag30",
+      "stanag5",
+      "stanag10",
+      "stanag20",
+      "stanag40",
+      "stanag50",
+      "stanag60",
+      "stanag60drum",
+      "stanag90",
+      "stanag100",
+      "stanag100drum",
+      "stanag150"
+     ],
+     "default_magazine": "survivor223mag"
+    }
+   ],
+   "dropped_keys": [
+    "magazines"
+   ],
+   "dropped_ids": [],
+   "tags": [],
+   "legacy": {
+    "magazines": [
+     [
+      "223",
+      [
+       "survivor223mag",
+       "carbonmag_223",
+       "stanag30",
+       "stanag5",
+       "stanag10",
+       "stanag20",
+       "stanag40",
+       "stanag50",
+       "stanag60",
+       "stanag60drum",
+       "stanag90",
+       "stanag100",
+       "stanag100drum",
+       "stanag150"
+      ]
+     ]
+    ],
+    "magazine_well": null,
+    "clip_size": null
+   },
+   "well_diff": {
+    "cdf_added": [],
+    "dda_only_kept": [],
+    "unfit": []
+   },
+   "synth_lost": [
+    "MOD"
+   ]
+  }
+ }
+}

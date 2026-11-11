@@ -1,0 +1,78 @@
+{
+ "batch": "7-R3c",
+ "note": "in-memory mutations of the golden pockets; the batch comparison must report a mismatch for exactly the named id and none for the others",
+ "mutations": [
+  {
+   "case": "N1",
+   "kind": "wrong_default",
+   "id": "game_watch",
+   "pocket": 0,
+   "mutation": "default_magazine `light_minus_battery_cell` -> bogus id",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N2",
+   "kind": "wrong_default",
+   "id": "mask_halfsurvivor",
+   "pocket": 0,
+   "mutation": "default_magazine `gasfilter_med` -> bogus id",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N3",
+   "kind": "flag",
+   "id": "mask_filter",
+   "pocket": 0,
+   "mutation": "flag_restriction gains P3_BOGUS_FLAG",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N4",
+   "kind": "flag",
+   "id": "rebreather_xl",
+   "pocket": 0,
+   "mutation": "flag_restriction gains P3_BOGUS_FLAG (REBREATHER_CART well)",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N5",
+   "kind": "drop_restriction_id",
+   "id": "rifle_308",
+   "pocket": 0,
+   "mutation": "drop `g3mag` from item_restriction (the hand-authored well)",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N6",
+   "kind": "drop_restriction_id",
+   "id": "surv_carbine_223",
+   "pocket": 0,
+   "mutation": "drop `stanag30` from item_restriction (the 14-id hand-authored well)",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N7",
+   "kind": "drop_restriction_id",
+   "id": "mask_halfsurvivor",
+   "pocket": 0,
+   "mutation": "drop `gasfilter_med` from item_restriction (AUTHOR row, no DDA twin)",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N8",
+   "kind": "add_bogus_id",
+   "id": "smg_9mm",
+   "pocket": 0,
+   "mutation": "item_restriction gains `p3_bogus_item_id`",
+   "expect": "mismatch reported for this id only"
+  },
+  {
+   "case": "N9",
+   "kind": "hand_fallback_integral",
+   "id": "game_watch",
+   "pocket": 0,
+   "mutation": "flip MAGAZINE_WELL -> MAGAZINE (the port must keep the well shape)",
+   "expect": "mismatch reported for this id only"
+  }
+ ]
+}

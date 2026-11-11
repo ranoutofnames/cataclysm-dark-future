@@ -189,8 +189,9 @@ TEST_CASE( "legacy_defaults_unchanged", "[p3][magazine][pocket]" )
         }
     }
     // CDF: P3-BATT1 and 7-R2a moved guns and tools off the legacy `magazines` key (96 items left here);
-    // the floor only guards against the population going empty, the per-item comparison stays strict
-    CHECK( checked > 80 );
+    // 7-R3c moved the 22 filter/cartridge and obsolete rows off it as well (74 left). The floor only
+    // guards against the population going empty, the per-item comparison stays strict
+    CHECK( checked > 60 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     WARN( "T4 items with a guard-G mod built in, skipped: " << skipped );
@@ -263,36 +264,36 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
 // T5b
 TEST_CASE( "flag_restricted_wells_answer_from_the_well", "[p3][magazine][pocket]" )
 {
-    // CDF: FILT1 gives these items DDA flag-restricted wells (no id list): the live answer is the union of the
-    // id lists (empty), the legacy `magazines` list is no longer what magazine_compatible() returns.
+    // CDF: FILT1 gives these items DDA flag-restricted wells; 7-R3c drops the legacy `magazines`
+    // table from them, so the well is the only answer left. game_watch also carries the ids of the
+    // old table beside the flag: it spawns with 80 charges, above the default cell's 50, so
+    // item::ammo_set's fallback needs a bigger cell to find (src/item.cpp:791-816).
     struct expectation {
         const char *id;
         const char *flag;
         const char *default_mag;
+        int ids;
     };
     const std::vector<expectation> cases = {
-        { "rebreather", "REBREATHER_CART", "rebreather_cartridge_o2" },
-        { "mask_gas", "GASFILTER_MED", "gasfilter_med" },
-        { "game_watch", "BATTERY_ULTRA_LIGHT", "light_minus_battery_cell" },
+        { "rebreather", "REBREATHER_CART", "rebreather_cartridge_o2", 0 },
+        { "mask_gas", "GASFILTER_MED", "gasfilter_med", 0 },
+        { "game_watch", "BATTERY_ULTRA_LIGHT", "light_minus_battery_cell", 3 },
     };
     for( const expectation &c : cases ) {
         CAPTURE( c.id );
         detached_ptr<item> it = item::spawn( itype_id( c.id ) );
-        REQUIRE_FALSE( it->type->magazines.empty() );
+        // CDF: the port removed the legacy table; this was the answer before it
+        CHECK( it->type->magazines.empty() );
         const item_pocket *well = well_of( *it );
         REQUIRE( well != nullptr );
         CHECK( well->get_data().get_flag_restrictions().count( flag_id( c.flag ) ) == 1 );
-        CHECK( well->get_data().item_id_restriction.empty() );
+        CHECK( static_cast<int>( well->get_data().item_id_restriction.size() ) == c.ids );
         CHECK( it->magazine_compatible() == live_well_ids( *it ) );
-        CHECK( it->magazine_compatible().empty() );
-        CHECK( it->magazine_default() == itype_id( c.default_mag ) );
-        // the legacy answer would have been the table, which this must differ from
-        std::set<itype_id> legacy;
-        for( const auto &kv : it->type->magazines ) {
-            legacy.insert( kv.second.begin(), kv.second.end() );
+        if( c.ids == 0 ) {
+            // CDF: a flag-only well lists no ids, so this is the answer the legacy table gave before
+            CHECK( it->magazine_compatible().empty() );
         }
-        REQUIRE_FALSE( legacy.empty() );
-        CHECK( it->magazine_compatible() != legacy );
+        CHECK( it->magazine_default() == itype_id( c.default_mag ) );
     }
 }
 

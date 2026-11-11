@@ -318,11 +318,12 @@
         "max_item_length": "2 km",
         "rigid": true,
         "flag_restriction": [ "BATTERY_ULTRA_LIGHT" ],
+        "//": "CDF: the cells of the legacy `magazines` list beside the DDA flag (Q-R3-1 shape, as BATT1). The spawn load is 80, above the default cell's 50, so item::ammo_set needs a bigger cell to find (src/item.cpp:791-816).",
+        "item_restriction": [ "light_minus_battery_cell", "light_minus_atomic_battery_cell", "light_minus_disposable_cell" ],
         "default_magazine": "light_minus_battery_cell"
       }
     ],
     "tool_ammo": "battery",
-    "magazines": [ [ "battery", [ "light_minus_battery_cell", "light_minus_atomic_battery_cell", "light_minus_disposable_cell" ] ] ],
     "name": { "str": "smart watch", "str_pl": "smart watches" },
     "volume": "250 ml",
     "description": "A waterproof smart watch, powered by UPS.  It has reliable weather data from its built-in sensors and some pre-installed apps.  Activate to use.",
@@ -355,7 +356,8 @@
     "symbol": "[",
     "initial_charges": 80,
     "charges_per_use": 1,
-    "use_action": [ "PORTABLE_GAME", "WEATHER_TOOL", "TOGGLE_UPS_CHARGING" ]
+    "use_action": [ "PORTABLE_GAME", "WEATHER_TOOL", "TOGGLE_UPS_CHARGING" ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; PLUT1: a MAGAZINE_WELL for the plutonium fuel pack (initial_charges still sets the spawn load through default_ammo)",
@@ -1322,7 +1324,6 @@
       }
     ],
     "tool_ammo": [ "rebreather_filter", "rebreather_o2_regenerator" ],
-    "magazines": [ [ "rebreather_filter", [ "rebreather_cartridge_o2", "rebreather_cartridge_air" ] ], [ "rebreather_o2_regenerator", [ "rebreather_cartridge_regen" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "symbol": "[",
@@ -1351,7 +1352,8 @@
     "environmental_protection": 1,
     "encumbrance": 30,
     "coverage": 75,
-    "material_thickness": 1
+    "material_thickness": 1,
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "rebreather_on",
@@ -1365,7 +1367,16 @@
     "revert_to": "rebreather",
     "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "Your %s deactivates.", "target": "rebreather" },
     "environmental_protection": 15,
-    "encumbrance": 20
+    "encumbrance": 20,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "REBREATHER_CART" ],
+        "default_magazine": "rebreather_cartridge_o2"
+      }
+    ]
   },
   {
     "id": "rebreather_xl",
@@ -1379,7 +1390,6 @@
       }
     ],
     "tool_ammo": [ "rebreather_filter", "rebreather_o2_regenerator" ],
-    "magazines": [ [ "rebreather_filter", [ "rebreather_cartridge_o2", "rebreather_cartridge_air" ] ], [ "rebreather_o2_regenerator", [ "rebreather_cartridge_regen" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "symbol": "[",
@@ -1408,7 +1418,8 @@
     "environmental_protection": 1,
     "encumbrance": 30,
     "coverage": 75,
-    "material_thickness": 1
+    "material_thickness": 1,
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "rebreather_xl_on",
@@ -1423,7 +1434,16 @@
     "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "Your %s deactivates.", "target": "rebreather_xl" },
     "covers": [ "mouth" ],
     "environmental_protection": 15,
-    "encumbrance": 20
+    "encumbrance": 20,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "REBREATHER_CART" ],
+        "default_magazine": "rebreather_cartridge_o2"
+      }
+    ]
   },
   {
     "id": "mask_filter",
@@ -1437,7 +1457,6 @@
       }
     ],
     "tool_ammo": "gasfilter_s",
-    "magazines": [ [ "gasfilter_s", [ "gasfilter_sm" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "filter mask" },
@@ -1459,7 +1478,8 @@
     "environmental_protection": 1,
     "environmental_protection_with_filter": 7,
     "initial_charges": 100,
-    "use_action": "GASMASK"
+    "use_action": "GASMASK",
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_gas",
@@ -1472,7 +1492,6 @@
       }
     ],
     "tool_ammo": "gasfilter_m",
-    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "gas mask" },
@@ -1523,7 +1542,8 @@
     "environmental_protection": 1,
     "environmental_protection_with_filter": 16,
     "initial_charges": 100,
-    "use_action": "GASMASK"
+    "use_action": "GASMASK",
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_gas_xl",
@@ -1536,7 +1556,6 @@
       }
     ],
     "tool_ammo": "gasfilter_m",
-    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "XL gas mask" },
@@ -1587,7 +1606,8 @@
     "environmental_protection_with_filter": 16,
     "initial_charges": 100,
     "use_action": "GASMASK",
-    "flags": [ "OVERSIZE", "SLEEP_IGNORE" ]
+    "flags": [ "OVERSIZE", "SLEEP_IGNORE" ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_fsurvivor",
@@ -1601,7 +1621,6 @@
       }
     ],
     "tool_ammo": "gasfilter_m",
-    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "survivor firemask" },
@@ -1624,7 +1643,8 @@
     "environmental_protection_with_filter": 15,
     "initial_charges": 100,
     "use_action": "GASMASK",
-    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ]
+    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_bunker",
@@ -1673,7 +1693,6 @@
       }
     ],
     "tool_ammo": "gasfilter_m",
-    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "heavy survivor mask" },
@@ -1696,7 +1715,8 @@
     "environmental_protection": 1,
     "environmental_protection_with_filter": 15,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ]
+    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_sasurvivor",
@@ -1707,7 +1727,16 @@
     "material": [ "kevlar", "superalloy" ],
     "color": "light_cyan",
     "encumbrance": 25,
-    "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
+    "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "gasfilter_med" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ]
   },
   {
     "id": "mask_lsurvivor",
@@ -1721,7 +1750,6 @@
       }
     ],
     "tool_ammo": "gasfilter_m",
-    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "light survivor mask" },
@@ -1744,7 +1772,8 @@
     "environmental_protection": 1,
     "environmental_protection_with_filter": 15,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ]
+    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_survivor",
@@ -1758,7 +1787,6 @@
       }
     ],
     "tool_ammo": "gasfilter_m",
-    "magazines": [ [ "gasfilter_m", [ "gasfilter_med" ] ] ],
     "type": "TOOL_ARMOR",
     "category": "clothing",
     "name": { "str": "survivor mask" },
@@ -1781,7 +1809,8 @@
     "environmental_protection": 1,
     "environmental_protection_with_filter": 15,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ]
+    "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES", "SLEEP_IGNORE" ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_wsurvivor",
@@ -2081,7 +2110,6 @@
       }
     ],
     "tool_ammo": [ "rebreather_filter", "rebreather_o2_regenerator" ],
-    "magazines": [ [ "rebreather_filter", [ "rebreather_cartridge_o2", "rebreather_cartridge_air" ] ], [ "rebreather_o2_regenerator", [ "rebreather_cartridge_regen" ] ] ],
     "initial_charges": 180,
     "type": "TOOL_ARMOR",
     "category": "clothing",
@@ -2110,7 +2138,8 @@
     "environmental_protection": 10,
     "encumbrance": 30,
     "coverage": 75,
-    "material_thickness": 2
+    "material_thickness": 2,
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
   {
     "id": "mask_h20survivor_on",
@@ -2125,7 +2154,16 @@
     "use_action": { "type": "transform", "menu_text": "Turn off", "msg": "Your %s deactivates.", "target": "mask_h20survivor" },
     "covers": [ "mouth", "eyes" ],
     "environmental_protection": 16,
-    "encumbrance": 20
+    "encumbrance": 20,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "REBREATHER_CART" ],
+        "default_magazine": "rebreather_cartridge_o2"
+      }
+    ]
   },
   {
     "id": "folding_poncho",
@@ -3727,7 +3765,16 @@
     "looks_like": "mask_filter",
     "covers": [ "mouth" ],
     "flags": [ "VARSIZE", "STURDY", "SLEEP_IGNORE" ],
-    "delete": { "qualities": [ [ "GLARE", 1 ] ] }
+    "delete": { "qualities": [ [ "GLARE", 1 ] ] },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "gasfilter_med" ],
+        "default_magazine": "gasfilter_med"
+      }
+    ]
   },
   {
     "type": "TOOL_ARMOR",
