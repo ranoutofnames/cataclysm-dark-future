@@ -20,6 +20,7 @@
 #include "veh_type.h"
 #include "vehicle.h"
 #include "vpart_position.h"
+#include "vpart_range.h"
 #include "weather/weather.h"
 #include "wheel_dimensions.h"
 
@@ -159,39 +160,35 @@ auto vehicle_part::properties_to_item() const -> detached_ptr<item> {
     detached_ptr<item> tmp = item::spawn(*base);
     tmp->unset_flag(flag_VEHICLE);
 
-    // Cables get special handling: their target coordinates need to remain
-    // stored, and if a cable actually drops, it should be half-connected.
-    // Except grid-connected ones, for now.
-    if (tmp->has_flag(flag_CABLE_SPOOL)) {
-        auto data = cable_connection_data::make_data(*tmp);
-        if (!data || tmp->has_flag(flag_TOW_CABLE)) {
-            tmp->reset_cable();
-        } else {
-            if (data->intermap_connection()) {
-                if (data->con1.point == target.first) {
-                    data->unset_con2(tmp.get());
-                } else if (data->con2.point == target.first) {
-                    data->unset_con1(tmp.get());
-                } else {
-                    tmp->reset_cable();
+    // Cables get special handling: their target coordinates need to remain stored, and if a
+    // cable actually drops, it should be half-connected.
+    // Tow cables are handled inside of invalidate_towing instead.
+    // CDF: LINKUP1d, DDA vehicle.cpp:9091-9104 (vehicle::part_to_item). CDF has no
+    // get_remote_part(here, vp); the remote part is looked up on the map at the part's stored
+    // target, which is inside the cable's length and so inside the reality bubble.
+    if (tmp->has_flag(flag_CABLE_SPOOL) && !tmp->has_flag(flag_TOW_CABLE)) {
+        tmp->reset_link(false);
+        // CDF: DDA's get_remote_part( here, vp ) walks the remote vehicle's loose parts for the
+        // POWER_TRANSFER part at the stored target. The map lookup finds that vehicle; the part
+        // is the one whose absolute position is this part's target.first (link_to() stores the
+        // other end's part position there).
+        const optional_vpart_position remote = get_map().veh_at(target.second);
+        bool linked = false;
+        if (remote) {
+            vehicle& remote_veh = remote->vehicle();
+            for (const vpart_reference& vp : remote_veh.get_all_parts()) {
+                if (!vp.part().info().has_flag("POWER_TRANSFER")) { continue; }
+                if (remote_veh.abs_part_location(vp.part_index()) != target.first) { continue; }
+                if (tmp->link_to(remote_veh, vp.mount(), link_state::automatic).success()) {
+                    tmp->link().t_abs_pos = target.second;
+                    linked = true;
                 }
-                if (!has_flag(targets_grid)) {
-                    map& here = get_map();
-                    const auto local_pos = abs_to_bub(target.first);
-                    if (!here.veh_at(local_pos)) {
-                        // That vehicle ain't there no more.
-                        tmp->set_flag(flag_NO_DROP);
-                    }
-                }
-            } else if (data->character_connected()) {
-                if (auto* const con = data->get_nonchar_connection()) {
-                    data->unset_con(tmp.get(), *con);
-                } else {
-                    tmp->reset_cable();
-                }
-            } else {
-                tmp->reset_cable();
+                break;
             }
+        }
+        if (!linked) {
+            // The linked vehicle can't be found, so this part shouldn't exist.
+            tmp->set_flag(flag_NO_DROP);
         }
     }
 

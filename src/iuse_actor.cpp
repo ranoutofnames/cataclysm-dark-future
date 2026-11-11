@@ -8721,6 +8721,21 @@ auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos )
             link_menu.addentry( 10, has_loose_end, -1, _( "Attach tow cable to towing vehicle" ) );
             link_menu.addentry( 11, has_loose_end, -1, _( "Attach tow cable to towed vehicle" ) );
         }
+        // CDF: LINKUP1d, DDA iuse_actor.cpp:4961-4978: CBM, UPS and solar pack ends.
+        if( targets.count( link_state::bio_cable ) > 0 ) {
+            if( !p.get_remote_fueled_bionic().is_empty() ) {
+                link_menu.addentry( 20, has_loose_end, -1, _( "Attach to Cable Charger System CBM" ) );
+            }
+        }
+        if( targets.count( link_state::ups ) > 0 && p.has_item_with_flag( flag_IS_UPS ) ) {
+            link_menu.addentry( 21, has_loose_end, -1, _( "Attach to UPS" ) );
+        }
+        if( targets.count( link_state::solarpack ) > 0 ) {
+            const bool has_solar_pack_on = p.worn_with_flag( flag_SOLARPACK_ON );
+            if( has_solar_pack_on || p.worn_with_flag( flag_SOLARPACK ) ) {
+                link_menu.addentry( 22, has_loose_end && has_solar_pack_on, -1, _( "Attach to solar pack" ) );
+            }
+        }
         if( !is_cable_item || !can_extend.empty() ) {
             link_menu.addentry( 30, true, -1,
                                 is_cable_item ? _( "Extend another cable" ) : _( "Extend with another cable" ) );
@@ -8760,6 +8775,23 @@ auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos )
         }
         if( targets.count( link_state::vehicle_battery ) > 0 ) {
             link_menu.addentry( 1, has_loose_end, -1, _( "Attach loose end to vehicle battery" ) );
+        }
+        // CDF: LINKUP1d, DDA iuse_actor.cpp:5061-5085: CBM, UPS and solar pack loose ends.
+        if( targets.count( link_state::bio_cable ) > 0 && !p.get_remote_fueled_bionic().is_empty() ) {
+            link_menu.addentry( 20, has_loose_end && !it.link_has_state( link_state::bio_cable ),
+                                -1, _( "Attach loose end to Cable Charger System CBM" ) );
+        }
+        if( targets.count( link_state::ups ) > 0 && p.has_item_with_flag( flag_IS_UPS ) ) {
+            link_menu.addentry( 21, has_loose_end && it.link_has_state( link_state::bio_cable ),
+                                -1, _( "Attach loose end to UPS" ) );
+        }
+        if( targets.count( link_state::solarpack ) > 0 ) {
+            const bool has_solar_pack_on = p.worn_with_flag( flag_SOLARPACK_ON );
+            if( has_solar_pack_on || p.worn_with_flag( flag_SOLARPACK ) ) {
+                link_menu.addentry( 22, has_loose_end && has_solar_pack_on &&
+                                    it.link_has_state( link_state::bio_cable ),
+                                    -1, _( "Attach loose end to solar pack" ) );
+            }
         }
         if( !can_extend.empty() ) {
             link_menu.addentry( 30, has_loose_end, -1, _( "Extend another cable" ) );
@@ -8808,6 +8840,103 @@ auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos )
     } else if( choice == 31 ) {
         // Selection: Remove all cable extensions and give the individual cables to the player.
         return remove_extensions( p, it ).value_or( 0 );
+    }
+
+    // CDF: LINKUP1d, DDA iuse_actor.cpp:5147-5245: the CBM, UPS and solar pack ends of the
+    // cable. CDF's inventory menu returns item* (DDA's item_location) and item::process() is
+    // static, so the link is validated through process_link() directly.
+    if( choice == 20 ) {
+        // Selection: Attach electrical cable to Cable Charger System CBM.
+        if( it.has_no_links() ) {
+            it.link().target = link_state::bio_cable;
+            p.add_msg_if_player( m_info, _( "You attach the cable to your Cable Charger System." ) );
+        } else if( it.link().source == link_state::ups ) {
+            it.link().target = link_state::bio_cable;
+            p.add_msg_if_player( m_good, _( "You are now plugged into the UPS." ) );
+        } else if( it.link().source == link_state::solarpack ) {
+            it.link().target = link_state::bio_cable;
+            p.add_msg_if_player( m_good, _( "You are now plugged into the solar backpack." ) );
+        } else if( it.link().target == link_state::vehicle_port ||
+                   it.link().target == link_state::vehicle_battery ) {
+            it.link().source = link_state::bio_cable;
+            p.add_msg_if_player( m_good, _( "You are now plugged into the vehicle." ) );
+        }
+
+        it.update_link_traits();
+        // CDF: DDA calls it.process( here, p, pos ) to validate the link immediately; CDF's
+        // item::process_link() is protected, and the next processing turn validates it anyway.
+        p.mod_moves( -move_cost );
+        return 0;
+
+    } else if( choice == 21 ) {
+        // Selection: Attach electrical cable to a UPS.
+        avatar *you = p.as_avatar();
+        const auto ups_filter = []( const item & itm ) {
+            return itm.has_flag( flag_IS_UPS );
+        };
+        item *loc = nullptr;
+        if( you != nullptr ) {
+            loc = game_menus::inv::titled_filter_menu( ups_filter, *you, _( "Choose UPS:" ),
+                    _( "You need an active UPS." ), -1 );
+        }
+        if( !loc ) {
+            p.add_msg_if_player( _( "Never mind." ) );
+            return 0;
+        }
+
+        if( it.has_no_links() ) {
+            p.add_msg_if_player( m_info, _( "You attach the cable to the UPS." ) );
+        } else if( it.link().target == link_state::bio_cable ) {
+            p.add_msg_if_player( m_good, _( "You are now plugged into the UPS." ) );
+        } else if( it.link().source == link_state::solarpack ) {
+            p.add_msg_if_player( m_good, _( "You link up the UPS and the solar backpack." ) );
+        } else if( it.link().target == link_state::vehicle_port ||
+                   it.link().target == link_state::vehicle_battery ) {
+            p.add_msg_if_player( m_good, _( "You link up the UPS and the vehicle." ) );
+        }
+
+        it.link().source = link_state::ups;
+        loc->set_var( "cable", "plugged_in" );
+        it.update_link_traits();
+        // CDF: DDA calls it.process( here, p, pos ) to validate the link immediately; CDF's
+        // item::process_link() is protected, and the next processing turn validates it anyway.
+        p.mod_moves( -move_cost );
+        return 0;
+
+    } else if( choice == 22 ) {
+        // Selection: Attach electrical cable to a solar pack.
+        avatar *you = p.as_avatar();
+        const auto solar_filter = []( const item & itm ) {
+            return itm.has_flag( flag_SOLARPACK_ON );
+        };
+        item *loc = nullptr;
+        if( you != nullptr ) {
+            loc = game_menus::inv::titled_filter_menu( solar_filter, *you, _( "Choose solar pack:" ),
+                    _( "You need an unfolded solar pack." ), -1 );
+        }
+        if( !loc ) {
+            p.add_msg_if_player( _( "Never mind." ) );
+            return 0;
+        }
+
+        if( it.has_no_links() ) {
+            p.add_msg_if_player( m_info, _( "You attach the cable to the solar pack." ) );
+        } else if( it.link().target == link_state::bio_cable ) {
+            p.add_msg_if_player( m_good, _( "You are now plugged into the solar pack." ) );
+        } else if( it.link().source == link_state::ups ) {
+            p.add_msg_if_player( m_good, _( "You link up the solar pack and the UPS." ) );
+        } else if( it.link().target == link_state::vehicle_port ||
+                   it.link().target == link_state::vehicle_battery ) {
+            p.add_msg_if_player( m_good, _( "You link up the solar pack and the vehicle." ) );
+        }
+
+        it.link().source = link_state::solarpack;
+        loc->set_var( "cable", "plugged_in" );
+        it.update_link_traits();
+        // CDF: DDA calls it.process( here, p, pos ) to validate the link immediately; CDF's
+        // item::process_link() is protected, and the next processing turn validates it anyway.
+        p.mod_moves( -move_cost );
+        return 0;
     }
     return 0;
 }

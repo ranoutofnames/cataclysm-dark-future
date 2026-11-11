@@ -11529,153 +11529,28 @@ detached_ptr<item> item::process_extinguish( detached_ptr<item> &&self, player *
     return std::move( self );
 }
 
-detached_ptr<item> item::process_cable( detached_ptr<item> &&self, player *carrier,
-                                        const tripoint_bub_ms &pos )
+// CDF: LINKUP1d, DDA item_gun_tool_ammo.cpp:4290-4307. A UPS or solar pack that no cable is
+// linked to any more loses its "plugged_in" state.
+bool item::process_linked_item( Character *carrier, const tripoint_bub_ms & /*pos*/,
+                                const link_state required_state )
 {
-    if( !self ) {
-        return std::move( self );
-    }
-    //No need to process cable if it' has no map connections's only connected to character
-    auto data = cable_connection_data::make_data( self.ptr );
-    if( !data || data->empty() ) {
-        self->reset_cable( carrier );
-        return std::move( self );
-    }
-    if( data->character_only() || data->intermap_connection() ) {
-        return std::move( self );
-    }
-    if( !data->get_nonchar_connection() ) {
-        self->reset_cable( carrier );
-        return std::move( self );
-    }
-
-    int distance = 0;
-    map &here = get_map();
-    //At this point we are sure that non_char is not empty
-    auto nonchar = *data->get_nonchar_connection();
-
-    //Caharacter connected to smth
-    if( data->complete() ) {
-        if( !carrier ) {
-            if( data->get_map_connection() ) {
-                data->unset_other_con( self.get(), nonchar );
-            } else {
-                self->reset_cable( carrier );
-            }
-            return std::move( self );
-        }
-        switch( nonchar.state ) {
-            case state_solar_pack:
-                if( !carrier->has_item( *self ) || !carrier->worn_with_flag( flag_SOLARPACK_ON ) ) {
-                    carrier->add_msg_if_player( m_bad, _( "You notice the cable has come loose!" ) );
-                    self->reset_cable( carrier );
-                }
-                return std::move( self );
-            case state_UPS: {
-                static const item_filter used_ups = [&]( const item & itm ) {
-                    return itm.get_var( "cable" ) == "plugged_in";
-                };
-
-                if( !carrier->has_item( *self ) || !carrier->has_item_with( used_ups ) ) {
-                    for( item *used : carrier->items_with( used_ups ) ) {
-                        used->erase_var( "cable" );
-                    }
-                    carrier->add_msg_if_player( m_bad, _( "You notice the cable has come loose!" ) );
-                    self->reset_cable( carrier );
-                }
-                return std::move( self );
-            }
-            case state_vehicle: {
-                if( !here.veh_at( nonchar.point ) ) {
-                    carrier->add_msg_if_player( m_bad, _( "You notice the cable has disconnected from a vehicle!" ) );
-                    data->unset_con( self.get(), nonchar );
-                    return std::move( self );
-                }
-                //Sitting in vehicle shenenigans
-                //If character is sitting at vehicle - no need(and no way) to figure out cable distance and if it's the same vehicle we previously connected
-                //So we just ignore distance
-                const auto vp_pos = here.veh_at( pos );
-                if( vp_pos ) {
-                    const auto seat = vp_pos.part_with_feature( "BOARDABLE", true );
-                    if( seat && carrier == seat->vehicle().get_passenger( seat->part_index() ) ) {
-                        return std::move( self );
-                    }
-                }
-                break;
-            }
-            case state_grid: {
-                auto s = nonchar.point;
-                auto *grid_connector = active_tiles::furn_at<vehicle_connector_tile>( s );
-                if( !grid_connector ) {
-                    if( carrier->has_item( *self ) ) {
-                        carrier->add_msg_if_player( m_bad, _( "You notice the cable has come loose!" ) );
-                    }
-                    self->reset_cable( carrier );
-                    return std::move( self );
-                }
-                break;
-            }
-            case state_none:
-            case state_self:
-            default:
-                debugmsg( "Unexpected cable state %s", nonchar.state );
-                self->reset_cable( carrier );
-                return std::move( self );
-        }
-    }
-    if( nonchar.map_point() ) {
-        distance = rl_dist( pos, abs_to_bub( nonchar.point ) );
-        self->charges = self->type->maximum_charges() - distance;
-        if( self->charges < 1 ) {
-            if( carrier ) {
-                carrier->add_msg_if_player( m_bad, _( "The over-extended cable breaks loose!" ) );
-            }
-            self->reset_cable( carrier );
-        }
-    }
-
-    return std::move( self );
-}
-
-void item::reset_cable( Character *who )
-{
-    int max_charges = type->maximum_charges();
-    //erase legacy info
-    erase_var( "state" );
-    erase_var( "source_x" );
-    erase_var( "source_y" );
-    erase_var( "source_z" );
-    //erase info
-    cable_connection_data::unset_vars( this );
-    deactivate();
-    charges = max_charges;
-
-    if( who != nullptr ) {
-        who->add_msg_if_player( m_info, _( "You reel in the cable." ) );
-        who->mod_moves( -10 * charges );
-    }
-}
-
-detached_ptr<item> item::process_UPS( detached_ptr<item> &&self, player *carrier,
-                                      const tripoint_bub_ms & /*pos*/ )
-{
-    if( !self ) {
-        return std::move( self );
-    }
     if( carrier == nullptr ) {
-        self->erase_var( "cable" );
-        self->deactivate();
-        return std::move( self );
+        erase_var( "cable" );
+        deactivate();
+        return false;
     }
-    bool has_connected_cable = carrier->has_item_with( []( const item & it ) {
-        return it.is_active() && cable_connection_data::ups_connected( &it );
+    // CDF: DDA's cache_has_item_with( "can_link_up", &item::can_link_up, filter ) has no CDF
+    // counterpart; the filter is folded into one has_item_with() predicate.
+    const bool has_connected_cable = carrier->has_item_with( [&required_state]( const item & it ) {
+        return it.can_link_up() && it.link_has_state( required_state );
     } );
     if( !has_connected_cable ) {
-        self->erase_var( "cable" );
-        self->deactivate();
+        erase_var( "cable" );
+        deactivate();
     }
-    return std::move( self );
+    return false;
 }
+
 
 bool item::process_wet( player * /*carrier*/, const tripoint_bub_ms & /*pos*/ )
 {
@@ -12135,16 +12010,26 @@ detached_ptr<item> item::process_internal( detached_ptr<item> &&self, player *ca
         return std::move( self );
     }
     if( self->has_flag( flag_CABLE_SPOOL ) ) {
-        ZoneScopedN( "item_process_cable" );
+        ZoneScopedN( "item_process_spool" );
         // DO NOT process this as a tool! It really isn't!
-        // Ticks dont matter here, it is for determining if it should snap
-        return process_cable( std::move( self ), carrier, pos );
+        // Cables have been reworked and shouldn't be active items anymore.
+        // CDF: LINKUP1d, DDA item.cpp:4865-4870.
+        self->deactivate();
+        return std::move( self );
     }
     if( self->has_flag( flag_IS_UPS ) ) {
         ZoneScopedN( "item_process_ups" );
         // DO NOT process this as a tool! It really isn't!
-        // Ticks dont matter here, it is for determining if it should snap from cable
-        return process_UPS( std::move( self ), carrier, pos );
+        // CDF: LINKUP1d, DDA item.cpp:4871-4874.
+        self->process_linked_item( carrier, pos, link_state::ups );
+        return std::move( self );
+    }
+    if( self->has_flag( flag_SOLARPACK ) || self->has_flag( flag_SOLARPACK_ON ) ) {
+        ZoneScopedN( "item_process_solarpack" );
+        // DO NOT process this as a tool! It really isn't!
+        // CDF: LINKUP1d, DDA item.cpp:4875-4878.
+        self->process_linked_item( carrier, pos, link_state::solarpack );
+        return std::move( self );
     }
     if( self->is_tool() ) {
         ZoneScopedN( "item_process_tool" );
@@ -12766,18 +12651,3 @@ int item::kill_count()
     }
 }
 
-bool cable_connection_data::ups_connected( const item *const cable )
-{
-    return cable && cable->has_flag( flag_CABLE_SPOOL ) &&
-           ( cable_state( cable->get_var( p1_name, 0.0 ) ) == state_UPS ||
-             cable_state( cable->get_var( p2_name, 0.0 ) ) == state_UPS );
-}
-
-std::optional<cable_connection_data> cable_connection_data::make_data( const item &cable )
-{
-    if( cable.has_flag( flag_CABLE_SPOOL ) ) {
-        return cable_connection_data( cable );
-    } else {
-        return std::nullopt;
-    }
-}

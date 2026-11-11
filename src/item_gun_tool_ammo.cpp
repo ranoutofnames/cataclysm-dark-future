@@ -2212,8 +2212,35 @@ auto item::process_link( map &here, Character *carrier, const tripoint_bub_ms &p
 
     const bool is_cable_item = has_flag( flag_CABLE_SPOOL );
 
-    // CDF: DDA's solar pack and UPS source checks are LINKUP1d's bionic/inventory side; LINKUP1a
-    // only creates links to vehicles, so there is nothing to check here yet.
+    // CDF: LINKUP1d, DDA item_gun_tool_ammo.cpp:3915-3932: a cable in the inventory whose source
+    // end is a solar pack or a UPS breaks loose when that item is gone or no longer connected.
+    if( link().source == link_state::solarpack ) {
+        if( carrier == nullptr || !carrier->worn_with_flag( flag_SOLARPACK_ON ) ) {
+            // CDF: CDF has no add_msg_if_player_sees(); report only when the avatar sees the cable.
+            if( get_avatar().sees( pos ) ) {
+                add_msg( m_bad, _( "The %s has come loose from the solar pack." ), link_name() );
+            }
+            reset_link( true, carrier );
+            return false;
+        }
+    }
+    const auto used_ups = []( const item & itm ) {
+        return itm.get_var( "cable" ) == "plugged_in";
+    };
+    if( link().source == link_state::ups ) {
+        // CDF: DDA's cache_has_item_with( flag_IS_UPS, used_ups ) has no CDF counterpart.
+        const bool has_ups = carrier != nullptr && carrier->has_item_with( [&used_ups]( const item & itm ) {
+            return itm.has_flag( flag_IS_UPS ) && used_ups( itm );
+        } );
+        if( !has_ups ) {
+            // CDF: CDF has no add_msg_if_player_sees(); report only when the avatar sees the cable.
+            if( get_avatar().sees( pos ) ) {
+                add_msg( m_bad, _( "The %s has come loose from the UPS." ), link_name() );
+            }
+            reset_link( true, carrier );
+            return false;
+        }
+    }
 
     // Certain cable states should skip processing and also become inactive if dropped.
     if( ( link().target == link_state::no_link && link().source != link_state::vehicle_tow ) ||
@@ -2498,8 +2525,8 @@ auto item::reset_link( bool unspool_if_too_long, Character *p, int vpart_index,
     }
 
     // CDF: DDA unspools an over-long cable (link_state::needs_reeling) and requires
-    // reel_cable_activity_actor to wind it back; that actor is not in LINKUP1b's file list, so
-    // CDF always resets the link fully. LINKUP1d picks the unspool state up with the BN removal.
+    // reel_cable_activity_actor to wind it back; that actor is not in LINKUP1b's or LINKUP1d's
+    // file list, so CDF always resets the link fully.
     if( loose_message && p ) {
         p->add_msg_if_player( m_info, _( "You reel in the %s and wind it up." ), link_name() );
     }

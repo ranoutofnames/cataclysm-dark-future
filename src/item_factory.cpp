@@ -1723,8 +1723,6 @@ void Item_factory::init()
     add_iuse( "BOLTCUTTERS", &iuse::boltcutters );
     add_iuse( "C4", &iuse::c4 );
     add_iuse( "C4_BREACHING", &iuse::c4_breaching );
-    add_iuse( "TOW_ATTACH", &iuse::tow_attach );
-    add_iuse( "CABLE_ATTACH", &iuse::cable_attach );
     add_iuse( "CAMERA", &iuse::camera );
     add_iuse( "CAN_GOO", &iuse::can_goo );
     add_iuse( "COIN_FLIP", &iuse::coin_flip );
@@ -2631,9 +2629,6 @@ void Item_factory::check_definitions() const
                 msg += string_format( "item action \"%s\" was not described.\n", actor->type.c_str() );
             }
 
-            if( actor->type == "CABLE_ATTACH" && !vpart_id( type->id.str() ).is_valid() ) {
-                msg += string_format( "no valid vehicle part for CABLE_ATTACH action\n" );
-            }
             msg += actor->check();
         }
 

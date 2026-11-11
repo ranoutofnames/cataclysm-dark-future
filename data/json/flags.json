@@ -272,6 +272,12 @@
     "context": [  ]
   },
   {
+    "id": "SINGLE_USE",
+    "type": "json_flag",
+    "info": "This item is removed after use.",
+    "context": [  ]
+  },
+  {
     "id": "DESTROY_ON_DROP",
     "type": "json_flag",
     "context": [  ]

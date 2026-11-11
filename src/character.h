@@ -1217,6 +1217,11 @@ class Character : public Creature, public location_visitable<Character>
         bool burn_fuel( bionic &bio, bool start = false );
         /**Passively produce power from PERPETUAL fuel*/
         void passive_power_gen( bionic &bio );
+        // CDF: LINKUP1d, DDA character.h:1806-1810. Sources attached through a cable item's link
+        // states, read by find_remote_fuel().
+        std::vector<item *> get_cable_ups();
+        std::vector<item *> get_cable_solar();
+        std::vector<vehicle *> get_cable_vehicle() const;
         /**Find fuel used by remote powered bionic*/
         itype_id find_remote_fuel( bool look_only = false );
         /**Consume fuel used by remote powered bionic, return amount of request unfulfilled (0 if totally successful).*/

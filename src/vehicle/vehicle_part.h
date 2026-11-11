@@ -41,7 +41,8 @@ public:
         tracked_flag = 16, // carried vehicle part with tracking enabled
         targets_grid = 32, // Jumper cable is to grid, not vehicle
         linked_flag = 64, // CDF: LINKUP1b, DDA vp_flag::linked_flag: an item cable is attached
-        // (DDA uses 32; CDF's 32 is BN's targets_grid until LINKUP1d removes it).
+        // (DDA uses 32; CDF's 32 is BN's targets_grid. The grid-cable copy of the BN cable UI is
+        // gone with LINKUP1d, but the distribution-graph side and its tests stay.)
     };
 
     vehicle_part();

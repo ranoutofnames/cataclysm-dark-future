@@ -1,0 +1,34 @@
+[
+  {
+    "//": "CDF: LINKUP1d test fixture. A minimal UPS: IS_UPS, direct battery charges. DDA finds it through flag_IS_UPS + the \"cable\" variable (bionics.cpp get_cable_ups).",
+    "id": "test_linkupd_ups",
+    "type": "TOOL",
+    "name": { "str": "test UPS" },
+    "description": "A test unified power supply.",
+    "price": 0,
+    "material": [ "plastic" ],
+    "symbol": ";",
+    "color": "light_green",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "ammo": "battery",
+    "max_charges": 1000,
+    "initial_charges": 1000,
+    "flags": [ "IS_UPS" ]
+  },
+  {
+    "//": "CDF: LINKUP1d test fixture. A solar pack in the unfolded state, no battery; DDA reads it through flag_SOLARPACK_ON + the \"cable\" variable (bionics.cpp get_cable_solar).",
+    "id": "test_linkupd_solar",
+    "type": "TOOL_ARMOR",
+    "name": { "str": "test solar pack" },
+    "description": "A test solar backpack.",
+    "price": 0,
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "yellow",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "covers": [ "torso" ],
+    "flags": [ "SOLARPACK_ON", "BELTED" ]
+  }
+]

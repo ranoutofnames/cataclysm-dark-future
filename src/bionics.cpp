@@ -1094,6 +1094,8 @@ bool Character::activate_bionic( bionic &bio, bool eff_only, bool *close_bionics
             bio.powered = g->remoteveh() != nullptr || !get_value( "remote_controlling" ).empty();
         }
     } else if( bio.info().is_remote_fueled ) {
+        // CDF: LINKUP1d, DDA bionics.cpp:1141-1170: the cable's link states replace the BN
+        // cable-connection struct.
         std::vector<item *> cables = items_with( []( const item & it ) {
             return it.has_flag( flag_CABLE_SPOOL );
         } );
@@ -1105,92 +1107,44 @@ bool Character::activate_bionic( bionic &bio, bool eff_only, bool *close_bionics
                                _( "You need a jumper cable connected to a power source to drain power from it." ) );
         } else {
             for( item *cable : cables ) {
-                auto data = cable_connection_data::make_data( cable );
-                if( !data ) {
-                    continue;
+                if( cable->has_no_links() ) {
+                    free_cable = true;
+                } else if( cable->link_has_states( link_state::no_link, link_state::bio_cable ) ) {
+                    add_msg_if_player( m_info,
+                                       _( "You have a cable attached to your CBM but it also has to be connected to a power source." ) );
+                } else if( cable->link_has_states( link_state::solarpack, link_state::bio_cable ) ) {
+                    add_msg_activate();
+                    success = true;
+                    add_msg_if_player( m_info,
+                                       _( "You are attached to a solar pack.  It will charge you if it's unfolded and in sunlight." ) );
+                } else if( cable->link_has_states( link_state::ups, link_state::bio_cable ) ) {
+                    add_msg_activate();
+                    success = true;
+                    add_msg_if_player( m_info,
+                                       _( "You are attached to a UPS.  It will charge you if it has some juice in it." ) );
+                } else if( cable->link_has_states( link_state::bio_cable, link_state::vehicle_battery ) ||
+                           cable->link_has_states( link_state::bio_cable, link_state::vehicle_port ) ) {
+                    add_msg_activate();
+                    success = true;
+                    add_msg_if_player( m_info,
+                                       _( "You are attached to a vehicle.  It will charge you if it has some juice in it." ) );
+                } else if( cable->link_has_states( link_state::solarpack, link_state::automatic ) ||
+                           cable->link_has_states( link_state::ups, link_state::automatic ) ) {
+                    add_msg_if_player( m_info,
+                                       _( "You have a cable attached to a portable power source, but you also need to connect it to your CBM." ) );
+                } else if( cable->link_has_states( link_state::automatic, link_state::vehicle_battery ) ||
+                           cable->link_has_states( link_state::automatic, link_state::vehicle_port ) ) {
+                    add_msg_if_player( m_info,
+                                       _( "You have a cable attached to a vehicle, but you also need to connect it to your CBM." ) );
                 }
+            }
 
-                switch( data->con2.state ) {
-                    case state_none:
-                        switch( data->con1.state ) {
-                            case state_solar_pack:
-                            case state_UPS:
-                                add_msg_if_player( m_info,
-                                                   _( "You have a cable plugged to a portable power source, but you need to plug it in to the CBM." ) );
-                                break;
-                            case state_vehicle:
-                                add_msg_if_player( m_info,
-                                                   _( "You have a cable plugged to a vehicle, but you need to plug it in to the CBM." ) );
-                                break;
-                            case state_grid:
-                                add_msg_if_player( m_info,
-                                                   _( "You have a cable plugged to a grid, but you need to plug it in to the CBM." ) );
-                                break;
-                            case state_self:
-                                add_msg_if_player( m_info,
-                                                   _( "Cable is plugged-in to the CBM but it has to be also connected to the power source." ) );
-                                break;
-                            case state_none:
-                                free_cable = true;
-                                break;
-                            default:
-                                break;
-                        }
-                        continue;
-                    case state_self:
-                        switch( data->con1.state ) {
-                            case state_grid:
-                                add_msg_if_player( m_info,
-                                                   _( "You are plugged to the grid.  It will charge you if it has some juice in it." ) );
-                                break;
-                            case state_solar_pack:
-                                add_msg_if_player( m_info,
-                                                   _( "You are plugged to a solar pack.  It will charge you if it's unfolded and in sunlight." ) );
-                                break;
-                            case state_UPS:
-                                add_msg_if_player( m_info,
-                                                   _( "You are plugged to a UPS.  It will charge you if it has some juice in it." ) );
-                                break;
-                            case state_vehicle:
-                                add_msg_if_player( m_info,
-                                                   _( "You are plugged to the vehicle.  It will charge you if it has some juice in it." ) );
-                                break;
-                            case state_self:
-                            case state_none:
-                            default:
-                                debugmsg( "Unexpected cable state %s", data->con1.state );
-                                continue;
-                        }
-                        break;
-                    case state_grid:
-                        add_msg_if_player( m_info,
-                                           _( "You are plugged to the grid.  It will charge you if it has some juice in it." ) );
-                        break;
-                    case state_solar_pack:
-                        add_msg_if_player( m_info,
-                                           _( "You are plugged to a solar pack.  It will charge you if it's unfolded and in sunlight." ) );
-                        break;
-                    case state_UPS:
-                        add_msg_if_player( m_info,
-                                           _( "You are plugged to a UPS.  It will charge you if it has some juice in it." ) );
-                        break;
-                    case state_vehicle:
-                        add_msg_if_player( m_info,
-                                           _( "You are plugged to the vehicle.  It will charge you if it has some juice in it." ) );
-                        break;
-                    default:
-                        debugmsg( "Unexpected cable state %s", data->con2.state );
-                        continue;
-                }
-                add_msg_activate();
-                success = true;
+            if( free_cable && !success ) {
+                add_msg_if_player( m_info,
+                                   _( "You have at least one free cable in your inventory that you could use to connect yourself." ) );
             }
         }
         if( !success ) {
-            if( free_cable ) {
-                add_msg_if_player( m_info,
-                                   _( "You have at least one free cable in your inventory that you could use to plug yourself in." ) );
-            }
             refund_power();
             bio.powered = false;
             return false;
@@ -1542,88 +1496,140 @@ void Character::passive_power_gen( bionic &bio )
     }
 }
 
-itype_id Character::find_remote_fuel( bool look_only )
+// CDF: LINKUP1d, DDA bionics.cpp:3464-3495. The cable's link states carry the connection now;
+// DDA's cache_visit_items_with over item locations is CDF's items_with(). The CDF fuel-stock
+// model (find_remote_fuel/consume_remote_fuel) is kept: it predates the link states.
+std::vector<item *> Character::get_cable_ups()
 {
-    itype_id remote_fuel;
-    map &here = get_map();
+    std::vector<item *> stored_fuels;
 
     const std::vector<item *> cables = items_with( []( const item & it ) {
-        return it.is_active() && it.has_flag( flag_CABLE_SPOOL );
+        return it.has_flag( flag_CABLE_SPOOL ) &&
+               it.link_has_states( link_state::ups, link_state::bio_cable );
     } );
+    int n = cables.size();
+    if( n == 0 ) {
+        return stored_fuels;
+    }
 
-    for( item *cable : cables ) {
-        auto data = cable_connection_data::make_data( cable );
-        if( !data || !data->character_connected() || !data->complete() ) {
-            continue;
+    // There is no way to check which cable is connected to which ups
+    // So if there are multiple cables and some of them are only partially connected this may add wrong ups
+    for( item *it : items_with( []( const item & it ) {
+    return it.has_flag( flag_IS_UPS );
+    } ) ) {
+        if( it->get_var( "cable" ) == "plugged_in" && it->ammo_remaining() ) {
+            stored_fuels.emplace_back( it );
+            n--;
         }
+        if( n == 0 ) {
+            break;
+        }
+    }
 
-        //At this point we are sure that non_char is not empty
-        auto nonchar = *data->get_nonchar_connection();
+    return stored_fuels;
+}
 
-        switch( nonchar.state ) {
-            case state_none:
-            case state_self:
-            default:
-                continue;
-            case state_grid: {
-                if( !nonchar.point_valid() ) {
-                    debugmsg( "Cable_data was not properly initialized or cable map points were not set" );
-                    add_msg_if_player( m_bad, _( "You notice the cable has come loose!" ) );
-                    cable->reset_cable( this );
-                    continue;
-                }
-                auto *grid_connector = active_tiles::furn_at<vehicle_connector_tile>( nonchar.point );
-                if( grid_connector ) {
-                    if( !look_only ) {
-                        auto &grid = get_distribution_grid_tracker().grid_at( nonchar.point );
-                        set_value( "rem_battery", std::to_string( grid.get_resource() ) );
-                    }
-                    remote_fuel = fuel_type_battery;
-                }
-                continue;
-            }
-            case state_vehicle: {
-                if( !nonchar.point_valid() ) {
-                    debugmsg( "Cable_data was not properly initialized or cable map points were not set" );
-                    add_msg_if_player( m_bad, _( "You notice the cable has come loose!" ) );
-                    cable->reset_cable( this );
-                    continue;
-                }
-                const optional_vpart_position vp = here.veh_at( nonchar.point );
-                if( vp ) {
-                    if( !look_only ) {
-                        set_value( "rem_battery", std::to_string( vp->vehicle().fuel_left( fuel_type_battery,
-                                   true ) ) );
-                    }
-                    remote_fuel = fuel_type_battery;
-                }
-                continue;
-            }
-            case state_solar_pack:
-                if( here.is_outside( bub_pos() ) && !is_night( calendar::turn ) ) {
-                    if( !look_only ) {
-                        set_value( "sunlight", "1" );
-                    }
-                    remote_fuel = fuel_type_sun_light;
-                }
-                continue;
-            case state_UPS: {
-                static const item_filter used_ups = [&]( const item & itm ) {
-                    return itm.get_var( "cable" ) == "plugged_in";
-                };
-                if( !look_only ) {
-                    if( has_charges( itype_UPS, 1, used_ups ) ) {
-                        set_value( "rem_battery", std::to_string( charges_of( itype_UPS,
-                                   units::to_kilojoule( max_power_level ), used_ups ) ) );
-                    } else {
-                        set_value( "rem_battery", std::to_string( 0 ) );
-                    }
-                }
-                remote_fuel = fuel_type_battery;
-                continue;
+// CDF: LINKUP1d, DDA bionics.cpp:3497-3525.
+std::vector<item *> Character::get_cable_solar()
+{
+    std::vector<item *> solar_sources;
+
+    const std::vector<item *> cables = items_with( []( const item & it ) {
+        return it.has_flag( flag_CABLE_SPOOL ) &&
+               it.link_has_states( link_state::solarpack, link_state::bio_cable );
+    } );
+    int n = cables.size();
+    if( n == 0 ) {
+        return solar_sources;
+    }
+
+    // There is no way to check which cable is connected to which solar pack
+    // So if there are multiple cables and some of them are only partially connected this may add wrong solar pack
+    for( item *it : items_with( []( const item & it ) {
+    return it.has_flag( flag_SOLARPACK_ON );
+    } ) ) {
+        if( it->get_var( "cable" ) == "plugged_in" ) {
+            solar_sources.emplace_back( it );
+            n--;
+        }
+        if( n == 0 ) {
+            break;
+        }
+    }
+
+    return solar_sources;
+}
+
+// CDF: LINKUP1d, DDA bionics.cpp:3527-3556.
+std::vector<vehicle *> Character::get_cable_vehicle() const
+{
+    std::vector<vehicle *> remote_vehicles;
+
+    const std::vector<item *> cables = items_with( []( const item & it ) {
+        return it.has_flag( flag_CABLE_SPOOL ) && it.link_has_state( link_state::bio_cable ) &&
+               ( it.link_has_state( link_state::vehicle_battery ) ||
+                 it.link_has_state( link_state::vehicle_port ) );
+    } );
+    if( cables.empty() ) {
+        return remote_vehicles;
+    }
+
+    map &here = get_map();
+
+    for( const item *cable : cables ) {
+        if( cable->link().t_veh ) {
+            remote_vehicles.emplace_back( cable->link().t_veh );
+        } else {
+            const optional_vpart_position vp = here.veh_at( cable->link().t_abs_pos );
+            if( vp ) {
+                remote_vehicles.emplace_back( &vp->vehicle() );
             }
         }
     }
+
+    return remote_vehicles;
+}
+
+itype_id Character::find_remote_fuel( bool look_only )
+{
+    itype_id remote_fuel;
+
+    const std::vector<vehicle *> vehicles = get_cable_vehicle();
+    if( !vehicles.empty() ) {
+        if( !look_only ) {
+            int rem_battery = 0;
+            for( const vehicle *veh : vehicles ) {
+                rem_battery += veh->connected_battery_power_level().first;
+            }
+            set_value( "rem_battery", std::to_string( rem_battery ) );
+        }
+        return fuel_type_battery;
+    }
+
+    if( !get_cable_ups().empty() ) {
+        static const item_filter used_ups = []( const item & itm ) {
+            return itm.get_var( "cable" ) == "plugged_in";
+        };
+        if( !look_only ) {
+            if( has_charges( itype_UPS, 1, used_ups ) ) {
+                set_value( "rem_battery", std::to_string( charges_of( itype_UPS,
+                           units::to_kilojoule( max_power_level ), used_ups ) ) );
+            } else {
+                set_value( "rem_battery", std::to_string( 0 ) );
+            }
+        }
+        return fuel_type_battery;
+    }
+
+    if( !get_cable_solar().empty() ) {
+        if( get_map().is_outside( bub_pos() ) && !is_night( calendar::turn ) ) {
+            if( !look_only ) {
+                set_value( "sunlight", "1" );
+            }
+            remote_fuel = fuel_type_sun_light;
+        }
+    }
+
     return remote_fuel;
 }
 
@@ -1631,54 +1637,21 @@ units::energy Character::consume_remote_fuel( units::energy amount )
 {
     int amount_kj = units::to_kilojoule( amount );
     units::energy unconsumed_amount = amount;
-    const std::vector<item *> cables = items_with( []( const item & it ) {
-        return it.is_active() && it.has_flag( flag_CABLE_SPOOL );
-    } );
 
-    map &here = get_map();
-    for( const item *cable : cables ) {
-        auto data = cable_connection_data::make_data( cable );
-        if( !data || ( !data->character_connected() && !data->complete() ) ) {
-            continue;
+    for( vehicle *veh : get_cable_vehicle() ) {
+        unconsumed_amount = units::from_kilojoule( veh->discharge_battery( amount_kj ) );
+        if( unconsumed_amount == 0_J ) {
+            break;
         }
+    }
 
-        auto non_char = *data->get_nonchar_connection();
-        switch( non_char.state ) {
-            case state_vehicle: {
-                if( !non_char.point_valid() ) {
-                    debugmsg( "Cable_data was not properly initialized or cable map points were not set" );
-                    continue;
-                }
-                const auto vp = here.veh_at( non_char.point );
-                if( vp ) {
-                    unconsumed_amount = units::from_kilojoule( vp->vehicle().discharge_battery( amount_kj ) );
-                }
-                break;
-            }
-            case state_grid: {
-                if( !non_char.point_valid() ) {
-                    debugmsg( "Cable_data was not properly initialized or cable map points were not set" );
-                    continue;
-                }
-                const auto *grid_connector = active_tiles::furn_at<vehicle_connector_tile>( non_char.point );
-                if( grid_connector ) {
-                    auto grid = get_distribution_grid_tracker().grid_at( non_char.point );
-                    unconsumed_amount = units::from_kilojoule( grid.mod_resource( -amount_kj ) );
-                }
-                break;
-            }
-            case state_UPS: {
-                static const item_filter used_ups = [&]( const item & itm ) {
-                    return itm.get_var( "cable" ) == "plugged_in";
-                };
-                if( has_charges( itype_UPS, amount_kj, used_ups ) ) {
-                    use_charges( itype_UPS, amount_kj, used_ups );
-                    unconsumed_amount = 0_J;
-                }
-                break;
-            }
-            default:
-                continue;
+    if( unconsumed_amount > 0_J && !get_cable_ups().empty() ) {
+        static const item_filter used_ups = []( const item & itm ) {
+            return itm.get_var( "cable" ) == "plugged_in";
+        };
+        if( has_charges( itype_UPS, amount_kj, used_ups ) ) {
+            use_charges( itype_UPS, amount_kj, used_ups );
+            unconsumed_amount = 0_J;
         }
     }
 

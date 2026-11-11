@@ -156,8 +156,6 @@ int einktabletpc( player *, item *, bool, const tripoint_bub_ms & );
 int camera( player *, item *, bool, const tripoint_bub_ms & );
 int ehandcuffs( player *, item *, bool, const tripoint_bub_ms & );
 int foodperson( player *, item *, bool, const tripoint_bub_ms & );
-int tow_attach( player *, item *, bool, const tripoint_bub_ms & );
-int cable_attach( player *, item *, bool, const tripoint_bub_ms & );
 int shavekit( player *, item *, bool, const tripoint_bub_ms & );
 int hairkit( player *, item *, bool, const tripoint_bub_ms & );
 int weather_tool( player *, item *, bool, const tripoint_bub_ms & );

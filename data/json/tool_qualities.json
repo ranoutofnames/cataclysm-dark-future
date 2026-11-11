@@ -402,5 +402,16 @@
     "type": "tool_quality",
     "id": "SLEEP_AID",
     "name": { "str": "sleep aid" }
+  },
+  {
+    "type": "tool_quality",
+    "id": "ROPE",
+    "name": { "str": "rope" }
+  },
+  {
+    "type": "tool_quality",
+    "id": "JUMPSTART",
+    "//": "A tool that is capable of charging something with electricity.",
+    "name": { "str": "jump starting" }
   }
 ]

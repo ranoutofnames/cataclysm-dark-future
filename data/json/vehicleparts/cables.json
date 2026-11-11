@@ -7,13 +7,51 @@
     "color": "yellow",
     "broken_symbol": "*",
     "broken_color": "dark_gray",
+    "categories": [ "other" ],
     "damage_modifier": 10,
+    "epower": 1000,
+    "//": "CDF: LINKUP1d, DDA data/json/vehicleparts/vehicle_parts.json:2380-2395. Epower for POWER_TRANSFER stuff is how much percentage-wise loss there is in transmission. No UNMOUNT_ON_MOVE: a moving vehicle keeps the cable and item::process_link breaks an over-stretched link.",
     "durability": 120,
-    "description": "Thick copper cable with leads on either end.  Attach one end to one vehicle and the other to another, and you can transfer electrical power between the two.",
     "item": "jumper_cable",
     "requirements": { "removal": { "time": "5 s" } },
-    "flags": [ "NOINSTALL", "UNMOUNT_ON_DAMAGE", "UNMOUNT_ON_MOVE", "POWER_TRANSFER", "SHOCK_IMMUNE" ],
-    "breaks_into": [ { "item": "cable", "charges": [ 1, 10 ] }, { "item": "plastic_chunk", "count": [ 1, 2 ] } ]
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "POWER_TRANSFER" ],
+    "breaks_into": [ { "item": "cable", "count": [ 4, 10 ] }, { "item": "plastic_chunk", "count": [ 1, 2 ] } ]
+  },
+  {
+    "type": "vehicle_part",
+    "id": "extension_cable",
+    "name": { "str": "extension cord" },
+    "symbol": "{",
+    "color": "yellow",
+    "broken_symbol": "*",
+    "broken_color": "dark_gray",
+    "categories": [ "other" ],
+    "damage_modifier": 10,
+    "epower": 1000,
+    "//": "CDF: LINKUP1d, DDA data/json/vehicleparts/vehicle_parts.json:2396-2411.",
+    "durability": 120,
+    "item": "extension_cable",
+    "requirements": { "removal": { "time": "5 s" } },
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "POWER_TRANSFER" ],
+    "breaks_into": [ { "item": "cable", "count": [ 15, 30 ] }, { "item": "plastic_chunk", "count": [ 2, 3 ] } ]
+  },
+  {
+    "type": "vehicle_part",
+    "id": "long_extension_cable",
+    "name": { "str": "outdoor extension cord" },
+    "symbol": "{",
+    "color": "yellow",
+    "broken_symbol": "*",
+    "broken_color": "dark_gray",
+    "categories": [ "other" ],
+    "damage_modifier": 10,
+    "epower": 1000,
+    "//": "CDF: LINKUP1d, DDA data/json/vehicleparts/vehicle_parts.json:2412-2427.",
+    "durability": 120,
+    "item": "long_extension_cable",
+    "requirements": { "removal": { "time": "5 s" } },
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "POWER_TRANSFER" ],
+    "breaks_into": [ { "item": "cable", "count": [ 45, 90 ] }, { "item": "plastic_chunk", "count": [ 4, 6 ] } ]
   },
   {
     "type": "vehicle_part",
@@ -23,13 +61,15 @@
     "color": "yellow",
     "broken_symbol": "*",
     "broken_color": "dark_gray",
+    "categories": [ "other" ],
     "damage_modifier": 10,
     "durability": 120,
-    "description": "Very thick copper cable with leads on either end.  Attach one end to one vehicle and the other to another, and you can transfer electrical power between the two.",
+    "epower": 5000,
+    "//": "CDF: LINKUP1d, DDA data/json/vehicleparts/vehicle_parts.json:2428-2443.",
     "item": "jumper_cable_heavy",
     "requirements": { "removal": { "time": "5 s" } },
-    "flags": [ "NOINSTALL", "UNMOUNT_ON_DAMAGE", "UNMOUNT_ON_MOVE", "POWER_TRANSFER", "SHOCK_IMMUNE" ],
-    "breaks_into": [ { "item": "wire", "count": [ 4, 8 ] }, { "item": "plastic_chunk", "count": [ 4, 8 ] } ]
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "POWER_TRANSFER" ],
+    "breaks_into": [ { "item": "cable", "count": [ 33, 65 ] }, { "item": "plastic_chunk", "count": [ 4, 8 ] } ]
   },
   {
     "type": "vehicle_part",
@@ -39,13 +79,20 @@
     "color": "light_blue",
     "broken_symbol": "*",
     "broken_color": "dark_gray",
+    "categories": [ "other" ],
     "damage_modifier": 10,
     "durability": 120,
-    "description": "A heavy duty tow cable, if the other end was attached to another vehicle, it could pull it.",
+    "//": "CDF: LINKUP1d, DDA data/json/vehicleparts/vehicle_parts.json:2444-2463. CDF's steel scrap ids (steel_lump/steel_chunk) replace DDA's ch_steel_lump/ch_steel_chunk.",
     "item": "hd_tow_cable",
-    "requirements": { "removal": { "time": 500 } },
-    "flags": [ "NOINSTALL", "UNMOUNT_ON_DAMAGE", "TOW_CABLE", "SHOCK_IMMUNE" ],
-    "breaks_into": [ { "item": "scrap", "count": [ 4, 8 ] }, { "item": "grip_hook", "count": 1 }, { "item": "cable", "count": [ 1, 4 ] } ]
+    "requirements": { "removal": { "time": "5 s" } },
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "TOW_CABLE" ],
+    "breaks_into": [
+      { "item": "steel_lump", "count": [ 5, 10 ] },
+      { "item": "steel_chunk", "count": [ 7, 14 ] },
+      { "item": "scrap", "count": [ 17, 34 ] },
+      { "item": "grip_hook", "prob": 80 },
+      { "item": "cable", "count": [ 1, 2 ] }
+    ]
   },
   {
     "type": "vehicle_part",
@@ -55,11 +102,13 @@
     "color": "yellow",
     "broken_symbol": "*",
     "broken_color": "dark_gray",
+    "categories": [ "other" ],
     "damage_modifier": 10,
     "durability": 120,
+    "//": "CDF: LINKUP1d, DDA data/json/vehicleparts/vehicle_parts.json:2464-2479.",
     "item": "jumper_cable_debug",
     "requirements": { "removal": { "time": "5 s" } },
-    "flags": [ "NOINSTALL", "UNMOUNT_ON_DAMAGE", "UNMOUNT_ON_MOVE", "POWER_TRANSFER", "SHOCK_IMMUNE" ],
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "POWER_TRANSFER" ],
     "breaks_into": [ { "item": "jumper_cable_debug" } ]
   }
 ]

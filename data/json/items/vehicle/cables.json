@@ -16,8 +16,15 @@
     "price_postapoc": "1 USD",
     "max_charges": 3,
     "initial_charges": 3,
-    "use_action": "CABLE_ATTACH",
-    "flags": [ "CABLE_SPOOL", "DESTROY_ON_DECHARGE" ]
+    "//": "CDF: LINKUP1d. use_action, targets, can_extend, flags and quality are DDA's (data/json/items/tool/cables.json); the cable length (max_charges) and the stats stay CDF (AUTO-185).",
+    "use_action": {
+      "type": "link_up",
+      "menu_text": "Attach / Manage connections",
+      "targets": [ "no_link", "bio_cable", "ups", "solarpack", "vehicle_battery" ],
+      "can_extend": [ "jumper_cable", "jumper_cable_heavy" ]
+    },
+    "flags": [ "CABLE_SPOOL", "SINGLE_USE" ],
+    "qualities": [ [ "JUMPSTART", 1 ] ]
   },
   {
     "type": "TOOL",
@@ -36,8 +43,54 @@
     "price_postapoc": "5 USD",
     "max_charges": 6,
     "initial_charges": 6,
-    "use_action": "TOW_ATTACH",
-    "flags": [ "CABLE_SPOOL", "TOW_CABLE", "DESTROY_ON_DECHARGE" ]
+    "//": "CDF: LINKUP1d. use_action, targets, efficiency, flags and quality are DDA's; the cable length (max_charges) and the stats stay CDF (AUTO-185).",
+    "use_action": {
+      "type": "link_up",
+      "menu_text": "Attach / Manage connections",
+      "efficiency": 0.0,
+      "targets": [ "no_link", "vehicle_tow" ]
+    },
+    "qualities": [ [ "ROPE", 2 ] ],
+    "flags": [ "CABLE_SPOOL", "TOW_CABLE", "SINGLE_USE", "NO_SALVAGE" ]
+  },
+  {
+    "type": "TOOL",
+    "id": "extension_cable",
+    "name": { "str": "extension cord" },
+    "description": "A long 30-foot (or about 10 m) orange extension cord for extending cables or connecting appliances.  Could be used on any appliance or other household electrical system.",
+    "to_hit": -1,
+    "color": "light_blue",
+    "symbol": "&",
+    "material": [ "copper", "plastic" ],
+    "volume": "1200 ml",
+    "weight": "800 g",
+    "bashing": 2,
+    "category": "tools_workshop",
+    "price": "1 cent",
+    "price_postapoc": "1 USD",
+    "max_charges": 10,
+    "initial_charges": 10,
+    "//": "CDF: LINKUP1d, DDA data/json/items/tool/cables.json extension_cable (new item, no CDF stats to keep).",
+    "use_action": {
+      "type": "link_up",
+      "menu_text": "Plug in / Manage connections",
+      "targets": [ "no_link", "vehicle_port" ],
+      "can_extend": [ "ELECTRICAL_DEVICES", "extension_cable", "long_extension_cable" ]
+    },
+    "flags": [ "CABLE_SPOOL", "SINGLE_USE" ]
+  },
+  {
+    "type": "TOOL",
+    "id": "long_extension_cable",
+    "name": { "str": "outdoor extension cord" },
+    "description": "An extra-long 100-foot (or about 30 m) orange extension cord for extending cables or connecting outdoor appliances.  Could be used on any appliance or other household electrical system.",
+    "copy-from": "extension_cable",
+    "volume": "3750 ml",
+    "weight": "2500 g",
+    "max_charges": 30,
+    "initial_charges": 30,
+    "//": "CDF: LINKUP1d, DDA data/json/items/tool/cables.json long_extension_cable (copy-from, new item).",
+    "flags": [ "CABLE_SPOOL", "SINGLE_USE" ]
   },
   {
     "type": "TOOL",
@@ -59,6 +112,14 @@
     "volume": "0 ml",
     "max_charges": 50,
     "initial_charges": 50,
+    "//": "CDF: LINKUP1d, DDA's own debug use_action (efficiency 1.0); the 50 m length is CDF's max_charges.",
+    "use_action": {
+      "type": "link_up",
+      "menu_text": "Attach / Manage connections",
+      "efficiency": 1.0,
+      "targets": [ "no_link", "bio_cable", "ups", "solarpack", "vehicle_port", "vehicle_battery", "vehicle_tow" ],
+      "can_extend": [ "ELECTRICAL_DEVICES", "jumper_cable_debug" ]
+    },
     "copy-from": "jumper_cable"
   }
 ]
