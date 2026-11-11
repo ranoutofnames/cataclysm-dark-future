@@ -14,14 +14,12 @@
   {
     "id": "surv_six_shooter",
     "type": "MIGRATION",
-    "replace": "handmade_revolver",
-    "contents": [ "retool_hmr_40" ]
+    "replace": "hptjcpmag"
   },
   {
     "id": "surv_hand_cannon",
     "type": "MIGRATION",
-    "replace": "handmade_revolver",
-    "contents": [ "retool_hmr_45" ]
+    "replace": "hptjhpmag"
   },
   {
     "id": "arrow_fire_hardened",
@@ -648,7 +646,7 @@
   {
     "id": "mask_wsurvivorxl",
     "type": "MIGRATION",
-    "replace": "mask_wsurvivor",
+    "replace": "balclava",
     "flags": [ "resized_large" ]
   },
   {
@@ -762,22 +760,22 @@
   {
     "id": "40x46mm_slug_m118",
     "type": "MIGRATION",
-    "replace": "40x46mm_slug"
+    "replace": "40x46mm_m576"
   },
   {
     "id": "40x46mm_slug_m199",
     "type": "MIGRATION",
-    "replace": "40x46mm_slug"
+    "replace": "40x46mm_m576"
   },
   {
     "id": "40x46mm_flechette_m118",
     "type": "MIGRATION",
-    "replace": "40x46mm_flechette"
+    "replace": "40x46mm_m576"
   },
   {
     "id": "40x46mm_flechette_m199",
     "type": "MIGRATION",
-    "replace": "40x46mm_flechette"
+    "replace": "40x46mm_m576"
   },
   {
     "id": "40x46mm_makeshift_he_m199",
@@ -799,7 +797,7 @@
   {
     "id": "rifle_40",
     "type": "MIGRATION",
-    "replace": "pipe_rifle",
+    "replace": "rifle_38",
     "contents": [ "retool_pipe_40" ]
   },
   {
@@ -811,13 +809,13 @@
   {
     "id": "rifle_45",
     "type": "MIGRATION",
-    "replace": "pipe_rifle",
+    "replace": "rifle_38",
     "contents": [ "retool_pipe_45" ]
   },
   {
     "id": "rifle_9mm",
     "type": "MIGRATION",
-    "replace": "pipe_rifle",
+    "replace": "rifle_38",
     "contents": [ "retool_pipe_9mm" ]
   },
   {
@@ -868,5 +866,30 @@
     "type": "MIGRATION",
     "id": "personal_gobag",
     "replace": "duffelbag"
+  },
+  {
+    "id": "human_lard",
+    "type": "MIGRATION",
+    "replace": "human_tallow"
+  },
+  {
+    "id": "lard",
+    "type": "MIGRATION",
+    "replace": "tallow"
+  },
+  {
+    "id": "mutant_human_lard",
+    "type": "MIGRATION",
+    "replace": "mutant_human_tallow"
+  },
+  {
+    "id": "mutant_lard",
+    "type": "MIGRATION",
+    "replace": "mutant_tallow"
+  },
+  {
+    "id": "peanutbutter_imitation",
+    "type": "MIGRATION",
+    "replace": "peanutbutter"
   }
 ]

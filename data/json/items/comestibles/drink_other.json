@@ -167,13 +167,6 @@
     "fun": 2
   },
   {
-    "id": "peanutbutter_imitation",
-    "type": "COMESTIBLE",
-    "name": "imitation peanut butter",
-    "description": "A thick, nutty brown paste.",
-    "copy-from": "peanutbutter"
-  },
-  {
     "type": "COMESTIBLE",
     "id": "vinegar",
     "category": "cooking_ingredients",

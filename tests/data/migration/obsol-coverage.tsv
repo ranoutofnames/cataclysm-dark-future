@@ -1,0 +1,29 @@
+cdf_id	kind	dda_replace	cdf_replace	disposition
+40x46mm_buckshot_m118	migration	40x46mm_m576	40x46mm_m576	CDF already migrates exactly as DDA: nothing to do
+40x46mm_buckshot_m199	migration	40x46mm_m576	40x46mm_m576	CDF already migrates exactly as DDA: nothing to do
+40x46mm_flechette_m118	migration	40x46mm_m576	40x46mm_m576	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+40x46mm_flechette_m199	migration	40x46mm_m576	40x46mm_m576	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+40x46mm_slug_m118	migration	40x46mm_m576	40x46mm_m576	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+40x46mm_slug_m199	migration	40x46mm_m576	40x46mm_m576	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+8mm_fmj	migration	8mm_caseless	8mm_caseless	CDF already migrates exactly as DDA: nothing to do
+AID_bio_meteorologist	item	letter	-	MIG1 class T-target-missing: no MIG1 edit
+AID_bio_watch	item	letter	-	MIG1 class T-target-missing: no MIG1 edit
+blueberries_cooked	item	blueberries	-	MIG1 class B-variant-with-own-stats: no MIG1 edit
+famasmag	item	stanag30	-	MIG1 class D-own-item: no MIG1 edit
+gobag	migration	duffelbag	duffelbag	CDF already migrates exactly as DDA: nothing to do
+mask_wsurvivorxl	migration	balclava	balclava	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+personal_gobag	migration	duffelbag	duffelbag	CDF already migrates exactly as DDA: nothing to do
+power_armor_basic	item	combat_exoskeleton_medium	-	PAL1 owns it (DDA target missing from CDF): MIG1 changes nothing
+power_armor_basic_on	item	combat_exoskeleton_medium_on	-	PAL1 owns it (DDA target missing from CDF): MIG1 changes nothing
+power_armor_heavy	item	combat_exoskeleton_heavy	-	PAL1 owns it (DDA target missing from CDF): MIG1 changes nothing
+power_armor_heavy_on	item	combat_exoskeleton_heavy_on	-	PAL1 owns it (DDA target missing from CDF): MIG1 changes nothing
+power_armor_light	item	combat_exoskeleton_light	-	PAL1 owns it (DDA target missing from CDF): MIG1 changes nothing
+power_armor_light_on	item	combat_exoskeleton_light_on	-	PAL1 owns it (DDA target missing from CDF): MIG1 changes nothing
+rifle_40	item+migration	rifle_38	rifle_38	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+rifle_45	item+migration	rifle_38	rifle_38	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+rifle_9mm	item+migration	rifle_38	rifle_38	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+sandwich_cucumber	item	sandwich_veggy	-	MIG1 class D-own-item: no MIG1 edit
+strawberries_cooked	item	strawberries	-	MIG1 class B-variant-with-own-stats: no MIG1 edit
+superalloy_harness_dog	migration	kevlar_harness	superalloy_armor_small_quadruped	CDF target stays: DDA's kevlar_harness is itself a MIGRATION id in CDF, not an item (AUTO-234 exception)
+surv_hand_cannon	item+migration	hptjhpmag	hptjhpmag	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)
+surv_six_shooter	item+migration	hptjcpmag	hptjcpmag	takes DDA's target (AUTO-235, MIG1 brief 2026-11-10)

@@ -730,7 +730,7 @@
       [ [ "water_clean", 1 ], [ "water", 1 ] ],
       [ [ "tanbark", 1 ], [ "acorns", 1 ], [ "hops", 1 ], [ "pine_bough", 1 ], [ "brain", 1 ] ],
       [ [ "salt_water", 1 ], [ "saline", 2 ], [ "salt", 2 ] ],
-      [ [ "edible_tallow_lard", 1, "LIST" ], [ "tallow_tainted", 1 ] ],
+      [ [ "edible_tallow", 1, "LIST" ], [ "tallow_tainted", 1 ] ],
       [ [ "cured_hide", 1 ] ]
     ]
   },
@@ -786,7 +786,7 @@
       [ [ "water_clean", 1 ], [ "water", 1 ] ],
       [ [ "tanbark", 1 ], [ "acorns", 1 ], [ "hops", 1 ], [ "pine_bough", 1 ], [ "brain", 1 ] ],
       [ [ "salt_water", 1 ], [ "saline", 2 ], [ "salt", 2 ] ],
-      [ [ "edible_tallow_lard", 1, "LIST" ], [ "tallow_tainted", 1 ] ],
+      [ [ "edible_tallow", 1, "LIST" ], [ "tallow_tainted", 1 ] ],
       [ [ "cured_pelt", 1 ] ]
     ]
   },

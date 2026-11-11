@@ -205,7 +205,7 @@
     "batch_time_factors": [ 80, 5 ],
     "qualities": [ { "id": "BOIL", "level": 1 }, { "id": "COOK", "level": 2 } ],
     "tools": [ [ [ "water_boiling_heat", 2, "LIST" ] ] ],
-    "components": [ [ [ "edible_fat", 1, "LIST" ], [ "edible_tallow_lard", 2, "LIST" ] ], [ [ "water", 1 ], [ "water_clean", 1 ] ] ]
+    "components": [ [ [ "edible_fat", 1, "LIST" ], [ "edible_tallow", 2, "LIST" ] ], [ [ "water", 1 ], [ "water_clean", 1 ] ] ]
   },
   {
     "type": "recipe",
@@ -288,7 +288,7 @@
     "skills_required": [ "survival", 1 ],
     "time": "2 m",
     "autolearn": true,
-    "components": [ [ [ "edible_tallow_lard", 1, "LIST" ] ], [ [ "mutant_bug_lungs", 1 ], [ "mutant_bug_organs", 1 ] ] ]
+    "components": [ [ [ "edible_tallow", 1, "LIST" ] ], [ [ "mutant_bug_lungs", 1 ], [ "mutant_bug_organs", 1 ] ] ]
   },
   {
     "type": "recipe",
@@ -1430,35 +1430,6 @@
     "qualities": [ { "id": "COOK", "level": 1 } ],
     "tools": [ [ [ "food_processor", 40 ] ] ],
     "components": [ [ [ "peanut", 3 ] ], [ [ "sugar", 10 ], [ "honey_bottled", 1 ], [ "honey_glassed", 2 ] ] ]
-  },
-  {
-    "type": "recipe",
-    "result": "peanutbutter_imitation",
-    "category": "CC_FOOD",
-    "subcategory": "CSC_FOOD_OTHER",
-    "skill_used": "cooking",
-    "difficulty": 1,
-    "charges": 3,
-    "time": "10 m",
-    "autolearn": true,
-    "qualities": [ { "id": "COOK", "level": 1 } ],
-    "tools": [ [ [ "food_processor", 40 ] ] ],
-    "components": [
-      [
-        [ "pine_nuts", 5 ],
-        [ "pecan", 5 ],
-        [ "cashews", 5 ],
-        [ "pistachio", 5 ],
-        [ "almond", 5 ],
-        [ "beech_nuts", 5 ],
-        [ "hickory_nut", 5 ],
-        [ "chestnut", 5 ],
-        [ "hazelnut", 5 ],
-        [ "walnut", 5 ],
-        [ "acorns", 5 ]
-      ],
-      [ [ "sugar", 10 ], [ "honeycomb", 1 ], [ "honey_bottled", 1 ], [ "honey_glassed", 2 ], [ "syrup", 1 ] ]
-    ]
   },
   {
     "type": "recipe",

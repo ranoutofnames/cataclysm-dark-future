@@ -344,7 +344,6 @@
       { "item": "sausage_wasteland", "prob": 10, "charges": 2, "container-item": "wrapper" },
       { "item": "cracklins", "prob": 5, "charges": 8, "container-item": "wrapper" },
       { "item": "tallow", "prob": 5, "charges": 2, "container-item": "wrapper" },
-      { "item": "lard", "prob": 5, "charges": 2, "container-item": "wrapper" },
       { "item": "cured_pelt", "prob": 10, "charges": [ 1, 5 ] },
       { "item": "cured_hide", "prob": 10, "charges": [ 1, 5 ] },
       { "item": "bone", "prob": 5, "charges": [ 1, 5 ] },

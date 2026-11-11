@@ -342,7 +342,7 @@
     "components": [
       [ [ "oatmeal", 1 ], [ "flour", 5 ], [ "buckwheat", 1 ] ],
       [ [ "dry_fruit", 1 ] ],
-      [ [ "edible_tallow_lard", 1, "LIST" ] ],
+      [ [ "edible_tallow", 1, "LIST" ] ],
       [
         [ "sugar", 10 ],
         [ "syrup", 1 ],
@@ -370,7 +370,7 @@
     "tools": [ [ [ "surface_heat", 2, "LIST" ] ], [ [ "food_processor", 20 ], [ "rock_quern", -1 ], [ "clay_quern", -1 ] ] ],
     "components": [
       [ [ "cacao_nibs", 10 ] ],
-      [ [ "cacao_nibs", 5 ], [ "cooking_oil", 2 ], [ "edible_tallow_lard", 1, "LIST" ] ],
+      [ [ "cacao_nibs", 5 ], [ "cooking_oil", 2 ], [ "edible_tallow", 1, "LIST" ] ],
       [ [ "sugar", 10 ] ]
     ]
   }

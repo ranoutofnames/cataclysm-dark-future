@@ -1131,7 +1131,7 @@
     "skill_used": "cooking",
     "time": "1 m",
     "autolearn": true,
-    "components": [ [ [ "bread_sandwich", 2, "LIST" ] ], [ [ "peanutbutter", 1 ], [ "peanutbutter_imitation", 1 ] ] ]
+    "components": [ [ [ "bread_sandwich", 2, "LIST" ] ], [ [ "peanutbutter", 1 ] ] ]
   },
   {
     "type": "recipe",
@@ -1144,7 +1144,7 @@
     "components": [
       [ [ "bread_sandwich", 2, "LIST" ] ],
       [ [ "jam_fruit", 1 ] ],
-      [ [ "peanutbutter", 1 ], [ "peanutbutter_imitation", 1 ] ]
+      [ [ "peanutbutter", 1 ] ]
     ]
   },
   {
@@ -1158,7 +1158,7 @@
     "components": [
       [ [ "bread_sandwich", 2, "LIST" ] ],
       [ [ "honeycomb", 2 ], [ "honey_bottled", 2 ], [ "honey_glassed", 4 ] ],
-      [ [ "peanutbutter", 1 ], [ "peanutbutter_imitation", 1 ] ]
+      [ [ "peanutbutter", 1 ] ]
     ]
   },
   {
@@ -1169,7 +1169,7 @@
     "skill_used": "cooking",
     "time": "1 m",
     "autolearn": true,
-    "components": [ [ [ "bread_sandwich", 2, "LIST" ] ], [ [ "syrup", 1 ] ], [ [ "peanutbutter", 1 ], [ "peanutbutter_imitation", 1 ] ] ]
+    "components": [ [ [ "bread_sandwich", 2, "LIST" ] ], [ [ "syrup", 1 ] ], [ [ "peanutbutter", 1 ] ] ]
   },
   {
     "type": "recipe",

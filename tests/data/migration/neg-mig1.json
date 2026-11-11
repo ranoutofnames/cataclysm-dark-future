@@ -1,0 +1,41 @@
+{
+ "//": "Mutation inputs for M-1..M-3. `probe` is the value the test feeds the checker instead of the real one; every mutation must produce a violation that names the id.",
+ "mutations": [
+  {
+   "case": "M-1",
+   "id": "lard",
+   "kind": "alias_item_defined",
+   "probe": "lard",
+   "replace": "tallow"
+  },
+  {
+   "case": "M-1",
+   "id": "human_lard",
+   "kind": "replace_missing",
+   "probe": "mig1_missing_target",
+   "replace": "human_tallow"
+  },
+  {
+   "case": "M-2",
+   "id": "peanutbutter_imitation",
+   "kind": "stray_reference",
+   "probe": "\"result\": \"peanutbutter_imitation\"",
+   "replace": "peanutbutter"
+  },
+  {
+   "case": "M-3",
+   "id": "schematics_copbot",
+   "kind": "keep_item_missing",
+   "probe": "schematics_copbot",
+   "replace": "novel_scifi"
+  },
+  {
+   "case": "M-3",
+   "id": "blueberries_cooked",
+   "kind": "keep_item_migrated",
+   "probe": "blueberries_cooked",
+   "replace": "blueberries"
+  }
+ ],
+ "packet": "MIG1"
+}

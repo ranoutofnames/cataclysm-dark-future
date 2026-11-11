@@ -1,0 +1,30 @@
+{
+ "//": "Mutation inputs for M-7/M-8 (PL-45-b NM-1..NM-4).",
+ "mutations": [
+  {
+   "case": "M-7",
+   "id": "rifle_40",
+   "kind": "drop_migration",
+   "probe": "rifle_40"
+  },
+  {
+   "case": "M-7",
+   "id": "gobag",
+   "kind": "retarget_migration",
+   "probe": "backpack"
+  },
+  {
+   "case": "M-8",
+   "id": "power_armor_heavy_on",
+   "kind": "drop_row",
+   "probe": "power_armor_heavy_on"
+  },
+  {
+   "case": "M-8",
+   "id": "m4a1",
+   "kind": "add_foreign_row",
+   "probe": "m4a1"
+  }
+ ],
+ "packet": "MIG1"
+}

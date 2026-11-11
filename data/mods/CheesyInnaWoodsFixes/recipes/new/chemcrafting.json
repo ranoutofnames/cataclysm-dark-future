@@ -147,7 +147,7 @@
     "qualities": [ { "id": "CONTAIN", "level": 1 }, { "id": "GRIND", "level": 1 } ],
     "autolearn": true,
     "charges": 3,
-    "components": [ [ [ "bandages_birchbark", 3 ] ], [ [ "lard", 1 ] ], [ [ "garlic_clove", 6 ], [ "garlic", 1 ] ] ]
+    "components": [ [ [ "bandages_birchbark", 3 ] ], [ [ "tallow", 1 ] ], [ [ "garlic_clove", 6 ], [ "garlic", 1 ] ] ]
   },
   {
     "result": "lye",
