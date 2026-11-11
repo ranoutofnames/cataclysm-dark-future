@@ -188,7 +188,9 @@ TEST_CASE( "legacy_defaults_unchanged", "[p3][magazine][pocket]" )
             bad.push_back( t->get_id().str() + ": " + got.str() + " != " + expected.str() );
         }
     }
-    CHECK( checked > 100 );
+    // CDF: P3-BATT1 and 7-R2a moved guns and tools off the legacy `magazines` key (96 items left here);
+    // the floor only guards against the population going empty, the per-item comparison stays strict
+    CHECK( checked > 80 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     WARN( "T4 items with a guard-G mod built in, skipped: " << skipped );
@@ -241,9 +243,10 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
             bad.push_back( t->get_id().str() );
         }
     }
-    // CDF: P3-BATT1 moved 72 tools off the legacy `magazines` key (157 -> 85 items with one here);
-    // the rest of the population is unchanged and the per-item comparison below stays strict
-    CHECK( checked > 80 );
+    // CDF: P3-BATT1 moved 72 tools and 7-R2a/STOR27 more off the legacy `magazines` key (157 -> 71 items
+    // compared here); the floor only guards against the population going empty, the per-item comparison below
+    // stays strict
+    CHECK( checked > 60 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     CAPTURE( bad_well );
