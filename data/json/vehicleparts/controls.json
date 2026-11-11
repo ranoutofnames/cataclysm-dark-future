@@ -80,7 +80,7 @@
         "using": [ [ "adhesive", 1 ], [ "vehicle_repair_electronics", 1 ] ]
       }
     },
-    "flags": [ "CTRL_ELECTRONIC", "DOME_LIGHT", "ENABLED_DRAINS_EPOWER", "SHOCK_RESISTANT" ],
+    "flags": [ "CTRL_ELECTRONIC", "CABLE_PORTS", "DOME_LIGHT", "ENABLED_DRAINS_EPOWER", "SHOCK_RESISTANT" ],
     "breaks_into": [ { "group": "ig_vp_device", "count": [ 2, 3 ] } ]
   },
   {
@@ -107,7 +107,7 @@
         "using": [ [ "adhesive", 1 ], [ "vehicle_repair_electronics", 1 ] ]
       }
     },
-    "flags": [ "CTRL_ELECTRONIC", "FOLDABLE", "DOME_LIGHT", "ENABLED_DRAINS_EPOWER", "SHOCK_RESISTANT" ],
+    "flags": [ "CTRL_ELECTRONIC", "CABLE_PORTS", "FOLDABLE", "DOME_LIGHT", "ENABLED_DRAINS_EPOWER", "SHOCK_RESISTANT" ],
     "breaks_into": "ig_vp_device",
     "damage_reduction": { "all": 6 }
   },
@@ -269,7 +269,7 @@
         "using": [ [ "welding_standard", 5 ], [ "vehicle_repair_electronics", 1 ] ]
       }
     },
-    "flags": [ "REMOTE_CONTROLS", "CAMERA_CONTROL", "OBSTACLE", "FOLDABLE", "SHOCK_RESISTANT" ],
+    "flags": [ "REMOTE_CONTROLS", "CAMERA_CONTROL", "OBSTACLE", "CABLE_PORTS", "FOLDABLE", "SHOCK_RESISTANT" ],
     "breaks_into": [
       { "item": "motor_tiny", "count": [ 1, 3 ] },
       { "item": "steel_chunk", "count": [ 1, 3 ] },

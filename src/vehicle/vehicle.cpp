@@ -5575,6 +5575,20 @@ auto vehicle::battery_power_level() const -> std::pair<int, int> {
     return std::make_pair(remaining_epower, total_epower_capacity);
 }
 
+auto vehicle::connected_battery_power_level() const -> std::pair<int, int> {
+    int remaining = 0;
+    int capacity = 0;
+    const auto add_vehicle = [&remaining, &capacity]( const vehicle& veh ) {
+        const auto [epower, epower_capacity] = veh.battery_power_level();
+        remaining += epower;
+        capacity += epower_capacity;
+        return distribution_graph::traverse_visitor_result::continue_further;
+    };
+    add_vehicle( *this );
+    distribution_graph::traverse( *this, add_vehicle, distribution_graph::noop_visitor_grid );
+    return { remaining, capacity };
+}
+
 auto vehicle::discharge_battery(int amount, bool recurse) -> int {
     auto dischargeable_parts = make_dischargeable_battery_buckets(*this);
     auto highest_charge_level = 100;
@@ -6221,7 +6235,11 @@ void vehicle::refresh() {
         if (vpi.has_flag("WIND_POWERED")) { sails.push_back(p); }
         if (vpi.has_flag("WATER_WHEEL")) { water_wheels.push_back(p); }
         if (vpi.has_flag("FUNNEL")) { funnels.push_back(p); }
-        if (vpi.has_flag("UNMOUNT_ON_MOVE")) { loose_parts.push_back(p); }
+        // CDF: LINKUP1b, DDA vehicle.cpp:6966-6968: power transfer cable parts are loose parts
+        // (the graph in distribution_graph::traverse walks them).
+        if (vpi.has_flag("UNMOUNT_ON_MOVE") || vpi.has_flag("POWER_TRANSFER")) {
+            loose_parts.push_back(p);
+        }
         if (vpi.has_flag("EMITTER")) { emitters.push_back(p); }
         if (vpi.has_flag("AUTOLOADER")) { has_autoloaders = true; }
         if (vpi.has_flag(VPFLAG_RECHARGE)) { has_cargo_recharge = true; }
@@ -6643,6 +6661,43 @@ auto vehicle::no_towing_slack() const -> bool {
     return rl_dist(towing_point, towed_point) >= 8;
 }
 
+void vehicle::unlink_cables(const tripoint_mnt_veh& mount, Character& remover, bool unlink_items,
+                            bool unlink_tow_cables, bool unlink_power_cords) {
+    if (!unlink_items && !unlink_tow_cables && !unlink_power_cords) { return; }
+    for (const int index : parts_at_relative(mount, false)) {
+        vehicle_part& part = parts[index];
+
+        if (unlink_items && part.has_flag(vehicle_part::linked_flag)) {
+            part.remove_flag(vehicle_part::linked_flag);
+            part.last_disconnected = calendar::turn;
+            remover.add_msg_if_player(_("You detach items connected to the %s."), part.name(false));
+        }
+        if (unlink_tow_cables && part.info().has_flag("TOW_CABLE")) {
+            // CDF: CDF's invalidate_towing() drops the tow cable on the map itself and takes no
+            // remover argument (DDA hands it to the remover).
+            const std::string part_name = part.name(false);
+            invalidate_towing(true);
+            remover.add_msg_if_player(_("You detach the %s."), part_name);
+        }
+        if (unlink_power_cords && part.info().has_flag("POWER_TRANSFER")) {
+            detached_ptr<item> drop = part.properties_to_item();
+            const bool u_can_stash = drop && remover.can_stash(*drop).success();
+            const bool keep = drop && !drop->has_flag(flag_NO_DROP);
+            const std::string drop_name = drop ? drop->type_name() : part.name(false);
+            if (keep) {
+                // CDF: i_add_or_drop() returns the leftover, not a success bool (DDA tests it as one).
+                remover.i_add_or_drop(std::move(drop));
+                remover.add_msg_if_player(u_can_stash ? _("You detach the %s and take it.") :
+                                           _("You detach the %s and drop it."), drop_name);
+            } else {
+                remover.add_msg_if_player(_("You detached the %s."), drop_name);
+            }
+            remove_remote_part(index);
+            remove_part(index);
+        }
+    }
+}
+
 void vehicle::remove_remote_part(int part_num) {
     if (parts[part_num].has_flag(vehicle_part::targets_grid)) {
         vehicle_connector_tile* connector = active_tiles::furn_at<vehicle_connector_tile>(
@@ -6678,6 +6733,13 @@ void vehicle::shed_loose_parts() {
     // it will stay empty.
     while (!loose_parts.empty()) {
         const int elem = loose_parts.front();
+        // CDF: LINKUP1b. DDA's cable parts are POWER_TRANSFER without UNMOUNT_ON_MOVE and a
+        // moving vehicle keeps them; item::process_link() breaks an over-stretched link. BN's
+        // cable parts still carry UNMOUNT_ON_MOVE (removed in LINKUP1d) and shed as before.
+        if (part_flag(elem, "POWER_TRANSFER") && !part_flag(elem, "UNMOUNT_ON_MOVE")) {
+            loose_parts.erase(loose_parts.begin());
+            continue;
+        }
         if (part_flag(elem, "POWER_TRANSFER")) { remove_remote_part(elem); }
         if (is_towing() || is_towed()) {
             vehicle* other_veh = is_towing() ? tow_data.get_towed() : tow_data.get_towed_by();

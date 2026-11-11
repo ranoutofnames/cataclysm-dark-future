@@ -25,6 +25,12 @@
     "info": "Armor plate.  Will partially protect other components on the same frame from damage from direct attacks but not from the shock damage of a distant collision."
   },
   {
+    "id": "BATTERY",
+    "type": "json_flag",
+    "context": [ "vehicle_part" ],
+    "info": "You can connect electrical cables to this part to draw from or charge its battery."
+  },
+  {
     "id": "BED",
     "type": "json_flag",
     "context": [ "vehicle_part" ],
@@ -41,6 +47,12 @@
     "type": "json_flag",
     "context": [ "vehicle_part" ],
     "info": "You can store items here."
+  },
+  {
+    "id": "CABLE_PORTS",
+    "type": "json_flag",
+    "context": [ "vehicle_part" ],
+    "info": "You can connect electrical cables to this part."
   },
   {
     "id": "CTRL_ELECTRONIC",

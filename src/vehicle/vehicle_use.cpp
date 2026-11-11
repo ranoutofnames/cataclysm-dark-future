@@ -827,6 +827,34 @@ void vehicle::use_controls(const tripoint_bub_ms& pos) {
         }
     }
 
+    // CDF: LINKUP1b, DDA vehicle_use.cpp:2352-2630: disconnect the cables attached to this tile.
+    bool power_linked = false;
+    bool item_linked = false;
+    bool tow_linked = false;
+    for (const vehicle_part* vp_part : get_parts_at(pos, "", part_status_flag::any)) {
+        power_linked = power_linked || vp_part->info().has_flag("POWER_TRANSFER");
+        item_linked = item_linked || vp_part->has_flag(vehicle_part::linked_flag);
+        tow_linked = tow_linked || vp_part->info().has_flag("TOW_CABLE");
+    }
+    const optional_vpart_position linked_vp = g->m.veh_at(pos);
+    if (linked_vp && power_linked && !item_linked && !tow_linked) {
+        options.emplace_back(_("Disconnect power connections"), keybind("DISCONNECT_CABLES"));
+        actions.emplace_back([&] {
+            // CDF: CDF has no Character::pause(); the menu refresh is enough.
+            unlink_cables(linked_vp->mount(), you, true, true, true);
+            refresh();
+        });
+    }
+    if (linked_vp && (item_linked || tow_linked)) {
+        options.emplace_back(item_linked && tow_linked ? _("Disconnect items and tow cables") :
+                             item_linked ? _("Disconnect items") : _("Disconnect tow cables"),
+                             keybind("DISCONNECT_CABLES"));
+        actions.emplace_back([&] {
+            unlink_cables(linked_vp->mount(), you, true, true, false);
+            refresh();
+        });
+    }
+
     if (has_part("TURRET")) {
         std::vector<vehicle_part*> turrets;
         for (auto& p : parts) {

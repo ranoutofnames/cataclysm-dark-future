@@ -1,0 +1,129 @@
+[
+  {
+    "//": "CDF: LINKUP1b test fixture. DDA data/json/items/tool/cables.json (jumper_cable shape): a CABLE_SPOOL item with a link_up action, its length is max_charges. The linked vehicle part below is installed by item::link_to().",
+    "id": "test_linkupb_cable",
+    "type": "TOOL",
+    "name": { "str": "test link-up cable" },
+    "description": "A test cable that links two power sources.",
+    "weight": "75 g",
+    "volume": "500 ml",
+    "price": 0,
+    "material": [ "copper", "plastic" ],
+    "symbol": "&",
+    "color": "light_blue",
+    "max_charges": 10,
+    "use_action": {
+      "type": "link_up",
+      "menu_text": "Attach / Manage connections",
+      "targets": [ "no_link", "vehicle_port", "vehicle_battery" ],
+      "can_extend": [ "test_linkupb_cable", "test_linkupb_extension" ],
+      "move_cost": 5
+    },
+    "flags": [ "CABLE_SPOOL" ]
+  },
+  {
+    "//": "CDF: LINKUP1b test fixture. DDA data/json/vehicleparts/vehicle_parts.json:2381 (jumper_cable part): POWER_TRANSFER without UNMOUNT_ON_MOVE, so a moving vehicle keeps it.",
+    "type": "vehicle_part",
+    "id": "test_linkupb_cable",
+    "name": { "str": "test link-up cable" },
+    "symbol": "{",
+    "color": "yellow",
+    "broken_symbol": "*",
+    "broken_color": "dark_gray",
+    "damage_modifier": 10,
+    "durability": 120,
+    "item": "test_linkupb_cable",
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "POWER_TRANSFER" ]
+  },
+  {
+    "//": "CDF: LINKUP1b test fixture. DDA extension_cable (data/json/items/tool/cables.json) and its part (vehicle_parts.json:2397).",
+    "id": "test_linkupb_extension",
+    "type": "TOOL",
+    "name": { "str": "test extension cable" },
+    "description": "A test extension cable.",
+    "weight": "75 g",
+    "volume": "500 ml",
+    "price": 0,
+    "material": [ "copper", "plastic" ],
+    "symbol": "&",
+    "color": "yellow",
+    "max_charges": 3,
+    "use_action": {
+      "type": "link_up",
+      "menu_text": "Attach / Manage connections",
+      "targets": [ "no_link", "vehicle_port" ],
+      "move_cost": 5
+    },
+    "flags": [ "CABLE_SPOOL" ]
+  },
+  {
+    "type": "vehicle_part",
+    "id": "test_linkupb_extension",
+    "name": { "str": "test extension cable" },
+    "symbol": "{",
+    "color": "yellow",
+    "broken_symbol": "*",
+    "broken_color": "dark_gray",
+    "damage_modifier": 10,
+    "durability": 120,
+    "item": "test_linkupb_extension",
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "POWER_TRANSFER" ]
+  },
+  {
+    "//": "CDF: LINKUP1b test fixture. DDA hd_tow_cable (data/json/items/tool/cables.json): TOW_CABLE part, targets vehicle_tow, efficiency 0.",
+    "id": "test_linkupb_tow_cable",
+    "type": "TOOL",
+    "name": { "str": "test tow cable" },
+    "description": "A test tow cable.",
+    "weight": "75 g",
+    "volume": "500 ml",
+    "price": 0,
+    "material": [ "steel" ],
+    "symbol": "&",
+    "color": "light_blue",
+    "max_charges": 20,
+    "use_action": {
+      "type": "link_up",
+      "menu_text": "Attach / Manage connections",
+      "targets": [ "no_link", "vehicle_tow" ],
+      "efficiency": 0.0,
+      "move_cost": 5
+    },
+    "flags": [ "CABLE_SPOOL", "TOW_CABLE" ]
+  },
+  {
+    "type": "vehicle_part",
+    "id": "test_linkupb_tow_cable",
+    "name": { "str": "test tow cable" },
+    "symbol": "{",
+    "color": "light_blue",
+    "broken_symbol": "*",
+    "broken_color": "dark_gray",
+    "damage_modifier": 10,
+    "durability": 120,
+    "item": "test_linkupb_tow_cable",
+    "flags": [ "NO_INSTALL_HIDDEN", "UNMOUNT_ON_DAMAGE", "TOW_CABLE" ]
+  },
+  {
+    "//": "CDF: LINKUP1b test fixture: a link_up tool with a long cable for the length checks (test_linkup_welder in linkup1a.json has cable_length 3).",
+    "id": "test_linkupb_welder",
+    "type": "TOOL",
+    "name": { "str": "test link-up welder (long cable)" },
+    "description": "A test tool that draws power through a long cable.",
+    "weight": "1 kg",
+    "volume": "500 ml",
+    "price": 0,
+    "material": [ "steel" ],
+    "symbol": ";",
+    "color": "light_gray",
+    "charges_per_use": 1,
+    "use_action": {
+      "type": "link_up",
+      "cable_length": 10,
+      "charge_rate": "0 W",
+      "targets": [ "no_link", "vehicle_port", "vehicle_battery" ],
+      "efficiency": 1.0,
+      "move_cost": 5
+    }
+  }
+]

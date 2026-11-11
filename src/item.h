@@ -1438,6 +1438,16 @@ class item : public location_visitable<item>, public game_object<item>
         ret_val<void> link_to( const optional_vpart_position &linked_vp,
                                link_state link_type = link_state::no_link );
         /**
+         * @brief Initializes the item's link_data and starts a connection between the first specified vehicle position and the second.
+         * @param first_linked_vp An optional_vpart_position to connect the item to first.
+         * @param second_linked_vp An optional_vpart_position to connect the item to second.
+         * @param link_type What type of connection to make. If set to link_state::automatic, will automatically determine which type to use. Defaults to link_state::no_link.
+         * @return true if the item was successfully connected.
+         */
+        ret_val<void> link_to( const optional_vpart_position &first_linked_vp,
+                               const optional_vpart_position &second_linked_vp,
+                               link_state link_type = link_state::no_link );
+        /**
          * @brief Initializes the item's link_data and starts a connection to the specified vehicle and mount point.
          * @param veh The vehicle to connect the item to.
          * @param mount The mount point of the part being connected to.
@@ -1471,6 +1481,29 @@ class item : public location_visitable<item>, public game_object<item>
          * Value used for sorting linked items in inventory lists.
          */
         int link_sort_key() const;
+
+        // CDF: LINKUP1b, DDA item.h:1700-1740. Resets a cable item back to its initial state.
+        // @param unspool_if_too_long If true, a long-enough cable will be put into an unspooled state instead of being fully reset.
+        // @param p Set to character that's holding the linked item, nullptr if none.
+        // @param vpart_index The index of the vehicle part the cable is attached to, so it can have `linked_flag` removed.
+        //        At -1, the default, this function will look up the index itself. At -2, skip modifying the part's flags entirely.
+        // @param loose_message If there should be a notification that the link was disconnected.
+        // @param cable_position Position of the linked item, used to determine if the player can see the link becoming loose.
+        // @return True if the cable should be deleted.
+        auto reset_link( bool unspool_if_too_long = true, Character *p = nullptr, int vpart_index = -1,
+                         bool loose_message = false,
+                         tripoint_bub_ms cable_position = tripoint_bub_ms::zero() ) -> bool;
+
+        /**
+         * @brief Exchange power between an item's batteries and the vehicle/appliance it's linked to.
+         * @brief A positive link().charge_rate will charge the item at the expense of the vehicle,
+         * while a negative link().charge_rate will charge the vehicle at the expense of the item.
+         *
+         * @param linked_veh The vehicle the item is connected to.
+         * @param turns_elapsed The number of turns the link has spent outside the reality bubble. Default 1.
+         * @return The amount of power given or taken to be displayed; ignores turns_elapsed and inefficiency.
+         */
+        auto charge_linked_batteries( vehicle &linked_veh, int turns_elapsed = 1 ) -> int;
 
         // CDF: LINKUP1a, DDA item.h:2951: the cables in this item's CABLE pockets
         std::vector<const item *> cables() const;
@@ -3115,6 +3148,8 @@ class item : public location_visitable<item>, public game_object<item>
                 const tripoint_bub_ms &pos );
         static detached_ptr<item> process_cable( detached_ptr<item> &&self, player *carrier,
                 const tripoint_bub_ms &pos );
+        // CDF: LINKUP1b, DDA item.h:3527-3529. Per-turn maintenance of a cable link.
+        auto process_link( map &here, Character *carrier, const tripoint_bub_ms &pos ) -> bool;
         static detached_ptr<item> process_UPS( detached_ptr<item> &&self, player *carrier,
                                                const tripoint_bub_ms &pos );
         static detached_ptr<item> process_blackpowder_fouling( detached_ptr<item> &&self, player *carrier,

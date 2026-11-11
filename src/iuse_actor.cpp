@@ -8691,21 +8691,84 @@ void link_up_actor::info( const item &it, std::vector<iteminfo> &dump ) const
     }
 }
 
-auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) const -> int
+auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos ) const -> int
 {
     if( targets.empty() ) {
         debugmsg( "Link up action for %s doesn't have any targets!", it.tname() );
         return 0;
     }
 
+    const bool is_cable_item = it.has_flag( flag_CABLE_SPOOL );
+    const bool unspooled = it.link_length() == -1;
+    const bool has_loose_end = !unspooled && is_cable_item ?
+                               it.link_has_state( link_state::no_link ) : it.has_no_links();
+    vehicle *t_veh = it.has_link_data() ? it.link().t_veh : nullptr;
+
     uilist link_menu;
-    link_menu.text = string_format( _( "What to do with the %s?" ), it.link_name() );
-    if( targets.count( link_state::vehicle_port ) > 0 ) {
-        link_menu.addentry( 0, true, -1,
-                            _( "Attach to dashboard, electronics control unit or appliance" ) );
-    }
-    if( targets.count( link_state::vehicle_battery ) > 0 ) {
-        link_menu.addentry( 1, true, -1, _( "Attach to vehicle battery or appliance" ) );
+    link_menu.text = string_format( _( "What to do with the %s?%s" ), it.link_name(), t_veh ?
+                                    string_format( _( "\nAttached to: %s" ), t_veh->name ) : "" );
+
+    if( !is_cable_item || it.has_no_links() ) {
+        // This is either a device or a cable item without any connections.
+        if( targets.count( link_state::vehicle_port ) > 0 ) {
+            link_menu.addentry( 0, has_loose_end, -1,
+                                _( "Attach to dashboard or electronics control unit" ) );
+        }
+        if( targets.count( link_state::vehicle_battery ) > 0 ) {
+            link_menu.addentry( 1, has_loose_end, -1, _( "Attach to vehicle battery" ) );
+        }
+        if( targets.count( link_state::vehicle_tow ) > 0 ) {
+            link_menu.addentry( 10, has_loose_end, -1, _( "Attach tow cable to towing vehicle" ) );
+            link_menu.addentry( 11, has_loose_end, -1, _( "Attach tow cable to towed vehicle" ) );
+        }
+        if( !is_cable_item || !can_extend.empty() ) {
+            link_menu.addentry( 30, true, -1,
+                                is_cable_item ? _( "Extend another cable" ) : _( "Extend with another cable" ) );
+            const bool has_extensions = !it.all_items_top( pocket_type::CABLE ).empty();
+            link_menu.addentry( 31, has_extensions, -1, _( "Remove cable extensions" ) );
+        }
+        if( targets.count( link_state::no_link ) > 0 ) {
+            link_menu.addentry( 999, !it.has_no_links(), -1, _( "Detach" ) );
+        }
+    } else if( it.link_has_state( link_state::vehicle_tow ) ) {
+        // Cables that started a tow can finish one or detach; nothing else.
+        link_menu.addentry( 10, has_loose_end && it.link().target == link_state::vehicle_tow, -1,
+                            _( "Attach loose end to towing vehicle" ) );
+        link_menu.addentry( 11, has_loose_end && it.link().source == link_state::vehicle_tow, -1,
+                            _( "Attach loose end to towed vehicle" ) );
+        if( targets.count( link_state::no_link ) > 0 ) {
+            link_menu.addentry( 999, true, -1, _( "Detach" ) );
+        }
+    } else {
+        // This is a cable item with at least one connection already.
+        std::string state_desc_lhs;
+        std::string state_desc_rhs;
+        if( it.link_has_state( link_state::no_link ) ) {
+            state_desc_lhs = _( "\nAttached to " );
+            if( t_veh ) {
+                state_desc_rhs = it.link().t_veh->name;
+            }
+        } else if( it.link().t_veh ) {
+            state_desc_lhs = _( "\nConnecting to " );
+            state_desc_rhs = it.link().t_veh->name;
+        }
+        link_menu.text = string_format( _( "What to do with the %s?%s%s" ), it.link_name(),
+                                        state_desc_lhs, state_desc_rhs );
+
+        if( targets.count( link_state::vehicle_port ) > 0 ) {
+            link_menu.addentry( 0, has_loose_end, -1, _( "Attach loose end to vehicle controls" ) );
+        }
+        if( targets.count( link_state::vehicle_battery ) > 0 ) {
+            link_menu.addentry( 1, has_loose_end, -1, _( "Attach loose end to vehicle battery" ) );
+        }
+        if( !can_extend.empty() ) {
+            link_menu.addentry( 30, has_loose_end, -1, _( "Extend another cable" ) );
+            const bool has_extensions = !it.all_items_top( pocket_type::CABLE ).empty();
+            link_menu.addentry( 31, has_extensions, -1, _( "Remove cable extensions" ) );
+        }
+        if( targets.count( link_state::no_link ) > 0 ) {
+            link_menu.addentry( 999, true, -1, _( "Detach" ) );
+        }
     }
 
     if( link_menu.entries.empty() ) {
@@ -8724,11 +8787,27 @@ auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms & ) co
     if( choice < 0 ) {
         // Cancelled selection.
         return 0;
+    } else if( choice == 999 ) {
+        // CDF: DDA's "Detach and re-spool" entry needs reel_cable_activity_actor (LINKUP1d);
+        // CDF detaches fully (see item::reset_link()).
+        it.reset_link( true, &p );
+        p.add_msg_if_player( m_info, string_format( is_cable_item ? _( "You detach the %s." ) :
+                              _( "You gather the %s up with it." ), it.link_name() ) );
+        return 0;
     }
 
     if( choice == 0 || choice == 1 ) {
-        // Selection: Attach electrical cable to vehicle ports / appliances, OR vehicle batteries.
+        // Selection: Attach electrical cable to vehicle ports, OR vehicle batteries.
         return link_to_veh_app( p, it, choice == 0 ).value_or( 0 );
+    } else if( choice == 10 || choice == 11 ) {
+        // Selection: Attach tow cable to towing/towed vehicle.
+        return link_tow_cable( p, it, choice == 10 ).value_or( 0 );
+    } else if( choice == 30 ) {
+        // Selection: Attach to another cable, resulting in a longer one.
+        return link_extend_cable( p, it, get_map(), pos ).value_or( 0 );
+    } else if( choice == 31 ) {
+        // Selection: Remove all cable extensions and give the individual cables to the player.
+        return remove_extensions( p, it ).value_or( 0 );
     }
     return 0;
 }
@@ -8804,7 +8883,206 @@ std::optional<int> link_up_actor::link_to_veh_app( player &p, item &it, const bo
 
     }
 
-    // CDF: LINKUP1b ports DDA iuse_actor.cpp:5312-5345, connecting two vehicles/appliances.
-    p.add_msg_if_player( m_info, _( "The %s is already connected." ), it.link_name() );
-    return std::nullopt;
+    // Connecting two vehicles together.
+    // CDF: DDA's power_cord/grid-merge branch is dropped: CDF has no appliance power grids
+    // (PL-35-b LINKUP1b-RESCOPE-v2; a separate appliance packet).
+    const ret_val<void> result = it.link_to( sel_vp, to_ports ? link_state::vehicle_port :
+                                link_state::vehicle_battery );
+    if( !result.success() ) {
+        p.add_msg_if_player( m_bad, result.str() );
+        return 0;
+    }
+    if( p.has_item( it ) ) {
+        p.add_msg_if_player( m_good, result.str() );
+    }
+
+    p.mod_moves( -move_cost );
+    return 1; // Let the cable be destroyed.
+}
+
+// CDF: LINKUP1b, DDA iuse_actor.cpp:5348-5410. Tow cables.
+auto link_up_actor::link_tow_cable( player &p, item &it, const bool to_towing ) const
+    -> std::optional<int>
+{
+    map &here = get_map();
+
+    const auto can_link = [&here]( const tripoint_bub_ms & point ) {
+        const optional_vpart_position ovp = here.veh_at( point );
+        return ovp && ovp->vehicle().is_external_part( point );
+    };
+    const std::optional<tripoint_bub_ms> pnt_ = choose_adjacent_highlight(
+                to_towing ? _( "Attach cable to the vehicle that will do the towing." ) :
+                _( "Attach cable to the vehicle that will be towed." ), "", can_link, false );
+    if( !pnt_ ) {
+        p.add_msg_if_player( _( "Never mind." ) );
+        return std::nullopt;
+    }
+    const tripoint_bub_ms &selection = *pnt_;
+    const optional_vpart_position sel_vp = here.veh_at( selection );
+    if( !sel_vp ) {
+        p.add_msg_if_player( _( "There's no vehicle there." ) );
+        return std::nullopt;
+    }
+
+    if( it.has_no_links() ) {
+
+        // Starting a new tow cable connection.
+        ret_val<void> result = it.link_to( sel_vp, link_state::vehicle_tow );
+        if( !result.success() ) {
+            p.add_msg_if_player( m_bad, result.str() );
+            return 0;
+        }
+        if( to_towing ) {
+            it.link().source = link_state::vehicle_tow;
+            it.link().target = link_state::no_link;
+        } else {
+            it.link().source = link_state::no_link;
+            it.link().target = link_state::vehicle_tow;
+        }
+
+        p.add_msg_if_player( _( "You connect the %1$s to the %2$s." ), it.type_name(),
+                             sel_vp->vehicle().name );
+
+        // CDF: item::process is a static detached_ptr API in CDF; the link is checked next turn.
+        it.update_link_traits();
+        p.mod_moves( -move_cost );
+        return 0;
+
+    } else {
+
+        // Connecting two vehicles with tow cable.
+        ret_val<void> result = it.link_to( sel_vp, link_state::vehicle_tow );
+        if( !result.success() ) {
+            p.add_msg_if_player( m_bad, result.str() );
+            return 0;
+        }
+        if( p.has_item( it ) ) {
+            p.add_msg_if_player( m_good, result.str() );
+        }
+
+        p.mod_moves( -move_cost );
+        return 1; // Let the cable be destroyed.
+    }
+}
+
+// CDF: LINKUP1b, DDA iuse_actor.cpp:5412-5516. Extension cables.
+// CDF: DDA moves the *used* cable into the selected one (item_location::remove_item); CDF's
+// item is an owning slot and cannot remove the invoking item mid-use, so the used item is the
+// one extended and the selected cable goes inside it. max_length (sum) and efficiency (product)
+// are symmetric, so the resulting cable has the same traits.
+auto link_up_actor::link_extend_cable( player &p, item &it, map & /*here*/,
+                                       const tripoint_bub_ms & /*pnt*/ ) const
+    -> std::optional<int>
+{
+    avatar *you = p.as_avatar();
+    if( !you ) {
+        p.add_msg_if_player( m_info, _( "Never mind." ) );
+        return std::nullopt;
+    }
+
+    const bool is_cable_item = it.has_flag( flag_CABLE_SPOOL );
+    const bool can_extend_devices = can_extend.find( "ELECTRICAL_DEVICES" ) != can_extend.end();
+    item *selected = nullptr;
+    if( is_cable_item ) {
+        const auto filter = [this, &it, can_extend_devices]( const item & inv ) {
+            if( !inv.can_link_up() || inv.link_has_state( link_state::needs_reeling ) ||
+                ( !inv.has_flag( flag_CABLE_SPOOL ) && !can_extend_devices ) ) {
+                return false;
+            }
+            return can_extend.find( inv.typeId().c_str() ) != can_extend.end() && &inv != &it;
+        };
+        // CDF: CDF's titled_filter_menu() takes (filter, avatar, title, none_message, radius);
+        // DDA passes radius before the message.
+        selected = game_menus::inv::titled_filter_menu( filter, *you, _( "Extend which cable?" ),
+                   _( "You don't have a compatible cable." ), -1 );
+    } else {
+        const auto filter = []( const item & inv ) {
+            if( !inv.can_link_up() || inv.link_has_state( link_state::needs_reeling ) ||
+                !inv.has_flag( flag_CABLE_SPOOL ) ) {
+                return false;
+            }
+            const link_up_actor *actor = static_cast<const link_up_actor *>
+                                         ( inv.get_use( "link_up" )->get_actor_ptr() );
+            return actor->can_extend.find( "ELECTRICAL_DEVICES" ) != actor->can_extend.end();
+        };
+        // CDF: CDF's titled_filter_menu() takes (filter, avatar, title, none_message, radius).
+        selected = game_menus::inv::titled_filter_menu( filter, *you, _( "Extend with which cable?" ),
+                   _( "You don't have a compatible cable." ), -1 );
+    }
+    if( !selected ) {
+        p.add_msg_if_player( m_info, _( "Never mind." ) );
+        return std::nullopt;
+    }
+
+    item *extension = selected;
+    item *extended = &it;
+
+    // Put the extension cable and all of its attached cables, if any, into the extended item's CABLE pocket.
+    std::vector<const item *> all_cables = extension->cables();
+    all_cables.emplace_back( extension );
+    for( const item *cable : all_cables ) {
+        detached_ptr<item> cable_copy = item::spawn( *cable );
+        cable_copy->get_contents().clear_items();
+        cable_copy->reset_link();
+        if( !extended->put_in( std::move( cable_copy ), pocket_type::CABLE ).success() ) {
+            debugmsg( "Failed to put %s inside %s!", cable->type_name(), extended->type_name() );
+        }
+    }
+    if( extension->has_link_data() ) {
+        extended->link() = extension->link();
+    }
+    extended->update_link_traits();
+
+    p.add_msg_if_player( _( "You extend the %1$s with the %2$s." ),
+                          extended->link_name(), extension->type_name() );
+
+    if( p.has_item( *extension ) ) {
+        // The copy is inside the extended item now; drop the original.
+        detached_ptr<item> removed = p.inv_remove_item( extension );
+    }
+    p.invalidate_inventory_validity_cache();
+    p.drop_invalid_inventory();
+    p.mod_moves( -move_cost );
+    return 0;
+}
+
+// CDF: LINKUP1b, DDA iuse_actor.cpp:5518-5590. Remove all cable extensions.
+// CDF: DDA gives the main cable back and resets the used item; CDF keeps the used item (it is
+// the extended cable, see link_extend_cable) and only hands back the extensions.
+auto link_up_actor::remove_extensions( player &p, item &it ) const
+    -> std::optional<int>
+{
+    std::vector<detached_ptr<item>> all_cables;
+    it.get_contents().remove_top_items_with(
+    [&all_cables]( detached_ptr<item> &&candidate ) -> detached_ptr<item> {
+        if( candidate->has_flag( flag_CABLE_SPOOL ) && candidate->can_link_up() ) {
+            all_cables.push_back( std::move( candidate ) );
+            return detached_ptr<item>();
+        }
+        return std::move( candidate );
+    } );
+
+    if( all_cables.empty() ) {
+        // Delete any non-cables that somehow got into the pocket.
+        it.get_contents().clear_pockets_if( []( item_pocket const & pocket ) {
+            return pocket.is_type( pocket_type::CABLE );
+        } );
+        return 0;
+    }
+
+    p.add_msg_if_player( _( "You disconnect the %1$s from the %2$s." ),
+                          all_cables.front()->type_name(), it.type_name() );
+
+    it.get_contents().clear_pockets_if( []( item_pocket const & pocket ) {
+        return pocket.is_type( pocket_type::CABLE );
+    } );
+
+    it.update_link_traits();
+    for( detached_ptr<item> &cable : all_cables ) {
+        p.i_add_or_drop( std::move( cable ) );
+    }
+    p.invalidate_inventory_validity_cache();
+    p.drop_invalid_inventory();
+    p.mod_moves( -move_cost );
+    return 0;
 }

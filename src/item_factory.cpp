@@ -1091,6 +1091,20 @@ void Item_factory::synthesize_pockets( itype &obj ) const
         }
     };
 
+    // CDF: LINKUP1b, DDA item_factory.cpp:4144-4148: a tool or cable with the link_up action
+    // gets a CABLE pocket for extension cables. DDA adds it after the pocket list is built,
+    // so it applies to explicit and synthesized lists alike.
+    const auto add_cable_pocket = []( itype & it ) {
+        if( it.get_use( "link_up" ) != nullptr &&
+            std::none_of( it.pockets.begin(), it.pockets.end(), []( const pocket_data & pocket ) {
+            return pocket.type == pocket_type::CABLE;
+        } ) ) {
+            pocket_data cable_pocket( pocket_type::CABLE );
+            cable_pocket.rigid = false;
+            it.pockets.emplace_back( cable_pocket );
+        }
+    };
+
     // Explicit "pocket_data" always wins (CDF P1a step 2).
     if( obj.explicit_pockets ) {
         derive_legacy_counts_from_pockets( obj, [this]( const itype_id & id ) -> const itype * {
@@ -1116,6 +1130,7 @@ void Item_factory::synthesize_pockets( itype &obj ) const
             obj.pockets.emplace_back( pocket_type::MOD );
         }
         add_molle( obj );
+        add_cable_pocket( obj );
         return;
     }
     obj.pockets.clear();
@@ -1256,6 +1271,8 @@ void Item_factory::synthesize_pockets( itype &obj ) const
             }
         }
     }
+
+    add_cable_pocket( obj );
 }
 
 void Item_factory::register_cached_uses( const itype &obj )

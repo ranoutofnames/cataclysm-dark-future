@@ -701,6 +701,13 @@ public:
      */
     void remove_remote_part(int part_num);
     /**
+     * CDF: LINKUP1b, DDA vehicle.cpp:7702-7742. Detach the cables attached to a part: linked
+     * items, tow cables and power transfer cable parts, depending on the arguments.
+     * CDF: no map* or part_to_item(); the dropped parts go through g->m and properties_to_item().
+     */
+    void unlink_cables(const tripoint_mnt_veh& mount, Character& remover, bool unlink_items,
+                       bool unlink_tow_cables, bool unlink_power_cords);
+    /**
      * Yields a range containing all parts (including broken ones) that can be
      * iterated over.
      */
@@ -1008,8 +1015,13 @@ public:
     auto discharge_battery(int amount, bool recurse = true) -> int;
 
     // CDF: LINKUP1a, DDA vehicle.cpp:5542-5557: (remaining, capacity) of this vehicle's own
-    // batteries. LINKUP1b adds connected_battery_power_level() for the appliance graph.
+    // batteries.
     auto battery_power_level() const -> std::pair<int, int>;
+
+    // CDF: LINKUP1b, DDA vehicle.cpp:5560-5573: (remaining, capacity) summed over this vehicle
+    // and every vehicle reachable through a POWER_TRANSFER cable part. CDF walks the existing
+    // distribution_graph (BN's cable graph) instead of DDA's search_connected_vehicles().
+    auto connected_battery_power_level() const -> std::pair<int, int>;
 
     // CDF: LINKUP1a, DDA vehicle.cpp:3120-3131: the index of the part a cable can connect to at
     // this mount, or -1. `to_ports` picks the CABLE_PORTS part flag over the BATTERY one.

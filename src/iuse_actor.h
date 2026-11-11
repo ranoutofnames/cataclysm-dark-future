@@ -1642,6 +1642,11 @@ class link_up_actor : public iuse_actor
         std::set<std::string> can_extend;
 
         std::optional<int> link_to_veh_app( player &p, item &it, bool to_ports ) const;
+        // CDF: LINKUP1b, DDA iuse_actor.h:1179-1182.
+        std::optional<int> link_tow_cable( player &p, item &it, bool to_towing ) const;
+        std::optional<int> link_extend_cable( player &p, item &it, map &here,
+                                              const tripoint_bub_ms &pnt ) const;
+        std::optional<int> remove_extensions( player &p, item &it ) const;
 
         link_up_actor() : iuse_actor( "link_up" ) {}
 

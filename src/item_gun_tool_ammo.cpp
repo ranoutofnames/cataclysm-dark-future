@@ -5,6 +5,8 @@
 #include <set>
 #include <vector>
 
+// CDF: LINKUP1b; get_avatar().sees() in item::reset_link().
+#include "avatar.h"
 #include "character.h"
 #include "enums.h"
 #include "flag.h"
@@ -15,13 +17,22 @@
 #include "iuse_actor.h"
 // CDF: needed for the free get_map() used as the dummy map argument below.
 #include "map/map.h"
+// CDF: LINKUP1b; add_msg() in item::reset_link().
+#include "messages.h"
 // CDF: LINKUP1a; vehicle::battery_power_level()/avail_linkable_part() for the link branches.
 #include "vehicle/vehicle.h"
+// CDF: LINKUP1b; vehicle_part, vpart_info::get_all() and the get_any_parts() range in the
+// two-vehicle link_to() branch.
+#include "vehicle/veh_type.h"
+#include "vehicle/vehicle_part.h"
+#include "vehicle/vpart_range.h"
 // CDF: LINKUP1a; optional_vpart_position::mount() in item::link_to().
 #include "vehicle/vpart_position.h"
 
 // CDF: defined below (AUTO-26 O1 / D14 legacy direct-charges guard).
 static bool cdf_legacy_direct_charges( const item &it );
+// CDF: LINKUP1b; the battery ammo item used when a linked battery is charged or discharged.
+static const itype_id itype_battery( "battery" );
 
 // CDF: LINKUP1a, DDA item_gun_tool_ammo.cpp:123
 static constexpr float MIN_LINK_EFFICIENCY = 0.001f;
@@ -238,16 +249,15 @@ int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const
         }
     }
 
-    // CDF: cable link block (DDA 1474-1484). LINKUP1a; the vehicle read is DDA's
-    // link().t_veh->connected_battery_power_level(), which arrives with LINKUP1b: CDF has no
-    // connected-vehicle traversal yet, so read the linked vehicle's own battery.
+    // CDF: cable link block (DDA 1474-1484). LINKUP1b: the linked vehicle's whole cable graph
+    // counts, as in DDA (DDA vehicle.cpp:5560-5573).
     if( include_linked && link_length() >= 0 && link().efficiency >= MIN_LINK_EFFICIENCY ) {
         if( link().t_veh ) {
-            ret += link().t_veh->battery_power_level().first;
+            ret += link().t_veh->connected_battery_power_level().first;
         } else {
             const optional_vpart_position vp = here.veh_at( link().t_abs_pos );
             if( vp ) {
-                ret += vp->vehicle().battery_power_level().first;
+                ret += vp->vehicle().connected_battery_power_level().first;
             }
         }
     }
@@ -398,10 +408,9 @@ int item::remaining_ammo_capacity( int well_idx ) const
 
 int item::ammo_capacity( const ammotype &ammo, bool include_linked ) const
 {
-    // CDF: cable link block (DDA 1722-1726). LINKUP1a; the connected-vehicle form of
-    // battery_power_level() arrives with LINKUP1b.
+    // CDF: cable link block (DDA 1722-1726). LINKUP1b: whole connected graph.
     if( include_linked && has_link_data() ) {
-        return link().t_veh ? link().t_veh->battery_power_level().second : 0;
+        return link().t_veh ? link().t_veh->connected_battery_power_level().second : 0;
     }
 
     // Route per-ammotype lookup through the matching pocket; magazine_current()
@@ -1966,6 +1975,21 @@ ret_val<void> item::link_to( const optional_vpart_position &linked_vp, link_stat
            ret_val<void>::make_failure();
 }
 
+ret_val<void> item::link_to( const optional_vpart_position &first_linked_vp,
+                             const optional_vpart_position &second_linked_vp, link_state link_type )
+{
+    if( !first_linked_vp || !second_linked_vp ) {
+        return ret_val<void>::make_failure();
+    }
+    // Link up the second vehicle first so, if it's a tow cable, the first vehicle will tow the second.
+    ret_val<void> result = link_to( second_linked_vp->vehicle(), second_linked_vp->mount(),
+                                    link_type );
+    if( !result.success() ) {
+        return result;
+    }
+    return link_to( first_linked_vp->vehicle(), first_linked_vp->mount(), link_type );
+}
+
 ret_val<void> item::link_to( vehicle &veh, const tripoint_mnt_veh &mount, link_state link_type )
 {
     if( !can_link_up() ) {
@@ -1973,26 +1997,41 @@ ret_val<void> item::link_to( vehicle &veh, const tripoint_mnt_veh &mount, link_s
     }
 
     // First, check if the desired link is actually possible.
-    // CDF: LINKUP1b adds the vehicle_tow branch; 1a only connects to power sources.
-    const link_up_actor *it_actor = static_cast<const link_up_actor *>
-                                    ( get_use( "link_up" )->get_actor_ptr() );
-    bool can_link_port = ( link_type == link_state::vehicle_port ||
-                           link_type == link_state::automatic ) &&
-                         it_actor->targets.find( link_state::vehicle_port ) != it_actor->targets.end() &&
-                         veh.avail_linkable_part( mount, true ) != -1;
 
-    bool can_link_battery = ( link_type == link_state::vehicle_battery ||
-                              link_type == link_state::automatic ) &&
-                            it_actor->targets.find( link_state::vehicle_battery ) != it_actor->targets.end() &&
-                            veh.avail_linkable_part( mount, false ) != -1;
+    if( link_type == link_state::vehicle_tow ) {
+        if( veh.has_tow_attached() || veh.is_towed() || veh.is_towing() ) {
+            return ret_val<void>::make_failure( _( "That vehicle already has a tow-line attached." ) );
+            // CDF: CDF's is_external_part() takes a bub position, not a mount.
+        } else if( !veh.is_external_part( veh.bub_ms_location() + veh.coord_translate( mount ) ) ) {
+            return ret_val<void>::make_failure( _( "You can't attach a tow-line to an internal part." ) );
+        } else {
+            const int part_at = veh.part_at( veh.coord_translate( mount ) );
+            // CDF: DDA tests carried_stack (racked items); CDF carries vehicles, tracked by carry_names.
+            if( part_at != -1 && !veh.part( part_at ).carry_names.empty() ) {
+                return ret_val<void>::make_failure( _( "You can't attach a tow-line to a racked part." ) );
+            }
+        }
+    } else {
+        const link_up_actor *it_actor = static_cast<const link_up_actor *>
+                                        ( get_use( "link_up" )->get_actor_ptr() );
+        const bool can_link_port = ( link_type == link_state::vehicle_port ||
+                                     link_type == link_state::automatic ) &&
+                                   it_actor->targets.find( link_state::vehicle_port ) != it_actor->targets.end() &&
+                                   veh.avail_linkable_part( mount, true ) != -1;
 
-    if( !can_link_port && !can_link_battery ) {
-        return ret_val<void>::make_failure( _( "The %s can't connect to that." ), type_name() );
-    } else if( link_type == link_state::automatic ) {
-        link_type = can_link_port ? link_state::vehicle_port : link_state::vehicle_battery;
+        const bool can_link_battery = ( link_type == link_state::vehicle_battery ||
+                                        link_type == link_state::automatic ) &&
+                                      it_actor->targets.find( link_state::vehicle_battery ) != it_actor->targets.end() &&
+                                      veh.avail_linkable_part( mount, false ) != -1;
+
+        if( !can_link_port && !can_link_battery ) {
+            return ret_val<void>::make_failure( _( "The %s can't connect to that." ), type_name() );
+        } else if( link_type == link_state::automatic ) {
+            link_type = can_link_port ? link_state::vehicle_port : link_state::vehicle_battery;
+        }
     }
 
-    bool bio_link = link_has_states( link_state::no_link, link_state::bio_cable );
+    const bool bio_link = link_has_states( link_state::no_link, link_state::bio_cable );
     if( bio_link || has_no_links() ) {
 
         // No link exists, so start a new link to a vehicle/appliance.
@@ -2009,10 +2048,95 @@ ret_val<void> item::link_to( vehicle &veh, const tripoint_mnt_veh &mount, link_s
         return ret_val<void>::make_success();
     }
 
-    // CDF: LINKUP1b ports DDA item_gun_tool_ammo.cpp:3752-3848, the connection of two
-    // vehicles/appliances by a cable item (it needs the cable vehicle parts and tow_data).
-    debugmsg( "Linking the %s to a second vehicle needs LINKUP1b.", tname() );
-    return ret_val<void>::make_failure();
+    // There's already a link, so connect the previous vehicle/appliance to the new one.
+
+    if( !link_has_state( link_state::no_link ) ) {
+        debugmsg( "Failed to connect the %s, both ends are already connected!", tname() );
+        return ret_val<void>::make_failure();
+    }
+    if( !link().t_veh ) {
+        vehicle *found_veh = vehicle::find_vehicle( link().t_abs_pos );
+        if( found_veh ) {
+            link().t_veh = found_veh;
+        } else {
+            debugmsg( "Failed to connect the %s, it lost its vehicle pointer!", tname() );
+            return ret_val<void>::make_failure();
+        }
+    }
+    vehicle *prev_veh = link().t_veh;
+    if( prev_veh == &veh ) {
+        return ret_val<void>::make_failure( _( "You cannot connect the %s to itself." ), prev_veh->name );
+    }
+
+    // Prepare target tripoints for the cable parts that'll be added to the selected/previous vehicles
+    const std::pair<tripoint_abs_ms, tripoint_abs_ms> prev_part_target = std::make_pair(
+                veh.abs_ms_location() + veh.coord_translate( mount ),
+                veh.abs_ms_location() );
+    const std::pair<tripoint_abs_ms, tripoint_abs_ms> sel_part_target = std::make_pair(
+                link().t_abs_pos + prev_veh->coord_translate( link().t_mount ),
+                link().t_abs_pos );
+
+    for( const vpart_reference &vpr : prev_veh->get_any_parts( "POWER_TRANSFER" ) ) {
+        if( vpr.part().target.first == prev_part_target.first &&
+            vpr.part().target.second == prev_part_target.second ) {
+            return ret_val<void>::make_failure( _( "The %1$s and %2$s are already connected." ),
+                                                veh.name, prev_veh->name );
+        }
+    }
+
+    if( rl_dist( prev_part_target.first, sel_part_target.first ) > link().max_length ) {
+        return ret_val<void>::make_failure( _( "The %s can't stretch that far!" ), type_name() );
+    }
+
+    const itype_id item_id = typeId();
+    vpart_id vpid = vpart_id::NULL_ID();
+    for( const vpart_info &e : vpart_info::get_all() ) { // CDF: DDA vehicles::parts::get_all()
+        if( e.item == item_id ) {
+            vpid = e.id;
+            break;
+        }
+    }
+
+    if( vpid.is_null() ) {
+        debugmsg( "item %s is not base item of any vehicle part!", item_id.c_str() );
+        return ret_val<void>::make_failure();
+    }
+
+    const tripoint_mnt_veh prev_mount = link().t_mount;
+
+    // CDF: vehicle::can_mount() returns bool (DDA returns ret_val<void>).
+    if( !prev_veh->can_mount( prev_mount, vpid ) || !veh.can_mount( mount, vpid ) ) {
+        //~ %1$s - cable name
+        return ret_val<void>::make_failure( _( "You can't attach the %1$s there." ), type_name() );
+    }
+
+    vehicle_part prev_veh_part( vpid, prev_mount, item::spawn( *this ), prev_veh );
+    prev_veh_part.target.first = prev_part_target.first;
+    prev_veh_part.target.second = prev_part_target.second;
+    prev_veh->install_part( prev_mount, std::move( prev_veh_part ) );
+    prev_veh->precalc_mounts( 1, prev_veh->pivot_rotation[1], prev_veh->pivot_anchor[1] );
+
+    vehicle_part sel_veh_part( vpid, mount, item::spawn( *this ), &veh );
+    sel_veh_part.target.first = sel_part_target.first;
+    sel_veh_part.target.second = sel_part_target.second;
+    veh.install_part( mount, std::move( sel_veh_part ) );
+    veh.precalc_mounts( 1, veh.pivot_rotation[1], veh.pivot_anchor[1] );
+
+    if( link_type == link_state::vehicle_tow ) {
+        if( link().source == link_state::vehicle_tow ) {
+            veh.tow_data.set_towing( prev_veh, &veh ); // Previous vehicle is towing.
+        } else {
+            veh.tow_data.set_towing( &veh, prev_veh ); // Previous vehicle is being towed.
+        }
+    }
+
+    if( typeId() != itype_id( "power_cord" ) ) {
+        // Remove linked_flag from attached parts - the just-added cable vehicle parts do the same thing.
+        reset_link();
+    }
+    //~ %1$s - first vehicle name, %2$s - second vehicle name - %3$s - cable name,
+    return ret_val<void>::make_success( _( "You connect the %1$s and %2$s with the %3$s." ),
+                                        prev_veh->disp_name(), veh.disp_name(), type_name() );
 }
 
 void item::update_link_traits()
@@ -2075,4 +2199,315 @@ int item::link_sort_key() const
 std::vector<const item *> item::cables() const
 {
     return contents.cables();
+}
+
+// CDF: LINKUP1b, DDA item_gun_tool_ammo.cpp:3907-4103 (process_link),
+// :4100-4224 (charge_linked_batteries) and :4225-4300 (reset_link), adapted to CDF's
+// coordinates (bub/abs helpers, no vehicle::pos_abs) and to the existing distribution graph.
+auto item::process_link( map &here, Character *carrier, const tripoint_bub_ms &pos ) -> bool
+{
+    if( link_length() < 0 ) {
+        return false;
+    }
+
+    const bool is_cable_item = has_flag( flag_CABLE_SPOOL );
+
+    // CDF: DDA's solar pack and UPS source checks are LINKUP1d's bionic/inventory side; LINKUP1a
+    // only creates links to vehicles, so there is nothing to check here yet.
+
+    // Certain cable states should skip processing and also become inactive if dropped.
+    if( ( link().target == link_state::no_link && link().source != link_state::vehicle_tow ) ||
+        link().target == link_state::bio_cable ) {
+        if( carrier == nullptr ) {
+            return reset_link( true, nullptr, -1, true, pos );
+        }
+        return false;
+    }
+
+    const bool last_t_abs_pos_is_oob = !here.inbounds( link().t_abs_pos );
+
+    // Lambda function for checking if a cable has been stretched too long, resetting it if so.
+    // @return True if the cable is disconnected.
+    // CDF: DDA's add_msg_debug( debugmode::DF_IUSE, ... ) call is dropped: CDF has no debugmode.
+    const auto check_length = [this, carrier, is_cable_item]() {
+        if( link().length > link().max_length ) {
+            const std::string cable_name = is_cable_item ? string_format( _( "over-extended %s" ), label( 1 ) ) :
+                                           string_format( _( "%s's over-extended cable" ), label( 1 ) );
+            if( carrier != nullptr ) {
+                carrier->add_msg_if_player( m_bad, _( "Your %s breaks loose!" ), cable_name );
+            }
+            return true;
+        } else if( link().length + M_SQRT2 >= link().max_length + 1 && carrier != nullptr ) {
+            carrier->add_msg_if_player( m_warning, _( "Your %s is stretched to its limit!" ), link_name() );
+        }
+        return false;
+    };
+
+    // check if the item moved since last length check
+    bool length_check_needed = false;
+    const tripoint_abs_ms abs_pos = bub_to_abs( pos );
+    if( link().s_abs_pos != abs_pos ) {
+        link().s_abs_pos = abs_pos;
+        length_check_needed = true;
+    }
+
+    // Re-establish vehicle pointer if it got lost or if this item just got loaded.
+    if( !link().t_veh ) {
+        vehicle *found_veh = vehicle::find_vehicle( link().t_abs_pos );
+        if( !found_veh ) {
+            if( last_t_abs_pos_is_oob ) {
+                // Target is outside the reality bubble -- its submap is probably
+                // just unloaded. Skip processing this turn; the cable will
+                // reconnect when the target submap loads back in.
+                return false;
+            }
+            return reset_link( true, carrier, -2, true, pos );
+        }
+        // CDF: DDA's re-established-link debug message is dropped (no debugmode in CDF).
+        link().t_veh = found_veh;
+    }
+
+    // Regular pointers are faster, so make one now that we know the reference is valid.
+    vehicle *t_veh = link().t_veh;
+
+    // We should skip processing if the last saved target point is out of bounds, since vehicles give innacurate absolute coordinates when out of bounds.
+    // However, if the linked vehicle is moving fast enough, we should always do processing to avoid erroneously skipping linked items riding inside of it.
+    if( last_t_abs_pos_is_oob && t_veh->velocity < HALF_MAPSIZE_X * 400 ) {
+        if( !length_check_needed ) {
+            return false;
+        }
+        link().length = rl_dist( abs_pos,
+                                 link().t_abs_pos + t_veh->coord_translate( link().t_mount ) );
+        if( check_length() ) {
+            return reset_link( true, carrier );
+        }
+        return false;
+    }
+
+    // Find the vp_part index the cable is linked to.
+    // CDF: DDA looks the part up in cable_ports/batteries; CDF has no appliance part lists, so
+    // the part at the recorded mount is used (a lost part disconnects the cable).
+    const int link_vp_index = t_veh->part_at( t_veh->coord_translate( link().t_mount ) );
+    if( link_vp_index == -1 ) {
+        // The part with cable ports was lost, so disconnect the cable.
+        return reset_link( true, carrier, -2, true, pos );
+    }
+
+    // The cable was detached from the vehicle side since this link last processed.
+    if( link().last_processed <= t_veh->part( link_vp_index ).last_disconnected ) {
+        const std::string message = string_format( _( "You detached the %s." ), type_name() );
+        if( carrier != nullptr ) {
+            carrier->add_msg_if_player( m_warning, message );
+        } else if( get_avatar().sees( pos ) ) {
+            add_msg( m_warning, message );
+        }
+        return reset_link( true, carrier, -2 );
+    }
+    t_veh->part( link_vp_index ).set_flag( vehicle_part::linked_flag );
+
+    const int turns_elapsed = to_turns<int>( calendar::turn - link().last_processed );
+    link().last_processed = calendar::turn;
+
+    // Set the new absolute position to the vehicle's origin.
+    const tripoint_abs_ms new_t_abs_pos = bub_to_abs( t_veh->bub_ms_location() );
+    if( link().t_abs_pos != new_t_abs_pos ) {
+        link().t_abs_pos = new_t_abs_pos;
+        length_check_needed = true;
+    }
+
+    // If either of the link's connected sides moved, check the cable's length.
+    if( length_check_needed ) {
+        link().length = rl_dist( pos, t_veh->bub_part_location( link_vp_index ) );
+        if( check_length() ) {
+            return reset_link( true, carrier, link_vp_index );
+        }
+    }
+
+    // Extra behaviors for the cabled item.
+    if( !is_cable_item ) {
+        if( link().efficiency < MIN_LINK_EFFICIENCY ) {
+            return false;
+        }
+        // Recharge or charge linked batteries.
+        charge_linked_batteries( *t_veh, turns_elapsed );
+        // CDF: DDA also reports the tool's power draw to vehicle::linked_item_epower_this_turn
+        // for the vehicle's power display; CDF has no such field, so the draw is not shown.
+    } else if( has_flag( flag_NO_DROP ) ) {
+        debugmsg( "%s shouldn't exist outside of an item or vehicle part.", tname() );
+        return true;
+    }
+
+    return false;
+}
+
+auto item::charge_linked_batteries( vehicle &linked_veh, int turns_elapsed ) -> int
+{
+    if( !has_link_data() || link().charge_rate == 0 || link().charge_interval < 1 ) {
+        return 0;
+    }
+
+    // Find a battery-flavored magazine to charge; on multimag items only
+    // the battery well is meaningful here.
+    item *parent_mag = nullptr;
+    for( item *mag : magazines_current() ) {
+        if( mag && mag->ammo_capacity( ammo_battery ) > 0 ) {
+            parent_mag = mag;
+            break;
+        }
+    }
+    if( !is_battery() ) {
+        if( !parent_mag || !parent_mag->has_flag( flag_RECHARGE ) ) {
+            return 0;
+        }
+    }
+
+    const int battery_charges = parent_mag ? parent_mag->ammo_remaining() : ammo_remaining();
+    const int battery_capacity = parent_mag
+                                 ? parent_mag->ammo_capacity( ammo_battery )
+                                 : ammo_capacity( ammo_battery );
+    const bool power_in = link().charge_rate > 0;
+    if( power_in ? battery_charges >= battery_capacity : battery_charges <= 0 ) {
+        return 0;
+    }
+    // Direct receiver for ammo_set so multimag items don't add charges to
+    // the wrong well.
+    item *charge_target = parent_mag ? parent_mag : this;
+
+    // Normally efficiency is the chance to get a charge every charge_interval, but if we're catching up from
+    // time spent outside the reality bubble it should be applied as a percentage of the total instead.
+    const bool short_time_passed = turns_elapsed <= link().charge_interval;
+
+    if( turns_elapsed < 1 || ( short_time_passed &&
+                               !calendar::once_every( time_duration::from_turns( link().charge_interval ) ) ) ) {
+        // Too early to get any charge
+        return link().charge_rate;
+    }
+
+    if( power_in ) {
+        const int available_charges = linked_veh.connected_battery_power_level().first;
+        const int wanted_charges = battery_capacity - battery_charges;
+
+        // Nothing to charge or nothing to charge with
+        if( wanted_charges == 0 || available_charges == 0 ) {
+            return link().charge_rate;
+        }
+
+        if( short_time_passed ) {
+            // Single charge - subtract one from source, roll against efficiency to add one to destination
+            const int deficit = linked_veh.discharge_battery( 1, true );
+            if( deficit == 0 && rng_float( 0.0, 1.0 ) <= link().efficiency ) {
+                charge_target->ammo_set( itype_battery, charge_target->ammo_remaining() + 1 );
+            }
+        } else {
+            // Multiple charges - get minimum from available charges, possible transfer in given time and
+            // amount of charges destination needs to charge itself to full with given efficiency.
+            // Subtract that value from the source and after reduction by efficiency add it to the destination.
+            const int possible_transfer =
+                static_cast<int>( turns_elapsed * 1.0f / link().charge_interval );
+            const int required_charges = static_cast<int>( wanted_charges / link().efficiency );
+            const int spent_charges = std::min( { possible_transfer, available_charges, required_charges } );
+            const int deficit = linked_veh.discharge_battery( spent_charges, true );
+            const int actual_spent = spent_charges - deficit;
+            // Avoid rounding error on full charge
+            const int received_charges = actual_spent >= required_charges
+                                         ? wanted_charges
+                                         : static_cast<int>( actual_spent * link().efficiency );
+
+            charge_target->ammo_set( itype_battery,
+                                     charge_target->ammo_remaining() + received_charges );
+        }
+    } else {
+        const auto [bat_remaining, bat_capacity] = linked_veh.connected_battery_power_level();
+        const int available_charges = battery_charges;
+        const int wanted_charges = bat_capacity - bat_remaining;
+
+        // Nothing to charge or nothing to charge with
+        if( wanted_charges == 0 || available_charges == 0 ) {
+            return link().charge_rate;
+        }
+
+        if( short_time_passed ) {
+            // Single charge - subtract one from source, roll against efficiency to add one to destination
+            charge_target->ammo_set( itype_battery, charge_target->ammo_remaining() - 1 );
+            if( rng_float( 0.0, 1.0 ) <= link().efficiency ) {
+                const int surplus = linked_veh.charge_battery( 1, true );
+                if( surplus != 0 ) {
+                    // Battery couldn't accept the charge, refund it
+                    charge_target->ammo_set( itype_battery, charge_target->ammo_remaining() + 1 );
+                }
+            }
+        } else {
+            // Multiple charges - get minimum from available charges, possible transfer in given time and
+            // amount of charges destination needs to charge itself to full with given efficiency.
+            // Subtract that value from the source and after reduction by efficiency add it to the destination.
+            const int possible_transfer =
+                static_cast<int>( turns_elapsed * 1.0f / link().charge_interval );
+            const int required_charges = static_cast<int>( wanted_charges / link().efficiency );
+            const int spent_charges = std::min( { possible_transfer, available_charges, required_charges } );
+            // Avoid rounding error on full charge
+            const int received_charges = spent_charges == required_charges
+                                         ? wanted_charges
+                                         : static_cast<int>( spent_charges * link().efficiency );
+
+            const int surplus = linked_veh.charge_battery( received_charges, true );
+            const int actual_received = received_charges - surplus;
+            // Only deduct from source what was actually accepted (accounting for efficiency)
+            int actual_spent = actual_received == wanted_charges
+                               ? required_charges
+                               : static_cast<int>( actual_received / link().efficiency );
+            // Ensure we don't spend more than planned
+            actual_spent = std::min( actual_spent, spent_charges );
+
+            charge_target->ammo_set( itype_battery,
+                                     charge_target->ammo_remaining() - actual_spent );
+        }
+    }
+    return link().charge_rate;
+}
+
+auto item::reset_link( bool unspool_if_too_long, Character *p, int vpart_index,
+                       const bool loose_message, const tripoint_bub_ms cable_position ) -> bool
+{
+    if( !has_link_data() ) {
+        return has_flag( flag_NO_DROP );
+    }
+    if( unspool_if_too_long && link_has_state( link_state::needs_reeling ) ) {
+        // Cables that need reeling should be reset with a reel_cable_activity_actor instead.
+        return false;
+    }
+
+    if( vpart_index != -2 && link().t_veh ) {
+        if( vpart_index == -1 ) {
+            // CDF: DDA looks the mount up in cable_ports/batteries; CDF looks up the part itself.
+            vpart_index = link().t_veh->part_at( link().t_veh->coord_translate( link().t_mount ) );
+        }
+        if( vpart_index != -1 ) {
+            link().t_veh->part( vpart_index ).remove_flag( vehicle_part::linked_flag );
+        }
+    }
+
+    if( loose_message ) {
+        if( p != nullptr ) {
+            p->add_msg_if_player( m_warning, _( "Your %s has come loose." ), link_name() );
+        } else {
+            // CDF: CDF has no add_msg_if_player_sees(); report only when the avatar sees the cable.
+            if( get_avatar().sees( cable_position ) ) {
+                add_msg( m_warning, _( "The %s has come loose." ), link_name() );
+            }
+        }
+    }
+
+    // CDF: DDA unspools an over-long cable (link_state::needs_reeling) and requires
+    // reel_cable_activity_actor to wind it back; that actor is not in LINKUP1b's file list, so
+    // CDF always resets the link fully. LINKUP1d picks the unspool state up with the BN removal.
+    if( loose_message && p ) {
+        p->add_msg_if_player( m_info, _( "You reel in the %s and wind it up." ), link_name() );
+    }
+
+    link_.reset();
+    if( !cables().empty() ) {
+        // If there are extensions, keep link active to maintain max_length.
+        update_link_traits();
+    }
+    return has_flag( flag_NO_DROP );
 }

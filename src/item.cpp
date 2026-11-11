@@ -517,6 +517,9 @@ item::item( const item &source ) : game_object<item>( source ), contents( this )
     old_owner = source.old_owner;
     damage_ = source.damage_;
     light = source.light;
+    // CDF: LINKUP1b; DDA's copy constructor is defaulted and copies link_ (cata::value_ptr).
+    // CDF's manual copy must do it too, or a copied/ spawned cable loses its link.
+    link_ = source.link_;
     invlet = source.invlet;
     active = source.active;
     activated_by = source.activated_by;
@@ -567,6 +570,8 @@ item &item::operator=( const item &source )
     old_owner = source.old_owner;
     damage_ = source.damage_;
     light = source.light;
+    // CDF: LINKUP1b; copy the link like DDA's defaulted assignment operator does.
+    link_ = source.link_;
     invlet = source.invlet;
     active = source.active;
     activated_by = source.activated_by;
@@ -10959,7 +10964,9 @@ bool item::needs_processing() const
            contents.overflow_pending() ||
            contents.has_processing_items() ||
            ( magazine_current() && magazine_current()->needs_processing() ) ||
-           is_artifact() || is_relic() || goes_bad();
+           is_artifact() || is_relic() || goes_bad() ||
+           // CDF: LINKUP1b, DDA item.cpp:4213: a live cable is processed every turn.
+           has_link_data();
 }
 
 auto item::size_is_stable() const -> bool
@@ -12000,6 +12007,15 @@ detached_ptr<item> item::process_internal( detached_ptr<item> &&self, player *ca
         }
         // NOTE: Ticks are handled by process_relic
         self->process_relic( carrier );
+    }
+
+    // CDF: LINKUP1b, DDA item.cpp:4792-4794. A linked item is maintained every turn: cable
+    // length, lost vehicles/parts and battery transfer.
+    if( self->has_link_data() ) {
+        ZoneScopedN( "item_process_link" );
+        if( self->process_link( get_map(), carrier, pos ) ) {
+            return detached_ptr<item>();
+        }
     }
 
     if( self->faults.contains( fault_gun_blackpowder ) ) {

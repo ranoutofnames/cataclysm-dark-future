@@ -142,6 +142,8 @@ static const std::unordered_map<std::string, vpart_bitflags> vpart_bitflag_map =
     {"NOFIELDS", VPFLAG_NOFIELDS},
     {"DROPPER", VPFLAG_DROPPER},
     {"LADDER", VPFLAG_LADDER},
+    {"CABLE_PORTS", VPFLAG_CABLE_PORTS},
+    {"BATTERY", VPFLAG_BATTERY},
     {"TRAP_PROOF", VPFLAG_TRAP_PROOF}};
 
 auto vpart_rotating_light::arc_width() const -> units::angle {

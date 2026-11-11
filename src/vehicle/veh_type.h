@@ -89,6 +89,8 @@ enum vpart_bitflags : int {
     VPFLAG_LADDER,
     VPFLAG_POWERED_BY_ENGINE,
     VPFLAG_TRAP_PROOF,
+    VPFLAG_CABLE_PORTS,
+    VPFLAG_BATTERY,
 
     NUM_VPFLAGS
 };

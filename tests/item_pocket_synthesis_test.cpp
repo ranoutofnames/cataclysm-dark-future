@@ -78,6 +78,8 @@ auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
     }
     if (t.has_flag(flag_CORPSE)) { ret[pocket_type::CORPSE] = 1; }
     if (t.get_id() == itype_id("usb_drive")) { ret[pocket_type::SOFTWARE] = 1; }
+    // CDF: LINKUP1b, DDA item_factory.cpp:4144-4148: a link_up item gets a CABLE pocket.
+    if (t.get_use("link_up") != nullptr) { ret[pocket_type::CABLE] = 1; }
     return ret;
 }
 

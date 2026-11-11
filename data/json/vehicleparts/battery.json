@@ -51,7 +51,7 @@
         "using": [ [ "soldering_standard", 5 ], [ "vehicle_repair_electronics", 1 ], [ "plastics", 1 ] ]
       }
     },
-    "flags": [ "FOLDABLE", "SHOCK_RESISTANT" ]
+    "flags": [ "BATTERY", "FOLDABLE", "SHOCK_RESISTANT" ]
   },
   {
     "id": "battery_motorbike",
@@ -119,7 +119,7 @@
       }
     },
     "description": "A battery for storing electrical power, and discharging it to power electrical devices built into the vehicle.  This one is mounted on a quick release framework that assists in loading and unloading the battery, allowing it to be easily swapped.",
-    "flags": [ "NEEDS_BATTERY_MOUNT", "NO_LIFT_REQ" ]
+    "flags": [ "BATTERY", "NEEDS_BATTERY_MOUNT", "NO_LIFT_REQ" ]
   },
   {
     "id": "medium_storage_battery",
@@ -180,6 +180,7 @@
     "durability": 300,
     "description": "A battery for storing electrical power, and discharging it to power electrical devices built into the vehicle.",
     "damage_modifier": 80,
+    "flags": [ "BATTERY" ],
     "breaks_into": [
       { "item": "steel_lump", "count": [ 5, 10 ] },
       { "item": "steel_chunk", "count": [ 5, 10 ] },
@@ -208,7 +209,7 @@
       "removal": { "skills": [ [ "mechanics", 0 ] ], "time": "10 s", "using": [  ] }
     },
     "description": "A battery for storing electrical power, and discharging it to power electrical devices built into the vehicle.  This one is mounted on a quick release framework that assists in loading and unloading the battery, allowing it to be easily swapped.",
-    "flags": [ "NEEDS_BATTERY_MOUNT", "NO_LIFT_REQ" ]
+    "flags": [ "BATTERY", "NEEDS_BATTERY_MOUNT", "NO_LIFT_REQ" ]
   },
   {
     "type": "vehicle_part",
