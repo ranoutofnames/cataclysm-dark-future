@@ -45,7 +45,7 @@
     "color": "yellow",
     "tool_ammo": "battery",
     "charges_per_use": 5,
-    "use_action": "CAMERA",
+    "use_action": [ "CAMERA", { "type": "link_up", "cable_length": 3, "charge_rate": "20 W" } ],
     "flags": [ "NO_RELOAD", "NO_UNLOAD" ],
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 50 } } ],
     "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
@@ -67,7 +67,7 @@
     "tool_ammo": "battery",
     "initial_charges": 80,
     "charges_per_use": 5,
-    "use_action": [ "CAMERA", "TOGGLE_UPS_CHARGING" ],
+    "use_action": [ "CAMERA", "TOGGLE_UPS_CHARGING", { "type": "link_up", "cable_length": 3, "charge_rate": "50 W" } ],
     "flags": [ "CAMERA_PRO", "ALWAYS_TWOHAND", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [
       {
@@ -93,15 +93,18 @@
     "color": "light_gray",
     "tool_ammo": "battery",
     "charges_per_use": 1,
-    "use_action": {
-      "target": "cell_phone_flashlight",
-      "msg": "You light up the screen.",
-      "active": true,
-      "need_charges": 1,
-      "transform_charges": 1,
-      "need_charges_msg": "The cellphone's batteries need more charge.",
-      "type": "transform"
-    },
+    "use_action": [
+      {
+        "target": "cell_phone_flashlight",
+        "msg": "You light up the screen.",
+        "active": true,
+        "need_charges": 1,
+        "transform_charges": 1,
+        "need_charges_msg": "The cellphone's batteries need more charge.",
+        "type": "transform"
+      },
+      { "type": "link_up", "cable_length": 3, "charge_rate": "20 W" }
+    ],
     "flags": [ "WATCH", "ALARMCLOCK", "NO_RELOAD", "NO_UNLOAD" ],
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 17 } } ],
     "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"
@@ -113,7 +116,10 @@
     "name": { "str": "cellphone - Screenlight", "str_pl": "cellphones - Screenlight" },
     "power_draw": 2500,
     "revert_to": "cell_phone",
-    "use_action": { "target": "cell_phone", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
+    "use_action": [
+      { "target": "cell_phone", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
+      { "type": "link_up", "cable_length": 3, "charge_rate": "20 W" }
+    ],
     "flags": [ "WATCH", "LIGHT_8", "TRADER_AVOID", "NO_RELOAD", "NO_UNLOAD" ]
   },
   {
@@ -767,7 +773,8 @@
         "internal_name": "music_player",
         "menu_text": "Listen to music"
       },
-      "TOGGLE_UPS_CHARGING"
+      "TOGGLE_UPS_CHARGING",
+      { "type": "link_up", "cable_length": 5, "charge_rate": "140 W" }
     ],
     "flags": [ "WATCH", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [
@@ -803,7 +810,10 @@
     "name": { "str": "laptop computer - lit screen", "str_pl": "laptop computers - lit screen" },
     "power_draw": 5000,
     "revert_to": "laptop",
-    "use_action": { "target": "laptop", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
+    "use_action": [
+      { "target": "laptop", "msg": "You stop lighting up the screen.", "menu_text": "Turn off", "type": "transform" },
+      { "type": "link_up", "cable_length": 5, "charge_rate": "140 W" }
+    ],
     "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [
       {
@@ -842,7 +852,8 @@
         "internal_name": "music_player",
         "menu_text": "Listen to music"
       },
-      "TOGGLE_UPS_CHARGING"
+      "TOGGLE_UPS_CHARGING",
+      { "type": "link_up", "cable_length": 2, "charge_rate": "5 W" }
     ],
     "charges_per_use": 1,
     "pocket_data": [
@@ -862,7 +873,7 @@
     "description": "This mp3 player is turned on and playing some great tunes, raising your morale steadily while on your person.  It runs through batteries quickly; you can turn it off by using it.  It also obscures your hearing.",
     "power_draw": 3500,
     "revert_to": "mp3",
-    "use_action": [ "MP3_ON" ],
+    "use_action": [ "MP3_ON", { "type": "link_up", "cable_length": 2, "charge_rate": "5 W" } ],
     "flags": [ "TRADER_AVOID", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [
       {
@@ -931,7 +942,7 @@
     "initial_charges": 38,
     "flags": [ "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "charges_per_use": 1,
-    "use_action": [ "PORTABLE_GAME", "TOGGLE_UPS_CHARGING" ],
+    "use_action": [ "PORTABLE_GAME", "TOGGLE_UPS_CHARGING", { "type": "link_up", "cable_length": 4, "charge_rate": "39 W" } ],
     "pocket_data": [
       {
         "pocket_type": "MAGAZINE",
@@ -994,7 +1005,8 @@
         "menu_text": "Listen to music"
       },
       "PORTABLE_GAME",
-      "TOGGLE_UPS_CHARGING"
+      "TOGGLE_UPS_CHARGING",
+      { "type": "link_up", "cable_length": 3, "charge_rate": "20 W" }
     ],
     "flags": [ "WATCH", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [
@@ -1032,12 +1044,15 @@
     "name": { "str": "smartphone - Flashlight", "str_pl": "smartphones - Flashlight" },
     "power_draw": 5000,
     "revert_to": "smart_phone",
-    "use_action": {
-      "target": "smart_phone",
-      "msg": "You deactivate the flashlight app.",
-      "menu_text": "Turn off flashlight",
-      "type": "transform"
-    },
+    "use_action": [
+      {
+        "target": "smart_phone",
+        "msg": "You deactivate the flashlight app.",
+        "menu_text": "Turn off flashlight",
+        "type": "transform"
+      },
+      { "type": "link_up", "cable_length": 3, "charge_rate": "20 W" }
+    ],
     "flags": [ "WATCH", "LIGHT_20", "TRADER_AVOID", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [
       {
@@ -1162,7 +1177,10 @@
     "symbol": ";",
     "color": "dark_gray",
     "tool_ammo": "battery",
-    "use_action": { "type": "sex_toy", "moves": 60000 },
+    "use_action": [
+      { "type": "sex_toy", "moves": 60000 },
+      { "type": "link_up", "cable_length": 3, "charge_rate": "10 W" }
+    ],
     "flags": [ "NO_RELOAD", "NO_UNLOAD" ],
     "pocket_data": [ { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 58 } } ],
     "//": "CDF: P3-BATT2: DDA integral battery pocket at the DDA number (cells no longer fit); ammo->tool_ammo, magazines and magazine_well dropped"

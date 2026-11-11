@@ -130,11 +130,14 @@ struct golden_counts {
 // Loaded pockets as the golden sees them. The golden never lists MOD, CORPSE or SOFTWARE pockets
 // (the loader synthesizes the MOD pocket of guns itself, per DDA), so those are dropped here;
 // the relative order of the rest is unchanged.
+// CDF: LINKUP1e also drops CABLE: the loader adds one to every item with the link_up action
+// (src/item_factory.cpp add_cable_pocket, DDA item_factory.cpp:4144-4148) and the golden records
+// the JSON pocket_data only. tests/p3_data_linkup1e_test.cpp pins that pocket on the 45 tools.
 auto golden_view(const itype& type) -> std::vector<const pocket_data*> {
     std::vector<const pocket_data*> out;
     for (const pocket_data& pocket : type.pockets) {
         if (pocket.type == pocket_type::MOD || pocket.type == pocket_type::CORPSE ||
-            pocket.type == pocket_type::SOFTWARE) {
+            pocket.type == pocket_type::SOFTWARE || pocket.type == pocket_type::CABLE) {
             continue;
         }
         out.push_back(&pocket);

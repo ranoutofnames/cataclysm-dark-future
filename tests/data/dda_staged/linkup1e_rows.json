@@ -1,0 +1,507 @@
+{
+  "packet": "LINKUP1e",
+  "source": "PL-33e targets/linkup-uses.tsv, rows with group other (45); values re-derived from DDA b4b62254ae2",
+  "dda": "b4b62254ae2",
+  "count": 45,
+  "note": "the 45 tools of group `other` keep their CDF wells and add the DDA link_up action as a second source; `pockets` is the loaded pocket signature without the loader's MOD/CABLE pockets (tests/p3_data_linkup1e_test.cpp)",
+  "items": {
+    "angle_grinder": {
+      "file": "data/json/items/tool/workshop.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 30,
+        "charge_rate": "800 W"
+      },
+      "cable_length": 30,
+      "charge_rate_mw": 800000,
+      "pockets": "da9292779d71f4fc"
+    },
+    "camera": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 20000,
+      "pockets": "fc207fb29e41daf1"
+    },
+    "camera_pro": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "50 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 50000,
+      "pockets": "33fe692dbf183731"
+    },
+    "cell_phone": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 20000,
+      "pockets": "9f5fb2c75ae42074"
+    },
+    "cell_phone_flashlight": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 20000,
+      "pockets": "9f5fb2c75ae42074"
+    },
+    "elec_jackhammer": {
+      "file": "data/json/items/tool/workshop.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 33,
+        "charge_rate": "2200 W"
+      },
+      "cable_length": 33,
+      "charge_rate_mw": 2200000,
+      "pockets": "9ad91533b546729a"
+    },
+    "electric_blanket": {
+      "file": "data/json/items/tool_armor.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "110 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 110000,
+      "pockets": "63ce8c32810587db"
+    },
+    "electric_blanket_on": {
+      "file": "data/json/items/tool_armor.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "110 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 110000,
+      "pockets": "63ce8c32810587db"
+    },
+    "electric_lantern": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 20000,
+      "pockets": "14067a37c72258e9"
+    },
+    "electric_lantern_on": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 20000,
+      "pockets": "14067a37c72258e9"
+    },
+    "electric_lighter": {
+      "file": "data/json/items/tool/fire.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "//": "USB 1/2 should take 2 hours for full",
+        "charge_rate": "5 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 5000,
+      "pockets": "57d70e3fd9d7cbfb"
+    },
+    "electrolysis_kit": {
+      "file": "data/json/items/tool/science.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "300 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 300000,
+      "pockets": "3cccdf6784f25ba7"
+    },
+    "fan": {
+      "file": "data/json/items/generic.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "35 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 35000,
+      "pockets": "4f2c08a982965e1b"
+    },
+    "hair_dryer": {
+      "file": "data/json/items/generic/bathroom_house.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "1500 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 1500000,
+      "pockets": "4f2c08a982965e1b"
+    },
+    "heavy_flashlight": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 20000,
+      "pockets": "bbb66a47621f6fb4"
+    },
+    "heavy_flashlight_on": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 20000,
+      "pockets": "bbb66a47621f6fb4"
+    },
+    "laptop": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 5,
+        "charge_rate": "140 W"
+      },
+      "cable_length": 5,
+      "charge_rate_mw": 140000,
+      "pockets": "84d5d27f22f4b48c"
+    },
+    "laptop_screen_lit": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 5,
+        "charge_rate": "140 W"
+      },
+      "cable_length": 5,
+      "charge_rate_mw": 140000,
+      "pockets": "84d5d27f22f4b48c"
+    },
+    "large_repairkit": {
+      "file": "data/json/items/tool/workshop.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "70 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 70000,
+      "pockets": "da9292779d71f4fc"
+    },
+    "large_space_heater": {
+      "file": "data/json/items/tool/misc.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "1 kW"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 1000000,
+      "pockets": "a277a3ef824236fd"
+    },
+    "large_space_heater_on": {
+      "file": "data/json/items/tool/misc.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "1 kW"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 1000000,
+      "pockets": "a277a3ef824236fd"
+    },
+    "lightstrip": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 10,
+        "charge_rate": "5 W"
+      },
+      "cable_length": 10,
+      "charge_rate_mw": 5000,
+      "pockets": "4f2c08a982965e1b"
+    },
+    "microcentrifuge": {
+      "file": "data/json/items/tool/science.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "400 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 400000,
+      "pockets": "b174584425162127"
+    },
+    "microscope": {
+      "file": "data/json/items/tool/science.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "10 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 10000,
+      "pockets": "4f2c08a982965e1b"
+    },
+    "microwave": {
+      "file": "data/json/items/generic.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "1800 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 1800000,
+      "pockets": "4f2c08a982965e1b"
+    },
+    "mp3": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "5 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 5000,
+      "pockets": "fc207fb29e41daf1"
+    },
+    "mp3_on": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "5 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 5000,
+      "pockets": "fc207fb29e41daf1"
+    },
+    "polisher": {
+      "file": "data/json/items/tool/workshop.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 5,
+        "charge_rate": "1600 W"
+      },
+      "cable_length": 5,
+      "charge_rate_mw": 1600000,
+      "pockets": "d90e841db243aae5"
+    },
+    "portable_game": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 4,
+        "charge_rate": "39 W"
+      },
+      "cable_length": 4,
+      "charge_rate_mw": 39000,
+      "pockets": "cf5c05f984fd34a0"
+    },
+    "radio": {
+      "file": "data/json/items/tool/radio_tools.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "5 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 5000,
+      "pockets": "bf2f3e89ef7c0fbc"
+    },
+    "radio_on": {
+      "file": "data/json/items/tool/radio_tools.json",
+      "action": {
+        "type": "link_up",
+        "menu_text": "Plug in / Unplug",
+        "ammo_scale": 0,
+        "cable_length": 3,
+        "charge_rate": "5 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 5000,
+      "pockets": "bf2f3e89ef7c0fbc"
+    },
+    "reading_light": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "2 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 2000,
+      "pockets": "0e89dba244764c00"
+    },
+    "reading_light_on": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "2 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 2000,
+      "pockets": "0e89dba244764c00"
+    },
+    "rotovap": {
+      "file": "data/json/items/tool/science.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "400 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 400000,
+      "pockets": "4f2c08a982965e1b"
+    },
+    "sewing_machine": {
+      "file": "data/json/items/tool/tailoring.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "84 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 84000,
+      "pockets": "c64ff902cb15c967"
+    },
+    "small_repairkit": {
+      "file": "data/json/items/tool/workshop.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "70 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 70000,
+      "pockets": "63ce8c32810587db"
+    },
+    "small_space_heater": {
+      "file": "data/json/items/tool/misc.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "500 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 500000,
+      "pockets": "63ce8c32810587db"
+    },
+    "small_space_heater_on": {
+      "file": "data/json/items/tool/misc.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "500 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 500000,
+      "pockets": "63ce8c32810587db"
+    },
+    "smart_lamp": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "6 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 6000,
+      "pockets": "0ecb0e972b2f2cda"
+    },
+    "smart_lamp_on": {
+      "file": "data/json/items/tool/lighting.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "6 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 6000,
+      "pockets": "0ecb0e972b2f2cda"
+    },
+    "smart_phone": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 20000,
+      "pockets": "d363c0128fd6462f"
+    },
+    "smart_phone_flashlight": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "20 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 20000,
+      "pockets": "d363c0128fd6462f"
+    },
+    "toaster": {
+      "file": "data/json/items/generic.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 2,
+        "charge_rate": "1400 W"
+      },
+      "cable_length": 2,
+      "charge_rate_mw": 1400000,
+      "pockets": "4f2c08a982965e1b"
+    },
+    "two_way_radio": {
+      "file": "data/json/items/tool/radio_tools.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "5 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 5000,
+      "pockets": "bf2f3e89ef7c0fbc"
+    },
+    "vibrator": {
+      "file": "data/json/items/tool/electronics.json",
+      "action": {
+        "type": "link_up",
+        "cable_length": 3,
+        "charge_rate": "10 W"
+      },
+      "cable_length": 3,
+      "charge_rate_mw": 10000,
+      "pockets": "14067a37c72258e9"
+    }
+  }
+}

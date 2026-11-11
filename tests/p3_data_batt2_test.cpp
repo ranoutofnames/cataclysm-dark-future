@@ -94,11 +94,14 @@ TEST_CASE("p3 batt2 integral pocket numbers", "[p3][data][BATT2]") {
 
 TEST_CASE("p3 batt2 pocket list completeness", "[p3][data][BATT2]") {
     // CDF: the pocket list is the before-port list with the well replaced by the integral pocket;
-    // the MOD pocket stays (before-snapshot: MAGAZINE_WELL x1 + MOD x1)
+    // the MOD pocket stays (before-snapshot: MAGAZINE_WELL x1 + MOD x1). CDF: LINKUP1e adds the
+    // link_up action to these 11 tools, and the loader adds the CABLE pocket beside the MOD one
+    // (src/item_factory.cpp add_cable_pocket, DDA item_factory.cpp:4144-4148).
     for (const auto& [id, n] : BATT2_NUMBERS) {
         CAPTURE(id, pocket_types(id));
         CHECK(count_type(id, pocket_type::MOD) == 1);
-        CHECK(itype_id(id).obj().pockets.size() == 2);
+        CHECK(count_type(id, pocket_type::CABLE) == 1);
+        CHECK(itype_id(id).obj().pockets.size() == 3);
     }
 }
 

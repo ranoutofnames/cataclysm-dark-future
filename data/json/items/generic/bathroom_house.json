@@ -86,7 +86,8 @@
     "material": [ "plastic", "steel" ],
     "bashing": 3,
     "to_hit": -1,
-    "category": "scrap_electronics"
+    "category": "scrap_electronics",
+    "use_action": [ { "type": "link_up", "cable_length": 2, "charge_rate": "1500 W" } ]
   },
   {
     "id": "curling_iron",

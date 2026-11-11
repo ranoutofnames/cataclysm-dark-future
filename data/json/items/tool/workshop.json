@@ -132,7 +132,8 @@
         "default_magazine": "medium_battery_cell"
       },
       { "pocket_type": "MOD" }
-    ]
+    ],
+    "use_action": [ { "type": "link_up", "cable_length": 30, "charge_rate": "800 W" } ]
   },
   {
     "id": "brick_kiln",
@@ -332,7 +333,7 @@
     "tool_ammo": "battery",
     "initial_charges": 5000,
     "charges_per_use": 200,
-    "use_action": [ "JACKHAMMER", "TOGGLE_UPS_CHARGING" ],
+    "use_action": [ "JACKHAMMER", "TOGGLE_UPS_CHARGING", { "type": "link_up", "cable_length": 33, "charge_rate": "2200 W" } ],
     "flags": [ "STAB", "DIG_TOOL", "POWERED", "RECHARGE", "NO_UNLOAD", "NO_RELOAD" ],
     "pocket_data": [
       {
@@ -641,7 +642,7 @@
       [ "PULL", 2 ],
       [ "CASING_FORMING", 1 ]
     ],
-    "use_action": [ "GUN_CLEAN", "GUN_REPAIR", "CROWBAR", "HAMMER" ],
+    "use_action": [ "GUN_CLEAN", "GUN_REPAIR", "CROWBAR", "HAMMER", { "type": "link_up", "cable_length": 3, "charge_rate": "70 W" } ],
     "pocket_data": [
       {
         "pocket_type": "MAGAZINE_WELL",
@@ -1024,7 +1025,8 @@
         "default_magazine": "light_battery_cell"
       },
       { "pocket_type": "MOD" }
-    ]
+    ],
+    "use_action": [ { "type": "link_up", "cable_length": 5, "charge_rate": "1600 W" } ]
   },
   {
     "id": "primitive_hammer",
@@ -1116,7 +1118,7 @@
       [ "CHISEL", 3 ],
       [ "CASING_FORMING", 1 ]
     ],
-    "use_action": [ "GUN_CLEAN", "GUN_REPAIR", "CROWBAR", "HAMMER" ],
+    "use_action": [ "GUN_CLEAN", "GUN_REPAIR", "CROWBAR", "HAMMER", { "type": "link_up", "cable_length": 3, "charge_rate": "70 W" } ],
     "pocket_data": [
       {
         "pocket_type": "MAGAZINE_WELL",

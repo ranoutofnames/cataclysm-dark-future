@@ -96,7 +96,8 @@
         "default_magazine": "battery_car"
       },
       { "pocket_type": "MOD" }
-    ]
+    ],
+    "use_action": [ { "type": "link_up", "cable_length": 2, "charge_rate": "300 W" } ]
   },
   {
     "id": "hydrogen_tank",
@@ -522,7 +523,8 @@
     "bashing": 3,
     "material": [ "steel", "glass" ],
     "symbol": "G",
-    "color": "white"
+    "color": "white",
+    "use_action": [ { "type": "link_up", "cable_length": 2, "charge_rate": "10 W" } ]
   },
   {
     "id": "microscope_dissecting",
@@ -574,7 +576,8 @@
     "material": [ "steel", "glass" ],
     "symbol": "R",
     "color": "white",
-    "qualities": [ [ "CONCENTRATE", 1 ] ]
+    "qualities": [ [ "CONCENTRATE", 1 ] ],
+    "use_action": [ { "type": "link_up", "cable_length": 2, "charge_rate": "400 W" } ]
   },
   {
     "id": "still_lab",
@@ -639,7 +642,8 @@
         "default_magazine": "light_battery_cell"
       },
       { "pocket_type": "MOD" }
-    ]
+    ],
+    "use_action": [ { "type": "link_up", "cable_length": 2, "charge_rate": "400 W" } ]
   },
   {
     "id": "3d_printer_basic",

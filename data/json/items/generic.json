@@ -1080,7 +1080,8 @@
     "material": [ "aluminum", "plastic" ],
     "weight": "725 g",
     "volume": "750 ml",
-    "category": "scrap_electronics"
+    "category": "scrap_electronics",
+    "use_action": [ { "type": "link_up", "cable_length": 2, "charge_rate": "1400 W" } ]
   },
   {
     "type": "GENERIC",
@@ -1094,7 +1095,8 @@
     "material": [ "steel", "plastic" ],
     "weight": "11339 g",
     "volume": "9 L",
-    "category": "scrap_electronics"
+    "category": "scrap_electronics",
+    "use_action": [ { "type": "link_up", "cable_length": 2, "charge_rate": "1800 W" } ]
   },
   {
     "type": "GENERIC",
@@ -1843,7 +1845,8 @@
     "material": [ "aluminum", "plastic" ],
     "weight": "2857 g",
     "volume": "1 L",
-    "category": "scrap_electronics"
+    "category": "scrap_electronics",
+    "use_action": [ { "type": "link_up", "cable_length": 3, "charge_rate": "35 W" } ]
   },
   {
     "type": "GENERIC",
