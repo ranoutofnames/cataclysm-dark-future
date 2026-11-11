@@ -1,0 +1,3232 @@
+{
+ "format": 1,
+ "packet": "BATT1",
+ "source": "outbox/PL-33b/targets/battery-tools.json (rows packet BATT1 / BATT1 test); capacity = the CDF default cell's number (AUTO-236: cells keep CDF sizes); item_restriction = the target cells, target default first (loader rule)",
+ "rows": [
+  {
+   "id": "debug_active_relic_test",
+   "group": "W7",
+   "file": "data/json/artifact/debug_artifacts.json",
+   "packet": "BATT1",
+   "source_id": "debug_active_relic_test",
+   "flags": [
+    "BATTERY_LIGHT"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "debug_active_relic_test_on",
+   "group": "W7",
+   "file": "data/json/artifact/debug_artifacts.json",
+   "packet": "BATT1",
+   "source_id": "debug_active_relic_test",
+   "flags": [
+    "BATTERY_LIGHT"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "plastic_jack_o_lantern",
+   "group": "N1",
+   "file": "data/json/items/items_holiday.json",
+   "packet": "BATT1 test",
+   "source_id": "plastic_jack_o_lantern",
+   "flags": [
+    "BATTERY_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [],
+   "target_item_restriction": [],
+   "old_cells": [],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "plastic_jack_o_lantern_lit",
+   "group": "N1",
+   "file": "data/json/items/items_holiday.json",
+   "packet": "BATT1 test",
+   "source_id": "plastic_jack_o_lantern",
+   "flags": [
+    "BATTERY_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [],
+   "target_item_restriction": [],
+   "old_cells": [],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "miner_hat",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "miner_hat",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "miner_hat_on",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "miner_hat",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "game_watch",
+   "group": "N1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1 test",
+   "source_id": "game_watch",
+   "flags": [
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_battery_cell",
+   "item_restriction": [],
+   "target_item_restriction": [],
+   "old_cells": [],
+   "capacity_before": 50,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_socks",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_socks",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_socks_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_socks",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_suit",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_suit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_suit_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_suit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_gloves",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_gloves",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_gloves_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_gloves",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_mask",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_mask",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_mask_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_mask",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_outfit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_on",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_outfit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_mask",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_mask",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_mask_on",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_mask",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_suit",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_suit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_suit_on",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_suit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "wearable_light",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "wearable_light",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "wearable_light_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "wearable_light",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "survivor_light",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "survivor_light",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "survivor_light_on",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "survivor_light",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "goggles_nv",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "goggles_nv",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv_enhanced",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "goggles_nv_enhanced",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv_enhanced_on",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "goggles_nv_enhanced",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_ir",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "goggles_ir",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_ir_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "goggles_ir",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "rad_monitor",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "rad_monitor",
+   "flags": [
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_battery_cell",
+   "item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 50,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_outfit",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_outfit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_outfit_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "thermal_outfit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "powered_earmuffs",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "powered_earmuffs",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "powered_earmuffs_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "powered_earmuffs",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "army_powered_earmuffs",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "army_powered_earmuffs",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "army_powered_earmuffs_on",
+   "group": "W7",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "army_powered_earmuffs",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electric_blanket",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "electric_blanket",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electric_blanket_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "electric_blanket",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "foodperson_mask",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "foodperson_mask",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "foodperson_mask_on",
+   "group": "W1",
+   "file": "data/json/items/tool_armor.json",
+   "packet": "BATT1",
+   "source_id": "foodperson_mask",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "talking_doll",
+   "group": "W1",
+   "file": "data/json/items/generic/toys_and_sports.json",
+   "packet": "BATT1",
+   "source_id": "talking_doll",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_disposable_cell",
+   "item_restriction": [
+    "light_minus_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "creepy_doll",
+   "group": "W1",
+   "file": "data/json/items/generic/toys_and_sports.json",
+   "packet": "BATT1",
+   "source_id": "creepy_doll",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_disposable_cell",
+   "item_restriction": [
+    "light_minus_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "l-stick",
+   "group": "W7",
+   "file": "data/json/items/melee/bludgeons.json",
+   "packet": "BATT1",
+   "source_id": "l-stick",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_plus_battery_cell",
+   "item_restriction": [
+    "medium_plus_battery_cell",
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_plus_battery_cell",
+    "medium_battery_cell"
+   ],
+   "capacity_before": 750,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "l-stick_on",
+   "group": "W7",
+   "file": "data/json/items/melee/bludgeons.json",
+   "packet": "BATT1",
+   "source_id": "l-stick",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_plus_battery_cell",
+   "item_restriction": [
+    "medium_plus_battery_cell",
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_plus_battery_cell",
+    "medium_battery_cell"
+   ],
+   "capacity_before": 750,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_staff",
+   "group": "W1",
+   "file": "data/json/items/melee/bludgeons.json",
+   "packet": "BATT1",
+   "source_id": "shock_staff",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_staff_on",
+   "group": "W7",
+   "file": "data/json/items/melee/bludgeons.json",
+   "packet": "BATT1",
+   "source_id": "shock_staff",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shocktonfa_off",
+   "group": "W1",
+   "file": "data/json/items/melee/bludgeons.json",
+   "packet": "BATT1",
+   "source_id": "shocktonfa_off",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shocktonfa_on",
+   "group": "W1",
+   "file": "data/json/items/melee/bludgeons.json",
+   "packet": "BATT1",
+   "source_id": "shocktonfa_off",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "tazer",
+   "group": "W1",
+   "file": "data/json/items/melee/misc.json",
+   "packet": "BATT1",
+   "source_id": "tazer",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_foil",
+   "group": "W1",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_foil",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_foil_on",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_foil",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_epee",
+   "group": "W1",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_epee",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_epee_on",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_epee",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_sabre",
+   "group": "W1",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_sabre",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_sabre_on",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_sabre",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_rapier_off",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_rapier_off",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_rapier_on",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "shock_rapier_off",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "ecs_lajatang_off",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "ecs_lajatang_off",
+   "flags": [
+    "BATTERY_HEAVY"
+   ],
+   "default": "heavy_battery_cell",
+   "item_restriction": [
+    "heavy_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "heavy_battery_cell"
+   ],
+   "capacity_before": 1000,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "ecs_lajatang_on",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "ecs_lajatang_off",
+   "flags": [
+    "BATTERY_HEAVY"
+   ],
+   "default": "heavy_battery_cell",
+   "item_restriction": [
+    "heavy_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "heavy_battery_cell"
+   ],
+   "capacity_before": 1000,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "e_combatsaw_off",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "e_combatsaw_off",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "e_combatsaw_on",
+   "group": "W7",
+   "file": "data/json/items/melee/swords_and_blades.json",
+   "packet": "BATT1",
+   "source_id": "e_combatsaw_off",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "soda_machine",
+   "group": "W7",
+   "file": "data/json/items/tool/cooking.json",
+   "packet": "BATT1",
+   "source_id": "soda_machine",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "mil_mess_kit",
+   "group": "W7",
+   "file": "data/json/items/tool/cooking.json",
+   "packet": "BATT1",
+   "source_id": "mil_mess_kit",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_plus_battery_cell",
+   "item_restriction": [
+    "medium_plus_battery_cell",
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_plus_battery_cell",
+    "medium_battery_cell"
+   ],
+   "capacity_before": 750,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electrohack",
+   "group": "W1",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "electrohack",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "geiger_off",
+   "group": "W1",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "geiger_off",
+   "flags": [
+    "BATTERY_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "geiger_on",
+   "group": "W1",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "geiger_off",
+   "flags": [
+    "BATTERY_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "sonar_device",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "sonar_device",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "hand_crank_charger",
+   "group": "W1",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "hand_crank_charger",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "noise_emitter",
+   "group": "W1",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "noise_emitter",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "noise_emitter_on",
+   "group": "W1",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "noise_emitter",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "UPS_off",
+   "group": "W1",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "UPS_off",
+   "flags": [
+    "BATTERY_HEAVY"
+   ],
+   "default": "heavy_plus_battery_cell",
+   "item_restriction": [
+    "heavy_plus_battery_cell",
+    "heavy_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "heavy_plus_battery_cell",
+    "heavy_battery_cell"
+   ],
+   "capacity_before": 1500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bullet_vibrator",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "bullet_vibrator",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bullet_vibrator_on",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "bullet_vibrator",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "gps_device",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "gps_device",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "mil_gps_device",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "mil_gps_device",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bionic_scanner",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "bionic_scanner",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bionic_scanner_on",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "bionic_scanner",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "genome_sampler",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "genome_sampler",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "dna_editor",
+   "group": "W7",
+   "file": "data/json/items/tool/electronics.json",
+   "packet": "BATT1",
+   "source_id": "dna_editor",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_plus_battery_cell",
+   "item_restriction": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_plus_battery_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crude_firestarter",
+   "group": "W1",
+   "file": "data/json/items/tool/fire.json",
+   "packet": "BATT1",
+   "source_id": "crude_firestarter",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "flashlight",
+   "group": "W1",
+   "file": "data/json/items/tool/lighting.json",
+   "packet": "BATT1",
+   "source_id": "flashlight",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "flashlight_on",
+   "group": "W1",
+   "file": "data/json/items/tool/lighting.json",
+   "packet": "BATT1",
+   "source_id": "flashlight",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "heavy_flashlight",
+   "group": "W1",
+   "file": "data/json/items/tool/lighting.json",
+   "packet": "BATT1",
+   "source_id": "heavy_flashlight",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "heavy_flashlight_on",
+   "group": "W1",
+   "file": "data/json/items/tool/lighting.json",
+   "packet": "BATT1",
+   "source_id": "heavy_flashlight",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "large_space_heater",
+   "group": "W1",
+   "file": "data/json/items/tool/misc.json",
+   "packet": "BATT1",
+   "source_id": "large_space_heater",
+   "flags": [
+    "BATTERY_HEAVY"
+   ],
+   "default": "heavy_battery_cell",
+   "item_restriction": [
+    "heavy_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "heavy_battery_cell"
+   ],
+   "capacity_before": 1000,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "large_space_heater_on",
+   "group": "W1",
+   "file": "data/json/items/tool/misc.json",
+   "packet": "BATT1",
+   "source_id": "large_space_heater",
+   "flags": [
+    "BATTERY_HEAVY"
+   ],
+   "default": "heavy_battery_cell",
+   "item_restriction": [
+    "heavy_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "heavy_battery_cell"
+   ],
+   "capacity_before": 1000,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "small_space_heater",
+   "group": "W1",
+   "file": "data/json/items/tool/misc.json",
+   "packet": "BATT1",
+   "source_id": "small_space_heater",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "small_space_heater_on",
+   "group": "W1",
+   "file": "data/json/items/tool/misc.json",
+   "packet": "BATT1",
+   "source_id": "small_space_heater",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "super_spray_can",
+   "group": "W7",
+   "file": "data/json/items/tool/misc.json",
+   "packet": "BATT1",
+   "source_id": "super_spray_can",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radiocontrol",
+   "group": "W1",
+   "file": "data/json/items/tool/radio_tools.json",
+   "packet": "BATT1",
+   "source_id": "radiocontrol",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio_car",
+   "group": "W1",
+   "file": "data/json/items/tool/radio_tools.json",
+   "packet": "BATT1",
+   "source_id": "radio_car",
+   "flags": [
+    "BATTERY_MEDIUM",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_disposable_cell",
+   "item_restriction": [
+    "light_minus_disposable_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_disposable_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio_car_on",
+   "group": "W1",
+   "file": "data/json/items/tool/radio_tools.json",
+   "packet": "BATT1",
+   "source_id": "radio_car",
+   "flags": [
+    "BATTERY_MEDIUM",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_disposable_cell",
+   "item_restriction": [
+    "light_minus_disposable_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_disposable_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 150,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio",
+   "group": "W1",
+   "file": "data/json/items/tool/radio_tools.json",
+   "packet": "BATT1",
+   "source_id": "radio",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio_on",
+   "group": "W1",
+   "file": "data/json/items/tool/radio_tools.json",
+   "packet": "BATT1",
+   "source_id": "radio",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "two_way_radio",
+   "group": "W1",
+   "file": "data/json/items/tool/radio_tools.json",
+   "packet": "BATT1",
+   "source_id": "two_way_radio",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_disposable_cell",
+   "item_restriction": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_disposable_cell",
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 300,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "remotevehcontrol",
+   "group": "W1",
+   "file": "data/json/items/tool/radio_tools.json",
+   "packet": "BATT1",
+   "source_id": "remotevehcontrol",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electrolysis_kit",
+   "group": "W1",
+   "file": "data/json/items/tool/science.json",
+   "packet": "BATT1",
+   "source_id": "electrolysis_kit",
+   "flags": [],
+   "default": "battery_car",
+   "item_restriction": [
+    "battery_car",
+    "battery_motorbike",
+    "small_storage_battery",
+    "medium_storage_battery",
+    "storage_battery"
+   ],
+   "target_item_restriction": [
+    "battery_car",
+    "battery_motorbike",
+    "small_storage_battery",
+    "medium_storage_battery",
+    "storage_battery"
+   ],
+   "old_cells": [
+    "battery_car",
+    "battery_motorbike",
+    "small_storage_battery",
+    "medium_storage_battery",
+    "storage_battery"
+   ],
+   "capacity_before": 3000,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "weather_reader",
+   "group": "W7",
+   "file": "data/json/items/tool/science.json",
+   "packet": "BATT1",
+   "source_id": "weather_reader",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "spectrophotometer",
+   "group": "W1",
+   "file": "data/json/items/tool/science.json",
+   "packet": "BATT1",
+   "source_id": "spectrophotometer",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "ph_meter",
+   "group": "W1",
+   "file": "data/json/items/tool/science.json",
+   "packet": "BATT1",
+   "source_id": "ph_meter",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "microcentrifuge",
+   "group": "W1",
+   "file": "data/json/items/tool/science.json",
+   "packet": "BATT1",
+   "source_id": "microcentrifuge",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "3d_printer_basic",
+   "group": "W7",
+   "file": "data/json/items/tool/science.json",
+   "packet": "BATT1",
+   "source_id": "3d_printer_basic",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "3d_printer_advanced",
+   "group": "W7",
+   "file": "data/json/items/tool/science.json",
+   "packet": "BATT1",
+   "source_id": "3d_printer_basic",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "advanced_ecig",
+   "group": "W1",
+   "file": "data/json/items/tool/smoking.json",
+   "packet": "BATT1",
+   "source_id": "advanced_ecig",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "dab_pen",
+   "group": "W7",
+   "file": "data/json/items/tool/smoking.json",
+   "packet": "BATT1",
+   "source_id": "dab_pen",
+   "flags": [
+    "BATTERY_LIGHT",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_battery_cell",
+   "item_restriction": [
+    "light_minus_battery_cell",
+    "light_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_battery_cell",
+    "light_battery_cell"
+   ],
+   "capacity_before": 50,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "elec_hairtrimmer",
+   "group": "W1",
+   "file": "data/json/items/tool/toiletries.json",
+   "packet": "BATT1",
+   "source_id": "elec_hairtrimmer",
+   "flags": [
+    "BATTERY_MEDIUM",
+    "BATTERY_ULTRA_LIGHT"
+   ],
+   "default": "light_minus_battery_cell",
+   "item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 50,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "circsaw_off",
+   "group": "W1",
+   "file": "data/json/items/tool/woodworking.json",
+   "packet": "BATT1",
+   "source_id": "circsaw_off",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "circsaw_on",
+   "group": "W1",
+   "file": "data/json/items/tool/woodworking.json",
+   "packet": "BATT1",
+   "source_id": "circsaw_off",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "elec_chainsaw_off",
+   "group": "W1",
+   "file": "data/json/items/tool/woodworking.json",
+   "packet": "BATT1",
+   "source_id": "elec_chainsaw_off",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "elec_chainsaw_on",
+   "group": "W1",
+   "file": "data/json/items/tool/woodworking.json",
+   "packet": "BATT1",
+   "source_id": "elec_chainsaw_off",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "angle_grinder",
+   "group": "W1",
+   "file": "data/json/items/tool/workshop.json",
+   "packet": "BATT1",
+   "source_id": "angle_grinder",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "con_mix",
+   "group": "W7",
+   "file": "data/json/items/tool/workshop.json",
+   "packet": "BATT1",
+   "source_id": "con_mix",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "cordless_drill",
+   "group": "W1",
+   "file": "data/json/items/tool/workshop.json",
+   "packet": "BATT1",
+   "source_id": "cordless_drill",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "large_repairkit",
+   "group": "W1",
+   "file": "data/json/items/tool/workshop.json",
+   "packet": "BATT1",
+   "source_id": "large_repairkit",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "polisher",
+   "group": "W1",
+   "file": "data/json/items/tool/workshop.json",
+   "packet": "BATT1",
+   "source_id": "polisher",
+   "flags": [
+    "BATTERY_HEAVY",
+    "BATTERY_LIGHT"
+   ],
+   "default": "light_battery_cell",
+   "item_restriction": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "target_item_restriction": [
+    "light_minus_battery_cell"
+   ],
+   "old_cells": [
+    "light_battery_cell",
+    "light_minus_battery_cell"
+   ],
+   "capacity_before": 100,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "small_repairkit",
+   "group": "W1",
+   "file": "data/json/items/tool/workshop.json",
+   "packet": "BATT1",
+   "source_id": "small_repairkit",
+   "flags": [
+    "BATTERY_MEDIUM"
+   ],
+   "default": "medium_battery_cell",
+   "item_restriction": [
+    "medium_battery_cell"
+   ],
+   "target_item_restriction": [],
+   "old_cells": [
+    "medium_battery_cell"
+   ],
+   "capacity_before": 500,
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  }
+ ]
+}

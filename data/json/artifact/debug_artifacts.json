@@ -135,8 +135,17 @@
       "need_charges": 1,
       "need_charges_msg": "Batteries not included."
     },
-    "magazines": [ [ "battery", [ "light_disposable_cell", "light_battery_cell" ] ] ],
-    "magazine_well": "250 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT" ],
+        "item_restriction": [ "light_disposable_cell", "light_battery_cell" ],
+        "default_magazine": "light_disposable_cell"
+      },
+      { "pocket_type": "MOD" }
+    ],
     "relic_data": {
       "recharge_scheme": [ { "type": "time", "req": "none", "interval": "10 m", "rate": 1 } ],
       "passive_effects": [

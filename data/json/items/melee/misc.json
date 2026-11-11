@@ -123,8 +123,17 @@
     "ammo": "battery",
     "charges_per_use": 25,
     "use_action": "TAZER",
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ],
     "flags": [ "BELT_CLIP" ]
   }
 ]

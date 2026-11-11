@@ -241,7 +241,9 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
             bad.push_back( t->get_id().str() );
         }
     }
-    CHECK( checked > 100 );
+    // CDF: P3-BATT1 moved 72 tools off the legacy `magazines` key (157 -> 85 items with one here);
+    // the rest of the population is unchanged and the per-item comparison below stays strict
+    CHECK( checked > 80 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     CAPTURE( bad_well );

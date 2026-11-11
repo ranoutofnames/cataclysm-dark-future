@@ -122,8 +122,17 @@
     "charges_per_use": 1,
     "power_draw": 800000,
     "flags": [ "NONCONDUCTIVE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "brick_kiln",
@@ -244,8 +253,17 @@
     "charges_per_use": 20,
     "qualities": [ [ "CONTAIN", 1 ] ],
     "use_action": "HOTPLATE",
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "cordless_drill",
@@ -266,8 +284,17 @@
     "ammo": "battery",
     "crafting_speed_modifier": 1.5,
     "qualities": [ [ "DRILL", 3 ], [ "SCREW", 1 ] ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "distaff_spindle",
@@ -616,8 +643,17 @@
       [ "CASING_FORMING", 1 ]
     ],
     "use_action": [ "GUN_CLEAN", "GUN_REPAIR", "CROWBAR", "HAMMER" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ],
     "flags": [ "ALLOWS_REMOTE_USE" ]
   },
   {
@@ -972,8 +1008,17 @@
     "color": "light_gray",
     "ammo": "battery",
     "flags": [ "TRADER_AVOID" ],
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY", "BATTERY_LIGHT" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "primitive_hammer",
@@ -1066,8 +1111,17 @@
       [ "CASING_FORMING", 1 ]
     ],
     "use_action": [ "GUN_CLEAN", "GUN_REPAIR", "CROWBAR", "HAMMER" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ],
     "flags": [ "ALLOWS_REMOTE_USE" ]
   },
   {

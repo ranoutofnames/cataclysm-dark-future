@@ -203,8 +203,17 @@
       "need_charges": 1,
       "need_charges_msg": "The flashlight's batteries are dead."
     },
-    "magazines": [ [ "battery", [ "light_disposable_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "100 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_disposable_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_disposable_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "flashlight_on",
@@ -395,8 +404,17 @@
       "need_charges": 1,
       "need_charges_msg": "The heavy duty flashlight's batteries are dead."
     },
-    "magazines": [ [ "battery", [ "light_disposable_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_disposable_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_disposable_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "heavy_flashlight_on",

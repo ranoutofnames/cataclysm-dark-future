@@ -52,8 +52,17 @@
     "ammo": "battery",
     "charges_per_use": 10,
     "use_action": "HAIRKIT",
-    "magazines": [ [ "battery", [ "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_minus_battery_cell" ],
+        "default_magazine": "light_minus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "mop",

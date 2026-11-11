@@ -136,8 +136,17 @@
     "encumbrance": 15,
     "coverage": 80,
     "material_thickness": 4,
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "miner_hat_on",
@@ -458,8 +467,17 @@
     "warmth": 10,
     "coverage": 100,
     "material_thickness": 1,
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "thermal_socks_on",
@@ -503,8 +521,17 @@
     "warmth": 10,
     "coverage": 100,
     "material_thickness": 1,
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY", "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "thermal_suit_on",
@@ -548,8 +575,17 @@
     "warmth": 10,
     "coverage": 100,
     "material_thickness": 1,
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "thermal_gloves_on",
@@ -593,8 +629,17 @@
     "warmth": 10,
     "coverage": 100,
     "material_thickness": 1,
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "thermal_mask_on",
@@ -778,8 +823,17 @@
       }
     ],
     "material_thickness": 1,
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "wearable_light_on",
@@ -883,8 +937,17 @@
     "covers": [ "head" ],
     "coverage": 20,
     "material_thickness": 1,
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "survivor_light_on",
@@ -1787,8 +1850,17 @@
     "coverage": 10,
     "rigid_layer_only": true,
     "material_thickness": 2,
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "goggles_nv_on",
@@ -1844,8 +1916,17 @@
     "coverage": 15,
     "rigid_layer_only": true,
     "material_thickness": 2,
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "goggles_nv_enhanced_on",
@@ -1899,8 +1980,17 @@
     "encumbrance": 5,
     "coverage": 10,
     "material_thickness": 2,
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ],
     "relic_data": { "passive_effects": [ { "conditions": [ "ACTIVE" ], "special_vision": [ "INFRARED" ] } ] }
   },
   {
@@ -2103,7 +2193,17 @@
     "coverage": 5,
     "material_thickness": 1,
     "flags": [ "BELTED", "COMPACT", "FRAGILE", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY", "OVERSIZE" ],
-    "magazines": [ [ "battery", [ "light_minus_battery_cell" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_minus_battery_cell" ],
+        "default_magazine": "light_minus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "hairpin",
@@ -2641,8 +2741,17 @@
     "warmth": 10,
     "coverage": 100,
     "material_thickness": 1,
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY", "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "thermal_outfit_on",
@@ -3061,8 +3170,17 @@
     "warmth": 5,
     "material_thickness": 2,
     "hearing_protection": 40,
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "powered_earmuffs_on",
@@ -3110,8 +3228,17 @@
     "rigid_layer_only": true,
     "material_thickness": 2,
     "hearing_protection": 40,
-    "magazines": [ [ "battery", [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_plus_battery_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_plus_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "army_powered_earmuffs_on",
@@ -3475,8 +3602,17 @@
     },
     "qualities": [ [ "SLEEP_AID", 2 ] ],
     "flags": [ "OVERSIZE", "OUTER", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_TAIL_SNAKE" ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "electric_blanket_on",
@@ -3524,8 +3660,17 @@
       "need_charges": 1,
       "need_charges_msg": "The mask's batteries are dead."
     },
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ],
     "valid_mods": [ "resized_large", "resized_small" ],
     "flags": [ "OUTER", "SUN_GLASSES" ]
   },

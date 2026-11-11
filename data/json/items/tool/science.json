@@ -89,11 +89,15 @@
     "material": [ "steel", "copper", "plastic" ],
     "symbol": ";",
     "ammo": "battery",
-    "magazines": [
-      [
-        "battery",
-        [ "battery_car", "battery_motorbike", "small_storage_battery", "medium_storage_battery", "storage_battery" ]
-      ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "battery_car", "battery_motorbike", "small_storage_battery", "medium_storage_battery", "storage_battery" ],
+        "default_magazine": "battery_car"
+      },
+      { "pocket_type": "MOD" }
     ]
   },
   {
@@ -297,8 +301,17 @@
     "charges_per_use": 5,
     "use_action": "WEATHER_TOOL",
     "flags": [ "THERMOMETER", "HYGROMETER", "BAROMETER", "WINDMETER" ],
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "analytical_set_basic",
@@ -352,8 +365,17 @@
     "material": [ "plastic", "steel" ],
     "symbol": ";",
     "color": "light_gray",
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "ph_meter",
@@ -371,8 +393,17 @@
     "material": [ "plastic", "glass" ],
     "symbol": ";",
     "color": "light_gray",
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "voltmeter",
@@ -602,8 +633,17 @@
     "color": "white",
     "ammo": "battery",
     "qualities": [ [ "CONCENTRATE", 1 ], [ "SEPARATE", 1 ] ],
-    "magazines": [ [ "battery", [ "light_battery_cell", "light_minus_battery_cell" ] ] ],
-    "magazine_well": "250 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "3d_printer_basic",
@@ -634,8 +674,17 @@
       },
       { "flame": false, "type": "cauterize" }
     ],
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "3d_printer_advanced",

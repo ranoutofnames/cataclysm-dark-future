@@ -300,8 +300,17 @@
       "menu_text": "Turn on",
       "type": "transform"
     },
-    "magazines": [ [ "battery", [ "heavy_battery_cell" ] ] ],
-    "magazine_well": "1000 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_HEAVY" ],
+        "item_restriction": [ "heavy_battery_cell" ],
+        "default_magazine": "heavy_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "large_space_heater_on",
@@ -510,8 +519,17 @@
       "menu_text": "Turn on",
       "type": "transform"
     },
-    "magazines": [ [ "battery", [ "medium_battery_cell" ] ] ],
-    "magazine_well": "500 ml"
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_MEDIUM" ],
+        "item_restriction": [ "medium_battery_cell" ],
+        "default_magazine": "medium_battery_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "small_space_heater_on",
@@ -571,7 +589,17 @@
     "use_action": [ { "type": "paint_stuff", "charge_cost": 1 }, { "type": "paint_stuff_cfg", "color_swap": true } ],
     "flags": [ "WRITE_MESSAGE", "NO_PAINT" ],
     "ammo": "battery",
-    "magazines": [ [ "battery", [ "light_disposable_cell", "light_battery_cell", "light_minus_battery_cell" ] ] ]
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "flag_restriction": [ "BATTERY_LIGHT", "BATTERY_ULTRA_LIGHT" ],
+        "item_restriction": [ "light_disposable_cell", "light_battery_cell", "light_minus_battery_cell" ],
+        "default_magazine": "light_disposable_cell"
+      },
+      { "pocket_type": "MOD" }
+    ]
   },
   {
     "id": "stepladder",

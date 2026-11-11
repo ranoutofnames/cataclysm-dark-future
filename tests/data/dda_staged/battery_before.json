@@ -1,0 +1,2008 @@
+{
+ "format": 1,
+ "packet": "BATT1",
+ "note": "before-snapshot (draft step 0): the loaded pockets of every BATT1 row before the port, minus the well entry, which batt1_pin.json replaces. Read from the base tree.",
+ "rows": [
+  {
+   "id": "debug_active_relic_test",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "debug_active_relic_test_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "plastic_jack_o_lantern",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [],
+    "default_magazine": null,
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "plastic_jack_o_lantern_lit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [],
+    "default_magazine": null,
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "miner_hat",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "miner_hat_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "game_watch",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [],
+    "default_magazine": null,
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_socks",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_socks_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_suit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_suit_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_gloves",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_gloves_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_mask",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_mask_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_mask",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_mask_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_suit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_cooling_suit_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "wearable_light",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "wearable_light_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "survivor_light",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "survivor_light_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv_enhanced",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_nv_enhanced_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_ir",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "goggles_ir_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "rad_monitor",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_minus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_outfit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "thermal_outfit_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "powered_earmuffs",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "powered_earmuffs_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "army_powered_earmuffs",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "army_powered_earmuffs_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electric_blanket",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electric_blanket_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "foodperson_mask",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "foodperson_mask_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "talking_doll",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_minus_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "creepy_doll",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_minus_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "l-stick",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_plus_battery_cell",
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "l-stick_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_plus_battery_cell",
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_staff",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_staff_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shocktonfa_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shocktonfa_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "tazer",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_foil",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_foil_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_epee",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_epee_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_sabre",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_sabre_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_rapier_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "shock_rapier_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "ecs_lajatang_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "heavy_battery_cell"
+    ],
+    "default_magazine": "heavy_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "ecs_lajatang_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "heavy_battery_cell"
+    ],
+    "default_magazine": "heavy_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "e_combatsaw_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "e_combatsaw_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "soda_machine",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "mil_mess_kit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_plus_battery_cell",
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electrohack",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "geiger_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "geiger_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "sonar_device",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "hand_crank_charger",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "noise_emitter",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "noise_emitter_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "UPS_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "heavy_plus_battery_cell",
+     "heavy_battery_cell"
+    ],
+    "default_magazine": "heavy_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bullet_vibrator",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bullet_vibrator_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "gps_device",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "mil_gps_device",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bionic_scanner",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "bionic_scanner_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "genome_sampler",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "dna_editor",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_plus_battery_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_plus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "crude_firestarter",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "flashlight",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "flashlight_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "heavy_flashlight",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "heavy_flashlight_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "large_space_heater",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "heavy_battery_cell"
+    ],
+    "default_magazine": "heavy_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "large_space_heater_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "heavy_battery_cell"
+    ],
+    "default_magazine": "heavy_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "small_space_heater",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "small_space_heater_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "super_spray_can",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radiocontrol",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio_car",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_disposable_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_minus_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio_car_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_disposable_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_minus_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "radio_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "two_way_radio",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_disposable_cell",
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_disposable_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "remotevehcontrol",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "electrolysis_kit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "battery_car",
+     "battery_motorbike",
+     "small_storage_battery",
+     "medium_storage_battery",
+     "storage_battery"
+    ],
+    "default_magazine": "battery_car",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "weather_reader",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "spectrophotometer",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "ph_meter",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "microcentrifuge",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "3d_printer_basic",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "3d_printer_advanced",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "advanced_ecig",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "dab_pen",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_battery_cell",
+     "light_battery_cell"
+    ],
+    "default_magazine": "light_minus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "elec_hairtrimmer",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_minus_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "circsaw_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "circsaw_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "elec_chainsaw_off",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "elec_chainsaw_on",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "angle_grinder",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "con_mix",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "cordless_drill",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "large_repairkit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "polisher",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "light_battery_cell",
+     "light_minus_battery_cell"
+    ],
+    "default_magazine": "light_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  },
+  {
+   "id": "small_repairkit",
+   "old_well": {
+    "pocket_type": "MAGAZINE_WELL",
+    "item_restriction": [
+     "medium_battery_cell"
+    ],
+    "default_magazine": "medium_battery_cell",
+    "note": "the synthesized well replaced by batt1_pin.json"
+   },
+   "other_pockets": [
+    {
+     "pocket_type": "MOD"
+    }
+   ]
+  }
+ ]
+}
