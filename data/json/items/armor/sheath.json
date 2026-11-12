@@ -138,9 +138,14 @@
     "symbol": "[",
     "looks_like": "sheath",
     "color": "brown",
-    "covers": [ "foot_either" ],
-    "coverage": 5,
-    "encumbrance": 3,
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 25,
+        "encumbrance": 3
+      }
+    ],
     "material_thickness": 1,
     "use_action": { "type": "holster", "holster_prompt": "Sheathe knife", "holster_msg": "You sheathe your %s" },
     "flags": [ "BELTED", "OVERSIZE", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY", "ALLOWS_HOOVES" ],

@@ -90,9 +90,15 @@ TEST_CASE("riot1_arm_and_leg_guards", "[armor][riot1]") {
     CHECK(cov(*legs, "leg_r", "leg_lower_r") == 90);
     CHECK(cov(*legs, "leg_l", "leg_upper_l") == 0);
     CHECK(legs->get_encumber(guy, bodypart_id("leg_l")) == 3);
-    // CDF: whole foot at 75, encumbrance 2 (DDA foot_arch/foot_ankle sub-locations do not exist)
-    CHECK(legs->get_coverage(bodypart_id("foot_l")) == 75);
-    CHECK(legs->get_coverage(bodypart_id("foot_r")) == 75);
+    // CDF: FOOT1: DDA foot_arch/foot_ankle only (legs_armor.json:2068-2074); the whole-foot
+    // aggregate is 0.25 + 0.20 of 75 = 34 (was the flat 75 before the foot sub-locations)
+    CHECK(legs->get_coverage(bodypart_id("foot_l")) == 34);
+    CHECK(legs->get_coverage(bodypart_id("foot_r")) == 34);
+    CHECK(cov(*legs, "foot_l", "foot_arch_l") == 75);
+    CHECK(cov(*legs, "foot_r", "foot_ankle_r") == 75);
+    CHECK(cov(*legs, "foot_l", "foot_toes_l") == 0);
+    CHECK(cov(*legs, "foot_l", "foot_heel_l") == 0);
+    CHECK(cov(*legs, "foot_l", "foot_sole_l") == 0);
     CHECK(legs->get_encumber(guy, bodypart_id("foot_l")) == 2);
 }
 
@@ -151,7 +157,11 @@ TEST_CASE("riot1_suit_is_the_dda_suit", "[armor][riot1]") {
     CHECK(cov(*suit, "leg_r", "leg_knee_r") == 90);
     CHECK(cov(*suit, "arm_l", "arm_upper_l") == 65);
     CHECK(cov(*suit, "leg_l", "leg_hip_l") == 30);
-    CHECK(suit->get_coverage(bodypart_id("foot_l")) == 75);
+    // CDF: FOOT1: DDA foot_arch/foot_ankle only (suits_protection.json:1382-1388), aggregate 34
+    CHECK(suit->get_coverage(bodypart_id("foot_l")) == 34);
+    CHECK(cov(*suit, "foot_l", "foot_arch_l") == 75);
+    CHECK(cov(*suit, "foot_l", "foot_ankle_l") == 75);
+    CHECK(cov(*suit, "foot_l", "foot_heel_l") == 0);
     CHECK(suit->made_of(material_id("plastic_pad")));
     CHECK(suit->made_of(material_id("thermo_resin")));
     CHECK(suit->has_flag(flag_id("BLOCK_WHILE_WORN")));

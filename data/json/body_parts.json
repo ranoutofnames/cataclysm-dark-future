@@ -264,7 +264,8 @@
     "stylish_bonus": 0.5,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 7
+    "bionic_slots": 7,
+    "sub_parts": [ "foot_sole_l", "foot_arch_l", "foot_toes_l", "foot_ankle_l", "foot_heel_l" ]
   },
   {
     "id": "foot_r",
@@ -287,6 +288,7 @@
     "stylish_bonus": 0.5,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 7
+    "bionic_slots": 7,
+    "sub_parts": [ "foot_sole_r", "foot_arch_r", "foot_toes_r", "foot_ankle_r", "foot_heel_r" ]
   }
 ]

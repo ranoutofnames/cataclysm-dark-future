@@ -310,7 +310,7 @@
     "id": "armor_riot",
     "type": "ARMOR",
     "category": "armor",
-    "//2b": "CDF: DDA suits_protection.json:1331 (b4b62254ae2) in BN armor format; replaces the old BN armor_riot (4000 g, 7500 ml, plastic/cotton, torso/legs/arms 85). One material list, plastic_pad first (largest portion), material_thickness 7 (DDA plastic_pad on the torso). Dropped: the gastropod_foot and tentacle_lower_* portions and the flags ALLOWS_GASTROPOD_FOOT / ALLOWS_LEG_TENTACLES (CDF has no such body parts or flags). DDA portion 3 also lists foot_l/foot_r at 65 without specifically_covers; dropped here because the foot is covered whole by the foot portion at 75 (the loader forbids mixing). Removed old BN fields: to_hit -3, bashing 6, repairs_like survivor_suit (DDA has none). The foot portion has no specifically_covers: CDF: DDA foot_arch/foot_ankle sub-locations do not exist; whole foot until a foot sub-location packet. The item_overlay lines for longest_side and molle_capacity are deleted (cdf_overlay_lengths.json, cdf_overlay_molle.json): the item carries both itself.",
+    "//2b": "CDF: DDA suits_protection.json:1331 (b4b62254ae2) in BN armor format; replaces the old BN armor_riot (4000 g, 7500 ml, plastic/cotton, torso/legs/arms 85). One material list, plastic_pad first (largest portion), material_thickness 7 (DDA plastic_pad on the torso). Dropped: the gastropod_foot and tentacle_lower_* portions and the flags ALLOWS_GASTROPOD_FOOT / ALLOWS_LEG_TENTACLES (CDF has no such body parts or flags). DDA portion 3 also lists foot_l/foot_r at 65 without specifically_covers; dropped here because the foot is covered whole by the foot portion at 75 (the loader forbids mixing). Removed old BN fields: to_hit -3, bashing 6, repairs_like survivor_suit (DDA has none). The foot portion is DDA's foot_arch + foot_ankle portion at 75 and 2 (FOOT1); its whole-foot aggregate drops from the flat 75 to 34 (0.25 + 0.20 of the foot). The item_overlay lines for longest_side and molle_capacity are deleted (cdf_overlay_lengths.json, cdf_overlay_molle.json): the item carries both itself.",
     "name": { "str": "riot armor suit" },
     "description": "A full suit of black plastic body armor plates used by riot police.  Cleverly placed velcro straps secure each piece, resulting in slightly less encumbrance than its constituent parts.  MOLLE webbing is attached to the torso and the word POLICE is emblazoned across the front.",
     "weight": "3 kg",
@@ -341,7 +341,8 @@
         "volume_encumber_modifier": 0,
         "specifically_covers": [ "arm_shoulder_l", "arm_shoulder_r", "arm_upper_l", "arm_upper_r", "leg_upper_l", "leg_upper_r" ]
       },
-      { "covers": [ "foot_l", "foot_r" ], "coverage": 75, "encumbrance": 2, "volume_encumber_modifier": 0 },
+      { "covers": [ "foot_l", "foot_r" ], "coverage": 75, "encumbrance": 2, "volume_encumber_modifier": 0,
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r", "foot_ankle_l", "foot_ankle_r" ] },
       {
         "covers": [ "leg_l", "leg_r" ],
         "coverage": 30,
@@ -499,6 +500,7 @@
   {
     "id": "chainmail_suit_faraday",
     "type": "ARMOR",
+    "//": "CDF: DDA suits_protection.json chainmail_suit_faraday covers the toes, ankle, heel and arch only; the foot aggregate drops from the flat 100 to 75 (rule 4, DDA shape). The other body parts keep CDF's flat 100 coverage and 30 encumbrance in one plain portion (rule 5).",
     "copy-from": "chainmail_suit",
     "name": { "str": "faraday chainmail suit" },
     "description": "A fully customized chainmail suit that can be worn over your normal clothing.  The suit is conductively interconnected, protecting against electricity.",
@@ -506,9 +508,20 @@
     "volume": "3500 ml",
     "price": "350 USD",
     "price_postapoc": "90 USD",
-    "covers": [ "torso", "head", "arms", "hands", "legs", "feet" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "torso", "head", "arms", "hands", "legs" ],
+        "coverage": 100,
+        "encumbrance": 30
+      }
+    ],
     "qualities": [ [ "HV_INSULATION", 1 ] ],
-    "encumbrance": 30,
     "extend": { "flags": [ "ELECTRIC_IMMUNE" ] }
   },
   {
@@ -767,6 +780,7 @@
     "id": "robofac_enviro_suit",
     "repairs_like": "aep_suit",
     "type": "ARMOR",
+    "//": "CDF: the foot portions are DDA's; the other body parts keep CDF's flat 100 coverage and 15 encumbrance in one plain portion (rule 5).",
     "name": { "str": "Hub 01 environmental suit" },
     "description": "A lightweight environmental suit worn by Hub personnel in their rare forays aboveground.  Colored brown and blue, the white seal of Hub 01 is embroidered on both of its upper arms.  It requires a separate gas mask for full protection.",
     "weight": "4000 g",
@@ -777,9 +791,37 @@
     "symbol": "[",
     "looks_like": "hazmat_suit",
     "color": "brown",
-    "covers": [ "head", "torso", "arms", "hands", "legs", "feet" ],
-    "coverage": 100,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r" ],
+        "coverage": 100,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "head", "torso", "arms", "hands", "legs" ],
+        "coverage": 100,
+        "encumbrance": 15
+      }
+    ],
     "storage": "5 L",
     "warmth": 40,
     "material_thickness": 2,

@@ -2,13 +2,27 @@
   {
     "id": "mboots_sevenleague",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json boots_hiking portions with this item's encumbrance 8 (rule 6).",
     "copy-from": "boots_hiking",
     "name": { "str": "seven league boots", "str_pl": "pairs of seven league boots" },
     "material": [ "leather", "steel" ],
     "looks_like": "boots_hiking",
     "description": "Rugged yet extremely comfortable and well fitting boots of worn leather and steel, they look like they've seen a lot of use and will likely see a lot more.  They make your movement a lot less work.",
     "relic_data": { "passive_effects": [ { "conditions": [ "WORN" ], "values": [ { "value": "MOVE_COST", "add": -30 } ] } ] },
-    "encumbrance": 8,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 8
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 3,
     "environmental_protection": 3,
@@ -17,6 +31,7 @@
   {
     "id": "mboots_haste",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json boots_hiking portions with this item's encumbrance 8 (rule 6).",
     "copy-from": "boots_hiking",
     "name": { "str": "boots of haste", "str_pl": "pairs of boots of haste" },
     "material": [ "leather", "steel" ],
@@ -28,7 +43,20 @@
         { "conditions": [ "WORN" ], "values": [ { "value": "SPEED", "add": 10 } ] }
       ]
     },
-    "encumbrance": 8,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 8
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 3,
     "environmental_protection": 3,
@@ -46,7 +74,20 @@
     "material": [ "leather", "steel" ],
     "relic_data": { "recharge_scheme": [ { "type": "time", "interval": "1 h", "rate": 1 } ] },
     "use_action": { "type": "cast_spell", "spell_id": "magus_escape", "no_fail": true, "level": 10, "need_worn": true },
-    "encumbrance": 8,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 8
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 3,
     "environmental_protection": 3,
@@ -57,16 +98,30 @@
         "ammo_restriction": { "crystallized_mana": 24 }
       }
     ],
-    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data)"
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data) CDF: DDA boots.json boots_hiking portions with this item's encumbrance 8 (rule 6)."
   },
   {
     "id": "mboots_grounding",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json boots_hiking portions with this item's encumbrance 8 (rule 6).",
     "copy-from": "boots_hiking",
     "name": { "str": "boots of grounding", "str_pl": "pairs of boots of grounding" },
     "looks_like": "boots_hiking",
     "description": "Rugged yet extremely comfortable and well fitting boots of leather with small engraved runes seemingly filled with rubber.  When worn, you are immune to damage from electricity.",
-    "encumbrance": 8,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 8
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 3,
     "environmental_protection": 3,

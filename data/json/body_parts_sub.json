@@ -352,5 +352,106 @@
     "name": "right leg (draped)",
     "name_multiple": "legs (draped)",
     "locations_under": [ "leg_hip_r", "leg_upper_r" ]
+  },
+  {
+    "//": "CDF: DDA body_parts.json:1296-1395, the ten foot sub-locations (FOOT1).",
+    "id": "foot_sole_l",
+    "type": "sub_body_part",
+    "parent": "foot_l",
+    "max_coverage": 25,
+    "side": "left",
+    "opposite": "foot_sole_r",
+    "name": "left foot bottom",
+    "name_multiple": "foot bottoms"
+  },
+  {
+    "id": "foot_arch_l",
+    "type": "sub_body_part",
+    "parent": "foot_l",
+    "max_coverage": 25,
+    "side": "left",
+    "opposite": "foot_arch_r",
+    "name": "left foot arch",
+    "name_multiple": "foot arches"
+  },
+  {
+    "id": "foot_toes_l",
+    "type": "sub_body_part",
+    "parent": "foot_l",
+    "max_coverage": 10,
+    "side": "left",
+    "opposite": "foot_toes_r",
+    "name": "left toes",
+    "name_multiple": "toes"
+  },
+  {
+    "id": "foot_ankle_l",
+    "type": "sub_body_part",
+    "parent": "foot_l",
+    "max_coverage": 20,
+    "side": "left",
+    "opposite": "foot_ankle_r",
+    "name": "left ankle",
+    "name_multiple": "ankles"
+  },
+  {
+    "id": "foot_heel_l",
+    "type": "sub_body_part",
+    "parent": "foot_l",
+    "max_coverage": 20,
+    "side": "left",
+    "opposite": "foot_heel_r",
+    "name": "left heel",
+    "name_multiple": "heels"
+  },
+  {
+    "id": "foot_sole_r",
+    "type": "sub_body_part",
+    "parent": "foot_r",
+    "max_coverage": 25,
+    "side": "right",
+    "opposite": "foot_sole_l",
+    "name": "right foot bottom",
+    "name_multiple": "foot bottoms"
+  },
+  {
+    "id": "foot_arch_r",
+    "type": "sub_body_part",
+    "parent": "foot_r",
+    "max_coverage": 25,
+    "side": "right",
+    "opposite": "foot_arch_l",
+    "name": "right foot arch",
+    "name_multiple": "foot arches"
+  },
+  {
+    "id": "foot_toes_r",
+    "type": "sub_body_part",
+    "parent": "foot_r",
+    "max_coverage": 10,
+    "side": "right",
+    "opposite": "foot_toes_l",
+    "name": "right toes",
+    "name_multiple": "toes"
+  },
+  {
+    "id": "foot_ankle_r",
+    "type": "sub_body_part",
+    "parent": "foot_r",
+    "max_coverage": 20,
+    "side": "right",
+    "opposite": "foot_ankle_l",
+    "name": "right ankle",
+    "name_multiple": "ankles"
+  },
+  {
+    "id": "foot_heel_r",
+    "type": "sub_body_part",
+    "parent": "foot_r",
+    "max_coverage": 20,
+    "side": "right",
+    "opposite": "foot_heel_l",
+    "name": "right heel",
+    "name_multiple": "heels"
   }
 ]

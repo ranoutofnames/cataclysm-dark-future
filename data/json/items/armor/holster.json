@@ -51,9 +51,14 @@
     "symbol": "[",
     "looks_like": "holster",
     "color": "brown",
-    "covers": [ "foot_either" ],
-    "coverage": 5,
-    "encumbrance": 2,
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 25,
+        "encumbrance": 2
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "BELTED", "OVERSIZE", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HOOVES" ],
     "use_action": { "type": "holster" },

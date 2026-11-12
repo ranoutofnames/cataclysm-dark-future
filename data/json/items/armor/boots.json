@@ -13,15 +13,27 @@
     "symbol": "[",
     "looks_like": "flip_flops",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 40,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 29,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 73,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 2,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS_FOOT" ]
   },
   {
     "id": "boots",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json foot portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 90 and 12 (rule A, AUTO-184). The sole portion takes the upper's thickness: CDF has one material_thickness per item (rule 7).",
     "name": { "str": "pair of boots", "str_pl": "pairs of boots" },
     "description": "Tough leather boots.  Very durable.",
     "weight": "1060 g",
@@ -34,9 +46,20 @@
     "symbol": "[",
     "looks_like": "dress_shoes",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 90,
-    "encumbrance": 12,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 90,
+        "encumbrance": 12
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 90,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "environmental_protection": 2,
@@ -45,6 +68,7 @@
   {
     "id": "boots_bone",
     "type": "ARMOR",
+    "//": "CDF: the parent's foot portions with this item's encumbrance 16 (rule 6).",
     "name": { "str": "pair of occult boots", "str_pl": "pairs of occult boots" },
     "description": "Leather boots covered with tiny finely carved bones.  With each step the bones collide with each other producing a strange song.",
     "weight": "1824 g",
@@ -56,8 +80,20 @@
     "symbol": "[",
     "looks_like": "boots",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "encumbrance": 16,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 90,
+        "encumbrance": 16
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 90,
+        "encumbrance": 0
+      }
+    ],
     "flags": [ "VARSIZE", "WATERPROOF" ]
   },
   {
@@ -75,9 +111,26 @@
     "symbol": "[",
     "looks_like": "boots_steel",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 40,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 40
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 35,
     "material_thickness": 3,
     "environmental_protection": 8,
@@ -87,6 +140,7 @@
   {
     "id": "boots_chitin",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json boots_chitin covers the toes and the ankle only; the foot aggregate drops from the flat 95 to 30 (rule 4, DDA shape).",
     "name": { "str": "pair of chitinous boots", "str_pl": "pairs of chitinous boots" },
     "description": "Boots made from the exoskeletons of insects.  Light and durable.",
     "weight": "1620 g",
@@ -99,9 +153,14 @@
     "symbol": "[",
     "looks_like": "boots_bone",
     "color": "green",
-    "covers": [ "feet" ],
-    "coverage": 95,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 10
+      }
+    ],
     "warmth": 10,
     "material_thickness": 4,
     "environmental_protection": 4,
@@ -111,11 +170,19 @@
     "id": "boots_acidchitin",
     "copy-from": "boots_chitin",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json boots_acidchitin covers the toes and the ankle only; the foot aggregate drops from the flat 95 to 30 (rule 4, DDA shape). The parent's portions with this item's encumbrance 15 (rule 6).",
     "name": { "str": "pair of biosilicified chitin boots", "str_pl": "pairs of biosilicified chitin boots" },
     "description": "Boots crafted from carefully cleaned and pruned biosilicified exoskeletons of acidic ants.  Acid-resistant and very durable.",
     "price_postapoc": "1750 cent",
     "material": [ "acidchitin", "leather" ],
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 15
+      }
+    ],
     "proportional": { "weight": 1.125, "volume": 1.13, "price": 1.25, "warmth": 1.5 },
     "relative": { "bashing": 2, "material_thickness": 1, "environmental_protection": 1 }
   },
@@ -135,9 +202,20 @@
     "symbol": "[",
     "looks_like": "boots",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 25,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -181,9 +259,20 @@
     "symbol": "[",
     "looks_like": "boots",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 90,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 90,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 90,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 60,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -228,9 +317,20 @@
     "symbol": "[",
     "looks_like": "boots",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 95,
-    "encumbrance": 12,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 12
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 2,
     "environmental_protection": 2,
@@ -251,9 +351,20 @@
     "symbol": "[",
     "looks_like": "boots_combat",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 15,
     "material_thickness": 6,
     "environmental_protection": 5,
@@ -263,11 +374,25 @@
     "id": "boots_sasurvivor",
     "copy-from": "boots_hsurvivor",
     "type": "ARMOR",
+    "//": "CDF: the parent's foot portions with this item's encumbrance 25 (rule 6).",
     "name": { "str": "pair of superalloy survivor boots", "str_pl": "pairs of superalloy survivor boots" },
     "description": "A pair of customized Kevlar boots, heavily armored with superalloy and modified to provide maximum protection from harm, even when knee-deep in the dead.",
     "material": [ "kevlar", "superalloy" ],
     "color": "light_cyan",
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
   },
   {
@@ -342,9 +467,20 @@
     "symbol": "[",
     "looks_like": "boots_steel",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 5,
     "environmental_protection": 1,
@@ -354,11 +490,25 @@
     "id": "boots_plate_superalloy",
     "copy-from": "boots_plate",
     "type": "ARMOR",
+    "//": "CDF: the parent's foot portions with this item's encumbrance 20 (rule 6).",
     "name": { "str": "pair of superalloy armored boots", "str_pl": "pairs of superalloy armored boots" },
     "description": "A set of armor plated boots, made with lightweight superalloy.",
     "material": [ "superalloy", "leather" ],
     "color": "light_cyan",
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
   },
   {
@@ -376,9 +526,20 @@
     "symbol": "[",
     "looks_like": "boots",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 3,
     "environmental_protection": 12,
@@ -419,9 +580,20 @@
     "symbol": "[",
     "looks_like": "boots_steel",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 80,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 80,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 80,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "WATERPROOF" ]
@@ -442,9 +614,26 @@
     "symbol": "[",
     "looks_like": "boots_combat",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 90,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 90,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 90,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 90,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 3,
     "environmental_protection": 3,
@@ -465,9 +654,26 @@
     "symbol": "[",
     "looks_like": "boots_combat",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 24,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 24
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 15,
     "material_thickness": 5,
     "environmental_protection": 3,
@@ -477,11 +683,24 @@
     "id": "boots_western",
     "copy-from": "boots",
     "type": "ARMOR",
+    "//": "CDF: the parent's foot portions with this item's coverage 95 and encumbrance 24 (rule 6).",
     "name": { "str": "pair of western boots", "str_pl": "pairs of western boots" },
     "description": "Stiff leather boots with intricate embroidery and one-inch heels.  They look good, but aren't made for running.  Each boot is large enough to conceal a small holdout pistol.",
     "price_postapoc": "750 cent",
-    "coverage": 95,
-    "encumbrance": 24,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 24
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "proportional": { "weight": 1.2, "volume": 1.2, "price": 2 },
     "use_action": { "type": "holster" },
     "extend": { "flags": [ "FANCY" ] },
@@ -504,9 +723,26 @@
     "symbol": "[",
     "looks_like": "boots_larmor",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 90,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 90,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r" ],
+        "coverage": 90,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 90,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 80,
     "material_thickness": 6,
     "environmental_protection": 1,
@@ -527,9 +763,26 @@
     "symbol": "[",
     "looks_like": "boots_fur",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 38,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 38
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 75,
     "material_thickness": 6,
     "environmental_protection": 5,
@@ -550,9 +803,26 @@
     "symbol": "[",
     "looks_like": "sneakers",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 80,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 91,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 36,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 91,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 3,
     "flags": [ "VARSIZE", "NOSLIP" ]
@@ -572,9 +842,26 @@
     "symbol": "[",
     "looks_like": "dress_shoes",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 70,
-    "encumbrance": 12,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 76,
+        "encumbrance": 12
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 46,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 76,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 15,
     "material_thickness": 3,
     "flags": [ "VARSIZE" ]
@@ -582,6 +869,7 @@
   {
     "id": "clogs",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json clogs (toes, heel + arch, sole); the foot aggregate drops from the flat 85 to 78 (rule 4, DDA shape).",
     "name": { "str": "pair of wooden clogs", "str_pl": "pairs of wooden clogs" },
     "description": "Known as klompen in the Netherlands and sabots in France, these wooden shoes have endured through the ages due to their simple design and durability.",
     "weight": "916 g",
@@ -594,9 +882,26 @@
     "symbol": "[",
     "looks_like": "leathersandals",
     "color": "yellow",
-    "covers": [ "feet" ],
-    "coverage": 85,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 96,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 5,
     "material_thickness": 4,
     "environmental_protection": 1,
@@ -618,9 +923,26 @@
     "symbol": "[",
     "looks_like": "sneakers",
     "color": "light_red",
-    "covers": [ "feet" ],
-    "coverage": 85,
-    "encumbrance": 60,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 92,
+        "encumbrance": 60
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 55,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 92,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 4,
     "environmental_protection": 2,
@@ -641,9 +963,26 @@
     "symbol": "[",
     "looks_like": "dress_shoes",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 60,
-    "encumbrance": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 71,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 14,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 71,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "FANCY" ]
@@ -664,9 +1003,26 @@
     "symbol": "[",
     "looks_like": "sneakers",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 60,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 68,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 27,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 68,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "FANCY" ]
@@ -685,9 +1041,20 @@
     "symbol": "[",
     "looks_like": "sneakers",
     "color": "blue",
-    "covers": [ "feet" ],
-    "coverage": 10,
-    "encumbrance": 35,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r" ],
+        "coverage": 13,
+        "encumbrance": 35
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 27,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS_FOOT" ]
   },
@@ -706,9 +1073,20 @@
     "symbol": "[",
     "looks_like": "flip_flops",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 12,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r" ],
+        "coverage": 16,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 32,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 1,
     "environmental_protection": 1,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS_FOOT" ]
@@ -837,6 +1215,7 @@
   {
     "id": "geta",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json geta (arch and sole only); the foot aggregate drops from the flat 50 to 42 (rule 4, DDA shape).",
     "name": { "str": "pair of geta", "str_pl": "pairs of geta" },
     "description": "Simple wooden geta.",
     "weight": "500 g",
@@ -849,9 +1228,20 @@
     "symbol": "[",
     "looks_like": "clogs",
     "color": "yellow",
-    "covers": [ "feet" ],
-    "coverage": 50,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r" ],
+        "coverage": 67,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 5,
     "material_thickness": 2,
     "environmental_protection": 1,
@@ -873,9 +1263,20 @@
     "symbol": "[",
     "looks_like": "dress_shoes",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 30,
-    "encumbrance": 50,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r" ],
+        "coverage": 49,
+        "encumbrance": 50
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 61,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "VARSIZE", "SUPER_FANCY" ]
   },
@@ -883,6 +1284,7 @@
     "id": "knee_high_boots",
     "repairs_like": "boots_larmor",
     "type": "ARMOR",
+    "//": "CDF: the foot portions are DDA's; the legs keep CDF's flat 65 coverage and 20 encumbrance in one plain portion (rule 5).",
     "name": { "str": "pair of knee-high boots", "str_pl": "pairs of knee-high boots" },
     "description": "Very long leather boots that cover the lower legs.  Difficult to wear but extremely durable.",
     "weight": "1520 g",
@@ -895,9 +1297,25 @@
     "symbol": "[",
     "looks_like": "boots_larmor",
     "color": "dark_gray",
-    "covers": [ "feet", "legs" ],
-    "coverage": 65,
-    "encumbrance": 20,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 65,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 65,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "legs" ],
+        "coverage": 65,
+        "encumbrance": 20
+      }
+    ],
     "warmth": 20,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -917,9 +1335,26 @@
     "symbol": "[",
     "looks_like": "flip_flops",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 20,
-    "encumbrance": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r" ],
+        "coverage": 19,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 9,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 44,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS_FOOT" ]
   },
@@ -938,8 +1373,26 @@
     "symbol": "[",
     "looks_like": "sneakers",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 80,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 98,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 10,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 98,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 5,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "WATER_FRIENDLY" ]
@@ -957,9 +1410,26 @@
     "symbol": "[",
     "looks_like": "leathersandals",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 50,
-    "encumbrance": 2,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 70,
+        "encumbrance": 2
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 56,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 70,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "WATERPROOF" ]
@@ -979,9 +1449,20 @@
     "symbol": "[",
     "looks_like": "boots_steel",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 95,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 35,
     "material_thickness": 4,
     "environmental_protection": 3,
@@ -1002,9 +1483,20 @@
     "symbol": "[",
     "looks_like": "rollerskates",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -1026,9 +1518,20 @@
     "symbol": "[",
     "looks_like": "roller_blades",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -1047,9 +1550,26 @@
     "symbol": "[",
     "looks_like": "clogs",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 50,
-    "encumbrance": 15,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 70,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 56,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 70,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 1,
     "flags": [ "VARSIZE" ]
@@ -1068,9 +1588,26 @@
     "symbol": "[",
     "looks_like": "dress_shoes",
     "color": "light_blue",
-    "covers": [ "feet" ],
-    "coverage": 80,
-    "encumbrance": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 95,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 19,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 3,
     "flags": [ "VARSIZE", "NOSLIP" ]
@@ -1090,9 +1627,32 @@
     "symbol": "[",
     "looks_like": "socks_wool",
     "color": "brown",
-    "covers": [ "feet" ],
-    "coverage": 30,
-    "encumbrance": 30,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 50,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r" ],
+        "coverage": 45,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r" ],
+        "coverage": 5,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 25,
     "material_thickness": 1,
     "flags": [ "VARSIZE" ]
@@ -1111,9 +1671,26 @@
     "symbol": "[",
     "looks_like": "shoes_bowling",
     "color": "light_blue",
-    "covers": [ "feet" ],
-    "coverage": 80,
-    "encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 87,
+        "encumbrance": 4
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 52,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 87,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 10,
     "material_thickness": 2,
     "flags": [ "VARSIZE" ]
@@ -1132,15 +1709,27 @@
     "symbol": "[",
     "looks_like": "leathersandals",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 30,
-    "encumbrance": 14,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 19,
+        "encumbrance": 14
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 63,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 2,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS_FOOT" ]
   },
   {
     "id": "swim_fins",
     "type": "ARMOR",
+    "//": "CDF: DDA boots.json swim_fins (toes, heel, arch, sole); the foot aggregate drops from the flat 85 to 75 (rule 4, DDA shape).",
     "name": { "str": "pair of swim fins", "str_pl": "pairs of swim fins" },
     "description": "A pair of rubber flippers worn on the feet which improve swimming speed while greatly impeding the wearer's ability to walk.",
     "weight": "680 g",
@@ -1151,9 +1740,32 @@
     "symbol": "[",
     "looks_like": "clownshoes",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 85,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r" ],
+        "coverage": 76,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 5,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "FIN" ]
@@ -1162,6 +1774,7 @@
     "id": "thigh_high_boots",
     "repairs_like": "boots_larmor",
     "type": "ARMOR",
+    "//": "CDF: the foot portions are DDA's; the legs keep CDF's flat 80 coverage and 25 encumbrance in one plain portion (rule 5).",
     "name": { "str": "pair of thigh-high boots", "str_pl": "pairs of thigh-high boots" },
     "description": "Very long leather boots that reach past the knees.  Difficult to wear but extremely durable.",
     "weight": "1540 g",
@@ -1174,9 +1787,25 @@
     "symbol": "[",
     "looks_like": "boots_larmor",
     "color": "dark_gray",
-    "covers": [ "feet", "legs" ],
-    "coverage": 80,
-    "encumbrance": 25,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 80,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 80,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "legs" ],
+        "coverage": 80,
+        "encumbrance": 25
+      }
+    ],
     "warmth": 20,
     "material_thickness": 3,
     "environmental_protection": 2,
@@ -1195,9 +1824,20 @@
     "symbol": "[",
     "looks_like": "boots_rubber",
     "color": "dark_gray",
-    "covers": [ "feet" ],
-    "coverage": 100,
-    "encumbrance": 13,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 13
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 30,
     "material_thickness": 2,
     "environmental_protection": 1,
@@ -1217,9 +1857,26 @@
     "symbol": "[",
     "looks_like": "sneakers",
     "color": "light_blue",
-    "covers": [ "feet" ],
-    "coverage": 80,
-    "encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 87,
+        "encumbrance": 4
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 52,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 87,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "use_action": { "type": "transform", "target": "roller_shoes_on", "msg": "You pop the wheels out.", "moves": 500 },
@@ -1238,9 +1895,26 @@
     "symbol": "[",
     "looks_like": "sneakers",
     "color": "light_blue",
-    "covers": [ "feet" ],
-    "coverage": 80,
-    "encumbrance": 4,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 87,
+        "encumbrance": 4
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 52,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 87,
+        "encumbrance": 0
+      }
+    ],
     "warmth": 20,
     "material_thickness": 2,
     "use_action": { "type": "transform", "target": "roller_shoes_off", "msg": "You pop the wheels back in.", "moves": 500 },
@@ -1339,8 +2013,20 @@
     "symbol": "[",
     "looks_like": "socks",
     "color": "light_gray",
-    "covers": [ "feet" ],
-    "coverage": 80,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_sole_l", "foot_sole_r" ],
+        "coverage": 87,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 52,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "VARSIZE", "SKINTIGHT", "POWERARMOR_COMPATIBLE" ]
   },
@@ -1357,9 +2043,20 @@
     "symbol": "[",
     "looks_like": "socks",
     "color": "light_blue",
-    "covers": [ "feet" ],
-    "coverage": 70,
-    "encumbrance": 3,
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_sole_l", "foot_sole_r" ],
+        "coverage": 83,
+        "encumbrance": 3
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 17,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "WATERPROOF", "OVERSIZE", "OVERSIZE" ]
   },

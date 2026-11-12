@@ -68,7 +68,7 @@
     "id": "armor_riot_leg",
     "type": "ARMOR",
     "category": "armor",
-    "//": "CDF: DDA legs_armor.json:2040 (b4b62254ae2) in BN armor format. One material list, plastic_pad first (largest portion), material_thickness 5 (DDA plastic_pad 5). The foot portion has no specifically_covers: CDF: DDA foot_arch/foot_ankle sub-locations do not exist; whole foot until a foot sub-location packet.",
+    "//": "CDF: DDA legs_armor.json:2040 (b4b62254ae2) in BN armor format. One material list, plastic_pad first (largest portion), material_thickness 5 (DDA plastic_pad 5). FOOT1: the foot portion is DDA's foot_arch + foot_ankle portion; the whole-foot aggregate drops from the flat 75 to 34 (0.25 + 0.20 of the foot).",
     "name": { "str_sp": "riot leg guards (pair)" },
     "description": "Hard leg guards used by riot police.",
     "weight": "500 g",
@@ -90,7 +90,8 @@
         "encumbrance": 3,
         "specifically_covers": [ "leg_knee_l", "leg_knee_r", "leg_lower_l", "leg_lower_r" ]
       },
-      { "covers": [ "foot_l", "foot_r" ], "coverage": 75, "encumbrance": 2 }
+      { "covers": [ "foot_l", "foot_r" ], "coverage": 75, "encumbrance": 2,
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r", "foot_ankle_l", "foot_ankle_r" ] }
     ]
   }
 ]
