@@ -230,6 +230,10 @@ enum class link_state : int {
     vehicle_battery, // Linked to a vehicle's battery or an appliance
     bio_cable,       // Linked to the cable holder's cable system bionic - source if connected to a vehicle, target otherwise
     vehicle_tow,     // Linked to a valid tow point on a vehicle - source if it's the towing vehicle, target if the towed one
+    // CDF: GRIDLINK1. Linked to a distribution-grid connector (the BN f_cable_connector
+    // furniture); the cable's other end joins a vehicle to that grid. DDA has no grid furniture
+    // (its appliances are vehicles), so this state is CDF-only.
+    vehicle_grid,
     automatic,       // Use in link_to() to automatically set the type of connection based on the connected vehicle part. Is always true as a link_has_states() parameter.
     last
 };
@@ -1438,6 +1442,19 @@ class item : public location_visitable<item>, public game_object<item>
          */
         ret_val<void> link_to( vehicle &veh, const tripoint_mnt_veh &mount,
                                link_state link_type = link_state::no_link );
+
+        /**
+         * @brief Attaches one end of the cable to a distribution-grid connector.
+         * CDF: GRIDLINK1. The BN grid-cable entry (removed in LINKUP1d) came back on the
+         * link-up cable: when the other end is already on a vehicle, this call closes the link by
+         * installing the cable as a `targets_grid` vehicle part and registering the vehicle with
+         * the connector, so the vehicle joins the distribution grid (power flows both ways).
+         * @param grid_pos Absolute position of the grid connector furniture.
+         * @param link_type Only link_state::vehicle_grid is handled.
+         * @return true if the end was attached or the link was closed.
+         */
+        ret_val<void> link_to( const tripoint_abs_ms &grid_pos,
+                               link_state link_type = link_state::vehicle_grid );
 
         /**
          * @brief Updates all parts of the item's link_data that don't have to do with its connection. Initializes the link if needed.

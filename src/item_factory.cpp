@@ -4955,6 +4955,8 @@ std::string enum_to_string<link_state>( link_state data )
         case link_state::vehicle_port: return "vehicle_port";
         case link_state::vehicle_battery: return "vehicle_battery";
         case link_state::vehicle_tow: return "vehicle_tow";
+        // CDF: GRIDLINK1, distribution-grid connector target.
+        case link_state::vehicle_grid: return "vehicle_grid";
         case link_state::bio_cable: return "bio_cable";
         case link_state::ups: return "ups";
         case link_state::solarpack: return "solarpack";

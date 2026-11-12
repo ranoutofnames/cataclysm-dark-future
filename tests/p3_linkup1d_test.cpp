@@ -129,7 +129,7 @@ TEST_CASE( "linkupd_cable_items_match_their_dda_twins", "[link][linkup1d]" )
     CHECK( jumper->efficiency == Approx( 0.85f ) );
     CHECK( jumper->targets == std::set<link_state>{
         link_state::no_link, link_state::bio_cable, link_state::ups, link_state::solarpack,
-        link_state::vehicle_battery
+        link_state::vehicle_battery, link_state::vehicle_grid // CDF: GRIDLINK1 grid connector target
     } );
     CHECK( jumper->can_extend == std::set<std::string>{ "jumper_cable", "jumper_cable_heavy" } );
     CHECK( itype_id( "jumper_cable" )->maximum_charges() == 3 );
@@ -161,7 +161,8 @@ TEST_CASE( "linkupd_cable_items_match_their_dda_twins", "[link][linkup1d]" )
     CHECK( debug->efficiency == Approx( 1.0f ) );
     CHECK( debug->targets == std::set<link_state>{
         link_state::no_link, link_state::bio_cable, link_state::ups, link_state::solarpack,
-        link_state::vehicle_port, link_state::vehicle_battery, link_state::vehicle_tow
+        link_state::vehicle_port, link_state::vehicle_battery, link_state::vehicle_tow,
+        link_state::vehicle_grid // CDF: GRIDLINK1 grid connector target
     } );
     CHECK( debug->can_extend == std::set<std::string>{ "ELECTRICAL_DEVICES", "jumper_cable_debug" } );
     CHECK( itype_id( "jumper_cable_debug" )->maximum_charges() == 50 );
@@ -169,7 +170,8 @@ TEST_CASE( "linkupd_cable_items_match_their_dda_twins", "[link][linkup1d]" )
     // extension_cable / long_extension_cable: new items, DDA stats.
     const link_up_actor *extension = link_actor( itype_id( "extension_cable" ) );
     CHECK( extension->targets == std::set<link_state>{
-        link_state::no_link, link_state::vehicle_port
+        link_state::no_link, link_state::vehicle_port,
+        link_state::vehicle_grid // CDF: GRIDLINK1 grid connector target
     } );
     CHECK( extension->can_extend == std::set<std::string>{
         "ELECTRICAL_DEVICES", "extension_cable", "long_extension_cable"

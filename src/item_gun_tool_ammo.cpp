@@ -6,6 +6,8 @@
 #include <vector>
 
 // CDF: LINKUP1b; get_avatar().sees() in item::reset_link().
+#include "active_tile_data.h"
+#include "active_tile_data_def.h"
 #include "avatar.h"
 #include "character.h"
 #include "enums.h"
@@ -1969,6 +1971,116 @@ std::string item::link_name() const
     return has_flag( flag_CABLE_SPOOL ) ? label( 1 ) : string_format( _( " %s's cable" ), label( 1 ) );
 }
 
+namespace
+{
+// CDF: GRIDLINK1. Installs the cable as a vehicle part that joins `veh` to the distribution-grid
+// connector at `grid_pos`, the way the BN grid cable did after both cable ends were set
+// (5123360d7b^:src/iuse.cpp:8711-8726): a POWER_TRANSFER part with the `targets_grid` flag, the
+// connector position in both target points, and the vehicle listed in the connector's
+// connected_vehicles. The grid backend (distribution_graph/distribution_grid) is unchanged.
+auto link_grid_vehicle( item &cable, vehicle &veh, const tripoint_mnt_veh &mount,
+                        const tripoint_abs_ms &grid_pos ) -> ret_val<void>
+{
+    vehicle_connector_tile *connector = active_tiles::furn_at<vehicle_connector_tile>( grid_pos );
+    if( connector == nullptr ) {
+        return ret_val<void>::make_failure( _( "There's no grid connector there." ) );
+    }
+
+    if( rl_dist( grid_pos, veh.abs_ms_location() + veh.coord_translate( mount ) ) >
+        cable.link().max_length ) {
+        return ret_val<void>::make_failure( _( "The %s can't stretch that far!" ), cable.type_name() );
+    }
+
+    const itype_id item_id = cable.typeId();
+    vpart_id vpid = vpart_id::NULL_ID();
+    for( const vpart_info &e : vpart_info::get_all() ) { // CDF: DDA vehicles::parts::get_all()
+        if( e.item == item_id ) {
+            vpid = e.id;
+            break;
+        }
+    }
+    if( vpid.is_null() ) {
+        debugmsg( "item %s is not base item of any vehicle part!", item_id.c_str() );
+        return ret_val<void>::make_failure();
+    }
+    // CDF: CDF's can_mount() returns bool (DDA returns ret_val<void>).
+    if( !veh.can_mount( mount, vpid ) ) {
+        return ret_val<void>::make_failure( _( "You can't attach the %1$s there." ), cable.type_name() );
+    }
+
+    // The cable stops being an item link: drop any linked_flag left on the part it was attached to.
+    for( const int idx : veh.parts_at_relative( mount, false ) ) {
+        veh.part( idx ).remove_flag( vehicle_part::linked_flag );
+    }
+
+    vehicle_part cable_part( vpid, mount, item::spawn( cable ), &veh );
+    cable_part.target.first = grid_pos;
+    cable_part.target.second = grid_pos;
+    cable_part.set_flag( vehicle_part::targets_grid );
+    veh.install_part( mount, std::move( cable_part ) );
+    veh.precalc_mounts( 1, veh.pivot_rotation[1], veh.pivot_anchor[1] );
+
+    if( std::ranges::find( connector->connected_vehicles, veh.abs_ms_location() ) ==
+        connector->connected_vehicles.end() ) {
+        connector->connected_vehicles.emplace_back( veh.abs_ms_location() );
+    }
+
+    cable.reset_link();
+    //~ %1$s - vehicle name
+    return ret_val<void>::make_success( _( "You connect the %1$s to the electric grid." ),
+                                        veh.name );
+}
+} // namespace
+
+// CDF: GRIDLINK1. The grid end of a link-up cable (BN's grid-cable state_grid entry).
+auto item::link_to( const tripoint_abs_ms &grid_pos, link_state link_type ) -> ret_val<void>
+{
+    if( !can_link_up() ) {
+        return ret_val<void>::make_failure( _( "The %s doesn't have a cable!" ), type_name() );
+    }
+    // CDF: GRIDLINK1. Only the distribution-grid end is routed here; the vehicle ends use the
+    // DDA overloads above.
+    if( link_type != link_state::vehicle_grid ) {
+        return ret_val<void>::make_failure();
+    }
+    const link_up_actor *it_actor = static_cast<const link_up_actor *>
+                                    ( get_use( "link_up" )->get_actor_ptr() );
+    if( it_actor->targets.find( link_state::vehicle_grid ) == it_actor->targets.end() ) {
+        return ret_val<void>::make_failure( _( "The %s can't connect to that." ), type_name() );
+    }
+    if( active_tiles::furn_at<vehicle_connector_tile>( grid_pos ) == nullptr ) {
+        return ret_val<void>::make_failure( _( "There's no grid connector there." ) );
+    }
+
+    // The other end already holds a vehicle: this end closes the link.
+    if( link_has_state( link_state::vehicle_port ) ||
+        link_has_state( link_state::vehicle_battery ) ) {
+        vehicle *veh = link().t_veh ? link().t_veh : vehicle::find_vehicle( link().t_abs_pos );
+        if( veh == nullptr ) {
+            return ret_val<void>::make_failure( _( "There's no vehicle there." ) );
+        }
+        return link_grid_vehicle( *this, *veh, link().t_mount, grid_pos );
+    }
+
+    if( !has_no_links() ) {
+        // CDF: GRIDLINK1. BN let the grid end pair with a CBM or a vehicle only; the DDA link
+        // model's UPS/solar pack ends stay a one-cable-to-one-device link.
+        return ret_val<void>::make_failure( _( "The %s is already connected to something else." ),
+                                            type_name() );
+    }
+
+    // Free end: remember the connector, the vehicle end closes the link later.
+    link().source = link_state::vehicle_grid;
+    link().target = link_state::no_link;
+    link().t_abs_pos = grid_pos;
+    link().t_mount = tripoint_mnt_veh::zero();
+    link().s_abs_pos = tripoint_abs_ms::min();
+    update_link_traits();
+    //~ %1$s - cable name
+    return ret_val<void>::make_success( _( "You attach the %1$s to the grid connector." ),
+                                        type_name() );
+}
+
 ret_val<void> item::link_to( const optional_vpart_position &linked_vp, link_state link_type )
 {
     return linked_vp ? link_to( linked_vp->vehicle(), linked_vp->mount(), link_type ) :
@@ -2029,6 +2141,12 @@ ret_val<void> item::link_to( vehicle &veh, const tripoint_mnt_veh &mount, link_s
         } else if( link_type == link_state::automatic ) {
             link_type = can_link_port ? link_state::vehicle_port : link_state::vehicle_battery;
         }
+    }
+
+    // CDF: GRIDLINK1. The cable's other end is on a distribution-grid connector: this end joins
+    // the vehicle to that grid instead of to a second vehicle.
+    if( link_has_state( link_state::vehicle_grid ) ) {
+        return link_grid_vehicle( *this, veh, mount, link().t_abs_pos );
     }
 
     const bool bio_link = link_has_states( link_state::no_link, link_state::bio_cable );

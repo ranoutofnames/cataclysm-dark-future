@@ -8642,6 +8642,10 @@ void link_up_actor::info( const item &it, std::vector<iteminfo> &dump ) const
         targets_strings.emplace_back( _( "vehicle battery" ) );
         appliance = true;
     }
+    // CDF: GRIDLINK1. Distribution-grid connector (the BN f_cable_connector furniture).
+    if( targets.count( link_state::vehicle_grid ) > 0 ) {
+        targets_strings.emplace_back( _( "electric grid" ) );
+    }
     if( appliance ) {
         targets_strings.emplace_back( _( "appliance" ) );
     }
@@ -8717,6 +8721,10 @@ auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos )
         if( targets.count( link_state::vehicle_battery ) > 0 ) {
             link_menu.addentry( 1, has_loose_end, -1, _( "Attach to vehicle battery" ) );
         }
+        // CDF: GRIDLINK1. The BN distribution-grid connector end.
+        if( targets.count( link_state::vehicle_grid ) > 0 && is_cable_item ) {
+            link_menu.addentry( 40, true, -1, _( "Attach to electric grid connector" ) );
+        }
         if( targets.count( link_state::vehicle_tow ) > 0 ) {
             link_menu.addentry( 10, has_loose_end, -1, _( "Attach tow cable to towing vehicle" ) );
             link_menu.addentry( 11, has_loose_end, -1, _( "Attach tow cable to towed vehicle" ) );
@@ -8776,6 +8784,11 @@ auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos )
         if( targets.count( link_state::vehicle_battery ) > 0 ) {
             link_menu.addentry( 1, has_loose_end, -1, _( "Attach loose end to vehicle battery" ) );
         }
+        // CDF: GRIDLINK1. The BN distribution-grid connector end.
+        if( targets.count( link_state::vehicle_grid ) > 0 ) {
+            link_menu.addentry( 40, has_loose_end, -1,
+                                _( "Attach loose end to electric grid connector" ) );
+        }
         // CDF: LINKUP1d, DDA iuse_actor.cpp:5061-5085: CBM, UPS and solar pack loose ends.
         if( targets.count( link_state::bio_cable ) > 0 && !p.get_remote_fueled_bionic().is_empty() ) {
             link_menu.addentry( 20, has_loose_end && !it.link_has_state( link_state::bio_cable ),
@@ -8831,6 +8844,10 @@ auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos )
     if( choice == 0 || choice == 1 ) {
         // Selection: Attach electrical cable to vehicle ports, OR vehicle batteries.
         return link_to_veh_app( p, it, choice == 0 ).value_or( 0 );
+    } else if( choice == 40 ) {
+        // Selection: Attach electrical cable to a distribution-grid connector.
+        // CDF: GRIDLINK1, the BN grid-cable state_grid end.
+        return link_to_grid( p, it ).value_or( 0 );
     } else if( choice == 10 || choice == 11 ) {
         // Selection: Attach tow cable to towing/towed vehicle.
         return link_tow_cable( p, it, choice == 10 ).value_or( 0 );
@@ -8992,6 +9009,14 @@ std::optional<int> link_up_actor::link_to_veh_app( player &p, item &it, const bo
             return 0;
         }
 
+        // CDF: GRIDLINK1. link_to() closed a cable whose other end was on a grid connector: the
+        // cable is now the vehicle's grid part and is consumed.
+        if( !it.has_link_data() ) {
+            p.add_msg_if_player( m_good, result.str() );
+            p.mod_moves( -move_cost );
+            return 1; // Let the cable be destroyed.
+        }
+
         // Get the part name for the connection message, using the vehicle name as a fallback.
         const int part_index = sel_vp->vehicle().avail_linkable_part( sel_vp->mount(), to_ports );
         const std::string sel_vp_name = part_index == -1 ? sel_vp->vehicle().name :
@@ -9027,6 +9052,35 @@ std::optional<int> link_up_actor::link_to_veh_app( player &p, item &it, const bo
 
     p.mod_moves( -move_cost );
     return 1; // Let the cable be destroyed.
+}
+
+// CDF: GRIDLINK1. The distribution-grid connector end of a link-up cable, the BN
+// grid-cable state_grid entry (5123360d7b^:src/iuse.cpp:8513-8729) re-expressed through the
+// DDA link model: pick an adjacent f_cable_connector, then let item::link_to() either remember
+// the end or close the link with the vehicle on the other end.
+auto link_up_actor::link_to_grid( player &p, item &it ) const -> std::optional<int>
+{
+    const auto can_link = []( const tripoint_bub_ms & point ) {
+        return active_tiles::furn_at<vehicle_connector_tile>( bub_to_abs( point ) ) != nullptr;
+    };
+    // CDF: CDF's choose_adjacent_highlight takes no map and no action id (DDA passes both).
+    const std::optional<tripoint_bub_ms> grid_ = choose_adjacent_highlight(
+                _( "Attach the cable to the grid connector where?" ), "", can_link, false );
+    if( !grid_ ) {
+        p.add_msg_if_player( _( "Never mind." ) );
+        return std::nullopt;
+    }
+    const tripoint_abs_ms grid_pos = bub_to_abs( *grid_ );
+    const ret_val<void> result = it.link_to( grid_pos, link_state::vehicle_grid );
+    if( !result.success() ) {
+        p.add_msg_if_player( m_bad, result.str() );
+        return 0;
+    }
+    p.add_msg_if_player( m_good, result.str() );
+    p.mod_moves( -move_cost );
+    // CDF: GRIDLINK1. No link data left means the other end was on a vehicle and the cable was
+    // installed as that vehicle's grid part: consume the item, as the BN cable was consumed.
+    return it.has_link_data() ? 0 : 1;
 }
 
 // CDF: LINKUP1b, DDA iuse_actor.cpp:5348-5410. Tow cables.

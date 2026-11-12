@@ -16,11 +16,11 @@
     "price_postapoc": "1 USD",
     "max_charges": 3,
     "initial_charges": 3,
-    "//": "CDF: LINKUP1d. use_action, targets, can_extend, flags and quality are DDA's (data/json/items/tool/cables.json); the cable length (max_charges) and the stats stay CDF (AUTO-185).",
+    "//": "CDF: LINKUP1d. use_action, targets, can_extend, flags and quality are DDA's (data/json/items/tool/cables.json); the cable length (max_charges) and the stats stay CDF (AUTO-185). CDF: GRIDLINK1 adds the BN distribution-grid connector target.",
     "use_action": {
       "type": "link_up",
       "menu_text": "Attach / Manage connections",
-      "targets": [ "no_link", "bio_cable", "ups", "solarpack", "vehicle_battery" ],
+      "targets": [ "no_link", "bio_cable", "ups", "solarpack", "vehicle_battery", "vehicle_grid" ],
       "can_extend": [ "jumper_cable", "jumper_cable_heavy" ]
     },
     "flags": [ "CABLE_SPOOL", "SINGLE_USE" ],
@@ -70,11 +70,11 @@
     "price_postapoc": "1 USD",
     "max_charges": 10,
     "initial_charges": 10,
-    "//": "CDF: LINKUP1d, DDA data/json/items/tool/cables.json extension_cable (new item, no CDF stats to keep).",
+    "//": "CDF: LINKUP1d, DDA data/json/items/tool/cables.json extension_cable (new item, no CDF stats to keep). CDF: GRIDLINK1 adds the BN distribution-grid connector target.",
     "use_action": {
       "type": "link_up",
       "menu_text": "Plug in / Manage connections",
-      "targets": [ "no_link", "vehicle_port" ],
+      "targets": [ "no_link", "vehicle_port", "vehicle_grid" ],
       "can_extend": [ "ELECTRICAL_DEVICES", "extension_cable", "long_extension_cable" ]
     },
     "flags": [ "CABLE_SPOOL", "SINGLE_USE" ]
@@ -112,12 +112,12 @@
     "volume": "0 ml",
     "max_charges": 50,
     "initial_charges": 50,
-    "//": "CDF: LINKUP1d, DDA's own debug use_action (efficiency 1.0); the 50 m length is CDF's max_charges.",
+    "//": "CDF: LINKUP1d, DDA's own debug use_action (efficiency 1.0); the 50 m length is CDF's max_charges. CDF: GRIDLINK1 adds the BN distribution-grid connector target.",
     "use_action": {
       "type": "link_up",
       "menu_text": "Attach / Manage connections",
       "efficiency": 1.0,
-      "targets": [ "no_link", "bio_cable", "ups", "solarpack", "vehicle_port", "vehicle_battery", "vehicle_tow" ],
+      "targets": [ "no_link", "bio_cable", "ups", "solarpack", "vehicle_port", "vehicle_battery", "vehicle_tow", "vehicle_grid" ],
       "can_extend": [ "ELECTRICAL_DEVICES", "jumper_cable_debug" ]
     },
     "copy-from": "jumper_cable"

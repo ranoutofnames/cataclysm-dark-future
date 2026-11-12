@@ -1642,6 +1642,8 @@ class link_up_actor : public iuse_actor
         std::set<std::string> can_extend;
 
         std::optional<int> link_to_veh_app( player &p, item &it, bool to_ports ) const;
+        // CDF: GRIDLINK1, the BN grid connector end (the removed grid-cable state).
+        std::optional<int> link_to_grid( player &p, item &it ) const;
         // CDF: LINKUP1b, DDA iuse_actor.h:1179-1182.
         std::optional<int> link_tow_cable( player &p, item &it, bool to_towing ) const;
         std::optional<int> link_extend_cable( player &p, item &it, map &here,
