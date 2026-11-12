@@ -1869,11 +1869,6 @@
   },
   {
     "type": "recipe",
-    "result": "welder_crude",
-    "obsolete": true
-  },
-  {
-    "type": "recipe",
     "result": "deluxe_eggs",
     "id_suffix": "from_powder",
     "obsolete": true

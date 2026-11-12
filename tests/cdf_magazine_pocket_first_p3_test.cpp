@@ -193,7 +193,8 @@ TEST_CASE( "legacy_defaults_unchanged", "[p3][magazine][pocket]" )
     // hold-list cable tools (44 left; APPL1 moved autoclave and hydraulic_press off the legacy key).
     // The floor only guards against the population going empty, the
     // per-item comparison stays strict
-    CHECK( checked > 30 );
+    // CDF: RETIRE1 deleted the 12 retired obsoletion ids; the T4 population fell to 24 (floor 30 -> 20).
+    CHECK( checked > 20 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     WARN( "T4 items with a guard-G mod built in, skipped: " << skipped );
@@ -250,7 +251,8 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
     // compared here); LINKUP1c moved the 19 hold-list cable tools too, and APPL1 autoclave and
     // hydraulic_press (41 left). The floor only guards against the population going empty, the
     // per-item comparison below stays strict
-    CHECK( checked > 30 );
+    // CDF: RETIRE1 deleted the 12 retired obsoletion ids; the T5 population fell to 21 (floor 30 -> 15).
+    CHECK( checked > 15 );
     CAPTURE( bad );
     CHECK( bad.empty() );
     CAPTURE( bad_well );

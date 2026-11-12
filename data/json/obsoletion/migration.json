@@ -722,6 +722,11 @@
     "flags": [ "resized_large" ]
   },
   {
+    "id": "dab_pen_on",
+    "type": "MIGRATION",
+    "replace": "dab_pen"
+  },
+  {
     "id": "survivor_belt",
     "type": "MIGRATION",
     "replace": "survivor_belt_notools",

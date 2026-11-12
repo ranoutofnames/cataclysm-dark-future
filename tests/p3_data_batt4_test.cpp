@@ -232,7 +232,7 @@ TEST_CASE( "batt4 mess kit and voltmeter hold no cell", "[battery][wells][batt4]
 
 // T2: the legacy store is the only way a base tool gets a battery without explicit pocket_data, and
 // the only ids allowed to keep it are the parked and retired entries of the hold file
-// (APPL1 emptied the parked set; only the MIG1-retired ids are left).
+// (APPL1 emptied the parked set; RETIRE1 deleted the retired ids, so no exemption is left).
 // Mutation: add a base tool with `magazines` (a new battery well) -> it is not listed.
 TEST_CASE( "batt4 legacy battery stores are exactly the listed exemptions", "[battery][wells][batt4]" )
 {
@@ -318,18 +318,19 @@ TEST_CASE( "batt4 exemption list is exactly the documented boundary", "[battery]
         CHECK( itype_id( id )->get_use( "link_up" ) != nullptr );
     }
 
-    // (e) retired obsoletion ids that still carry a well; MIG1 deletes them (still pending)
+    // (e) retired obsoletion ids: RETIRE1 deleted all 12 items (see tests/retired_ids_test.cpp), so
+    // the hold file lists none and none of them is defined any more.
     const std::set<std::string> retired_ids = {
         "closed_loop_extractor_large", "closed_loop_extractor_large_on",
         "closed_loop_extractor_small", "closed_loop_extractor_small_on", "dab_pen_on",
         "vac_oven_small", "vac_oven_small_done", "vac_oven_small_full", "vac_oven_small_on",
         "vac_pump", "vac_pump_on", "welder_crude"
     };
-    CHECK( ids_of_kind( hold, "retired" ) == retired_ids );
+    CHECK( ids_of_kind( hold, "retired" ).empty() );
     for( const std::string &id : retired_ids ) {
         CAPTURE( id );
-        REQUIRE( itype_id( id ).is_valid() );
-        CHECK( scan.legacy.count( id ) == 1 );
+        CHECK_FALSE( itype_id( id ).is_valid() );
+        CHECK( scan.legacy.count( id ) == 0 );
     }
 
     // (f) DDA has no pocket at all: fake_firestarter stays without a battery store
