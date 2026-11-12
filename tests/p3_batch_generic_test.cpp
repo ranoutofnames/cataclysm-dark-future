@@ -200,9 +200,17 @@ TEST_CASE("p3 batch kept and dropped ids", "[p3][data][batch]") {
             const JsonObject row = row_object(member);
             const bool has_dropped =
                 row.has_array("dropped_ids") && row.get_array("dropped_ids").size() > 0;
-            const bool has_added = row.has_object("well_diff") &&
-                                   row.get_object("well_diff").has_array("cdf_added") &&
-                                   row.get_object("well_diff").get_array("cdf_added").size() > 0;
+            // the well_diff object is read in full by the checks below: a named copy so its
+            // omitted members (dda_only_kept, unfit) are not reported as unvisited here
+            const bool has_added = [&row]() {
+                if (!row.has_object("well_diff")) {
+                    return false;
+                }
+                JsonObject well_diff_probe = row.get_object("well_diff");
+                well_diff_probe.allow_omitted_members();
+                return well_diff_probe.has_array("cdf_added") &&
+                       well_diff_probe.get_array("cdf_added").size() > 0;
+            }();
             if (!has_dropped && !has_added) {
                 skipped++;
                 continue;

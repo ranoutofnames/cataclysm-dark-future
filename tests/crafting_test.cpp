@@ -1063,6 +1063,7 @@ struct vehicle_craft_fixture_options {
     vpart_id work_part;
     bool install_battery = false;
     bool install_freezer = false;
+    bool install_cable_port = false;
 };
 
 struct vehicle_craft_fixture {
@@ -1110,6 +1111,11 @@ auto make_vehicle_craft_fixture(const vehicle_craft_fixture_options& opts)
             install_part_on_frame(*veh, tripoint_mnt_veh(1, 0, 0), vpart_id("storage_battery")));
         veh->charge_battery(5000);
     }
+    if (opts.install_cable_port) {
+        // CDF: APPL1. The dashboard is the CABLE_PORTS part a link_up tool plugs into (as powered_car)
+        static_cast<void>(
+            install_part_on_frame(*veh, tripoint_mnt_veh(-1, 0, 0), vpart_id("dashboard")));
+    }
     if (opts.install_freezer) {
         freezer_part =
             install_part_on_frame(*veh, tripoint_mnt_veh(-1, 0, 0), vpart_id("minifreezer"));
@@ -1147,8 +1153,12 @@ auto add_fresh_meat_to_work_part(vehicle_craft_fixture& fixture) -> void {
     add_fresh_meat_to_part(fixture, fixture.work_part);
 }
 
-auto add_inventory_cooking_tools(avatar& you) -> void {
-    you.i_add(item::spawn("hotplate", calendar::turn, 20));
+// CDF: APPL1. The hotplate is a DDA link_up tool with no battery well (LINKUP1c), so it cannot
+// hold charges of its own: its link_up targets are the vehicle port only, so it is cabled to the
+// CABLE_PORTS dashboard (mount -1,0,0), which draws from the vehicle battery.
+auto add_inventory_cooking_tools(avatar& you, vehicle& veh) -> void {
+    item& hotplate = you.i_add(item::spawn("hotplate", calendar::turn));
+    REQUIRE(hotplate.link_to(veh, tripoint_mnt_veh(-1, 0, 0), link_state::vehicle_port).success());
     you.i_add(item::spawn("pot", calendar::turn));
 }
 
@@ -1254,14 +1264,17 @@ TEST_CASE("vehicle kitchen craft preserves fresh component rot", "[crafting][rot
 
 // AUTOCLAVE variant of the BN9254 test above: the autoclave part is
 // CARGO+AUTOCLAVE on one tile, so any phantom from map::use_charges precedes the
-// real component. Cooking tools come from inventory so the vehicle has no battery.
+// real component. Cooking tools come from inventory and draw from the vehicle battery through a
+// cable (CDF: APPL1), the same powered setup as the kitchen test above.
 TEST_CASE("vehicle autoclave craft preserves fresh component rot", "[crafting][rot]") {
     setup_vehicle_rot_test_at(old_world_craft_turn());
     auto fixture = make_vehicle_craft_fixture({
         .work_part = vpart_id("autoclave"),
+        .install_battery = true,
+        .install_cable_port = true,
     });
     add_fresh_meat_to_work_part(fixture);
-    add_inventory_cooking_tools(*fixture.you);
+    add_inventory_cooking_tools(*fixture.you, *fixture.veh);
 
     auto& result = *craft_cooked_meat_at_vehicle(fixture);
 

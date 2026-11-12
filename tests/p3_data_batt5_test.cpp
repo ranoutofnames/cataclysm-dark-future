@@ -102,6 +102,8 @@ auto read_other_pockets( JsonObject jo ) -> std::vector<mod_pocket>
 {
     std::vector<mod_pocket> out;
     for( JsonObject p : jo.get_array( "other_pockets" ) ) {
+        // read_pocket reads a copy, so the loop's own object must allow its omitted members too
+        p.allow_omitted_members();
         out.push_back( read_pocket( p ) );
     }
     return out;
@@ -174,6 +176,7 @@ auto read_records( const std::string &file_name ) -> std::map<std::string, mod_r
         r.max_charges = jo.get_int( "max_charges", 0 );
         if( r.pockets ) {
             for( JsonObject p : jo.get_array( "pocket_data" ) ) {
+                p.allow_omitted_members();
                 r.list.push_back( read_pocket( p ) );
             }
         }

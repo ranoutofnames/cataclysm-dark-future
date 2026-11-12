@@ -57,7 +57,9 @@ TEST_CASE("p3 golden items have a known class and action", "[p3][golden]") {
     std::ifstream file(P3_GOLDEN_FILENAME, std::ios::binary);
     JsonIn jsin(file);
     JsonObject golden = jsin.get_object();
+    golden.allow_omitted_members();
     JsonObject items = golden.get_object("items");
+    items.allow_omitted_members();
 
     const std::set<std::string> known_classes =
         {"MAG", "GUN-INT", "TOOL-INT", "WELL", "CHARGES", "ADAPTOR", "DDA-POCKET"};
@@ -83,7 +85,9 @@ TEST_CASE("p3 golden: only ADAPTOR rows carry an adaptor block", "[p3][golden]")
     std::ifstream file(P3_GOLDEN_FILENAME, std::ios::binary);
     JsonIn jsin(file);
     JsonObject golden = jsin.get_object();
+    golden.allow_omitted_members();
     JsonObject items = golden.get_object("items");
+    items.allow_omitted_members();
 
     size_t adaptor_rows = 0;
     for (const JsonMember member : items) {

@@ -572,6 +572,7 @@ TEST_CASE( "p3 storage STOR5: the two golden entries equal the loaded pockets", 
     JsonObject golden = jsin.get_object();
     golden.allow_omitted_members();
     JsonObject items = golden.get_object( "items" );
+    items.allow_omitted_members();
     for( const char *id : { "sparkledogsuit", "sparkledogsuit_on" } ) {
         CAPTURE( id );
         REQUIRE( items.has_object( id ) );
