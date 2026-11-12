@@ -986,7 +986,7 @@ namespace
 {
 
 // CDF: on since 4-b2 (tools only): the readers and writers of tool ammo now use the pocket model
-// (D14: tools leave cdf_legacy_direct_charges). Guns are not synthesized (AUTO-20).
+// (D14: tools leave the legacy direct charges, P3-7END removed the guns' guard). Guns are not synthesized (AUTO-20).
 constexpr bool kSynthesizeIntegralMagazine = true;
 
 // CDF: P3-7-PRE. DDA deleted `capacity`, `max_charges` and `tool_ammo` from its data; CDF's readers
@@ -1169,10 +1169,14 @@ void Item_factory::synthesize_pockets( itype &obj ) const
     }
 
     // CDF: integral magazine tool pocket (DDA check_and_create_magazine_pockets tool branch).
-    // DDA debugmsgs "needs pocket definitions" for every such tool; CDF keeps the JSON max_charges
-    // as the data (functionality port, D2), so the message is dropped.
+    // CDF: P3-7END, DDA debugmsgs "needs pocket definitions" for every such tool. The message is on
+    // again: base data and the default mods have no synthesizing item, so a hit is a data bug (tools
+    // from third-party mods without pocket_data still synthesize, rule 3).
     if( kSynthesizeIntegralMagazine ) {
-        static_cast<void>( add_integral_magazine_pocket( obj ) );
+        const std::string msg = add_integral_magazine_pocket( obj );
+        if( !msg.empty() ) {
+            debugmsg( "%s", msg );
+        }
     }
 
     // Guns and tools that take magazines get a magazine well.

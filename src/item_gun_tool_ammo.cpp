@@ -31,8 +31,6 @@
 // CDF: LINKUP1a; optional_vpart_position::mount() in item::link_to().
 #include "vehicle/vpart_position.h"
 
-// CDF: defined below (AUTO-26 O1 / D14 legacy direct-charges guard).
-static bool cdf_legacy_direct_charges( const item &it );
 // CDF: LINKUP1b; the battery ammo item used when a linked battery is charged or discharged.
 static const itype_id itype_battery( "battery" );
 
@@ -88,13 +86,6 @@ bool item::can_reload_with( const item &ammo, bool now ) const
         }
     }
 
-    // CDF: legacy direct-charges guns (D14) have no MAGAZINE pocket, so the pocket check below
-    // would reject them; keep BN's answer for them. Remove with cdf_legacy_direct_charges.
-    if( cdf_legacy_direct_charges( *this ) ) {
-        // CDF: BN's is_reloadable_with() always evaluated "now" (rejects a full/loaded gun).
-        return is_reloadable_helper( ammo.typeId(), true );
-    }
-
     // Check if the item is in general compatible with any reloadable pocket.
     return contents.can_reload_with( ammo, now );
 }
@@ -106,12 +97,6 @@ bool item::is_reloadable() const
         // turrets ignore NO_RELOAD flag
         // don't show guns without default ammo defined in reload ui
         return false;
-    }
-
-    // CDF: legacy direct-charges guns (D14) have no MAGAZINE pocket, so DDA's pocket loop
-    // would skip them; keep BN's answer for them. Remove with cdf_legacy_direct_charges.
-    if( cdf_legacy_direct_charges( *this ) && !ammo_types().empty() ) {
-        return true;
     }
 
     for( const item_pocket *pocket : contents.get_all_reloadable_pockets() ) {
@@ -178,30 +163,6 @@ bool item::is_toolmod() const
     return !is_gunmod() && type->mod;
 }
 
-// CDF: single removal point for the AUTO-26 O1 / REPLAN D14 legacy-charges guard. BN kept ammo
-// in direct `charges` for tools and guns without a MAGAZINE pocket; DDA counts only magazines.
-// Tools left this in 4-b2 (integral tools now get a MAGAZINE pocket from the loader); guns leave it
-// at the last 7-R2 group; 9-4 checks that no item still uses it.
-// A MAGAZINE_WELL pocket alone does not end the legacy path: BN guns with an optional `magazines`
-// list (e.g. sw_619 with a speedloader) get a well yet still store loaded rounds in `charges`
-// while magazine_integral() holds.
-static bool cdf_legacy_direct_charges( const item &it )
-{
-    // CDF: tools are out since 4-b2; only guns without a MAGAZINE pocket still keep direct charges.
-    if( !it.is_gun() ) {
-        return false;
-    }
-    const item_contents &c = it.get_contents();
-    // CDF: a loaded magazine wins and the item's own `charges` are ignored (BN
-    // item::ammo_remaining: `if( mag ) return mag->ammo_remaining();`). magazine_current() also
-    // sees a magazine parked in MIGRATION: a smartphone has magazine_well but no `magazines`
-    // list, so it gets no well pocket and its battery lands in MIGRATION, while max_charges and
-    // initial_charges keep it magazine_integral().
-    return !c.has_pocket_type( pocket_type::MAGAZINE ) &&
-           ( !c.has_pocket_type( pocket_type::MAGAZINE_WELL ) || it.magazine_integral() ) &&
-           it.magazine_current() == nullptr;
-}
-
 int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const Character *carrier,
                           const bool include_linked ) const
 {
@@ -218,7 +179,7 @@ int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const
     for( const item *mag : magazines_current() ) {
         ret += mag->ammo_remaining( );
     }
-    // CDF: a magazine parked outside a well (MIGRATION, see cdf_legacy_direct_charges) still counts,
+    // CDF: a magazine parked outside a well (MIGRATION) still counts,
     // as in BN's `if( mag ) return mag->ammo_remaining();`. For a tool that also owns an integral
     // MAGAZINE pocket (smart_phone_music: a magazine_well without a `magazines` list) the parked
     // magazine wins and the integral rounds are ignored, as BN ignored the tool's own charges.
@@ -264,9 +225,9 @@ int item::ammo_remaining( const map &here, const std::set<ammotype> &ammo, const
         }
     }
 
-    // Non ammo using item that uses charges (DDA 1486-1489), plus the CDF legacy guard.
+    // Non ammo using item that uses charges (DDA 1486-1489).
     // CDF: is_ammo() excluded: BN returned 0 for an ammo item's own charges (iteminfo "Ammunition type").
-    if( ( ammo.empty() && !is_ammo() ) || cdf_legacy_direct_charges( *this ) ) {
+    if( ammo.empty() && !is_ammo() ) {
         ret += charges;
     }
 
@@ -1040,16 +1001,6 @@ int item::ammo_consume( int qty, map &here, const tripoint_bub_ms &pos, Characte
     if( ( is_tool() || is_gun() ) && contents.magazines_current().empty() ) {
         if( item *parked = magazine_current() ) {
             qty -= parked->ammo_consume( qty, here, pos, carrier );
-        }
-    }
-
-    // CDF: legacy direct charges (D14, same helper as ammo_remaining). Remove with cdf_legacy_direct_charges.
-    if( cdf_legacy_direct_charges( *this ) ) {
-        int used = std::min( qty, charges );
-        qty -= used;
-        charges -= used;   // BN: charges is the ammo for legacy tools/guns
-        if( charges == 0 ) {
-            curammo = nullptr;
         }
     }
 

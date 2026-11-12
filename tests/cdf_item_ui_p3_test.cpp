@@ -666,7 +666,7 @@ TEST_CASE( "select_default_ammo_uses_game_menus_select_ammo", "[p3][ui][8-2a-sel
     }
 
     // [UNSURE] needs the legacy integral bow to take arrow_wood through the owner-level target (a BN
-    // integral gun: clip_size 1, no MAGAZINE pocket, answered by cdf_legacy_direct_charges). If a REQUIRE
+    // integral gun: clip_size 1, no MAGAZINE pocket, answered by the direct-charges guard removed in 7ENDC). If a REQUIRE
     // of this section fails, delete this section only, with a log line in the report and a Blocked line.
     SECTION( "a bow takes its arrow as the default ammo" ) {
         item &bow = you.i_add( item::spawn( itype_longbow ) );

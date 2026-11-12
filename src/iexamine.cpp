@@ -5298,7 +5298,13 @@ void iexamine::use_furn_fake_item( player &p, const tripoint_bub_ms &examp )
 
     if( fake_item.has_flag( flag_USES_GRID_POWER ) ) {
         const distribution_grid &grid = get_distribution_grid_tracker().grid_at( abspos );
-        fake_item.ammo_set( ammo, grid.get_resource() );
+        // CDF: 7ENDC. Same as activity_handlers.cpp get_fake_tool: an ammo-less grid tool has no pocket and
+        // keeps its grid charge in direct `charges`, which ammo_remaining reads for an item with no ammo type.
+        if( ammo.is_null() ) {
+            fake_item.charges = std::min( grid.get_resource(), fake_item.ammo_capacity() );
+        } else {
+            fake_item.ammo_set( ammo, grid.get_resource() );
+        }
         charge_type = charges_type::grid;
     } else if( ammo != itype_id::NULL_ID() ) {
         fake_item.ammo_set( ammo, count_charges_in_list( &*ammo, m.i_at( examp ) ) );

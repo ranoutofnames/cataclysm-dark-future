@@ -743,9 +743,21 @@ void item::ammo_set( const itype_id &ammo, int qty )
 
     // handle reloadable tools and guns with no specific ammo type as special case
     if( no_ammo_type ) {
-        if( ( is_tool() || is_gun() ) && magazine_integral() ) {
-            curammo = nullptr;
-            charges = std::min( qty, ammo_capacity() );
+        // CDF: 7ENDC, the DDA body (item_gun_tool_ammo.cpp:289-301): only an item with a MAGAZINE pocket is
+        // touched; a tool keeps its direct `charges`, a gun gets its default ammo in the pocket.
+        if( magazine_integral() ) {
+            if( is_tool() ) {
+                curammo = nullptr;
+                charges = std::min( qty, ammo_capacity() );
+            } else if( is_gun() ) {
+                // CDF: DDA does not guard a null default ammo; a gun with no ammo type has none.
+                const itype_id default_ammo = ammo_default();
+                if( !default_ammo.is_null() && default_ammo->ammo ) {
+                    put_in( item::spawn( default_ammo, calendar::turn,
+                                         std::min( qty, ammo_capacity( default_ammo->ammo->type ) ) ),
+                            pocket_type::MAGAZINE );
+                }
+            }
         }
         return;
     }
@@ -773,12 +785,10 @@ void item::ammo_set( const itype_id &ammo, int qty )
         }
         put_in( std::move( set_ammo ), pocket_type::MAGAZINE );
 
-    } else if( magazine_integral() ) {
-        // CDF: legacy gun without a MAGAZINE pocket (D14): the rounds stay in direct charges.
-        curammo = atype;
-        charges = std::min( qty, ammo_capacity() );
-
     } else {
+        // CDF: 7ENDC, the `else if( magazine_integral() )` branch that wrote direct `charges` for a
+        // legacy gun is gone: DDA has none (item_gun_tool_ammo.cpp:333), an item with a MAGAZINE pocket
+        // is is_magazine() and takes the first branch.
         if( !magazine_current() ) {
             itype_id mag = magazine_default();
             if( !mag->magazine ) {
@@ -839,14 +849,21 @@ void item::ammo_unset()
     } else if( is_magazine() ) {
         // CDF: DDA contents.clear_magazines(); a tool with an integral pocket is a magazine too, so
         // the mods and other pockets must stay. A plain magazine item keeps clear_items().
+        if( is_money() ) { // CDF: 7ENDC, DDA item_gun_tool_ammo.cpp:386-388: charges are set wrong on cash cards.
+            charges = 0;
+        }
         if( type->magazine ) {
             contents.clear_items();
         } else {
             contents.clear_magazines();
         }
     } else if( magazine_integral() ) {
+        // CDF: 7ENDC, DDA item_gun_tool_ammo.cpp:390-394 (reached only if a MAGAZINE pocket is not is_magazine()).
         curammo = nullptr;
         charges = 0;
+        if( is_gun() ) {
+            contents.clear_magazines();
+        }
     } else if( magazine_current() ) {
         magazine_current()->ammo_unset();
     }
@@ -3093,12 +3110,11 @@ void item::gun_info( const item *mod, std::vector<iteminfo> &info, const iteminf
                         }
                     }
                 }
-                // CDF: DDA item_info.cpp:1370-1374 calls mod->ammo_capacity( at ) always. In CDF that is
-                // pocket based and returns 0 for a BN-style integral gun (clip_size, no MAGAZINE pocket;
-                // guns are not synthesized, AUTO-20), so integral guns keep the zero-argument capacity
-                // (pinned by tests/iteminfo_test.cpp "ranged weapon attributes"). vgettext as above.
-                const int capacity = mod->magazine_integral() ? mod->ammo_capacity() :
-                                     mod->ammo_capacity( at );
+                // CDF: DDA item_info.cpp:1370-1374 calls mod->ammo_capacity( at ) always. 7ENDC: an integral
+                // gun now has a MAGAZINE pocket, so the pocket-based capacity is right (the zero-argument
+                // clip branch of AUTO-20 is gone; with a battery well loaded it also read the battery's
+                // capacity). vgettext as above.
+                const int capacity = mod->ammo_capacity( at );
                 const std::string fmt = string_format( vgettext( "<num> round of %s",
                                                        "<num> rounds of %s",
                                                        capacity ), at->name() );
@@ -9570,23 +9586,9 @@ std::string item::ammo_sort_name() const
     return "";
 }
 
-// CDF: BN body kept for guns (type->gun->clip) and tools (type->tool->max_charges); only the final
-// fall-through follows the live pockets, as DDA item_gun_tool_ammo.cpp:2253-2256 does. The gun branch
-// changes with the integral-magazine gun data conversion (PL-15), guns get no synthesized MAGAZINE pocket.
+// CDF: P3-7END, the DDA body (DDA item_gun_tool_ammo.cpp:2253-2256): an item is integral when it has a MAGAZINE pocket.
 bool item::magazine_integral() const
 {
-    // If it has a default magazine, it can't have an integral magazine.
-    if( magazine_default() ) {
-        return false;
-    } else if( is_gun() ) {
-        // We have an integral magazine if we're a gun with an ammo capacity (clip)
-        return type->gun->clip;
-    } else if( is_tool() ) {
-        // Or we are a tool with max_charges defined
-        return type->tool->max_charges;
-    }
-    // CDF: MAGPOCKET, DDA item_gun_tool_ammo.cpp:2253-2256: other items (mods, armor, food...) are integral
-    // only if they have a MAGAZINE pocket; the BN "return true" made a toolmod or an apple integral.
     return contents.has_pocket_type( pocket_type::MAGAZINE );
 }
 

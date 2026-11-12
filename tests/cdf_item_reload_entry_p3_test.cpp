@@ -680,13 +680,16 @@ TEST_CASE( "reload_weapon_prefers_wielded_then_compatible_then_gun_then_speed", 
         } );
     }
 
-    SECTION( "an empty gun is reloaded before a partly loaded one of the same kind" ) {
-        // CDF: nothing wielded, so the affiliation key is skipped. The empty sw_619 (38.json, direct charges, 7
-        // rounds) has remaining_ammo_capacity() 0 (probed), which is the DDA key 0, where capacity minus loaded
-        // gives 7 and 70 * 7 = 490. The glock_19 holding 12 of 15 rounds has 3 left either way, 100 * 3 = 300. So
+    SECTION( "a gun with the smaller reload key is reloaded first (DDA: reload time x remaining capacity)" ) {
+        // CDF: nothing wielded, so the affiliation key is skipped. The empty sw_619 (38.json, MAGAZINE pocket, 7
+        // rounds) has remaining_ammo_capacity() 7 under the pocket shape (7ENDC; 0 under the old direct-charges
+        // shape), where capacity minus loaded gives 7 and 70 * 7 = 490. The glock_19 holding 12 of 15 rounds has 3 left either way, 100 * 3 = 300. So
         // the DDA key puts the empty revolver first and the capacity-minus-loaded key puts the glock first.
-        // CDF: 7-R2a; the ported sw_619 has an integral MAGAZINE pocket (remaining_ammo_capacity 7),
-        // this DDA key needs the legacy direct-charges shape (remaining_ammo_capacity 0).
+        // CDF: 7-R2a; the ported sw_619 has an integral MAGAZINE pocket (remaining_ammo_capacity 7).
+        // CDF: 7ENDC; the empty gun is now the pocket shape (empty pocket, remaining_ammo_capacity 7, was 0
+        // under the removed direct-charges shape). The old premise (capacity 0 for an empty legacy gun) is gone
+        // with the legacy path, and the order now follows DDA's key: the partial glock (300) goes before the
+        // empty revolver (490).
         item &empty_gun = who.i_add( item::spawn( "legacy_sw_619", bday, 0 ) );
         detached_ptr<item> mag_det = item::spawn( "glockmag", bday, 0 );
         REQUIRE( mag_det->put_in( item::spawn( "9mm", bday, 12 ), pocket_type::MAGAZINE ).success() );
@@ -696,7 +699,7 @@ TEST_CASE( "reload_weapon_prefers_wielded_then_compatible_then_gun_then_speed", 
         who.i_add( item::spawn( "38_special", bday, 100 ) );
         who.i_add( item::spawn( "9mm", bday, 100 ) );
         REQUIRE( partial_gun.ammo_remaining() == 12 );
-        REQUIRE( empty_gun.remaining_ammo_capacity() == 0 );
+        REQUIRE( empty_gun.remaining_ammo_capacity() == 7 ); // CDF: 7ENDC, was 0 (direct-charges shape)
         REQUIRE( partial_gun.remaining_ammo_capacity() == 3 );
         REQUIRE( empty_gun.get_reload_time() * ( empty_gun.ammo_capacity() - empty_gun.ammo_remaining() ) >
                  partial_gun.get_reload_time() * partial_gun.remaining_ammo_capacity() );
@@ -705,8 +708,8 @@ TEST_CASE( "reload_weapon_prefers_wielded_then_compatible_then_gun_then_speed", 
         REQUIRE( who.activity );
         process_activity( who );
 
-        CHECK( empty_gun.ammo_remaining() > 0 );
-        CHECK( partial_gun.ammo_remaining() == 12 );
+        CHECK( partial_gun.ammo_remaining() == 15 );
+        CHECK( empty_gun.ammo_remaining() == 0 );
     }
 }
 

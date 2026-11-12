@@ -9,8 +9,14 @@
     "volume": "1 ml",
     "symbol": ";",
     "color": "red",
-    "ammo": "charcoal",
-    "max_charges": 100,
+    "tool_ammo": "charcoal",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "charcoal": 100 }
+      }
+    ],
     "charges_per_use": 3,
     "use_action": {
       "type": "manualnoise",

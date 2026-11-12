@@ -306,8 +306,8 @@ TEST_CASE( "reload_option_qty_of_a_speedloader_is_its_rounds", "[p3][charges][ac
     const int rounds = loader.ammo_remaining();
     REQUIRE( rounds == 7 );
 
-    // CDF: 7-R2a; the ported sw_619 has an integral MAGAZINE pocket, the legacy fixture keeps the
-    // direct-charges shape this test sets (`gun.charges = 2`) and ammo_capacity() 7.
+    // CDF: 7-R2a; the ported sw_619 has an integral MAGAZINE pocket, and legacy_sw_619 inherits it
+    // (7ENDC: no direct-charges shape any more); ammo_capacity() is 7.
     detached_ptr<item> gun_owner = item::spawn( itype_id( "legacy_sw_619" ), bday, false );
     item &gun = *gun_owner;
     REQUIRE( gun.ammo_remaining() == 0 );
@@ -320,9 +320,9 @@ TEST_CASE( "reload_option_qty_of_a_speedloader_is_its_rounds", "[p3][charges][ac
     }
 
     SECTION( "a partly loaded cylinder caps the qty at its room" ) {
-        // CDF: the sw_619 is a legacy direct-charges gun (no MAGAZINE pocket, magazine_integral),
-        // so its loaded rounds are `charges` (item_gun_tool_ammo.cpp:165-180).
-        gun.charges = 2;
+        // CDF: 7ENDC; the 2 loaded rounds go in the gun's integral MAGAZINE pocket (was `gun.charges = 2`,
+        // the removed direct-charges shape). Same numbers: 2 loaded, room 5.
+        gun.ammo_set( itype_id( "38_special" ), 2 ); // CDF: 7ENDC, "38" is an ammotype, not an item
         REQUIRE( gun.ammo_remaining() == 2 );
         const int room = gun.ammo_capacity() - gun.ammo_remaining();
         REQUIRE( room == 5 );

@@ -161,8 +161,8 @@ TEST_CASE( "item_is_reloadable_integral_magazine", "[p3][reload][magazine]" )
 TEST_CASE( "item_is_reloadable_gunmod", "[p3][reload][magazine]" )
 {
     // Host: m4a1 (one well, a MOD pocket) with a full stanag30, so it has no reloadable pocket.
-    // CDF: not pipe_pistol: it is a legacy direct-charges gun (D14, cdf_legacy_direct_charges),
-    // reloadable before the mod is fitted.
+    // CDF: not pipe_pistol: it was a legacy direct-charges gun (D14, the direct-charges guard that
+    // 7ENDC removed), reloadable before the mod is fitted.
     detached_ptr<item> gun_ptr = item::spawn( itype_id( "m4a1" ) );
     item &gun = *gun_ptr;
     detached_ptr<item> stanag_mag = item::spawn( itype_id( "stanag30" ) );
@@ -1056,7 +1056,9 @@ TEST_CASE( "ammo_count_for_counts_loaded_and_loose", "[p3][reload][ammo]" )
     item &gun = guy.i_add( item::spawn( itype_id( "test_hybrid_ammo_gun" ) ) );
     REQUIRE( gun.ammo_required() == 1 );
     REQUIRE( gun.ammo_remaining() == 0 );
-    REQUIRE( !gun.magazine_integral() );
+    // CDF: 7ENDC; DDA body contents.has_pocket_type( MAGAZINE ): the fixture has a MAGAZINE pocket
+    // (items.json:1932-1935), so the gun is integral. Was `!magazine_integral()` (BN clip body).
+    REQUIRE( gun.magazine_integral() );
 
     SECTION( "magazine only" ) {
         item &mag = guy.i_add( loaded_mag( itype_id( "glockmag" ), itype_id( "9mm" ), 15 ) );
@@ -1069,10 +1071,13 @@ TEST_CASE( "ammo_count_for_counts_loaded_and_loose", "[p3][reload][ammo]" )
     SECTION( "no magazine, loose only" ) {
         item &loose = guy.i_add( item::spawn( itype_id( "9mm" ), calendar::turn, 5 ) );
         const auto found = character_funcs::find_ammo_items_or_mags( guy, gun, true, -1 );
-        // The loose stack IS found (so the 0 below comes from the has_mag gate, not the finder).
+        // The loose stack IS found.
         REQUIRE( result_contains( found, loose ) );
-        // CDF: no magazine in play, so loose ammo is not available (DDA 56-58).
-        CHECK( character_funcs::ammo_count_for( guy, gun ) == 0 );
+        // CDF: 7ENDC; was 0 (the BN clip body made the gun not integral, so the has_mag gate dropped the
+        // loose ammo). The DDA body gives the gun a MAGAZINE pocket, so magazine_integral() is true and
+        // `has_mag` starts true: DDA src/character_ammo.cpp:41-58 `bool has_mag = gun->magazine_integral();`
+        // ... `if( has_mag ) { total_ammo += loose_ammo; }` counts the 5 loose 9mm. DDA has no test of this.
+        CHECK( character_funcs::ammo_count_for( guy, gun ) == 5 );
     }
 
     SECTION( "magazine then loose" ) {

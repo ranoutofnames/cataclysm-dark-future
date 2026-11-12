@@ -2573,7 +2573,15 @@ item *get_fake_tool( hack_type_t hack_type, const player_activity &activity )
                     const auto abspos = activity.coords.at( 0 );
                     const distribution_grid &grid = get_distribution_grid_tracker().grid_at( abspos );
                     fake_item = item::spawn_temporary( item_type.get_id(), calendar::turn, 0 );
-                    fake_item->ammo_set( fake_item->ammo_default(), grid.get_resource( true ) );
+                    // CDF: 7ENDC. An ammo-less grid tool (fake_oven: max_charges, no ammo type, no pocket) has no
+                    // MAGAZINE pocket, so the DDA ammo_set (item_gun_tool_ammo.cpp:261-377) leaves it alone; the grid
+                    // charge is its direct `charges`, which ammo_remaining and ammo_consume read for an item with no
+                    // ammo type (DDA :1486-1489, :1883), as inventory.cpp:501 does for the crafting inventory.
+                    if( fake_item->ammo_default().is_null() ) {
+                        fake_item->charges = std::min( grid.get_resource( true ), fake_item->ammo_capacity() );
+                    } else {
+                        fake_item->ammo_set( fake_item->ammo_default(), grid.get_resource( true ) );
+                    }
                     break;
                 }
             }

@@ -915,7 +915,7 @@ bool unload_item( avatar &you, item &loc, bool bypass_activity, item *new_contai
 
     // CDF: P3-6-4d (DDA character_inventory.cpp:2678-2790). A gun or tool gives up every loaded
     // magazine and the ammo in its integral MAGAZINE pockets, synchronously (ADV-14: no actor here).
-    // CDF: a magazine parked outside a well (MIGRATION, cdf_legacy_direct_charges) is a source too,
+    // CDF: a magazine parked outside a well (MIGRATION) is a source too,
     // magazine_current() finds it where magazines_current() does not.
     std::vector<item *> mags_to_eject = target->magazines_current();
     if( mags_to_eject.empty() ) {

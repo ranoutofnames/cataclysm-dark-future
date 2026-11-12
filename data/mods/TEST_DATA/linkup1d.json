@@ -11,9 +11,15 @@
     "color": "light_green",
     "weight": "1 g",
     "volume": "1 ml",
-    "ammo": "battery",
-    "max_charges": 1000,
+    "tool_ammo": "battery",
     "initial_charges": 1000,
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 1000 }
+      }
+    ],
     "flags": [ "IS_UPS" ]
   },
   {

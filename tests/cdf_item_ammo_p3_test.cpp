@@ -282,20 +282,21 @@ TEST_CASE( "ammo_remaining returns charges for a charges-only tool", "[p3][ammo]
     CHECK( candle->ammo_remaining() == 37 );
 }
 
-// O1 gate: a gun carrying an ammo type but no magazine pocket keeps its direct charges (the
-// // CDF: guard, D14; tools left it in 4-b2 and own an integral MAGAZINE pocket instead).
-TEST_CASE( "ammo_remaining keeps direct charges on an ammo gun with no magazine pocket",
+// Pocket shape of the old direct-charges guard test (the guard is deleted by 7END): a gun with an
+// ammo type and an integral MAGAZINE pocket answers ammo_remaining from that pocket.
+// CDF: 7ENDC; the old test proved the removed direct-charges path on legacy_pipe_pistol, which now
+// inherits its MAGAZINE pocket, but that pocket holds 1 round, so the same 5-round numbers are checked
+// on legacy_sw_619 (MAGAZINE pocket 38:7, 38.json:121-141).
+TEST_CASE( "ammo_remaining reads a pocketed gun's magazine rounds",
            "[p3][ammo]" ) {
-    // CDF: 7-R2a; the ported pipe_pistol has an integral MAGAZINE pocket, the TEST_DATA fixture keeps
-    // the pre-port legacy shape (clip_size, no pocket, direct charges).
-    detached_ptr<item> gun = item::spawn( itype_id( "legacy_pipe_pistol" ) );
+    detached_ptr<item> gun = item::spawn( itype_id( "legacy_sw_619" ) );
     REQUIRE( gun->is_gun() );
     REQUIRE_FALSE( gun->ammo_types().empty() );
-    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
-    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
+    REQUIRE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
 
-    gun->charges = 5;
+    gun->ammo_set( itype_id( "38_special" ), 5 ); // CDF: 7ENDC, "38" is an ammotype, not an item
     CHECK( gun->ammo_remaining() == 5 );
+    CHECK( gun->charges == 0 );
 }
 
 // 4-b2: a tool with an ammo type and max_charges gets an integral MAGAZINE pocket from the loader;
@@ -479,21 +480,21 @@ TEST_CASE( "uses_magazine is true for a gun with a magazine well", "[p3][ammo]" 
     CHECK_FALSE( backpack->uses_magazine() );
 }
 
-// O1/D14 gate: a gun carrying an ammo type but no magazine pocket keeps its direct charges, and
-// ammo_consume must drain them (G-6, OD-3).
-TEST_CASE( "ammo_consume drains a legacy gun's direct charges", "[p3][ammo]" ) {
+// ammo_consume must drain a gun's rounds (G-6, OD-3). The direct-charges form of this test is gone
+// with the 7END guard; the same numbers (5 loaded, 3 consumed, 2 left) run through the MAGAZINE pocket.
+// CDF: 7ENDC; legacy_sw_619 is used because its pocket holds 7 rounds (38.json:121-141).
+TEST_CASE( "ammo_consume drains a legacy gun's magazine rounds", "[p3][ammo]" ) {
     clear_map();
-    // CDF: 7-R2a; legacy_pipe_pistol is the TEST_DATA fixture without the ported MAGAZINE pocket.
-    detached_ptr<item> gun = item::spawn( itype_id( "legacy_pipe_pistol" ) );
+    detached_ptr<item> gun = item::spawn( itype_id( "legacy_sw_619" ) );
     REQUIRE( gun->is_gun() );
     REQUIRE_FALSE( gun->ammo_types().empty() );
-    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
-    REQUIRE_FALSE( gun->contents.has_pocket_type( pocket_type::MAGAZINE_WELL ) );
+    REQUIRE( gun->contents.has_pocket_type( pocket_type::MAGAZINE ) );
 
-    gun->charges = 5;
+    gun->ammo_set( itype_id( "38_special" ), 5 ); // CDF: 7ENDC, "38" is an ammotype, not an item
     const tripoint_bub_ms pos = tripoint_bub_ms::zero();
     CHECK( gun->ammo_consume( 3, pos, nullptr ) == 3 );
-    CHECK( gun->charges == 2 );
+    CHECK( gun->ammo_remaining() == 2 );
+    CHECK( gun->charges == 0 );
 }
 
 // 4-b2: an integral tool drains the rounds in its MAGAZINE pocket; `charges` is not touched.
