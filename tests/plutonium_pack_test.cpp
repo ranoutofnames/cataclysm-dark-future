@@ -35,6 +35,8 @@ const itype_id itype_plut_cell_charge( "plut_cell_charge" );
 const itype_id itype_plut_pack_small( "plut_pack_small" );
 const itype_id itype_plut_pack_large( "plut_pack_large" );
 const itype_id itype_plut_pack_medium( "plut_pack_medium" );
+const itype_id itype_rm13_battery( "rm13_battery" );
+const itype_id itype_battery( "battery" );
 
 auto give_cells( avatar &you, int cells ) -> void
 {
@@ -173,14 +175,35 @@ TEST_CASE( "rm13_armor_keeps_its_large_pack_when_switched_on", "[plut][pocket][t
     CHECK( armor.ammo_remaining() == 5000 );
     armor.ammo_consume( 5, tripoint_bub_ms::zero(), &you );
     CHECK( armor.ammo_remaining() == 4995 );
+    // CDF: RM13PACK1 (ruled edit): the battery well is kept across the transform too; a bare spawn
+    // leaves it empty, so dress the wells as the spawn sites do.
+    armor.dress_magazine_wells( true, true );
+    item *battery = nullptr;
+    for( item *mag : armor.magazines_current() ) {
+        if( mag->typeId() == itype_rm13_battery ) {
+            battery = mag;
+        }
+    }
+    REQUIRE( battery != nullptr );
+    battery->ammo_set( itype_battery, 1000 );
+    armor.ammo_consume( 5, tripoint_bub_ms::zero(), &you );
+    CHECK( armor.ammo_remaining() == 5990 );
     armor.convert( itype_id( "rm13_armor_on" ) );
-    REQUIRE( armor.magazine_current() != nullptr );
+    REQUIRE( armor.magazines_current().size() == 2 );
     CHECK( armor.magazine_current()->typeId() == itype_plut_pack_large );
-    CHECK( armor.ammo_remaining() == 4995 );
+    CHECK( armor.ammo_remaining() == 5990 );
+    item *battery_after = nullptr;
+    for( item *mag : armor.magazines_current() ) {
+        if( mag->typeId() == itype_rm13_battery ) {
+            battery_after = mag;
+        }
+    }
+    REQUIRE( battery_after != nullptr );
+    CHECK( battery_after->ammo_remaining() == 1000 );
 
-    // the _on copy has the well by copy-from
+    // the _on copy has the wells by copy-from
     const item *on = item::spawn_temporary( itype_id( "rm13_armor_on" ) );
-    CHECK( wells_of( *on->type ).size() == 1 );
+    CHECK( wells_of( *on->type ).size() == 2 );
     CHECK( on->type->tool->max_charges == 0 );
     CHECK( on->ammo_remaining() == 5000 );
 }
@@ -319,13 +342,18 @@ TEST_CASE( "plutonium wells take their pack and nothing else", "[plut][pocket]" 
     CHECK( accepts( *cloak, "plut_pack_small" ) );
     CHECK( accepts( *anchor, "plut_pack_small" ) );
     CHECK( accepts( *rm13, "plut_pack_large" ) );
+    // CDF: RM13PACK1 (ruled edit): the second well takes the battery pack only
+    CHECK( accepts( *rm13, "rm13_battery" ) );
     CHECK_FALSE( accepts( *cloak, "medium_battery_cell" ) );
     CHECK_FALSE( accepts( *cloak, "plut_pack_large" ) );
     // the 8 L carry pocket of rm13_armor takes any small item, so only its pack well is checked
     const std::vector<const pocket_data *> rm13_wells = wells_of( *rm13->type );
-    REQUIRE( rm13_wells.size() == 1 );
-    CHECK( rm13_wells.front()->item_id_restriction.contains( itype_plut_pack_large ) );
-    CHECK_FALSE( rm13_wells.front()->item_id_restriction.contains( itype_plut_pack_small ) );
+    REQUIRE( rm13_wells.size() == 2 );
+    CHECK( rm13_wells[0]->item_id_restriction.contains( itype_plut_pack_large ) );
+    CHECK_FALSE( rm13_wells[0]->item_id_restriction.contains( itype_plut_pack_small ) );
+    CHECK_FALSE( rm13_wells[0]->item_id_restriction.contains( itype_rm13_battery ) );
+    CHECK( rm13_wells[1]->item_id_restriction.contains( itype_rm13_battery ) );
+    CHECK_FALSE( rm13_wells[1]->item_id_restriction.contains( itype_plut_pack_large ) );
     CHECK_FALSE( accepts( *anchor, "medium_atomic_battery_cell" ) );
     // and the other way round: a battery well does not take a pack
     const item *laptop = empty_tool( "control_laptop" );
@@ -390,12 +418,14 @@ TEST_CASE( "rm13_armor keeps its 8 L carry pocket", "[plut][pocket][armor]" )
         CAPTURE( id );
         detached_ptr<item> armor = item::spawn( itype_id( id ) );
         CHECK( armor->get_storage() == 8000_ml );
-        // CDF: AMENDMENT-v3 pocket list: MAGAZINE_WELL, MOD, CONTAINER, in that order
+        // CDF: AMENDMENT-v3 pocket list; RM13PACK1 adds the battery well after the pack well:
+        // MAGAZINE_WELL (pack), MAGAZINE_WELL (battery), MOD, CONTAINER, in that order
         const std::vector<pocket_data> &pockets = armor->type->pockets;
-        REQUIRE( pockets.size() == 3 );
+        REQUIRE( pockets.size() == 4 );
         CHECK( pockets[0].type == pocket_type::MAGAZINE_WELL );
-        CHECK( pockets[1].type == pocket_type::MOD );
-        CHECK( pockets[2].type == pocket_type::CONTAINER );
+        CHECK( pockets[1].type == pocket_type::MAGAZINE_WELL );
+        CHECK( pockets[2].type == pocket_type::MOD );
+        CHECK( pockets[3].type == pocket_type::CONTAINER );
     }
 }
 

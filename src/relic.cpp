@@ -38,6 +38,7 @@ std::string enum_to_string<relic_recharge_type>( relic_recharge_type data )
         case relic_recharge_type::fatigue: return "fatigue";
         case relic_recharge_type::field: return "field";
         case relic_recharge_type::trap: return "trap";
+        case relic_recharge_type::transfer: return "transfer";
         case relic_recharge_type::num:
             break;
         // *INDENT-ON*
@@ -73,6 +74,9 @@ bool relic_recharge::operator==( const relic_recharge &rhs ) const
            req == rhs.req &&
            field_type == rhs.field_type &&
            trap_type == rhs.trap_type &&
+           from_ammo == rhs.from_ammo &&
+           to_ammo == rhs.to_ammo &&
+           cost == rhs.cost &&
            interval == rhs.interval &&
            intensity_min == rhs.intensity_min &&
            intensity_max == rhs.intensity_max &&
@@ -92,6 +96,9 @@ void relic_recharge::load( const JsonObject &jo )
     jo.read( "req", req );
     jo.read( "field", field_type );
     jo.read( "trap", trap_type );
+    jo.read( "from_ammo", from_ammo );
+    jo.read( "to_ammo", to_ammo );
+    jo.read( "cost", cost );
     jo.read( "interval", interval );
     jo.read( "int_min", intensity_min );
     jo.read( "int_max", intensity_max );
@@ -107,6 +114,9 @@ void relic_recharge::serialize( JsonOut &json ) const
     json.member( "req", req );
     json.member( "field", field_type );
     json.member( "trap", trap_type );
+    json.member( "from_ammo", from_ammo );
+    json.member( "to_ammo", to_ammo );
+    json.member( "cost", cost );
     json.member( "interval", interval );
     json.member( "int_min", intensity_min );
     json.member( "int_max", intensity_max );
@@ -133,6 +143,24 @@ void relic_recharge::check() const
         show_warning_at_json_loc( src_loc,
                                   string_format( "Relic specifies invalid trap type '%s' to recharge from.", trap_type )
                                 );
+    }
+    if( type == relic_recharge_type::transfer ) {
+        if( !from_ammo.is_valid() ) {
+            show_warning_at_json_loc( src_loc,
+                                      string_format( "Relic specifies invalid ammotype '%s' to transfer charges from.", from_ammo )
+                                    );
+        }
+        if( !to_ammo.is_valid() ) {
+            show_warning_at_json_loc( src_loc,
+                                      string_format( "Relic specifies invalid ammotype '%s' to transfer charges to.", to_ammo )
+                                    );
+        }
+        if( rate <= 0 ) {
+            show_warning_at_json_loc( src_loc, "Relic specifies invalid transfer rate." );
+        }
+        if( cost < 1 ) {
+            show_warning_at_json_loc( src_loc, "Relic specifies invalid transfer cost." );
+        }
     }
     if( to_seconds<int>( interval ) <= 0 ) {
         show_warning_at_json_loc( src_loc, "Relic specifies invalid recharge interval." );
@@ -395,6 +423,41 @@ bool process_recharge_entry( item &itm, const relic_recharge &rech, Character *c
     if( !check_recharge_reqs( itm, rech, carrier ) ) {
         return false;
     }
+    if( rech.type == relic_recharge_type::transfer ) {
+        // CDF: RM13PACK1. DDA has no transfer type; the mechanism is CDF's. It moves charges between
+        // two loaded MAGAZINE_WELL magazines of the same host (PL-51 PART1 section B).
+        item *source = nullptr;
+        item *dest = nullptr;
+        const std::vector<item *> loaded = itm.magazines_current();
+        for( item *mag : loaded ) {
+            if( source == nullptr && mag->ammo_types().contains( rech.from_ammo ) ) {
+                source = mag;
+            }
+        }
+        for( item *mag : loaded ) {
+            if( mag != source && dest == nullptr && mag->ammo_types().contains( rech.to_ammo ) ) {
+                dest = mag;
+            }
+        }
+        if( source == nullptr || dest == nullptr ) {
+            return false;
+        }
+        int gain = std::min( rech.rate, dest->remaining_ammo_capacity() );
+        if( rech.cost > 0 ) {
+            gain = std::min( gain, source->ammo_remaining() / rech.cost );
+        }
+        if( gain <= 0 ) {
+            return false;
+        }
+        source->ammo_consume( gain * rech.cost, itm.bub_pos(), carrier );
+        const itype_id dest_ammo = dest->ammo_current().is_null() ?
+                                   dest->ammo_default() : dest->ammo_current();
+        dest->ammo_set( dest_ammo, dest->ammo_remaining() + gain );
+        if( rech.message && carrier ) {
+            carrier->add_msg_if_player( _( *rech.message ) );
+        }
+        return true;
+    }
     map &here = get_map();
     switch( rech.type ) {
         case relic_recharge_type::time: {
@@ -517,10 +580,14 @@ bool process_recharge_entry( item &itm, const relic_recharge &rech, Character *c
 void process_recharge( item &itm, Character *carrier )
 {
     if( itm.is_tool() || itm.is_gun() || itm.is_magazine() ) {
-        if( itm.ammo_remaining() >= itm.ammo_capacity() ) {
-            return;
-        }
+        // CDF: RM13PACK1. A multi-well host reports the SUM of its wells, so the full check would
+        // stop a transfer refill while the first-loaded well is still full (PL-51 PART1 section B).
+        // The transfer type therefore ignores it; every other type keeps the early return.
+        const bool full = itm.ammo_remaining() >= itm.ammo_capacity();
         for( const relic_recharge &rech : itm.get_relic_recharge_scheme() ) {
+            if( full && rech.type != relic_recharge_type::transfer ) {
+                continue;
+            }
             process_recharge_entry( itm, rech, carrier );
         }
     }

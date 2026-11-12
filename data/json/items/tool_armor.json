@@ -1019,7 +1019,7 @@
     "symbol": "[",
     "color": "dark_gray",
     "name": { "str": "RM13 combat armor" },
-    "description": "Internally powered by a maximum of ten plutonium fuel cells, this full-body suit of sleek black military armor represents the pinnacle of Rivtech's non-rigid powered armor technology.  While inactive it can protect from most pistol rounds.  When active, its powered ballistic shielding can shrug off 5.56x45mm.  Use it to turn it on.",
+    "description": "Internally powered by a maximum of ten plutonium fuel cells, this full-body suit of sleek black military armor represents the pinnacle of Rivtech's non-rigid powered armor technology.  While inactive it can protect from most pistol rounds.  When active, its powered ballistic shielding can shrug off 5.56x45mm.  The upper well holds a plutonium fuel pack that charges the battery pack in the lower well; the suit draws on the pack while it has fuel and on the battery after.  Use it to turn it on.",
     "flags": [
       "VARSIZE",
       "STURDY",
@@ -1050,6 +1050,14 @@
         "default_magazine": "plut_pack_large"
       },
       {
+        "//": "CDF: RM13PACK1 (PL-51 PART1 section B). The battery buffer the fuel pack's generator fills; the suit draws on the pack first and on the battery when the pack is empty.",
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "rm13_battery" ],
+        "default_magazine": "rm13_battery"
+      },
+      {
         "pocket_type": "MOD"
       },
       {
@@ -1059,9 +1067,9 @@
         "moves": 100
       }
     ],
-    "tool_ammo": "plutonium",
+    "tool_ammo": [ "plutonium", "battery" ],
     "default_ammo": "plut_cell_charge",
-    "magazines": [ [ "plutonium", [ "plut_pack_large" ] ] ],
+    "//3": "CDF: RM13PACK1. No legacy `magazines` table: the two wells are the only source (PAPR shape for a multi-ammo tool). A table would make type->magazine_default answer for the alphabetically first ammotype (battery) while item::magazine_default answers with the first well (the pack), which legacy_defaults_unchanged pins as equal.",
     "use_action": {
       "type": "transform",
       "msg": "You activate your RM13 combat armor.",
@@ -1109,6 +1117,17 @@
           "flags": [ "FIRE_FIELD_IMMUNE" ]
         },
         { "special_vision": [ "DRONE_CAM" ] }
+      ],
+      "recharge_scheme": [
+        {
+          "//": "CDF: RM13PACK1. The pack tops the battery buffer up every second (PL-51 PART1 section C).",
+          "type": "transfer",
+          "from_ammo": "plutonium",
+          "to_ammo": "battery",
+          "interval": "1 s",
+          "rate": 1,
+          "cost": 1
+        }
       ]
     }
   },
@@ -1119,7 +1138,7 @@
     "type": "TOOL_ARMOR",
     "//": "CDF: the parent's portions with this item's flat 100 coverage and 10 encumbrance (rule 6).",
     "name": { "str": "RM13 combat armor (on)", "str_pl": "RM13 combat armors (on)" },
-    "description": "Internally powered by a maximum of ten plutonium fuel cells, this full-body suit of sleek black military armor represents the pinnacle of Rivtech's non-rigid powered armor technology.  It is turned on and continually draining power, its powered ballistic shielding protecting against anything up to 5.56x45mm.  Use it to turn it off.",
+    "description": "Internally powered by a maximum of ten plutonium fuel cells, this full-body suit of sleek black military armor represents the pinnacle of Rivtech's non-rigid powered armor technology.  It is turned on and continually draining power, its powered ballistic shielding protecting against anything up to 5.56x45mm.  The upper well holds a plutonium fuel pack that charges the battery pack in the lower well; the suit draws on the pack while it has fuel and on the battery after.  Use it to turn it off.",
     "flags": [
       "VARSIZE",
       "STURDY",

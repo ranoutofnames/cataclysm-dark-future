@@ -8,6 +8,7 @@
 #include "magic/magic.h"
 #include "enchantments/enchantment.h"
 #include "translations.h"
+#include "type_id.h"
 
 class Creature;
 class JsonIn;
@@ -29,6 +30,8 @@ enum class relic_recharge_type {
     field,
     /** Consumes trap to recharge */
     trap,
+    /** Moves charges from one loaded magazine of the item into another */
+    transfer,
 
     num
 };
@@ -78,6 +81,12 @@ class relic_recharge
         field_type_str_id field_type;
         /** If relic consumes traps to recharge, this specifies trap type */
         trap_str_id trap_type;
+        /** For 'transfer' recharge, the ammotype of the source magazine */
+        ammotype from_ammo;
+        /** For 'transfer' recharge, the ammotype of the destination magazine */
+        ammotype to_ammo;
+        /** For 'transfer' recharge, source charges spent per destination charge. Default: 1 */
+        int cost = 1;
         /** For time-based recharge, specifies recharge interval */
         time_duration interval = 1_seconds;
         /** For intensity-based recharge types, specifies min intensity */

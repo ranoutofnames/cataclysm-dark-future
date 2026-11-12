@@ -15725,6 +15725,15 @@
           "default_magazine": "plut_pack_large"
         },
         {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "item_restriction": [
+            "rm13_battery"
+          ],
+          "default_magazine": "rm13_battery"
+        },
+        {
           "pocket_type": "CONTAINER",
           "carry": true,
           "max_contains_volume": "8 L",
@@ -15750,6 +15759,15 @@
             "plut_pack_large"
           ],
           "default_magazine": "plut_pack_large"
+        },
+        {
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "item_restriction": [
+            "rm13_battery"
+          ],
+          "default_magazine": "rm13_battery"
         },
         {
           "pocket_type": "CONTAINER",

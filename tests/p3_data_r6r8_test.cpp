@@ -348,7 +348,10 @@ TEST_CASE("p3 r9 storage order", "[p3][data][R6R8]") {
             CHECK((first == pocket_type::MAGAZINE || first == pocket_type::MAGAZINE_WELL));
             for (size_t i = 1; i < pockets.size(); i++) {
                 INFO("pocket " << i);
-                CHECK(pockets[i]->type == pocket_type::CONTAINER);
+                // CDF: RM13PACK1: a storage row may carry more than one well (rm13_armor(_on) gets the
+                // battery buffer well after its pack well). The carry pockets still come last.
+                CHECK((pockets[i]->type == pocket_type::CONTAINER ||
+                       pockets[i]->type == pocket_type::MAGAZINE_WELL));
             }
             checked++;
         }
