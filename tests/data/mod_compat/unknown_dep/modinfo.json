@@ -1,0 +1,7 @@
+{
+  "type": "MOD_INFO",
+  "id": "compat_unknown_dep",
+  "name": "COMPAT2 fixture unknown dependency",
+  "description": "Depends on an id that exists nowhere; must still fail",
+  "dependencies": [ "no_such_mod" ]
+}

@@ -304,6 +304,19 @@ std::optional<MOD_INFORMATION> load_modfile( const JsonObject &jo, const std::st
     assign( jo, "version", modfile.version );
     assign( jo, "lua_api_version", modfile.lua_api_version );
     assign( jo, "dependencies", modfile.dependencies );
+    // CDF: COMPAT2: DDA mods depend on the DDA core id "dda"; it resolves to CDF's core pack.
+    // A mod that lists both ids keeps a single entry.
+    if( std::find( modfile.dependencies.begin(), modfile.dependencies.end(),
+                   mod_id( "dda" ) ) != modfile.dependencies.end() ) {
+        t_mod_list resolved;
+        for( const mod_id &dep : modfile.dependencies ) {
+            const mod_id id = dep == mod_id( "dda" ) ? get_default_core_content_pack() : dep;
+            if( std::find( resolved.begin(), resolved.end(), id ) == resolved.end() ) {
+                resolved.push_back( id );
+            }
+        }
+        modfile.dependencies = resolved;
+    }
     assign( jo, "conflicts", modfile.conflicts );
     assign( jo, "core", modfile.core );
     assign( jo, "obsolete", modfile.obsolete );

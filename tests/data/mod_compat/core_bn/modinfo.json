@@ -1,0 +1,7 @@
+{
+  "type": "MOD_INFO",
+  "id": "bn",
+  "name": "COMPAT2 fixture core",
+  "description": "Fixture core pack for the dda dependency alias test",
+  "core": true
+}

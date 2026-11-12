@@ -1,0 +1,7 @@
+{
+  "type": "MOD_INFO",
+  "id": "compat_dda_alias",
+  "name": "COMPAT2 fixture DDA-style mod",
+  "description": "Depends on the DDA core id, which resolves to bn",
+  "dependencies": [ "dda" ]
+}

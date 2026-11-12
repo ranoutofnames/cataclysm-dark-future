@@ -1,0 +1,7 @@
+{
+  "type": "MOD_INFO",
+  "id": "compat_both",
+  "name": "COMPAT2 fixture bn and dda",
+  "description": "Lists both the CDF core id and the DDA alias",
+  "dependencies": [ "bn", "dda" ]
+}
