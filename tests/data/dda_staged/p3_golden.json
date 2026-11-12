@@ -12466,17 +12466,21 @@
       "storage": false
     },
     "minireactor": {
-      "class": "TOOL-INT",
-      "rule": "R4",
-      "action": "COPY-TWIN",
+      "class": "WELL",
+      "rule": "R3",
+      "action": "AUTHOR-KEEP-CDF-WELL",
       "twin": true,
       "pockets": [
         {
-          "pocket_type": "MAGAZINE",
-          "ammo_restriction": {
-            "plutonium": 10000
-          },
-          "rigid": true
+          "pocket_type": "MAGAZINE_WELL",
+          "max_item_length": "2 km",
+          "rigid": true,
+          "item_restriction": [
+            "plut_pack_reactor",
+            "plut_pack_small",
+            "plut_pack_large"
+          ],
+          "default_magazine": "plut_pack_reactor"
         }
       ],
       "cdf_kept_ids": [],

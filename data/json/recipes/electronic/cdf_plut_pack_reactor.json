@@ -1,0 +1,19 @@
+[
+  {
+    "result": "plut_pack_reactor",
+    "type": "recipe",
+    "category": "CC_ELECTRONIC",
+    "subcategory": "CSC_ELECTRONIC_PARTS",
+    "skill_used": "electronics",
+    "difficulty": 6,
+    "skills_required": [ "fabrication", 6 ],
+    "time": "60 m",
+    "reversible": true,
+    "decomp_learn": 7,
+    "book_learn": [ [ "recipe_atomic_battery", 6 ], [ "textbook_atomic_lab", 7 ] ],
+    "using": [ [ "soldering_standard", 10 ] ],
+    "qualities": [ { "id": "SCREW", "level": 1 } ],
+    "//": "CDF: REACTORPACK1. Copied from the heavy_atomic_battery_cell recipe (data/json/recipes/electronic/parts.json) with 20 plutonium cells = the pack's 10000 charges.",
+    "components": [ [ [ "scrap", 6 ] ], [ [ "cable", 4 ] ], [ [ "plut_cell", 20 ] ] ]
+  }
+]

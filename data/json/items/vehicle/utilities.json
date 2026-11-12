@@ -19,7 +19,7 @@
     "type": "TOOL",
     "id": "minireactor",
     "name": { "str": "minireactor" },
-    "description": "A small portable plutonium reactor.  Handle with great care!",
+    "description": "A small portable plutonium reactor.  It takes a plutonium fuel pack.  Handle with great care!",
     "weight": "27215 g",
     "to_hit": -4,
     "color": "light_cyan",
@@ -30,8 +30,19 @@
     "category": "veh_parts",
     "price": "900 USD",
     "price_postapoc": "50 USD",
-    "ammo": "plutonium",
-    "max_charges": 10000
+    "//": "CDF: REACTORPACK1. The reactor holds its fuel in a removable pack (PLUT1 shape); the part keeps reading plut_cell while one is seated.  Capacity stays CDF's 10000 through the default plut_pack_reactor.",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE_WELL",
+        "max_item_length": "2 km",
+        "rigid": true,
+        "item_restriction": [ "plut_pack_reactor", "plut_pack_small", "plut_pack_large" ],
+        "default_magazine": "plut_pack_reactor"
+      }
+    ],
+    "tool_ammo": "plutonium",
+    "default_ammo": "plut_cell_charge",
+    "magazines": [ [ "plutonium", [ "plut_pack_reactor", "plut_pack_small", "plut_pack_large" ] ] ]
   },
   {
     "type": "GENERIC",

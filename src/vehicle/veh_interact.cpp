@@ -64,6 +64,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #if defined(TILES)
 #    include "vehicle_preview.h"
@@ -631,6 +632,16 @@ auto veh_interact::cant_do(char mode) -> task_reason {
                 if (e.first != fuel_type_battery && e.first->phase == SOLID) {
                     valid_target = true;
                     break;
+                }
+            }
+            // CDF: REACTORPACK1 a reactor part with a fuel pack is unloadable as the pack
+            if (!valid_target) {
+                for (const vpart_reference& vp : veh->get_all_parts()) {
+                    if (vp.part().has_fuel_pack_well() &&
+                        vp.part().get_base().magazine_current() != nullptr) {
+                        valid_target = true;
+                        break;
+                    }
                 }
             }
             break;
@@ -1567,8 +1578,42 @@ void veh_interact::calc_overview() {
 
     for (const vpart_reference& vpr : veh->get_all_parts()) {
         if (vpr.part().is_reactor() && vpr.part().is_available()) {
+            // CDF: REACTORPACK1: a reactor with a fuel well shows the seated pack; an empty well
+            // says so instead of drawing a blank row.  Reactors without a well (mods) keep the
+            // ammo row details_ammo draws.
+            auto details_reactor = [](const vehicle_part& pt, const catacurses::window& w, int y) {
+                if (pt.has_fuel_pack_well()) {
+                    const item* pack = pt.get_base().magazine_current();
+                    if (pack == nullptr) {
+                        right_print(w, y, 1, c_light_red, _("no fuel pack"));
+                        return;
+                    }
+                    int offset = 1;
+                    std::string fmtstring = "%s   %5i";
+                    if (pt.is_leaking()) {
+                        fmtstring = "%s  " + leak_marker + "%5i" + leak_marker;
+                        offset = 0;
+                    }
+                    const nc_color color =
+                        pt.ammo_current().is_null() ? c_light_gray : pt.ammo_current()->color;
+                    right_print(w, y, offset, color,
+                                string_format(fmtstring, pack->tname(), pack->ammo_remaining()));
+                    return;
+                }
+                if (pt.ammo_remaining()) {
+                    int offset = 1;
+                    std::string fmtstring = "%s   %5i";
+                    if (pt.is_leaking()) {
+                        fmtstring = "%s  " + leak_marker + "%5i" + leak_marker;
+                        offset = 0;
+                    }
+                    right_print(
+                        w, y, offset, pt.ammo_current()->color,
+                        string_format(fmtstring, item::nname(pt.ammo_current()), pt.ammo_remaining()));
+                }
+            };
             overview_opts.emplace_back(
-                "REACTOR", &vpr.part(), next_hotkey(vpr.part(), hotkey), details_ammo);
+                "REACTOR", &vpr.part(), next_hotkey(vpr.part(), hotkey), details_reactor);
         }
     }
 
@@ -2951,51 +2996,87 @@ void act_vehicle_unload_fuel(vehicle* veh) {
     std::vector<itype_id> fuels;
     for (auto& e : veh->fuels_left()) {
         if (e.first == fuel_type_battery || e.first->phase != SOLID) {
-            // This skips battery and plutonium cells
+            // This skips battery and liquids; plutonium cells are SOLID and stay listed below
             continue;
         }
         fuels.push_back(e.first);
     }
-    if (fuels.empty()) {
+    // CDF: REACTORPACK1: a reactor part with a fuel pack is unloaded as the pack, partial charge
+    // included, so the pack itself is the entry and its cells are not listed.
+    std::vector<int> pack_parts;
+    for (const vpart_reference& vp : veh->get_all_parts()) {
+        vehicle_part& pt = vp.part();
+        if (!pt.has_fuel_pack_well() || pt.get_base().magazine_current() == nullptr) {
+            continue;
+        }
+        pack_parts.push_back(static_cast<int>(vp.part_index()));
+        std::erase(fuels, itype_plut_cell);
+    }
+    if (fuels.empty() && pack_parts.empty()) {
         add_msg(m_info, _("The vehicle has no solid fuel left to remove."));
         return;
     }
-    itype_id fuel;
-    if (fuels.size() > 1) {
+    int choice = 0;
+    const size_t option_count = fuels.size() + pack_parts.size();
+    if (option_count > 1) {
         uilist smenu;
         smenu.text = _("Remove what?");
-        for (size_t i = 0; i < fuels.size(); i++) {
-            const itype_id& fuel = fuels[i];
-            if (fuel == itype_plut_cell && veh->fuel_left(fuel) < PLUTONIUM_CHARGES) { continue; }
-            smenu.entries.emplace_back(
-                uilist_entry(item::nname(fuel)).with_retval(static_cast<int>(i)));
+        for (size_t i = 0; i < option_count; i++) {
+            if (i < fuels.size()) {
+                const itype_id& fuel = fuels[i];
+                if (fuel == itype_plut_cell && veh->fuel_left(fuel) < PLUTONIUM_CHARGES) {
+                    continue;
+                }
+                smenu.entries.emplace_back(
+                    uilist_entry(item::nname(fuel)).with_retval(static_cast<int>(i)));
+            } else {
+                vehicle_part& pt = veh->part(pack_parts[i - fuels.size()]);
+                const item& pack = *pt.get_base().magazine_current();
+                smenu.entries.emplace_back(
+                    uilist_entry(string_format(_("%1$s: %2$s, %3$d charges"), pt.name(),
+                                               pack.tname(), pack.ammo_remaining()))
+                        .with_retval(static_cast<int>(i)));
+            }
         }
         smenu.query();
-        if (smenu.ret < 0 || static_cast<size_t>(smenu.ret) >= fuels.size()) {
+        if (smenu.ret < 0 || static_cast<size_t>(smenu.ret) >= option_count) {
             add_msg(m_info, _("Never mind."));
             return;
         }
-        fuel = fuels[smenu.ret];
-    } else {
-        fuel = fuels.front();
+        choice = smenu.ret;
+    }
+    if (choice < static_cast<int>(fuels.size())) {
+        const itype_id fuel = fuels[choice];
+        int qty = veh->fuel_left(fuel);
+        if (fuel == itype_plut_cell) {
+            if (qty / PLUTONIUM_CHARGES == 0) {
+                add_msg(m_info, _("The vehicle has no fully charged plutonium cells."));
+                return;
+            }
+            detached_ptr<item> plutonium = item::spawn(fuel, calendar::turn,
+                                                       qty / PLUTONIUM_CHARGES);
+            add_msg(m_info, _("You unload %s from the vehicle."), plutonium->display_name());
+            veh->drain(fuel, qty - (qty % PLUTONIUM_CHARGES));
+            you.i_add_or_drop(std::move(plutonium));
+        } else {
+            detached_ptr<item> solid_fuel = item::spawn(fuel, calendar::turn, qty);
+            add_msg(m_info, _("You unload %s from the vehicle."), solid_fuel->display_name());
+            veh->drain(fuel, qty);
+            you.i_add_or_drop(std::move(solid_fuel));
+        }
+        return;
     }
 
-    int qty = veh->fuel_left(fuel);
-    if (fuel == itype_plut_cell) {
-        if (qty / PLUTONIUM_CHARGES == 0) {
-            add_msg(m_info, _("The vehicle has no fully charged plutonium cells."));
-            return;
-        }
-        detached_ptr<item> plutonium = item::spawn(fuel, calendar::turn, qty / PLUTONIUM_CHARGES);
-        add_msg(m_info, _("You unload %s from the vehicle."), plutonium->display_name());
-        veh->drain(fuel, qty - (qty % PLUTONIUM_CHARGES));
-        you.i_add_or_drop(std::move(plutonium));
-    } else {
-        detached_ptr<item> solid_fuel = item::spawn(fuel, calendar::turn, qty);
-        add_msg(m_info, _("You unload %s from the vehicle."), solid_fuel->display_name());
-        veh->drain(fuel, qty);
-        you.i_add_or_drop(std::move(solid_fuel));
+    vehicle_part& pt = veh->part(pack_parts[choice - fuels.size()]);
+    detached_ptr<item> pack = pt.remove_fuel_pack();
+    if (!pack) {
+        add_msg(m_info, _("The reactor has no fuel pack."));
+        return;
     }
+    //~ 1$s pack name, 2$s vehicle part name
+    add_msg(m_info, _("You remove %s from the %s."), pack->display_name(), pt.name());
+    you.i_add_or_drop(std::move(pack));
+    veh->invalidate_mass();
 }
 
 /**
@@ -3181,12 +3262,29 @@ void veh_interact::complete_vehicle(Character& who) {
                 }
 
             } else if (pt.is_fuel_store()) {
-                auto qty = src->charges;
-                pt.base->reload(who, *src, qty);
+                bool refuelled = true;
+                // CDF: REACTORPACK1: a pack is a unit (insert_fuel_pack swaps it and returns the
+                // old one), loose cells go into the seated pack (PLUT1's item::reload branch), and
+                // every other fuel store keeps the old line.
+                if (pt.has_fuel_pack_well() && src->is_magazine()) {
+                    refuelled = pt.insert_fuel_pack(who, *src);
+                } else if (pt.has_fuel_pack_well() &&
+                           pt.get_base().magazine_current() == nullptr) {
+                    who.add_msg_if_player(m_info, _("The reactor has no fuel pack."));
+                    refuelled = false;
+                } else if (pt.has_fuel_pack_well()) {
+                    refuelled =
+                        pt.get_base().magazine_current()->reload(who, *src, src->charges);
+                } else {
+                    auto qty = src->charges;
+                    pt.base->reload(who, *src, qty);
+                }
 
-                //~ 1$s vehicle name, 2$s reactor name
-                who.add_msg_if_player(
-                    m_good, _("You refuel the %1$s's %2$s."), veh->name, pt.name());
+                if (refuelled) {
+                    //~ 1$s vehicle name, 2$s reactor name
+                    who.add_msg_if_player(
+                        m_good, _("You refuel the %1$s's %2$s."), veh->name, pt.name());
+                }
 
             } else {
                 debugmsg("vehicle part is not reloadable");

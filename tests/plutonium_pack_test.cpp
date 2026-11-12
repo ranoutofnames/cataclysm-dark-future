@@ -334,25 +334,9 @@ TEST_CASE( "plutonium wells take their pack and nothing else", "[plut][pocket]" 
     CHECK_FALSE( accepts( *laptop, "plut_pack_large" ) );
 }
 
-// T10'
-TEST_CASE( "the minireactor stays on the integral plutonium path", "[plut][pocket][reload]" )
-{
-    clear_all_state();
-    avatar &you = get_avatar();
-    clear_avatar();
-
-    SECTION( "minireactor: one cell is 500 charges, capped at 10000" ) {
-        item &reactor = you.i_add( item::spawn( itype_id( "minireactor" ) ) );
-        // CDF: vehicle/utilities.json minireactor max_charges 10000
-        REQUIRE( reactor.type->tool->max_charges == 10000 );
-        const int before = reactor.ammo_remaining();
-        give_cells( you, 40 );
-        REQUIRE( reactor.reload( you, cell_stack( you ), 1 ) );
-        CHECK( reactor.ammo_remaining() == before + 500 );
-        REQUIRE( reactor.reload( you, cell_stack( you ), 40 ) );
-        CHECK( reactor.ammo_remaining() == 10000 );
-    }
-}
+// T10' is gone: CDF: REACTORPACK1 (ruled edit, conversion rule 7).  The minireactor item is no
+// longer an integral plutonium magazine; its well, pack and vehicle path are pinned by
+// tests/vehicle_reactor_pack_test.cpp K1, K4 and K6.
 
 // T11
 TEST_CASE( "plutonium constants and the ammo type default are unchanged", "[plut][pocket]" )

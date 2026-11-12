@@ -76,5 +76,25 @@
     "default_ammo": "plut_cell_charge",
     "looks_like": "medium_atomic_battery_cell",
     "flags": [ "NO_SALVAGE", "LEAK_DAM", "RADIOACTIVE" ]
+  },
+  {
+    "//": "CDF: REACTORPACK1. Body numbers copied from heavy_atomic_battery_cell (capacity 10000 matches the minireactor's own capacity).",
+    "type": "MAGAZINE",
+    "id": "plut_pack_reactor",
+    "category": "spare_parts",
+    "name": { "str": "reactor plutonium fuel pack" },
+    "description": "A shielded pack that holds up to twenty plutonium fuel cells worth of fuel.  Load a plutonium fuel cell into it to refill it; unloading it gives back whole cells.",
+    "weight": "1500 g",
+    "volume": "1 L",
+    "price": "1 kUSD",
+    "price_postapoc": "15 USD",
+    "material": [ "iron", "plastic" ],
+    "symbol": "=",
+    "color": "green",
+    "ammo_type": "plutonium",
+    "capacity": 10000,
+    "default_ammo": "plut_cell_charge",
+    "looks_like": "heavy_atomic_battery_cell",
+    "flags": [ "NO_SALVAGE", "LEAK_DAM", "RADIOACTIVE" ]
   }
 ]

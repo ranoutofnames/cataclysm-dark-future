@@ -20,6 +20,7 @@ class vehicle;
 class item_location;
 class vehicle_cursor;
 class npc;
+class Character;
 
 /**
  * Structure, describing vehicle part (i.e., wheel, seat)
@@ -120,6 +121,23 @@ public:
 
     /* @retun true if part in current state be reloaded optionally with specific itype_id */
     auto can_reload(const item* obj = nullptr) const -> bool;
+
+    /**
+     * CDF: REACTORPACK1: true when this is a reactor whose base item holds its fuel in a
+     * removable magazine well (a plutonium fuel pack).  A reactor without a well (mods) keeps
+     * the integral fuel path.
+     */
+    auto has_fuel_pack_well() const -> bool;
+
+    /**
+     * CDF: REACTORPACK1: seat @p src (a plutonium fuel pack) in the part's fuel well.  A pack
+     * already in the well goes back to @p who with its charge intact.  @return false when the
+     * pack does not fit or the part has no fuel well.
+     */
+    auto insert_fuel_pack(Character& who, item& src) -> bool;
+
+    /** CDF: REACTORPACK1: take the seated fuel pack out; empty when none is seated. */
+    auto remove_fuel_pack() -> detached_ptr<item>;
 
     /**
      * If this part is capable of wholly containing something, process the

@@ -1620,6 +1620,8 @@ PLUT_WELL_IDS = frozenset((
     "dimensional_anchor", "dimensional_anchor_on", "holo_cloak", "rm13_armor", "rm13_armor_on",
     # CDF: PLUT2, the phase suit takes the medium pack the same way
     "phase_immersion_suit", "phase_immersion_suit_on",
+    # CDF: REACTORPACK1, the minireactor takes the removable reactor pack
+    "minireactor",
 ))
 
 

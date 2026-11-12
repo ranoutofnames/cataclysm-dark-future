@@ -287,6 +287,13 @@ auto vehicle_part::ammo_current() const -> itype_id {
 
     if (is_tank() && !base->contents.empty()) { return base->contents.front().typeId(); }
 
+    // CDF: REACTORPACK1: a reactor with a fuel pack seated reports the vehicle fuel id
+    // (power.json fuel_type plut_cell), not the pack's plut_cell_charge contents, so every
+    // vehicle site keyed on plut_cell (fuels_left, fuel_left, drain, slow_leak) keeps working.
+    if (is_reactor() && base->magazine_current() != nullptr && !info().fuel_type.is_null()) {
+        return info().fuel_type;
+    }
+
     if (is_fuel_store(false) || is_turret()) { return base->ammo_current(); }
 
     return itype_id::NULL_ID();
@@ -294,6 +301,10 @@ auto vehicle_part::ammo_current() const -> itype_id {
 
 auto vehicle_part::ammo_capacity() const -> int {
     if (is_tank()) { return ammo_current()->charges_per_volume(base->get_container_capacity()); }
+
+    // CDF: REACTORPACK1: a well reactor reads its capacity from the seated pack, or from the
+    // default magazine when the well is empty (item::ammo_capacity( true ), src/item.cpp:9422).
+    if (has_fuel_pack_well()) { return base->ammo_capacity(true); }
 
     if (is_fuel_store(false) || is_turret()) { return base->ammo_capacity(); }
 
@@ -318,6 +329,31 @@ auto vehicle_part::ammo_set(const itype_id& ammo, int qty) -> int {
         const int limit = units::from_milliliter(ammo_capacity()) / stack;
         base->put_in(item::spawn(ammo, calendar::turn, qty > 0 ? std::min(qty, limit) : limit));
         return qty;
+    }
+
+    // CDF: REACTORPACK1: the spawn fill (vehicle.cpp:835-846) and the reactor tests call with
+    // the vehicle fuel id plut_cell; the pack holds PLUT1's plut_cell_charge contents instead.
+    // The default pack is inserted explicitly so the well takes the reactor pack and not "the
+    // smallest that fits" (item::ammo_set, src/item.cpp:782-828).
+    if (has_fuel_pack_well() && (ammo == info().fuel_type || ammo == base->ammo_default())) {
+        const itype_id charge = base->ammo_default();
+        if (!charge.is_null() && qty <= 0) {
+            // qty 0 leaves the well empty: an empty spawn has no pack
+            return 0;
+        }
+        if (base->magazine_current() == nullptr) {
+            const itype_id default_pack = base->magazine_default();
+            if (default_pack.is_null()) { return -1; }
+            std::vector<item_pocket*> wells = base->get_pockets([](const item_pocket& p) {
+                return p.is_type(pocket_type::MAGAZINE_WELL);
+            });
+            if (wells.empty()) { return -1; }
+            if (!wells.front()->insert_item(item::spawn(default_pack, base->birthday())).success()) {
+                return -1;
+            }
+        }
+        base->ammo_set(charge, qty >= 0 ? qty : base->ammo_capacity(true));
+        return base->ammo_remaining();
     }
 
     if (is_turret()) {
@@ -381,6 +417,16 @@ auto vehicle_part::can_reload(const item* obj) const -> bool {
     // first check part is not destroyed and can contain ammo
     if (!is_fuel_store()) { return false; }
 
+    // CDF: REACTORPACK1: a reactor with a fuel well follows DDA's reactor answer
+    // (DDA vehicle_part.cpp:426-428, 455-457): always refillable without an item, a pack that
+    // the well allows, and loose cells only into a seated pack.
+    if (has_fuel_pack_well()) {
+        if (obj == nullptr || obj->is_null()) { return true; }
+        if (base->magazine_compatible().count(obj->typeId()) > 0) { return true; }
+        const item* pack = base->magazine_current();
+        return pack != nullptr && pack->can_reload_with(*obj, false);
+    }
+
     if (obj != nullptr && !obj->is_null()) {
         const itype_id obj_type = obj->typeId();
         if (is_reactor()) { return base->is_reloadable_with(obj_type); }
@@ -402,6 +448,54 @@ auto vehicle_part::can_reload(const item* obj) const -> bool {
     }
 
     return ammo_remaining() < ammo_capacity();
+}
+
+auto vehicle_part::has_fuel_pack_well() const -> bool {
+    return is_reactor() && base->contents.has_pocket_type(pocket_type::MAGAZINE_WELL);
+}
+
+auto vehicle_part::insert_fuel_pack(Character& who, item& src) -> bool {
+    if (!has_fuel_pack_well() || src.is_null() || !src.is_magazine()) { return false; }
+    // the well's own item restriction decides which packs fit
+    if (base->magazine_compatible().count(src.typeId()) == 0) { return false; }
+
+    std::vector<item_pocket*> pockets = base->get_pockets([](const item_pocket&) {
+        return true;
+    });
+    int well_index = -1;
+    for (size_t i = 0; i < pockets.size(); ++i) {
+        if (pockets[i]->is_type(pocket_type::MAGAZINE_WELL)) {
+            well_index = static_cast<int>(i);
+            break;
+        }
+    }
+    if (well_index < 0) { return false; }
+
+    // CDF: reload_targeted refuses the swap while the seated magazine is full
+    // (src/item_pocket.cpp:2021-2028) and a full pack must be swappable, so the seated pack is
+    // ejected by hand here; reload_targeted then fills the empty well (old pack to the carrier).
+    if (item* seated = pockets[well_index]->magazine_current()) {
+        detached_ptr<item> old = pockets[well_index]->remove_item(seated);
+        base->on_contents_changed();
+        if (old) {
+            who.i_add(std::move(old), true, nullptr, nullptr, true, false);
+        }
+    }
+    if (!base->reload(who, src, 1, well_index)) { return false; }
+    return true;
+}
+
+auto vehicle_part::remove_fuel_pack() -> detached_ptr<item> {
+    if (!has_fuel_pack_well()) { return detached_ptr<item>(); }
+    std::vector<item_pocket*> wells = base->get_pockets([](const item_pocket& p) {
+        return p.is_type(pocket_type::MAGAZINE_WELL);
+    });
+    if (wells.empty() || wells.front()->magazine_current() == nullptr) {
+        return detached_ptr<item>();
+    }
+    detached_ptr<item> pack = wells.front()->remove_item(wells.front()->magazine_current());
+    base->on_contents_changed();
+    return pack;
 }
 
 void vehicle_part::process_contents(const tripoint_bub_ms& pos, const bool e_heater, int turns) {

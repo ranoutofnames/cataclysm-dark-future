@@ -185,7 +185,13 @@ auto vehicle::print_part_list(
 
         std::string partname = vp.name();
 
-        if (vp.is_fuel_store() && !vp.ammo_current().is_null()) {
+        // CDF: REACTORPACK1: a reactor with a fuel pack is named by the pack, not by the
+        // plut_cell fuel id its rows used to print.
+        if (vp.has_fuel_pack_well()) {
+            if (const item* pack = vp.get_base().magazine_current()) {
+                partname += string_format(" (%s)", pack->tname());
+            }
+        } else if (vp.is_fuel_store() && !vp.ammo_current().is_null()) {
             if (detail) {
                 if (vp.ammo_current() == itype_battery) {
                     partname += string_format(
