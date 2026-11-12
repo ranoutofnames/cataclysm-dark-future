@@ -13,6 +13,8 @@
 #include "flag.h"
 #include "fstream_utils.h"
 #include "init.h"
+#include "item_factory.h"
+#include "itype.h"
 #include "json.h"
 #include "type_id.h"
 
@@ -95,13 +97,31 @@ TEST_CASE( "dda_flag_compat_file_defines_each_id_once", "[compat][p3]" )
     CHECK( defined_elsewhere.empty() );
 }
 
-TEST_CASE( "dda_edible_frozen_fixture_item_has_no_undefined_flag", "[compat][p3]" )
+TEST_CASE( "dda_edible_frozen_fixture_item_flags_are_defined", "[compat][p3]" )
 {
     CHECK( flag_id( "EDIBLE_FROZEN" ).is_valid() );
-    const std::string msg = capture_debugmsg_during( [&]() {
-        load_fixture_objects( HINT_FIXTURES + "item_edible_frozen.json", "compat4" );
+    load_fixture_objects( HINT_FIXTURES + "item_edible_frozen.json", "compat4" );
+    const std::vector<const itype *> found = item_controller->find( []( const itype & t ) {
+        return t.get_id() == itype_id( "compat4_frozen_item" );
     } );
-    CHECK( msg.find( "undefined flag" ) == std::string::npos );
+    REQUIRE( found.size() == 1 );
+    const itype *def = found.front();
+    REQUIRE_FALSE( def->item_tags.empty() );
+    // Same check Item_factory::finalize_post runs on item_tags ("undefined flag" debugmsg).
+    for( const flag_id &f : def->item_tags ) {
+        INFO( f.str() );
+        CHECK( f.is_valid() );
+    }
+}
+
+TEST_CASE( "dda_armor_hint_names_armor_data", "[compat][p3]" )
+{
+    const std::string msg = capture_debugmsg_during( [&]() {
+        load_fixture_objects( HINT_FIXTURES + "item_armor_array.json", "compat4" );
+    } );
+    CHECK( msg.find( "Invalid or misplaced field name \"armor\"" ) != std::string::npos );
+    CHECK( msg.find( "CDF reads armor_data, with armor_portion_data nested inside it" ) != std::string::npos );
+    CHECK( msg.find( "armor_portion_data, not a DDA armor array" ) == std::string::npos );
 }
 
 TEST_CASE( "dda_variants_key_still_errors_with_cdf_hint", "[compat][p3]" )

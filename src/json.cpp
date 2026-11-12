@@ -112,18 +112,18 @@ void JsonObject::mark_visited( const std::string &name ) const
 static std::string compat_key_hint( const std::string &name )
 {
     static const std::map<std::string, std::string> hints = {
-        { "armor", "CDF reads armor_portion_data, not a DDA armor array" },
-        { "variants", "DDA cosmetic key, not read by CDF" },
-        { "display_type", "DDA cosmetic key, not read by CDF" },
-        { "sided", "DDA cosmetic key, not read by CDF" },
+        { "armor", "CDF reads armor_data, with armor_portion_data nested inside it" },
+        { "variants", "not read by CDF" },
+        { "display_type", "not read by CDF" },
+        { "sided", "not read by CDF; CDF sets sidedness from the covers list" },
         { "replace_materials", "not read by CDF" },
         { "variant_type", "not read by CDF" },
         { "read_skill", "not read by CDF" },
         { "read_fun", "not read by CDF" },
-        { "freezing_point", "not read by CDF" },
+        { "freezing_point", "not read by CDF; CDF sets freeze_point on the material" },
         { "growth_stages", "not read by CDF" },
         { "tick_action", "not read by CDF" },
-        { "max_worn", "dropped by CDF (AR5), not read" },
+        { "max_worn", "not read by CDF (no max_worn field yet)" },
     };
     const auto it = hints.find( name );
     return it == hints.end() ? std::string() : it->second;

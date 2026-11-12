@@ -1,0 +1,10 @@
+[
+  {
+    "type": "ARMOR",
+    "id": "compat4_armor_array_item",
+    "name": "compat4 armor array fixture",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "armor": [ { "encumbrance": 1, "coverage": 10, "covers": [ "torso" ] } ]
+  }
+]
