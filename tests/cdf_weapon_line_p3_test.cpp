@@ -1,7 +1,8 @@
 // Job 5-5d: the Wield line of a gun with several ammo pockets (U7, sidebar part).
 // Function under test: character_funcs::fmt_wielded_weapon (src/character_functions.cpp).
 // DDA source: src/character_inventory.cpp weapname / weapname_mode / weapname_ammo
-// (DDA commit b4b62254ae2). CDF keeps the `ammo mode name` order, see TASK.md fact 4.
+// (DDA commit b4b62254ae2). Job 5-5e: the line now follows DDA's `mode name ammo` order, with the
+// single-pocket "(cur/max)" and "(empty)" text (was CDF's `ammo [mode] name`, draft fact 4).
 
 #include <string>
 #include <utility>
@@ -93,6 +94,9 @@ TEST_CASE( "wield_line_dual_well_gun_lists_both_wells", "[p3][weapon]" )
     CHECK( text.find( "(15/15, 1000/1000)" ) != std::string::npos );
     // The old single-count path would print only the current mode's well, "(15)".
     CHECK( text.find( "(15)" ) == std::string::npos );
+    // CDF: 5-5e: the ammo list follows the gun name (DDA "mode name ammo"), it no longer leads the line
+    CHECK( text.find( remove_color_tags( chr.primary_weapon().type_name() ) ) <
+           text.find( "(15/15, 1000/1000)" ) );
 }
 
 TEST_CASE( "wield_line_colours_follow_the_ratio", "[p3][weapon]" )
@@ -178,8 +182,30 @@ TEST_CASE( "wield_line_single_pocket_gun_is_unchanged", "[p3][weapon]" )
     const std::string text = remove_color_tags( character_funcs::fmt_wielded_weapon( chr ) );
     const std::string type_name = remove_color_tags( chr.primary_weapon().type_name() );
     CAPTURE( text, type_name );
-    CHECK( text.starts_with( "(15)" ) );
-    CHECK( text.find( type_name ) != std::string::npos );
+    // CDF: 5-5e: DDA layout, the gun name then the "(cur/max)" count (was "(15)" before the name).
+    // The glockmag capacity is 15 (asserted in the dual-well case above), so the max is 15.
+    CHECK( text.starts_with( type_name ) );
+    CHECK( text.ends_with( " (15/15)" ) );
+}
+
+TEST_CASE( "wield_line_empty_single_pocket_gun_says_empty", "[p3][weapon]" )
+{
+    clear_all_state();
+    avatar &chr = get_avatar();
+    clear_avatar();
+
+    // CDF: 5-5e: DDA weapname_ammo prints "(empty)" for a magazine well with no magazine
+    detached_ptr<item> gun = item::spawn( itype_id( "glock_19" ) );
+    REQUIRE( gun->uses_magazine() );
+    REQUIRE( gun->magazine_current() == nullptr );
+    REQUIRE( !chr.wield( std::move( gun ) ) );
+
+    const std::string text = remove_color_tags( character_funcs::fmt_wielded_weapon( chr ) );
+    const std::string type_name = remove_color_tags( chr.primary_weapon().type_name() );
+    CAPTURE( text, type_name );
+    CHECK( text.starts_with( type_name ) );
+    CHECK( text.ends_with( " (empty)" ) );
+    CHECK( text.find( "(0" ) == std::string::npos );
 }
 
 TEST_CASE( "wield_line_mode_only_when_there_is_a_choice", "[p3][weapon]" )

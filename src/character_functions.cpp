@@ -173,6 +173,48 @@ std::string multimag_ammo_summary( const item &gun )
     return summary;
 }
 
+// CDF: 5-5e: the single-pocket ammo text of the Wield line, in DDA's layout (DDA weapname_ammo,
+// src/character_inventory.cpp:1770-1799): "(cur/max)" coloured by fill, and "(empty)" for a gun whose
+// magazine well is empty. A gun with neither a magazine well nor an integral magazine keeps the plain
+// "(cur)" text. Returns "" when the gun has no current mode.
+std::string single_ammo_summary( const gun_mode &mode )
+{
+    item *gun = mode.target;
+    if( gun == nullptr ) {
+        return std::string();
+    }
+    if( gun->uses_magazine() && gun->magazine_current() == nullptr ) {
+        return _( "(empty)" );
+    }
+    const int cur = gun->ammo_remaining();
+    if( !gun->uses_magazine() && !gun->magazine_integral() ) {
+        return string_format( "(%d)", cur );
+    }
+    int max = 0;
+    if( cur == 0 ) {
+        const itype_id default_ammo = gun->ammo_default();
+        if( !default_ammo.is_null() && default_ammo->ammo ) {
+            max = gun->ammo_capacity( default_ammo->ammo->type );
+        }
+    } else {
+        max = gun->ammo_capacity( gun->loaded_ammo().ammo_type() );
+    }
+    nc_color color = c_white;
+    if( cur == 0 ) {
+        color = c_light_red;
+    } else if( max > 0 && cur < max ) {
+        const double ratio = static_cast<double>( cur ) / static_cast<double>( max );
+        if( ratio < 1.0 / 3.0 ) {
+            color = c_red;
+        } else if( ratio < 2.0 / 3.0 ) {
+            color = c_yellow;
+        } else {
+            color = c_light_green;
+        }
+    }
+    return "(" + colorize( string_format( "%d/%d", cur, max ), color ) + ")";
+}
+
 } // namespace
 
 namespace character_funcs
@@ -640,20 +682,21 @@ std::string fmt_wielded_weapon( const Character &who )
             str = string_format( "(%d) %s", weapon.ammo_remaining(), weapon.type_name() );
         } else {
             const gun_mode mode = weapon.gun_current_mode();
-            const int cur_ammo = mode.target != nullptr ? mode.target->ammo_remaining() : 0;
             // CDF: 5-5d: a gun with firing requirements lists every ammo pocket as "cur/max"
             // instead of the current mode's single count (DDA weapname_ammo, character_inventory.cpp).
+            // CDF: 5-5e: the single-pocket text takes DDA's "(cur/max)" / "(empty)" form (single_ammo_summary).
             const std::string ammo_text = weapon.uses_firing_requirements()
                                           ? multimag_ammo_summary( weapon )
-                                          : string_format( "(%d)", cur_ammo );
+                                          : single_ammo_summary( mode );
             // CDF: 5-5d: hide the mode when the gun that owns it has no alternative (DDA weapname_mode).
             const bool show_mode = mode.target != nullptr && mode.target->gun_all_modes().size() > 1;
             str = weapon.type_name();
             if( show_mode ) {
                 str = "[" + mode.tname() + "] " + str;
             }
+            // CDF: 5-5e: the ammo follows the name, "[mode] name ammo" (DDA weapname: mode, name, ammo)
             if( !ammo_text.empty() ) {
-                str = ammo_text + " " + str;
+                str += " " + ammo_text;
             }
         }
         // Is either the base item or at least one auxiliary gunmod loaded (includes empty magazines)
