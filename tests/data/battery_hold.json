@@ -1,6 +1,6 @@
 {
- "note": "BATT4 exemption/deferred list (PL-33b TASK-draft-BATT4-v2, revised by AUTO-265/266). Boundary: a base TOOL/TOOL_ARMOR item may have a battery well or an integral battery pocket only through explicit `pocket_data` (the DDA form) unless it is listed here. Kinds: native (CDF well, no DDA twin), filter (filter/cartridge well, not a battery tool), integral (DDA class integral / BATT2 integral pocket), parked (legacy well, waiting for the appliance packet), retired (obsoletion id MIG1 deletes), no-pocket (DDA has no battery pocket). Not listed: plutonium pack wells (PLUT1) and weld-tank wells, which are not battery storage. LINKUP1c converted the 20 live hold tools; BATT4 removed the mess_kit, crt_mess_kit and voltmeter stores (DDA heats food for free; DDA's voltmeter has no power).",
- "count": 67,
+ "note": "BATT4 exemption/deferred list (PL-33b TASK-draft-BATT4-v2, revised by AUTO-265/266). Boundary: a base TOOL/TOOL_ARMOR item may have a battery well or an integral battery pocket only through explicit `pocket_data` (the DDA form) unless it is listed here. Kinds: native (CDF well, no DDA twin), filter (filter/cartridge well, not a battery tool), integral (DDA class integral / BATT2 integral pocket), parked (legacy well, waiting for the appliance packet), retired (obsoletion id MIG1 deletes), no-pocket (DDA has no battery pocket). Not listed: plutonium pack wells (PLUT1) and weld-tank wells, which are not battery storage. LINKUP1c converted the 20 live hold tools; BATT4 removed the mess_kit, crt_mess_kit and voltmeter stores (DDA heats food for free; DDA's voltmeter has no power). APPL1 (2026-11-11) closed the parked pair: autoclave and hydraulic_press lost their legacy wells and take the DDA appliance link (link_up), so no parked rows are left.",
+ "count": 65,
  "scan": "data/json/items + data/json/obsoletion, TOOL and TOOL_ARMOR, core mod (\"bn\") items only (TEST_DATA fixtures and runtime test itypes excluded)",
  "items": {
   "control_laptop": {
@@ -366,22 +366,6 @@
    "group": "W5-wrist",
    "file": "data/json/items/tool/electronics.json",
    "note": "DDA class integral (no swappable cell), capacity follows CDF (AUTO-236); explicit pocket authored by R4a/R4b"
-  },
-  "autoclave": {
-   "kind": "parked",
-   "packet": "appliance packet (after LINKUP1d)",
-   "group": "W3",
-   "file": "data/json/items/tool/med.json",
-   "dda_cite": "DDA:data/json/items/appliances.json:212",
-   "note": "DDA makes it a disconnected appliance; parked until the appliance port lands (AUTO-265, DEFERRED-REGISTER)"
-  },
-  "hydraulic_press": {
-   "kind": "parked",
-   "packet": "appliance packet (after LINKUP1d)",
-   "group": "W3",
-   "file": "data/json/items/tool/metalworking.json",
-   "dda_cite": "DDA:data/json/items/appliances.json:185",
-   "note": "DDA makes it a disconnected appliance; parked until the appliance port lands (AUTO-265, DEFERRED-REGISTER)"
   },
   "closed_loop_extractor_large": {
    "kind": "retired",

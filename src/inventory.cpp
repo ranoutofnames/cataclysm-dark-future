@@ -31,6 +31,7 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
+#include "vehicle/vpart_range.h"
 
 #include <algorithm>
 #include <climits>
@@ -407,6 +408,34 @@ static int count_charges_in_list( const itype *type, const map_stack &items )
     return 0;
 }
 
+// CDF: APPL1. A DDA appliance tool has no battery well: the appliance feeds its pseudo tool (DDA
+// vehicle::prepare_tool inserts a pseudo magazine into the tool's well). CDF's 4-b1 path loaded the
+// vehicle charge into a real magazine with ammo_set, which a well-less tool no longer has, so point
+// the link model at the vehicle instead, the same link a player-made cable sets.
+static bool cdf_link_appliance_tool( item &tool, vehicle &veh )
+{
+    if( !tool.can_link_up() || tool.get_contents().has_pocket_type( pocket_type::MAGAZINE_WELL ) ) {
+        return false;
+    }
+    for( const vpart_reference &vp : veh.get_all_parts() ) {
+        const vehicle_part &part = vp.part();
+        if( part.removed || part.is_broken() ) {
+            continue;
+        }
+        if( part.info().has_flag( "BATTERY" ) || part.info().has_flag( "APPLIANCE" ) ) {
+            item::link_data &link = tool.link();
+            link.source = link_state::no_link;
+            link.target = link_state::vehicle_battery;
+            link.t_veh = &veh;
+            link.t_abs_pos = veh.abs_ms_location();
+            link.t_mount = part.mount;
+            tool.update_link_traits();
+            return true;
+        }
+    }
+    return false;
+}
+
 void inventory::form_from_map( const tripoint_bub_ms &origin, int range, const Character *pl,
                                bool assign_invlet,
                                bool clear_path )
@@ -563,8 +592,12 @@ void inventory::form_from_map( map &m, std::vector<tripoint_bub_ms> pts, const C
             for( itype_id id : crafterpart->info().craftertools() ) {
                 if( !found_tools.contains( id.str() ) ) {
                     item &tool = *item::spawn_temporary( id, bday );
-                    // CDF: 4-b1: vehicle battery charge goes into the tool's magazine pocket, not direct charges
-                    tool.ammo_set( tool.ammo_default(), veh->fuel_left( itype_battery, true ) );
+                    // CDF: APPL1: the well-less appliance tools take the vehicle link; the rest keep
+                    // the 4-b1 magazine load below
+                    if( !cdf_link_appliance_tool( tool, *veh ) ) {
+                        // CDF: 4-b1: vehicle battery charge goes into the tool's magazine pocket, not direct charges
+                        tool.ammo_set( tool.ammo_default(), veh->fuel_left( itype_battery, true ) );
+                    }
                     tool.item_tags.insert( flag_PSEUDO );
                     if( id == itype_hotplate ) {
                         tool.item_tags.insert( flag_HEATS_FOOD );
@@ -588,8 +621,12 @@ void inventory::form_from_map( map &m, std::vector<tripoint_bub_ms> pts, const C
 
         if( autoclavepart && !has_autodoc ) {
             item &autoclave = *item::spawn_temporary( "autoclave", bday );
-            // CDF: 4-b1: as above, pocket model instead of direct charges
-            autoclave.ammo_set( autoclave.ammo_default(), veh->fuel_left( itype_battery, true ) );
+            // CDF: APPL1: the autoclave has no battery well any more (DDA appliance shape), so the
+            // part powers it through the link instead of an ammo_set magazine load
+            if( !cdf_link_appliance_tool( autoclave, *veh ) ) {
+                // CDF: 4-b1: as above, pocket model instead of direct charges
+                autoclave.ammo_set( autoclave.ammo_default(), veh->fuel_left( itype_battery, true ) );
+            }
             autoclave.item_tags.insert( flag_PSEUDO );
             add_item_by_items_type_cache( autoclave, false );
             has_autodoc = true;

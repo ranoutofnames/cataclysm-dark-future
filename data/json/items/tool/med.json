@@ -41,12 +41,10 @@
     "material": "steel",
     "symbol": "A",
     "color": "yellow",
-    "use_action": "AUTOCLAVE",
+    "use_action": [ "AUTOCLAVE", { "type": "link_up", "cable_length": 2, "charge_rate": "1500 W" } ],
     "flags": [ "ALLOWS_REMOTE_USE" ],
     "looks_like": "microwave",
-    "ammo": "battery",
-    "magazines": [ [ "battery", [ "medium_storage_battery", "storage_battery", "large_storage_battery" ] ] ],
-    "magazine_well": "1000 ml"
+    "ammo": "battery"
   },
   {
     "id": "inhaler",

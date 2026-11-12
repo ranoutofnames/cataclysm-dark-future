@@ -190,7 +190,8 @@ TEST_CASE( "legacy_defaults_unchanged", "[p3][magazine][pocket]" )
     }
     // CDF: P3-BATT1 and 7-R2a moved guns and tools off the legacy `magazines` key (96 items left here);
     // 7-R3c moved the 22 filter/cartridge and obsolete rows off it as well, and LINKUP1c the 19
-    // hold-list cable tools (46 left). The floor only guards against the population going empty, the
+    // hold-list cable tools (44 left; APPL1 moved autoclave and hydraulic_press off the legacy key).
+    // The floor only guards against the population going empty, the
     // per-item comparison stays strict
     CHECK( checked > 30 );
     CAPTURE( bad );
@@ -246,8 +247,9 @@ TEST_CASE( "legacy_compatible_unchanged", "[p3][magazine][pocket]" )
         }
     }
     // CDF: P3-BATT1 moved 72 tools and 7-R2a/STOR27 more off the legacy `magazines` key (157 -> 71 items
-    // compared here); LINKUP1c moved the 19 hold-list cable tools too (43 left). The floor only guards
-    // against the population going empty, the per-item comparison below stays strict
+    // compared here); LINKUP1c moved the 19 hold-list cable tools too, and APPL1 autoclave and
+    // hydraulic_press (41 left). The floor only guards against the population going empty, the
+    // per-item comparison below stays strict
     CHECK( checked > 30 );
     CAPTURE( bad );
     CHECK( bad.empty() );

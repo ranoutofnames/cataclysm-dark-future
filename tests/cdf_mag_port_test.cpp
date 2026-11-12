@@ -31,9 +31,9 @@ TEST_CASE("p3 golden file has format 1, the DDA hash and the target items", "[p3
     JsonObject items = golden.get_object("items");
     items.allow_omitted_members();
 
-    // The count is read from the file; what is pinned is the 1167 target ids (7-GOLD1 regen
-    // target, with their class; BATT4 removed mess_kit, crt_mess_kit and voltmeter) and the three
-    // TEST_DATA ids the tree gained after it.
+    // The count is read from the file; what is pinned is the 1165 target ids (7-GOLD1 regen
+    // target, with their class; BATT4 removed mess_kit, crt_mess_kit and voltmeter and APPL1
+    // autoclave and hydraulic_press) and the three TEST_DATA ids the tree gained after it.
     std::ifstream ids_file(P3_GOLDEN_TARGET_IDS_FILENAME, std::ios::binary);
     JsonIn ids_in(ids_file);
     JsonObject ids = ids_in.get_object();

@@ -146,19 +146,9 @@
   ],
   "deferred": [
     {
-      "id": "autoclave",
-      "file": "data/json/items/tool/med.json",
-      "reason": "Step-0 correction: the DDA twin is the disconnected appliance item (data/json/items/appliances.json:212) with no link_up, no tool_ammo and no battery; the working autoclave is a vehicle appliance part, and CDF has no appliance port. A cable value cannot be copied; blocked."
-    },
-    {
       "id": "crt_mess_kit",
       "file": "data/mods/CRT_EXPANSION/items/crt_tools.json",
       "reason": "CDF-only child of mess_kit (HAND-FALLBACK, no DDA twin). It can only copy its parent, and the parent has no DDA link_up (deferred with mess_kit)."
-    },
-    {
-      "id": "hydraulic_press",
-      "file": "data/json/items/tool/metalworking.json",
-      "reason": "Step-0 correction: the DDA twin is the disconnected appliance item (data/json/items/appliances.json:185) with no link_up and no use_action; the working press is an appliance part and CDF has no appliance port. Blocked."
     },
     {
       "id": "mess_kit",
@@ -169,6 +159,24 @@
       "id": "voltmeter",
       "file": "data/json/items/tool/science.json",
       "reason": "Step-0 correction: the DDA twin (data/json/items/tool/science.json:1025) has no link_up, no tool_ammo and no battery; CDF has no VOLTMETER iuse either. Deleting only the well is DDA-faithful but is not this packet's rule (no cable value to copy). Blocked."
+    }
+  ],
+  "appl1_converted": [
+    {
+      "id": "autoclave",
+      "file": "data/json/items/tool/med.json",
+      "cable_length": 2,
+      "charge_rate": "1500 W",
+      "charge_rate_mw": 1500000,
+      "reason": "AUTO-265 parked pair closed by APPL1: the DDA twin is the disconnected appliance item (data/json/items/appliances.json:212) with no link_up; CDF bridges the appliance port with link_up. Rate = DDA ap_autoclave epower 1500 W; cable_length 2 = an appliance lead."
+    },
+    {
+      "id": "hydraulic_press",
+      "file": "data/json/items/tool/metalworking.json",
+      "cable_length": 2,
+      "charge_rate": "36 kW",
+      "charge_rate_mw": 36000000,
+      "reason": "AUTO-265 parked pair closed by APPL1: the DDA twin is the disconnected appliance item (data/json/items/appliances.json:185) with no link_up or use_action; CDF bridges the appliance port with link_up. DDA ap_hydraulic_press states no epower, so the rate is CDF's own 36 kW motor (item description); cable_length 2 = an appliance lead."
     }
   ]
 }

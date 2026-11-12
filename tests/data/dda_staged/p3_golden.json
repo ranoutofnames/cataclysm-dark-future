@@ -2456,27 +2456,6 @@
       "dropped_ids": [],
       "storage": false
     },
-    "autoclave": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "1000 ml",
-          "item_restriction": [
-            "medium_storage_battery",
-            "storage_battery",
-            "large_storage_battery"
-          ],
-          "default_magazine": "medium_storage_battery"
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
     "aux_flamer": {
       "class": "WELL",
       "rule": "R3",
@@ -9120,25 +9099,6 @@
           "ammo_restriction": {
             "arrow": 1
           }
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "hydraulic_press": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR-KEEP-CDF-WELL",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "1000 ml",
-          "item_restriction": [
-            "heavy_battery_cell"
-          ],
-          "default_magazine": "heavy_battery_cell"
         }
       ],
       "cdf_kept_ids": [],

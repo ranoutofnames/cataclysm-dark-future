@@ -246,9 +246,8 @@
     "looks_like": "f_hydraulic_press",
     "ammo": "battery",
     "charges_per_use": 20,
-    "flags": [ "ALLOWS_REMOTE_USE" ],
-    "magazines": [ [ "battery", [ "heavy_battery_cell" ] ] ],
-    "magazine_well": "1000 ml"
+    "use_action": { "type": "link_up", "cable_length": 2, "charge_rate": "36 kW" },
+    "flags": [ "ALLOWS_REMOTE_USE" ]
   },
   {
     "id": "kiln_done",

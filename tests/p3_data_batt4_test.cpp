@@ -231,7 +231,8 @@ TEST_CASE( "batt4 mess kit and voltmeter hold no cell", "[battery][wells][batt4]
 }
 
 // T2: the legacy store is the only way a base tool gets a battery without explicit pocket_data, and
-// the only ids allowed to keep it are the parked and retired entries of the hold file.
+// the only ids allowed to keep it are the parked and retired entries of the hold file
+// (APPL1 emptied the parked set; only the MIG1-retired ids are left).
 // Mutation: add a base tool with `magazines` (a new battery well) -> it is not listed.
 TEST_CASE( "batt4 legacy battery stores are exactly the listed exemptions", "[battery][wells][batt4]" )
 {
@@ -249,7 +250,7 @@ TEST_CASE( "batt4 legacy battery stores are exactly the listed exemptions", "[ba
 }
 
 // T3: the hold file is exactly the documented boundary: the three native control laptop wells, the
-// filter/cartridge wells, every stay-integral battery pocket, the two parked tools and the retired
+// filter/cartridge wells, every stay-integral battery pocket, the (now empty) parked set and the retired
 // ids. A tool added to the file under any kind fails its set or its kind predicate.
 // Mutation: add `flashlight` as native, or drop `vac_pump` from the retired list.
 TEST_CASE( "batt4 exemption list is exactly the documented boundary", "[battery][wells][batt4]" )
@@ -307,14 +308,14 @@ TEST_CASE( "batt4 exemption list is exactly the documented boundary", "[battery]
         CHECK( count_type( type, pocket_type::MAGAZINE_WELL ) == 0 );
     }
 
-    // (d) parked (AUTO-265): DDA makes them appliances; the legacy well stays until that packet
-    const std::set<std::string> parked_ids = { "autoclave", "hydraulic_press" };
-    CHECK( ids_of_kind( hold, "parked" ) == parked_ids );
-    for( const std::string &id : parked_ids ) {
+    // (d) APPL1 closed the AUTO-265 parked pair: autoclave and hydraulic_press are no longer parked.
+    // They lost the legacy well and take the DDA appliance link (link_up), so no parked row is left.
+    CHECK( ids_of_kind( hold, "parked" ).empty() );
+    for( const std::string &id : { "autoclave", "hydraulic_press" } ) {
         CAPTURE( id );
         REQUIRE( itype_id( id ).is_valid() );
-        CHECK( scan.legacy.count( id ) == 1 );
-        CHECK( itype_id( id )->get_use( "link_up" ) == nullptr );
+        CHECK( scan.legacy.count( id ) == 0 );
+        CHECK( itype_id( id )->get_use( "link_up" ) != nullptr );
     }
 
     // (e) retired obsoletion ids that still carry a well; MIG1 deletes them (still pending)

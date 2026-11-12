@@ -15,8 +15,9 @@
 
 // CDF: LINKUP1c tests. Spec: PL-33e TASK-draft-LINKUP1-v4.md, LINKUP1c test table L10-L12.
 // The expected link_up values are the DDA twin's, pinned in the linkup1c_pin.json fixture.
-// The five live hold ids whose DDA twin has no link_up are the pin's `deferred` set (REPORT,
-// Blocked); the retired hold ids belong to MIG1 and keep their legacy wells (L11's analogue).
+// APPL1 closed two of the five live hold ids (autoclave, hydraulic_press, the pin's
+// `appl1_converted` set); the three left in `deferred` have no DDA link_up. The retired hold ids
+// belong to MIG1 and keep their legacy wells (L11's analogue).
 
 namespace
 {
@@ -31,6 +32,7 @@ struct linkupc_row {
 
 struct linkupc_pin {
     std::vector<linkupc_row> converted;
+    std::vector<linkupc_row> appl1_converted;
     std::vector<std::string> deferred;
 };
 
@@ -47,6 +49,12 @@ auto read_pin() -> linkupc_pin
         pin.converted.push_back( { .id = jo.get_string( "id" ),
                                    .cable_length = jo.get_int( "cable_length" ),
                                    .charge_rate_mw = jo.get_int( "charge_rate_mw" ) } );
+    }
+    for( JsonObject jo : root.get_array( "appl1_converted" ) ) {
+        jo.allow_omitted_members();
+        pin.appl1_converted.push_back( { .id = jo.get_string( "id" ),
+                                         .cable_length = jo.get_int( "cable_length" ),
+                                         .charge_rate_mw = jo.get_int( "charge_rate_mw" ) } );
     }
     for( JsonObject jo : root.get_array( "deferred" ) ) {
         jo.allow_omitted_members();
@@ -94,11 +102,21 @@ TEST_CASE( "linkupc_converted_tools_draw_from_a_cable", "[battery][linkup1c]" ) 
 TEST_CASE( "linkupc_hold_list_is_exactly_the_uncabled_twins", "[battery][linkup1c]" ) {
     const linkupc_pin pin = read_pin();
     const std::vector<std::string> expected_deferred = {
-        "autoclave", "crt_mess_kit", "hydraulic_press", "mess_kit", "voltmeter"
+        "crt_mess_kit", "mess_kit", "voltmeter"
     };
     CHECK( pin.deferred == expected_deferred );
-    // the 25 live hold ids of battery-hold.json: 20 converted plus these 5
-    CHECK( pin.converted.size() + pin.deferred.size() == 25 );
+    // the 25 live hold ids of battery_hold.json: 20 converted here, 2 closed by APPL1, 3 deferred
+    CHECK( pin.converted.size() + pin.appl1_converted.size() + pin.deferred.size() == 25 );
+    for( const linkupc_row &row : pin.appl1_converted ) {
+        INFO( "appl1 id " << row.id );
+        REQUIRE( itype_id( row.id ).is_valid() );
+        CHECK( std::ranges::find( pin.deferred, row.id ) == pin.deferred.end() );
+        CHECK( itype_id( row.id )->get_use( "link_up" ) != nullptr );
+        item tool( itype_id( row.id ) );
+        tool.update_link_traits();
+        CHECK( tool.link().max_length == row.cable_length );
+        CHECK( tool.link().charge_rate == row.charge_rate_mw );
+    }
     for( const linkupc_row &row : pin.converted ) {
         INFO( "converted id " << row.id );
         CHECK( std::ranges::find( pin.deferred, row.id ) == pin.deferred.end() );

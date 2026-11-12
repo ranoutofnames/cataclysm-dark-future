@@ -1,5 +1,5 @@
 {
-  "note": "ids of the 7-GOLD1 regen target (1167) with their class, plus the 3 TEST_DATA ids added to the tree later; G1 asserts these against p3_golden.json. LINKUP1c removed 20 cable tools from the target and BATT4 mess_kit, crt_mess_kit and voltmeter: they have no battery pocket in DDA and none in CDF now, so the plan tool emits no row for them",
+  "note": "ids of the 7-GOLD1 regen target (1165) with their class, plus the 3 TEST_DATA ids added to the tree later; G1 asserts these against p3_golden.json. LINKUP1c removed 20 cable tools from the target and BATT4 mess_kit, crt_mess_kit and voltmeter: they have no battery pocket in DDA and none in CDF now, so the plan tool emits no row for them. APPL1 removed autoclave and hydraulic_press the same way (DDA appliance items, no battery pocket; CDF gives them the appliance link_up instead)",
   "target": {
     "1895sbl": "GUN-INT",
     "20x66_10_mag": "MAG",
@@ -128,7 +128,6 @@
     "augmag_10rd": "MAG",
     "augmag_30rd": "MAG",
     "augmag_42rd": "MAG",
-    "autoclave": "WELL",
     "aux_flamer": "WELL",
     "aux_pressurized_tank": "MAG",
     "barb_launcher": "GUN-INT",
@@ -473,7 +472,6 @@
     "huge_atomic_battery_cell": "MAG",
     "huge_crossbow": "GUN-INT",
     "hybridbow": "GUN-INT",
-    "hydraulic_press": "WELL",
     "ichaival": "GUN-INT",
     "iwi_tavor_x95_300blk": "WELL",
     "j22": "WELL",
