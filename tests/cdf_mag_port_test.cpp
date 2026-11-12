@@ -401,14 +401,13 @@ auto p3_golden_compare_pockets(const std::string& id, const std::string& pockets
 
 // CDF: P3-7-MODS-T un-hides R1, R4, R5, R6 and R8: the TEST_DATA rows of those classes are ported
 // and the kept legacy fixtures are skipped by name (_fixture_keep.json). P3-MODSFIX un-hides R2
-// (u_shotgun's integral MAGAZINE is rigid, the fixture inherits it). R3 stays hidden: the class
-// still has rows outside this packet (the merged packets' wells against the staged golden), see the
-// MODSFIX REPORT `## Blocked`.
+// (u_shotgun's integral MAGAZINE is rigid, the fixture inherits it). P3-7ENDA un-hides R3: the
+// staged golden WELL rows were refreshed against the merged well packets (BATT1, R3B, R3C, LINKUP1c).
 TEST_CASE("p3 golden load R1 MAG", "[p3][golden][load][R1]") { check_class("MAG"); }
 
 TEST_CASE("p3 golden load R2 GUN-INT", "[p3][golden][load][R2]") { check_class("GUN-INT"); }
 
-TEST_CASE("p3 golden load R3 WELL", "[.][p3][golden][load][R3]") { check_class("WELL"); }
+TEST_CASE("p3 golden load R3 WELL", "[p3][golden][load][R3]") { check_class("WELL"); }
 
 TEST_CASE("p3 golden load R4 TOOL-INT", "[p3][golden][load][R4]") { check_class("TOOL-INT"); }
 

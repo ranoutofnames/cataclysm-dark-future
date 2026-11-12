@@ -320,7 +320,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -339,7 +338,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -1006,8 +1004,7 @@
           "flag_restriction": [
             "BATTERY_HEAVY"
           ],
-          "default_magazine": "heavy_plus_battery_cell",
-          "magazine_well": "2000 ml"
+          "default_magazine": "heavy_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -1849,10 +1846,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell",
-          "magazine_well": "500 ml"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -2153,7 +2150,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -2174,7 +2170,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -3194,7 +3189,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "100 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -3214,7 +3208,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "100 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -3657,7 +3650,7 @@
       "twin": true,
       "pockets": [
         {
-          "magazine_well": "2 L",
+          "magazine_well": "2000 ml",
           "pocket_type": "MAGAZINE_WELL",
           "item_restriction": [
             "pressurized_tank_chem"
@@ -3677,10 +3670,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell",
-          "magazine_well": "500 ml"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -3696,10 +3689,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell",
-          "magazine_well": "500 ml"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -4486,7 +4479,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -4585,10 +4577,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell",
-          "magazine_well": "500 ml"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -4605,9 +4597,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
-            "BATTERY_LIGHT"
+            "BATTERY_LIGHT",
+            "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_minus_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -5137,10 +5130,13 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "item_restriction": [
+            "light_atomic_battery_cell",
+            "light_battery_cell",
+            "light_disposable_cell",
+            "light_minus_atomic_battery_cell",
             "light_minus_battery_cell",
             "light_minus_disposable_cell",
-            "light_battery_cell",
-            "light_disposable_cell"
+            "light_plus_battery_cell"
           ],
           "default_magazine": "light_minus_battery_cell"
         }
@@ -5194,7 +5190,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_disposable_cell",
             "light_battery_cell"
@@ -5214,7 +5209,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_disposable_cell",
             "light_battery_cell"
@@ -5371,7 +5365,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -5630,7 +5623,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -5649,7 +5641,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -5668,7 +5659,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "1000 ml",
           "item_restriction": [
             "heavy_battery_cell"
           ],
@@ -5687,7 +5677,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "1000 ml",
           "item_restriction": [
             "heavy_battery_cell"
           ],
@@ -5743,10 +5732,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell",
-          "magazine_well": "500 ml"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -5762,10 +5751,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell",
-          "magazine_well": "500 ml"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -5781,10 +5770,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_MEDIUM"
+            "BATTERY_MEDIUM",
+            "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "medium_battery_cell",
-          "magazine_well": "250 ml"
+          "default_magazine": "light_minus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -5911,9 +5900,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -6599,9 +6589,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -6618,9 +6609,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -7693,7 +7685,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -7713,7 +7705,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -7733,7 +7725,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -7748,7 +7740,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -7769,7 +7760,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -7795,7 +7785,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -8140,9 +8130,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -8159,9 +8150,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -9589,7 +9581,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_plus_battery_cell",
             "medium_battery_cell"
@@ -9609,7 +9600,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_plus_battery_cell",
             "medium_battery_cell"
@@ -9963,7 +9953,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -12353,7 +12342,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_plus_battery_cell",
             "medium_battery_cell"
@@ -12415,7 +12403,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -12435,7 +12422,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -12989,25 +12975,6 @@
           "ammo_restriction": {
             "thread": 1000
           }
-        }
-      ],
-      "cdf_kept_ids": [],
-      "dropped_ids": [],
-      "storage": false
-    },
-    "multi_cooker_filled": {
-      "class": "WELL",
-      "rule": "R3",
-      "action": "AUTHOR",
-      "twin": true,
-      "pockets": [
-        {
-          "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -13961,10 +13928,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_LIGHT"
           ],
-          "default_magazine": "heavy_battery_cell",
-          "magazine_well": "250 ml"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -14291,7 +14258,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -14311,7 +14278,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -14701,7 +14668,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -14718,9 +14685,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
-            "BATTERY_MEDIUM"
+            "BATTERY_MEDIUM",
+            "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_minus_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -14737,9 +14705,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
-            "BATTERY_MEDIUM"
+            "BATTERY_MEDIUM",
+            "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_minus_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -14759,7 +14728,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -14779,7 +14748,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -17294,9 +17263,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -17311,7 +17281,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -17333,9 +17302,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -17350,7 +17320,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -17370,7 +17339,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -17390,7 +17358,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -17412,9 +17379,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -17429,7 +17397,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -17451,9 +17418,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -17468,7 +17436,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -17490,9 +17457,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -17509,9 +17477,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -18049,7 +18018,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -18408,7 +18376,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -18517,7 +18484,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -19367,7 +19333,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -19388,7 +19353,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -19661,9 +19625,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
-            "BATTERY_LIGHT"
+            "BATTERY_LIGHT",
+            "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_minus_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -19894,10 +19859,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell",
-          "magazine_well": "250 ml"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20164,10 +20129,10 @@
         {
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
-          "item_restriction": [
-            "medium_battery_cell"
-          ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "medium_battery_cell",
+          "flag_restriction": [
+            "BATTERY_MEDIUM"
+          ]
         }
       ],
       "cdf_kept_ids": [],
@@ -20417,7 +20382,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -20436,7 +20400,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -20456,7 +20419,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
@@ -20476,7 +20438,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell"
           ],
@@ -20495,7 +20456,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -20516,7 +20476,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_plus_battery_cell",
             "light_battery_cell",
@@ -20539,9 +20498,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20558,9 +20518,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20577,9 +20538,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20596,9 +20558,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20618,7 +20581,7 @@
             "BATTERY_MEDIUM",
             "BATTERY_HEAVY"
           ],
-          "default_magazine": "heavy_battery_cell"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20638,7 +20601,7 @@
             "BATTERY_MEDIUM",
             "BATTERY_HEAVY"
           ],
-          "default_magazine": "heavy_battery_cell"
+          "default_magazine": "medium_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20655,9 +20618,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20674,9 +20638,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20693,10 +20658,11 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
-            "BATTERY_MEDIUM",
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_LIGHT",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -20713,10 +20679,11 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
-            "BATTERY_MEDIUM",
-            "BATTERY_HEAVY"
+            "BATTERY_HEAVY",
+            "BATTERY_LIGHT",
+            "BATTERY_MEDIUM"
           ],
-          "default_magazine": "heavy_battery_cell"
+          "default_magazine": "light_plus_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -21083,7 +21050,7 @@
             "BATTERY_LIGHT",
             "BATTERY_ULTRA_LIGHT"
           ],
-          "default_magazine": "light_battery_cell"
+          "default_magazine": "light_disposable_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -21404,7 +21371,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "500 ml",
           "item_restriction": [
             "medium_battery_cell",
             "heavy_battery_cell",
@@ -22454,9 +22420,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -22473,9 +22440,10 @@
           "pocket_type": "MAGAZINE_WELL",
           "rigid": true,
           "flag_restriction": [
+            "BATTERY_LIGHT",
             "BATTERY_MEDIUM"
           ],
-          "default_magazine": "medium_battery_cell"
+          "default_magazine": "light_battery_cell"
         }
       ],
       "cdf_kept_ids": [],
@@ -22508,7 +22476,6 @@
       "pockets": [
         {
           "pocket_type": "MAGAZINE_WELL",
-          "magazine_well": "250 ml",
           "item_restriction": [
             "light_battery_cell",
             "light_minus_battery_cell"
