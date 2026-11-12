@@ -96,8 +96,15 @@
     "name": "C.R.I.T. backpack",
     "description": "C.R.I.T. standard-issue pack.  Based on the MOLLE backpack's design, this smaller pack strikes a fine balance between storage space and encumbrance and allows multiple larger weapons to be holstered, drawing and holstering is still rather awkward even with the magnetized clips, but practice helps.",
     "color": "dark_gray",
-    "encumbrance": 3,
-    "max_encumbrance": 7,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 70,
+        "encumbrance": [ 3, 7 ]
+      }
+    ],
+    "//TORSO2": "CDF: the molle_pack base names its portion (specifically_covers torso_hanging_back), so the flat encumbrance 3 / max_encumbrance 7 move into a portion with the parent's placement; the array keeps both CDF numbers.",
     "material_thickness": 2,
     "material": [ "leather", "kevlar" ],
     "use_action": { "type": "holster" },

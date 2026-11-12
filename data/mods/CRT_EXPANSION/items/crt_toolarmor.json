@@ -141,9 +141,8 @@
     "symbol": "[",
     "color": "light_gray",
     "covers": [ "torso" ],
-    "max_charges": 300,
     "initial_charges": 300,
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "use_action": [
       {
         "type": "transform",
@@ -177,7 +176,20 @@
     "warmth": 10,
     "material_thickness": 4,
     "environmental_protection": 4,
-    "flags": [ "WATER_FRIENDLY", "STURDY", "VARSIZE", "RECHARGE", "NO_UNLOAD", "OUTER", "COMBAT_NPC_USE", "ALLOWS_WINGS" ]
+    "flags": [ "WATER_FRIENDLY", "STURDY", "VARSIZE", "RECHARGE", "NO_UNLOAD", "OUTER", "COMBAT_NPC_USE", "ALLOWS_WINGS" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 300 }
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "2500 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "crt_em_vest_on",
@@ -201,10 +213,9 @@
     "warmth": 75,
     "material_thickness": 6,
     "environmental_protection": 16,
-    "max_charges": 300,
     "initial_charges": 0,
     "turns_per_charge": 1,
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "revert_to": "crt_em_vest",
     "use_action": { "type": "transform", "menu_text": "Turn off armor", "msg": "C.R.I.T. E.M powering off…", "target": "crt_em_vest" },
     "relic_data": {
@@ -238,7 +249,20 @@
       "ALLOWS_WINGS",
       "COMBAT_NPC_USE",
       "COMBAT_NPC_ON"
-    ]
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 300 }
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "2500 ml"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "crt_helmet",
@@ -318,13 +342,19 @@
     "name": "C.R.I.T solarpack",
     "description": "C.R.I.T special-issue pack. This is based on the MOLLE backpack's design, but comes with a integrated UPS and a few protected but interwoven solar cells",
     "storage": "9 L",
-    "encumbrance": 2,
-    "max_encumbrance": 7,
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_hanging_back" ],
+        "coverage": 70,
+        "encumbrance": [ 2, 7 ]
+      }
+    ],
+    "//TORSO2": "CDF: the molle_pack base names its portion (specifically_covers torso_hanging_back), so the flat encumbrance 2 / max_encumbrance 7 move into a portion with the parent's placement; the array keeps both CDF numbers.",
     "material_thickness": 2,
     "material": [ "leather", "kevlar", "glass" ],
-    "max_charges": 1000,
     "initial_charges": 1000,
-    "ammo": "battery",
+    "tool_ammo": "battery",
     "flags": [ "BELTED", "STURDY", "WATERPROOF", "IS_UPS", "ALLOWS_WINGS", "RECHARGE" ],
     "relic_data": {
       "recharge_scheme": [
@@ -335,7 +365,20 @@
           "rate": 1
         }
       ]
-    }
+    },
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": true,
+        "ammo_restriction": { "battery": 1000 }
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "carry": true,
+        "max_contains_volume": "9 L"
+      }
+    ],
+    "//": "CDF: P3-2 DDA magazine port: dropped keys max_charges (now in pocket_data); renamed ammo->tool_ammo"
   },
   {
     "id": "crt_med_kit",

@@ -1,0 +1,512 @@
+{
+  "batch": "7-MODSO2",
+  "base": "e1d3f1e21f",
+  "dda": "b4b62254ae2",
+  "note": "7-MODS-O part 2 (AUTO-262): the CRT_EXPANSION rows. 10 GUN-INT AUTHOR rows in `items`; the 3 STOR6 hand rows (crt_em_vest, crt_em_vest_on, crt_solarpack) in `unloaded_pockets` because their golden pocket list has more than one pocket and the generic B3 counts every multi-pocket golden id as loaded; the 5 rows BATT5/BATT4 already own in `not_edited` with their own key set; the 2 armor_portion_data conversions (crt_backpack, crt_solarpack) in `armor`. The mod is not in the unit-test world, so G2 prints these ids as skipped and tests/p3_data_modso2_test.cpp checks the own records at JSON level; the loader check is `--check-mods crt_expansion`.",
+  "count": 13,
+  "items": {
+    "crt_cqb_si": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "9mm": 18
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "crt_cqb_si_shotgun": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gunmods.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "shot": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "crt_pelletgun": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "crt_pellets": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "crt_pelletsniper": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "crt_pellets": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "ds_line_gun": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plasma": 5
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "ds_plasma_cutter": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "plasma": 12
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "ds_pulse_rifle": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "pulsesb": 175
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "ds_ripper": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "pulsesb": 8
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "ds_rivet_gun": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gun.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "nail": 25
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    },
+    "flare_gmod": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_gunmods.json",
+      "class": "GUN-INT",
+      "rule": "R2",
+      "action": "AUTHOR",
+      "twin": false,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "signal_flare": 1
+          }
+        }
+      ],
+      "dropped_keys": [],
+      "dropped_ids": [],
+      "tags": [],
+      "legacy": {}
+    }
+  },
+  "unloaded_pockets": {
+    "crt_em_vest": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "HAND-FALLBACK",
+      "twin": false,
+      "hand_fallback": true,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 300
+          }
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "carry": true,
+          "max_contains_volume": "2500 ml"
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "STORAGE"
+      ],
+      "legacy": {}
+    },
+    "crt_em_vest_on": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "HAND-FALLBACK",
+      "twin": false,
+      "hand_fallback": true,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 300
+          }
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "carry": true,
+          "max_contains_volume": "2500 ml"
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "STORAGE"
+      ],
+      "legacy": {}
+    },
+    "crt_solarpack": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "TOOL-INT",
+      "rule": "R4",
+      "action": "HAND-FALLBACK",
+      "twin": false,
+      "hand_fallback": true,
+      "pocket_data": [
+        {
+          "pocket_type": "MAGAZINE",
+          "rigid": true,
+          "ammo_restriction": {
+            "battery": 1000
+          }
+        },
+        {
+          "pocket_type": "CONTAINER",
+          "carry": true,
+          "max_contains_volume": "9 L"
+        }
+      ],
+      "dropped_keys": [
+        "max_charges"
+      ],
+      "dropped_ids": [],
+      "tags": [
+        "STORAGE"
+      ],
+      "legacy": {}
+    }
+  },
+  "not_edited": {
+    "crt_gasmask": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "TOOL-INT",
+      "action": "KEEP",
+      "note": "owned by BATT5 (the four integral battery tools) / BATT4 (crt_mess_kit): pinned, not edited",
+      "own_keys": [
+        "ammo",
+        "category",
+        "color",
+        "coverage",
+        "covers",
+        "description",
+        "encumbrance",
+        "environmental_protection",
+        "flags",
+        "hearing_protection",
+        "id",
+        "initial_charges",
+        "material",
+        "material_thickness",
+        "max_charges",
+        "name",
+        "pocket_data",
+        "price",
+        "price_postapoc",
+        "qualities",
+        "relic_data",
+        "symbol",
+        "to_hit",
+        "type",
+        "use_action",
+        "volume",
+        "warmth",
+        "weight"
+      ]
+    },
+    "crt_gasmask_on": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "TOOL-INT",
+      "action": "KEEP",
+      "note": "owned by BATT5 (the four integral battery tools) / BATT4 (crt_mess_kit): pinned, not edited",
+      "own_keys": [
+        "adv_hearing_protection",
+        "ammo",
+        "category",
+        "color",
+        "coverage",
+        "covers",
+        "description",
+        "encumbrance",
+        "environmental_protection",
+        "flags",
+        "hearing_protection",
+        "id",
+        "initial_charges",
+        "material",
+        "material_thickness",
+        "max_charges",
+        "name",
+        "pocket_data",
+        "price",
+        "price_postapoc",
+        "qualities",
+        "relic_data",
+        "revert_to",
+        "symbol",
+        "to_hit",
+        "turns_per_charge",
+        "type",
+        "use_action",
+        "volume",
+        "warmth",
+        "weight"
+      ]
+    },
+    "crt_helmet": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "TOOL-INT",
+      "action": "KEEP",
+      "note": "owned by BATT5 (the four integral battery tools) / BATT4 (crt_mess_kit): pinned, not edited",
+      "own_keys": [
+        "ammo",
+        "color",
+        "copy-from",
+        "description",
+        "flags",
+        "id",
+        "initial_charges",
+        "material",
+        "material_thickness",
+        "max_charges",
+        "name",
+        "pocket_data",
+        "type",
+        "use_action",
+        "warmth"
+      ]
+    },
+    "crt_helmet_on": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "TOOL-INT",
+      "action": "KEEP",
+      "note": "owned by BATT5 (the four integral battery tools) / BATT4 (crt_mess_kit): pinned, not edited",
+      "own_keys": [
+        "ammo",
+        "charges_per_use",
+        "color",
+        "copy-from",
+        "description",
+        "flags",
+        "id",
+        "initial_charges",
+        "material",
+        "material_thickness",
+        "max_charges",
+        "name",
+        "pocket_data",
+        "revert_to",
+        "turns_per_charge",
+        "type",
+        "use_action",
+        "warmth"
+      ]
+    },
+    "crt_mess_kit": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_tools.json",
+      "class": "TOOL-INT",
+      "action": "KEEP",
+      "note": "owned by BATT5 (the four integral battery tools) / BATT4 (crt_mess_kit): pinned, not edited",
+      "own_keys": [
+        "//",
+        "ammo",
+        "bashing",
+        "charges_per_use",
+        "color",
+        "description",
+        "flags",
+        "id",
+        "material",
+        "name",
+        "price",
+        "price_postapoc",
+        "qualities",
+        "relic_data",
+        "sub",
+        "symbol",
+        "to_hit",
+        "type",
+        "use_action",
+        "volume",
+        "weight"
+      ]
+    }
+  },
+  "armor": {
+    "crt_backpack": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_armor.json",
+      "class": "ARMOR-PORTION",
+      "action": "ARMOR-PORTION",
+      "note": "CDF: molle_pack armor_portion_data names specifically_covers; the flat encumbrance 3 / max_encumbrance 7 move into one portion",
+      "flat_keys": [
+        "covers",
+        "coverage",
+        "encumbrance",
+        "max_encumbrance"
+      ],
+      "armor_portion_data": [
+        {
+          "covers": [
+            "torso"
+          ],
+          "specifically_covers": [
+            "torso_hanging_back"
+          ],
+          "coverage": 70,
+          "encumbrance": [
+            3,
+            7
+          ]
+        }
+      ]
+    },
+    "crt_solarpack": {
+      "file": "data/mods/CRT_EXPANSION/items/crt_toolarmor.json",
+      "class": "ARMOR-PORTION",
+      "action": "ARMOR-PORTION",
+      "note": "CDF: molle_pack armor_portion_data names specifically_covers; the flat encumbrance 2 / max_encumbrance 7 move into one portion",
+      "flat_keys": [
+        "covers",
+        "coverage",
+        "encumbrance",
+        "max_encumbrance"
+      ],
+      "armor_portion_data": [
+        {
+          "covers": [
+            "torso"
+          ],
+          "specifically_covers": [
+            "torso_hanging_back"
+          ],
+          "coverage": 70,
+          "encumbrance": [
+            2,
+            7
+          ]
+        }
+      ]
+    }
+  }
+}

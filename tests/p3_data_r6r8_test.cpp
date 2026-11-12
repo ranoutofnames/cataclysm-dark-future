@@ -337,8 +337,8 @@ TEST_CASE("p3 r9 storage order", "[p3][data][R6R8]") {
         for (const std::string& id : storage_ids) {
             CAPTURE(id);
             if (!itype_id(id).is_valid()) {
-                // CDF: the three CRT_EXPANSION rows are deferred to the MODS stage (AUTO-262);
-                // the next section checks they are still unported, never silent
+                // CDF: the three CRT_EXPANSION rows are mod items and not in the unit-test world;
+                // the next section checks their JSON record, never silent
                 CHECK(id.rfind("crt_", 0) == 0);
                 continue;
             }
@@ -355,15 +355,16 @@ TEST_CASE("p3 r9 storage order", "[p3][data][R6R8]") {
         CHECK(checked == 10);
     }
 
-    SECTION("the deferred CRT rows are still unported") {
-        // CDF: AUTO-262 defers crt_em_vest(_on) and crt_solarpack to the MODS stage. When they
-        // are ported this guard goes red together with the list above: add them there.
+    SECTION("the ported CRT rows carry their own pocket_data") {
+        // CDF: AUTO-262 moved crt_em_vest(_on) and crt_solarpack to the MODS stage part 2. The
+        // guard flips with the data: a row that loses its pocket_data or regains max_charges is
+        // red (the same two checks the deferred form had, in the ported state).
         for (const std::string& id : {"crt_em_vest", "crt_em_vest_on", "crt_solarpack"}) {
             CAPTURE(id);
             const record_probe record = probe_record(CRT_TOOLARMOR, id);
             REQUIRE(record.found);
-            CHECK_FALSE(record.pocket_data);
-            CHECK(record.max_charges);
+            CHECK(record.pocket_data);
+            CHECK_FALSE(record.max_charges);
         }
     }
 }
