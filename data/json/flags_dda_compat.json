@@ -1,0 +1,1325 @@
+[
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ABLATIVE_CHAINMAIL_ARMS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ABLATIVE_CHAINMAIL_ELBOWS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ABLATIVE_CHAINMAIL_KNEES",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ABLATIVE_CHAINMAIL_LEGS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ABLATIVE_CHAINMAIL_TORSO",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ACTIVE_CRYOSUIT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "AFS_CS_ARMORY_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "AFS_CS_EXOBAY_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "AFS_CS_LOCKER_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALCOHOL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALCOHOL_WEAK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALLOWS_BODY_BLOCK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALLOWS_GASTROPOD_FOOT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALLOWS_LEG_TENTACLES",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALLOWS_TALONS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALLOWS_WING_ARMS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ALWAYS_AIMED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ARM_PROSTHETIC",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "BANK_NOTE_SHAPED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "BANK_NOTE_STRAP_SHAPED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "BIONIC_FUEL_SOURCE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "BIONIC_WEAPON_MELEE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "BURNOUT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CALORIES_INTAKE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CALORIE_BURN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CAN_USE_IN_DARK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CASELESS_ROUNDS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CHOKE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "COIN_SHAPED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "COMBAT_TOGGLEABLE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CONTRABAND",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CORROSIVE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CREDIT_CARD_SHAPED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CRUTCHES",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CRYOGENIC_ROT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CUT_HARVEST",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "CYLINDER_GRENADE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "DEBUG_ONLY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "DECAYS_IN_AIR",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "DECAY_EXPOSED_ATMOSPHERE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "DESTROY_ON_CHARGE_USE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "DETERGENT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EASY_CLEAN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EDIBLE_FROZEN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ELECTRONIC",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ENERGY_SHIELD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ENHANCED_VISION",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_ARM_PLATE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_HELMET_GADGET",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_HELMET_PLATE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_LARGE_GADGET",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_LEG_PLATE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_MEDIUM_GADGET",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_PSU",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_SMALL_GADGET",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_TORSO_PLATE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXO_UNDERLAYER",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "EXTRA_PLATING",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "E_STORABLE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "FIFTH_SUN_TECHNOLOGY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "FILTHY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "FRESH_GRAIN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "GAS_TANK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "GEMSTONE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "GENE_TECH",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HACK_NO_CHARGE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HEAD_STRAP_MOUNT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HEAVY_TOOL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HEDGE_ENCHANTED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_AVENTAIL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_BACK_POUCH",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_EAR_ATTACHMENT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_FRONT_ATTACHMENT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_HEAD_ATTACHMENT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_MANDIBLE_GUARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_MANDIBLE_GUARD_STRAPPED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HELMET_NAPE_PROTECTOR",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "HINT_THE_LOCATION",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "IMPERIAL_ROAD_KEY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "INTEGRATED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "INVENTOR_CRAFTED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "IRREPLACEABLE_CONSUMABLE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "IRRITANT_IMMUNE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "JETPACK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "LASER_SIGHT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "LEG_PROSTHETIC",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "LIXA_MILITARY_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "LIXA_SCIENCE_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "LIXA_SCIENCE_CARD_2",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "LIXA_SCIENCE_CARD_3",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "LOCATION_PRECISE_CLOSEST_CITY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MAGICAL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MAGICAL_MIND_PROTECTION",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MARLOSS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_BIOKINESIS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_CLAIRSENTIENCE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_CORUSCATING",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_ELECTROKINESIS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_PHOTOKINESIS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_PYROKINESIS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_TELEKINESIS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_TELEPATHY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_TELEPORTATION",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MATRIX_CRYSTAL_VITAKINESIS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "METHANOL_TANK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MODULE_HOLDER",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MOP",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MORPHIC",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MOUSE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MUNDANE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MUSHY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MUTAGEN_PRIMER",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MUTAGEN_SAMPLE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "MUTATED_ANATOMY_ONLY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NANOFAB_REPAIR",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NANOFAB_TEMPLATE_SINGLE_USE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NORMAL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NO_AUTO_CONSUME",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NO_CLEAN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NO_MANUAL_ACTIVATION",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NO_TEMP",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "NO_WING_GLIDING",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "OBSOLETE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "OLD_CURRENCY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "OLD_ENFORCER_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "OLD_MERCURIAL_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "OLD_TSKBEM_CARD",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ONE_PER_LAYER",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "OVERHEATS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PANORAMIC_OUTSERT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PAPER_SHAPED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PREDATOR_FUN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PREFIX_XL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PREFIX_XS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PRESERVE_SPAWN_LOC",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PROVIDES_TECHNIQUES",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PUMP_RAIL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "PUNCTURE_VEHICLE_WHEELS",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "RABBIT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "RADIOCAR",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "RADIO_CONTAINER",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "RAD_DETECT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "RAD_STERILIZED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "RAT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "RELIC_PINK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ROBOFAC_ARM",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ROBOFAC_BACK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ROBOFAC_LEG",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ROBOFAC_LENS_ACCESSORY",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ROBOFAC_LENS_HELMET",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ROBOFAC_ROBOT_MEDIUM",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "ROBOFAC_ROBOT_SMALL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCBA",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCBA_ON",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCBA_TANK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCBA_TANK_ON",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MAINTENANCE_BLUE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MAINTENANCE_GREEN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MAINTENANCE_YELLOW",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MEDICAL_RED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MUTAGEN_CYAN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MUTAGEN_GREEN",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MUTAGEN_PINK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_MU_UNIVERSAL",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_SECURITY_BLACK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_SECURITY_MAGENTA",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_SECURITY_YELLOW",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_TRANSPORT_1",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SCIENCE_CARD_VISITOR",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SINGLE_ACTION",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SLEEP_AID_CONTAINER",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SPAWN_ACTIVE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "SPELLCASTING_AID",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "STAR_PLATE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "STAR_SHOULDER",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "STAR_SKIRT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "STRICT_HUMANITARIANISM",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "TOUGH_FEET",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "UNRESTRICTED",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "USES_NEARBY_AMMO",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "USE_POWER_WHEN_HIT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "WATER_BREAK",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "WATER_BREAK_ACTIVE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "WATER_DISSOLVE",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "WISE_SORCERY_AID",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "WONT_TRAIN_MARKSMANSHIP",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "WOODEN_WEAPON",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "WRIST_MOUNT_ATTACHMENT",
+    "info": ""
+  },
+  {
+    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
+    "type": "json_flag",
+    "context": ["GENERIC"],
+    "id": "XEDRAWOOD_INSECT_BAD_TASTE",
+    "info": ""
+  }
+]

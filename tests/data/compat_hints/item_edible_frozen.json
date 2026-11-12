@@ -1,0 +1,10 @@
+[
+  {
+    "type": "GENERIC",
+    "id": "compat4_frozen_item",
+    "name": "compat4 frozen fixture",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "flags": [ "EDIBLE_FROZEN" ]
+  }
+]

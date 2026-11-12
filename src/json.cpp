@@ -11,6 +11,7 @@
 #include <iterator>
 #include <limits>
 #include <locale> // ensure user's locale doesn't interfere with output
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
@@ -106,6 +107,28 @@ void JsonObject::mark_visited( const std::string &name ) const
 #endif
 }
 
+// CDF: COMPAT4 (COMPAT-DDA-PROBE1 A10, AUTO-240): CDF equivalents for DDA item keys that CDF
+// does not read (keys with 0 hits in src/). Only the error text changes; the error still fires.
+static std::string compat_key_hint( const std::string &name )
+{
+    static const std::map<std::string, std::string> hints = {
+        { "armor", "CDF reads armor_portion_data, not a DDA armor array" },
+        { "variants", "DDA cosmetic key, not read by CDF" },
+        { "display_type", "DDA cosmetic key, not read by CDF" },
+        { "sided", "DDA cosmetic key, not read by CDF" },
+        { "replace_materials", "not read by CDF" },
+        { "variant_type", "not read by CDF" },
+        { "read_skill", "not read by CDF" },
+        { "read_fun", "not read by CDF" },
+        { "freezing_point", "not read by CDF" },
+        { "growth_stages", "not read by CDF" },
+        { "tick_action", "not read by CDF" },
+        { "max_worn", "dropped by CDF (AR5), not read" },
+    };
+    const auto it = hints.find( name );
+    return it == hints.end() ? std::string() : it->second;
+}
+
 void JsonObject::report_unvisited() const
 {
 #ifndef CATA_IN_TOOL
@@ -120,7 +143,9 @@ void JsonObject::report_unvisited() const
             const std::string &name = p.first;
             if( !visited_members.contains( name ) && !name.starts_with( "//" ) ) {
                 try {
-                    throw_error( string_format( "Invalid or misplaced field name \"%s\" in JSON data", name ), name );
+                    const std::string hint = compat_key_hint( name );
+                    const std::string msg = string_format( "Invalid or misplaced field name \"%s\" in JSON data", name );
+                    throw_error( hint.empty() ? msg : msg + "; CDF: " + hint, name );
                 } catch( const JsonError &e ) {
                     debugmsg( "(json-error)\n%s", e.what() );
                 }

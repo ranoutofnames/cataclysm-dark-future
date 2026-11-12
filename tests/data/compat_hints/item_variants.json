@@ -1,0 +1,10 @@
+[
+  {
+    "type": "GENERIC",
+    "id": "compat4_variants_item",
+    "name": "compat4 variants fixture",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "variants": [ { "id": "compat4_variant_a" } ]
+  }
+]

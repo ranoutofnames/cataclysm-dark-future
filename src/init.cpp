@@ -116,6 +116,7 @@
 #include <exception>
 #include <fstream>
 #include <iterator>
+#include <map>
 #include <memory>
 #include <ranges>
 #include <set>
@@ -224,6 +225,29 @@ static void load_ignored_type( const JsonObject &jo )
     // This function is used for types that are to be ignored
     // (for example for testing or for unimplemented types)
     jo.allow_omitted_members();
+}
+
+// CDF: COMPAT4 (AUTO-240, COMPAT-DDA-PROBE1 A5): DDA-only top-level types that CDF never reads.
+// Each object is read and ignored; the type is logged once per type name, not once per object,
+// so one foreign object no longer aborts the whole file. Other types and all item/gameplay keys
+// stay strict.
+static std::map<std::string, size_t> dda_inert_type_log_lines;
+
+static void load_dda_inert_type( const JsonObject &jo, const std::string &src )
+{
+    const std::string type = jo.get_string( "type" );
+    if( dda_inert_type_log_lines[type] == 0 ) {
+        DebugLog( DL::Info, DC::Main ) << "DDA-only type \"" << type << "\" from mod \"" << src
+                        << "\" is not read by CDF; its objects are ignored.";
+        dda_inert_type_log_lines[type]++;
+    }
+    jo.allow_omitted_members();
+}
+
+size_t compat_inert_type_log_count( const std::string &type )
+{
+    const auto it = dda_inert_type_log_lines.find( type );
+    return it == dda_inert_type_log_lines.end() ? 0 : it->second;
 }
 
 void DynamicDataLoader::add( const std::string &type,
@@ -456,6 +480,18 @@ void DynamicDataLoader::initialize()
 
     // loaded earlier.
     add( "colordef", &load_ignored_type );
+    // CDF: COMPAT4 A5 (AUTO-240): DDA-only types CDF never reads; read and logged once, not fatal.
+    add( "widget", &load_dda_inert_type );
+    add( "jmath_function", &load_dda_inert_type );
+    add( "end_screen", &load_dda_inert_type );
+    add( "help", &load_dda_inert_type );
+    add( "mood_face", &load_dda_inert_type );
+    add( "weather_generator", &load_dda_inert_type );
+    add( "character_mod", &load_dda_inert_type );
+    add( "conduct", &load_dda_inert_type );
+    add( "climbing_aid", &load_dda_inert_type );
+    add( "body_graph", &load_dda_inert_type );
+    add( "damage_info_order", &load_dda_inert_type );
     // mod information, ignored, handled by the mod manager
     add( "MOD_INFO", &load_ignored_type );
 

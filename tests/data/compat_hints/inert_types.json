@@ -1,0 +1,18 @@
+[
+  {
+    "type": "widget",
+    "id": "compat4_widget_a",
+    "//": "COMPAT4 fixture: DDA-only type, read and logged once (AUTO-240)"
+  },
+  {
+    "type": "widget",
+    "id": "compat4_widget_b",
+    "//": "COMPAT4 fixture: second object of the same DDA-only type"
+  },
+  {
+    "type": "json_flag",
+    "id": "COMPAT4_FIXTURE_FLAG",
+    "context": [ "GENERIC" ],
+    "info": "COMPAT4 fixture flag, loaded after the inert widgets"
+  }
+]

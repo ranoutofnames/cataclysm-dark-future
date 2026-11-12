@@ -97,16 +97,6 @@ class DynamicDataLoader
          */
         void load_all_from_json( JsonIn &jsin, const std::string &src, loading_ui &ui,
                                  const std::string &base_path, const std::string &full_path );
-        /**
-         * Load a single object from a json object.
-         * @param jo The json object to load the C++-object from.
-         * @param src String identifier for mod this data comes from
-         * @throws std::exception on all kind of errors.
-         */
-        void load_object( const JsonObject &jo, const std::string &src,
-                          const std::string &base_path = std::string(),
-                          const std::string &full_path = std::string() );
-
         DynamicDataLoader();
         ~DynamicDataLoader();
         /**
@@ -115,6 +105,17 @@ class DynamicDataLoader
         void initialize();
 
     public:
+        /**
+         * Load a single object from a json object.
+         * @param jo The json object to load the C++-object from.
+         * @param src String identifier for mod this data comes from
+         * @throws std::exception on all kind of errors.
+         * CDF: COMPAT4 made public so tests/compat_hints_test.cpp can load fixture objects.
+         */
+        void load_object( const JsonObject &jo, const std::string &src,
+                          const std::string &base_path = std::string(),
+                          const std::string &full_path = std::string() );
+
         /**
          * Check the consistency of all the loaded data.
          * May print a debugmsg if something seems wrong.
