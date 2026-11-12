@@ -32,7 +32,8 @@ TEST_CASE("lua_ablative_and_sub_part_api", "[lua][armor][ablative][subpart]") {
     CHECK(test_data.get<int>("upper_max_coverage") == 60);
     CHECK(test_data.get<std::string>("upper_parent") == "torso");
     CHECK_FALSE(test_data.get<std::string>("upper_name").empty());
-    CHECK(test_data.get<int>("hand_parts") == 0);
+    // CDF: HAND1 gave the hand four sub-locations (hand_parts is 4, was 0)
+    CHECK(test_data.get<int>("hand_parts") == 4);
     CHECK(test_data.get<int>("arm_parts") == 4);
     CHECK(test_data.get<bool>("sub_id_valid"));
     CHECK(test_data.get<std::string>("sub_id_str") == "torso_upper");

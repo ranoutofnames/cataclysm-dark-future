@@ -330,7 +330,14 @@
     "weight": "112 g",
     "to_hit": -1,
     "color": "light_gray",
-    "covers": [ "hand_either" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "price": "60 USD",
     "price_postapoc": "1 USD",
     "material": [ "plastic" ],
@@ -352,12 +359,11 @@
       "NO_RELOAD",
       "POWERARMOR_COMPATIBLE"
     ],
-    "coverage": 15,
     "symbol": "[",
     "initial_charges": 80,
     "charges_per_use": 1,
     "use_action": [ "PORTABLE_GAME", "WEATHER_TOOL", "TOGGLE_UPS_CHARGING" ],
-    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
+    "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data). HAND1: hand coverage 15 -> 10 in the wrist portion (DDA:game_watch; the wrist is already 100 of the hand's 100, rule A4)."
   },
   {
     "//": "CDF: owner ruling 2026-10-31, plutonium kept instead of DDA batteries; PLUT1: a MAGAZINE_WELL for the plutonium fuel pack (initial_charges still sets the spawn load through default_ammo)",
@@ -2281,8 +2287,14 @@
     "charges_per_use": 1,
     "ammo": "battery",
     "use_action": "RADGLOVE",
-    "covers": [ "hand_either" ],
-    "coverage": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "material_thickness": 1,
     "flags": [ "BELTED", "COMPACT", "FRAGILE", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY", "OVERSIZE" ],
     "pocket_data": [

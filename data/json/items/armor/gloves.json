@@ -91,6 +91,27 @@
   {
     "id": "gauntlets_chitin",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:237 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 95 and 10 (rule A, AUTO-184). DDA's paw_default covers are dropped (limb system: LB1/P6/P9).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r", "hand_back_l", "hand_back_r" ],
+        "coverage": 95,
+        "encumbrance": 10
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of chitinous gauntlets", "str_pl": "pairs of chitinous gauntlets" },
     "description": "Gauntlets made from the exoskeletons of insects.  Very light and durable.",
     "weight": "760 g",
@@ -103,9 +124,6 @@
     "symbol": "[",
     "looks_like": "gauntlets_larmor",
     "color": "green",
-    "covers": [ "hands" ],
-    "coverage": 95,
-    "encumbrance": 10,
     "warmth": 10,
     "material_thickness": 4,
     "environmental_protection": 4,
@@ -116,11 +134,31 @@
     "copy-from": "gauntlets_chitin",
     "looks_like": "gauntlets_chitin",
     "type": "ARMOR",
+    "//": "CDF: the parent's hand portions with this item's encumbrance 15 (rule 6).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r", "hand_back_l", "hand_back_r" ],
+        "coverage": 95,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of biosilicified chitin gauntlets", "str_pl": "pairs of biosilicified chitin gauntlets" },
     "description": "Gauntlets crafted from the carefully cleaned and pruned biosilicified exoskeletons of acidic ants.  Acid-resistant and very durable.",
     "material": [ "acidchitin", "leather" ],
     "price_postapoc": "1750 cent",
-    "encumbrance": 15,
     "proportional": { "weight": 1.125, "volume": 1.13, "price": 1.25, "warmth": 1.5 },
     "relative": { "bashing": 1, "material_thickness": 1, "environmental_protection": 1 }
   },
@@ -173,6 +211,27 @@
   {
     "id": "gauntlets_larmor",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:402 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 60 and 4 (rule A, AUTO-184; the portions give 59.9). DDA's paw_default covers are dropped (limb system: LB1/P6/P9).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 62,
+        "encumbrance": 2
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r", "hand_back_l", "hand_back_r" ],
+        "coverage": 83,
+        "encumbrance": 2
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 41,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of leather armor gauntlets", "str_pl": "pairs of leather armor gauntlets" },
     "description": "Heavy fingerless leather gloves.  Very flexible and comfortable.",
     "weight": "350 g",
@@ -185,9 +244,6 @@
     "symbol": "[",
     "looks_like": "gloves_leather",
     "color": "brown",
-    "covers": [ "hands" ],
-    "coverage": 60,
-    "encumbrance": 4,
     "warmth": 15,
     "material_thickness": 4,
     "environmental_protection": 1,
@@ -197,11 +253,17 @@
     "id": "gauntlets_plarmor",
     "copy-from": "gauntlets_larmor",
     "type": "ARMOR",
+    "//": "CDF: DDA has no gauntlets_plarmor; the parent's hand portions with this item's encumbrance 5 (4 x 1.25, rule 6: DDA proportional does not reach armor portions).",
+    "armor_portion_data": [
+      { "covers": [ "hands" ], "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ], "coverage": 62, "encumbrance": 2 },
+      { "covers": [ "hands" ], "specifically_covers": [ "hand_palm_l", "hand_palm_r", "hand_back_l", "hand_back_r" ], "coverage": 83, "encumbrance": 3 },
+      { "covers": [ "hands" ], "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ], "coverage": 41, "encumbrance": 0 }
+    ],
     "name": { "str": "pair of plated leather gauntlets", "str_pl": "pairs of plated leather gauntlets" },
     "description": "Heavy fingerless leather gloves that have been reinforced with strategically-placed metal plates.  Flexible and tough.",
     "material": [ "leather", "iron" ],
     "looks_like": "gloves_plate",
-    "proportional": { "price": 4, "price_postapoc": 1.2, "encumbrance": 1.25 },
+    "proportional": { "price": 4, "price_postapoc": 1.2 },
     "relative": { "weight": "250 g" }
   },
   {
@@ -227,6 +289,27 @@
   {
     "id": "gloves_fingerless",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:471 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage is CDF's flat 50 (rule A, AUTO-184; the portions give 50.1).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r", "hand_back_l", "hand_back_r" ],
+        "coverage": 56,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 74,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 37,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of fingerless leather gloves", "str_pl": "pairs of fingerless leather gloves" },
     "description": "A pair of leather gloves with no fingers, allowing greater manual dexterity.",
     "weight": "100 g",
@@ -238,8 +321,6 @@
     "symbol": "[",
     "looks_like": "gloves_light",
     "color": "dark_gray",
-    "covers": [ "hands" ],
-    "coverage": 50,
     "warmth": 10,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS" ]
@@ -247,6 +328,33 @@
   {
     "id": "gloves_fingerless_mod",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:502 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 50 and 3 (rule A; the portions give 49.8).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_back_l", "hand_back_r" ],
+        "coverage": 64,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 53,
+        "encumbrance": 1
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 71,
+        "encumbrance": 2
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 35,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of armored fingerless gloves", "str_pl": "pairs of armored fingerless gloves" },
     "description": "A pair of leather gloves with no fingers, allowing greater manual dexterity.  These have been crudely reinforced with steel guards across the back.",
     "weight": "380 g",
@@ -258,9 +366,6 @@
     "symbol": "[",
     "looks_like": "gloves_fingerless",
     "color": "dark_gray",
-    "covers": [ "hands" ],
-    "coverage": 50,
-    "encumbrance": 3,
     "warmth": 5,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS" ]
@@ -326,6 +431,33 @@
   {
     "id": "gloves_hsurvivor",
     "type": "ARMOR",
+    "//": "CDF: DDA bespoke_armor/cuttingroom.json:114 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 100 and 30 (rule A).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_back_l", "hand_back_r" ],
+        "coverage": 100,
+        "encumbrance": 30
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of heavy survivor gloves", "str_pl": "pairs of heavy survivor gloves" },
     "description": "A pair of heavily customized, steel-backed armored Kevlar gloves, modified to be easy to wear while providing maximum protection under extreme conditions.",
     "weight": "1344 g",
@@ -337,9 +469,6 @@
     "symbol": "[",
     "looks_like": "fire_gauntlets",
     "color": "dark_gray",
-    "covers": [ "hands" ],
-    "coverage": 100,
-    "encumbrance": 30,
     "warmth": 15,
     "material_thickness": 4,
     "environmental_protection": 5,
@@ -349,17 +478,58 @@
     "id": "gloves_sasurvivor",
     "copy-from": "gloves_hsurvivor",
     "type": "ARMOR",
+    "//": "CDF: the parent's hand portions with this item's encumbrance 25 (rule 6).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_back_l", "hand_back_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of superalloy survivor gloves", "str_pl": "pairs of superalloy survivor gloves" },
     "description": "A pair of heavily customized, superalloy-backed armored Kevlar gloves, modified to be easy to wear while providing maximum protection under extreme conditions.",
     "material": [ "kevlar", "superalloy" ],
     "color": "light_cyan",
-    "encumbrance": 25,
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
   },
   {
     "id": "glove_jackson",
     "repairs_like": "gloves_light",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:677 hand portions (b4b62254ae2); a single right glove in CDF, so the right sub-locations only. Coverage is CDF's flat 95 (rule A).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_r" ],
+        "specifically_covers": [ "hand_palm_r", "hand_back_r", "hand_fingers_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hand_r" ],
+        "specifically_covers": [ "hand_wrist_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "white glove" },
     "description": "A single white glove covered with hundreds of rhinestones.",
     "weight": "59 g",
@@ -371,8 +541,6 @@
     "symbol": "[",
     "looks_like": "gloves_leather",
     "color": "white",
-    "covers": [ "hand_r" ],
-    "coverage": 95,
     "warmth": 20,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "FANCY" ]
@@ -541,6 +709,33 @@
   {
     "id": "gloves_plate",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:906 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 100 and 25 (rule A).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_back_l", "hand_back_r" ],
+        "coverage": 100,
+        "encumbrance": 25
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of armored gauntlets", "str_pl": "pairs of armored gauntlets" },
     "description": "An extremely heavy set of armor-plated leather gloves.",
     "weight": "980 g",
@@ -553,9 +748,6 @@
     "symbol": "[",
     "looks_like": "fire_gauntlets",
     "color": "light_gray",
-    "covers": [ "hands" ],
-    "coverage": 100,
-    "encumbrance": 25,
     "warmth": 20,
     "material_thickness": 5,
     "environmental_protection": 1,
@@ -565,11 +757,37 @@
     "id": "gloves_plate_superalloy",
     "copy-from": "gloves_plate",
     "type": "ARMOR",
+    "//": "CDF: the parent's hand portions with this item's encumbrance 20 (rule 6).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_back_l", "hand_back_r" ],
+        "coverage": 100,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of superalloy armored gauntlets", "str_pl": "pairs of superalloy armored gauntlets" },
     "description": "An set of armor-plated leather gloves, made with lightweight superalloy.",
     "material": [ "superalloy", "leather" ],
     "color": "light_cyan",
-    "encumbrance": 20,
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }
   },
   {
@@ -687,15 +905,28 @@
     "id": "gloves_wool_fingerless",
     "copy-from": "gloves_wool",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:1078 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 50 and 7 (rule A).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r", "hand_palm_l", "hand_palm_r", "hand_back_l", "hand_back_r" ],
+        "coverage": 60,
+        "encumbrance": 7
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 40,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of fingerless wool gloves", "str_pl": "pairs of fingerless wool gloves" },
     "description": "A thick pair of wool gloves with no fingers, cutting down on warmth but making them less cumbersome.",
     "weight": "150 g",
     "price": "10 USD",
     "price_postapoc": "25 cent",
     "looks_like": "gloves_fingerless",
-    "coverage": 50,
     "warmth": 24,
-    "encumbrance": 7,
     "extend": { "flags": [ "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS" ] }
   },
   {
@@ -916,6 +1147,15 @@
   {
     "id": "sockmitts",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:1329 hand portions (b4b62254ae2): the sock mitts leave the fingers open. Coverage is CDF's flat 40 (rule A).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r", "hand_palm_l", "hand_palm_r", "hand_back_l", "hand_back_r" ],
+        "coverage": 80,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of sock mitts", "str_pl": "pairs of sock mitts" },
     "description": "A pair of improvised gloves made from socks with holes poked through them.",
     "weight": "32 g",
@@ -926,8 +1166,6 @@
     "symbol": "[",
     "looks_like": "mittens",
     "color": "white",
-    "covers": [ "hands" ],
-    "coverage": 40,
     "warmth": 5,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "SKINTIGHT", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_CLAWS" ]
@@ -978,6 +1216,21 @@
     "id": "gloves_golf",
     "repairs_like": "gloves_light",
     "type": "ARMOR",
+    "//": "CDF: DDA gloves.json:1460 hand portions (b4b62254ae2). Sub-location sets are DDA's; coverage and encumbrance are CDF's flat 90 and 5 (rule A; the portions give 90.1).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r", "hand_back_l", "hand_back_r", "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 92,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 73,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of golfing gloves", "str_pl": "pairs of golfing gloves" },
     "description": "A thin pair of black leather golfing gloves.",
     "weight": "150 g",
@@ -989,9 +1242,6 @@
     "symbol": "[",
     "looks_like": "gloves_light",
     "color": "dark_gray",
-    "covers": [ "hands" ],
-    "coverage": 90,
-    "encumbrance": 5,
     "warmth": 20,
     "material_thickness": 1,
     "flags": [ "VARSIZE", "WATERPROOF", "SKINTIGHT" ]

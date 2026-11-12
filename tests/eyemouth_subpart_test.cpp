@@ -107,7 +107,8 @@ TEST_CASE( "eyemouth1_sub_parts_load", "[armor][eyemouth1]" )
     }
     CHECK( bodypart_str_id( "eyes" )->sub_parts.size() == 2 );
     CHECK( bodypart_str_id( "mouth" )->sub_parts.size() == 4 );
-    CHECK( bodypart_str_id( "hand_l" )->sub_parts.empty() );
+    // CDF: HAND1 gave the hands four sub-locations; the appendix has none
+    CHECK( bodypart_str_id( "num_bp" )->sub_parts.empty() );
     // the 24 older entries are unchanged
     CHECK( sbp( "torso_upper" )->max_coverage == 60 );
     CHECK( sbp( "head_throat" )->max_coverage == 20 );

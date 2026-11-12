@@ -105,8 +105,9 @@ TEST_CASE( "random_sub_part picks within the primary or the secondary pool", "[a
         CHECK( primary.count( "leg_draped_l" ) == 0 );
     }
     SECTION( "a part without sub-locations rolls the null id in both pools" ) {
-        CHECK( bodypart_str_id( "hand_l" )->random_sub_part( false ).is_null() );
-        CHECK( bodypart_str_id( "hand_l" )->random_sub_part( true ).is_null() );
+        // CDF: HAND1 gave the hands theirs, so the appendix stands in
+        CHECK( bodypart_str_id( "num_bp" )->random_sub_part( false ).is_null() );
+        CHECK( bodypart_str_id( "num_bp" )->random_sub_part( true ).is_null() );
         // arms have no secondary location
         CHECK( bodypart_str_id( "arm_l" )->random_sub_part( true ).is_null() );
     }

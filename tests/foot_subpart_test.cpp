@@ -70,8 +70,8 @@ TEST_CASE( "foot1_sub_parts_load", "[armor][foot1][p3]" )
         }
         CHECK( total == 100 );
     }
-    // the hands still have no sub-locations (HAND1 is a separate packet)
-    CHECK( bodypart_str_id( "hand_l" )->sub_parts.empty() );
+    // CDF: HAND1 added the hand sub-locations; this packet's "hands have none" check moved to
+    // tests/hand_subpart_test.cpp
 }
 
 TEST_CASE( "foot1_random_sub_part_distribution", "[armor][foot1][p3]" )

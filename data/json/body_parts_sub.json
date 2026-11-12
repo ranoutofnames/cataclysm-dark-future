@@ -354,6 +354,87 @@
     "locations_under": [ "leg_hip_r", "leg_upper_r" ]
   },
   {
+    "//": "CDF: DDA body_parts.json:1160-1239, the eight hand sub-locations (HAND1).",
+    "id": "hand_wrist_r",
+    "type": "sub_body_part",
+    "parent": "hand_r",
+    "max_coverage": 10,
+    "side": "right",
+    "opposite": "hand_wrist_l",
+    "name": "right wrist",
+    "name_multiple": "wrists"
+  },
+  {
+    "id": "hand_palm_r",
+    "type": "sub_body_part",
+    "parent": "hand_r",
+    "max_coverage": 20,
+    "side": "right",
+    "opposite": "hand_palm_l",
+    "name": "right palm",
+    "name_multiple": "palms"
+  },
+  {
+    "id": "hand_back_r",
+    "type": "sub_body_part",
+    "parent": "hand_r",
+    "max_coverage": 20,
+    "side": "right",
+    "opposite": "hand_back_l",
+    "name": "right back of hand",
+    "name_multiple": "back of hands"
+  },
+  {
+    "id": "hand_fingers_r",
+    "type": "sub_body_part",
+    "parent": "hand_r",
+    "max_coverage": 50,
+    "side": "right",
+    "opposite": "hand_fingers_l",
+    "name": "right fingers",
+    "name_multiple": "fingers"
+  },
+  {
+    "id": "hand_wrist_l",
+    "type": "sub_body_part",
+    "parent": "hand_l",
+    "max_coverage": 10,
+    "side": "left",
+    "opposite": "hand_wrist_r",
+    "name": "left wrist",
+    "name_multiple": "wrists"
+  },
+  {
+    "id": "hand_palm_l",
+    "type": "sub_body_part",
+    "parent": "hand_l",
+    "max_coverage": 20,
+    "side": "left",
+    "opposite": "hand_palm_r",
+    "name": "left palm",
+    "name_multiple": "palms"
+  },
+  {
+    "id": "hand_back_l",
+    "type": "sub_body_part",
+    "parent": "hand_l",
+    "max_coverage": 20,
+    "side": "left",
+    "opposite": "hand_back_r",
+    "name": "left back of hand",
+    "name_multiple": "back of hands"
+  },
+  {
+    "id": "hand_fingers_l",
+    "type": "sub_body_part",
+    "parent": "hand_l",
+    "max_coverage": 50,
+    "side": "left",
+    "opposite": "hand_fingers_r",
+    "name": "left fingers",
+    "name_multiple": "fingers"
+  },
+  {
     "//": "CDF: DDA body_parts.json:1296-1395, the ten foot sub-locations (FOOT1).",
     "id": "foot_sole_l",
     "type": "sub_body_part",

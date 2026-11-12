@@ -56,9 +56,10 @@ TEST_CASE("sub body parts load with DDA's ids and coverage", "[armor][subpart]")
         }
         CHECK(total == 100);
     }
-    // parts without sub-locations have none and roll the null id
-    CHECK(bodypart_str_id("hand_l")->sub_parts.empty());
-    CHECK(bodypart_str_id("hand_l")->random_sub_part().is_null());
+    // parts without sub-locations have none and roll the null id (CDF: HAND1 gave the hands
+    // theirs, so the appendix stands in)
+    CHECK(bodypart_str_id("num_bp")->sub_parts.empty());
+    CHECK(bodypart_str_id("num_bp")->random_sub_part().is_null());
 }
 
 TEST_CASE("random_sub_part follows max_coverage", "[armor][subpart]") {

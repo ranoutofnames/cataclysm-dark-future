@@ -2,6 +2,16 @@
   {
     "id": "bead_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 20 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 20,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ],
     "name": { "str": "beaded bracelet" },
     "description": "A simple bracelet of string and wooden beads.  You can wear it if you like, but it won't provide any effects.  Also doubles as a set of prayer beads, if you're so inclined.",
     "looks_like": "copper_bracelet",
@@ -9,7 +19,6 @@
     "volume": "10 ml",
     "price": "1 USD",
     "price_postapoc": "10 cent",
-    "flags": [ "FANCY" ],
     "material": [ "wood" ],
     "symbol": "[",
     "color": "brown",
@@ -48,6 +57,16 @@
   {
     "id": "bracelet_friendship",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 30 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 30,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ],
     "name": { "str": "friendship bracelet" },
     "description": "A homemade bracelet crafted from colorful knickknacks.  It's not very expensive, but it's the effort that makes it special.",
     "looks_like": "copper_bracelet",
@@ -55,7 +74,6 @@
     "volume": "10 ml",
     "price": "1 USD",
     "price_postapoc": "10 cent",
-    "flags": [ "FANCY" ],
     "material": [ "wood", "plastic" ],
     "symbol": "[",
     "color": "red"
@@ -209,6 +227,17 @@
   {
     "id": "diamond_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "diamond and gold ring" },
     "description": "A gold ring with a sparkling diamond mounted on top of it.  Back in the old days this could be worth a fortune.  You can wear it if you like, but it won't provide any effects.",
     "weight": "12 g",
@@ -218,8 +247,7 @@
     "material": [ "gold" ],
     "symbol": "[",
     "looks_like": "ring_engagement",
-    "color": "yellow",
-    "flags": [ "FANCY" ]
+    "color": "yellow"
   },
   {
     "id": "diving_watch",
@@ -235,8 +263,14 @@
     "symbol": "[",
     "looks_like": "gold_watch",
     "color": "light_gray",
-    "covers": [ "hand_either" ],
-    "coverage": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "use_action": "WEATHER_TOOL",
     "flags": [
       "WATCH",
@@ -268,6 +302,16 @@
   {
     "id": "copper_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 20 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 20,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "BELTED", "NO_WEAR_EFFECT", "OVERSIZE" ],
     "name": { "str": "copper bracelet" },
     "description": "An old-fashioned, copper bracelet.  You can wear it if you like, but it won't provide any effects.",
     "weight": "86 g",
@@ -338,6 +382,17 @@
   {
     "id": "copper_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "copper ring" },
     "description": "A plain, copper ring.  Not very shiny, and not very popular.  You can wear it if you like, but it won't provide any effects.",
     "weight": "50 g",
@@ -751,6 +806,16 @@
   {
     "id": "gold_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 20 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 20,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "BELTED", "NO_WEAR_EFFECT", "OVERSIZE" ],
     "name": { "str": "gold bracelet" },
     "description": "A fancy golden bracelet.  You can wear it if you like, but it won't provide any effects.",
     "weight": "40 g",
@@ -759,8 +824,7 @@
     "price_postapoc": "50 cent",
     "material": [ "gold" ],
     "symbol": "[",
-    "color": "yellow",
-    "flags": [ "FANCY" ]
+    "color": "yellow"
   },
   {
     "id": "gold_dental_grill",
@@ -852,6 +916,17 @@
   {
     "id": "gold_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "gold ring" },
     "description": "A flashy gold ring.  You can wear it if you like, but it won't provide any effects.",
     "weight": "10 g",
@@ -875,8 +950,14 @@
     "material": [ "steel", "gold" ],
     "symbol": "[",
     "color": "yellow",
-    "covers": [ "hand_either" ],
-    "coverage": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "flags": [ "WATCH", "FANCY", "BELTED", "COMPACT", "FRAGILE", "ALLOWS_NATURAL_ATTACKS", "OVERSIZE", "POWERARMOR_COMPATIBLE" ]
   },
   {
@@ -905,8 +986,14 @@
     "material": [ "steel", "silver" ],
     "symbol": "[",
     "color": "light_gray",
-    "covers": [ "hand_either" ],
-    "coverage": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "flags": [
       "WATCH",
       "FANCY",
@@ -922,6 +1009,16 @@
   {
     "id": "silver_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 20 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 20,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ],
     "name": { "str": "silver bracelet" },
     "description": "A nice silver bracelet.  You can wear it if you like, but it won't provide any effects.",
     "weight": "30 g",
@@ -930,8 +1027,7 @@
     "price_postapoc": "25 cent",
     "material": [ "silver" ],
     "symbol": "[",
-    "color": "light_gray",
-    "flags": [ "FANCY" ]
+    "color": "light_gray"
   },
   {
     "id": "silver_ear",
@@ -961,8 +1057,14 @@
     "material": [ "gold", "silver" ],
     "symbol": "[",
     "color": "yellow",
-    "covers": [ "hand_either" ],
-    "coverage": 10,
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
     "flags": [
       "WATCH",
       "SUPER_FANCY",
@@ -1061,8 +1163,14 @@
     "material": [ "platinum" ],
     "symbol": "[",
     "color": "white",
-    "covers": [ "hand_either" ],
-    "coverage": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "flags": [
       "WATCH",
       "SUPER_FANCY",
@@ -1077,6 +1185,16 @@
   {
     "id": "platinum_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 50 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "BELTED", "NO_WEAR_EFFECT", "OVERSIZE" ],
     "name": { "str": "platinum bracelet" },
     "description": "A flawless platinum bracelet.  You can wear it if you like, but it won't provide any effects.",
     "weight": "50 g",
@@ -1085,8 +1203,7 @@
     "price_postapoc": "1 USD",
     "material": [ "platinum" ],
     "symbol": "[",
-    "color": "white",
-    "flags": [ "FANCY" ]
+    "color": "white"
   },
   {
     "id": "platinum_dental_grill",
@@ -1164,6 +1281,17 @@
   {
     "id": "platinum_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "platinum ring" },
     "description": "A platinum ring, engraved with all manner of swirls and spirals.  You can wear it if you like, but it won't provide any effects.",
     "weight": "13 g",
@@ -1172,12 +1300,22 @@
     "price_postapoc": "50 cent",
     "material": [ "platinum" ],
     "symbol": "[",
-    "color": "white",
-    "flags": [ "FANCY" ]
+    "color": "white"
   },
   {
     "id": "ring_engagement",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "engagement ring" },
     "description": "This ring is an intricate gold band, with a small cluster of diamonds set in the center.  Before the world broke down, this ring would've cost a small fortune.",
     "weight": "14 g",
@@ -1186,12 +1324,22 @@
     "price_postapoc": "25 cent",
     "material": [ "gold", "diamond" ],
     "symbol": "[",
-    "color": "yellow",
-    "flags": [ "FANCY" ]
+    "color": "yellow"
   },
   {
     "id": "ring_purity",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "purity ring" },
     "description": "Also known as a promise ring, this ring is worn as a sign of chastity.  This one bears the inscription, \"Love is patient.\"",
     "weight": "6 g",
@@ -1200,12 +1348,22 @@
     "price_postapoc": "10 cent",
     "material": [ "silver" ],
     "symbol": "[",
-    "color": "light_gray",
-    "flags": [ "FANCY" ]
+    "color": "light_gray"
   },
   {
     "id": "ring_signet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "signet ring" },
     "description": "A gold and silver ring with a wide stamp attached to the band.  A long time ago, the stamp was legible, but now the pattern is too worn to discern its former use.",
     "weight": "25 g",
@@ -1214,12 +1372,22 @@
     "price_postapoc": "25 cent",
     "material": [ "gold", "silver" ],
     "symbol": "[",
-    "color": "yellow",
-    "flags": [ "FANCY" ]
+    "color": "yellow"
   },
   {
     "id": "ring_wedding",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "SUPER_FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "wedding ring" },
     "description": "A flawless ring, ensnaring a diamond with twists of pure gold.  It's a constant reminder that the wearer is married.",
     "weight": "16 g",
@@ -1228,8 +1396,7 @@
     "price_postapoc": "50 cent",
     "material": [ "gold", "diamond" ],
     "symbol": "[",
-    "color": "yellow",
-    "flags": [ "SUPER_FANCY" ]
+    "color": "yellow"
   },
   {
     "id": "silver_necklace",
@@ -1290,6 +1457,17 @@
   {
     "id": "silver_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "silver ring" },
     "description": "A simple, silver ring.  You can wear it if you like, but it won't provide any effects.",
     "weight": "6 g",
@@ -1298,8 +1476,7 @@
     "price_postapoc": "10 cent",
     "material": [ "silver" ],
     "symbol": "[",
-    "color": "light_gray",
-    "flags": [ "FANCY" ]
+    "color": "light_gray"
   },
   {
     "id": "leather_collar",
@@ -1328,8 +1505,14 @@
     "material": [ "plastic", "steel" ],
     "symbol": "[",
     "color": "dark_gray",
-    "covers": [ "hand_either" ],
-    "coverage": 5,
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 50,
+        "encumbrance": 0
+      }
+    ],
     "flags": [
       "WATCH",
       "ALARMCLOCK",
@@ -1898,6 +2081,17 @@
   {
     "id": "garnet_gold_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "garnet and gold ring" },
     "description": "A gold ring with a garnet mounted on top of it.  You can wear it if you like, but it won't provide any effects.",
     "weight": "2700 mg",
@@ -1907,8 +2101,7 @@
     "material": [ "gold", "gemstone" ],
     "looks_like": "gold_ring",
     "symbol": "[",
-    "color": "red",
-    "flags": [ "FANCY" ]
+    "color": "red"
   },
   {
     "id": "amethyst_gold_ring",
@@ -2019,6 +2212,17 @@
   {
     "id": "garnet_silver_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT" ],
     "name": { "str": "garnet and silver ring" },
     "description": "A silver ring with a garnet mounted on top of it.  You can wear it if you like, but it won't provide any effects.",
     "weight": "2700 mg",
@@ -2028,8 +2232,7 @@
     "material": [ "silver", "gemstone" ],
     "looks_like": "silver_ring",
     "symbol": "[",
-    "color": "red",
-    "flags": [ "FANCY" ]
+    "color": "red"
   },
   {
     "id": "amethyst_silver_ring",
@@ -2140,6 +2343,17 @@
   {
     "id": "garnet_platinum_ring",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a ring covers the fingers only, at 0 coverage and rigid_layer_only (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 0,
+        "encumbrance": 0,
+        "rigid_layer_only": true
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "SKINTIGHT" ],
     "name": { "str": "garnet and platinum ring" },
     "description": "A platinum ring with a garnet mounted on top of it.  You can wear it if you like, but it won't provide any effects.",
     "weight": "2700 mg",
@@ -2149,8 +2363,7 @@
     "material": [ "platinum", "gemstone" ],
     "looks_like": "platinum_ring",
     "symbol": "[",
-    "color": "red",
-    "flags": [ "FANCY" ]
+    "color": "red"
   },
   {
     "id": "amethyst_platinum_ring",
@@ -2262,6 +2475,16 @@
   {
     "id": "garnet_gold_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 20 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 20,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "OVERSIZE" ],
     "name": { "str": "garnet and gold bracelet" },
     "description": "A gold bracelet with sparkling garnets.  You can wear it if you like, but it won't provide any effects.",
     "weight": "2700 mg",
@@ -2271,8 +2494,7 @@
     "material": [ "gold", "gemstone" ],
     "looks_like": "gold_bracelet",
     "symbol": "[",
-    "color": "red",
-    "flags": [ "FANCY" ]
+    "color": "red"
   },
   {
     "id": "amethyst_gold_bracelet",
@@ -2384,6 +2606,16 @@
   {
     "id": "garnet_silver_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 20 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 20,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "NO_WEAR_EFFECT", "OVERSIZE" ],
     "name": { "str": "garnet and silver bracelet" },
     "description": "A silver bracelet with sparkling garnets.  You can wear it if you like, but it won't provide any effects.",
     "weight": "2700 mg",
@@ -2393,8 +2625,7 @@
     "material": [ "silver", "gemstone" ],
     "looks_like": "silver_bracelet",
     "symbol": "[",
-    "color": "red",
-    "flags": [ "FANCY" ]
+    "color": "red"
   },
   {
     "id": "amethyst_silver_bracelet",
@@ -2506,6 +2737,16 @@
   {
     "id": "garnet_platinum_bracelet",
     "type": "ARMOR",
+    "//": "CDF: DDA jewelry.json hand portion (b4b62254ae2): a bracelet covers the wrist at 20 (rule 7).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hand_either" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r" ],
+        "coverage": 20,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "FANCY", "BELTED", "NO_WEAR_EFFECT", "OVERSIZE" ],
     "name": { "str": "garnet and platinum bracelet" },
     "description": "A platinum bracelet with sparkling garnets.  You can wear it if you like, but it won't provide any effects.",
     "weight": "2700 mg",
@@ -2515,8 +2756,7 @@
     "material": [ "platinum", "gemstone" ],
     "looks_like": "platinum_bracelet",
     "symbol": "[",
-    "color": "red",
-    "flags": [ "FANCY" ]
+    "color": "red"
   },
   {
     "id": "amethyst_platinum_bracelet",

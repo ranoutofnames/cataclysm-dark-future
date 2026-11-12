@@ -780,7 +780,7 @@
     "id": "robofac_enviro_suit",
     "repairs_like": "aep_suit",
     "type": "ARMOR",
-    "//": "CDF: the foot portions are DDA's; the other body parts keep CDF's flat 100 coverage and 15 encumbrance in one plain portion (rule 5).",
+    "//": "CDF: the foot and hand portions are DDA's; the other body parts keep CDF's flat 100 coverage and 15 encumbrance in one plain portion (rules 5 and 8). HAND1: the hand back portion takes CDF's total 15, not DDA's 16 (rule A).",
     "name": { "str": "Hub 01 environmental suit" },
     "description": "A lightweight environmental suit worn by Hub personnel in their rare forays aboveground.  Colored brown and blue, the white seal of Hub 01 is embroidered on both of its upper arms.  It requires a separate gas mask for full protection.",
     "weight": "4000 g",
@@ -817,7 +817,25 @@
         "encumbrance": 0
       },
       {
-        "covers": [ "head", "torso", "arms", "hands", "legs" ],
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_back_l", "hand_back_r" ],
+        "coverage": 100,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r", "hand_palm_l", "hand_palm_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "head", "torso", "arms", "legs" ],
         "coverage": 100,
         "encumbrance": 15
       }

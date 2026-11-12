@@ -85,10 +85,31 @@
     "id": "gauntlets_demonchitin",
     "copy-from": "gauntlets_chitin",
     "type": "ARMOR",
+    "//": "CDF: the parent's hand portions with this item's encumbrance 9 (0.9 x the parent's 10, rule 6; DDA proportional does not reach armor portions).",
+    "armor_portion_data": [
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_wrist_l", "hand_wrist_r", "hand_back_l", "hand_back_r" ],
+        "coverage": 95,
+        "encumbrance": 9
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_fingers_l", "hand_fingers_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "hands" ],
+        "specifically_covers": [ "hand_palm_l", "hand_palm_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      }
+    ],
     "name": { "str": "pair of demon chitin gauntlets", "str_pl": "pairs of demon chitin gauntlets" },
     "description": "Gauntlets crafted from the carefully cleaned and pruned red exoskeletons of demon spiders.  Fire-resistant and very durable.",
     "material": [ "demon_chitin" ],
-    "proportional": { "weight": 0.9, "encumbrance": 0.9, "price": 10, "warmth": 2 },
+    "proportional": { "weight": 0.9, "price": 10, "warmth": 2 },
     "environmental_protection": 8
   },
   {

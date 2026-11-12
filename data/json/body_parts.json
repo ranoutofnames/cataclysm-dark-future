@@ -168,7 +168,8 @@
     "stylish_bonus": 0.5,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 5
+    "bionic_slots": 5,
+    "sub_parts": [ "hand_wrist_l", "hand_palm_l", "hand_back_l", "hand_fingers_l" ]
   },
   {
     "id": "hand_r",
@@ -191,7 +192,8 @@
     "stylish_bonus": 0.5,
     "hot_morale_mod": 0.5,
     "cold_morale_mod": 0.5,
-    "bionic_slots": 5
+    "bionic_slots": 5,
+    "sub_parts": [ "hand_wrist_r", "hand_palm_r", "hand_back_r", "hand_fingers_r" ]
   },
   {
     "id": "leg_l",
