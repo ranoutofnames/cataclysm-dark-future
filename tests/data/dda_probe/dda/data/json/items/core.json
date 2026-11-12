@@ -1,0 +1,6 @@
+[
+  { "type": "ITEM", "subtypes": [ "GENERIC" ], "id": "a", "name": "a", "flags": [ "WET", "EDIBLE_FROZEN" ], "frobnicate": 1 },
+  { "type": "ITEM", "subtypes": "GUN", "id": "b", "name": "b" },
+  { "type": "GENERIC", "id": "c", "name": "c", "flags": [ "WET" ] },
+  { "type": "widget", "id": "w" }
+]

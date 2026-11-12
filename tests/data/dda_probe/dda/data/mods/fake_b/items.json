@@ -1,0 +1,4 @@
+[
+  { "type": "TOOL", "id": "t", "name": "t", "flags": [ "WET" ] },
+  { "type": "ITEM", "subtypes": [ "TOOL", "GUN" ], "id": "g", "name": "g", "flags": [ "NOPE" ] }
+]

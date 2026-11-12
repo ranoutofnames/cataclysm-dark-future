@@ -1,0 +1,4 @@
+[
+  { "type": "ITEM", "subtypes": "GENERIC", "id": "x", "flags": [ "WET", "NOPE" ] },
+  { "type": "effect_on_condition", "id": "e" }
+]
