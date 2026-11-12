@@ -1,0 +1,10 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "TOOL", "ARMOR" ],
+  "id": "compat_item_tool_armor",
+  "name": "compat item tool armor",
+  "max_charges": 50,
+  "initial_charges": 50,
+  "ammo": "battery",
+  "material_thickness": 1
+}

@@ -173,6 +173,8 @@ class Item_factory
         void load_tool( const JsonObject &jo, const std::string &src );
         void load_toolmod( const JsonObject &jo, const std::string &src );
         void load_tool_armor( const JsonObject &jo, const std::string &src );
+        // CDF: DDA "type": "ITEM" with a "subtypes" array (AUTO-239 q2), see item_factory.cpp
+        void load_item( const JsonObject &jo, const std::string &src );
         void load_book( const JsonObject &jo, const std::string &src );
         void load_comestible( const JsonObject &jo, const std::string &src );
         void load_container( const JsonObject &jo, const std::string &src );

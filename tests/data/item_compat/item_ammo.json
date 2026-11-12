@@ -1,0 +1,8 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "AMMO" ],
+  "id": "compat_item_ammo",
+  "name": "compat item ammo",
+  "ammo_type": "9mm",
+  "stack_size": 20
+}

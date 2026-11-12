@@ -1,0 +1,10 @@
+{
+  "type": "TOOL",
+  "id": "compat_legacy_tool",
+  "name": "compat legacy tool",
+  "max_charges": 100,
+  "initial_charges": 40,
+  "charges_per_use": 2,
+  "power_draw": 5,
+  "ammo": "battery"
+}

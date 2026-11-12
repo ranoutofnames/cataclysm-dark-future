@@ -1,0 +1,9 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "BOOK" ],
+  "id": "compat_item_book",
+  "name": "compat item book",
+  "max_level": 3,
+  "required_level": 1,
+  "time": 100
+}

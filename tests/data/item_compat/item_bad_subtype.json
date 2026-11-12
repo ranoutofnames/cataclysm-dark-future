@@ -1,0 +1,7 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "TOOL", "NOT_A_TYPE" ],
+  "id": "compat_item_bad_subtype",
+  "name": "compat item bad subtype",
+  "max_charges": 100
+}

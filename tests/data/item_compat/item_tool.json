@@ -1,0 +1,11 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "TOOL" ],
+  "id": "compat_item_tool",
+  "name": "compat item tool",
+  "max_charges": 100,
+  "initial_charges": 40,
+  "charges_per_use": 2,
+  "power_draw": 5,
+  "ammo": "battery"
+}

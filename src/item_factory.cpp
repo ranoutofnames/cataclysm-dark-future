@@ -3447,6 +3447,82 @@ void Item_factory::load_tool_armor( const JsonObject &jo, const std::string &src
     }
 }
 
+// CDF: DDA "type": "ITEM" with a "subtypes" array (DDA item_factory.cpp:3176 reads the same key).
+// Each subtype runs the same slot loaders as its legacy per-type object (load_gun, load_tool, ...),
+// the slots union on one itype and the basic info is read once. Unknown subtypes are an error.
+void Item_factory::load_item( const JsonObject &jo, const std::string &src )
+{
+    static const std::set<std::string> known_subtypes = {
+        "AMMO", "ARMOR", "BATTERY", "BIONIC_ITEM", "BOOK", "COMESTIBLE", "CONTAINER", "ENGINE",
+        "FUEL", "GENERIC", "GUN", "GUNMOD", "MAGAZINE", "PET_ARMOR", "TOOL", "TOOLMOD",
+        "TOOL_ARMOR", "WHEEL",
+    };
+    std::set<std::string> subtypes;
+    for( const std::string subtype : jo.get_array( "subtypes" ) ) {
+        if( !known_subtypes.contains( subtype ) ) {
+            jo.throw_error( "unknown ITEM subtype '" + subtype + "'", "subtypes" );
+        }
+        subtypes.insert( subtype );
+    }
+    if( subtypes.empty() ) {
+        jo.throw_error( "ITEM needs at least one subtype", "subtypes" );
+    }
+
+    itype def;
+    if( !load_definition( jo, src, def ) ) {
+        return;
+    }
+    for( const std::string &subtype : subtypes ) {
+        if( subtype == "AMMO" ) {
+            assign( jo, "stack_size", def.stack_size, is_strict_enabled( src ), 1 );
+            if( def.was_loaded && def.ammo ) {
+                def.ammo->was_loaded = true;
+            } else {
+                def.ammo = cata::make_value<islot_ammo>();
+                def.ammo->was_loaded = def.was_loaded;
+            }
+            def.ammo->load( jo );
+        } else if( subtype == "COMESTIBLE" ) {
+            assign( jo, "stack_size", def.stack_size, is_strict_enabled( src ), 1 );
+            load_slot( def.comestible, jo, src );
+        } else if( subtype == "ARMOR" ) {
+            load_slot( def.armor, jo, src );
+        } else if( subtype == "BATTERY" ) {
+            load_slot( def.battery, jo, src );
+        } else if( subtype == "BIONIC_ITEM" ) {
+            load_slot( def.bionic, jo, src );
+        } else if( subtype == "BOOK" ) {
+            load_slot( def.book, jo, src );
+        } else if( subtype == "CONTAINER" ) {
+            load_slot( def.container, jo, src );
+        } else if( subtype == "ENGINE" ) {
+            load_slot( def.engine, jo, src );
+        } else if( subtype == "FUEL" ) {
+            load_slot( def.fuel, jo, src );
+        } else if( subtype == "GUN" ) {
+            load_slot( def.gun, jo, src );
+        } else if( subtype == "GUNMOD" ) {
+            load_slot( def.gunmod, jo, src );
+            load_slot( def.mod, jo, src );
+        } else if( subtype == "MAGAZINE" ) {
+            load_slot( def.magazine, jo, src );
+        } else if( subtype == "PET_ARMOR" ) {
+            load_slot( def.pet_armor, jo, src );
+        } else if( subtype == "TOOL" ) {
+            load_slot( def.tool, jo, src );
+        } else if( subtype == "TOOLMOD" ) {
+            load_slot( def.mod, jo, src );
+        } else if( subtype == "TOOL_ARMOR" ) {
+            load_slot( def.tool, jo, src );
+            load_slot( def.armor, jo, src );
+        } else if( subtype == "WHEEL" ) {
+            load_slot( def.wheel, jo, src );
+        }
+        // GENERIC has no slot of its own: the basic info below is its whole definition
+    }
+    load_basic_info( jo, def, src );
+}
+
 void Item_factory::load( islot_book &slot, const JsonObject &jo, const std::string &src )
 {
     const bool strict = is_strict_enabled( src );
@@ -3979,7 +4055,14 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
         "TOOL_ARMOR",
         "WHEEL",
     };
-    if( needs_plural.contains( jo.get_string( "type" ) ) ) {
+    // CDF: an ITEM (see load_item) takes the plural when any of its subtypes does
+    bool plural = needs_plural.contains( jo.get_string( "type" ) );
+    if( jo.get_string( "type" ) == "ITEM" ) {
+        for( const std::string subtype : jo.get_array( "subtypes" ) ) {
+            plural = plural || needs_plural.contains( subtype );
+        }
+    }
+    if( plural ) {
         def.name = translation( translation::plural_tag() );
     } else {
         def.name = translation();

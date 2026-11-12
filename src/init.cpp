@@ -420,6 +420,10 @@ void DynamicDataLoader::initialize()
     add( "BIONIC_ITEM", []( const JsonObject & jo, const std::string & src ) {
         item_controller->load_bionic( jo, src );
     } );
+    // CDF: DDA item objects, "type": "ITEM" with "subtypes" (AUTO-239 q2)
+    add( "ITEM", []( const JsonObject & jo, const std::string & src ) {
+        item_controller->load_item( jo, src );
+    } );
 
     add( "ITEM_CATEGORY", &item_category::load_item_cat );
 

@@ -1,0 +1,9 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "GUN" ],
+  "id": "compat_item_gun",
+  "name": "compat item gun",
+  "ammo": "9mm",
+  "range": 10,
+  "durability": 5
+}

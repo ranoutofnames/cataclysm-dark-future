@@ -1,0 +1,8 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "TOOL" ],
+  "id": "compat_item_unknown_key",
+  "name": "compat item unknown key",
+  "max_charges": 100,
+  "not_a_cdf_key": 1
+}

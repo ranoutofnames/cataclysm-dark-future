@@ -1,0 +1,9 @@
+{
+  "type": "ITEM",
+  "subtypes": [ "COMESTIBLE" ],
+  "id": "compat_item_food",
+  "name": "compat item food",
+  "comestible_type": "FOOD",
+  "quench": 5,
+  "stack_size": 5
+}
