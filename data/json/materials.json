@@ -1956,5 +1956,42 @@
     "copy-from": "plastic",
     "name": "Plastic Padding",
     "//": "CDF: DDA materials.json:1731 (b4b62254ae2). copy-from plastic with CDF numbers kept (DDA: bash 1, cut 0.5, bullet 0.5); salvaged_into/repaired_with inherited from plastic."
+  },
+  {
+    "type": "material",
+    "id": "denim",
+    "copy-from": "cotton",
+    "name": "Denim",
+    "//": "CDF: FOOT2. DDA materials.json:691 (b4b62254ae2). copy-from cotton with CDF numbers kept; DDA's repaired_with/salvaged_into denim_patch is not a CDF item, so cotton's are inherited."
+  },
+  {
+    "type": "material",
+    "id": "leather_treated",
+    "copy-from": "leather",
+    "name": "Treated Leather",
+    "//": "CDF: FOOT2. DDA materials.json:1423 (b4b62254ae2). copy-from leather with CDF numbers kept; DDA's repaired_with/salvaged_into leather exist in CDF and are the parent's."
+  },
+  {
+    "type": "material",
+    "id": "ch_steel",
+    "copy-from": "hardsteel",
+    "name": "Hardened Carbon Steel",
+    "//": "CDF: FOOT2. DDA materials.json:2041 (b4b62254ae2), named hard steel there ('Hardened Carbon Steel'), so hardsteel is the parent (FOOT2 rule 7); CDF numbers kept. DDA's repaired_with mc_steel_chunk is not a CDF item, so hardsteel's is inherited."
+  },
+  {
+    "type": "material",
+    "id": "lc_steel_chain",
+    "copy-from": "steel",
+    "name": "Low Carbon Steel Chain",
+    "compact_accepts": [  ],
+    "compacts_into": [  ],
+    "//": "CDF: FOOT2. DDA materials.json:2119 (b4b62254ae2). copy-from steel with CDF numbers kept; DDA's repaired_with lc_chain_link is not a CDF item, so steel's is inherited. compacts_into/compact_accepts emptied because the steel chunk items are made of steel, not lc_steel_chain (material check, as qt_steel)."
+  },
+  {
+    "type": "material",
+    "id": "budget_steel_chain",
+    "copy-from": "budget_steel",
+    "name": "Budget Steel Chain",
+    "//": "CDF: FOOT2. DDA materials.json:2097 (b4b62254ae2). copy-from budget_steel with CDF numbers kept (DDA: bash 3, cut 6, bullet 2); budget_steel's repaired_with scrap is DDA's too."
   }
 ]

@@ -355,5 +355,42 @@
         "volume_encumber_modifier": 0.5
       }
     ]
+  },
+  {
+    "id": "bootsheath_birchbark",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA sheath.json:325 (b4b62254ae2). Sided ankle sheath in the FOOT1 form of bootsheath (foot_either, both ankles named); DDA's encumbrance [2, 3] kept as the array form (min 2, max 3) the portion loader reads.",
+    "name": { "str": "birchbark ankle sheath" },
+    "description": "A handcrafted small concealed knife sheath worn on the ankle, made from birch bark.  Activate to sheathe/draw a weapon.",
+    "weight": "190 g",
+    "volume": "500 ml",
+    "price": "12 USD",
+    "price_postapoc": "1 USD 50 cent",
+    "material": [ "wood" ],
+    "symbol": "[",
+    "looks_like": "bootsheath",
+    "color": "brown",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 25,
+        "encumbrance": [ 2, 3 ]
+      }
+    ],
+    "material_thickness": 1,
+    "use_action": { "type": "holster", "holster_prompt": "Sheathe knife", "holster_msg": "You sheathe your %s" },
+    "flags": [ "BELTED", "OVERSIZE", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY" ],
+    "pocket_data": [
+      {
+        "magazine_well": "200 ml",
+        "holster": true,
+        "flag_restriction": [ "SHEATH_KNIFE" ],
+        "moves": 35,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "1 kg",
+        "max_item_length": "30 cm"
+      }
+    ]
   }
 ]

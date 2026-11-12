@@ -136,7 +136,7 @@
     "id": "foot_protectors_eod",
     "type": "ARMOR",
     "category": "armor",
-    "//": "CDF: EOD1. DDA boots.json:388. CDF: specifically_covers (toes, ankle, heel, arch) dropped (CDF has no foot sub-locations); the per-layer materials are the item-level list with DDA's material_thickness 14.",
+    "//": "CDF: EOD1. DDA boots.json:388. CDF: the per-layer materials are the item-level list with DDA's material_thickness 14. FOOT2: specifically_covers (toes, ankle, heel, arch, no sole) restored now that FOOT1 defines the foot sub-locations, as DDA.",
     "name": { "str_sp": "EOD foot protectors (pair)" },
     "description": "Armored foot protectors constructed from steel and Nomex for use by explosive ordnance disposal technicians.",
     "weight": "1220 g",
@@ -149,7 +149,14 @@
     "symbol": "[",
     "color": "light_gray",
     "flags": [ "STURDY", "OUTER" ],
-    "armor_portion_data": [ { "covers": [ "foot_l", "foot_r" ], "coverage": 100, "encumbrance": 34 } ]
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 34
+      }
+    ]
   },
   {
     "id": "EOD_hotstick",

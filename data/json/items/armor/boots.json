@@ -1729,7 +1729,7 @@
   {
     "id": "swim_fins",
     "type": "ARMOR",
-    "//": "CDF: DDA boots.json swim_fins (toes, heel, arch, sole); the foot aggregate drops from the flat 85 to 75 (rule 4, DDA shape).",
+    "//": "CDF: DDA boots.json swim_fins (toes, heel, arch, sole); the foot aggregate drops from the flat 85 to 75 (rule 4, DDA shape). FOOT2 adds BOOT_FINS (DDA swimming.json:740) so the thick diving boots' fin mount takes them.",
     "name": { "str": "pair of swim fins", "str_pl": "pairs of swim fins" },
     "description": "A pair of rubber flippers worn on the feet which improve swimming speed while greatly impeding the wearer's ability to walk.",
     "weight": "680 g",
@@ -1768,7 +1768,7 @@
     ],
     "warmth": 5,
     "material_thickness": 1,
-    "flags": [ "VARSIZE", "WATER_FRIENDLY", "FIN" ]
+    "flags": [ "VARSIZE", "WATER_FRIENDLY", "FIN", "BOOT_FINS" ]
   },
   {
     "id": "thigh_high_boots",
@@ -2281,5 +2281,399 @@
     "color": "green",
     "material_thickness": 5,
     "environmental_protection": 4
+  },
+  {
+    "id": "boots_faux_fur",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA boots.json:525 (b4b62254ae2). Portions as DDA. One material list and one material_thickness per item: the upper is cotton 1.5 + faux_fur 1.5 and the rubber sole (4 mm) is one set with it; DDA's item-level material_thickness 3 is kept.",
+    "name": { "str_sp": "faux fur boots (pair)" },
+    "description": "Boots lined with fur for warmth.",
+    "weight": "1890 g",
+    "volume": "4500 ml",
+    "price": "140 USD",
+    "price_postapoc": "7 USD 50 cent",
+    "material": [ "cotton", "faux_fur", "leather", "rubber" ],
+    "symbol": "[",
+    "color": "brown",
+    "looks_like": "boots_fur",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "warmth": 40,
+    "material_thickness": 3,
+    "environmental_protection": 2,
+    "flags": [ "VARSIZE", "WATERPROOF" ]
+  },
+  {
+    "id": "boots_denim",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA boots.json:338 (b4b62254ae2), DDA note 'Denim part is 12 oz.'. Foot portions as DDA. One material list and one material_thickness per item: the upper is leather 1.5 + denim 0.8 = 2.3 mm and the rubber sole (6 mm) cannot be its own (per-portion thickness: ARMMAT1). CDF: material_thickness is an int, so 2.3 is stored as 2.",
+    "name": { "str_sp": "denim boots (pair)" },
+    "description": "A pair of boots extending towards your lower leg, completely lined with denim.  Looks cool and has above average protection.",
+    "weight": "1120 g",
+    "volume": "3 L",
+    "price": "60 USD",
+    "price_postapoc": "6 USD 50 cent",
+    "material": [ "leather", "denim", "rubber" ],
+    "symbol": "{",
+    "color": "light_blue",
+    "looks_like": "boots",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 12
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "warmth": 20,
+    "material_thickness": 2.3,
+    "environmental_protection": 2,
+    "flags": [ "VARSIZE", "WATERPROOF" ]
+  },
+  {
+    "id": "toecaps",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: FOOT2. DDA boots.json:427 (b4b62254ae2). The toes only, DDA item-level thickness 3.",
+    "name": { "str_sp": "toecaps (pair)" },
+    "description": "Rubbery overshoes that cover your toes with sturdy, OSHA compliant steel toes.",
+    "weight": "907 g",
+    "volume": "1 L",
+    "price": "25 USD",
+    "price_postapoc": "6 USD 50 cent",
+    "material": [ "plastic", "steel" ],
+    "symbol": "[",
+    "color": "brown",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 10
+      }
+    ],
+    "warmth": 10,
+    "material_thickness": 3,
+    "environmental_protection": 1,
+    "flags": [ "OUTER", "STURDY" ]
+  },
+  {
+    "id": "sneakers_steel",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: FOOT2. DDA boots.json:959 (b4b62254ae2). Portions as DDA. One material list and one material_thickness per item: DDA's portions are cotton 1 / cotton+steel 0.5 (toes) / cotton+rubber 4 (sole), so the steel toe cap and the rubber sole cannot have their own numbers (ARMMAT1). The list follows the table (largest portion first), not DDA's stale item-level nylon/plastic list.",
+    "name": { "str_sp": "steeltoed sneakers (pair)" },
+    "description": "A descendant of the classic steeltoed boot, this modern footwear has become popular among working class people over the last couple of decades.",
+    "weight": "900 g",
+    "volume": "1500 ml",
+    "longest_side": "254 mm",
+    "price": "120 USD",
+    "price_postapoc": "9 USD 25 cent",
+    "material": [ "cotton", "rubber", "steel" ],
+    "symbol": "[",
+    "looks_like": "sneakers",
+    "color": "light_blue",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 8
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 60,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "warmth": 18,
+    "material_thickness": 2.5,
+    "environmental_protection": 3,
+    "flags": [ "NONCONDUCTIVE", "WATERPROOF", "VARSIZE" ]
+  },
+  {
+    "id": "motor_police_boots",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: FOOT2. DDA boots.json:1828 (b4b62254ae2). Foot and leg portions as DDA, DDA item-level thickness 2. One material list: the leather upper and the rubber sole are one set (ARMMAT1).",
+    "name": { "str_sp": "motorcycle police boots (pair)" },
+    "description": "Custom-made knee-high leather boots issued to motor officers.  Warm, durable and quite tough.",
+    "weight": "1520 g",
+    "volume": "3750 ml",
+    "price": "80 USD",
+    "price_postapoc": "12 USD 50 cent",
+    "material": [ "leather", "rubber" ],
+    "symbol": "[",
+    "looks_like": "knee_high_boots",
+    "color": "dark_gray",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 15
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "legs" ],
+        "specifically_covers": [ "leg_lower_l", "leg_lower_r" ],
+        "coverage": 100,
+        "encumbrance": 10
+      }
+    ],
+    "warmth": 20,
+    "material_thickness": 2,
+    "environmental_protection": 2,
+    "flags": [ "VARSIZE", "WATERPROOF", "OUTER", "STURDY" ]
+  },
+  {
+    "id": "shoes_denim",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA boots.json:2240 (b4b62254ae2), DDA note 'Denim part is 10 oz.'. Portions as DDA. One material list: cotton+denim upper (1.15 mm) and the rubber sole are one set (ARMMAT1). CDF: material_thickness is an int, so 1.15 is stored as 1.",
+    "name": { "str_sp": "denim sneakers (pair)" },
+    "description": "A pair of denim shoes.  They are cool and that's about it.",
+    "weight": "340 g",
+    "volume": "1500 ml",
+    "price": "50 USD",
+    "price_postapoc": "3 USD 50 cent",
+    "material": [ "cotton", "denim", "rubber" ],
+    "symbol": "[",
+    "color": "light_blue",
+    "looks_like": "sneakers",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r", "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 5
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 60,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "warmth": 25,
+    "material_thickness": 1.15,
+    "flags": [ "VARSIZE" ]
+  },
+  {
+    "id": "espadrilles",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA boots.json:3507 (b4b62254ae2). Portions as DDA. One material list and one material_thickness per item: the cotton upper (1 mm) and the dry_plant sole (6 mm) are one set, and the sole+arch portion has the larger foot weight, so thickness 6 (ARMMAT1).",
+    "name": { "str_sp": "espadrilles" },
+    "description": "Originating from the Pyrenees and made from a rope sole and cloth, these shoes are perfect for the hot weather, sipping Sangria and dodging tourists.",
+    "looks_like": "leathersandals",
+    "price": "20 USD",
+    "price_postapoc": "10 USD",
+    "symbol": "[",
+    "material": [ "dry_plant", "cotton" ],
+    "volume": "600 ml",
+    "weight": "300 g",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_heel_l", "foot_heel_r" ],
+        "coverage": 100,
+        "encumbrance": 4
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r", "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "VARSIZE" ],
+    "warmth": 2,
+    "material_thickness": 6
+  },
+  {
+    "id": "jikatabi",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA boots.json:3559 (b4b62254ae2). Portions as DDA, DDA item-level thickness 1.0.",
+    "name": { "str_sp": "jika-tabi (pair)" },
+    "description": "A pair of thin traditional Japanese split toed boots sewn out of leather.",
+    "weight": "230 g",
+    "volume": "500 ml",
+    "price": "30 USD",
+    "price_postapoc": "3 USD",
+    "material": [ "leather" ],
+    "symbol": "[",
+    "looks_like": "boots",
+    "color": "brown",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 100,
+        "encumbrance": 4
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 80,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "warmth": 20,
+    "material_thickness": 1.0,
+    "flags": [ "VARSIZE", "WATERPROOF" ]
+  },
+  {
+    "id": "chainmail_junk_feet",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: FOOT2. DDA boots.json:2587 (b4b62254ae2). Portions as DDA. One material list and one material_thickness per item: leather 2.0 + budget_steel_chain 1.2 = 3.2 mm on the upper, the leather sole is one set with it (ARMMAT1). CDF: material_thickness is an int, so 3.2 is stored as 3.",
+    "name": { "str_sp": "chainmail chausses (pair)" },
+    "description": "Customized chainmail chausses that cover the feet, like booties made of chainmail.  The metal shows signs of rust and corrosion.",
+    "weight": "1801 g",
+    "volume": "500 ml",
+    "price": "50 USD 12 cent",
+    "price_postapoc": "20 USD",
+    "material": [ "leather", "budget_steel_chain" ],
+    "symbol": "[",
+    "color": "light_red",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 14
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "material_thickness": 3.2,
+    "flags": [ "VARSIZE", "STURDY", "OUTER" ]
+  },
+  {
+    "id": "lc_chainmail_feet",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: FOOT2. DDA boots.json:2630 (b4b62254ae2). Portions as DDA. One material list and one material_thickness per item: leather 2.0 + lc_steel_chain 1.2 = 3.2 mm on the upper, the leather sole is one set with it (ARMMAT1). CDF: material_thickness is an int, so 3.2 is stored as 3.",
+    "name": { "str_sp": "mild steel chainmail chausses (pair)" },
+    "description": "Customized chainmail chausses that cover the feet, like booties made of chainmail.",
+    "weight": "1801 g",
+    "volume": "500 ml",
+    "price": "50 USD 12 cent",
+    "price_postapoc": "20 USD",
+    "material": [ "leather", "lc_steel_chain" ],
+    "symbol": "[",
+    "color": "light_red",
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 14
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "material_thickness": 3.2,
+    "flags": [ "VARSIZE", "STURDY", "OUTER" ]
+  },
+  {
+    "id": "wetsuit_booties_thick",
+    "type": "ARMOR",
+    "copy-from": "wetsuit_booties",
+    "//": "CDF: FOOT2. DDA swimming.json:651 (b4b62254ae2), DDA note 'These will have an ablative armor slot for fins, as diving boots are designed to be worn with those.'. DDA replaces the parent's whole armor array; CDF replaces armor_portion_data the same way. DDA's materials come from the portions (nylon 0.4 + neoprene 5.0 = 5.4 mm on the upper, rubber 4 mm sole): one list and one thickness in CDF (ARMMAT1); material_thickness is an int, so 5.4 is stored as 5.",
+    "name": { "str_sp": "thick diving boots (pair)" },
+    "description": "A pair of 5 mm thick neoprene diving boots with thick soles.",
+    "weight": "160 g",
+    "material": [ "nylon", "neoprene", "rubber" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r", "foot_ankle_l", "foot_ankle_r", "foot_heel_l", "foot_heel_r", "foot_arch_l", "foot_arch_r" ],
+        "coverage": 100,
+        "encumbrance": 20
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_sole_l", "foot_sole_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      }
+    ],
+    "warmth": 50,
+    "material_thickness": 5.4,
+    "environmental_protection": 12,
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "1300 ml",
+        "max_contains_weight": "1000 g",
+        "moves": 150,
+        "description": "mounting for a pair of fins.",
+        "flag_restriction": [ "BOOT_FINS" ]
+      }
+    ]
   }
 ]

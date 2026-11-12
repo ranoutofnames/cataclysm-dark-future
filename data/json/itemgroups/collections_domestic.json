@@ -247,7 +247,9 @@
       [ "hairbrush", 5 ],
       { "group": "ammo_pistol_common", "prob": 5 },
       { "group": "guns_pistol_common", "prob": 1 },
-      { "group": "mags_pistol_common", "prob": 1 }
+      { "group": "mags_pistol_common", "prob": 1 },
+      [ "ankle_wallet_pouch", 1 ],
+      [ "ankle_wallet_pouch", 1 ]
     ]
   },
   {
@@ -436,7 +438,9 @@
       { "group": "mags_rifle_common", "prob": 2 },
       { "group": "mags_pistol_common", "prob": 5 },
       { "group": "mags_smg_common", "prob": 3 },
-      { "group": "mags_shotgun_common", "prob": 3 }
+      { "group": "mags_shotgun_common", "prob": 3 },
+      { "item": "espadrilles", "prob": 15 },
+      { "item": "espadrilles", "prob": 15 }
     ]
   },
   {
@@ -1010,7 +1014,11 @@
       { "group": "mags_rifle_common", "prob": 2 },
       { "group": "mags_pistol_common", "prob": 5 },
       { "group": "mags_smg_common", "prob": 3 },
-      { "group": "mags_shotgun_common", "prob": 3 }
+      { "group": "mags_shotgun_common", "prob": 3 },
+      { "item": "ankle_wallet_pouch", "prob": 2 },
+      { "item": "espadrilles", "prob": 15 },
+      { "item": "ankle_wallet_pouch", "prob": 2 },
+      { "item": "espadrilles", "prob": 15 }
     ]
   },
   {

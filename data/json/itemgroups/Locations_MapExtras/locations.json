@@ -413,7 +413,8 @@
       [ "flashlight", 40 ],
       [ "boots_rubber", 20 ],
       [ "toolbox", 5 ],
-      [ "apron_leather", 10 ]
+      [ "apron_leather", 10 ],
+      [ "sneakers_steel", 35 ]
     ]
   },
   {
@@ -596,7 +597,8 @@
       [ "bucket", 100 ],
       [ "fishing_hook_basic", 100 ],
       [ "fishing_hook_bone", 100 ],
-      [ "waterwaymap", 25 ]
+      [ "waterwaymap", 25 ],
+      [ "wetsuit_booties_thick", 2 ]
     ]
   },
   {
@@ -1401,7 +1403,8 @@
       [ "toolbox", 1 ],
       [ "apron_leather", 10 ],
       [ "tool_anfo_charge", 1 ],
-      [ "remotevehcontrol", 10 ]
+      [ "remotevehcontrol", 10 ],
+      [ "sneakers_steel", 35 ]
     ]
   },
   {
@@ -1681,7 +1684,8 @@
       { "item": "shimmer", "prob": 3 },
       { "item": "knitting_needles", "prob": 1 },
       { "group": "auto_sears", "prob": 5 },
-      { "item": "survnote", "prob": 2 }
+      { "item": "survnote", "prob": 2 },
+      { "item": "ankle_wallet_pouch", "prob": 5 }
     ]
   },
   {
@@ -1782,7 +1786,8 @@
       [ "thermometer", 3 ],
       [ "hygrometer", 3 ],
       [ "barometer", 3 ],
-      [ "remotevehcontrol", 10 ]
+      [ "remotevehcontrol", 10 ],
+      [ "sneakers_steel", 35 ]
     ]
   },
   {
@@ -1946,7 +1951,8 @@
       [ "dnd_handbook", 2 ],
       [ "bodypillow", 1 ],
       [ "pirate_flag", 5 ],
-      [ "afs_atomic_smartphone", 1 ]
+      [ "afs_atomic_smartphone", 1 ],
+      [ "sneakers_steel", 3 ]
     ]
   },
   {

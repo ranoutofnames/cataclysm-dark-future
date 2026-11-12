@@ -734,5 +734,85 @@
     "warmth": 5,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "STURDY" ]
+  },
+  {
+    "id": "gaiter_boot",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: FOOT2. DDA legs_clothes.json:2830 (b4b62254ae2). The lower leg and the foot portions as DDA. CDF: material_thickness is an int, so DDA's 0.4 is stored as 0.",
+    "name": { "str_sp": "gaiters (pair)" },
+    "description": "A pair of short, lightweight nylon gaiters designed to keep water and snow off your shins.",
+    "weight": "80 g",
+    "volume": "125 ml",
+    "price": "50 USD",
+    "price_postapoc": "2 USD",
+    "material": [ "nylon" ],
+    "symbol": "[",
+    "looks_like": "leg_warmers",
+    "color": "black",
+    "armor_portion_data": [
+      {
+        "covers": [ "legs" ],
+        "specifically_covers": [ "leg_lower_l", "leg_lower_r" ],
+        "coverage": 60,
+        "encumbrance": 1
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 100,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r", "foot_heel_l", "foot_heel_r" ],
+        "coverage": 80,
+        "encumbrance": 0
+      }
+    ],
+    "warmth": 10,
+    "material_thickness": 0.4,
+    "environmental_protection": 2,
+    "flags": [ "OUTER", "VARSIZE", "WATERPROOF" ]
+  },
+  {
+    "id": "gaiter_boot_makeshift",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: FOOT2. DDA legs_clothes.json:2920 (b4b62254ae2). The lower leg and the foot portions as DDA. Dropped: DDA's faults fabric_cotton (CDF has no fault groups). CDF: material_thickness is an int, so DDA's 0.4 is stored as 0.",
+    "name": { "str_sp": "makeshift gaiters (pair)" },
+    "description": "A pair of makeshift gaiters made from cotton wrapped in duct tape.  Useful for keeping water out of your shoes, though far from fashionable.",
+    "weight": "130 g",
+    "volume": "225 ml",
+    "price": "1 USD",
+    "price_postapoc": "50 cent",
+    "material": [ "plastic", "cotton" ],
+    "symbol": "[",
+    "looks_like": "leg_warmers",
+    "color": "black",
+    "armor_portion_data": [
+      {
+        "covers": [ "legs" ],
+        "specifically_covers": [ "leg_lower_l", "leg_lower_r" ],
+        "coverage": 100,
+        "encumbrance": 2
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 95,
+        "encumbrance": 0
+      },
+      {
+        "covers": [ "feet" ],
+        "specifically_covers": [ "foot_arch_l", "foot_arch_r", "foot_heel_l", "foot_heel_r" ],
+        "coverage": 70,
+        "encumbrance": 1
+      }
+    ],
+    "warmth": 15,
+    "material_thickness": 0.4,
+    "environmental_protection": 2,
+    "flags": [ "OUTER", "VARSIZE", "WATERPROOF" ]
   }
 ]

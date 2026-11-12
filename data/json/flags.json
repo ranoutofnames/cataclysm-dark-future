@@ -2895,5 +2895,21 @@
     "//": "CDF: EOD1. DDA flags.json:423 (b4b62254ae2); label only, no C++ reads it in DDA.",
     "info": "This item is attachable in the front of <info>hard hats and helmets</info> to protect your eyes or face.",
     "restriction": "Item must be some kind of face shield"
+  },
+  {
+    "id": "BOOT_FINS",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "//": "CDF: FOOT2. DDA flags.json:477 (b4b62254ae2); DDA has no context, CDF requires one.",
+    "info": "This item is attachable to commercial diving boots as fins.",
+    "restriction": "Item must be some kind of fins"
+  },
+  {
+    "id": "BOOT_FINS_CUSTOM",
+    "type": "json_flag",
+    "context": [ "ARMOR", "GENERIC" ],
+    "//": "CDF: FOOT2. DDA flags.json:483 (b4b62254ae2); DDA ships it, only custom fins use it. DDA has no context, CDF requires one.",
+    "info": "This item is attachable to custom diving boots as fins.",
+    "restriction": "Item must be some kind of custom fins"
   }
 ]

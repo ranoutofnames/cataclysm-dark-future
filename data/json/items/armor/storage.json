@@ -1534,5 +1534,39 @@
     "warmth": 5,
     "material_thickness": 2,
     "flags": [ "VARSIZE", "ALLOWS_WINGS" ]
+  },
+  {
+    "id": "ankle_wallet_pouch",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA storage.json:1829 (b4b62254ae2). Sided ankle pouch in the FOOT1 form of legpouch; CDF: material_thickness is an int, so DDA's 0.1 is stored as 0.",
+    "name": { "str": "ankle wallet pouch", "str_pl": "ankle wallet pouches" },
+    "description": "A small concealed wallet pouch worn on the ankle.  If you strap it under your clothes, it can help you keep your wallet hidden and safe.",
+    "weight": "60 g",
+    "volume": "150 ml",
+    "price": "10 cent",
+    "price_postapoc": "10 cent",
+    "material": [ "nylon" ],
+    "symbol": "[",
+    "looks_like": "legpouch",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 25,
+        "encumbrance": 1
+      }
+    ],
+    "material_thickness": 0.1,
+    "flags": [ "BELTED", "OVERSIZE", "ALLOWS_NATURAL_ATTACKS", "WATER_FRIENDLY" ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "600 g",
+        "max_item_length": "9 cm",
+        "moves": 150
+      }
+    ]
   }
 ]

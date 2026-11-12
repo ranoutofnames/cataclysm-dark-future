@@ -107,7 +107,8 @@
       [ "survnote", 1 ],
       [ "halter_top", 30 ],
       [ "iceaxe", 30 ],
-      [ "tourist_table", 30 ]
+      [ "tourist_table", 30 ],
+      [ "wetsuit_booties_thick", 5 ]
     ]
   },
   {

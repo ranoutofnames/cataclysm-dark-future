@@ -3585,5 +3585,166 @@
     "material": [ "gold" ],
     "price_postapoc": "5 USD",
     "proportional": { "weight": 2 }
+  },
+  {
+    "id": "gold_anklet",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA jewelry.json:4428 (b4b62254ae2). Sided accessory in the FOOT1 form (foot_either); DDA's coverage 0 is kept (NO_WEAR_EFFECT), so it is named on the worn ankle but does not protect it.",
+    "name": { "str": "gold anklet" },
+    "description": "An anklet made from tiny chain links of gold.",
+    "weight": "6 g",
+    "volume": "10 ml",
+    "price": "200 USD",
+    "price_postapoc": "25 cent",
+    "material": [ "gold" ],
+    "symbol": "[",
+    "color": "yellow",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 0,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ]
+  },
+  {
+    "id": "silver_anklet",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA jewelry.json:4452 (b4b62254ae2).",
+    "name": { "str": "silver anklet" },
+    "description": "An anklet made from tiny chain links of silver.",
+    "weight": "6 g",
+    "volume": "10 ml",
+    "price": "150 USD",
+    "price_postapoc": "20 cent",
+    "material": [ "silver" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 0,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ]
+  },
+  {
+    "id": "bat_anklet",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA jewelry.json:4476 (b4b62254ae2).",
+    "name": { "str": "bat charm anklet" },
+    "description": "An anklet with tiny charms in the shape of bats and blood drops.",
+    "weight": "6 g",
+    "volume": "10 ml",
+    "price": "2 USD",
+    "price_postapoc": "2 cent",
+    "material": [ "plastic", "cotton" ],
+    "symbol": "[",
+    "color": "red",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 0,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ]
+  },
+  {
+    "id": "flower_anklet",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA jewelry.json:4500 (b4b62254ae2).",
+    "name": { "str": "flower charm anklet" },
+    "description": "An anklet with tiny charms in the shape of flowers in an array of colors.",
+    "weight": "6 g",
+    "volume": "10 ml",
+    "price": "2 USD",
+    "price_postapoc": "2 cent",
+    "material": [ "plastic", "cotton" ],
+    "symbol": "[",
+    "color": "pink",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 0,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ]
+  },
+  {
+    "id": "woven_anklet",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA jewelry.json:4524 (b4b62254ae2).",
+    "name": { "str": "woven anklet" },
+    "description": "An anklet made from brightly colored cord woven into a repeating pattern.",
+    "weight": "5 g",
+    "volume": "10 ml",
+    "price": "2 USD",
+    "price_postapoc": "2 cent",
+    "material": [ "cotton" ],
+    "symbol": "[",
+    "color": "green",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_ankle_l", "foot_ankle_r" ],
+        "coverage": 0,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "BELTED", "OVERSIZE" ]
+  },
+  {
+    "id": "gold_toe_ring",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA jewelry.json:4668 (b4b62254ae2). Sided, worn on the toes of one foot; coverage 0 is kept (NO_WEAR_EFFECT).",
+    "name": { "str": "gold toe ring" },
+    "description": "An expensive gold toe ring.",
+    "weight": "3 g",
+    "volume": "3 ml",
+    "price": "250 USD",
+    "price_postapoc": "25 cent",
+    "material": [ "gold" ],
+    "symbol": "[",
+    "color": "yellow",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 0,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "SKINTIGHT" ]
+  },
+  {
+    "id": "silver_toe_ring",
+    "type": "ARMOR",
+    "//": "CDF: FOOT2. DDA jewelry.json:4692 (b4b62254ae2).",
+    "name": { "str": "silver toe ring" },
+    "description": "An expensive silver toe ring.",
+    "weight": "3 g",
+    "volume": "3 ml",
+    "price": "150 USD",
+    "price_postapoc": "15 cent",
+    "material": [ "silver" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "armor_portion_data": [
+      {
+        "covers": [ "foot_either" ],
+        "specifically_covers": [ "foot_toes_l", "foot_toes_r" ],
+        "coverage": 0,
+        "encumbrance": 0
+      }
+    ],
+    "flags": [ "NO_WEAR_EFFECT", "SKINTIGHT" ]
   }
 ]
