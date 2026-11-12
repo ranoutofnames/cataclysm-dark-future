@@ -4,6 +4,7 @@
 // one itype. Unknown subtypes are an error, unknown keys still report (strict, AUTO-240).
 // Fixtures: tests/data/item_compat/. The DDA armor array is not read here (A4).
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -181,4 +182,84 @@ TEST_CASE("ITEM with an unknown key still reports it (strict, AUTO-240)", "[item
     } );
     CHECK( clean.find( "not_a_cdf_key" ) == std::string::npos );
     CHECK( clean.empty() );
+}
+
+namespace {
+
+// CDF: the type table dispatches "ITEM" to the global item_controller, which is frozen after game
+// data load, so these cases swap in a fresh Item_factory for their scope and restore the original.
+struct scoped_item_controller {
+    std::unique_ptr<Item_factory> saved;
+
+    scoped_item_controller() : saved( std::move( item_controller ) ) {
+        item_controller = std::make_unique<Item_factory>();
+    }
+    ~scoped_item_controller() {
+        item_controller = std::move( saved );
+    }
+};
+
+// Feeds one JSON object through the real type table (DynamicDataLoader::load_object), as a mod file would.
+void load_inline( const std::string &json )
+{
+    std::istringstream buffer( json );
+    JsonIn jsin( buffer );
+    JsonObject jo = jsin.get_object();
+    DynamicDataLoader::get_instance().load_object( jo, COMPAT_SRC );
+}
+
+} // namespace
+
+TEST_CASE("ITEM TOOL through the type table loads the same slots as legacy TOOL", "[item][compat][p3]")
+{
+    scoped_item_controller scope;
+    load_inline( R"({"type": "TOOL", "id": "compat3b_legacy_tool", "name": "compat3b legacy tool",
+        "max_charges": 100, "initial_charges": 40, "charges_per_use": 2, "power_draw": 5,
+        "ammo": "battery"})" );
+    load_inline( R"({"type": "ITEM", "subtypes": [ "TOOL" ], "id": "compat3b_tool",
+        "name": "compat3b tool", "max_charges": 100, "initial_charges": 40, "charges_per_use": 2,
+        "power_draw": 5, "ammo": "battery"})" );
+    item_controller->finalize();
+
+    const itype *legacy = find_item( *item_controller, "compat3b_legacy_tool" );
+    const itype *item = find_item( *item_controller, "compat3b_tool" );
+    REQUIRE( legacy != nullptr );
+    REQUIRE( item != nullptr );
+    REQUIRE( legacy->tool );
+    REQUIRE( item->tool );
+
+    CHECK( item->tool->max_charges == 100 );
+    CHECK( item->tool->def_charges == 40 );
+    CHECK( item->tool->charges_per_use == 2 );
+    CHECK( item->tool->power_draw == 5 );
+    CHECK( item->tool->ammo_id == legacy->tool->ammo_id );
+    CHECK( item->tool->max_charges == legacy->tool->max_charges );
+    CHECK( item->tool->def_charges == legacy->tool->def_charges );
+    CHECK( item->tool->charges_per_use == legacy->tool->charges_per_use );
+    CHECK( item->tool->power_draw == legacy->tool->power_draw );
+    CHECK_FALSE( item->armor );
+    CHECK_FALSE( item->gun );
+}
+
+TEST_CASE("ITEM COMESTIBLE through the type table loads the same slot as legacy COMESTIBLE", "[item][compat][p3]")
+{
+    scoped_item_controller scope;
+    load_inline( R"({"type": "COMESTIBLE", "id": "compat3b_legacy_food", "name": "compat3b legacy food",
+        "comestible_type": "FOOD", "quench": 5, "stack_size": 5})" );
+    load_inline( R"({"type": "ITEM", "subtypes": [ "COMESTIBLE" ], "id": "compat3b_food",
+        "name": "compat3b food", "comestible_type": "FOOD", "quench": 5, "stack_size": 5})" );
+    item_controller->finalize();
+
+    const itype *legacy = find_item( *item_controller, "compat3b_legacy_food" );
+    const itype *item = find_item( *item_controller, "compat3b_food" );
+    REQUIRE( legacy != nullptr );
+    REQUIRE( item != nullptr );
+    REQUIRE( legacy->comestible );
+    REQUIRE( item->comestible );
+
+    CHECK( item->comestible->quench == 5 );
+    CHECK( item->comestible->quench == legacy->comestible->quench );
+    CHECK( item->comestible->comesttype == legacy->comestible->comesttype );
+    CHECK( item->stack_size == legacy->stack_size );
+    CHECK_FALSE( item->tool );
 }
