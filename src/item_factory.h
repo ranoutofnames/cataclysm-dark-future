@@ -61,6 +61,8 @@ class migration
         int charges = 0;
         /** Counted contents (CDF P1e step 28); JSON entries are ids or { "id", "count" }. */
         std::vector<migration_content> contents;
+        /** Mod that defined it; empty or the core pack ("bn") is core data (CDF: MIGDDA1). */
+        std::string src;
 };
 
 /**
@@ -192,7 +194,16 @@ class Item_factory
         void finalize();
 
         /** Migrations transform items loaded from legacy saves */
-        void load_migration( const JsonObject &jo );
+        void load_migration( const JsonObject &jo, const std::string &src = std::string() );
+
+        /**
+         * CDF: MIGDDA1 (PL-49 A7). True when the replacement item of the migration exists.
+         * When it does not, a migration of core data is an error (debugmsg), one from any other
+         * source (a mod, e.g. an unedited DDA mod) is logged once at warning level and skipped.
+         */
+        bool check_migration_target( const migration &m ) const;
+        /** The migration of an item id, or nullptr. */
+        const migration *find_migration( const itype_id &id ) const;
         /** CDF-only `item_overlay`: whitelisted fields applied on top of existing item types. */
         void load_item_overlay( const JsonObject &jo );
 

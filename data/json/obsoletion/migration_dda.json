@@ -1,0 +1,1184 @@
+[
+  {
+    "type": "MIGRATION",
+    "id": "PBJ_Toast_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "STI_DS_10",
+    "replace": "glock_20"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "ammo_box_2",
+    "replace": "box_small"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "astrakhan",
+    "replace": "hat_fur"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "ballistic_vest_heavy_arms",
+    "replace": "ballistic_vest_heavy",
+    "contents": [ { "id": "iotv_shoulder_plate", "count": 1 }, { "id": "iotv_neck_plate", "count": 1 } ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "ballistic_vest_heavy_legs",
+    "replace": "ballistic_vest_heavy",
+    "contents": [ { "id": "iotv_groin_plate", "count": 1 }, { "id": "iotv_neck_plate", "count": 1 } ]
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bcheckers_man",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bchess_bishop",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bchess_king",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bchess_knight",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bchess_pawn",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bchess_queen",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bchess_rook",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "beanie_hat",
+    "replace": "hat_cotton"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "becheckers_man",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bio_trickle",
+    "replace": "burnt_out_bionic"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "blood_pancakes_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "blt_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "boater_hat",
+    "replace": "straw_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "boots_h20survivor_light",
+    "replace": "wetsuit_booties"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "boots_h20survivor_thick",
+    "replace": "wetsuit_booties_thick"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bp_300blk_ss",
+    "replace": "300blk_ss"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bp_338lapua_hpbt",
+    "replace": "338lapua_hpbt"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bp_40x46mm_buckshot_m199",
+    "replace": "40x46mm_m576"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bp_40x46mm_flechette_m118",
+    "replace": "40x46mm_m576"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bp_40x46mm_flechette_m199",
+    "replace": "40x46mm_m576"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bp_40x46mm_slug_m118",
+    "replace": "40x46mm_m576"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bp_40x46mm_slug_m199",
+    "replace": "40x46mm_m576"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bread_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bren2_762",
+    "replace": "aksemi"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bren2_762mag10",
+    "replace": "akmag10"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bren2_762mag30",
+    "replace": "akmag30"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "brown_bread_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_branch",
+    "replace": "stick"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_branch_long",
+    "replace": "stick_long"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_copper_pipe",
+    "replace": "cu_pipe"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_javelin",
+    "replace": "javelin"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_nylon",
+    "replace": "nylon"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_pipe",
+    "replace": "pipe"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_plank",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "bundle_rebar",
+    "replace": "rebar"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "buttered_toast_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "calicomag_100rd",
+    "replace": "glock_drum_100rd"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "checkboard",
+    "replace": "tinder"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "checkpaper",
+    "replace": "paper"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "cheeseburger_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "chicken_sandwich_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "chilidogs_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "chullo_hat",
+    "replace": "hat_knit"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "conical_hat",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "coonskin",
+    "replace": "hat_fur"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "cp33",
+    "replace": "ruger_1022"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "deerstalker",
+    "replace": "hat_fur"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "deluxe_fried_egg_sandwich_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "draco_micro",
+    "replace": "aksemi"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "draco_mini",
+    "replace": "aksemi"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "factory_handguard",
+    "replace": "grip"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fancy_glasses_bifocal",
+    "replace": "glasses_bifocal"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fancy_glasses_eye",
+    "replace": "glasses_eye"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fancy_glasses_reading",
+    "replace": "glasses_reading"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fastrakhan",
+    "replace": "hat_faux_fur"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fcoonskin",
+    "replace": "hat_faux_fur"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fez",
+    "replace": "eboshi"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fish_sandwich_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "flatbread_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fresh_fries_j",
+    "replace": "fries"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fried_egg_sandwich_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "fushanka",
+    "replace": "hat_faux_fur"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "gambeson_loose",
+    "replace": "gambeson"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "gosling_jacket",
+    "replace": "jacket_leather"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hamburger_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "handmade_chess",
+    "replace": "chess"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hat_bucket",
+    "replace": "hat_boonie"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hat_cart",
+    "replace": "10gal_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hat_cloche",
+    "replace": "hat_boonie"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hat_floppy",
+    "replace": "10gal_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "heavy_dry_cell",
+    "replace": "heavy_plus_battery_cell"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "helmet_acidchitin_light",
+    "replace": "helmet_acidchitin"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "helmet_chitin_light",
+    "replace": "helmet_chitin"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "homburg_hat",
+    "replace": "fedora"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hood_h20survivor_light",
+    "replace": "wetsuit_hood"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hotdogs_cooked_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "hotdogs_newyork_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "integrated_hooves",
+    "replace": "wristwatch"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "integrated_rabbit_feet",
+    "replace": "wristwatch"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "internal_mp3",
+    "replace": "manual_swimming"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "jam_toast_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "k_beanie",
+    "replace": "hat_knit"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "kpf9mag_8rd",
+    "replace": "glockmag"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "leather_hatball",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "left_arm_neuroprosthetic",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "left_arm_prosthetic",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "left_arm_prosthetic_steel",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "left_arm_prosthetic_wood",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "left_leg_prosthetic",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "left_leg_prosthetic_steel",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "left_peg_leg",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "lever_shotgun",
+    "replace": "remington_870"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "light_dry_cell",
+    "replace": "light_battery_cell"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "long_duffelbag",
+    "replace": "duffelbag"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "ltrucker_hat",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "lvizor_hat",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "makeshift_chess",
+    "replace": "chess"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mask_wsurvivorxs",
+    "replace": "balclava"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "matchead_357mag_jhp",
+    "replace": "357mag_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "matchead_357sig_jhp",
+    "replace": "357sig_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "matchead_380_JHP",
+    "replace": "380_JHP"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "matchead_40sw",
+    "replace": "40sw"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "matchead_45_jhp",
+    "replace": "45_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "matchead_45colt_jhp",
+    "replace": "45colt_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "matchead_9mm",
+    "replace": "9mm"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mauser_m714",
+    "replace": "glock_19"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mausermag_10rd",
+    "replace": "glockmag"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mausermag_20rd",
+    "replace": "glock17_22"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mc_broadsword",
+    "replace": "broadsword"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mc_knife_rambo",
+    "replace": "knife_rambo"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mc_knife_trench",
+    "replace": "knife_trench"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mc_kukri",
+    "replace": "kukri"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mc_mace",
+    "replace": "mace"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mc_rapier",
+    "replace": "rapier"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mc_warhammer",
+    "replace": "warhammer"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "medium_dry_cell",
+    "replace": "medium_battery_cell"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mininuke_payload",
+    "replace": "broken_science_bot"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "mr73",
+    "replace": "sw_619"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "neckwarmer",
+    "replace": "scarf"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "neckwarmer_head",
+    "replace": "scarf"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "news_boat",
+    "replace": "tinfoil_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "panama_hat",
+    "replace": "straw_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "paper_boat",
+    "replace": "tinfoil_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "peanut_butter_toast_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "pepperhuman",
+    "replace": "human_cooked"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "peppermeat",
+    "replace": "meat_cooked"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "peppermutant",
+    "replace": "mutant_meat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "peppermutant_human",
+    "replace": "mutant_human_cooked"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "pepperscrap",
+    "replace": "meat_scrap"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "pepperscrap_mutant",
+    "replace": "mutant_meat_scrap"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "plumber_cap",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "propeller_hat",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "rcheckers_man",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_300_winmag",
+    "replace": "300_winmag"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_300blk",
+    "replace": "300blk"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_300blk_ss",
+    "replace": "300blk_ss"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_338lapua_hpbt",
+    "replace": "338lapua_hpbt"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_357mag_jhp",
+    "replace": "357mag_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_357sig_jhp",
+    "replace": "357sig_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_380_JHP",
+    "replace": "380_JHP"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_380_p",
+    "replace": "380_p"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_38_special",
+    "replace": "38_special"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_40sw",
+    "replace": "40sw"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_44magnum",
+    "replace": "44magnum"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_45_jhp",
+    "replace": "45_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_45_super",
+    "replace": "45_super"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_45colt_jhp",
+    "replace": "45colt_jhp"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_460_fmj",
+    "replace": "45_super"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_460_rowland",
+    "replace": "45_super"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_556",
+    "replace": "556"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_556_incendiary",
+    "replace": "556_incendiary"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_9mm",
+    "replace": "9mm"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_9mmP",
+    "replace": "9mmP"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "reloaded_9mmP2",
+    "replace": "9mm"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "rifle_32",
+    "replace": "rifle_38"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "rifle_380",
+    "replace": "rifle_38"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "rifle_9x18",
+    "replace": "rifle_38"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "right_arm_neuroprosthetic",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "right_arm_prosthetic",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "right_arm_prosthetic_steel",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "right_arm_prosthetic_wood",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "right_leg_prosthetic",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "right_leg_prosthetic_steel",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "right_peg_leg",
+    "replace": "2x4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "ruger_charger",
+    "replace": "ruger_1022"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_cheese_grilled_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_cheese_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_cucumber_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_deluxe_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_egg_salad_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_fairy_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_honey_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_jam_butter",
+    "replace": "sandwich_sauce"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_jam_butter_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_jam_cheese",
+    "replace": "sandwich_cheese"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_jam_cheese_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_jam_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_pb_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_pbh_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_pbj_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_pbm_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_reuben_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_sauce_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_t_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_veggy_cheese",
+    "replace": "sandwich_veggy"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_veggy_cheese_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sandwich_veggy_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "scrap_cap1",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "scrap_cap2",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "sloppyjoe_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "small_checkboard",
+    "replace": "tinder"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "soup_blood_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "stanag10ranger",
+    "replace": "stanag10"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "stanag20ranger",
+    "replace": "stanag20"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "stanag30ranger",
+    "replace": "stanag30"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "stanag40ranger",
+    "replace": "stanag40"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "stanag5ranger",
+    "replace": "stanag5"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "stowed_glass_fridge",
+    "replace": "glass_fridge"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tec9mag_20rd",
+    "replace": "glock17_22"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tec9mag_30rd",
+    "replace": "glockbigmag"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tec9mag_36rd",
+    "replace": "glock_drum_50rd"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tec9mag_50rd",
+    "replace": "glock_drum_50rd"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tec9mag_72rd",
+    "replace": "glock_drum_100rd"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tinfoil_boat",
+    "replace": "tinfoil_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tinfoil_fedora",
+    "replace": "tinfoil_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tinfoil_hat1",
+    "replace": "tinfoil_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tinfoil_hatball",
+    "replace": "tinfoil_hat"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "toad_in_a_hole_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "toast_wheat_free",
+    "replace": "bread"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "toastem4",
+    "replace": "toastem"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "trilby_hat",
+    "replace": "porkpie"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "trucker_hat",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "tyrolean_hat",
+    "replace": "porkpie"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "ushanka",
+    "replace": "hat_fur"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "vizor_hat",
+    "replace": "hat_ball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "vz58_p",
+    "replace": "ak47"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "vz58mag10",
+    "replace": "akmag10"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "vz58mag30",
+    "replace": "akmag30"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "vz58ts",
+    "replace": "aksemi"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "water_purifying",
+    "replace": "water_clean"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "water_purifying_active",
+    "replace": "water_clean"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wcheckers_man",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wchess_bishop",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wchess_king",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wchess_knight",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wchess_pawn",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wchess_queen",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wchess_rook",
+    "replace": "splinter"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "wire_barbed_baseball",
+    "replace": "baseball"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "zucchetto",
+    "replace": "kippah"
+  }
+]

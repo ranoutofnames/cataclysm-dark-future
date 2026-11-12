@@ -1,0 +1,7 @@
+[
+  {
+    "type": "MIGRATION",
+    "id": "migdda1_fixture_old_item",
+    "replace": "migdda1_fixture_item_cdf_does_not_have"
+  }
+]

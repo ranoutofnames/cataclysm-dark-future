@@ -45,6 +45,7 @@
 
 class player;
 #include "material.h"
+#include "mod_manager.h"
 #include "options.h"
 #include "output.h"
 #include "recipe.h"
@@ -1544,8 +1545,8 @@ void Item_factory::finalize_item_blacklist()
     }
 
     for( const std::pair<const itype_id, migration> &migrate : migrations ) {
-        if( !m_templates.contains( migrate.second.replace ) ) {
-            debugmsg( "Replacement item for migration %s does not exist", migrate.first.c_str() );
+        // CDF: MIGDDA1: a missing target from a non-core source is a logged skip
+        if( !check_migration_target( migrate.second ) ) {
             continue;
         }
 
@@ -2643,7 +2644,11 @@ void Item_factory::check_definitions() const
     }
     for( const auto &e : migrations ) {
         if( !m_templates.contains( e.second.replace ) ) {
-            debugmsg( "Invalid migration target: %s", e.second.replace.c_str() );
+            // CDF: MIGDDA1: reported (or logged and skipped) by finalize_item_blacklist
+            if( e.second.src.empty() || e.second.src == mod_management::get_default_core_content_pack().str() ) {
+                debugmsg( "Invalid migration target: %s", e.second.replace.c_str() );
+            }
+            continue;
         }
         for( const migration_content &c : e.second.contents ) {
             if( !m_templates.contains( c.id ) ) {
@@ -4291,9 +4296,32 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
     }
 }
 
-void Item_factory::load_migration( const JsonObject &jo )
+bool Item_factory::check_migration_target( const migration &m ) const
+{
+    if( m_templates.contains( m.replace ) ) {
+        return true;
+    }
+    // CDF: MIGDDA1: only core data is held to it, so DDA mods whose migration targets CDF
+    // lacks (or a verbatim DDA migration file) can load
+    if( m.src.empty() || m.src == mod_management::get_default_core_content_pack().str() ) {
+        debugmsg( "Replacement item for migration %s does not exist", m.id.c_str() );
+    } else {
+        DebugLog( DL::Warn, DC::Game ) << "Skipped migration " << m.id.str() << " of " << m.src
+                                       << ": replacement item " << m.replace.str() << " does not exist";
+    }
+    return false;
+}
+
+const migration *Item_factory::find_migration( const itype_id &id ) const
+{
+    const auto iter = migrations.find( id );
+    return iter != migrations.end() ? &iter->second : nullptr;
+}
+
+void Item_factory::load_migration( const JsonObject &jo, const std::string &src )
 {
     migration m;
+    m.src = src;
     assign( jo, "replace", m.replace );
     assign( jo, "flags", m.flags );
     assign( jo, "charges", m.charges );

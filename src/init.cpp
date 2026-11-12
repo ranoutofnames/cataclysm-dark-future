@@ -431,8 +431,8 @@ void DynamicDataLoader::initialize()
         item_controller->load_item_overlay( jo );
     } );
 
-    add( "MIGRATION", []( const JsonObject & jo ) {
-        item_controller->load_migration( jo );
+    add( "MIGRATION", []( const JsonObject & jo, const std::string & src ) {
+        item_controller->load_migration( jo, src ); // CDF: MIGDDA1
     } );
 
     add( "charge_removal_blacklist", charge_removal_blacklist::load );
