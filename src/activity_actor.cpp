@@ -2118,7 +2118,7 @@ std::unique_ptr<activity_actor> stash_activity_actor::deserialize( JsonIn &jsin 
 
 // ---- insert_item_activity_actor ----
 // Transplanted from DDA activity_actor.cpp:8031-8281 (insert_item_activity_actor), adapted to BN
-// ownership: item locations are safe_references and a moved item is detached, not copied (T2/T4).
+// ownership: item locations are safe_references and the original is detached after the copy went in (T2/T4).
 
 // Cost to take an item from where it is and put it somewhere else (DDA item_move_cost).
 static int insert_move_cost( Character &who, item &it, bool bulk_cost )
@@ -2194,8 +2194,14 @@ static ret_val<void> try_insert( item &holster, item &it, int count, int *charge
                 ret = parents_can_contain_recursive( holster, it );
             }
         }
-        // CDF (T2): the item itself moves after this check, DDA copies it and removes the original.
-        return ret;
+        if( !ret.success() ) {
+            return ret;
+        }
+
+        // CDF: NINEFOUR1b, DDA activity_actor.cpp:8122. The put goes first and works on a copy, so a
+        // refused put (a gun passes the can_contain_directly gate with its magazine well but has no
+        // CONTAINER pocket) leaves the original untouched; do_turn removes the original on success.
+        return holster.put_in( it, pocket_type::CONTAINER, /*unseal_pockets=*/true, carrier );
     }
 
     ret = holster.can_contain_partial_directly( it );
@@ -2256,13 +2262,8 @@ void insert_item_activity_actor::do_turn( player_activity &act, Character &who )
                                                       it.display_name(), holster->type->nname( 1 ) ) );
                 handler.add_unsealed( *holster );
                 handler.unseal_pocket_containing( it );
-                const std::string name = it.display_name();
-                ret = holster->put_in( it.detach(), pocket_type::CONTAINER, /*unseal_pockets=*/true,
-                                       carrier );
-                if( !ret.success() ) {
-                    debugmsg( "ACT_INSERT_ITEM could not put %s into %s: %s", name, holster->tname(),
-                              ret.str() );
-                }
+                // CDF: try_insert already put a copy in (DDA activity_actor.cpp:8183), drop the original.
+                it.detach();
             }
         } else {
             int charges_added = 0;
