@@ -1928,6 +1928,12 @@ void options_manager::add_options_interface()
          true
        );
 
+    // CDF: P3-8-6c, DDA options.cpp:2007-2011
+    add( "UNLOAD_RAS_WEAPON", interface, translate_marker( "Unload your bow etc after canceling shooting" ),
+         translate_marker( "If true, weapons like bow and slingshot will be unloaded when quitting aim UI." ),
+         true
+       );
+
     add( "QUERY_DISASSEMBLE", interface, translate_marker( "Query on disassembly while butchering" ),
          translate_marker( "If true, will query before disassembling items while butchering." ),
          true

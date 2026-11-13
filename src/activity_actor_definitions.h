@@ -41,8 +41,8 @@ class aim_activity_actor : public activity_actor
         tripoint_rel_ms initial_view_offset;
         /** Target UI requested to abort aiming */
         bool aborted = false;
-        /** RELOAD_AND_SHOOT weapon is kept loaded by the activity */
-        bool loaded_RAS_weapon = false;
+        /** RELOAD_AND_SHOOT weapon is unloaded when the aim ends without firing (DDA should_unload_RAS) */
+        bool should_unload_RAS = false;
         /** Item location for RAS weapon reload */
         safe_reference<item> reload_loc;
         /** if true abort if no targets are available when re-entering aiming ui after shooting */

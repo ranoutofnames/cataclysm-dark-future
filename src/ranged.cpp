@@ -492,6 +492,9 @@ class target_ui
         // Snap camera to cursor. Can be permanently toggled in settings
         // or temporarily in this window
         bool snap_to_target = false;
+        // Unload a RELOAD_AND_SHOOT gun when the aim screen is quit without firing
+        // (DDA target_ui::unload_RAS_weapon; starts at the UNLOAD_RAS_WEAPON option, CDF: P3-8-6c)
+        bool unload_RAS_weapon = true;
         // If true, LEVEL_UP, LEVEL_DOWN and directional keys
         // responsible for moving cursor will shift view instead.
         bool shifting_view = false;
@@ -3104,6 +3107,7 @@ target_handler::trajectory target_ui::run()
     g->refresh_player_visibility_cache_if_needed( true );
     // Load settings
     snap_to_target = get_option<bool>( "SNAP_TO_TARGET" );
+    unload_RAS_weapon = get_option<bool>( "UNLOAD_RAS_WEAPON" );
     if( mode == TargetMode::Turrets ) {
         // Due to how cluttered the display would become, disable it by default
         // unless aiming a single turret.
@@ -3151,6 +3155,7 @@ target_handler::trajectory target_ui::run()
         }
         // Load state to keep the ui consistent across turns
         snap_to_target = activity->snap_to_target;
+        unload_RAS_weapon = activity->should_unload_RAS;
         shifting_view = activity->shifting_view;
         resume_critter = activity->aiming_at_critter;
     }
@@ -3233,6 +3238,12 @@ target_handler::trajectory target_ui::run()
         // Handle received input
         if( handle_cursor_movement( action, skip_redraw ) ) {
             continue;
+        } else if( action == "TOGGLE_UNLOAD_RAS_WEAPON" ) {
+            // CDF: P3-8-6c, DDA ranged.cpp:2994-2996; the activity is checked for null (Fact 8)
+            unload_RAS_weapon = !unload_RAS_weapon;
+            if( activity ) {
+                activity->should_unload_RAS = unload_RAS_weapon;
+            }
         } else if( action == "TOGGLE_SNAP_TO_TARGET" ) {
             toggle_snap_to_target();
         } else if( action == "TOGGLE_TURRET_LINES" ) {
@@ -3308,6 +3319,10 @@ target_handler::trajectory target_ui::run()
             traj.clear();
             if( mode == TargetMode::Fire || mode == TargetMode::Shape ) {
                 activity->aborted = true;
+                if( mode == TargetMode::Fire ) {
+                    // CDF: P3-8-6c, DDA ranged.cpp:3092 (Fire only: the key exists only there)
+                    activity->should_unload_RAS = unload_RAS_weapon;
+                }
             }
             break;
         }
@@ -3321,6 +3336,7 @@ target_handler::trajectory target_ui::run()
             activity->acceptable_losses = list_friendlies_in_lof();
             traj.clear();
             activity->action = timed_out_action;
+            activity->should_unload_RAS = unload_RAS_weapon; // CDF: P3-8-6c, DDA ranged.cpp:3108
             activity->snap_to_target = snap_to_target;
             activity->shifting_view = shifting_view;
             activity->aiming_at_critter = dst_critter != nullptr || you->last_target.lock() != nullptr;
@@ -3380,6 +3396,10 @@ void target_ui::init_window_and_input()
     ctxt.register_action( "NEXT_TARGET" );
     ctxt.register_action( "PREV_TARGET" );
     ctxt.register_action( "CENTER" );
+    // CDF: P3-8-6c, DDA ranged.cpp:3165-3167
+    if( mode == TargetMode::Fire && relevant->has_flag( flag_RELOAD_AND_SHOOT ) ) {
+        ctxt.register_action( "TOGGLE_UNLOAD_RAS_WEAPON" );
+    }
     ctxt.register_action( "TOGGLE_SNAP_TO_TARGET" );
     ctxt.register_action( "HELP_KEYBINDINGS" );
     ctxt.register_action( "QUIT" );
@@ -4382,6 +4402,12 @@ void target_ui::draw_controls_list( int text_y )
                     relevant->ammo_remaining() ) ) {
             lines.push_back( { 6, colored( col_enabled, string_format( _( "[%c] to reload/switch ammo." ),
                                            bound_key( "SWITCH_AMMO" ) ) ) } );
+        } else if( mode == TargetMode::Fire ) {
+            // CDF: P3-8-6c, DDA ranged.cpp:4270-4282. DDA's else also runs for modes that never register the
+            // key (it would print an unbound "[ ]"): the line is shown for Fire only, where the key exists.
+            const std::string key( 1, bound_key( "TOGGLE_UNLOAD_RAS_WEAPON" ) );
+            lines.push_back( { 3, colored( col_enabled, ranged_text::ras_unload_hint( unload_RAS_weapon, key,
+                                           relevant->tname() ) ) } );
         }
     }
     if( mode == TargetMode::Turrets ) {

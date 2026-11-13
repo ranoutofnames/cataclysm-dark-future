@@ -23,4 +23,8 @@ std::string aim_ammo_row( const gun_mode &m, bool is_favorite, const itype &ammo
 // the pocket holds less than one shot needs, `base` otherwise; "(vehicle %d, need %d)" when the supply
 // is vehicle-bound, "(%d, need %d)" when not. CDF: 8-6b, the loop and the print stay in target_ui.
 std::pair<std::string, nc_color> turret_row( const multimag_display_pocket &dp, nc_color base );
+// DDA ranged.cpp:4270-4282: the line under the ammo hint of a loaded RELOAD_AND_SHOOT gun. It names what the
+// key does next: with unloading off (`unload_set` false) "unload", with it on "keep ... loaded". Both
+// are the caller's col_enabled, line order 3. CDF: 8-6c, `key` is the bound key as text.
+std::string ras_unload_hint( bool unload_set, const std::string &key, const std::string &gun_name );
 } // namespace ranged_text

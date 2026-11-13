@@ -46,4 +46,13 @@ std::pair<std::string, nc_color> turret_row( const multimag_display_pocket &dp, 
     }
     return { ammo_str, row_clr };
 }
+
+std::string ras_unload_hint( bool unload_set, const std::string &key, const std::string &gun_name )
+{
+    // DDA ranged.cpp:4270-4282 (the two sentences are DDA's, key and gun name are %s).
+    if( !unload_set ) {
+        return string_format( _( "[%s] to unload the %s after quitting." ), key, gun_name );
+    }
+    return string_format( _( "[%s] to keep the %s loaded after quitting." ), key, gun_name );
+}
 } // namespace ranged_text

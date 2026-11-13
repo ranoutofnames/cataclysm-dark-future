@@ -238,6 +238,8 @@ void aim_activity_actor::finish( player_activity &act, Character &who )
         return;
     }
     if( aborted ) {
+        // CDF: P3-8-6c, DDA activity_actor.cpp:603 (before the optional reload)
+        unload_RAS_weapon();
         if( reload_requested ) {
             // Reload the gun / select different arrows
             // May assign ACT_RELOAD
@@ -287,6 +289,8 @@ void aim_activity_actor::finish( player_activity &act, Character &who )
 
 void aim_activity_actor::canceled( player_activity &/*act*/, Character &/*who*/ )
 {
+    // CDF: P3-8-6c, DDA activity_actor.cpp:639-642
+    unload_RAS_weapon();
     restore_view();
 }
 
@@ -304,7 +308,7 @@ void aim_activity_actor::serialize( JsonOut &jsout ) const
     jsout.member( "snap_to_target", snap_to_target );
     jsout.member( "shifting_view", shifting_view );
     jsout.member( "initial_view_offset", initial_view_offset );
-    jsout.member( "loaded_RAS_weapon", loaded_RAS_weapon );
+    jsout.member( "should_unload_RAS", should_unload_RAS );
     jsout.member( "reload_loc", reload_loc );
     jsout.member( "aborted", aborted );
     jsout.member( "reload_requested", reload_requested );
@@ -329,7 +333,7 @@ std::unique_ptr<activity_actor> aim_activity_actor::deserialize( JsonIn &jsin )
     data.read( "snap_to_target", actor->snap_to_target );
     data.read( "shifting_view", actor->shifting_view );
     data.read( "initial_view_offset", actor->initial_view_offset );
-    data.read( "loaded_RAS_weapon", actor->loaded_RAS_weapon );
+    data.read( "should_unload_RAS", actor->should_unload_RAS );
     data.read( "reload_loc", actor->reload_loc );
     data.read( "aborted", actor->aborted );
     data.read( "reload_requested", actor->reload_requested );
@@ -403,8 +407,24 @@ bool aim_activity_actor::load_RAS_weapon()
     }
 
     reload_loc = opt.ammo;
-    loaded_RAS_weapon = true;
     return true;
+}
+
+void aim_activity_actor::unload_RAS_weapon()
+{
+    // CDF: P3-8-6c, DDA activity_actor.cpp:749-763. The gun is unloaded only when it holds ammo;
+    // unload_item( ..., true ) is DDA's you.unload( loc, true ) (bypass_activity).
+    item *weapon = get_weapon();
+    if( !weapon || !should_unload_RAS ) {
+        return;
+    }
+
+    gun_mode gun = weapon->gun_current_mode();
+    if( gun && gun->has_flag( flag_RELOAD_AND_SHOOT ) ) {
+        if( gun->ammo_remaining() ) {
+            avatar_funcs::unload_item( get_avatar(), *gun.target, true );
+        }
+    }
 }
 
 void autodrive_activity_actor::start( player_activity &/* act */, Character &who )
