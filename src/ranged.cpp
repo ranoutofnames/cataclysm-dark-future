@@ -4460,7 +4460,17 @@ void target_ui::panel_gun_info( int &text_y )
     nc_color clr = c_light_gray;
     print_colored_text( w_target, point( 1, text_y++ ), clr, clr, str );
 
-    if( status == Status::OutOfAmmo ) {
+    if( mode == TargetMode::TurretManual && turret && relevant->uses_firing_requirements() ) {
+        // CDF: 8-6b, DDA ranged.cpp:4360-4387. Show the panel even when not ready, so the player
+        // sees which pocket is short.
+        if( status == Status::OutOfAmmo ) {
+            mvwprintz( w_target, point( 1, text_y++ ), c_red, _( "OUT OF AMMO" ) );
+        }
+        for( const multimag_display_pocket &dp : turret->multimag_display_state() ) {
+            std::pair<std::string, nc_color> row = ranged_text::turret_row( dp, clr );
+            print_colored_text( w_target, point( 1, text_y++ ), row.second, row.second, row.first );
+        }
+    } else if( status == Status::OutOfAmmo ) {
         mvwprintz( w_target, point( 1, text_y++ ), c_red, _( "OUT OF AMMO" ) );
     } else if( ammo ) {
         // CDF: DDA ranged.cpp:4388-4396 (favourite star, capacity of the ammo shown).

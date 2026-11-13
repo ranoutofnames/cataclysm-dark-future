@@ -8,6 +8,7 @@
 #include "item_pocket.h"
 #include "map/map.h"
 #include "pocket_type.h"
+#include "ranged_text.h"
 #include "ret_val.h"
 #include "state_helpers.h"
 #include "type_id.h"
@@ -974,4 +975,45 @@ TEST_CASE( "multimag_display_state_shows_a_partial_battery_as_a_shortfall", "[p3
     CHECK( power->effective_qty > 0 );
     CHECK( power->effective_qty < power->per_use_qty );
     CHECK( power->vehicle_bound );
+}
+
+// CDF: 8-6b. turret_row on the real multimag_display_state of the test turret (hand-built cases are in
+// tests/aim_text_test.cpp). The shortfall decides the colour and the vehicle-bound word comes from the
+// state, so a state that is short and bound must show a red "(vehicle" row.
+TEST_CASE( "turret_rows_follow_the_real_multimag_state", "[p3][turret][aim_text]" )
+{
+    {
+        vehicle_part *part = loaded_multimag_rig( 1000 );
+        vehicle *veh = &get_map().veh_at( tripoint_bub_ms( 65, 65, 0 ) )->vehicle();
+        const auto rows = veh->turret_query( *part ).multimag_display_state();
+        const multimag_display_pocket *ammo = find_row( rows, "ammo" );
+        const multimag_display_pocket *power = find_row( rows, "power" );
+        REQUIRE( ammo != nullptr );
+        REQUIRE( power != nullptr );
+        REQUIRE( power->effective_qty >= power->per_use_qty );
+        const auto power_row = ranged_text::turret_row( *power, c_light_gray );
+        const auto ammo_row = ranged_text::turret_row( *ammo, c_light_gray );
+        CHECK( power_row.second == c_light_gray );
+        CHECK( ammo_row.second == c_light_gray );
+        CHECK( power_row.first.find( "(vehicle " + std::to_string( power->effective_qty ) + ", need " +
+                                     std::to_string( power->per_use_qty ) + ")" ) != std::string::npos );
+        CHECK( ammo_row.first.find( "(10, need " + std::to_string( ammo->per_use_qty ) + ")" ) !=
+               std::string::npos );
+    }
+    {
+        vehicle_part *part = loaded_multimag_rig( 0 );
+        vehicle *veh = &get_map().veh_at( tripoint_bub_ms( 65, 65, 0 ) )->vehicle();
+        const auto rows = veh->turret_query( *part ).multimag_display_state();
+        const multimag_display_pocket *ammo = find_row( rows, "ammo" );
+        const multimag_display_pocket *power = find_row( rows, "power" );
+        REQUIRE( ammo != nullptr );
+        REQUIRE( power != nullptr );
+        REQUIRE( power->effective_qty < power->per_use_qty );
+        const auto power_row = ranged_text::turret_row( *power, c_light_gray );
+        CHECK( power_row.second == c_red );
+        CHECK( power_row.first.find( "(vehicle 0, need " + std::to_string( power->per_use_qty ) + ")" ) !=
+               std::string::npos );
+        // The magazine pocket is still loaded: it stays the base colour.
+        CHECK( ranged_text::turret_row( *ammo, c_light_gray ).second == c_light_gray );
+    }
 }
