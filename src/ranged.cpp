@@ -51,6 +51,7 @@
 #include "panels.h"
 #include "player.h"
 #include "player_activity.h"
+#include "ranged_text.h"
 #include "reload/reload.h"
 #include "point.h"
 #include "projectile.h"
@@ -3391,7 +3392,8 @@ void target_ui::init_window_and_input()
     if( mode == TargetMode::Fire || mode == TargetMode::TurretManual || ( mode == TargetMode::Shape &&
             relevant->is_gun() ) ) {
         ctxt.register_action( "SWITCH_MODE" );
-        if( mode == TargetMode::TurretManual || relevant->has_flag( flag_RELOAD_AND_SHOOT ) ) {
+        // CDF: DDA ranged.cpp:3182-3184 gate (the hint promises the key).
+        if( mode == TargetMode::Fire || mode == TargetMode::TurretManual ) {
             // Turrets may support multiple ammo types.
             // RELOAD_AND_SHOOT weapons use whatever ammo is favorite.
             ctxt.register_action( "SWITCH_AMMO" );
@@ -4045,6 +4047,13 @@ bool target_ui::action_switch_ammo()
             ammo = &*turret->ammo_current();
             range = turret->range();
         }
+    } else if( mode == TargetMode::Fire && relevant->has_flag( flag_RELOAD_AND_SHOOT ) ) {
+        // CDF: DDA ranged.cpp:3926-3932. select_ammo takes the avatar as player &.
+        item_reload_option opt = game_menus::inv::select_ammo( *you, *relevant );
+        if( opt ) {
+            activity->reload_loc = opt.ammo;
+            update_ammo_range_from_gun_mode();
+        }
     } else {
         // Leave aiming UI and open reloading UI since
         // reloading annihilates our aim anyway
@@ -4367,8 +4376,13 @@ void target_ui::draw_controls_list( int text_y )
             relevant->is_gun() ) ) {
         lines.push_back( { 5, colored( col_enabled, string_format( _( "[%c] to switch firing modes." ),
                                        bound_key( "SWITCH_MODE" ) ) ) } );
-        lines.push_back( { 6, colored( col_enabled, string_format( _( "[%c] to switch ammo." ),
-                                       bound_key( "SWITCH_AMMO" ) ) ) } );
+        // CDF: DDA ranged.cpp:4265-4266 gate, the else (unload/keep after quitting) is 8-6c.
+        if( ( mode == TargetMode::Fire || mode == TargetMode::TurretManual ) &&
+            ranged_text::switch_ammo_hint_shown( relevant->has_flag( flag_RELOAD_AND_SHOOT ),
+                    relevant->ammo_remaining() ) ) {
+            lines.push_back( { 6, colored( col_enabled, string_format( _( "[%c] to reload/switch ammo." ),
+                                           bound_key( "SWITCH_AMMO" ) ) ) } );
+        }
     }
     if( mode == TargetMode::Turrets ) {
         const std::string label = draw_turret_lines
@@ -4449,9 +4463,9 @@ void target_ui::panel_gun_info( int &text_y )
     if( status == Status::OutOfAmmo ) {
         mvwprintz( w_target, point( 1, text_y++ ), c_red, _( "OUT OF AMMO" ) );
     } else if( ammo ) {
-        str = string_format( m->ammo_remaining() ? _( "Ammo: %s (%d/%d)" ) : _( "Ammo: %s" ),
-                             colorize( ammo->nname( std::max( m->ammo_remaining(), 1 ) ), ammo->color ), m->ammo_remaining(),
-                             m->ammo_capacity() );
+        // CDF: DDA ranged.cpp:4388-4396 (favourite star, capacity of the ammo shown).
+        const bool is_favorite = relevant->is_ammo_container() && relevant->first_ammo().is_favorite;
+        str = ranged_text::aim_ammo_row( m, is_favorite, *ammo );
         print_colored_text( w_target, point( 1, text_y++ ), clr, clr, str );
     } else {
         // Weapon doesn't use ammunition

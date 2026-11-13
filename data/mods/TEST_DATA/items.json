@@ -2527,5 +2527,45 @@
     "type": "GUN",
     "name": { "str": "legacy simple flamethrower" },
     "description": "Test gun."
+  },
+  {
+    "//": "CDF: 8-6a A3 gun stand-in: one MAGAZINE pocket. Does not satisfy is_ammo_container() with loose ammo (item.cpp:8594), so the star is tested through the formatter input (DDA ranged.cpp:4388-4396)",
+    "id": "aim_star_fixture",
+    "type": "TOOL",
+    "name": { "str": "TEST aim star fixture" },
+    "description": "Test-only item for the aim screen favourite star.",
+    "weight": "1 g",
+    "volume": "1 L",
+    "price": "0 USD",
+    "material": "cotton",
+    "symbol": "#",
+    "color": "white",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": false,
+        "ammo_restriction": { "9mm": 20 }
+      }
+    ]
+  },
+  {
+    "//": "CDF: 8-6a A5 gun stand-in: one MAGAZINE pocket with two ammo types of different capacity (9mm 20, 40 8). Pocket capacity is per ammo type; the untyped item capacity is not (DDA ranged.cpp:4388-4396 uses the typed form)",
+    "id": "aim_two_ammo_fixture",
+    "type": "TOOL",
+    "name": { "str": "TEST aim two-ammo fixture" },
+    "description": "Test-only item for the aim screen ammo capacity per ammo type.",
+    "weight": "1 g",
+    "volume": "1 L",
+    "price": "0 USD",
+    "material": "cotton",
+    "symbol": "#",
+    "color": "white",
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": false,
+        "ammo_restriction": { "9mm": 20, "40": 8 }
+      }
+    ]
   }
 ]
