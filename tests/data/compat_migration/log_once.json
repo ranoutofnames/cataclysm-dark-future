@@ -1,0 +1,4 @@
+[
+  { "type": "camp_migration", "id": "compat5_camp_a", "new_id": "compat5_camp_x" },
+  { "type": "camp_migration", "id": "compat5_camp_b", "new_id": "compat5_camp_y" }
+]

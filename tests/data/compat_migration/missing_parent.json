@@ -1,0 +1,8 @@
+[
+  {
+    "type": "GENERIC",
+    "id": "compat5_orphan_child",
+    "copy-from": "compat5_parent_never_defined",
+    "name": "compat5 orphan"
+  }
+]

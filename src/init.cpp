@@ -175,6 +175,32 @@ shared_ptr_fast<std::istream> DynamicDataLoader::get_cached_stream( const std::s
     return cached;
 }
 
+// CDF: COMPAT5 (A12): report text for a deferred object that never resolved. Names the copy-from
+// parent, the child id and the source mod, so a missing parent is findable. Message text only.
+std::string compat_unresolved_deferred_message( const json_source_location &loc,
+        const std::string &src )
+{
+    std::string parent;
+    std::string child;
+    try {
+        // read directly: this report runs once per unresolved object, so the stream cache is not needed
+        std::istringstream stream( read_entire_file( *loc.path ) );
+        JsonIn jsin( stream, loc );
+        JsonObject jo = jsin.get_object();
+        jo.allow_omitted_members();
+        parent = jo.get_string( "copy-from", "" );
+        child = jo.get_string( "id", jo.get_string( "abstract", "" ) );
+    } catch( const std::exception & ) {
+        // fall through to the generic text
+    }
+    if( parent.empty() ) {
+        return "JSON contains circular dependency, this object is discarded";
+    }
+    return string_format( "copy-from parent \"%s\" of \"%s\" (mod \"%s\") is never defined "
+                          "(or the dependency is circular), this object is discarded",
+                          parent, child, src );
+}
+
 void DynamicDataLoader::load_deferred( deferred_json &data )
 {
     while( !data.empty() ) {
@@ -206,7 +232,7 @@ void DynamicDataLoader::load_deferred( deferred_json &data )
                 } else {
                     try {
                         throw_error_at_json_loc( elem.first,
-                                                 "JSON contains circular dependency, this object is discarded" );
+                                                 compat_unresolved_deferred_message( elem.first, elem.second ) );
                     } catch( const JsonError &err ) {
                         debugmsg( "(json-error)\n%s", err.what() );
                     }
@@ -496,6 +522,16 @@ void DynamicDataLoader::initialize()
     add( "climbing_aid", &load_dda_inert_type );
     add( "body_graph", &load_dda_inert_type );
     add( "damage_info_order", &load_dda_inert_type );
+    // CDF: COMPAT5 (A6): DDA migration-family types. CDF has no migration table for traits,
+    // bionics, effects, vehicle parts, terrain/furniture, overmap specials or camps, so each
+    // is inert: read and logged once.
+    add( "TRAIT_MIGRATION", &load_dda_inert_type );
+    add( "bionic_migration", &load_dda_inert_type );
+    add( "effect_migration", &load_dda_inert_type );
+    add( "vehicle_part_migration", &load_dda_inert_type );
+    add( "ter_furn_migration", &load_dda_inert_type );
+    add( "overmap_special_migration", &load_dda_inert_type );
+    add( "camp_migration", &load_dda_inert_type );
     // mod information, ignored, handled by the mod manager
     add( "MOD_INFO", &load_ignored_type );
 

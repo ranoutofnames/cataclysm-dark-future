@@ -1,0 +1,15 @@
+[
+  { "type": "TRAIT_MIGRATION", "id": "compat5_old_trait", "trait": "compat5_new_trait" },
+  { "type": "bionic_migration", "from": "compat5_old_bionic", "to": "compat5_new_bionic" },
+  { "type": "effect_migration", "from": "compat5_old_effect", "to": "compat5_new_effect" },
+  { "type": "vehicle_part_migration", "from": "compat5_old_vpart", "to": "compat5_new_vpart" },
+  { "type": "ter_furn_migration", "from_ter": "compat5_old_ter", "to_ter": "t_floor" },
+  { "type": "overmap_special_migration", "id": "compat5_old_special", "new_id": "compat5_new_special" },
+  { "type": "camp_migration", "id": "compat5_old_camp", "new_id": "compat5_new_camp" },
+  {
+    "type": "json_flag",
+    "id": "COMPAT5_NORMAL_FLAG",
+    "context": [ "GENERIC" ],
+    "info": "COMPAT5 fixture: normal object loaded after the migration objects"
+  }
+]
