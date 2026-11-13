@@ -121,6 +121,7 @@
     "description": "One of Kel-tec's oldest designs, the P32 is a popular option for deep concealment and backup usage.  Despite its extreme light weight and small size, its .32 ACP chambering makes for good handling and recoil control.",
     "weight": "198 g",
     "volume": "132 ml",
+    "longest_side": "145 mm",
     "price": "140 USD",
     "price_postapoc": "10 USD",
     "ascii_picture": "P3AT",

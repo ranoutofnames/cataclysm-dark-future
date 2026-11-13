@@ -779,11 +779,104 @@
     "items": [
       {
         "distribution": [
-          { "item": "box_huge", "contents-group": [ "crate_stack_smaller", "crate_stack_smaller" ], "prob": 100 },
-          { "item": "box_huge", "contents-group": [ "crate_stack_smaller", "crate_stack_smaller" ], "prob": 100 }
+          { "item": "box_huge", "contents-group": [ "plane_crate_stack_smaller", "plane_crate_stack_smaller" ], "prob": 100 },
+          { "item": "box_huge", "contents-group": [ "plane_crate_stack_smaller", "plane_crate_stack_smaller" ], "prob": 100 }
         ],
         "prob": 80
       }
+    ]
+  },
+  {
+    "id": "plane_crate_stack_smaller",
+    "type": "item_group",
+    "subtype": "distribution",
+    "items": [
+      [ "null", 100 ],
+      { "group": "crate_clothes", "prob": 30 },
+      { "group": "crate_linens", "prob": 25 },
+      { "group": "crate_kitchen", "prob": 20 },
+      { "group": "crate_winter", "prob": 20 },
+      { "group": "crate_wine", "prob": 5 },
+      { "group": "plane_crate_toys", "prob": 10 },
+      { "group": "plane_crate_sports", "prob": 5 },
+      { "group": "crate_creepy", "prob": 1 }
+    ]
+  },
+  {
+    "id": "plane_crate_sports",
+    "type": "item_group",
+    "subtype": "collection",
+    "groups": [ [ "plane_sports_bulk", 90 ], [ "plane_sports_bulk", 70 ], [ "plane_sports_bulk", 40 ], [ "plane_sports_bulk", 10 ] ]
+  },
+  {
+    "id": "plane_sports_bulk",
+    "type": "item_group",
+    "subtype": "distribution",
+    "items": [
+      [ "takedown_recurbow", 1 ],
+      [ "quiver_takedown_bow", 1 ],
+      [ "boxing_gloves", 40 ],
+      [ "football_armor", 30 ],
+      [ "helmet_football", 10 ],
+      [ "helmet_bike", 25 ],
+      [ "helmet_ball", 25 ],
+      [ "headgear", 20 ],
+      [ "mask_hockey", 25 ],
+      [ "roller_blades", 20 ],
+      [ "folding_skateboard", 10 ],
+      [ "rollerskates", 10 ],
+      [ "quiver", 3 ],
+      [ "fencing_jacket", 10 ],
+      [ "fencing_mask", 10 ],
+      [ "fencing_pants", 10 ],
+      [ "lame_foil", 10 ],
+      [ "lame_saber", 10 ],
+      [ "plastron_cotton", 10 ],
+      [ "plastron_plastic", 10 ],
+      [ "gauntlet_fencing", 9 ],
+      [ "gauntlet_fencing_l", 1 ]
+    ]
+  },
+  {
+    "id": "plane_crate_toys",
+    "type": "item_group",
+    "subtype": "collection",
+    "groups": [ [ "plane_toy_box", 90 ], [ "plane_toy_box", 70 ], [ "plane_toy_box", 40 ], [ "plane_toy_box", 10 ] ]
+  },
+  {
+    "id": "plane_toy_box",
+    "type": "item_group",
+    "ammo": 75,
+    "magazine": 100,
+    "subtype": "distribution",
+    "items": [
+      [ "marble", 50 ],
+      [ "talking_doll", 50 ],
+      [ "basketball", 30 ],
+      [ "fc_hairpin", 30 ],
+      { "group": "kids_books", "prob": 170, "count": [ 1, 4 ] },
+      { "group": "games", "prob": 170, "count": [ 1, 2 ] },
+      [ "backpack", 20 ],
+      [ "baseball", 30 ],
+      [ "football", 20 ],
+      [ "frisbee", 40 ],
+      [ "disc_golf", 20 ],
+      [ "radio_car_box", 10 ],
+      [ "orangesoda", 30 ],
+      [ "magic_8_ball", 10 ],
+      [ "hairpin", 30 ],
+      [ "purple_drink", 20 ],
+      [ "candy", 20 ],
+      [ "slingshot", 10 ],
+      [ "rock", 10 ],
+      [ "super_soaker", 10 ],
+      [ "creepy_doll", 3 ],
+      [ "portable_game", 5 ],
+      [ "whistle", 3 ],
+      [ "shark_plush", 4 ],
+      [ "bb", 8 ],
+      [ "paintball", 4 ],
+      [ "paintballgun", 5 ]
     ]
   },
   {

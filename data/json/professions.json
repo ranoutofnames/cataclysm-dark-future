@@ -23,7 +23,7 @@
       },
       {
         "collection": [
-          { "item": "bfr", "container-item": "holster" },
+          { "item": "bfr" },
           { "item": "ammo_satchel_leg", "contents-group": "ammopouch_4570_carry" }
         ],
         "prob": 20
@@ -135,7 +135,7 @@
       },
       {
         "collection": [
-          { "item": "hptjhp", "container-item": "holster" },
+          { "item": "hptjhp" },
           { "item": "legpouch_large", "contents-item": [ "hptjhpmag", "hptjhpmag" ] }
         ],
         "prob": 10
