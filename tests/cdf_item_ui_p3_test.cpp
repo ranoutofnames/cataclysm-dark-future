@@ -8,14 +8,17 @@
 #include "input.h"
 #include "inventory_ui.h"
 #include "item.h"
+#include "item_category.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "map/map.h"
+#include "map_helpers.h"
 #include "ranged.h"
 #include "reload/reload.h"
 #include "safe_reference.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "vehicle/vehicle.h"
 
 #include <algorithm>
 #include <string>
@@ -117,6 +120,18 @@ class ammo_selector_actions_probe : public ammo_inventory_selector
             }
             return rows;
         }
+
+        // CDF: P3-NESTAMMO2. The category of the row of the item (nullptr when it has no row).
+        auto row_category( const item *it ) const -> const item_category * {
+            for( const inventory_column *col : { &own_gear_column, &own_inv_column, &map_column } ) {
+                for( const inventory_entry *entry : col->get_all_entries() ) {
+                    if( entry->is_item() && entry->any_item() == it ) {
+                        return entry->get_category_ptr();
+                    }
+                }
+            }
+            return nullptr;
+        }
 };
 
 // How many rows the select_ammo selector lists for the host, from the carried items (the map is not
@@ -131,6 +146,19 @@ auto listed_candidates( avatar &you, item &host ) -> size_t
     ammo_selector_actions_probe sel( you, host, preset );
     sel.clear_items();
     sel.add_character_items( you );
+    return sel.item_entry_count();
+}
+
+// CDF: P3-NESTAMMO2. The rows of the list select_ammo builds: the carried items and, as
+// add_nearby_items( 1 ) adds them, the map squares around the avatar and the vehicle cargo on them.
+// Never opens a selector (see listed_candidates).
+auto listed_with_map( avatar &you, item &host ) -> size_t
+{
+    const select_ammo_shows_preset preset( host, true );
+    ammo_selector_actions_probe sel( you, host, preset );
+    sel.clear_items();
+    sel.add_character_items( you );
+    sel.add_nearby_items( 1 );
     return sel.item_entry_count();
 }
 
@@ -569,6 +597,392 @@ TEST_CASE( "ammo_selector_lists_what_is_nested_in_a_carried_container", "[p3][ui
         plain_selector_probe plain( you, preset );
         plain.clear_items();
         plain.add_character_items( you );
+        CHECK( plain.item_entry_count() == 0 );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-NESTAMMO2; CDF-only (DDA has no test of the ammo selector list). The map half of NESTAMMO1: DDA's
+// _add_map_items runs add_entry_rec on every item of a map square and of vehicle cargo (inventory_ui.cpp:
+// 2221-2262, 2337-2358), so ammo in a box on the floor next to the avatar, a liquid in a jug on the floor and
+// ammo in a box in vehicle cargo are listed when the preset shows them. The CDF add_items listed only the
+// top level of the stack. Same rules as the carried walk of NESTAMMO1 (no magazine opened, a gun's loaded
+// magazine not offered, NO_UNLOAD not opened, ammo selector only). Rows go through the public seam of the
+// selector (add_nearby_items / add_map_items / add_vehicle_items, item_entry_count, listed_items) and no test
+// opens a selector: select_ammo is only called with prompt off and exactly one row listed (REQUIREd first).
+// Expected rows come from the JSON (box_small and box_medium take loose ammo, jug_plastic and 2lcanteen are
+// watertight, water_clean is a liquid, glockmag holds 15 9mm) and from the DDA rules above.
+// ---------------------------------------------------------------------------
+
+TEST_CASE( "ammo_selector_lists_what_is_nested_in_containers_on_the_map", "[p3][ui][nestammo2]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_id( "bigback" ) ), false );
+    const tripoint_bub_ms next_to_you = you.bub_pos() + tripoint_east;
+    REQUIRE( get_map().i_at( next_to_you ).empty() );
+
+    SECTION( "ammo in a box on an adjacent tile is listed, and the option is that ammo" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        item &nine = box.contents.front();
+        get_map().add_item( next_to_you, std::move( box_ptr ) );
+        REQUIRE( nine.parent_item() == &box );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, nine, true ) );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( gun, box, true ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_nearby_items( 1 );
+        CHECK( sel.item_entry_count() == 1 );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &nine } );
+
+        REQUIRE( listed_with_map( you, gun ) == 1 );
+        const item_reload_option opt = game_menus::inv::select_ammo( you, gun );
+        REQUIRE( opt );
+        CHECK( opt.target == in_gun );
+        CHECK( opt.ammo == &nine );
+        // glockmag capacity 15 minus 5 loaded: the room, not the 30 in the box.
+        CHECK( opt.qty() == 10 );
+    }
+
+    SECTION( "ammo in a box on the avatar's own tile is listed" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        get_map().add_item( you.bub_pos(), std::move( box_ptr ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_map_items( you.bub_pos() );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &box.contents.front() } );
+    }
+
+    SECTION( "a liquid in a jug on the ground is listed, and the option carries the jug" ) {
+        item &canteen = you.i_add( item::spawn( itype_id( "2lcanteen" ) ) );
+        detached_ptr<item> jug_ptr = item::spawn( itype_id( "jug_plastic" ) );
+        item &jug = *jug_ptr;
+        REQUIRE( jug.put_in( item::spawn( itype_id( "water_clean" ), calendar::turn_zero, 2 ),
+                             pocket_type::CONTAINER ).success() );
+        item &water = jug.contents.front();
+        get_map().add_item( next_to_you, std::move( jug_ptr ) );
+        // The premise: the water sits in the jug, not loose on the floor, so the ground-liquid rule
+        // (DDA game_inventory.cpp:3234-3238) does not hide it; the jug itself is not ammo.
+        REQUIRE( water.where() == item_location_type::container );
+        REQUIRE( game_menus::inv::select_ammo_shows( canteen, water, true ) );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( canteen, jug, true ) );
+
+        const select_ammo_shows_preset preset( canteen, true );
+        ammo_selector_actions_probe sel( you, canteen, preset );
+        sel.clear_items();
+        sel.add_nearby_items( 1 );
+        CHECK( sel.item_entry_count() == 1 );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &water } );
+
+        // CDF convention (character_functions.cpp:1083-1087): the option carries the container of a liquid.
+        REQUIRE( listed_with_map( you, canteen ) == 1 );
+        const item_reload_option opt = game_menus::inv::select_ammo( you, canteen );
+        REQUIRE( opt );
+        CHECK( opt.target == &canteen );
+        CHECK( opt.ammo == &jug );
+    }
+
+    SECTION( "water loose on the ground stays hidden" ) {
+        item &canteen = you.i_add( item::spawn( itype_id( "2lcanteen" ) ) );
+        detached_ptr<item> water_ptr = item::spawn( itype_id( "water_clean" ), calendar::turn_zero, 2 );
+        item &water = *water_ptr;
+        get_map().add_item( next_to_you, std::move( water_ptr ) );
+        REQUIRE( water.where() == item_location_type::map );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( canteen, water, true ) );
+        CHECK( listed_with_map( you, canteen ) == 0 );
+    }
+
+    SECTION( "ammo two containers deep on the ground is listed" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> outer_ptr = item::spawn( itype_id( "box_medium" ) );
+        item &outer = *outer_ptr;
+        detached_ptr<item> inner_ptr = item::spawn( itype_id( "box_small" ) );
+        item &inner = *inner_ptr;
+        REQUIRE( inner.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        REQUIRE( outer.put_in( std::move( inner_ptr ), pocket_type::CONTAINER ).success() );
+        item &nine = inner.contents.front();
+        get_map().add_item( next_to_you, std::move( outer_ptr ) );
+        REQUIRE( nine.parent_item() == &inner );
+        REQUIRE( inner.parent_item() == &outer );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_nearby_items( 1 );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &nine } );
+    }
+
+    SECTION( "every box of a stack of identical boxes on the ground is opened" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> first_ptr = item::spawn( itype_id( "box_small" ) );
+        detached_ptr<item> second_ptr = item::spawn( itype_id( "box_small" ) );
+        item &first = *first_ptr;
+        item &second = *second_ptr;
+        REQUIRE( first.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        REQUIRE( second.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        REQUIRE( first.stacks_with( second ) );
+        get_map().add_item( next_to_you, std::move( first_ptr ) );
+        get_map().add_item( next_to_you, std::move( second_ptr ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_nearby_items( 1 );
+        const std::vector<const item *> rows = sel.listed_items();
+        CHECK( rows.size() == 2 );
+        CHECK( std::ranges::count( rows, &first.contents.front() ) == 1 );
+        CHECK( std::ranges::count( rows, &second.contents.front() ) == 1 );
+    }
+
+    SECTION( "loose ammo on the ground and the same ammo in a box are two rows under one header" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> loose_ptr = item::spawn( itype_9mm, calendar::turn, 12 );
+        item &loose = *loose_ptr;
+        get_map().add_item( next_to_you, std::move( loose_ptr ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        item &nested = box.contents.front();
+        get_map().add_item( next_to_you, std::move( box_ptr ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_nearby_items( 1 );
+        const std::vector<const item *> rows = sel.listed_items();
+        CHECK( rows.size() == 2 );
+        CHECK( std::ranges::count( rows, &loose ) == 1 );
+        CHECK( std::ranges::count( rows, &nested ) == 1 );
+        // The nested row sits under the same square header as the loose row (not under 9mm's own category).
+        REQUIRE( sel.row_category( &loose ) != nullptr );
+        REQUIRE( sel.row_category( &nested ) != nullptr );
+        CHECK( sel.row_category( &nested )->get_id() == sel.row_category( &loose )->get_id() );
+    }
+
+    SECTION( "carried and ground containers are both walked" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item &carried_box = you.i_add( item::spawn( itype_id( "box_small" ) ) );
+        REQUIRE( carried_box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ),
+                                     pocket_type::CONTAINER ).success() );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &ground_box = *box_ptr;
+        REQUIRE( ground_box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ),
+                                    pocket_type::CONTAINER ).success() );
+        get_map().add_item( next_to_you, std::move( box_ptr ) );
+        CHECK( listed_with_map( you, gun ) == 2 );
+    }
+
+    SECTION( "what is not ammo for the target stays unlisted" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_38_special, calendar::turn, 7 ),
+                             pocket_type::CONTAINER ).success() );
+        REQUIRE( box.put_in( item::spawn( itype_id( "pebble" ), calendar::turn, 3 ),
+                             pocket_type::CONTAINER ).success() );
+        get_map().add_item( next_to_you, std::move( box_ptr ) );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( gun, box.contents.front(), true ) );
+        CHECK( listed_with_map( you, gun ) == 0 );
+    }
+
+    SECTION( "a box out of reach is not opened" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        get_map().add_item( you.bub_pos() + tripoint( 2, 0, 0 ), std::move( box_ptr ) );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, box.contents.front(), true ) );
+        CHECK( listed_with_map( you, gun ) == 0 );
+    }
+
+    SECTION( "the magazine loaded in a gun on the ground and its ammo are not taken from it" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item *other_mag = nullptr;
+        detached_ptr<item> other_ptr = gun_with_glockmag( 10, other_mag );
+        item &other = *other_ptr;
+        get_map().add_item( next_to_you, std::move( other_ptr ) );
+        REQUIRE( other_mag->parent_item() == &other );
+        // Both would be shown; CDF discovery never steals either (character_functions.cpp:1113-1120).
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, *other_mag, true ) );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, other_mag->contents.front(), true ) );
+        CHECK( listed_with_map( you, gun ) == 0 );
+    }
+
+    SECTION( "the rounds in a loose magazine on the ground are not taken out of it" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> spare_ptr = loaded_mag( itype_glockmag, itype_9mm, 10 );
+        item &spare = *spare_ptr;
+        get_map().add_item( next_to_you, std::move( spare_ptr ) );
+        item &rounds = spare.contents.front();
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, spare, true ) );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, rounds, true ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_nearby_items( 1 );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &spare } );
+    }
+
+    SECTION( "a NO_UNLOAD box on the ground is not opened" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        get_map().add_item( next_to_you, std::move( box_ptr ) );
+        REQUIRE( listed_with_map( you, gun ) == 1 );
+        box.set_flag( flag_id( "NO_UNLOAD" ) );
+        // DDA inventory_ui.cpp:2113 add_contained_items.
+        CHECK( listed_with_map( you, gun ) == 0 );
+    }
+
+    SECTION( "only the ammo selector walks into containers on the map" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        get_map().add_item( next_to_you, std::move( box_ptr ) );
+        REQUIRE( listed_with_map( you, gun ) == 1 );
+
+        // The same preset on any other selector: drop, pick-up and the rest keep their top-level list.
+        const select_ammo_shows_preset preset( gun, true );
+        plain_selector_probe plain( you, preset );
+        plain.clear_items();
+        plain.add_nearby_items( 1 );
+        CHECK( plain.item_entry_count() == 0 );
+    }
+}
+
+TEST_CASE( "ammo_selector_lists_what_is_nested_in_vehicle_cargo", "[p3][ui][nestammo2]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_id( "bigback" ) ), false );
+    map &here = get_map();
+
+    // A frame with one "box" cargo part (data/json/vehicleparts/cargo.json), the avatar on the next tile.
+    const tripoint_bub_ms origin( 60, 60, 0 );
+    vehicle *veh = here.add_vehicle( vproto_id( "none" ), origin, 0_degrees, 0, 0 );
+    REQUIRE( veh != nullptr );
+    REQUIRE( veh->install_part( tripoint_mnt_veh::zero(), vpart_id( "frame_vertical" ), true ) >= 0 );
+    const int part = veh->install_part( tripoint_mnt_veh::zero(), vpart_id( "box" ), true );
+    REQUIRE( part >= 0 );
+    here.add_vehicle_to_cache( veh );
+    here.build_map_cache( origin.z(), true );
+    REQUIRE( here.veh_at( origin ) );
+    REQUIRE( veh->get_items( part ).empty() );
+    you.setpos( origin + tripoint_south );
+
+    SECTION( "ammo in a box in vehicle cargo is listed, and the option is that ammo" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        item &nine = box.contents.front();
+        REQUIRE_FALSE( veh->add_item( part, std::move( box_ptr ) ) );
+        REQUIRE( nine.parent_item() == &box );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, nine, true ) );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( gun, box, true ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_vehicle_items( origin );
+        CHECK( sel.item_entry_count() == 1 );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &nine } );
+
+        // The way select_ammo reaches it: the square next to the avatar, one row, no menu.
+        REQUIRE( listed_with_map( you, gun ) == 1 );
+        const item_reload_option opt = game_menus::inv::select_ammo( you, gun );
+        REQUIRE( opt );
+        CHECK( opt.target == in_gun );
+        CHECK( opt.ammo == &nine );
+        CHECK( opt.qty() == 10 );
+    }
+
+    SECTION( "a liquid in a jug in vehicle cargo is listed, and the option carries the jug" ) {
+        item &canteen = you.i_add( item::spawn( itype_id( "2lcanteen" ) ) );
+        detached_ptr<item> jug_ptr = item::spawn( itype_id( "jug_plastic" ) );
+        item &jug = *jug_ptr;
+        REQUIRE( jug.put_in( item::spawn( itype_id( "water_clean" ), calendar::turn_zero, 2 ),
+                             pocket_type::CONTAINER ).success() );
+        item &water = jug.contents.front();
+        REQUIRE_FALSE( veh->add_item( part, std::move( jug_ptr ) ) );
+        REQUIRE( game_menus::inv::select_ammo_shows( canteen, water, true ) );
+
+        const select_ammo_shows_preset preset( canteen, true );
+        ammo_selector_actions_probe sel( you, canteen, preset );
+        sel.clear_items();
+        sel.add_vehicle_items( origin );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &water } );
+
+        REQUIRE( listed_with_map( you, canteen ) == 1 );
+        const item_reload_option opt = game_menus::inv::select_ammo( you, canteen );
+        REQUIRE( opt );
+        CHECK( opt.target == &canteen );
+        CHECK( opt.ammo == &jug );
+    }
+
+    SECTION( "what is not ammo for the target stays unlisted" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_38_special, calendar::turn, 7 ),
+                             pocket_type::CONTAINER ).success() );
+        REQUIRE_FALSE( veh->add_item( part, std::move( box_ptr ) ) );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( gun, box.contents.front(), true ) );
+        CHECK( listed_with_map( you, gun ) == 0 );
+    }
+
+    SECTION( "a NO_UNLOAD box in vehicle cargo is not opened" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        REQUIRE_FALSE( veh->add_item( part, std::move( box_ptr ) ) );
+        REQUIRE( listed_with_map( you, gun ) == 1 );
+        box.set_flag( flag_id( "NO_UNLOAD" ) );
+        CHECK( listed_with_map( you, gun ) == 0 );
+    }
+
+    SECTION( "only the ammo selector walks into vehicle cargo" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
+        item &box = *box_ptr;
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        REQUIRE_FALSE( veh->add_item( part, std::move( box_ptr ) ) );
+        REQUIRE( listed_with_map( you, gun ) == 1 );
+
+        const select_ammo_shows_preset preset( gun, true );
+        plain_selector_probe plain( you, preset );
+        plain.clear_items();
+        plain.add_vehicle_items( origin );
         CHECK( plain.item_entry_count() == 0 );
     }
 }

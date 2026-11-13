@@ -2911,11 +2911,11 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
             .prompt = prompt,
             .discovery = { .include_empty_mags = empty, .include_potential = include_potential }
         } );
-        // CDF: P3-6-6a. The selector lists the carried items, nested ones included (P3-NESTAMMO1), but not
-        // an ammo item nested in a container lying on the map (add_items does not recurse), which discovery
-        // does find. With one discovered option and no prompt the BN reload menu took it without a menu:
-        // keep that (the DDA single-entry shortcut below). Not for include_potential (8-2a-sel): there the
-        // list is DDA's, a full gun lists nothing.
+        // CDF: P3-6-6a. The selector lists the carried items and the items on the map and in vehicle cargo
+        // around the avatar, nested ones included (P3-NESTAMMO1, P3-NESTAMMO2), but discovery can find an
+        // option the selector does not list. With one discovered option and no prompt the BN reload menu
+        // took it without a menu: keep that (the DDA single-entry shortcut below). Not for
+        // include_potential (8-2a-sel): there the list is DDA's, a full gun lists nothing.
         if( !include_potential && why.outcome == reload_selection::selection_outcome::automatic ) {
             return why.selected;
         }

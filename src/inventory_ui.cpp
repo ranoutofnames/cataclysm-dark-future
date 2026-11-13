@@ -1538,6 +1538,19 @@ void inventory_selector::add_items( inventory_column &target_column,
 
         add_entry( target_column, std::move( locations ), nat_category );
     }
+
+    // CDF: P3-NESTAMMO2. What sits nested in the items of the stacks (the ammo selector only).
+    std::vector<item *> roots;
+    for( const std::list<item *> &stack : stacks ) {
+        std::transform( stack.begin(), stack.end(), std::back_inserter( roots ), locator );
+    }
+    add_nested_map_items( target_column, roots, custom_category );
+}
+
+// CDF: P3-NESTAMMO2. Nothing nested is listed unless a selector asks for it (the ammo selector does).
+void inventory_selector::add_nested_map_items( inventory_column &, const std::vector<item *> &,
+        const item_category * )
+{
 }
 
 void inventory_selector::remove_item( item *location )
@@ -4142,28 +4155,51 @@ ammo_inventory_selector::~ammo_inventory_selector() = default;
 // reload can do: nothing is taken out of a magazine, and the magazine loaded in an item is not offered
 // (character_functions.cpp:1113-1120, "do not steal"). Without that rule the rounds in the magazine
 // of the gun being reloaded would be offered to that magazine.
+void ammo_inventory_selector::add_rows_below( inventory_column &column, item &container,
+        const std::function<const item_category *()> &category )
+{
+    if( container.has_flag( flag_NO_UNLOAD ) || container.is_magazine() ) {
+        return;
+    }
+    for( item *child : container.all_items_top() ) {
+        if( child == container.magazine_current() ) {
+            continue;
+        }
+        if( preset.is_shown( child ) ) {
+            add_shown_entry( column, std::vector<item *>( 1, child ), category(), nullptr, false, 0 );
+        }
+        add_rows_below( column, *child, category );
+    }
+}
+
 void ammo_inventory_selector::add_nested_character_items( Character &character )
 {
     // Only items below a carried item are visited here, so none of them is a row of the carried stacks.
-    const std::function<void( item & )> add_below = [this, &add_below]( item & container ) {
-        if( container.has_flag( flag_NO_UNLOAD ) || container.is_magazine() ) {
-            return;
-        }
-        for( item *child : container.all_items_top() ) {
-            if( child == container.magazine_current() ) {
-                continue;
-            }
-            if( preset.is_shown( child ) ) {
-                add_shown_entry( own_inv_column, std::vector<item *>( 1, child ), nullptr, nullptr,
-                                 false, 0 );
-            }
-            add_below( *child );
-        }
-    };
     for( const carried_stack &stack : carried_item_stacks( character ) ) {
         for( item *carried : stack ) {
-            add_below( *carried );
+            add_rows_below( own_inv_column, *carried, []() -> const item_category * {
+                return nullptr;
+            } );
         }
+    }
+}
+
+// CDF: P3-NESTAMMO2, DDA inventory_ui.cpp 2337-2358 (_add_map_items), which runs add_entry_rec on every
+// item of a map square and of vehicle cargo. The roots (the items of the stacks add_items listed) are
+// not rows here, add_items made those; this adds what is nested below them, by the same walk as the
+// carried items. The rows sit under the square's header like the loose items of that square (the header
+// is made at the first row, so a square with nothing nested adds no category).
+void ammo_inventory_selector::add_nested_map_items( inventory_column &target_column,
+        const std::vector<item *> &roots, const item_category *custom_category )
+{
+    for( item *root : roots ) {
+        const item_category *header = nullptr;
+        add_rows_below( target_column, *root, [&]() -> const item_category * {
+            if( header == nullptr && custom_category != nullptr ) {
+                header = naturalize_category( *custom_category, root->bub_pos() );
+            }
+            return header;
+        } );
     }
 }
 
