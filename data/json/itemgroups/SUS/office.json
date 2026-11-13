@@ -107,7 +107,6 @@
       { "item": "eink_tablet_pc", "prob": 2 },
       { "item": "laptop", "prob": 6 },
       { "item": "usb_drive", "prob": 5 },
-      { "item": "mobile_memory_card_used", "prob": 3 },
       { "group": "digital_storage_media", "prob": 5 },
       { "group": "digital_storage_media", "prob": 3 },
       { "item": "battery_charger", "prob": 8 },

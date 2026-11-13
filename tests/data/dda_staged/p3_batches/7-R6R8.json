@@ -682,6 +682,7 @@
    "class": "ADAPTOR",
    "action": "KEEP",
    "own_keys": [
+    "//",
     "ammo_modifier",
     "color",
     "description",
@@ -708,6 +709,7 @@
    "class": "ADAPTOR",
    "action": "KEEP",
    "own_keys": [
+    "//",
     "ammo_modifier",
     "color",
     "description",

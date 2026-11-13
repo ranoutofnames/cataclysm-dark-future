@@ -545,7 +545,7 @@
      "pocket_type": "MAGAZINE",
      "rigid": true,
      "ammo_restriction": {
-      "8x40mm": 5
+      "8x40mm": 6
      }
     }
    ],
@@ -555,7 +555,7 @@
    "dropped_ids": [],
    "tags": [],
    "legacy": {
-    "capacity": 5,
+    "capacity": 6,
     "ammo_type": "8x40mm"
    }
   },

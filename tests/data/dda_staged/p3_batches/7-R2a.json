@@ -2948,7 +2948,7 @@
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
-            "8x40mm": 5
+            "8x40mm": 6
           },
           "allowed_speedloaders": [
             "8x40_speedloader5"
@@ -2970,7 +2970,7 @@
           ]
         ],
         "magazine_well": null,
-        "clip_size": 5
+        "clip_size": 6
       },
       "synth_lost": [
         "MOD"

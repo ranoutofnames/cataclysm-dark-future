@@ -410,9 +410,12 @@ ret_val<void> item::can_contain( const item &it, int &copies_remaining, const bo
         // or does this already contain it?
         return ret_val<void>::make_failure( "can't put a container into itself" );
     }
-    // BN: digital files only go into digital storage media, and digital storage takes nothing else
-    if( is_digital_file( it ) || has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
-        return has_flag( flag_id( "DIGITAL_STORAGE" ) ) && is_digital_file( it ) ?
+    // BN: digital files only go into digital storage media, and digital storage takes no other cargo.
+    // CDF: magazines and ammo still reach the battery pocket or well of a digital reader
+    // (laptops, cameras, e-readers carry DIGITAL_STORAGE and a P3 magazine pocket).
+    const bool digital_storage = has_flag( flag_id( "DIGITAL_STORAGE" ) );
+    if( is_digital_file( it ) || ( digital_storage && !it.is_magazine() && !it.is_ammo() ) ) {
+        return digital_storage && is_digital_file( it ) ?
                ret_val<void>::make_success() :
                ret_val<void>::make_failure( "digital files need digital storage media" );
     }

@@ -46,17 +46,47 @@
     "material_thickness": 6,
     "environmental_protection": 2,
     "resistance": { "bullet": 70 },
-    "use_action": {
-      "type": "holster",
-      "holster_prompt": "Stash ammo",
-      "holster_msg": "You stash your %s.",
-      "multi": 4,
-      "min_volume": "250 ml",
-      "max_volume": "1 L",
-      "draw_cost": 60,
-      "flags": [ "MAG_COMPACT" ]
-    },
-    "flags": [ "STURDY", "OUTER", "ALLOWS_WINGS" ]
+    "use_action": { "type": "holster", "holster_prompt": "Stash ammo", "holster_msg": "You stash your %s." },
+    "flags": [ "STURDY", "OUTER", "ALLOWS_WINGS" ],
+    "//2": "CDF: BN's four holster-action magazine pouches (250 ml to 1 L each) as four P3 CONTAINER pockets, same shape as the chest rig",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_length": "240 mm",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "moves": 60,
+        "flag_restriction": [ "MAG_COMPACT" ],
+        "volume_encumber_modifier": 0.3
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_length": "240 mm",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "moves": 60,
+        "flag_restriction": [ "MAG_COMPACT" ],
+        "volume_encumber_modifier": 0.3
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_length": "240 mm",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "moves": 60,
+        "flag_restriction": [ "MAG_COMPACT" ],
+        "volume_encumber_modifier": 0.3
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "max_item_length": "240 mm",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "2 kg",
+        "moves": 60,
+        "flag_restriction": [ "MAG_COMPACT" ],
+        "volume_encumber_modifier": 0.3
+      }
+    ]
   },
   {
     "id": "ceramic_ballistic_plate",
@@ -105,17 +135,27 @@
   },
   {
     "id": "super_ballistic_plate",
-    "copy-from": "steel_ballistic_plate",
     "type": "ARMOR",
+    "//": "CDF: standalone (BN copy-from steel_ballistic_plate): CDF's steel_ballistic_plate is the DDA ablative plate, so BN's flat steel-plate fields are spelled out here.",
     "name": { "str_sp": "superalloy ballistic plates" },
     "description": "A set of polygonal superalloy ballistic plates.  They are highly protective and durable, and reliably negate anything up to 5.56x45mm, all with marginal flexibility loss and additional weight, but practically require soft armor.  These are intended to be worn in a plate carrier.",
     "weight": "4800 g",
+    "volume": "4 L",
     "price": "1000 USD",
     "price_postapoc": "25 USD",
+    "to_hit": -3,
+    "bashing": 6,
     "material": [ "superalloy" ],
+    "looks_like": "esapi_plate",
+    "symbol": ",",
     "color": "light_cyan",
+    "covers": [ "torso" ],
+    "coverage": 85,
+    "encumbrance": 5,
+    "warmth": 0,
+    "material_thickness": 3,
     "resistance": { "bullet": 28 },
-    "encumbrance": 5
+    "flags": [ "OUTER", "ALLOWS_WINGS", "ARMOR_PLATE", "COMPACT" ]
   },
   {
     "id": "scrap_ballistic_plate",
