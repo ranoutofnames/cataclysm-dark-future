@@ -41,6 +41,7 @@ class lua_iwieldable_actor;
 class lua_iwearable_actor;
 class lua_iequippable_actor;
 class lua_istate_actor;
+class lua_iconsume_actor;
 class lua_imelee_actor;
 class lua_iranged_actor;
 class lua_itrap_actor;
@@ -461,6 +462,11 @@ struct islot_armor {
     bool ripoff_chance = false;
     bool rigid = false;
     bool comfortable = true;
+
+    // NOTE: Theoretically this will one day become clothing modifications
+    // Today is not that day, but this will set a suitable framework
+    std::map<flag_id, int> provides_slot;
+    std::map<flag_id, int> consumes_slot;
 };
 
 struct islot_pet_armor {
@@ -481,7 +487,7 @@ struct islot_pet_armor {
      */
     units::volume storage = 0_ml;
     /**
-     * The maximum volume a pet can be and wear this armor
+     * The maximum volume a pet can be and wear this armor (exclusive)
      */
     units::volume max_vol = 0_ml;
     /**
@@ -1029,6 +1035,10 @@ struct islot_seed {
      * Terrain tag required to plant the seed.
      */
     std::string required_terrain_flag = "PLANTABLE";
+    /// Flags copied from the planted item to harvested fruits and seeds, excluding byproducts.
+    std::vector<flag_id> harvest_inherit_flags;
+    /// Copy the planted item's poison value to harvested fruits and seeds.
+    bool harvest_inherit_poison = false;
     islot_seed() = default;
 
     /**
@@ -1213,6 +1223,7 @@ struct itype {
         const lua_iwearable_actor *iwearable_callbacks = nullptr;
         const lua_iequippable_actor *iequippable_callbacks = nullptr;
         const lua_istate_actor *istate_callbacks = nullptr;
+        const lua_iconsume_actor *iconsume_callbacks = nullptr;
         const lua_imelee_actor *imelee_callbacks = nullptr;
         const lua_iranged_actor *iranged_callbacks = nullptr;
         const lua_itrap_actor *itrap_callbacks = nullptr;

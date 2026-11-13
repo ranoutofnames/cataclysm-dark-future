@@ -114,6 +114,7 @@
       "material_thickness": 6
     },
     "proportional": { "weight": 5, "volume": 5, "price": 5 },
+    "extend": { "flags": [ "BUTCHERY_ROPE" ] },
     "//TORSO2": "CDF: restated as a plain torso portion (DDA string.json:115 gives rope_30 no sub-location); flat covers/coverage/encumbrance cannot modify a parent that has specifically_covers."
   },
   {

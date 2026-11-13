@@ -1182,7 +1182,7 @@
     "components": [
       [ [ "fabric_standard", 20, "LIST" ] ],
       [ [ "duct_tape", 300 ] ],
-      [ [ "ballistic_vest_esapi", 1 ] ],
+      [ [ "ballistic_vest_heavy", 1 ] ],
       [ [ "kevlar_plate", 20 ] ]
     ],
     "flags": [ "SECRET" ]

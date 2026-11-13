@@ -785,7 +785,7 @@
       }
     ],
     "name": { "str": "pair of superalloy armored gauntlets", "str_pl": "pairs of superalloy armored gauntlets" },
-    "description": "An set of armor-plated leather gloves, made with lightweight superalloy.",
+    "description": "A set of armor-plated leather gloves, made with lightweight superalloy.",
     "material": [ "superalloy", "leather" ],
     "color": "light_cyan",
     "proportional": { "weight": 0.6, "price": 2, "price_postapoc": 2 }

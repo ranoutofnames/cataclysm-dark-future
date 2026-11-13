@@ -10,6 +10,7 @@
 #include "catalua_bindings_utils.h"
 #include "catalua_coord.h"
 #include "catalua_impl.h"
+#include "catalua_item_filters.h"
 #include "catalua_log.h"
 #include "catalua_luna.h"
 #include "catalua_luna_doc.h"
@@ -1091,6 +1092,8 @@ void cata::detail::reg_character( sol::state &lua )
 
         SET_FX_T( is_wielding, bool( const item & ) const );
 
+        SET_FX( wielded_items );
+
         SET_FX_T( is_wearing, bool( const item & ) const );
 
         SET_FX_T( is_wearing_on_bp, bool( const itype_id &, const bodypart_id & ) const );
@@ -1210,6 +1213,26 @@ void cata::detail::reg_character( sol::state &lua )
 
         DOC( "Filters items" );
         luna::set_fx( ut, "items_with", &Character::items_with );
+
+        DOC( "Returns items from the inventory, wielded and worn, matching every given filter as an array of Item.  " );
+        DOC( "Takes a table where each key is a filter; unknown keys show a debug message and are ignored. Available filters:  " );
+        DOC( "* `category` (string or string[]): Item category id is one of these, e.g. \"food\".  " );
+        DOC( "* `type` (ItemTypeId or ItemTypeId[]): Item type is one of these.  " );
+        DOC( "* `is_food` (boolean): Whether the item is food.  " );
+        DOC( "* `flags` (FlagId or FlagId[]): Item has at least one of these flags.  " );
+        DOC( "* `need_charges` (boolean): Tool items must have charges left.  " );
+        DOC( "* `has_charges` (table): { id = ItemTypeId, amount = integer }: item type is `id` and has at least `amount` charges.  " );
+        DOC( "* `worn` (boolean): Whether the item is worn.  " );
+        DOC( "* `wielded` (boolean): Whether the item is wielded." );
+        luna::set_fx( ut, "get_items_if", []( const UT_CLASS & c, sol::table filters ) -> std::vector<item *> {
+            return c.get_items_if( character_item_predicates_from_lua( c, filters ) );
+        } );
+
+        DOC( "Removes and returns items from the inventory, wielded and worn, matching every given filter as an array of Item.  " );
+        DOC( "Accepts the same filter table as `get_items_if`." );
+        luna::set_fx( ut, "remove_items_if", []( UT_CLASS & c, sol::table filters ) -> std::vector<detached_ptr<item>> {
+            return c.remove_items_if( character_item_predicates_from_lua( c, filters ) );
+        } );
 
         DOC( "DEPRECATED: use remove_item instead" );
         luna::set_fx( ut, "inv_remove_item", &Character::inv_remove_item );
@@ -1491,6 +1514,10 @@ void cata::detail::reg_character( sol::state &lua )
             return ch.bonus_from_enchantments( base, ench_val_id, round.value_or( false ) );
         } );
         SET_FX( has_enchantment_flag );
+
+        SET_FX( add_perk );
+        SET_FX( remove_perk );
+        SET_FX( has_perk );
     }
 #undef UT_CLASS // #define UT_CLASS Character
 

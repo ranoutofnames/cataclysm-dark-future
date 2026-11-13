@@ -191,6 +191,7 @@
     "ammo": "battery",
     "charges_per_use": 1,
     "turns_per_charge": 10,
+    "revert_to": "remotevehcontrol",
     "use_action": "REMOTEVEH",
     "pocket_data": [
       {

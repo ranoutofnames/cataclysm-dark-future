@@ -206,6 +206,7 @@
     "material": "aluminum",
     "symbol": ",",
     "color": "light_gray",
+    "light_color": "#ffb05f",
     "tool_ammo": [ "lighter_fluid", "gasoline" ],
     "default_ammo": "chem_butane",
     "initial_charges": 25,

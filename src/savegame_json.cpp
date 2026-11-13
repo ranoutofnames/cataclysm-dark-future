@@ -27,6 +27,8 @@
 #include "creature.h"
 #include "creature_tracker.h"
 #include "debug.h"
+#include "digital_media.h"
+#include "digital_recipes.h"
 #include "drop_token.h"
 #include "effect.h"
 #include "enum_conversions.h"
@@ -944,6 +946,7 @@ void Character::load( const JsonObject &data )
     recalculate_size();
 
     data.read( "my_bionics", *my_bionics );
+    data.read( "my_perks", perks );
 
     for( auto &w : worn ) {
         w->on_takeoff( *this );
@@ -1146,6 +1149,7 @@ void Character::store( JsonOut &json ) const
     json.member( "martial_arts_data", martial_arts_data );
     // "Fracking Toasters" - Saul Tigh, toaster
     json.member( "my_bionics", *my_bionics );
+    json.member( "my_perks", perks );
 
     json.member_as_string( "move_mode",  move_mode );
 
@@ -3207,6 +3211,16 @@ void item::deserialize( JsonIn &jsin )
         kills = std::make_unique<kill_tracker>( false );
         data.read( "item_kill_tracker", kills );
     }
+
+    if( has_flag( flag_id( "GENOME_DRIVE" ) ) && !is_digital_file( *this ) ) {
+        migrate_legacy_digital_media( *this );
+    }
+    for( const auto &[key, value] : type->item_vars ) {
+        if( key.starts_with( "digital_" ) && !has_var( key ) ) {
+            set_var( key, value );
+        }
+    }
+    initialize_digital_recipe_file( *this );
 
     if( data.has_member( "id" ) ) {
         safe_reference<item>::id_type id;
