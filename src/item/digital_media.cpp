@@ -48,7 +48,7 @@ auto identify_digital_file(item& file) -> void {
 
 auto copy_digital_file(item& file, item& destination) -> bool {
     namespace ranges = std::ranges;
-    if (!is_digital_file(file) || !destination.can_contain(file)) { return false; }
+    if (!is_digital_file(file) || !destination.can_contain(file).success()) { return false; }
     initialize_digital_recipe_file(file);
     identify_digital_file(file);
     const auto duplicate =

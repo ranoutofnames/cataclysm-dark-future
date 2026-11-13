@@ -28,6 +28,7 @@
 #include "scenario.h"
 #include "sol/forward.hpp"
 #include "sol/sol.hpp"
+#include "temp_crafting_inventory.h"
 #include "units_temperature.h"
 #include "weather/weather.h"
 
@@ -947,19 +948,19 @@ void cata::detail::reg_game_api( sol::state &lua )
         auto radius = opts.get_or<int>( "radius", PICKUP_RANGE );
         auto fn = opts.get<sol::protected_function>( "func" );
         auto &state = *DynamicDataLoader::get_instance().lua.get();
-        inventory map_inv;
+        // CDF: BN's inventory/get_inv() are gone (P3 temp_crafting_inventory); add_all_ref( Character ) covers
+        // the carried items, the wielded weapon and the worn items as top-level references.
+        temp_crafting_inventory map_inv;
         map_inv.form_from_map( g->u.bub_pos(), radius, &g->u );
-        map_inv.add_items( g->u.get_inv(), true );
-        map_inv.add_item( g->u.primary_weapon(), true );
-        map_inv.add_items( g->u.worn, true );
-        map_inv.edit_all_items( [&]( item & e )
+        map_inv.add_all_ref( g->u );
+        for( item *e : map_inv.top_items() )
         {
             auto params = state.lua.create_table();
-            params["item"] = &e;
+            params["item"] = e;
             sol::protected_function_result res = fn( params );
 
             check_func_result( res );
-        } );
+        }
     } );
 
     luna::set_fx( lib, "get_option", []( std::string name ) -> std::string {

@@ -6,7 +6,7 @@
 #include "character_functions.h"
 #include "digital_media.h"
 #include "game.h"
-#include "inventory.h"
+#include "temp_crafting_inventory.h"
 #include "item.h"
 #include "item_contents.h"
 #include "itype.h"
@@ -196,15 +196,16 @@ TEST_CASE(
     CHECK_FALSE(is_digital_file(book));
     CHECK(book.volume() == 100_ml);
     CHECK_FALSE(start_book_scan(who, reader, book));
-    CHECK(reader.can_contain(file));
-    CHECK_FALSE(reader.can_contain(book));
-    CHECK_FALSE(item::spawn("bottle_plastic")->can_contain(file));
+    CHECK(reader.can_contain(file).success());
+    CHECK_FALSE(reader.can_contain(book).success());
+    CHECK_FALSE(item::spawn("bottle_plastic")->can_contain(file).success());
     CHECK(digital_reader_for(who, file));
 
     who.set_skill_level(skill_id("electronics"), 1);
     const auto& recipe = recipe_id("test_soldering_iron_digital_media").obj();
-    auto inv = inventory{};
-    inv.add_item(reader, false);
+    // CDF: P3 crafting queries take a temp_crafting_inventory
+    auto inv = temp_crafting_inventory{};
+    inv.add_item_loc(reader);
     CHECK(who.get_recipes_from_books(inv).contains(recipe));
     REQUIRE(who.read(&file, true));
     REQUIRE_FALSE(who.activity->is_null());

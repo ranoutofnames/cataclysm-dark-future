@@ -9,7 +9,7 @@
 #include "digital_media.h"
 #include "digital_recipes.h"
 #include "flag.h"
-#include "inventory.h"
+#include "temp_crafting_inventory.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_group.h"
@@ -173,9 +173,9 @@ TEST_CASE("digital_storage_accepts_files_only", "[digital_media][item]") {
     const auto rock = item::spawn("test_rock");
     const auto bottle = item::spawn("bottle_plastic");
 
-    CHECK(media->can_contain(*file));
-    CHECK_FALSE(media->can_contain(*rock));
-    CHECK_FALSE(bottle->can_contain(*file));
+    CHECK(media->can_contain(*file).success());
+    CHECK_FALSE(media->can_contain(*rock).success());
+    CHECK_FALSE(bottle->can_contain(*file).success());
 
     media->put_in(item::spawn(*file));
     CHECK(media->spill_contents(tripoint_bub_ms::zero()));
@@ -541,20 +541,23 @@ TEST_CASE("digital_recipe_references_require_a_powered_reader", "[digital_media]
     reader->ammo_set(itype_id("battery"), 10);
 
     SECTION("a file on passive media supplies no recipes") {
-        auto inv = inventory{};
-        inv.add_item(*media, false);
+        // CDF: P3 crafting queries take a temp_crafting_inventory
+        auto inv = temp_crafting_inventory{};
+        inv.add_item_loc(*media);
         CHECK_FALSE(dummy.get_recipes_from_books(inv).contains(recipe));
         CHECK(media->contents.front().get_available_recipes(dummy).empty());
     }
     SECTION("a loose file supplies no recipes") {
-        auto inv = inventory{};
-        inv.add_item(media->contents.front(), false);
+        // CDF: P3 crafting queries take a temp_crafting_inventory
+        auto inv = temp_crafting_inventory{};
+        inv.add_item_loc(media->contents.front());
         CHECK_FALSE(dummy.get_recipes_from_books(inv).contains(recipe));
     }
     SECTION("installed files supply references without memorizing recipes") {
         REQUIRE(download_digital_files(*reader, *media, dummy) == 1);
-        auto inv = inventory{};
-        inv.add_item(*reader, false);
+        // CDF: P3 crafting queries take a temp_crafting_inventory
+        auto inv = temp_crafting_inventory{};
+        inv.add_item_loc(*reader);
         const auto references = dummy.get_recipes_from_books(inv);
         CHECK(references.contains(recipe));
         CHECK(references.get_custom_difficulty(&recipe) == 1);
@@ -1056,7 +1059,7 @@ TEST_CASE(
     auto album = find_camera_photo_collection(*device);
     REQUIRE(album);
     CHECK(is_digital_file(album->get()));
-    CHECK(device->can_contain(album->get()));
+    CHECK(device->can_contain(album->get()).success());
     CHECK(album->get().charges == 1);
     CHECK(album->get().get_var(photo_key) == photos);
     CHECK(digital_monster_photos(*device).at(mtype_id("mon_zombie")) == 5);
@@ -1138,7 +1141,7 @@ TEST_CASE(
     REQUIRE(drive->contents.num_item_stacks() == 1);
     auto& sample = drive->contents.front();
     CHECK(is_digital_file(sample));
-    CHECK(drive->can_contain(sample));
+    CHECK(drive->can_contain(sample).success());
     CHECK(sample.get_var("specimen_sample") == specimen);
     CHECK(sample.get_var("specimen_sample_progress") == progress);
     CHECK(sample.get_var("specimen_name") == name);
