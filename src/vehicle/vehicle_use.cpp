@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "enums.h"
 #include "game.h"
+#include "game_inventory.h"
 #include "iexamine.h"
 #include "input.h"
 #include "int_id.h"
@@ -33,7 +34,6 @@
 #include "player.h"
 #include "player_activity.h"
 #include "reload/reload.h"
-#include "reload/reload_ui.h"
 #include "requirements.h"
 #include "rng.h"
 #include "sounds.h"
@@ -2381,7 +2381,7 @@ void vehicle::interact_with(const tripoint_bub_ms& pos, int interact_part) {
             return;
         }
         case RELOAD_TURRET: {
-            auto opt = reload_ui::select_ammo(you, turret.base(), {.prompt = true});
+            auto opt = game_menus::inv::select_ammo(you, turret.base(), true);
             if (opt) {
                 // CDF: P3-6-2a (DDA vehicle_use.cpp:2562-2575): opt.target is the turret base or a
                 // gunmod

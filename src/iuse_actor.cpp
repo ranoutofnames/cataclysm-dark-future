@@ -81,7 +81,6 @@
 #include "recipe.h"
 #include "recipe_dictionary.h"
 #include "reload/reload.h"
-#include "reload/reload_ui.h"
 #include "requirements.h"
 #include "rng.h"
 #include "skill.h"
@@ -3053,7 +3052,7 @@ int ammobelt_actor::use( player &p, item &, bool, const tripoint_bub_ms & ) cons
         return 0;
     }
 
-    auto opt = reload_ui::select_ammo( p, *mag, { .prompt = true } );
+    auto opt = game_menus::inv::select_ammo( p, *mag, true );
     if( opt ) {
         // CDF: P3-6-2a; the actor moves ammo into the belt while it runs, so the belt is put in the
         // inventory first. opt.target is the belt's address, which i_add does not change.

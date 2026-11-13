@@ -9,7 +9,6 @@
 #include "player_helpers.h"
 #include "reload/reload.h"
 #include "reload/reload_selection.h"
-#include "reload/reload_ui.h"
 #include "state_helpers.h"
 #include "uistate.h"
 #include "vehicle/vehicle.h"
@@ -90,7 +89,10 @@ TEST_CASE("reload_single_discovered_option", "[reload][reload_selection]") {
     CHECK(discovery.options.front().target == &gun);
     CHECK(discovery.options.front().ammo == &ammo);
 
-    const auto selected = reload_ui::select_ammo(who, gun);
+    // CDF: P3-6-6a, the BN menu is gone from this test: prepare() is the decision it presented
+    const auto result = reload_selection::prepare(who, gun);
+    REQUIRE(result.outcome == reload_selection::selection_outcome::automatic);
+    const auto& selected = result.selected;
     CHECK(selected.target == &gun);
     CHECK(selected.ammo == &ammo);
     CHECK(ammo.charges == starting_charges);
@@ -250,11 +252,14 @@ TEST_CASE("reload_npc_empty_selection", "[reload][reload_selection]") {
     const auto history = uistate.lastreload;
     auto& gun = *item::spawn_temporary("sw_619", calendar::start_of_cataclysm, 0);
 
-    const auto discovered = reload_ui::select_ammo(who, gun);
-    const auto supplied = reload_ui::select_ammo(who, gun, std::vector<item_reload_option>{});
+    // CDF: P3-6-6a, prepare() in place of the BN menu: no option for the NPC, nothing selected
+    const auto discovered = reload_selection::prepare(who, gun);
+    const auto supplied = reload_selection::prepare(who, std::vector<item_reload_option>{});
 
-    CHECK_FALSE(discovered);
-    CHECK_FALSE(supplied);
+    CHECK(discovered.outcome != reload_selection::selection_outcome::automatic);
+    CHECK(supplied.outcome == reload_selection::selection_outcome::empty_supplied);
+    CHECK_FALSE(discovered.selected);
+    CHECK_FALSE(supplied.selected);
     CHECK(uistate.lastreload == history);
     CHECK_FALSE(who.activity);
     CHECK_FALSE(get_avatar().activity);
@@ -421,7 +426,10 @@ TEST_CASE("reload_nonempty_precedes_cheaper_empty", "[reload][reload_selection]"
     REQUIRE(discovery.options[1].ammo == &loaded);
     REQUIRE(discovery.options[0].moves() < discovery.options[1].moves());
 
-    const auto selected = reload_ui::select_ammo(who, gun);
+    // CDF: P3-6-6a, prepare() in place of the BN menu (an NPC takes the first option)
+    const auto result = reload_selection::prepare(who, gun);
+    REQUIRE(result.outcome == reload_selection::selection_outcome::automatic);
+    const auto& selected = result.selected;
 
     CHECK(selected.target == &gun);
     CHECK(selected.ammo == &loaded);

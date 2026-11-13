@@ -1,7 +1,7 @@
 // DDA source: tests/reload_time_test.cpp (DDA commit b4b62254ae2), case
 // reload_from_inventory_times. Adapted for CDF: BN has no fire_gun spending moves for the reload,
 // so the RELOAD_AND_SHOOT cost is read from ranged::time_to_attack with the option chosen by
-// reload_ui::select_ammo.
+// reload_selection::prepare.
 #include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
@@ -11,7 +11,7 @@
 #include "player_helpers.h"
 #include "point.h"
 #include "ranged.h"
-#include "reload/reload_ui.h"
+#include "reload/reload_selection.h"
 #include "state_helpers.h"
 #include "type_id.h"
 
@@ -34,9 +34,12 @@ static void check_reload_time(
         shooter.i_add(item::spawn(ammo, calendar::start_of_cataclysm, 1));
     }
     REQUIRE(shooter.primary_weapon().typeId() == itype_id(weapon));
-    auto opt = reload_ui::select_ammo(
+    // CDF: P3-6-6a, the pure selection in place of the BN menu (same options, no UI)
+    const auto result = reload_selection::prepare(
         shooter, shooter.primary_weapon(),
         {.prompt = false, .discovery = {.include_empty_mags = true, .include_potential = true}});
+    auto opt = result.selected;
+    REQUIRE(result.outcome == reload_selection::selection_outcome::automatic);
     REQUIRE(opt);
     // DDA's fire_gun spends time_to_attack plus the RAS reload cost; BN folds both into
     // time_to_attack.

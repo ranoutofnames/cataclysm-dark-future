@@ -70,4 +70,16 @@ auto prepare(const player& who, item& base, selection_options options = {}) -> s
  * @param options Candidate reloads, in the order the caller wants them
  */
 auto prepare(const player& who, std::vector<item_reload_option> options) -> selection_result;
+
+/**
+ * Tell the player why a reload did not start: prints the message for `empty_supplied` ("Never
+ * mind."), `missing_magazine`, `nothing_to_reload` and `missing_ammunition`. The other outcomes
+ * print nothing.
+ * @param who Character who gets the message
+ * @param base Item that was to be reloaded
+ * @param outcome Outcome of `prepare`
+ */
+// CDF: P3-6-6a. DDA has no such helper (its select_ammo is silent); these are the four messages
+// the BN reload menu printed (its present() function), kept for game_menus::inv::select_ammo.
+auto report(const player& who, const item& base, selection_outcome outcome) -> void;
 } // namespace reload_selection

@@ -43,6 +43,7 @@
 #include "recipe.h"
 #include "recipe_dictionary.h"
 #include "reload/reload.h"
+#include "reload/reload_selection.h"
 #include "requirements.h"
 #include "ret_val.h"
 #include "salvage.h"
@@ -2875,10 +2876,20 @@ auto game_menus::inv::reload_destination_labels( const std::vector<const reload_
 // `player &` and `item &` in place of Character & and const item_location &, item_reload_option
 // for item::reload_option, drop_location is { loc, count } here (not first / second), and the
 // trailing include_potential is CDF-only (ADV-14 ruling 4): accepted for the 6-3b and 8-2a-sel
-// callers and not read (DDA has no such argument; 8-2a-sel decides whether it needs it).
+// callers. P3-6-6a: it is read by the empty-list explanation below (DDA has no such argument).
 item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool prompt, bool empty,
-        [[maybe_unused]] bool include_potential )
+        bool include_potential )
 {
+    // CDF: P3-6-6a. DDA dispatches Character::select_ammo virtually: avatar::select_ammo opens this menu
+    // (avatar.cpp:1435-1442), npc::select_ammo never does (npcmove.cpp:2797). player has no such
+    // virtual here, so an npc takes the pure selection (the first discovered option), as the BN reload
+    // menu did (reload_selection::prepare, an npc is never asked).
+    if( you.is_npc() ) {
+        return reload_selection::prepare( you, loc, {
+            .prompt = prompt,
+            .discovery = { .include_empty_mags = empty, .include_potential = include_potential }
+        } ).selected;
+    }
     const select_ammo_inventory_preset preset( you, loc, empty );
     ammo_inventory_selector inv_s( you, loc, preset );
 
@@ -2894,6 +2905,25 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
     inv_s.set_all_entries_chosen_count();
 
     if( inv_s.empty() ) {
+        // CDF: P3-6-6a. The BN reload menu told the player why nothing can be reloaded; DDA only has
+        // the popup. Name the missing magazine or ammunition in the message log and skip the popup.
+        const reload_selection::selection_result why = reload_selection::prepare( you, loc, {
+            .prompt = prompt,
+            .discovery = { .include_empty_mags = empty, .include_potential = include_potential }
+        } );
+        // CDF: P3-6-6a. This selector lists only the carried stacks, not an ammo item nested in a carried
+        // container (a liquid in a jug), which discovery does find. With one discovered option and no prompt
+        // the BN reload menu took it without a menu: keep that (the DDA single-entry shortcut below). Not for
+        // include_potential (8-2a-sel): there the list is DDA's, a full gun lists nothing.
+        if( !include_potential && why.outcome == reload_selection::selection_outcome::automatic ) {
+            return why.selected;
+        }
+        if( why.outcome == reload_selection::selection_outcome::missing_magazine ||
+            why.outcome == reload_selection::selection_outcome::nothing_to_reload ||
+            why.outcome == reload_selection::selection_outcome::missing_ammunition ) {
+            reload_selection::report( you, loc, why.outcome );
+            return item_reload_option();
+        }
         popup( _( "You have nothing to reload." ), PF_GET_KEY );
         return item_reload_option();
     }
@@ -2906,6 +2936,8 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
     }
 
     if( !selected.loc ) {
+        // CDF: P3-6-6a, the BN menu printed this on cancel
+        reload_selection::report( you, loc, reload_selection::selection_outcome::empty_supplied );
         return item_reload_option();
     }
 
@@ -2935,6 +2967,8 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
         }
         menu.query();
         if( menu.ret < 0 || menu.ret >= static_cast<int>( matches.size() ) ) {
+            // CDF: P3-6-6a, the BN menu printed this on cancel
+            reload_selection::report( you, loc, reload_selection::selection_outcome::empty_supplied );
             return item_reload_option();
         }
         match = matches[menu.ret];

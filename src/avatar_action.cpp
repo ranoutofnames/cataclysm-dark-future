@@ -48,7 +48,6 @@
 #include "projectile.h"
 #include "ranged.h"
 #include "reload/reload.h"
-#include "reload/reload_ui.h"
 #include "ret_val.h"
 #include "rng.h"
 #include "string_formatter.h"
@@ -1514,7 +1513,7 @@ void avatar_action::wield( item &loc )
 }
 
 static item_reload_option favorite_ammo_or_select(
-    const player &u, item &it, bool empty, bool prompt )
+    player &u, item &it, bool empty, bool prompt )
 {
     // CDF: DDA TODO(multimag), game.cpp:7039-7041: favorite-ammo fast path uses list_ammo() with the legacy first-compatible-well fallback. A second well that accepts the same ammo type is not offered without an explicit menu step.
     if( u.ammo_location ) {
@@ -1530,16 +1529,8 @@ static item_reload_option favorite_ammo_or_select(
         }
     }
     // CDF: DDA 7053-7055 resets an empty ammo_location; nothing to reset on a safe_reference
-    // CDF: DDA calls u.select_ammo here (CDF game_menus::inv::select_ammo, 5-3). That selector offers no loose
-    // ammo to a legacy direct-charge gun (sw_619 has a speedloader well and no loose-ammo target), so reload_ui
-    // stays here until the item data is converted (P3-6-3b report, Blocked).
-    return reload_ui::select_ammo( u, it, {
-        .prompt = prompt,
-        .discovery = {
-            .include_empty_mags = empty,
-            .include_potential = false
-        }
-    } );
+    // CDF: DDA calls u.select_ammo here (CDF game_menus::inv::select_ammo, 5-3, 6-6a)
+    return game_menus::inv::select_ammo( u, it, prompt, empty, false );
 }
 
 static bool can_reload_item_or_mods( const avatar &you, const item &itm )
@@ -1772,8 +1763,8 @@ void avatar_action::reload_weapon( bool try_everything )
     if( veh != nullptr ) {
         const turret_data turret = veh->turret_query( u.abs_pos() );
         if( turret.can_reload() ) {
-            // CDF: DDA calls u.select_ammo( turret.base(), true ); reload_ui stays, see favorite_ammo_or_select
-            auto opt = reload_ui::select_ammo( u, turret.base(), { .prompt = true } );
+            // CDF: DDA calls u.select_ammo( turret.base(), true ); here game_menus::inv::select_ammo (6-6a)
+            auto opt = game_menus::inv::select_ammo( u, turret.base(), true );
             if( opt ) {
                 // CDF: P3-6-2a (DDA game.cpp:7246-7256): opt.target is the turret base or one of its gunmods
                 u.assign_activity( std::make_unique<player_activity>(
