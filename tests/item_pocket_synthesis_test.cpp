@@ -176,8 +176,11 @@ TEST_CASE("synthesised pockets spot checks", "[item][pocket][synthesis]") {
     }
     SECTION("usb drive: software pocket") {
         const itype& t = *itype_id("usb_drive");
-        REQUIRE(t.pockets.size() == 1);
-        CHECK(t.pockets.front().type == pocket_type::SOFTWARE);
+        // CDF: BN's digital-media data gives the drive container_data (1 ml for its files) next to
+        // the software pocket, so it carries a CONTAINER pocket as well
+        REQUIRE(t.pockets.size() == 2);
+        CHECK(count_type(t, pocket_type::SOFTWARE) == 1);
+        CHECK(count_type(t, pocket_type::CONTAINER) == 1);
     }
     SECTION("rock: no pockets") { CHECK(itype_id("rock")->pockets.empty()); }
 }

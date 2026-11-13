@@ -6655,6 +6655,10 @@ units::length item::length() const
     }
 
     if( is_corpse() ) {
+        // CDF: a corpse of a volume-less monster (BN's 0 ml hat man hallucination) has no length (-1 mm, DDA rule)
+        if( corpse_volume( corpse ) <= 0_ml ) {
+            return -1_mm;
+        }
         // CDF: corpse_volume( corpse ) replaces DDA's corpse->volume
         return units::default_length_from_volume( corpse_volume( corpse ) );
     }

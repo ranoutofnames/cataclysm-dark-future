@@ -103,7 +103,9 @@ static const std::vector<head_row> head_rows = {
     { "powered_earmuffs", 20, 5, { "head" } },
     { "straw_fedora", 25, 10, { "head" } },
     { "straw_hat", 40, 2, { "head" } },
-    { "tac_helmet", 42, 15, { "head" } },
+    // CDF: BN raised the tactical helmet from 1110 g to 1600 g (BN balance, "at the expense of encumbrance");
+    // the weight-derived head encumbrance goes 15 -> 40
+    { "tac_helmet", 42, 40, { "head" } },
     { "tinfoil_hat", 40, 1, { "head" } },
     { "tophat", 40, 6, { "head" } },
     { "tricorne", 40, 12, { "head" } },

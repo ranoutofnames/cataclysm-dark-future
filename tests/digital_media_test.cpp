@@ -219,8 +219,18 @@ TEST_CASE(
 
 TEST_CASE("mp3_players_spawn_with_preloaded_music", "[digital_media][item]") {
     auto player = item::spawn("mp3");
-    REQUIRE(player->contents.num_item_stacks() == 1);
-    const auto& music = player->contents.front();
+    // CDF: the mp3 has a P3 integral battery MAGAZINE pocket, so its battery is a second content
+    // stack; the music is the one digital file in it
+    const item* found = nullptr;
+    auto files = 0;
+    for (const item* it : player->contents.all_items_top()) {
+        if (is_digital_file(*it)) {
+            found = it;
+            files++;
+        }
+    }
+    REQUIRE(files == 1);
+    const auto& music = *found;
     CHECK(music.typeId() == itype_id("digital_music_collection"));
     CHECK(music.charges == 20);
     CHECK(is_digital_file(music));
