@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
+#include <locale>
 #include <set>
 #include <sstream>
 #include <string>
@@ -87,6 +88,9 @@ auto read_rows() -> std::vector<linkup_row>
 auto pocket_signature( const itype &type ) -> std::string
 {
     std::ostringstream os;
+    // CDF: the hash must not depend on the global C++ locale (localized_compare sets classic, the
+    // startup locale groups digits); the stored hashes are the classic-locale form.
+    os.imbue( std::locale::classic() );
     // The legacy magazines table (what the loader synthesizes a well from, when present).
     os << "magazines:";
     for( const auto &[ammo, ids] : type.magazines ) {

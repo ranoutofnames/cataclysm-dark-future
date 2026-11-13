@@ -2,6 +2,8 @@
 // CDF: owner ruling 2026-10-31: dimensional_anchor(_on), holo_cloak and rm13_armor(_on) keep their
 // integral plutonium pocket (no plutonium magazine item exists), so 18 tools take wells and
 // 5 ids (3 tools + 2 _on variants) are asserted as still integral.
+// CDF: AUTO-282 (RM13PACK1): rm13_armor(_on) gets two wells (plut_pack_large, rm13_battery);
+// the integral pocket is still gone, the other plutonium tools keep one well.
 // Spec: planning\outbox\PL-06f\R4-amendment.md sections 2-4. DDA wells: b4b62254ae2
 // (tool_armor.json, custom_headgear.json, items_holiday.json, rm13_combat_armor.json,
 // mods/aftershock_exoplanet/items/tools.json). CDF-authored test.
@@ -40,21 +42,23 @@ struct tool_expect {
     int initial_charges; // CDF initial_charges (mask_h20survivor: 180, see A4)
 };
 
-// CDF: owner ruling 2026-10-31: plutonium kept; id, CDF max_charges, CDF initial_charges.
+// CDF: owner ruling 2026-10-31: plutonium kept; id, CDF max_charges, CDF initial_charges, and the
+// number of magazine wells (CDF: AUTO-282 gave rm13_armor(_on) two wells: plutonium pack + battery).
 struct integral_expect {
     std::string id;
     int max_charges;
     int initial_charges;
+    size_t wells;
 };
 
 const std::vector<integral_expect> &plutonium_integral()
 {
     static const std::vector<integral_expect> v = {
-        { "dimensional_anchor", 1000, 1000 },
-        { "dimensional_anchor_on", 1000, 1000 },
-        { "holo_cloak", 1000, 500 },
-        { "rm13_armor", 5000, 5000 },
-        { "rm13_armor_on", 5000, 5000 },
+        { "dimensional_anchor", 1000, 1000, 1 },
+        { "dimensional_anchor_on", 1000, 1000, 1 },
+        { "holo_cloak", 1000, 500, 1 },
+        { "rm13_armor", 5000, 5000, 2 },
+        { "rm13_armor_on", 5000, 5000, 2 },
     };
     return v;
 }
@@ -163,14 +167,15 @@ TEST_CASE( "r4_wells_load_for_all_18_and_plutonium_stays_integral", "[filt1][r4]
         CHECK_FALSE( tool->type->tool->ammo_id.empty() );
         CHECK_FALSE( tool->contents.has_pocket_type( pocket_type::MAGAZINE ) );
     }
-    // CDF: PLUT1 (owner ruling 2026-10-31, plutonium kept): the plutonium tools have one well for
-    // their plutonium fuel pack and no integral pocket any more.
+    // CDF: PLUT1 (owner ruling 2026-10-31, plutonium kept): the plutonium tools have wells for
+    // their plutonium fuel pack and no integral pocket any more. CDF: rm13_armor(_on) has two wells
+    // (AUTO-282, RM13PACK1), the others one; the restrictions of the two rm13 wells are checked below.
     for( const integral_expect &e : plutonium_integral() ) {
         CAPTURE( e.id );
         REQUIRE( itype_id( e.id ).is_valid() );
         const item *tool = item::spawn_temporary( itype_id( e.id ) );
         REQUIRE( tool->type->tool );
-        CHECK( wells_of( *tool->type ).size() == 1 );
+        CHECK( wells_of( *tool->type ).size() == e.wells );
         CHECK( tool->type->tool->max_charges == 0 );
         CHECK( tool->type->tool->ammo_id.contains( ammotype( "plutonium" ) ) );
         CHECK_FALSE( tool->contents.has_pocket_type( pocket_type::MAGAZINE ) );
@@ -206,10 +211,13 @@ TEST_CASE( "r4_rebreather_takes_cartridge", "[filt1][r4]" )
         // CDF: the amendment (A3) wants the regenerator refused, but the well is DDA's flag
         // REBREATHER_CART and DDA gives the regenerator that flag (filter.json:96), so it fits.
     }
-    // CDF: PLUT1: rm13_armor has one well, for its plutonium fuel pack (was: well 1 rm13_battery,
-    // well 2 regenerator, plut_cell refused by both).
+    // CDF: AUTO-282 (RM13PACK1): rm13_armor has two wells, well 1 for its plutonium fuel pack and
+    // well 2 for the rm13_battery buffer (the suit draws on the pack first, then the battery).
     const item *rm13 = item::spawn_temporary( itype_id( "rm13_armor" ) );
-    CHECK( wells_of( *rm13->type ).size() == 1 );
+    const std::vector<const pocket_data *> rm13_wells = wells_of( *rm13->type );
+    REQUIRE( rm13_wells.size() == 2 );
+    CHECK( well_matches( *rm13_wells[0], well_expect{ false, "plut_pack_large", "plut_pack_large" } ) );
+    CHECK( well_matches( *rm13_wells[1], well_expect{ false, "rm13_battery", "rm13_battery" } ) );
     CHECK( rm13->type->tool->ammo_id.contains( ammotype( "plutonium" ) ) );
 }
 

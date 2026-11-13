@@ -14,7 +14,7 @@
       },
       "cable_length": 30,
       "charge_rate_mw": 800000,
-      "pockets": "da9292779d71f4fc"
+      "pockets": "5415be8dfcfdd39a"
     },
     "camera": {
       "file": "data/json/items/tool/electronics.json",
@@ -25,7 +25,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 20000,
-      "pockets": "fc207fb29e41daf1"
+      "pockets": "61cff570a9d78d49"
     },
     "camera_pro": {
       "file": "data/json/items/tool/electronics.json",
@@ -36,7 +36,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 50000,
-      "pockets": "33fe692dbf183731"
+      "pockets": "01a15411c4d0c509"
     },
     "cell_phone": {
       "file": "data/json/items/tool/electronics.json",
@@ -47,7 +47,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 20000,
-      "pockets": "9f5fb2c75ae42074"
+      "pockets": "b998f135f8b1beba"
     },
     "cell_phone_flashlight": {
       "file": "data/json/items/tool/electronics.json",
@@ -58,7 +58,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 20000,
-      "pockets": "9f5fb2c75ae42074"
+      "pockets": "b998f135f8b1beba"
     },
     "elec_jackhammer": {
       "file": "data/json/items/tool/workshop.json",
@@ -69,7 +69,7 @@
       },
       "cable_length": 33,
       "charge_rate_mw": 2200000,
-      "pockets": "9ad91533b546729a"
+      "pockets": "c3bf3cc8dba1b0b0"
     },
     "electric_blanket": {
       "file": "data/json/items/tool_armor.json",
@@ -80,7 +80,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 110000,
-      "pockets": "63ce8c32810587db"
+      "pockets": "7afc8b5cdf177983"
     },
     "electric_blanket_on": {
       "file": "data/json/items/tool_armor.json",
@@ -91,7 +91,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 110000,
-      "pockets": "63ce8c32810587db"
+      "pockets": "7afc8b5cdf177983"
     },
     "electric_lantern": {
       "file": "data/json/items/tool/lighting.json",
@@ -102,7 +102,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 20000,
-      "pockets": "14067a37c72258e9"
+      "pockets": "1b7ba5bceb4cafe1"
     },
     "electric_lantern_on": {
       "file": "data/json/items/tool/lighting.json",
@@ -113,7 +113,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 20000,
-      "pockets": "14067a37c72258e9"
+      "pockets": "1b7ba5bceb4cafe1"
     },
     "electric_lighter": {
       "file": "data/json/items/tool/fire.json",
@@ -125,7 +125,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 5000,
-      "pockets": "57d70e3fd9d7cbfb"
+      "pockets": "f1848a42d701eb3f"
     },
     "electrolysis_kit": {
       "file": "data/json/items/tool/science.json",
@@ -136,7 +136,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 300000,
-      "pockets": "3cccdf6784f25ba7"
+      "pockets": "3126b8d6463bd49f"
     },
     "fan": {
       "file": "data/json/items/generic.json",
@@ -169,7 +169,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 20000,
-      "pockets": "bbb66a47621f6fb4"
+      "pockets": "fa41a2ab38f21672"
     },
     "heavy_flashlight_on": {
       "file": "data/json/items/tool/lighting.json",
@@ -180,7 +180,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 20000,
-      "pockets": "bbb66a47621f6fb4"
+      "pockets": "fa41a2ab38f21672"
     },
     "laptop": {
       "file": "data/json/items/tool/electronics.json",
@@ -191,7 +191,7 @@
       },
       "cable_length": 5,
       "charge_rate_mw": 140000,
-      "pockets": "84d5d27f22f4b48c"
+      "pockets": "b048d2ec209202f2"
     },
     "laptop_screen_lit": {
       "file": "data/json/items/tool/electronics.json",
@@ -202,7 +202,7 @@
       },
       "cable_length": 5,
       "charge_rate_mw": 140000,
-      "pockets": "84d5d27f22f4b48c"
+      "pockets": "b048d2ec209202f2"
     },
     "large_repairkit": {
       "file": "data/json/items/tool/workshop.json",
@@ -213,7 +213,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 70000,
-      "pockets": "da9292779d71f4fc"
+      "pockets": "5415be8dfcfdd39a"
     },
     "large_space_heater": {
       "file": "data/json/items/tool/misc.json",
@@ -224,7 +224,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 1000000,
-      "pockets": "a277a3ef824236fd"
+      "pockets": "e98783b6f2e3b7d1"
     },
     "large_space_heater_on": {
       "file": "data/json/items/tool/misc.json",
@@ -235,7 +235,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 1000000,
-      "pockets": "a277a3ef824236fd"
+      "pockets": "e98783b6f2e3b7d1"
     },
     "lightstrip": {
       "file": "data/json/items/tool/lighting.json",
@@ -257,7 +257,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 400000,
-      "pockets": "b174584425162127"
+      "pockets": "c4f115e007be5d1f"
     },
     "microscope": {
       "file": "data/json/items/tool/science.json",
@@ -290,7 +290,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 5000,
-      "pockets": "fc207fb29e41daf1"
+      "pockets": "61cff570a9d78d49"
     },
     "mp3_on": {
       "file": "data/json/items/tool/electronics.json",
@@ -301,7 +301,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 5000,
-      "pockets": "fc207fb29e41daf1"
+      "pockets": "61cff570a9d78d49"
     },
     "polisher": {
       "file": "data/json/items/tool/workshop.json",
@@ -312,7 +312,7 @@
       },
       "cable_length": 5,
       "charge_rate_mw": 1600000,
-      "pockets": "d90e841db243aae5"
+      "pockets": "c459711648ccb9f9"
     },
     "portable_game": {
       "file": "data/json/items/tool/electronics.json",
@@ -323,7 +323,7 @@
       },
       "cable_length": 4,
       "charge_rate_mw": 39000,
-      "pockets": "cf5c05f984fd34a0"
+      "pockets": "4ec046d93646bb96"
     },
     "radio": {
       "file": "data/json/items/tool/radio_tools.json",
@@ -334,7 +334,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 5000,
-      "pockets": "bf2f3e89ef7c0fbc"
+      "pockets": "e0e711d824666cda"
     },
     "radio_on": {
       "file": "data/json/items/tool/radio_tools.json",
@@ -347,7 +347,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 5000,
-      "pockets": "bf2f3e89ef7c0fbc"
+      "pockets": "e0e711d824666cda"
     },
     "reading_light": {
       "file": "data/json/items/tool/lighting.json",
@@ -358,7 +358,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 2000,
-      "pockets": "0e89dba244764c00"
+      "pockets": "1cbcb3de8055b3f6"
     },
     "reading_light_on": {
       "file": "data/json/items/tool/lighting.json",
@@ -369,7 +369,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 2000,
-      "pockets": "0e89dba244764c00"
+      "pockets": "1cbcb3de8055b3f6"
     },
     "rotovap": {
       "file": "data/json/items/tool/science.json",
@@ -391,7 +391,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 84000,
-      "pockets": "c64ff902cb15c967"
+      "pockets": "be9e4b7254afaf7b"
     },
     "small_repairkit": {
       "file": "data/json/items/tool/workshop.json",
@@ -402,7 +402,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 70000,
-      "pockets": "63ce8c32810587db"
+      "pockets": "7afc8b5cdf177983"
     },
     "small_space_heater": {
       "file": "data/json/items/tool/misc.json",
@@ -413,7 +413,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 500000,
-      "pockets": "63ce8c32810587db"
+      "pockets": "7afc8b5cdf177983"
     },
     "small_space_heater_on": {
       "file": "data/json/items/tool/misc.json",
@@ -424,7 +424,7 @@
       },
       "cable_length": 2,
       "charge_rate_mw": 500000,
-      "pockets": "63ce8c32810587db"
+      "pockets": "7afc8b5cdf177983"
     },
     "smart_lamp": {
       "file": "data/json/items/tool/lighting.json",
@@ -435,7 +435,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 6000,
-      "pockets": "0ecb0e972b2f2cda"
+      "pockets": "78d0a1c18a42cad4"
     },
     "smart_lamp_on": {
       "file": "data/json/items/tool/lighting.json",
@@ -446,7 +446,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 6000,
-      "pockets": "0ecb0e972b2f2cda"
+      "pockets": "78d0a1c18a42cad4"
     },
     "smart_phone": {
       "file": "data/json/items/tool/electronics.json",
@@ -457,7 +457,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 20000,
-      "pockets": "d363c0128fd6462f"
+      "pockets": "9e7a6df082c65f83"
     },
     "smart_phone_flashlight": {
       "file": "data/json/items/tool/electronics.json",
@@ -468,7 +468,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 20000,
-      "pockets": "d363c0128fd6462f"
+      "pockets": "9e7a6df082c65f83"
     },
     "toaster": {
       "file": "data/json/items/generic.json",
@@ -490,7 +490,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 5000,
-      "pockets": "bf2f3e89ef7c0fbc"
+      "pockets": "e0e711d824666cda"
     },
     "vibrator": {
       "file": "data/json/items/tool/electronics.json",
@@ -501,7 +501,7 @@
       },
       "cable_length": 3,
       "charge_rate_mw": 10000,
-      "pockets": "14067a37c72258e9"
+      "pockets": "1b7ba5bceb4cafe1"
     }
   }
 }
