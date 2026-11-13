@@ -4670,7 +4670,7 @@
           { "item": "usp_45", "ammo-item": "45_acp", "charges": 12, "container-item": "holster" },
           { "item": "legpouch_large", "contents-group": "army_mags_usp45" },
           { "item": "ballistic_vest_light", "contents-group": [ "army_mags_rm11b" ] },
-          { "item": "ceramic_ballistic_plate" }
+          { "item": "ceramic_ballistic_plate", "custom-flags": [ "no_auto_equip" ] }
         ]
       },
       "male": [ "boxer_shorts" ],
