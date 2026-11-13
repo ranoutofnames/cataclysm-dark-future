@@ -29,6 +29,7 @@
 #include "character.h"
 #include "coordinates.h"
 #include "debug.h"
+#include "digital_media.h"
 #include "enums.h"
 #include "flag.h"
 #include "flat_set.h"
@@ -409,6 +410,12 @@ ret_val<void> item::can_contain( const item &it, int &copies_remaining, const bo
         // or does this already contain it?
         return ret_val<void>::make_failure( "can't put a container into itself" );
     }
+    // BN: digital files only go into digital storage media, and digital storage takes nothing else
+    if( is_digital_file( it ) || has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
+        return has_flag( flag_id( "DIGITAL_STORAGE" ) ) && is_digital_file( it ) ?
+               ret_val<void>::make_success() :
+               ret_val<void>::make_failure( "digital files need digital storage media" );
+    }
     // CDF: any container pocket, carry or not (DDA is_container())
     if( nested && !has_pocket_type( pocket_type::CONTAINER ) ) {
         return ret_val<void>::make_failure();
@@ -502,6 +509,10 @@ pocket_choice item::best_pocket( const item &it, const item *avoid, const bool a
 
 bool item::spill_contents( Character &c )
 {
+    // BN: digital storage media hold files, nothing to spill
+    if( has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
+        return true;
+    }
     // CDF: any container pocket, carry or not (DDA is_container())
     if( ( !has_pocket_type( pocket_type::CONTAINER ) && !is_magazine() &&
           !has_pocket_type( pocket_type::MAGAZINE_WELL ) ) ||
@@ -521,6 +532,10 @@ bool item::spill_contents( Character &c )
 
 bool item::spill_contents( const tripoint_bub_ms &pos )
 {
+    // BN: digital storage media hold files, nothing to spill
+    if( has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
+        return true;
+    }
     // CDF: any container pocket, carry or not (DDA is_container())
     if( ( !has_pocket_type( pocket_type::CONTAINER ) && !is_magazine() &&
           !has_pocket_type( pocket_type::MAGAZINE_WELL ) ) ||
