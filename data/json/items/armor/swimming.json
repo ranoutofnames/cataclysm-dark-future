@@ -212,11 +212,12 @@
     "color": "light_blue",
     "covers": [ "eyes" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 10,
     "warmth": 10,
     "material_thickness": 1,
     "environmental_protection": 4,
-    "flags": [ "WATER_FRIENDLY", "SWIM_GOGGLES" ]
+    "flags": [ "WATER_FRIENDLY", "SWIM_GOGGLES", "SKINTIGHT" ]
   },
   {
     "id": "wetsuit_gloves",

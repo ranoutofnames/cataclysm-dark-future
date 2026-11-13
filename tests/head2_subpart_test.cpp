@@ -443,17 +443,15 @@ TEST_CASE( "head2_gas_mask_wear", "[armor][head2]" )
         detached_ptr<item> ball = item::spawn( itype_id( "hat_ball" ) );
         detached_ptr<item> hard = item::spawn( itype_id( "hat_hard" ) );
         CHECK( guy.can_wear( *ball ).success() );
-        // CDF: a hard hat over the mask is refused for another reason than the helmet check: both are rigid on the
-        // forehead (CDF's portion rigidity comes from the item-wide materials, the mask is plastic; DDA's mask
-        // forehead is rubber). Pinned as it is, reported to the orchestrator; hat_ball (not rigid) goes over it.
+        // FIXD: the mask forehead and head harness portions are soft like DDA's (neoprene and cotton
+        // portion materials, the stand-ins for DDA's butyl rubber and cotton), so a hard hat goes over the
+        // mask and the mask goes over a hard hat; this was refused (both rigid on the forehead) before.
         const ret_val<bool> hard_over = guy.can_wear( *hard );
-        CHECK_FALSE( hard_over.success() );
-        CHECK( hard_over.str().find( "more than one rigid item on forehead" ) != std::string::npos );
+        CHECK( hard_over.success() );
         clear_character( *guy.as_player(), true );
         guy.wear_item( std::move( hard ), false );
         detached_ptr<item> m2 = item::spawn( itype_id( mask ) );
         const ret_val<bool> mask_over = guy.can_wear( *m2 );
-        CHECK_FALSE( mask_over.success() );
-        CHECK( mask_over.str().find( "more than one rigid item on forehead" ) != std::string::npos );
+        CHECK( mask_over.success() );
     }
 }

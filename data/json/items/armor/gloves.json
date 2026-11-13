@@ -704,7 +704,7 @@
     "encumbrance": 1,
     "material_thickness": 1,
     "environmental_protection": 6,
-    "flags": [ "WATER_FRIENDLY", "WATERPROOF", "SKINTIGHT", "POWERARMOR_COMPATIBLE" ]
+    "flags": [ "WATER_FRIENDLY", "WATERPROOF", "SKINTIGHT", "POWERARMOR_COMPATIBLE", "SOFT" ]
   },
   {
     "id": "gloves_plate",
@@ -812,7 +812,7 @@
     "material_thickness": 3,
     "environmental_protection": 8,
     "qualities": [ [ "HV_INSULATION", 1 ] ],
-    "flags": [ "WATERPROOF" ]
+    "flags": [ "WATERPROOF", "SOFT" ]
   },
   {
     "id": "gloves_survivor",
@@ -834,7 +834,7 @@
     "warmth": 15,
     "material_thickness": 3,
     "environmental_protection": 3,
-    "flags": [ "VARSIZE", "WATERPROOF", "STURDY" ]
+    "flags": [ "VARSIZE", "WATERPROOF", "STURDY", "SOFT" ]
   },
   {
     "id": "gloves_tactical",

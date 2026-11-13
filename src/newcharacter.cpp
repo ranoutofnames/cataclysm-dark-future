@@ -573,6 +573,46 @@ void avatar::randomize_cosmetics()
     } );
 }
 
+void newcharacter::add_profession_items( avatar &u, std::vector<detached_ptr<item>> &&prof_items,
+        std::vector<detached_ptr<item>> &overflow )
+{
+    // Two passes (CDF P1c): the clothes go on first, because the carried kit lives in their pockets.
+    std::vector<detached_ptr<item>> carried_kit;
+    for( detached_ptr<item> &it : prof_items ) {
+        // TODO: debugmsg if food that isn't a seed is inedible
+        if( it->has_flag( json_flag_no_auto_equip ) ) {
+            it->unset_flag( json_flag_no_auto_equip );
+            carried_kit.push_back( std::move( it ) );
+        } else if( it->has_flag( json_flag_auto_wield ) ) {
+            it->unset_flag( json_flag_auto_wield );
+            if( !u.is_armed() ) {
+                u.wield( std::move( it ) );
+            } else {
+                carried_kit.push_back( std::move( it ) );
+            }
+        } else if( it->is_armor() ) {
+            // DDA: an armor item that cannot be worn is carried instead of being lost
+            // (wear_item hands the item back when it cannot be worn)
+            detached_ptr<item> not_worn = u.wear_item( std::move( it ), false );
+            if( not_worn ) {
+                carried_kit.push_back( std::move( not_worn ) );
+            }
+        } else {
+            carried_kit.push_back( std::move( it ) );
+        }
+    }
+    for( detached_ptr<item> &it : carried_kit ) {
+        if( !it ) {
+            continue;
+        }
+        ret_val<item *> added = u.try_add( std::move( it ) );
+        if( !added.success() ) {
+            // nothing fits it: it waits at the starting position (see game::start_game)
+            overflow.push_back( std::move( it ) );
+        }
+    }
+}
+
 bool avatar::create( character_type type, const std::string &tempname )
 {
     // TODO: This block should not be needed
@@ -780,8 +820,6 @@ bool avatar::create( character_type type, const std::string &tempname )
 
     std::vector<detached_ptr<item>> prof_items = prof->items( male, get_mutations() );
 
-    // Two passes (CDF P1c): the clothes go on first, because the carried kit lives in their pockets.
-    std::vector<detached_ptr<item>> carried_kit;
     for( detached_ptr<item> &it : prof_items ) {
         if( it->has_flag( STATIC( flag_id( "WET" ) ) ) ) {
             it->activate();
@@ -790,34 +828,8 @@ bool avatar::create( character_type type, const std::string &tempname )
         if( it->is_book() ) {
             items_identified.insert( it->typeId() );
         }
-        // TODO: debugmsg if food that isn't a seed is inedible
-        if( it->has_flag( json_flag_no_auto_equip ) ) {
-            it->unset_flag( json_flag_no_auto_equip );
-            carried_kit.push_back( std::move( it ) );
-        } else if( it->has_flag( json_flag_auto_wield ) ) {
-            it->unset_flag( json_flag_auto_wield );
-            if( !is_armed() ) {
-                wield( std::move( it ) );
-            } else {
-                carried_kit.push_back( std::move( it ) );
-            }
-        } else if( it->is_armor() ) {
-            // TODO: debugmsg if wearing fails
-            wear_item( std::move( it ), false );
-        } else {
-            carried_kit.push_back( std::move( it ) );
-        }
     }
-    for( detached_ptr<item> &it : carried_kit ) {
-        if( !it ) {
-            continue;
-        }
-        ret_val<item *> added = try_add( std::move( it ) );
-        if( !added.success() ) {
-            // nothing fits it: it waits at the starting position (see game::start_game)
-            starting_overflow.push_back( std::move( it ) );
-        }
-    }
+    newcharacter::add_profession_items( *this, std::move( prof_items ), starting_overflow );
 
     std::vector<addiction> prof_addictions = prof->addictions();
     for( std::vector<addiction>::const_iterator iter = prof_addictions.begin();

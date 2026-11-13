@@ -1,10 +1,14 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
+#include "detached_ptr.h"
 #include "type_id.h"
 
 class Character;
+class avatar;
+class item;
 
 struct points_left {
     int stat_points = 0;
@@ -45,6 +49,13 @@ void add_traits( Character &ch );
 void add_traits( Character &ch, points_left &points );
 /** Adds configured default mutation traits when their mutation type is missing. */
 auto add_default_mutation_type_traits( Character &ch ) -> void;
+/**
+ * Wears or carries the starting items of a profession (the clothes first, the carried kit
+ * second). An armor item that cannot be worn is carried instead of being lost (DDA), and an
+ * item nothing can hold goes to `overflow`.
+ */
+void add_profession_items( avatar &u, std::vector<detached_ptr<item>> &&prof_items,
+                           std::vector<detached_ptr<item>> &overflow );
 
 /** Returns true if character has a conflicting trait to the bionic. */
 bool bionic_has_conflict( const Character &ch, const bionic_id &b );

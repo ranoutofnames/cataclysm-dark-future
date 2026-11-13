@@ -1532,6 +1532,7 @@
     "color": "light_gray",
     "covers": [ "mouth" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 20,
     "warmth": 10,
     "material_thickness": 2,
@@ -1556,7 +1557,7 @@
     "category": "clothing",
     "name": { "str": "gas mask" },
     "description": "A full gas mask that covers the face and eyes.  Provides excellent protection from smoke, teargas, and other contaminants.  It must be prepared before use.",
-    "flags": [ "SLEEP_IGNORE", "HELMET_COMPAT" ],
+    "flags": [ "SLEEP_IGNORE", "HELMET_COMPAT", "SKINTIGHT" ],
     "weight": "897 g",
     "volume": "1 L",
     "price": "49 USD",
@@ -1575,24 +1576,28 @@
       {
         "covers": [ "mouth" ],
         "specifically_covers": [ "mouth_lips", "mouth_nose", "mouth_chin" ],
+        "material": [ { "type": "neoprene", "covered_by_mat": 100 }, { "type": "plastic", "covered_by_mat": 30 } ],
         "coverage": 100,
         "encumbrance": [ 20, 40 ]
       },
       {
         "covers": [ "mouth" ],
         "specifically_covers": [ "mouth_cheeks" ],
+        "material": [ { "type": "neoprene", "covered_by_mat": 100 }, { "type": "plastic", "covered_by_mat": 30 } ],
         "coverage": 100,
         "encumbrance": 20
       },
       {
         "covers": [ "head" ],
         "specifically_covers": [ "head_crown", "head_nape" ],
+        "material": [ { "type": "cotton", "covered_by_mat": 100 } ],
         "coverage": 25,
         "encumbrance": 0
       },
       {
         "covers": [ "head" ],
         "specifically_covers": [ "head_forehead" ],
+        "material": [ { "type": "neoprene", "covered_by_mat": 100 } ],
         "coverage": 100,
         "encumbrance": 20
       }
@@ -1638,24 +1643,28 @@
       {
         "covers": [ "mouth" ],
         "specifically_covers": [ "mouth_lips", "mouth_nose", "mouth_chin" ],
+        "material": [ { "type": "neoprene", "covered_by_mat": 100 }, { "type": "plastic", "covered_by_mat": 30 } ],
         "coverage": 100,
         "encumbrance": [ 20, 40 ]
       },
       {
         "covers": [ "mouth" ],
         "specifically_covers": [ "mouth_cheeks" ],
+        "material": [ { "type": "neoprene", "covered_by_mat": 100 }, { "type": "plastic", "covered_by_mat": 30 } ],
         "coverage": 100,
         "encumbrance": 20
       },
       {
         "covers": [ "head" ],
         "specifically_covers": [ "head_crown", "head_nape" ],
+        "material": [ { "type": "cotton", "covered_by_mat": 100 } ],
         "coverage": 25,
         "encumbrance": 0
       },
       {
         "covers": [ "head" ],
         "specifically_covers": [ "head_forehead" ],
+        "material": [ { "type": "neoprene", "covered_by_mat": 100 } ],
         "coverage": 100,
         "encumbrance": 20
       }
@@ -1769,6 +1778,7 @@
     "color": "dark_gray",
     "covers": [ "mouth", "eyes" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 30,
     "warmth": 15,
     "material_thickness": 3,
@@ -1863,6 +1873,7 @@
     "color": "dark_gray",
     "covers": [ "mouth", "eyes" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 25,
     "warmth": 15,
     "material_thickness": 3,
@@ -1915,7 +1926,7 @@
     "color": "dark_gray",
     "name": { "str": "pair of light amp goggles", "str_pl": "pairs of light amp goggles" },
     "description": "A pair of battery-powered goggles that amplify ambient light, allowing you to see in the dark.  Use it to turn them on.",
-    "flags": [ "FRAGILE", "HELMET_COMPAT", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ],
+    "flags": [ "FRAGILE", "HELMET_COMPAT", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS", "OUTER" ],
     "price": "920 USD",
     "price_postapoc": "35 USD",
     "material": [ "plastic", "steel" ],
@@ -1958,7 +1969,7 @@
     "type": "TOOL_ARMOR",
     "name": { "str_pl": "pairs of light amp goggles (on)", "str": "pair of light amp goggles (on)" },
     "description": "A pair of battery-powered light amplifying goggles with an infrared illuminator, allowing you to see in the dark.  It is turned on, and continually draining batteries.  Use it to turn them off.",
-    "flags": [ "GNV_EFFECT", "FRAGILE", "TRADER_AVOID" ],
+    "flags": [ "GNV_EFFECT", "FRAGILE", "TRADER_AVOID", "OUTER" ],
     "//": "2019 commercial models can operate at under 0.375W with the IR illuminator on",
     "power_draw": 375,
     "revert_to": "goggles_nv",
@@ -1981,7 +1992,7 @@
     "color": "dark_gray",
     "name": { "str_sp": "enhanced light amp goggles" },
     "description": "Modern light enhancement goggles that greatly amplify ambient light, allowing you to see in the dark almost perfectly, all while looking properly tactical.  Use it to turn them on.",
-    "flags": [ "FRAGILE", "HELMET_COMPAT", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS" ],
+    "flags": [ "FRAGILE", "HELMET_COMPAT", "ALLOWS_NATURAL_ATTACKS", "ALLOWS_HORNS", "OUTER" ],
     "price": "920 USD",
     "price_postapoc": "35 USD",
     "material": [ "plastic", "steel" ],
@@ -2024,7 +2035,7 @@
     "type": "TOOL_ARMOR",
     "name": { "str_sp": "enhanced light amp goggles (on)" },
     "description": "Modern light enhancement goggles that greatly amplify ambient light, allowing you to see in the dark almost perfectly, all while looking properly tactical.  It is turned on, and continually draining batteries.  Use it to turn them off.",
-    "flags": [ "GNVE_EFFECT", "FRAGILE", "TRADER_AVOID" ],
+    "flags": [ "GNVE_EFFECT", "FRAGILE", "TRADER_AVOID", "OUTER" ],
     "power_draw": 375,
     "revert_to": "goggles_nv_enhanced",
     "use_action": {
@@ -2198,6 +2209,7 @@
     "environmental_protection": 10,
     "encumbrance": 30,
     "coverage": 75,
+    "rigid_layer_only": true,
     "material_thickness": 2,
     "//": "CDF: P3-2 DDA magazine port: dropped keys magazines (now in pocket_data)"
   },
@@ -3475,6 +3487,7 @@
     "armor_portion_data": [
       {
         "covers": [ "eyes", "mouth" ],
+        "rigid_layer_only": true,
         "coverage": 95,
         "encumbrance": 20
       },

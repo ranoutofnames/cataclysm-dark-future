@@ -15,6 +15,7 @@
     "color": "light_gray",
     "covers": [ "eyes" ],
     "coverage": 80,
+    "rigid_layer_only": true,
     "encumbrance": 10,
     "material_thickness": 1,
     "environmental_protection": 1,
@@ -59,11 +60,12 @@
     "color": "dark_gray",
     "covers": [ "eyes" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 1,
     "material_thickness": 1,
     "environmental_protection": 1,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "FANCY", "WATER_FRIENDLY", "SUN_GLASSES", "FRAGILE" ]
+    "flags": [ "FANCY", "WATER_FRIENDLY", "SUN_GLASSES", "FRAGILE", "SKINTIGHT" ]
   },
   {
     "id": "fitover_sunglasses",
@@ -81,6 +83,7 @@
     "color": "dark_gray",
     "covers": [ "eyes" ],
     "coverage": 90,
+    "rigid_layer_only": true,
     "encumbrance": 1,
     "material_thickness": 1,
     "environmental_protection": 1,
@@ -103,12 +106,13 @@
     "color": "dark_gray",
     "covers": [ "eyes" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 5,
     "warmth": 5,
     "material_thickness": 3,
     "environmental_protection": 4,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "WATER_FRIENDLY", "SUN_GLASSES" ]
+    "flags": [ "WATER_FRIENDLY", "SUN_GLASSES", "SKINTIGHT" ]
   },
   {
     "id": "glasses_bifocal",
@@ -126,10 +130,11 @@
     "color": "cyan",
     "covers": [ "eyes" ],
     "coverage": 75,
+    "rigid_layer_only": true,
     "material_thickness": 1,
     "environmental_protection": 1,
     "use_action": { "type": "firestarter", "moves": 1000, "moves_slow": 25000, "need_sunlight": true },
-    "flags": [ "WATER_FRIENDLY", "FIRESTARTER", "FIX_NEARSIGHT", "FIX_FARSIGHT", "FRAGILE" ]
+    "flags": [ "WATER_FRIENDLY", "FIRESTARTER", "FIX_NEARSIGHT", "FIX_FARSIGHT", "FRAGILE", "SKINTIGHT" ]
   },
   {
     "id": "glasses_eye",
@@ -147,9 +152,10 @@
     "color": "cyan",
     "covers": [ "eyes" ],
     "coverage": 75,
+    "rigid_layer_only": true,
     "material_thickness": 1,
     "environmental_protection": 1,
-    "flags": [ "WATER_FRIENDLY", "FIX_NEARSIGHT", "FRAGILE" ]
+    "flags": [ "WATER_FRIENDLY", "FIX_NEARSIGHT", "FRAGILE", "SKINTIGHT" ]
   },
   {
     "id": "glasses_monocle",
@@ -168,9 +174,10 @@
     "color": "cyan",
     "covers": [ "eyes" ],
     "coverage": 20,
+    "rigid_layer_only": true,
     "material_thickness": 1,
     "environmental_protection": 1,
-    "flags": [ "SUPER_FANCY", "FIX_NEARSIGHT", "FRAGILE" ]
+    "flags": [ "SUPER_FANCY", "FIX_NEARSIGHT", "FRAGILE", "SKINTIGHT" ]
   },
   {
     "id": "glasses_reading",
@@ -188,10 +195,11 @@
     "color": "cyan",
     "covers": [ "eyes" ],
     "coverage": 75,
+    "rigid_layer_only": true,
     "material_thickness": 1,
     "environmental_protection": 1,
     "use_action": { "type": "firestarter", "moves": 1000, "moves_slow": 25000, "need_sunlight": true },
-    "flags": [ "WATER_FRIENDLY", "FIRESTARTER", "FIX_FARSIGHT", "FRAGILE" ]
+    "flags": [ "WATER_FRIENDLY", "FIRESTARTER", "FIX_FARSIGHT", "FRAGILE", "SKINTIGHT" ]
   },
   {
     "id": "glasses_safety",
@@ -210,6 +218,7 @@
     "color": "light_gray",
     "covers": [ "eyes" ],
     "coverage": 95,
+    "rigid_layer_only": true,
     "encumbrance": 5,
     "warmth": 5,
     "material_thickness": 2,
@@ -233,6 +242,7 @@
     "color": "dark_gray",
     "covers": [ "eyes" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 15,
     "warmth": 50,
     "material_thickness": 2,
@@ -256,6 +266,7 @@
     "color": "dark_gray",
     "covers": [ "eyes" ],
     "coverage": 100,
+    "rigid_layer_only": true,
     "encumbrance": 60,
     "warmth": 10,
     "material_thickness": 4,
@@ -279,11 +290,12 @@
     "color": "light_gray",
     "covers": [ "eyes" ],
     "coverage": 90,
+    "rigid_layer_only": true,
     "encumbrance": 9,
     "warmth": 5,
     "material_thickness": 1,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "WATER_FRIENDLY", "SUN_GLASSES" ]
+    "flags": [ "WATER_FRIENDLY", "SUN_GLASSES", "SKINTIGHT" ]
   },
   {
     "id": "sunglasses",
@@ -301,11 +313,12 @@
     "color": "dark_gray",
     "covers": [ "eyes" ],
     "coverage": 85,
+    "rigid_layer_only": true,
     "encumbrance": 1,
     "material_thickness": 1,
     "environmental_protection": 1,
     "qualities": [ [ "GLARE", 1 ] ],
-    "flags": [ "WATER_FRIENDLY", "SUN_GLASSES", "FRAGILE" ]
+    "flags": [ "WATER_FRIENDLY", "SUN_GLASSES", "FRAGILE", "SKINTIGHT" ]
   },
   {
     "id": "survivor_goggles",

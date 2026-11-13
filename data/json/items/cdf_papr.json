@@ -86,7 +86,7 @@
     "environmental_protection_with_filter": 16,
     "use_action": "PAPR_MASK_ACTIVATE",
     "flags": [ "SLEEP_IGNORE", "PAPR_MASK" ],
-    "armor_portion_data": [ { "covers": [ "mouth" ], "coverage": 100, "encumbrance": 10 } ]
+    "armor_portion_data": [ { "covers": [ "mouth" ], "coverage": 100, "encumbrance": 10, "rigid_layer_only": true } ]
   },
   {
     "id": "military_papr_mask",

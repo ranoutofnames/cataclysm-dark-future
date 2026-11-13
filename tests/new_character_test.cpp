@@ -26,6 +26,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -112,7 +113,9 @@ struct failure {
 namespace std {
 template <> struct less<failure> {
     auto operator()(const failure& lhs, const failure& rhs) const -> bool {
-        return lhs.prof < rhs.prof;
+        // by profession, item and reason: a profession can fail with more than one item
+        return std::tie(lhs.prof, lhs.item_name, lhs.reason) <
+               std::tie(rhs.prof, rhs.item_name, rhs.reason);
     }
 };
 } // namespace std
@@ -246,23 +249,32 @@ TEST_CASE("starting_items", "[slow]") {
 
                     for (detached_ptr<item>& det_it : items) {
                         item* it = &*det_it;
+                        // read before the item can be moved: the label must be the item itself
+                        const itype_id it_id = it->typeId();
                         const bool is_food =
                             !it->is_seed() && it->is_food() && !ch.can_eat(*it).success()
                             && control.can_eat(*it).success();
-                        // CDF: per-portion rigidity (DDA) makes the random survivor
-                        // jacket_leather_mod (leather + iron on the arms) conflict with
-                        // armguard_scrap; the combination is random in
-                        // survivorzed_tops/survivorzed_extra, so skip that one item.
-                        const bool rigid_conflict_ok =
-                            prof->ident().str() == "RNG_SURVIVOR"
-                            && it->typeId().str() == "armguard_scrap";
-                        const bool is_armor =
-                            it->is_armor() && ch.wear_item(std::move(det_it), false)
-                            && !rigid_conflict_ok;
+                        // RNG_SURVIVOR's kit is random (survivorzed_head x survivorzed_extra x
+                        // ...), so two rigid pieces on the same sub-location can come up together
+                        // (DDA's own rigid rule does the same). The real flow carries what it
+                        // cannot wear, see starting_items_that_cannot_be_worn_are_carried, and
+                        // DDA's starting_items does not wear items at all.
+                        const bool rigid_conflict_ok = prof->ident().str() == "RNG_SURVIVOR";
+                        // newcharacter::add_profession_items carries a no_auto_equip item in
+                        // the kit instead of wearing it (DDA add_profession_items)
+                        const bool wearable = it->is_armor()
+                                              && !it->has_flag(flag_id("no_auto_equip"));
+                        // An item that cannot be worn is handed back, keep it alive until the
+                        // end of this iteration so it is neither destroyed nor read after free.
+                        detached_ptr<item> not_worn;
+                        if (wearable) {
+                            not_worn = ch.wear_item(std::move(det_it), false);
+                        }
+                        const bool is_armor = static_cast<bool>(not_worn) && !rigid_conflict_ok;
                         // Seeds don't count- they're for growing things, not eating
                         if (is_food || is_armor) {
                             failures.insert(
-                                failure{prof->ident(), ch.get_mutations(), it->typeId(),
+                                failure{prof->ident(), ch.get_mutations(), it_id,
                                         is_food ? "Couldn't eat it" : "Couldn't wear it."});
                         }
 
@@ -294,4 +306,81 @@ TEST_CASE("starting_items", "[slow]") {
     }
     INFO(failure_messages.str());
     REQUIRE(failures.empty());
+}
+
+TEST_CASE("starting_items_that_cannot_be_worn_are_carried", "[new_character]") {
+    clear_all_state();
+    avatar& ch = get_avatar();
+    ch = get_sanitized_player();
+    g->scen = scenario::generic();
+
+    // Two rigid helmets cannot be worn together: the second one must not be lost.
+    std::vector<detached_ptr<item>> items;
+    items.push_back(item::spawn("helmet_army"));
+    items.push_back(item::spawn("helmet_army"));
+    std::vector<detached_ptr<item>> overflow;
+    newcharacter::add_profession_items(ch, std::move(items), overflow);
+
+    int total = 0;
+    int worn = 0;
+    ch.visit_items([&](item* it) -> VisitResponse {
+        if (it->typeId().str() == "helmet_army") {
+            total++;
+        }
+        return VisitResponse::NEXT;
+    });
+    for (const item* it : ch.worn) {
+        if (it->typeId().str() == "helmet_army") {
+            worn++;
+        }
+    }
+    for (const detached_ptr<item>& it : overflow) {
+        if (it && it->typeId().str() == "helmet_army") {
+            total++;
+        }
+    }
+    CHECK(worn == 1);
+    CHECK(total == 2);
+}
+
+// FIXD: BN's "You're already wearing footwear!" rule is gone; DDA decides by the rigid test, the
+// layer and the per-type limit (DDA Character::can_wear, src/character_attire.cpp:240-275).
+TEST_CASE("armor_riot_and_boots_combat_can_be_worn_together", "[armor][fixd][p3]") {
+    clear_all_state();
+    avatar& ch = get_avatar();
+    ch = get_sanitized_player();
+    g->scen = scenario::generic();
+
+    SECTION("armor_riot then boots_combat") {
+        CHECK(ch.wear_item(item::spawn("armor_riot"), false) == nullptr);
+        detached_ptr<item> boots = item::spawn("boots_combat");
+        const ret_val<bool> ok = ch.can_wear(*boots);
+        INFO(ok.str());
+        CHECK(ok.success());
+        CHECK(ch.wear_item(std::move(boots), false) == nullptr);
+    }
+    SECTION("boots_combat then armor_riot") {
+        CHECK(ch.wear_item(item::spawn("boots_combat"), false) == nullptr);
+        detached_ptr<item> riot = item::spawn("armor_riot");
+        const ret_val<bool> ok = ch.can_wear(*riot);
+        INFO(ok.str());
+        CHECK(ok.success());
+        CHECK(ch.wear_item(std::move(riot), false) == nullptr);
+    }
+    // DDA has no "already wearing footwear" rule: two pairs of ordinary (soft) boots go on, the
+    // per-type limit (MAX_WORN_PER_TYPE) refuses a third pair of the same kind.
+    SECTION("ordinary boots follow the per-type limit, not a footwear rule") {
+        CHECK(ch.wear_item(item::spawn("boots_combat"), false) == nullptr);
+        CHECK(ch.wear_item(item::spawn("boots_combat"), false) == nullptr);
+        detached_ptr<item> third = item::spawn("boots_combat");
+        CHECK_FALSE(ch.can_wear(*third).success());
+    }
+    // Two rigid foot items still conflict (DDA rigid_test on the sub-parts).
+    SECTION("two rigid boots are refused by the rigid rule") {
+        CHECK(ch.wear_item(item::spawn("boots_plate"), false) == nullptr);
+        detached_ptr<item> second = item::spawn("boots_steel");
+        const ret_val<bool> res = ch.can_wear(*second);
+        INFO(res.str());
+        CHECK_FALSE(res.success());
+    }
 }
