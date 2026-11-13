@@ -156,10 +156,11 @@
   },
   {
     "id": "8x40_speedloader5",
+    "//": "Retains old ID for compatibility",
     "looks_like": "38_speedloader",
     "type": "MAGAZINE",
     "name": { "str": "RMGS5 8x40mm speedloader" },
-    "description": "This speedloader, made by Rivtech for use with RM99 revolver, can hold 5 rounds of 8x40mm caseless rounds and quickly reload a compatible revolver.",
+    "description": "This speedloader, made by Rivtech for use with RM99 revolver, can hold 6 rounds of 8x40mm caseless rounds and quickly reload a compatible revolver.",
     "weight": "92 g",
     "volume": "250 ml",
     "price": "80 USD",
@@ -173,9 +174,9 @@
       {
         "pocket_type": "MAGAZINE",
         "rigid": true,
-        "ammo_restriction": { "8x40mm": 5 }
+        "ammo_restriction": { "8x40mm": 6 }
       }
     ],
-    "//": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data)"
+    "//2": "CDF: P3-2 DDA magazine port: dropped keys capacity (now in pocket_data); upstream BN capacity 5 -> 6 taken as the pocket restriction"
   }
 ]

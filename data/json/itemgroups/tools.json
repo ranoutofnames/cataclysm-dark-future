@@ -168,7 +168,8 @@
       [ "chem_hexamine", 10 ],
       [ "esbit_stove", 15 ],
       [ "mess_tin", 10 ],
-      { "item": "gaiter_boot", "prob": 5 }
+      { "item": "gaiter_boot", "prob": 5 },
+      [ "billybass", 5 ]
     ]
   },
   {
