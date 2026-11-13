@@ -317,6 +317,25 @@
     "flags": [ "VARSIZE", "SKINTIGHT" ]
   },
   {
+    "id": "test_mouth_encumbrance_100",
+    "type": "ARMOR",
+    "name": { "str": "TEST mouth guard" },
+    "description": "A test-only mouth covering with 100 encumbrance, used to reach the stamina clamp threshold.",
+    "weight": "10 g",
+    "volume": "1 ml",
+    "price": "1 USD",
+    "material": [ "cotton" ],
+    "symbol": "[",
+    "looks_like": "scarf_fur",
+    "color": "white",
+    "covers": [ "mouth" ],
+    "coverage": 100,
+    "encumbrance": 100,
+    "warmth": 0,
+    "material_thickness": 1,
+    "flags": [ "VARSIZE" ]
+  },
+  {
     "id": "test_noslip_boots",
     "type": "ARMOR",
     "name": { "str": "TEST pair of non-slip boots", "str_pl": "TEST pairs of non-slip boots" },

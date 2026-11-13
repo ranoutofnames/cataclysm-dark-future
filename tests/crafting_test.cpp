@@ -392,28 +392,45 @@ TEST_CASE("tools use charge to craft", "[crafting][charge]") {
         // - 10 charges of soldering iron
         // - 10 charges of surface heat
 
+        // CDF: P3-L1C made hotplate and soldering_iron link_up tools with no battery pocket, so bare
+        // spawn charges are invisible. Both tools are powered by a UPS mod, as in DDA
+        // crafting_test.cpp:1040-1064 and the UPS sections below.
         WHEN("each tool has enough charges") {
-            tools.push_back(item::spawn("hotplate", calendar::start_of_cataclysm, 20));
-            tools.push_back(item::spawn("soldering_iron", calendar::start_of_cataclysm, 20));
+            detached_ptr<item> hotplate = item::spawn("hotplate", calendar::start_of_cataclysm, 0);
+            hotplate->put_in(item::spawn("battery_ups"));
+            tools.push_back(std::move(hotplate));
+            detached_ptr<item> soldering_iron =
+                item::spawn("soldering_iron", calendar::start_of_cataclysm, 0);
+            soldering_iron->put_in(item::spawn("battery_ups"));
+            tools.push_back(std::move(soldering_iron));
+            tools.push_back(item::spawn("UPS_off", calendar::start_of_cataclysm, 10));
+            tools.push_back(item::spawn("UPS_off", calendar::start_of_cataclysm, 10));
 
             THEN("crafting succeeds, and uses charges from each tool") {
                 int turns = actually_test_craft(recipe_id("carver_off"), tools, INT_MAX);
                 CAPTURE(turns);
-                CHECK(get_remaining_charges("hotplate") == 10);
-                CHECK(get_remaining_charges("soldering_iron") == 10);
+                CHECK(get_remaining_charges("UPS_off") == 0);
             }
         }
 
         WHEN("multiple tools have enough combined charges") {
-            tools.emplace_back(item::spawn("hotplate", calendar::start_of_cataclysm, 5));
-            tools.emplace_back(item::spawn("hotplate", calendar::start_of_cataclysm, 5));
-            tools.emplace_back(item::spawn("soldering_iron", calendar::start_of_cataclysm, 5));
-            tools.emplace_back(item::spawn("soldering_iron", calendar::start_of_cataclysm, 5));
+            detached_ptr<item> hotplate = item::spawn("hotplate", calendar::start_of_cataclysm, 0);
+            hotplate->put_in(item::spawn("battery_ups"));
+            tools.push_back(std::move(hotplate));
+            detached_ptr<item> hotplate2 = item::spawn("hotplate", calendar::start_of_cataclysm, 0);
+            hotplate2->put_in(item::spawn("battery_ups"));
+            tools.push_back(std::move(hotplate2));
+            detached_ptr<item> soldering_iron =
+                item::spawn("soldering_iron", calendar::start_of_cataclysm, 0);
+            soldering_iron->put_in(item::spawn("battery_ups"));
+            tools.push_back(std::move(soldering_iron));
+            tools.push_back(item::spawn("UPS_off", calendar::start_of_cataclysm, 5));
+            tools.push_back(item::spawn("UPS_off", calendar::start_of_cataclysm, 5));
+            tools.push_back(item::spawn("UPS_off", calendar::start_of_cataclysm, 10));
 
             THEN("crafting succeeds, and uses charges from multiple tools") {
                 actually_test_craft(recipe_id("carver_off"), tools, INT_MAX);
-                CHECK(get_remaining_charges("hotplate") == 0);
-                CHECK(get_remaining_charges("soldering_iron") == 0);
+                CHECK(get_remaining_charges("UPS_off") == 0);
             }
         }
 
@@ -457,7 +474,13 @@ TEST_CASE("tool_use", "[crafting][tool]") {
     clear_all_state();
     SECTION("clean_water") {
         std::vector<detached_ptr<item>> tools;
-        tools.push_back(item::spawn("hotplate", calendar::start_of_cataclysm, 20));
+        // CDF: bare hotplate has no battery pocket since P3-L1C; power it with a UPS mod (DDA
+        // crafting_test.cpp clean_water uses a pocket-carrying stove; popcan_stove is not in CDF's
+        // water_boiling_heat list).
+        detached_ptr<item> hotplate = item::spawn("hotplate", calendar::start_of_cataclysm, 0);
+        hotplate->put_in(item::spawn("battery_ups"));
+        tools.push_back(std::move(hotplate));
+        tools.push_back(item::spawn("UPS_off", calendar::start_of_cataclysm, 500));
         detached_ptr<item> plastic_bottle = item::spawn("bottle_plastic");
         plastic_bottle->put_in(item::spawn("water", calendar::start_of_cataclysm, 2));
         tools.push_back(std::move(plastic_bottle));
@@ -468,7 +491,11 @@ TEST_CASE("tool_use", "[crafting][tool]") {
     }
     SECTION("clean_water_in_occupied_cooking_vessel") {
         std::vector<detached_ptr<item>> tools;
-        tools.push_back(item::spawn("hotplate", calendar::start_of_cataclysm, 20));
+        // CDF: same UPS-powered hotplate as clean_water, so the expected failure is the occupied jar.
+        detached_ptr<item> hotplate = item::spawn("hotplate", calendar::start_of_cataclysm, 0);
+        hotplate->put_in(item::spawn("battery_ups"));
+        tools.push_back(std::move(hotplate));
+        tools.push_back(item::spawn("UPS_off", calendar::start_of_cataclysm, 500));
         detached_ptr<item> plastic_bottle = item::spawn("bottle_plastic");
         plastic_bottle->put_in(item::spawn("water", calendar::start_of_cataclysm, 2));
         tools.push_back(std::move(plastic_bottle));

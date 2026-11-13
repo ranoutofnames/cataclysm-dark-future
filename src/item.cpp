@@ -389,7 +389,12 @@ item::item( const itype *type, time_point turn, int qty ) : type( type ),
         // default magazine (it is not magazine_integral, so the direct-charges guard does not apply),
         // so its spawn charges were lost. 4-b2: integral tools own a MAGAZINE pocket too (loader), so
         // the rounds go there; a tool without any pocket keeps its direct `charges` (ammo_set).
-        if( charges > 0 && !ammo_types().empty() ) {
+        // DDA item.cpp:262-265 guards the same call on having ammo to set; CDF's ammo_remaining() reads 0
+        // for a battery tool, so the guard is the magazine target ammo_set() needs (without one it
+        // debugmsgs and the spawn quantity stays in the plain `charges` field).
+        if( charges > 0 && !ammo_types().empty() &&
+            ( contents.has_pocket_type( pocket_type::MAGAZINE ) || magazine_current() ||
+              !magazine_default().is_null() ) ) {
             const int spawn_charges = charges;
             ammo_set( ammo_default(), spawn_charges );
             if( contents.has_pocket_type( pocket_type::MAGAZINE ) || magazine_current() ) {

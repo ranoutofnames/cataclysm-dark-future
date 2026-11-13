@@ -67,11 +67,14 @@ TEST_CASE("repair_vehicle_part") {
     clear_all_state();
     const time_point bday = calendar::start_of_cataclysm;
     SECTION("welder") {
+        // CDF: P3-L1C converted welder to link_up with no battery pocket, so bare spawn charges are
+        // not usable and a standalone welder cannot repair (DDA welder: tool_ammo battery, no pocket).
+        // The powered case is UPS_modded_welder below.
         std::vector<detached_ptr<item>> tools;
         tools.push_back(item::spawn("welder", bday, 500));
         tools.push_back(item::spawn("goggles_welding"));
         tools.push_back(item::spawn("material_aluminium_ingot", bday, 10));
-        test_repair(tools, true);
+        test_repair(tools, false);
     }
     SECTION("UPS_modded_welder") {
         std::vector<detached_ptr<item>> tools;

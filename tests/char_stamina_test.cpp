@@ -311,10 +311,13 @@ TEST_CASE("stamina regen with mouth encumbrance", "[stamina][update][regen][encu
     }
 
     GIVEN("character has 100+ mouth encumbrance") {
-        dummy.wear_item(item::spawn("mask_gas"));
-        dummy.wear_item(item::spawn("mask_gas"));
-        dummy.wear_item(item::spawn("scarf_fur"));
-        dummy.wear_item(item::spawn("scarf_fur"));
+        // CDF: real mouth gear no longer reaches 100 (EYEMOUTH1 made mask_gas DDA sub-location portions,
+        // two masks plus two scarves measure 70), so the premise uses the TEST_DATA item
+        // test_mouth_encumbrance_100 (covers mouth, coverage 100, encumbrance 100), as DDA's TEST_DATA
+        // armor items do for high encumbrance. The 100 floor is where update_stamina clamps
+        // (character.cpp: max(1.0, base - encumb/5)).
+        dummy.wear_item(item::spawn("test_mouth_encumbrance_100"));
+        INFO("measured mouth encumbrance " << dummy.encumb(body_part_mouth));
         REQUIRE(dummy.encumb(body_part_mouth) >= 100);
 
         THEN("stamina regen is above 0") { CHECK(actual_regen_rate(dummy, turn_moves) > 0); }
