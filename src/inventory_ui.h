@@ -646,6 +646,14 @@ class inventory_selector
                                   const item_category *custom_category = nullptr,
                                   const item *topmost_parent = nullptr, int indent = 0 );
 
+        /**
+         * CDF: P3-NESTAMMO1. add_character_items calls this after the carried stacks (categories mode).
+         * It adds the rows for what sits nested in a carried container, as DDA's add_entry_rec does. Off
+         * (does nothing) in every selector but the ammo selector: drop, pick-up and the rest list the top
+         * level of the carry pockets on purpose (P1c step 22).
+         */
+        virtual void add_nested_character_items( Character &character );
+
         uimode _uimode = uimode::categories;
 
 
@@ -1042,6 +1050,8 @@ class ammo_inventory_selector : public inventory_selector
         }
     protected:
         void mod_chosen_count( inventory_entry &entry, int val );
+        /** CDF: P3-NESTAMMO1, DDA inventory_ui.cpp:2017-2047 and 2109-2141 (add_entry_rec, add_contained_items). */
+        void add_nested_character_items( Character &character ) override;
     private:
         item &reload_loc;
         // Keyed on the item so the signal survives column rebuilds

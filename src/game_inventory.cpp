@@ -2911,10 +2911,11 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
             .prompt = prompt,
             .discovery = { .include_empty_mags = empty, .include_potential = include_potential }
         } );
-        // CDF: P3-6-6a. This selector lists only the carried stacks, not an ammo item nested in a carried
-        // container (a liquid in a jug), which discovery does find. With one discovered option and no prompt
-        // the BN reload menu took it without a menu: keep that (the DDA single-entry shortcut below). Not for
-        // include_potential (8-2a-sel): there the list is DDA's, a full gun lists nothing.
+        // CDF: P3-6-6a. The selector lists the carried items, nested ones included (P3-NESTAMMO1), but not
+        // an ammo item nested in a container lying on the map (add_items does not recurse), which discovery
+        // does find. With one discovered option and no prompt the BN reload menu took it without a menu:
+        // keep that (the DDA single-entry shortcut below). Not for include_potential (8-2a-sel): there the
+        // list is DDA's, a full gun lists nothing.
         if( !include_potential && why.outcome == reload_selection::selection_outcome::automatic ) {
             return why.selected;
         }
@@ -2975,7 +2976,15 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
         disambiguated = true;
     }
 
-    item_reload_option opt( &you, match->target, &loc, *selected.loc, match->pocket_index );
+    // CDF: P3-NESTAMMO1. A liquid row (the liquid in a carried jug, listed as DDA lists it) is reloaded
+    // from the container that holds it: CDF reload options carry the container of a contained liquid
+    // (character_functions.cpp:1083-1087, DDA's option carries the liquid itself).
+    item *source = &*selected.loc;
+    if( item *holder = source->parent_item(); holder != nullptr && holder->is_container() &&
+        source->made_of( phase_id::LIQUID ) ) {
+        source = holder;
+    }
+    item_reload_option opt( &you, match->target, &loc, *source, match->pocket_index );
     if( disambiguated && !inv_s.last_choice_count_player_adjusted() ) {
         // Refill to the chosen target's own capacity when the seeded count
         // (from a sibling match) came back unmodified.

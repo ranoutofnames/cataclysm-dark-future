@@ -79,23 +79,23 @@ auto first_well_index( item &host ) -> int
     return -1;
 }
 
-// How many carried stacks the select_ammo preset shows for the host. add_character_items lists the
-// wielded and worn items and the top level of the carry pockets (these tests wear only a backpack,
-// wield nothing, and the map is empty). select_ammo with prompt off reaches the interactive
-// execute() unless exactly one entry is listed, and execute() spins forever headless, so the
-// select_ammo sections REQUIRE this count before the call.
-auto listed_candidates( const avatar &you, item &host ) -> size_t
+// CDF: P3-NESTAMMO1. The preset of the select_ammo selector reduced to its is_shown (the real preset
+// is private to game_inventory.cpp): game_menus::inv::select_ammo_shows is what it asks.
+class select_ammo_shows_preset : public inventory_selector_preset
 {
-    size_t listed = 0;
-    for( const carried_stack &stack : carried_item_stacks( you ) ) {
-        if( game_menus::inv::select_ammo_shows( host, *stack.front(), true ) ) {
-            ++listed;
-        }
-    }
-    return listed;
-}
+    public:
+        select_ammo_shows_preset( item &host, bool empty ) : host( host ), empty( empty ) {}
 
-// CDF: ctxt is protected; these read the actions a selector registered.
+        bool is_shown( const item *loc ) const override {
+            return game_menus::inv::select_ammo_shows( host, *loc, empty );
+        }
+
+    private:
+        item &host;
+        bool empty;
+};
+
+// CDF: ctxt is protected; these read the actions a selector registered. P3-NESTAMMO1: and the rows.
 class ammo_selector_actions_probe : public ammo_inventory_selector
 {
     public:
@@ -104,7 +104,35 @@ class ammo_selector_actions_probe : public ammo_inventory_selector
         auto actions() const -> std::vector<std::string> {
             return ctxt.get_registered_actions_copy();
         }
+
+        // The item of every row of the three columns, in column order.
+        auto listed_items() const -> std::vector<const item *> {
+            std::vector<const item *> rows;
+            for( const inventory_column *col : { &own_gear_column, &own_inv_column, &map_column } ) {
+                for( const inventory_entry *entry : col->get_all_entries() ) {
+                    if( entry->is_item() ) {
+                        rows.push_back( entry->any_item() );
+                    }
+                }
+            }
+            return rows;
+        }
 };
+
+// How many rows the select_ammo selector lists for the host, from the carried items (the map is not
+// added; these tests keep the floor empty or say so). It is the list select_ammo builds with
+// add_character_items: the wielded and worn items, the top level of the carry pockets and, as DDA's
+// add_entry_rec does, what sits nested in a carried container (P3-NESTAMMO1). select_ammo with prompt
+// off reaches the interactive execute() unless exactly one entry is listed, and execute() spins
+// forever headless, so the select_ammo sections REQUIRE this count before the call.
+auto listed_candidates( avatar &you, item &host ) -> size_t
+{
+    const select_ammo_shows_preset preset( host, true );
+    ammo_selector_actions_probe sel( you, host, preset );
+    sel.clear_items();
+    sel.add_character_items( you );
+    return sel.item_entry_count();
+}
 
 class plain_selector_probe : public inventory_pick_selector
 {
@@ -327,6 +355,221 @@ TEST_CASE( "select_ammo_returns_the_chosen_source_without_a_menu", "[p3][ui][5-3
 
         const item_reload_option opt = game_menus::inv::select_ammo( you, gun );
         CHECK_FALSE( opt );
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CDF: P3-NESTAMMO1; CDF-only (DDA has no test of the ammo selector list). DDA's selector walks the whole
+// carried tree (inventory_ui.cpp:2017-2047 add_entry_rec, 2109-2141 add_contained_items), so a liquid in a
+// carried jug and ammo in a box in a bag are listed when the preset shows them; the CDF selector listed
+// only the top level of the carry pockets. The tests go through the public seam of the selector
+// (add_character_items, item_entry_count) and never open one: select_ammo is called only with prompt off
+// and exactly one row listed (REQUIREd before the call), the guard of every select_ammo test in this file.
+// Expected rows come from the JSON (jug_plastic and 2lcanteen are watertight, water_clean is a liquid,
+// box_small and box_medium take loose ammo, glockmag holds 15 9mm) and from the DDA rules above.
+// ---------------------------------------------------------------------------
+
+TEST_CASE( "ammo_selector_lists_what_is_nested_in_a_carried_container", "[p3][ui][nestammo1]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    you.wear_item( item::spawn( itype_id( "bigback" ) ), false );
+
+    SECTION( "a liquid in a carried jug is listed, and the option carries the jug" ) {
+        item &canteen = you.i_add( item::spawn( itype_id( "2lcanteen" ) ) );
+        item &jug = you.i_add( item::spawn( itype_id( "jug_plastic" ) ) );
+        REQUIRE( jug.put_in( item::spawn( itype_id( "water_clean" ), calendar::turn_zero, 2 ),
+                             pocket_type::CONTAINER ).success() );
+        item &water = jug.contents.front();
+        // The premise: the canteen takes the water but not the jug, so only a walk into the jug finds it.
+        REQUIRE( game_menus::inv::select_ammo_shows( canteen, water, true ) );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( canteen, jug, true ) );
+
+        const select_ammo_shows_preset preset( canteen, true );
+        ammo_selector_actions_probe sel( you, canteen, preset );
+        sel.clear_items();
+        sel.add_character_items( you );
+        CHECK( sel.item_entry_count() == 1 );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &water } );
+
+        // CDF convention (reload.cpp discover_ammo, character_functions.cpp:1083-1087): a reload option
+        // carries the container of a contained liquid. prompt off and one row: no menu.
+        REQUIRE( listed_candidates( you, canteen ) == 1 );
+        const item_reload_option opt = game_menus::inv::select_ammo( you, canteen );
+        REQUIRE( opt );
+        CHECK( opt.target == &canteen );
+        CHECK( opt.ammo == &jug );
+    }
+
+    SECTION( "a liquid in a carried jug that the target cannot take is not listed" ) {
+        item &gun = you.i_add( item::spawn( itype_test_multimag_gun ) );
+        item &jug = you.i_add( item::spawn( itype_id( "jug_plastic" ) ) );
+        REQUIRE( jug.put_in( item::spawn( itype_id( "water_clean" ), calendar::turn_zero, 2 ),
+                             pocket_type::CONTAINER ).success() );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( gun, jug.contents.front(), true ) );
+        CHECK( listed_candidates( you, gun ) == 0 );
+    }
+
+    SECTION( "ammo in a box in a carried bag is listed, and the option is that ammo" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item &box = you.i_add( item::spawn( itype_id( "box_small" ) ) );
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        item &nine = box.contents.front();
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, nine, true ) );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( gun, box, true ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_character_items( you );
+        CHECK( sel.item_entry_count() == 1 );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &nine } );
+
+        REQUIRE( listed_candidates( you, gun ) == 1 );
+        const item_reload_option opt = game_menus::inv::select_ammo( you, gun );
+        REQUIRE( opt );
+        CHECK( opt.target == in_gun );
+        CHECK( opt.ammo == &nine );
+        // glockmag capacity 15 minus 5 loaded: the room, not the 30 in the box.
+        CHECK( opt.qty() == 10 );
+    }
+
+    SECTION( "ammo two containers deep is listed" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item &outer = you.i_add( item::spawn( itype_id( "box_medium" ) ) );
+        detached_ptr<item> inner_ptr = item::spawn( itype_id( "box_small" ) );
+        REQUIRE( inner_ptr->put_in( item::spawn( itype_9mm, calendar::turn, 30 ),
+                                    pocket_type::CONTAINER ).success() );
+        item &inner = *inner_ptr;
+        REQUIRE( outer.put_in( std::move( inner_ptr ), pocket_type::CONTAINER ).success() );
+        item &nine = inner.contents.front();
+        REQUIRE( nine.parent_item() == &inner );
+        REQUIRE( inner.parent_item() == &outer );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_character_items( you );
+        CHECK( sel.listed_items() == std::vector<const item *>{ &nine } );
+    }
+
+    SECTION( "an item listed at the top level of the carry pockets is not listed twice" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item &loose = you.i_add( item::spawn( itype_9mm, calendar::turn, 12 ) );
+        item &box = you.i_add( item::spawn( itype_id( "box_small" ) ) );
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        item &nested = box.contents.front();
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_character_items( you );
+        std::vector<const item *> rows = sel.listed_items();
+        CHECK( rows.size() == 2 );
+        CHECK( std::ranges::count( rows, &loose ) == 1 );
+        CHECK( std::ranges::count( rows, &nested ) == 1 );
+    }
+
+    SECTION( "every container of a stack of identical containers is opened" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item &first = you.i_add( item::spawn( itype_id( "box_small" ) ) );
+        item &second = you.i_add( item::spawn( itype_id( "box_small" ) ) );
+        REQUIRE( first.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        REQUIRE( second.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        // The carried stacks group the two boxes (one stack of two), the rounds are two items.
+        REQUIRE( first.stacks_with( second ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_character_items( you );
+        const std::vector<const item *> rows = sel.listed_items();
+        CHECK( rows.size() == 2 );
+        CHECK( std::ranges::count( rows, &first.contents.front() ) == 1 );
+        CHECK( std::ranges::count( rows, &second.contents.front() ) == 1 );
+    }
+
+    SECTION( "what is not ammo for the target stays unlisted" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item &box = you.i_add( item::spawn( itype_id( "box_small" ) ) );
+        REQUIRE( box.put_in( item::spawn( itype_38_special, calendar::turn, 7 ),
+                             pocket_type::CONTAINER ).success() );
+        REQUIRE( box.put_in( item::spawn( itype_id( "pebble" ), calendar::turn, 3 ),
+                             pocket_type::CONTAINER ).success() );
+        REQUIRE_FALSE( game_menus::inv::select_ammo_shows( gun, box.contents.front(), true ) );
+        CHECK( listed_candidates( you, gun ) == 0 );
+    }
+
+    SECTION( "the ammo inside the magazine of the host gun is not offered to it" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        // The rounds in the host's own magazine would be accepted by that magazine (top up with itself).
+        item &rounds = in_gun->contents.front();
+        REQUIRE( rounds.parent_item() == in_gun );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, rounds, true ) );
+        CHECK( listed_candidates( you, gun ) == 0 );
+    }
+
+    SECTION( "the magazine and the ammo loaded in another gun are not taken from it" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item *other_mag = nullptr;
+        item &other = you.i_add( gun_with_glockmag( 10, other_mag ) );
+        REQUIRE( other_mag->parent_item() == &other );
+        // CDF discovery never steals either (character_functions.cpp:1113-1120); both would be shown.
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, *other_mag, true ) );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, other_mag->contents.front(), true ) );
+        CHECK( listed_candidates( you, gun ) == 0 );
+    }
+
+    SECTION( "the rounds in a loose magazine are not taken out of it" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        detached_ptr<item> spare_ptr = loaded_mag( itype_glockmag, itype_9mm, 10 );
+        item &spare = you.i_add( std::move( spare_ptr ) );
+        item &rounds = spare.contents.front();
+        REQUIRE( rounds.parent_item() == &spare );
+        // Both would be shown: the magazine swaps in, the rounds top up the loaded one.
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, spare, true ) );
+        REQUIRE( game_menus::inv::select_ammo_shows( gun, rounds, true ) );
+
+        const select_ammo_shows_preset preset( gun, true );
+        ammo_selector_actions_probe sel( you, gun, preset );
+        sel.clear_items();
+        sel.add_character_items( you );
+        // CDF discovery never takes ammo out of a magazine (character_functions.cpp:1113): the magazine only.
+        CHECK( sel.listed_items() == std::vector<const item *>{ &spare } );
+    }
+
+    SECTION( "a NO_UNLOAD container is not opened" ) {
+        item *in_gun = nullptr;
+        item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
+        item &box = you.i_add( item::spawn( itype_id( "box_small" ) ) );
+        REQUIRE( box.put_in( item::spawn( itype_9mm, calendar::turn, 30 ), pocket_type::CONTAINER ).success() );
+        REQUIRE( listed_candidates( you, gun ) == 1 );
+        box.set_flag( flag_id( "NO_UNLOAD" ) );
+        // DDA inventory_ui.cpp:2113 add_contained_items.
+        CHECK( listed_candidates( you, gun ) == 0 );
+    }
+
+    SECTION( "only the ammo selector walks into carried containers" ) {
+        item &canteen = you.i_add( item::spawn( itype_id( "2lcanteen" ) ) );
+        item &jug = you.i_add( item::spawn( itype_id( "jug_plastic" ) ) );
+        REQUIRE( jug.put_in( item::spawn( itype_id( "water_clean" ), calendar::turn_zero, 2 ),
+                             pocket_type::CONTAINER ).success() );
+        REQUIRE( listed_candidates( you, canteen ) == 1 );
+
+        // The same preset on any other selector: drop, pick-up and the rest keep their top-level list.
+        const select_ammo_shows_preset preset( canteen, true );
+        plain_selector_probe plain( you, preset );
+        plain.clear_items();
+        plain.add_character_items( you );
+        CHECK( plain.item_entry_count() == 0 );
     }
 }
 

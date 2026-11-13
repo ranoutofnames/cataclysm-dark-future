@@ -1730,6 +1730,12 @@ void inventory_selector::add_character_items( Character &character )
             add_entry( own_inv_column, std::move( locations ), group );
         }
     }
+    add_nested_character_items( character );
+}
+
+// CDF: P3-NESTAMMO1. Nothing nested is listed unless a selector asks for it (the ammo selector does).
+void inventory_selector::add_nested_character_items( Character & )
+{
 }
 
 void inventory_selector::add_map_items( const tripoint_bub_ms &target )
@@ -4124,6 +4130,42 @@ ammo_inventory_selector::ammo_inventory_selector( player &you, item &reload_loc,
 }
 
 ammo_inventory_selector::~ammo_inventory_selector() = default;
+
+// CDF: P3-NESTAMMO1, DDA inventory_ui.cpp 2017-2047 (add_entry_rec) and 2109-2141 (add_contained_items),
+// which DDA's add_character_items runs for every carried item: whatever sits nested in a carried
+// container is a row when the preset shows it. add_character_items already lists the top level of
+// the carry pockets (grouped by carrier); this adds the items below it. Rows are made with
+// add_shown_entry, as DDA does, one per item (not restacked), in the own inventory column. A liquid
+// stays its own row: select_ammo turns it into the container that holds it when it builds the
+// option (CDF reload options carry the container, character_functions.cpp:1083-1087).
+// Where DDA's walk and CDF's ammo discovery differ, discovery wins, so the list matches what the
+// reload can do: nothing is taken out of a magazine, and the magazine loaded in an item is not offered
+// (character_functions.cpp:1113-1120, "do not steal"). Without that rule the rounds in the magazine
+// of the gun being reloaded would be offered to that magazine.
+void ammo_inventory_selector::add_nested_character_items( Character &character )
+{
+    // Only items below a carried item are visited here, so none of them is a row of the carried stacks.
+    const std::function<void( item & )> add_below = [this, &add_below]( item & container ) {
+        if( container.has_flag( flag_NO_UNLOAD ) || container.is_magazine() ) {
+            return;
+        }
+        for( item *child : container.all_items_top() ) {
+            if( child == container.magazine_current() ) {
+                continue;
+            }
+            if( preset.is_shown( child ) ) {
+                add_shown_entry( own_inv_column, std::vector<item *>( 1, child ), nullptr, nullptr,
+                                 false, 0 );
+            }
+            add_below( *child );
+        }
+    };
+    for( const carried_stack &stack : carried_item_stacks( character ) ) {
+        for( item *carried : stack ) {
+            add_below( *carried );
+        }
+    }
+}
 
 // CDF: P3-5-2b, DDA inventory_ui.cpp 4153-4242. Items are item pointers (D1): `rt.owner` and
 // `match->owner` are the key, `&reload_loc` replaces `reload_loc`, `get_entries( return_item,
