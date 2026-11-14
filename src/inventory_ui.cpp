@@ -3074,8 +3074,7 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "UP", to_translation( "Previous item" ) );
     ctxt.register_action( "PAGE_DOWN", to_translation( "Page down" ) );
     ctxt.register_action( "PAGE_UP", to_translation( "Page up" ) );
-    // UI1: DDA's column actions (inventory_ui.cpp:3460-3461). LEFT/RIGHT are no longer registered
-    // here; the multiselectors register their own (RIGHT marks), see inventory_multiselector.
+    // UI1: DDA's column actions (inventory_ui.cpp:3460-3461). LEFT/RIGHT are no longer registered.
     ctxt.register_action( "NEXT_COLUMN", to_translation( "Next column" ) );
     ctxt.register_action( "PREV_COLUMN", to_translation( "Previous column" ) );
     ctxt.register_action( "CONFIRM", to_translation( "Confirm your selection" ) );
@@ -3282,11 +3281,6 @@ void inventory_selector::on_input( const inventory_input &input )
         toggle_navigation_mode();
     } else if( handle_column_action( input.action ) ) {
         // moved the active column
-    } else if( input.action == "LEFT" ) {
-        // only registered by the multiselectors until UI2 renames their keys
-        toggle_active_column( scroll_direction::BACKWARD );
-    } else if( input.action == "RIGHT" ) {
-        toggle_active_column( scroll_direction::FORWARD );
     } else if( input.action == "INVENTORY_FILTER" ) {
         set_filter();
     } else if( input.action == "RESET_FILTER" ) {
@@ -3570,10 +3564,13 @@ inventory_multiselector::inventory_multiselector( player &p,
     inventory_selector( p, preset ),
     selection_col( new selection_column( "SELECTION_COLUMN", selection_column_title ) )
 {
-    // UI1: the base selector no longer registers LEFT/RIGHT; the multiselectors keep them until UI2.
-    ctxt.register_action( "LEFT", to_translation( "Previous column" ) );
-    ctxt.register_action( "RIGHT", to_translation( "Mark/unmark selected item" ) );
-    ctxt.register_action( "DROP_NON_FAVORITE", to_translation( "Mark/unmark non-favorite items" ) );
+    // Per DDA inventory_ui.cpp:4383-4388. These replace CDF's RIGHT and DROP_NON_FAVORITE here.
+    ctxt.register_action( "TOGGLE_ENTRY", to_translation( "Mark/unmark selected item" ) );
+    ctxt.register_action( "MARK_WITH_COUNT",
+                          to_translation( "Mark a specific amount of selected item" ) );
+    ctxt.register_action( "TOGGLE_NON_FAVORITE", to_translation( "Mark/unmark non-favorite items" ) );
+    ctxt.register_action( "INCREASE_COUNT" );
+    ctxt.register_action( "DECREASE_COUNT" );
 
     for( auto &elem : get_all_columns() ) {
         elem->set_multiselect( true );
@@ -3588,7 +3585,7 @@ void inventory_multiselector::rearrange_columns( size_t client_width )
     selection_col->set_visibility( !is_overflown( client_width ) );
 }
 
-size_t inventory_multiselector::query_count( size_t count = 0 )
+int inventory_multiselector::query_count( size_t count )
 {
     std::string count_str;
     if( count == 0 ) {
@@ -3611,12 +3608,14 @@ size_t inventory_multiselector::query_count( size_t count = 0 )
         spopup->query_string( /*loop=*/false );
     } while( !spopup->confirmed() && !spopup->canceled() );
 
+    int result = -1;
     if( spopup->confirmed() ) {
         count_str = spopup->text();
         try {
-            count = std::stoull( count_str );
+            result = static_cast<int>( std::min<unsigned long long>( std::stoull( count_str ),
+                                       static_cast<unsigned long long>( INT_MAX ) ) );
         } catch( const std::exception &e ) {
-            count = 0;
+            result = 0;
         }
 
         if( current_ui ) {
@@ -3625,7 +3624,7 @@ size_t inventory_multiselector::query_count( size_t count = 0 )
     }
 
     spopup.reset();
-    return count;
+    return result;
 }
 
 void inventory_multiselector::set_chosen_count( inventory_entry &entry, size_t count )
@@ -3634,6 +3633,252 @@ void inventory_multiselector::set_chosen_count( inventory_entry &entry, size_t c
         entry.chosen_count = std::min( count, entry.get_available_count() );
         on_change( entry );
     }
+}
+
+void inventory_multiselector::toggle_entry( inventory_entry &entry, size_t count )
+{
+    set_chosen_count( entry, count );
+    end_mark_batch();
+}
+
+void inventory_multiselector::end_mark_batch()
+{
+    if( !allow_select_contained ) {
+        deselect_contained_items();
+    }
+    selection_col->prepare_paging( get_filter() );
+    on_toggle();
+}
+
+namespace
+{
+/// True when `it` sits inside `container` at any depth.
+auto is_inside_item( const item *it, const item *container ) -> bool
+{
+    for( const item *parent = it->parent_item(); parent != nullptr; parent = parent->parent_item() ) {
+        if( parent == container ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// The items a chosen entry stands for: all its locations, or only the first chosen_count of a
+/// stack of separate items.
+auto chosen_holders( const inventory_entry &entry ) -> std::vector<const item *>
+{
+    std::vector<const item *> res;
+    const size_t limit = entry.locations.size() > 1 ?
+                         std::min( entry.locations.size(), entry.chosen_count ) : entry.locations.size();
+    for( size_t i = 0; i < limit; ++i ) {
+        res.push_back( entry.locations[i] );
+    }
+    return res;
+}
+} // namespace
+
+void inventory_multiselector::deselect_contained_items()
+{
+    // Per DDA inventory_ui.cpp:4702-4758 (frozen liquid part not ported: CDF has no such rule).
+    // The selection column only mirrors the other columns, so it is skipped.
+    const auto is_chosen = []( const inventory_entry & entry ) {
+        return entry.is_item() && entry.chosen_count > 0;
+    };
+    std::vector<inventory_entry *> chosen;
+    for( inventory_column *col : get_all_columns() ) {
+        if( col == selection_col.get() ) {
+            continue;
+        }
+        const std::vector<inventory_entry *> found = col->get_all_entries( is_chosen );
+        chosen.insert( chosen.end(), found.begin(), found.end() );
+    }
+    std::vector<inventory_entry *> to_clear;
+    for( inventory_entry *inner : chosen ) {
+        bool covered = false;
+        for( inventory_entry *outer : chosen ) {
+            if( outer == inner ) {
+                continue;
+            }
+            for( const item *holder : chosen_holders( *outer ) ) {
+                for( const item *contained : inner->locations ) {
+                    if( is_inside_item( contained, holder ) ) {
+                        covered = true;
+                        break;
+                    }
+                }
+                if( covered ) {
+                    break;
+                }
+            }
+            if( covered ) {
+                break;
+            }
+        }
+        if( covered ) {
+            to_clear.push_back( inner );
+        }
+    }
+    // Clear after the scan so a container and its contents are judged on the same state.
+    for( inventory_entry *entry : to_clear ) {
+        set_chosen_count( *entry, 0 );
+    }
+}
+
+void inventory_multiselector::toggle_entries( int &count, const toggle_mode mode )
+{
+    std::vector<inventory_entry *> selected;
+    switch( mode ) {
+        case toggle_mode::SELECTED:
+            selected = get_active_column().get_all_selected();
+            break;
+        case toggle_mode::NON_FAVORITE_NON_WORN: {
+            const auto filter_to_nonfavorite_and_nonworn = [this]( const inventory_entry & entry ) {
+                return entry.is_selectable() &&
+                       !entry.any_item()->is_favorite &&
+                       !u.is_worn( *entry.any_item() );
+            };
+
+            selected = get_active_column().get_entries( filter_to_nonfavorite_and_nonworn );
+            break;
+        }
+    }
+
+    // Entries that can be highlighted but not marked (disabled rows) are left alone.
+    selected.erase( std::remove_if( selected.begin(), selected.end(),
+    []( const inventory_entry * elem ) {
+        return !elem->is_selectable();
+    } ), selected.end() );
+
+    if( selected.empty() ) {
+        count = 0;
+        return;
+    }
+
+    // No amount entered, select all
+    if( count == 0 ) {
+        bool select_nonfav = true;
+        bool select_fav = true;
+        switch( mode ) {
+            case toggle_mode::SELECTED: {
+                count = max_chosen_count;
+
+                // Any non favorite item to select?
+                select_nonfav = std::any_of( selected.begin(), selected.end(),
+                []( const inventory_entry * elem ) {
+                    return ( !elem->any_item()->is_favorite ) && elem->chosen_count == 0;
+                } );
+
+                // Otherwise, any favorite item to select?
+                select_fav = !select_nonfav && std::any_of( selected.begin(), selected.end(),
+                []( const inventory_entry * elem ) {
+                    return elem->any_item()->is_favorite && elem->chosen_count == 0;
+                } );
+                break;
+            }
+            case toggle_mode::NON_FAVORITE_NON_WORN: {
+                const bool clear = std::none_of( selected.begin(), selected.end(),
+                []( const inventory_entry * elem ) {
+                    return elem->chosen_count > 0;
+                } );
+
+                if( clear ) {
+                    count = max_chosen_count;
+                }
+                break;
+            }
+        }
+
+        for( inventory_entry *elem : selected ) {
+            const bool is_favorite = elem->any_item()->is_favorite;
+            if( ( select_nonfav && !is_favorite ) || ( select_fav && is_favorite ) ) {
+                set_chosen_count( *elem, count );
+            } else if( !select_nonfav && !select_fav ) {
+                // Every element is selected, unselect all
+                set_chosen_count( *elem, 0 );
+            }
+        }
+        // Select the entered amount
+    } else {
+        for( inventory_entry *elem : selected ) {
+            set_chosen_count( *elem, count );
+        }
+    }
+
+    count = 0;
+    end_mark_batch();
+}
+
+bool inventory_multiselector::handle_mark_action( const inventory_input &input )
+{
+    int count = 0;
+    if( input.action == "TOGGLE_NON_FAVORITE" ) {
+        toggle_entries( count, toggle_mode::NON_FAVORITE_NON_WORN );
+    } else if( input.action == "MARK_WITH_COUNT" ) {
+        // Set count and mark selected with specific key
+        int query_result = query_count();
+        if( query_result >= 0 ) {
+            toggle_entries( query_result, toggle_mode::SELECTED );
+        }
+    } else if( input.ch >= '0' && input.ch <= '9' ) {
+        int query_result = query_count( input.ch - '0' );
+        if( query_result >= 0 ) {
+            toggle_entries( query_result, toggle_mode::SELECTED );
+        }
+    } else if( input.action == "TOGGLE_ENTRY" ) {
+        toggle_entries( count, toggle_mode::SELECTED );
+    } else if( input.action == "INCREASE_COUNT" || input.action == "DECREASE_COUNT" ) {
+        if( !has_available_choices() ) {
+            return true;
+        }
+        inventory_entry &entry = get_active_column().get_highlighted();
+        if( entry.is_item() && entry.is_selectable() ) {
+            const size_t chosen = entry.chosen_count;
+            const size_t max = entry.get_available_count();
+            const size_t newcount = input.action == "INCREASE_COUNT"
+                                    ? chosen < max ? chosen + 1 : max
+                                    : chosen > 1 ? chosen - 1 : 0;
+            toggle_entry( entry, newcount );
+        }
+    } else if( input.action == "VIEW_CATEGORY_MODE" ) {
+        toggle_categorize_contained();
+    } else {
+        return false;
+    }
+    return true;
+}
+
+void inventory_multiselector::toggle_categorize_contained()
+{
+    // Per DDA inventory_ui.cpp:4760-4772. CDF rebuilds the entries when the view changes, so the
+    // chosen counts are read first and put back on the new entries by item.
+    std::vector<std::pair<const item *, size_t>> chosen;
+    for( inventory_column *col : get_all_columns() ) {
+        if( col == selection_col.get() ) {
+            continue;
+        }
+        for( const inventory_entry *entry : col->get_all_entries( []( const inventory_entry & e ) {
+        return e.is_item() && e.chosen_count > 0;
+    } ) ) {
+            chosen.emplace_back( entry->locations.front(), entry->chosen_count );
+        }
+    }
+    selection_col->clear();
+    inventory_selector::toggle_categorize_contained();
+    for( const std::pair<const item *, size_t> &saved : chosen ) {
+        for( inventory_column *col : get_all_columns() ) {
+            if( col == selection_col.get() ) {
+                continue;
+            }
+            for( inventory_entry *entry : col->get_all_entries( []( const inventory_entry & e ) {
+            return e.is_item();
+        } ) ) {
+                if( std::ranges::find( entry->locations, saved.first ) != entry->locations.end() ) {
+                    set_chosen_count( *entry, saved.second );
+                }
+            }
+        }
+    }
+    end_mark_batch();
 }
 
 std::vector<inventory_entry *> inventory_multiselector::get_selection_column_items() const
@@ -3659,7 +3904,7 @@ std::pair<const item *, const item *> inventory_compare_selector::execute()
             select( input.entry->any_item() );
             toggle_entry( input.entry );
             just_selected = input.entry;
-        } else if( input.action == "RIGHT" ) {
+        } else if( input.action == "TOGGLE_ENTRY" ) {
             const auto selection( get_active_column().get_all_selected() );
 
             for( auto &elem : selection ) {
@@ -3673,7 +3918,7 @@ std::pair<const item *, const item *> inventory_compare_selector::execute()
             }
         } else if( input.action == "CONFIRM" ) {
             popup_getkey( _( "You need two items for comparison.  Use %s to select them." ),
-                          ctxt.get_desc( "RIGHT" ) );
+                          ctxt.get_desc( "TOGGLE_ENTRY" ) );
         } else if( input.action == "QUIT" ) {
             return std::make_pair( nullptr, nullptr );
         } else {
@@ -3722,45 +3967,21 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
 {
     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
 
-    int count = 0;
     while( true ) {
         ui_manager::redraw();
 
         const inventory_input input = get_input();
 
-        if( input.ch >= '0' && input.ch <= '9' ) {
-            count = std::min( count, INT_MAX / 10 - 10 );
-            count *= 10;
-            count += input.ch - '0';
-        } else if( input.entry != nullptr ) {
+        if( input.entry != nullptr ) {
             select( input.entry->any_item() );
-            if( count == 0 && input.entry->chosen_count == 0 ) {
-                count = max_chosen_count;
-            }
-            set_chosen_count( *input.entry, count );
-            count = 0;
-        } else if( input.action == "RIGHT" ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            if( count == 0 ) {
-                const bool clear = std::none_of( selected.begin(), selected.end(),
-                []( const inventory_entry * elem ) {
-                    return elem->chosen_count > 0;
-                } );
-
-                if( clear ) {
-                    count = max_chosen_count;
-                }
-            }
-
-            for( const auto &elem : selected ) {
-                set_chosen_count( *elem, count );
-            }
-            count = 0;
+            set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
+            end_mark_batch();
+        } else if( handle_mark_action( input ) ) {
+            // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             if( to_use.empty() ) {
                 popup_getkey( _( "No items were selected.  Use %s to select them." ),
-                              ctxt.get_desc( "RIGHT" ) );
+                              ctxt.get_desc( "TOGGLE_ENTRY" ) );
                 continue;
             }
             break;
@@ -3768,7 +3989,6 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
             return std::vector<iuse_location>();
         } else {
             on_input( input );
-            count = 0;
         }
     }
 
@@ -3833,24 +4053,11 @@ inventory_drop_selector::inventory_drop_selector( player &p,
 #endif
 }
 
-void inventory_drop_selector::process_selected( int &count,
-        const std::vector<inventory_entry *> &selected )
+void inventory_drop_selector::on_toggle()
 {
-    if( count == 0 ) {
-        const bool clear = std::none_of( selected.begin(), selected.end(),
-        []( const inventory_entry * elem ) {
-            return elem->chosen_count > 0;
-        } );
-
-        if( clear ) {
-            count = max_chosen_count;
-        }
-    }
-
-    for( const auto &elem : selected ) {
-        set_chosen_count( *elem, count );
-    }
-    count = 0;
+    // CDF: the drop preview follows every batch of marks right away, including the unmarking of
+    // contained items, so the "will be dropped" counts and the order are never stale.
+    update_drop_preview();
 }
 
 drop_locations inventory_drop_selector::execute()
@@ -3883,79 +4090,22 @@ drop_locations inventory_drop_selector::execute()
     }
 
     // main multidrop selection loop
-    int count = 0;
     while( true ) {
         update_drop_preview();
         ui_manager::redraw();
 
         const inventory_input input = get_input();
 
-        if( input.ch >= '0' && input.ch <= '9' ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            count = query_count( input.ch - '0' );
-            count = std::min( count, max_chosen_count );
-            for( const auto &elem : selected ) {
-                set_chosen_count( *elem, count );
-            }
-
-            count = 0;
-        } else if( input.entry != nullptr ) {
+        if( input.entry != nullptr ) {
             select( input.entry->any_item() );
-            if( count == 0 && input.entry->chosen_count == 0 ) {
-                count = max_chosen_count;
-            }
-            set_chosen_count( *input.entry, count );
-            count = 0;
-        } else if( input.action == "DROP_NON_FAVORITE" ) {
-            const auto filter_to_nonfavorite_and_nonworn = []( const inventory_entry & entry ) {
-                return entry.is_item() &&
-                       !entry.any_item()->is_favorite &&
-                       !g->u.is_worn( *entry.any_item() );
-            };
-
-            const auto selected( get_active_column().get_entries( filter_to_nonfavorite_and_nonworn ) );
-            process_selected( count, selected );
-        } else if( input.action == "RIGHT" ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            // No amount entered, select all
-            if( count == 0 ) {
-                count = max_chosen_count;
-
-                // Any non favorite item to select?
-                const bool select_nonfav = std::any_of( selected.begin(), selected.end(),
-                []( const inventory_entry * elem ) {
-                    return ( !elem->any_item()->is_favorite ) && elem->chosen_count == 0;
-                } );
-
-                // Otherwise, any favorite item to select?
-                const bool select_fav = !select_nonfav && std::any_of( selected.begin(), selected.end(),
-                []( const inventory_entry * elem ) {
-                    return elem->any_item()->is_favorite && elem->chosen_count == 0;
-                } );
-
-                for( const auto &elem : selected ) {
-                    const bool is_favorite = elem->any_item()->is_favorite;
-                    if( ( select_nonfav && !is_favorite ) || ( select_fav && is_favorite ) ) {
-                        set_chosen_count( *elem, count );
-                    } else if( !select_nonfav && !select_fav ) {
-                        // Every element is selected, unselect all
-                        set_chosen_count( *elem, 0 );
-                    }
-                }
-                // Select the entered amount
-            } else {
-                for( const auto &elem : selected ) {
-                    set_chosen_count( *elem, count );
-                }
-            }
-
-            count = 0;
+            set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
+            end_mark_batch();
+        } else if( handle_mark_action( input ) ) {
+            // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             if( dropping.empty() ) {
                 popup_getkey( _( "No items were selected.  Use %s to select them." ),
-                              ctxt.get_desc( "RIGHT" ) );
+                              ctxt.get_desc( "TOGGLE_ENTRY" ) );
                 continue;
             }
             break;
@@ -3966,7 +4116,6 @@ drop_locations inventory_drop_selector::execute()
             if( input.action == "TOGGLE_FAVORITE" || input.action == "WEAR" || input.action == "WIELD" ) {
                 preview_dirty = true;
             }
-            count = 0;
         }
     }
 
@@ -4057,44 +4206,14 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( input.ch >= '0' && input.ch <= '9' ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            size_t count = query_count( input.ch - '0' );
-            for( const auto &elem : selected ) {
-                set_chosen_count( *elem, count );
-            }
-        } else if( input.entry != nullptr ) {
+        if( input.entry != nullptr ) {
             select( input.entry->any_item() );
             if( input.entry->chosen_count == 0 ) {
                 set_chosen_count( *input.entry, max_chosen_count );
+                end_mark_batch();
             }
-        } else if( input.action == "RIGHT" ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            size_t count = max_chosen_count;
-
-            // Any non favorite item to select?
-            const bool select_nonfav = std::any_of( selected.begin(), selected.end(),
-            []( const inventory_entry * elem ) {
-                return ( !elem->any_item()->is_favorite ) && elem->chosen_count == 0;
-            } );
-
-            // Otherwise, any favorite item to select?
-            const bool select_fav = !select_nonfav && std::any_of( selected.begin(), selected.end(),
-            []( const inventory_entry * elem ) {
-                return elem->any_item()->is_favorite && elem->chosen_count == 0;
-            } );
-
-            for( const auto &elem : selected ) {
-                const bool is_favorite = elem->any_item()->is_favorite;
-                if( ( select_nonfav && !is_favorite ) || ( select_fav && is_favorite ) ) {
-                    set_chosen_count( *elem, count );
-                } else if( !select_nonfav && !select_fav ) {
-                    // Every element is selected, unselect all
-                    set_chosen_count( *elem, 0 );
-                }
-            }
+        } else if( handle_mark_action( input ) ) {
+            // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             std::vector<pickup::pick_drop_selection> result;
             std::vector<item *> locations;
@@ -4119,7 +4238,7 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
             result = pickup::optimize_pickup( locations, counts );
             if( result.empty() ) {
                 popup_getkey( _( "No items were selected.  Use %s to select them." ),
-                              ctxt.get_desc( "RIGHT" ) );
+                              ctxt.get_desc( "TOGGLE_ENTRY" ) );
                 continue;
             } else {
                 return result;

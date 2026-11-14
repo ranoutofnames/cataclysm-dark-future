@@ -964,12 +964,42 @@ class unload_selector : public inventory_pick_selector
 class inventory_multiselector : public inventory_selector
 {
     public:
+        /// Per DDA inventory_ui.h toggle_mode: which entries toggle_entries() works on.
+        enum class toggle_mode {
+            SELECTED,
+            NON_FAVORITE_NON_WORN
+        };
+
         inventory_multiselector( player &p, const inventory_selector_preset &preset = default_preset,
                                  const std::string &selection_column_title = "" );
+
+        /// Per DDA inventory_ui.cpp:4702-4758: an entry whose item sits inside another chosen
+        /// entry's item (at any depth) is unmarked; marking the container covers its contents.
+        void deselect_contained_items();
+        /// Per DDA inventory_multiselector::toggle_entry (4399-4404).
+        void toggle_entry( inventory_entry &entry, size_t count );
+        /// Per DDA inventory_multiselector::toggle_entries (4463-4562). count 0 toggles, count > 0
+        /// marks that amount; count is reset to 0 afterwards.
+        void toggle_entries( int &count, toggle_mode mode = toggle_mode::SELECTED );
+        /// Per DDA inventory_multiselector::on_input (4774-4811), the mark actions only:
+        /// TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, INCREASE_COUNT, DECREASE_COUNT,
+        /// the number keys and VIEW_CATEGORY_MODE. Returns true when the input was used.
+        bool handle_mark_action( const inventory_input &input );
+        /// Per DDA inventory_ui.cpp:4760-4772: the chosen counts survive the view switch.
+        void toggle_categorize_contained();
+        /// Whether an entry may be marked together with the container that holds it (DDA
+        /// allow_select_contained). False for every CDF multiselector.
+        bool allow_select_contained = false;
+
     protected:
         void rearrange_columns( size_t client_width ) override;
-        size_t query_count( size_t count );
-        void set_chosen_count( inventory_entry &entry, size_t count );
+        /// @return the typed amount, or -1 when the prompt was cancelled
+        int query_count( size_t count = 0 );
+        virtual void set_chosen_count( inventory_entry &entry, size_t count );
+        /// Runs after every batch of marks, once the contained items are unmarked.
+        virtual void on_toggle() {}
+        /// Common tail of a batch of marks: pocket-aware unmarking, paging, on_toggle().
+        void end_mark_batch();
         std::vector<inventory_entry *> get_selection_column_items() const;
         std::unique_ptr<inventory_column> selection_col;
 };
@@ -1001,7 +1031,7 @@ class inventory_iuse_selector : public inventory_multiselector
 
     protected:
         header_stats get_raw_stats() const override;
-        void set_chosen_count( inventory_entry &entry, size_t count );
+        void set_chosen_count( inventory_entry &entry, size_t count ) override;
 
     private:
         GetStats get_stats;
@@ -1024,8 +1054,9 @@ class inventory_drop_selector : public inventory_multiselector
          */
         header_stats get_raw_stats() const override;
         /** Toggle item dropping */
-        void set_chosen_count( inventory_entry &entry, size_t count );
-        void process_selected( int &count, const std::vector<inventory_entry *> &selected );
+        void set_chosen_count( inventory_entry &entry, size_t count ) override;
+        /** CDF: refresh the drop preview right after a batch of marks. */
+        void on_toggle() override;
         auto update_drop_preview() -> void;
         auto get_drop_preview() const -> const drop_locations & { return predicted_drops; } // *NOPAD*
 
