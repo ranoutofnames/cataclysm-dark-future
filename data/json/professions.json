@@ -9233,7 +9233,6 @@
           "socks",
           "boots_combat",
           "diving_watch",
-          "ballistic_vest_light",
           "tacvest",
           "goggles_nv",
           "canteen",
@@ -9241,6 +9240,7 @@
         ],
         "entries": [
           { "group": "premium_contents" },
+          { "item": "ballistic_vest_light", "contents-item": [ "esapi_plate", "esapi_plate" ] },
           { "item": "mask_gas", "custom-flags": [ "no_auto_equip" ] },
           { "item": "army_powered_earmuffs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "halligan" },
