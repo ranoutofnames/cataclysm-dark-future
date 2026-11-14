@@ -162,3 +162,18 @@ The advanced inventory (`/`) shows the contents of a container in its own pane, 
 - **Scrolling.** `Home` and `End` jump to the first and last row of the pane. Page up and page down move by a page, stop at the first or last row, and wrap around when the pane is already there.
 
 Unchanged and still CDF-only: the grab-vehicle and vehicle-storage toggles, `ITEMS_UP`/`ITEMS_DOWN` (the squares above and below), the reset-filter-on-close switch and the carried-weight and volume header of the inventory and worn panes.
+
+## Advanced inventory: display (FM6)
+
+The advanced inventory draws its panes, header grid and menus the way Cataclysm: Dark Days Ahead does. The CDF-only rows named in the previous section stay.
+
+- **Container pointer.** When one pane shows a container, the row for that container in the other pane is drawn in brown, or white on yellow when it is selected, and a small arrow joins it to the pane that lists its contents. The contents are no longer removed from the inventory list.
+- **Container header.** The weight and volume above the container pane are drawn without padding; the carried number is red when it is over the capacity and green otherwise. A container pane without a container shows the totals of the square instead.
+- **Header grid.** The keys sit in DDA's cells. The container square and the square the container was found in use `><`, the parent row uses `<>`, and the base square's key is brown.
+- **Worn pane.** The wielded weapon is the first row, followed by the worn items.
+- **Selected row.** The highlight removes colour tags from the item name, and a food container takes the colour of its content.
+- **Page line and count.** The active pane always shows `page x of y`, including a single page. The item count at the top of an inactive pane is grey.
+- **Sorting.** The sort menu lists DDA's fourteen modes with DDA's keys: density (`d`), offensive power (`o`), barter value per volume (`r`), barter value per weight (`g`) and amount (`t`). The header names the damage sort "offensive power".
+- **Destination menu.** Squares that cannot take items are red. A vehicle's name has its own column. Refusals use a key-waiting popup, including "You aren't dragging a vehicle." for the grabbed-vehicle square.
+
+Still CDF-only and drawn in the same style: the garment column, the Above/Below squares, the reset-filter-on-close line, and the inventory header's carried volume (which counts what you carry, not the capacity minus free space).

@@ -28,7 +28,13 @@ enum advanced_inv_sortby {
     SORTBY_DAMAGE,
     SORTBY_AMMO,
     SORTBY_SPOILAGE,
-    SORTBY_PRICE
+    SORTBY_PRICE,
+    // CDF: FM6 b, DDA advanced_inv_pane.h:20-33.  Appended here (not in DDA's position) so an
+    // existing save's saved sort_idx keeps the meaning it had.
+    SORTBY_DENSITY,
+    SORTBY_PRICEPERVOLUME,
+    SORTBY_PRICEPERWEIGHT,
+    SORTBY_STACKS
 };
 
 /**
@@ -105,11 +111,15 @@ class advanced_inventory_pane
         /** What ITEMS_PARENT does now.  @p other_pane_container is the other pane's container. */
         aim_parent_target parent_target( const item *other_pane_container ) const;
         /**
-         * P3-UI5: the container the other pane shows.  Its contents are listed there, so the
-         * inventory view leaves them out (DDA hides items added to the other pane).  Set by
-         * advanced_inventory::recalc_pane.
+         * P3-UI5: the container the other pane shows.  Set by advanced_inventory::recalc_pane;
+         * FM6 a1 highlights its row in this pane (advanced_inventory::print_items).
          */
         const item *other_pane_container = nullptr;
+        /**
+         * FM6 a1 (DDA advanced_inv_pane.h:85-88): the line of the other pane's container when it
+         * is a row of this pane, -1 when there is none.  Set by advanced_inventory::print_items.
+         */
+        int other_cont = -1;
         /** Select this item after the next recalculation (the container we just left). */
         item *target_item_after_recalc = nullptr;
         advanced_inv_pane_save_state *save_state;

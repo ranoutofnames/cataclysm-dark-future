@@ -365,7 +365,7 @@ TEST_CASE( "pane container is restored only when the advanced inventory is re-en
     }
 }
 
-TEST_CASE( "inventory view leaves out the contents of the other pane's container",
+TEST_CASE( "inventory view lists the contents of the other pane's container",
            "[advanced_inv][ui][p3]" )
 {
     clear_all_state();
@@ -387,5 +387,8 @@ TEST_CASE( "inventory view leaves out the contents of the other pane's container
     pane.items.clear();
     pane.other_pane_container = garment;
     pane.add_items_from_area( square_inventory );
-    CHECK( pane.items.empty() );
+    // FM6 a1: DDA keeps the contents in the inventory list and highlights the container's row in
+    // the pane that shows it (advanced_inv.cpp:298-304), so the rock is still listed here.
+    REQUIRE( pane.items.size() == 1 );
+    CHECK( pane.items.front().items.front()->parent_item() == garment );
 }

@@ -153,10 +153,8 @@ void advanced_inventory_pane::add_items_from_area( advanced_inv_area &square,
         for( size_t x = 0; x < stacks.size(); ++x ) {
             std::list<item *> item_pointers;
             for( item * const &i : stacks[x] ) {
-                // listed by the other pane, which shows this container
-                if( other_pane_container != nullptr && i->parent_item() == other_pane_container ) {
-                    continue;
-                }
+                // FM6 a1/a5: the contents of the other pane's container stay in this list, as DDA
+                // lists them; the container's row there is highlighted instead (advanced_inv.cpp)
                 item_pointers.push_back( i );
             }
             if( item_pointers.empty() ) {
@@ -181,6 +179,19 @@ void advanced_inventory_pane::add_items_from_area( advanced_inv_area &square,
             items.push_back( it );
         }
     } else if( square.id == AIM_WORN ) {
+        // FM6 a4, DDA advanced_inv_pane.cpp:214-228: the wielded weapon is listed first.
+        // CDF: primary_weapon replaces DDA's get_wielded_item (character.h:1531-1546); worn rows
+        // keep their worn index because advanced_inv_area::set_container stores idx
+        // (advanced_inv_area.cpp:350), so the weapon shares index 0.
+        item *weapon = &u.primary_weapon();
+        if( !weapon->is_null() ) {
+            advanced_inv_listitem it( weapon, 0, 1, square.id, false );
+            if( !is_filtered( *it.items.front() ) ) {
+                square.volume += it.volume;
+                square.weight += it.weight;
+                items.push_back( it );
+            }
+        }
         auto iter = u.worn.begin();
         for( size_t i = 0; i < u.worn.size(); ++i, ++iter ) {
             advanced_inv_listitem it( *iter, i, 1, square.id, false );
