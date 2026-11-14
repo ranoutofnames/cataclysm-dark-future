@@ -234,7 +234,8 @@ TEST_CASE( "insert selector does not offer a plate when both large slots are ful
 TEST_CASE( "container selector stats match the pockets of the container", "[inventory][ui][p3]" )
 {
     pack_fixture f;
-    detached_ptr<item> box = item::spawn( itype_id( "box_medium" ), calendar::turn );
+    // a free hiking pack: several soft pockets (data/json/items/armor/storage.json)
+    detached_ptr<item> box = item::spawn( itype_id( "backpack_hiking" ), calendar::turn );
     REQUIRE( box->try_put_in( item::spawn( itype_id( "test_rock" ), calendar::turn ) ).success() );
     item *rock = box->contents.all_items_top().front();
 
@@ -242,6 +243,7 @@ TEST_CASE( "container selector stats match the pockets of the container", "[inve
     for( const item_pocket *p : box->get_container_pockets() ) {
         capacity += p->volume_capacity();
     }
+    REQUIRE( box->get_container_pockets().size() >= 2 );
     container_probe sel( f.u, box.get() );
     const std::vector<std::string> lines = header_lines( sel.get_raw_stats() );
     REQUIRE_FALSE( lines.empty() );
