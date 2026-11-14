@@ -10,5 +10,23 @@
     "type": "item_group",
     "subtype": "collection",
     "entries": [ { "item": "tiny_pouch", "contents-item": [ "big_item" ] } ]
+  },
+  {
+    "id": "nested_group",
+    "type": "item_group",
+    "subtype": "distribution",
+    "entries": [
+      {
+        "collection": [
+          { "item": "missing_nested_item" },
+          {
+            "distribution": [
+              { "item": "tiny_pouch", "contents-item": [ "big_item" ] }
+            ]
+          }
+        ],
+        "prob": 100
+      }
+    ]
   }
 ]

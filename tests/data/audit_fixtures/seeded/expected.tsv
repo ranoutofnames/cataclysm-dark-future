@@ -7,6 +7,7 @@ A1	info	planted_vest	flag CDF_ONLY_FLAG only in CDF	cdf:data/json/items.json:37
 A2	error	dead_plate	insert-only item accepted by no pocket (flags ABLATIVE_LARGE,CANT_WEAR)	cdf:data/json/items.json:58
 A3	warning	dead_pocket_holder	pocket[0] flag_restriction=ABLATIVE_XL matches no item	cdf:data/json/items.json:66
 A4	error	missing_group_item	missing item id in item_group bad_group (item)	cdf:data/json/groups.json:3
+A4	error	missing_nested_item	missing item id in item_group nested_group (item)	cdf:data/json/groups.json:15
 A4	error	missing_prof_item	missing item id in profession bad_prof	cdf:data/json/professions.json:4
 A4	error	missing_recipe_item	missing item id in recipe component for clean_vest	cdf:data/json/recipes.json:4
 A4	error	no_such_item	missing migration target in old_bad (replace)	cdf:data/json/migrations.json:4
@@ -15,3 +16,4 @@ A6	error	chain_1	chain longer than 3: chain_2 -> chain_3 -> chain_4 -> clean_ves
 A6	error	cycle_a	cycle cycle_a -> cycle_a	cdf:data/json/migrations.json:9
 A6	error	old_bad	target no_such_item does not exist	cdf:data/json/migrations.json:4
 A7	warning	tiny_pouch	no pocket holds big_item	cdf:data/json/groups.json:9
+A7	warning	tiny_pouch	no pocket holds big_item	cdf:data/json/groups.json:15

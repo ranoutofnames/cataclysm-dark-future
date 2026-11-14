@@ -155,32 +155,16 @@ def run_capture(cmd, cwd, timeout):
 
 # --------------------------------------------------------------- allowlist
 
-def load_allow(path):
-    """(check id, item id) pairs from the tab-separated allowlist."""
-    allowed = set()
-    if not os.path.isfile(path):
-        return allowed
-    with open(path, encoding="utf-8", errors="replace") as f:
-        for line in f:
-            line = line.rstrip("\r\n")
-            if not line.strip() or line.lstrip().startswith("#"):
-                continue
-            parts = line.split("\t")
-            if len(parts) < 2:
-                continue
-            check = parts[0].strip()
-            if check.lower() in ("check", "check id"):
-                continue  # header row
-            allowed.add((check, parts[1].strip()))
-    return allowed
-
-
-def audit_result(rows, allowed):
-    """Turn cdf_audit rows into (result, counts, new findings)."""
-    new = [row for row in rows if (row[0], row[2]) not in allowed]
-    findings = [Finding(row[0], row[2], row[3]) for row in new]
-    counts = "%d findings (%d new)" % (len(rows), len(new))
-    return ("FAIL" if new else "PASS"), counts, findings
+def audit_result(rows, allowed_count=0):
+    """Turn allow-filtered cdf_audit rows into (result, counts, findings)."""
+    findings = [Finding(row[0], row[2], row[3]) for row in rows]
+    total = len(rows) + allowed_count
+    if allowed_count:
+        counts = "%d findings (%d new, %d allowed)" % (
+            total, len(rows), allowed_count)
+    else:
+        counts = "%d findings (%d new)" % (total, len(rows))
+    return ("FAIL" if rows else "PASS"), counts, findings
 
 
 # --------------------------------------------------------------- sections
@@ -198,14 +182,15 @@ def section_data_audit(ctx):
     dda = ctx.dda if ctx.dda and os.path.isdir(
         os.path.join(ctx.dda, "data", "json")) else None
     try:
-        _result, _count, rows = cdf_audit.section(ctx.src, dda)
+        _result, _count, rows, allowed = cdf_audit.section(
+            ctx.src, dda, ctx.allow_path)
     except Exception as exc:
         detail = os.path.join(ctx.out, "audit-error.log")
         write_text(detail, "%s\n" % exc)
         return Result("data-audit", "FAIL", "audit failed", detail)
     detail = os.path.join(ctx.out, "audit.tsv")
     write_text(detail, cdf_audit.format_tsv(rows))
-    result, counts, findings = audit_result(rows, load_allow(ctx.allow_path))
+    result, counts, findings = audit_result(rows, allowed)
     if dda is None:
         counts += " (no DDA)"
     return Result("data-audit", result, counts, detail, findings)
@@ -580,16 +565,11 @@ def selftest():
 
     with tempfile.TemporaryDirectory() as tmp:
         src = os.path.join(tmp, "src")
-        os.makedirs(os.path.join(src, "tests", "data", "audit"))
-        allow_path = os.path.join(src, ALLOW_PATH)
-        write_text(allow_path,
-                   "check\titem\treason\tdate\n"
-                   "A1\tok_item\tdeliberate CDF flag\t2026-11-14\n")
-        allowed = load_allow(allow_path)
-        check("header is not an allow entry",
-              allowed == {("A1", "ok_item")})
+        os.makedirs(src)
 
         fake_ctx = Context(src, "report", None, True, True, 25)
+        check("default allow path",
+              fake_ctx.allow_path == os.path.join(src, ALLOW_PATH))
         fake_ctx.commit, fake_ctx.build_number = "deadbeefcafe", "test"
         passed = Result("keybindings", "PASS", "0 findings", "")
         skipped = Result("ui-smoke", "SKIP", "no build", "")
@@ -610,16 +590,17 @@ def selftest():
               and exit_code([passed, skipped]) == 0)
 
         rows = [
-            ("A1", "error", "ok_item", "flag only in DDA", "src"),
-            ("A2", "error", "new_item", "accepted by no pocket", "src"),
+            ("A1", "error", "new_item", "flag only in DDA", "src"),
         ]
-        result, counts, findings = audit_result(rows, allowed)
-        check("allowlist count", counts == "2 findings (1 new)")
+        result, counts, findings = audit_result(rows, 1)
+        check("allowed count", counts == "2 findings (1 new, 1 allowed)")
         check("new finding fails", result == "FAIL"
               and findings[0].item == "new_item")
-        result, counts, findings = audit_result(rows[:1], allowed)
-        check("allowlisted finding passes", result == "PASS"
-              and counts == "1 findings (0 new)" and not findings)
+        result, counts, findings = audit_result([], 1)
+        check("all allowed passes", result == "PASS"
+              and counts == "1 findings (0 new, 1 allowed)" and not findings)
+        result, counts, findings = audit_result(rows)
+        check("no allow count", counts == "1 findings (1 new)")
 
         selected = select_sections("data-audit,keybindings")
         check("--only selects", [name for name, _fn in selected]

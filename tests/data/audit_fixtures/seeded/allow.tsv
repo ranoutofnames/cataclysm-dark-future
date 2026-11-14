@@ -1,0 +1,6 @@
+# Fixture allowlist for --selftest (allow-draft.tsv format).
+# The except_id_regex row must not drop the planted_vest pocket row.
+check	detail_regex	family_regex	except_id_regex	verdict	reason
+A1	^pocket\[0\] key moves only in DDA$	^items$	^planted_vest$	DELIBERATE	fixture: except_id must protect the planted row
+A1	^flag DDA_ONLY_FLAG only in DDA$	^items$	^$	DELIBERATE	fixture: allowed A1 flag row
+A4	^missing item id in item_group bad_group \(item\)$	.*	^$	DELIBERATE	fixture: allowed A4 row
