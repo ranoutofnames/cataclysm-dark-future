@@ -644,7 +644,7 @@ class inventory_selector
         void add_nearby_items( int radius = 1 );
         void add_fake_items( Character &character );
         /** Per DDA inventory_ui.cpp:3821: switch between category columns and the container tree. */
-        void toggle_categorize_contained();
+        virtual void toggle_categorize_contained();
         /** Registers VIEW_CATEGORY_MODE for this selector. The footer label is always drawn. */
         void enable_view_mode_toggle();
 
@@ -731,8 +731,6 @@ class inventory_selector
         using header_stats_line = std::vector<std::string>;
         using header_stats = std::vector<header_stats_line>;
         static header_stats convert_stats_to_header_stats( const stats &old_stats );
-
-        bool keep_open = false;
 
         void add_item( inventory_column &target_column,
                        item *location,
@@ -1011,6 +1009,10 @@ class inventory_selector
         bool display_stats = true;
         int nearby_radius = -1;
         bool fake_items_added = false;
+        // CDF: the sources a selector was built from, so toggle_categorize_contained() can rebuild
+        // the same rows. DDA re-categorizes in place; CDF clears and re-adds.
+        bool character_items_added = false;
+        std::vector<tripoint_bub_ms> added_squares;
         // Per DDA inventory_ui.h:1007. Shared by all selectors; CDF default is on (old behaviour).
         static bool skip_unselectable;
 
@@ -1035,6 +1037,18 @@ inventory_selector::stat display_stat( const std::string &caption, int cur_value
 
 /** CDF: P3-UI3. True when `it` is inside `container` at any depth (DDA item_location::eventually_contains). */
 bool eventually_contains( const item &container, const item &it );
+
+/**
+ * What a pick selector's handle_action() wants its execute() loop to do. This replaces the old
+ * bool close signal: DDA's execute returns directly from every branch, while CDF needs to say
+ * whether the key was used at all. pick_action_result::not_handled falls through to on_input().
+ */
+enum class pick_action_result {
+    not_handled,   // not a handler action: run on_input()
+    stay_open,     // handled; keep the screen open and do not run on_input()
+    close_screen,  // handled; return nullptr, the caller closes (or reopens) the screen
+    return_item,   // handled; return the selected item
+};
 
 class inventory_pick_selector : public inventory_selector
 {
@@ -1073,13 +1087,9 @@ class inventory_pick_selector : public inventory_selector
         item *drag_source = nullptr;
         bool drag_active = false;
 
-        virtual auto handle_action( const std::string &/*action*/ ) -> bool {
-            return false;
+        virtual auto handle_action( const std::string &/*action*/ ) -> pick_action_result {
+            return pick_action_result::not_handled;
         }
-
-        /// Receives a key that matched no selectable letter and no picker action.
-        /// @return The item to pick, or nullptr to treat the key as before.
-        virtual auto pick_by_unbound_key( int /*key*/ ) -> item * { return nullptr; } // *NOPAD*
 };
 
 /** The choice made in the unload screen: the item to unload (nullptr if cancelled) and the Auto flag. */
@@ -1134,7 +1144,7 @@ class inventory_multiselector : public inventory_selector
         /// Test hook: when set, the "not an integer" message goes here instead of the popup.
         static std::function<void( const std::string & )> query_count_error_test_hook;
         /// Per DDA inventory_ui.cpp:4760-4772: the chosen counts survive the view switch.
-        void toggle_categorize_contained();
+        void toggle_categorize_contained() override;
         /// Whether an entry may be marked together with the container that holds it (DDA
         /// allow_select_contained). False for every CDF multiselector.
         bool allow_select_contained = false;

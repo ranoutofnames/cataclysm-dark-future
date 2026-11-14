@@ -136,24 +136,19 @@ class common_inventory_selector : public inventory_pick_selector
         }
 
     protected:
-        auto handle_action( const std::string &action ) -> bool override {
-            if( action == "ORGANIZE_MENU" ) {
-                // Per DDA inventory_ui.cpp:3971
-                u.organize_items_menu();
-                return true;
-            }
+        auto handle_action( const std::string &action ) -> pick_action_result override {
             if( action == "VIEW_CATEGORY_MODE" ) {
-                // CDF: FM5b. DDA inventory_ui.cpp:3640 toggles in inventory_selector::on_input;
-                // CDF's on_input (inventory_ui.cpp:3426) has no such branch, so the toggle stays
-                // here and returns false: execute() (inventory_ui.cpp:3730) only closes on true.
+                // FM5b: DDA inventory_ui.cpp:3640 toggles in inventory_selector::on_input. The
+                // common screen toggles here instead so the probe test can drive it directly; the
+                // explicit outcome keeps execute() from also running on_input() for the key.
                 toggle_categorize_contained();
-                return false;
+                return pick_action_result::stay_open;
             }
             if( action != "unload_all" ) {
-                return false;
+                return pick_action_result::not_handled;
             }
             unload_all_selected = true;
-            return true;
+            return pick_action_result::close_screen;
         }
 
     private:
@@ -181,7 +176,7 @@ class common_selector_test_probe : public common_inventory_selector
     public:
         using common_inventory_selector::common_inventory_selector;
 
-        auto probe( const std::string &action ) -> bool {
+        auto probe( const std::string &action ) -> pick_action_result {
             return handle_action( action );
         }
         auto in_category_mode() const -> bool {
@@ -213,8 +208,8 @@ int anesthetic_requirement( int mult )
 
 // CDF: FM5b, test hook (precedent: FM5a take_off_none_message). Declared here and in
 // tests/game_inventory_pockets_test.cpp, not in game_inventory.h (a hook there would rebuild its
-// includers); keep the two signatures identical. closes mirrors inventory_pick_selector::execute()
-// (inventory_ui.cpp:3730): true when the action makes the selector return and close the screen.
+// includers); keep the two signatures identical. closes mirrors inventory_pick_selector::execute():
+// true when handle_action() names pick_action_result::close_screen.
 namespace game_menus
 {
 namespace inv
@@ -231,8 +226,8 @@ game_menus::inv::common_selector_action game_menus::inv::probe_common_selector_a
     player &p, const std::string &action )
 {
     common_selector_test_probe sel( p );
-    const bool closes = sel.probe( action );
-    return { closes, sel.in_category_mode() };
+    const pick_action_result result = sel.probe( action );
+    return { result == pick_action_result::close_screen, sel.in_category_mode() };
 }
 
 inventory_filter_preset::inventory_filter_preset( const item_filter &filter )
@@ -329,11 +324,6 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
 
         item *location = inv_s.execute();
 
-        if( inv_s.keep_open ) {
-            inv_s.keep_open = false;
-            continue;
-        }
-
         if( u.has_activity( consuming ) ) {
             u.activity->values.clear();
             init_pair = inv_s.get_selection_position();
@@ -381,12 +371,7 @@ void game_menus::inv::common( avatar &you )
         }
 
         if( location == nullptr ) {
-            if( inv_s.keep_open ) {
-                inv_s.keep_open = false;
-                continue;
-            } else {
-                break;
-            }
+            break;
         }
 
         const auto func_pos_x = []() {
@@ -1565,7 +1550,7 @@ class insert_inventory_preset : public inventory_selector_preset
             }
 
             if( it->is_bucket_nonempty() ) {
-                return "item would spill";
+                return _( "item would spill" );
             }
 
             detached_ptr<item> item_copy = item::spawn( *it );
@@ -1573,12 +1558,12 @@ class insert_inventory_preset : public inventory_selector_preset
             ret_val<void> ret = holster.can_contain( *item_copy, false, false, true, false,
                                 it->parent_item() );
             if( !ret.success() ) {
-                return !ret.str().empty() ? ret.str() : "item can't be stored there";
+                return !ret.str().empty() ? ret.str() : _( "item can't be stored there" );
             }
 
             ret = parents_can_contain_recursive( holster, *item_copy );
             if( !ret.success() ) {
-                return !ret.str().empty() ? ret.str() : "item can't be stored there";
+                return !ret.str().empty() ? ret.str() : _( "item can't be stored there" );
             }
 
             return {};
@@ -2187,13 +2172,7 @@ drop_locations game_menus::inv::multidrop( player &p )
             return drop_locations();
         }
 
-        drop_locations result = inv_s.execute();
-        // an item has been favorited, reopen the UI
-        if( inv_s.keep_open ) {
-            continue;
-        } else {
-            return result;
-        }
+        return inv_s.execute();
     }
 }
 
@@ -2464,14 +2443,7 @@ static item *autodoc_internal( player &u, player &patient,
             return nullptr;
         }
 
-        item *location = inv_s.execute();
-
-        if( inv_s.keep_open ) {
-            inv_s.keep_open = false;
-            continue;
-        }
-
-        return location;
+        return inv_s.execute();
 
     } while( true );
 }
@@ -2797,14 +2769,7 @@ static item *autoclave_internal( player &u,
             return nullptr;
         }
 
-        item *location = inv_s.execute();
-
-        if( inv_s.keep_open ) {
-            inv_s.keep_open = false;
-            continue;
-        }
-
-        return location;
+        return inv_s.execute();
 
     } while( true );
 

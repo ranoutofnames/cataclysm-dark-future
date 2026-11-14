@@ -14,6 +14,7 @@
 #include "type_id.h"
 #include "uistate.h"
 
+#include <algorithm>
 #include <array>
 #include <fstream>
 #include <iterator>
@@ -2413,4 +2414,127 @@ TEST_CASE("contained items follow the preset pocket types", "[inventory][ui][fm]
     CHECK(row_of(mod_ptr) == nullptr);
     // neither is the magazine in its well
     CHECK(row_of(mag_ptr) == nullptr);
+}
+
+// PL-64 IN2: input-path fixes (G02-G05, G19-G22, G31).
+namespace {
+struct in2_pick_probe : inventory_pick_selector {
+    using inventory_pick_selector::inventory_pick_selector;
+    using inventory_selector::process_input;
+    using inventory_selector::ctxt;
+    auto actions() const -> std::vector<std::string> {
+        return ctxt.get_registered_actions_copy();
+    }
+};
+
+struct in2_drop_probe : inventory_drop_selector {
+    using inventory_drop_selector::inventory_drop_selector;
+    using inventory_selector::ctxt;
+    auto actions() const -> std::vector<std::string> {
+        return ctxt.get_registered_actions_copy();
+    }
+};
+
+struct in2_compare_probe : inventory_compare_selector {
+    using inventory_compare_selector::inventory_compare_selector;
+    using inventory_selector::ctxt;
+    auto actions() const -> std::vector<std::string> {
+        return ctxt.get_registered_actions_copy();
+    }
+};
+
+struct in2_pickup_probe : inventory_pickup_selector {
+    using inventory_pickup_selector::inventory_pickup_selector;
+    using inventory_selector::ctxt;
+    auto actions() const -> std::vector<std::string> {
+        return ctxt.get_registered_actions_copy();
+    }
+};
+
+auto in2_has_action(const std::vector<std::string>& actions, const std::string& id) -> bool {
+    return std::find(actions.begin(), actions.end(), id) != actions.end();
+}
+} // namespace
+
+TEST_CASE("the view mode key is registered in every selector kind", "[inventory][ui][in2]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+
+    // G03/G04: DDA registers VIEW_CATEGORY_MODE in the base ctor (inventory_ui.cpp:3471) and
+    // WIELD/WEAR only in the pickup selector (4997-4998).
+    in2_pick_probe pick(you);
+    CHECK(in2_has_action(pick.actions(), "VIEW_CATEGORY_MODE"));
+    CHECK_FALSE(in2_has_action(pick.actions(), "WIELD"));
+    CHECK_FALSE(in2_has_action(pick.actions(), "WEAR"));
+
+    in2_pickup_probe pickup(you);
+    CHECK(in2_has_action(pickup.actions(), "VIEW_CATEGORY_MODE"));
+    CHECK(in2_has_action(pickup.actions(), "WIELD"));
+    CHECK(in2_has_action(pickup.actions(), "WEAR"));
+
+    in2_drop_probe drop(you);
+    CHECK(in2_has_action(drop.actions(), "VIEW_CATEGORY_MODE"));
+    CHECK_FALSE(in2_has_action(drop.actions(), "WIELD"));
+    CHECK_FALSE(in2_has_action(drop.actions(), "WEAR"));
+
+    in2_compare_probe compare(you);
+    CHECK(in2_has_action(compare.actions(), "VIEW_CATEGORY_MODE"));
+}
+
+TEST_CASE("a bound key is not stolen by an item invlet", "[inventory][ui][in2]") {
+    // G22: an item with invlet r must not take the reset-filter key. Only an unbound key
+    // (ANY_INPUT) selects a row by its letter.
+    clear_all_state();
+    avatar& you = get_avatar();
+    item& bandage = you.i_add(item::spawn("bandages"));
+    bandage.invlet = 'r';
+
+    in2_pick_probe sel(you);
+    sel.add_character_items(you);
+    sel.own_inv_column.prepare_paging();
+
+    const inventory_input bound = sel.process_input("RESET_FILTER", 'r');
+    CHECK(bound.entry == nullptr);
+
+    const inventory_input unbound = sel.process_input("ANY_INPUT", 'r');
+    REQUIRE(unbound.entry != nullptr);
+    CHECK(unbound.entry->any_item() == &bandage);
+}
+
+TEST_CASE("a digit bound to an action is not a count in a multiselector",
+          "[inventory][ui][in2]") {
+    // G19: 4 is NEXT_COLUMN and 6 is TOGGLE_ENTRY. They keep their action instead of opening the
+    // count prompt. Only an unbound digit seeds the prompt.
+    clear_all_state();
+    avatar& you = get_avatar();
+    item& rock = you.i_add(item::spawn("rock"));
+
+    inventory_iuse_selector sel(you, "test");
+    sel.add_character_items(you);
+    sel.own_inv_column.prepare_paging();
+    REQUIRE(sel.select(&rock));
+
+    CHECK_FALSE(sel.handle_mark_action("NEXT_COLUMN", '4'));
+    CHECK(sel.handle_mark_action("TOGGLE_ENTRY", '6'));
+    const inventory_entry* row = row_for(sel, &rock);
+    REQUIRE(row != nullptr);
+    CHECK(row->chosen_count > 0);
+}
+
+TEST_CASE("examine with no highlighted row is a no-op", "[inventory][ui][in2]") {
+    // G31/R-001: the column handler used to call get_selected().any_item() without a guard.
+    clear_all_state();
+    auto disabled = item::spawn("bandages");
+
+    inventory_selector_preset preset;
+    inventory_column col(preset);
+    col.add_entry(inventory_entry({disabled.get()}, nullptr, false));
+    col.invalidate_paging();
+    col.on_activate();
+    col.prepare_paging();
+
+    // skip_unselectable is on by default, so the only row cannot be highlighted.
+    REQUIRE_FALSE(col.get_selected().is_item());
+    col.on_input(inventory_input{"EXAMINE", 0, nullptr});
+    CHECK_FALSE(col.get_selected().is_item());
 }

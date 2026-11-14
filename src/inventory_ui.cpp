@@ -959,16 +959,21 @@ void inventory_column::on_input( const inventory_input &input )
     } else if( input.action == "HOME" ) {
         select( 0, scroll_direction::FORWARD );
     } else if( input.action == "EXAMINE" ) {
-        const auto &highlighed =  get_selected().any_item();
+        // G31: only act when a row is highlighted (DDA inventory_ui.cpp:3662-3667 guards with
+        // if( selected )). get_selected() returns a null dummy for a header or an empty column.
+        const inventory_entry &selected = get_selected();
+        if( selected.is_item() ) {
+            item *const highlighted = selected.any_item();
 
-        std::vector<iteminfo> this_item = highlighed->info();
-        item_info_data dummy( highlighed->display_name(), {}, this_item, {} );
-        dummy.handle_scrolling = true;
-        draw_item_info( []() -> catacurses::window {
-            const int width = std::min( TERMX, FULL_SCREEN_WIDTH ) + std::max( 0, TERMX - FULL_SCREEN_WIDTH ) * ( 1.0 / 4 );
-            const int height = std::min( TERMY, FULL_SCREEN_HEIGHT ) + std::max( 0, TERMY - FULL_SCREEN_HEIGHT ) * ( 2.0 / 3 );
-            return catacurses::newwin( height, width, point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 ) );
-        }, dummy );
+            std::vector<iteminfo> this_item = highlighted->info();
+            item_info_data dummy( highlighted->display_name(), {}, this_item, {} );
+            dummy.handle_scrolling = true;
+            draw_item_info( []() -> catacurses::window {
+                const int width = std::min( TERMX, FULL_SCREEN_WIDTH ) + std::max( 0, TERMX - FULL_SCREEN_WIDTH ) * ( 1.0 / 4 );
+                const int height = std::min( TERMY, FULL_SCREEN_HEIGHT ) + std::max( 0, TERMY - FULL_SCREEN_HEIGHT ) * ( 2.0 / 3 );
+                return catacurses::newwin( height, width, point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 ) );
+            }, dummy );
+        }
 
         // recalc = true;
         // keepline = true;
@@ -1987,6 +1992,7 @@ void inventory_selector::action_examine( const item *sitem )
 
 void inventory_selector::add_character_items( Character &character )
 {
+    character_items_added = true;
     // Per DDA inventory_ui.cpp:2195-2212: one listing path for both view modes. Every worn/wielded
     // row is made by add_entry_rec, which sets the row's chevron when it has visible contents.
     // CDF: item * instead of DDA's item_location (OPENCODE_RULES).
@@ -2019,6 +2025,10 @@ void inventory_selector::add_character_items( Character &character )
 
 void inventory_selector::add_map_items( const tripoint_bub_ms &target )
 {
+    // CDF: remember the source so toggle_categorize_contained() can rebuild these rows.
+    if( std::find( added_squares.begin(), added_squares.end(), target ) == added_squares.end() ) {
+        added_squares.push_back( target );
+    }
     if( g->m.accessible_items( target ) ) {
         const auto items = g->m.i_at( target );
         const std::string name = to_upper_case( g->m.name( target ) );
@@ -2032,6 +2042,10 @@ void inventory_selector::add_map_items( const tripoint_bub_ms &target )
 
 void inventory_selector::add_vehicle_items( const tripoint_bub_ms &target )
 {
+    // CDF: remember the source so toggle_categorize_contained() can rebuild these rows.
+    if( std::find( added_squares.begin(), added_squares.end(), target ) == added_squares.end() ) {
+        added_squares.push_back( target );
+    }
     const std::optional<vpart_reference> vp = g->m.veh_at( target ).part_with_feature( "CARGO", true );
     if( !vp ) {
         return;
@@ -2085,19 +2099,21 @@ void inventory_selector::add_fake_items( Character &character )
 
 void inventory_selector::enable_view_mode_toggle()
 {
-    // The footer label is always drawn (DDA inventory_ui.cpp:3416-3418); this only opts the
-    // selector into the key.
-    ctxt.register_action( "VIEW_CATEGORY_MODE", to_translation( "Switch view mode" ) );
+    // Per DDA inventory_ui.cpp:3471 the action is registered in the selector constructor, so every
+    // screen can toggle the view. Kept as a no-op for callers that used to ask for the key (the
+    // footer label was always drawn; DDA inventory_ui.cpp:3416-3418).
 }
 
 void inventory_selector::toggle_categorize_contained()
 {
-    // Per DDA inventory_ui.cpp:3821. DDA re-labels the existing entries; CDF's category mode has no
-    // contained rows, so the entries are rebuilt from the same sources in the other mode.
+    // CDF: DDA re-labels the existing entries; CDF's category mode has no contained rows, so the
+    // entries are rebuilt from the same sources. Copy the sources before clear_items() forgets them.
     const item *highlighted = nullptr;
     if( has_available_choices() && get_selected().is_item() ) {
         highlighted = get_selected().any_item();
     }
+    const bool had_character_items = character_items_added;
+    const std::vector<tripoint_bub_ms> squares = added_squares;
     _uimode = _uimode == uimode::hierarchy ? uimode::categories : uimode::hierarchy;
     // Per DDA inventory_ui.cpp:3497-3503: remember the mode for the next opening. CDF: DDA writes it
     // back in the destructor; here the toggle is the only writer of _uimode, so it writes it back.
@@ -2113,9 +2129,12 @@ void inventory_selector::toggle_categorize_contained()
         col->uncollate();
         col->set_hierarchy( _uimode == uimode::hierarchy );
     }
-    add_character_items( u );
-    if( nearby_radius >= 0 ) {
-        add_nearby_items( nearby_radius );
+    if( had_character_items ) {
+        add_character_items( u );
+    }
+    for( const tripoint_bub_ms &pos : squares ) {
+        add_map_items( pos );
+        add_vehicle_items( pos );
     }
     if( fake_items_added ) {
         add_fake_items( u );
@@ -2135,6 +2154,8 @@ void inventory_selector::clear_items()
     // A-L5 fix: the rows the map points to are gone.
     rect_entry_map.clear();
     is_empty = true;
+    character_items_added = false;
+    added_squares.clear();
     for( auto &column : columns ) {
         column->clear();
     }
@@ -3337,11 +3358,11 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "HELP_KEYBINDINGS" );
     ctxt.register_action( "INVENTORY_FILTER" );
     ctxt.register_action( "EXAMINE" );
-    ctxt.register_action( "WIELD" );
-    ctxt.register_action( "WEAR" );
     ctxt.register_action( "ANY_INPUT" ); // For invlets
     // Per DDA inventory_ui.cpp:3481; registered here so auto-assigned invlets skip its key.
     ctxt.register_action( "ORGANIZE_MENU" );
+    // Per DDA inventory_ui.cpp:3471: the view toggle works in every selector, not only common().
+    ctxt.register_action( "VIEW_CATEGORY_MODE", to_translation( "Switch view mode" ) );
     ctxt.register_action( "SHOW_HIDE_CONTENTS", to_translation( "Show/hide contents" ) );
     // Per DDA inventory_ui.cpp:3469; the key comes from UI0.
     ctxt.register_action( "EXAMINE_CONTENTS" );
@@ -3462,9 +3483,14 @@ inventory_input inventory_selector::process_input( const std::string &action, in
         }
     }
 
-    res.entry = find_entry_by_invlet( res.ch );
-    if( res.entry != nullptr && !res.entry->is_selectable() ) {
-        res.entry = nullptr;
+    // G22: a key bound to an action must not be stolen by an item invlet (r/R reset the filter,
+    // o examines the contents, 4/6 move the column and mark). DDA looks the invlet up for every
+    // key; CDF lets the binding win, so only an unbound key (ANY_INPUT) picks by invlet.
+    if( res.action == "ANY_INPUT" ) {
+        res.entry = find_entry_by_invlet( res.ch );
+        if( res.entry != nullptr && !res.entry->is_selectable() ) {
+            res.entry = nullptr;
+        }
     }
     return res;
 }
@@ -3626,6 +3652,9 @@ void inventory_selector::on_input( const inventory_input &input )
 {
     if( input.action == "CATEGORY_SELECTION" ) {
         toggle_navigation_mode();
+    } else if( input.action == "VIEW_CATEGORY_MODE" ) {
+        // Per DDA inventory_ui.cpp:3640: toggles in every selector and stays open.
+        toggle_categorize_contained();
     } else if( input.action == "TOGGLE_NUMPAD_NAVIGATION" ) {
         // Per DDA inventory_ui.cpp:3642-3644.
         uistate.numpad_navigation = !uistate.numpad_navigation;
@@ -3683,14 +3712,6 @@ void inventory_selector::on_input( const inventory_input &input )
         }
         refresh_active_column(); // Columns can react to actions by losing their activation capacity
         prepare_layout();
-    } else if( input.action == "WIELD" ) {
-        auto &entry = const_cast<inventory_entry &>( get_selected() );
-        wield( entry );
-        assign_invlet_hints();
-    } else if( input.action == "WEAR" ) {
-        auto &entry = const_cast<inventory_entry &>( get_selected() );
-        wear( entry );
-        assign_invlet_hints();
     } else {
         if( has_available_choices() ) {
             for( inventory_column *elem : columns ) {
@@ -3923,6 +3944,10 @@ item *inventory_pick_selector::execute()
                 ui_manager::redraw();
             }
             return input.entry->any_item();
+        } else if( input.action == "ORGANIZE_MENU" ) {
+            // Per DDA inventory_ui.cpp:3971-3973: every pick selector organizes and closes.
+            u.organize_items_menu();
+            return nullptr;
         } else if( input.action == "QUIT" ) {
             return nullptr;
         } else if( input.action == "CONFIRM" ) {
@@ -3930,19 +3955,19 @@ item *inventory_pick_selector::execute()
             if( item *const confirmed = confirmed_item() ) {
                 return confirmed;
             }
-        } else if( handle_action( input.action ) ) {
-            return nullptr;
         } else {
-            auto *const picked = input.action == "ANY_INPUT"
-                                 ? pick_by_unbound_key( input.ch )
-                                 : nullptr;
-            if( picked != nullptr ) {
-                if( select( picked ) ) {
-                    ui_manager::redraw();
-                }
-                return picked;
+            switch( handle_action( input.action ) ) {
+                case pick_action_result::close_screen:
+                    return nullptr;
+                case pick_action_result::return_item:
+                    return confirmed_item();
+                case pick_action_result::stay_open:
+                    // The handler did its work and the screen stays open.
+                    break;
+                case pick_action_result::not_handled:
+                    on_input( input );
+                    break;
             }
-            on_input( input );
         }
 
     }
@@ -4299,7 +4324,11 @@ bool inventory_multiselector::is_count_digit( int ch )
 bool inventory_multiselector::handle_mark_action( const std::string &action, int ch )
 {
     int count = 0;
-    if( !uistate.numpad_navigation && is_count_digit( ch ) ) {
+    // G19: only an unbound digit (the test/empty action or ANY_INPUT) opens the count prompt.
+    // A digit that is bound to an action keeps that action: 4 moves the column, 6 marks the row.
+    const bool unbound_digit = ( action.empty() || action == "ANY_INPUT" ) &&
+                               !uistate.numpad_navigation && is_count_digit( ch );
+    if( unbound_digit ) {
         // Checked first: UI0 also binds "1" to MARK_WITH_COUNT, and the digit must seed the prompt.
         // Per DDA inventory_ui.cpp:4788-4790: with numpad navigation on the digits move the cursor.
         int query_result = query_count( static_cast<char>( ch ), true );
@@ -4462,8 +4491,10 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
-            // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
+        if( ( input.action.empty() || input.action == "ANY_INPUT" ) &&
+            !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
+            // A-L1 fix: an unbound digit opens the count prompt even when a row has that digit as
+            // invlet. G19: a bound digit (4, 6) keeps its action.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
             select( input.entry->any_item() );
@@ -4686,7 +4717,6 @@ void inventory_drop_selector::on_toggle()
 drop_locations inventory_drop_selector::execute()
 {
     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
-    this->keep_open = false;
     preview_dirty = true;
 
     // if we favorited an item, we exited this function and entered it again
@@ -4719,8 +4749,10 @@ drop_locations inventory_drop_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
-            // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
+        if( ( input.action.empty() || input.action == "ANY_INPUT" ) &&
+            !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
+            // A-L1 fix: an unbound digit opens the count prompt even when a row has that digit as
+            // invlet. G19: a bound digit (4, 6) keeps its action.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
             select( input.entry->any_item() );
@@ -4998,8 +5030,10 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
-            // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
+        if( ( input.action.empty() || input.action == "ANY_INPUT" ) &&
+            !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
+            // A-L1 fix: an unbound digit opens the count prompt even when a row has that digit as
+            // invlet. G19: a bound digit (4, 6) keeps its action.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
             select( input.entry->any_item() );
