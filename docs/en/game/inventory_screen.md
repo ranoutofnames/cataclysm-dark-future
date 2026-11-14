@@ -126,6 +126,7 @@ The multipickup menu (pick up from your tile or from the tiles around you) now b
 - **Nothing marked**: confirming with no item marked is refused with a popup that names the mark key.
 - **Header**: the usual carried volume and weight line is followed by a "Selected" line with the volume and weight of what you have marked (a partly marked stack counts only the part you marked).
 - **Wield and wear**: the highlighted item is wielded or worn at once and removed from the list, the highlight moves to the next item and the menu stays open. The menu closes when nothing is left.
+
 ## Insert picker and pocket denial text
 
 The "Put item into ..." picker (`game_menus::inv::insert_items`, DDA `game_menus::inv::holster`) is built on
