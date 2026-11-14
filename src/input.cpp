@@ -438,6 +438,7 @@ void input_manager::init_keycode_mapping()
     keyname_to_keycode["SCROLL_UP"] = SCROLLWHEEL_UP;
     keyname_to_keycode["SCROLL_DOWN"] = SCROLLWHEEL_DOWN;
     keyname_to_keycode["MOUSE_MOVE"] = MOUSE_MOVE;
+    keyname_to_keycode["MOUSE_LEFT_PRESSED"] = MOUSE_BUTTON_LEFT_PRESSED;
 }
 
 int input_manager::get_keycode( const std::string &name ) const
@@ -491,6 +492,8 @@ std::string input_manager::get_keyname( int ch, input_event_t inp_type, bool por
             raw = translate_marker_context( "key name", "SCROLL_DOWN" );
         } else if( ch == MOUSE_MOVE ) {
             raw = translate_marker_context( "key name", "MOUSE_MOVE" );
+        } else if( ch == MOUSE_BUTTON_LEFT_PRESSED ) {
+            raw = translate_marker_context( "key name", "MOUSE_LEFT_PRESSED" );
         }
     } else if( inp_type == input_event_t::gamepad ) {
         const t_key_to_name_map::const_iterator a = gamepad_keycode_to_keyname.find( ch );
@@ -964,6 +967,11 @@ const std::string &input_context::handle_input( const int timeout )
         if( next_action.type == input_event_t::mouse ) {
             if( !handling_coordinate_input && action == CATA_ERROR ) {
                 continue; // Ignore this mouse input.
+            }
+            // The left button press exists only as a drag start (CLICK_AND_DRAG); where nothing
+            // binds it, drop it so contexts see one event per click (the release) as before.
+            if( action == CATA_ERROR && next_action.get_first_input() == MOUSE_BUTTON_LEFT_PRESSED ) {
+                continue;
             }
 
             coordinate_input_received = true;
@@ -1516,6 +1524,18 @@ std::optional<tripoint_bub_ms> input_context::get_coordinates( const catacurses:
 
     const point_bub_ms p = view_offset - ( view_size / 2 - coordinate );
     return tripoint_bub_ms( p, g->get_levz() );
+}
+#endif
+
+#if !defined(TILES)
+// The TILES version is in sdltiles.cpp. In curses the mouse position is a screen cell.
+std::optional<point> input_context::get_coordinates_text( const catacurses::window &capture_win )
+const
+{
+    if( !coordinate_input_received ) {
+        return std::nullopt;
+    }
+    return coordinate - point( getbegx( capture_win ), getbegy( capture_win ) );
 }
 #endif
 

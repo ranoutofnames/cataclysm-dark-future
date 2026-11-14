@@ -14,6 +14,7 @@
 #include "game_inventory.h"
 #include "ime.h"
 #include "inventory.h"
+#include "inventory_examiner.h"
 #include "item.h"
 #include "item_category.h"
 #include "item_search.h"
@@ -93,6 +94,7 @@ struct inventory_input {
     std::string action;
     int ch;
     inventory_entry *entry;
+    bool mouse = false; // entry was found by screen position, not by inventory letter
 };
 
 bool inventory_entry::operator==( const inventory_entry &other ) const
@@ -241,11 +243,39 @@ const item_category *inventory_entry::get_category_ptr() const
     return &any_item()->get_category();
 }
 
+inventory_column::inventory_column( const inventory_selector_preset &preset ) : preset( preset )
+{
+    hide_entries_override = uistate.hide_entries_override;
+    cells.resize( preset.get_cells_count() );
+}
+
 bool inventory_column::activatable() const
 {
-    return std::ranges::any_of( entries, []( const inventory_entry & e ) {
-        return e.is_selectable();
+    return std::ranges::any_of( entries, [this]( const inventory_entry & e ) {
+        return e.is_highlightable( skip_unselectable );
     } );
+}
+
+// Per DDA inventory_ui.cpp:737-740.
+void inventory_column::toggle_skip_unselectable( const bool skip )
+{
+    skip_unselectable = skip;
+}
+
+// Per DDA inventory_ui.cpp:3585-3597.
+void inventory_column::cycle_hide_override()
+{
+    if( hide_entries_override ) {
+        if( *hide_entries_override ) {
+            hide_entries_override = std::nullopt;
+        } else {
+            hide_entries_override = true;
+        }
+    } else {
+        hide_entries_override = false;
+    }
+    uistate.hide_entries_override = hide_entries_override;
+    paging_is_valid = false;
 }
 
 inventory_entry *inventory_column::find_by_invlet( int invlet ) const
@@ -390,8 +420,8 @@ std::string  inventory_selector_preset::cell_t::get_text( const inventory_entry 
 void inventory_column::select( size_t new_index, scroll_direction dir )
 {
     if( new_index < entries.size() ) {
-        if( !entries[new_index].is_selectable() ) {
-            new_index = next_selectable_index( new_index, dir );
+        if( !entries[new_index].is_highlightable( skip_unselectable ) ) {
+            new_index = next_highlightable_index( new_index, dir );
         }
 
         selected_index = new_index;
@@ -400,7 +430,8 @@ void inventory_column::select( size_t new_index, scroll_direction dir )
     }
 }
 
-size_t inventory_column::next_selectable_index( size_t index, scroll_direction dir ) const
+// Per DDA inventory_ui.cpp:972-996. CDF: was next_selectable_index.
+size_t inventory_column::next_highlightable_index( size_t index, scroll_direction dir ) const
 {
     if( entries.empty() ) {
         return index;
@@ -414,9 +445,9 @@ size_t inventory_column::next_selectable_index( size_t index, scroll_direction d
         //     N = entries.size()  - number of elements,
         //     k = |step|          - absolute step (k <= N).
         new_index = ( new_index + static_cast<int>( dir ) + entries.size() ) % entries.size();
-    } while( new_index != index && !entries[new_index].is_selectable() );
+    } while( new_index != index && !entries[new_index].is_highlightable( skip_unselectable ) );
 
-    if( !entries[new_index].is_selectable() ) {
+    if( !entries[new_index].is_highlightable( skip_unselectable ) ) {
         return static_cast<size_t>( -1 );
     }
 
@@ -428,7 +459,7 @@ void inventory_column::move_selection( scroll_direction dir )
     size_t index = selected_index;
 
     do {
-        index = next_selectable_index( index, dir );
+        index = next_highlightable_index( index, dir );
     } while( index != selected_index && is_selected_by_category( entries[index] ) );
 
     select( index, dir );
@@ -439,7 +470,7 @@ void inventory_column::move_selection_page( scroll_direction dir )
     size_t index = selected_index;
 
     do {
-        const size_t next_index = next_selectable_index( index, dir );
+        const size_t next_index = next_highlightable_index( index, dir );
         const bool flipped = next_index == selected_index ||
                              ( next_index > selected_index ) != ( static_cast<int>( dir ) > 0 );
 
@@ -448,7 +479,21 @@ void inventory_column::move_selection_page( scroll_direction dir )
         }
 
         index = next_index;
-    } while( page_of( next_selectable_index( index, dir ) ) == page_index() );
+    } while( page_of( next_highlightable_index( index, dir ) ) == page_index() );
+
+    select( index, dir );
+}
+
+// Per DDA inventory_ui.cpp:1027-1039 (mouse wheel).
+void inventory_column::scroll_selection_page( scroll_direction dir )
+{
+    size_t index = selected_index;
+
+    while( page_of( index = next_highlightable_index( index, dir ) ) == page_index() ) {
+        if( index == selected_index && page_of( index ) == page_index() ) {
+            break; // If flipped and still on the same page - no need to flip
+        }
+    }
 
     select( index, dir );
 }
@@ -777,6 +822,10 @@ void inventory_column::on_input( const inventory_input &input )
         move_selection_page( scroll_direction::FORWARD );
     } else if( input.action == "PAGE_UP" ) {
         move_selection_page( scroll_direction::BACKWARD );
+    } else if( input.action == "SCROLL_DOWN" ) {
+        scroll_selection_page( scroll_direction::FORWARD );
+    } else if( input.action == "SCROLL_UP" ) {
+        scroll_selection_page( scroll_direction::BACKWARD );
     } else if( input.action == "HOME" ) {
         select( 0, scroll_direction::FORWARD );
     } else if( input.action == "EXAMINE" ) {
@@ -838,6 +887,18 @@ void inventory_column::move_entries_to( inventory_column &dest )
     clear();
 }
 
+// CDF adapters for DDA's item_location::has_parent() / parent_pocket() (PL-61 RESULT.md section 3).
+static auto has_parent( const item &it ) -> bool
+{
+    return it.parent_item() != nullptr;
+}
+
+static auto parent_pocket_of( const item &it ) -> const item_pocket *
+{
+    const item *parent = it.parent_item();
+    return parent == nullptr ? nullptr : parent->contents.pocket_of( &it );
+}
+
 // CDF: Q2 flat view; carried-item rows are hidden while the holding garment is collapsed.
 // Per DDA inventory_ui.cpp:585-600 (adapted: item * instead of item_location)
 static auto carried_holder( const inventory_entry &entry ) -> item *
@@ -849,26 +910,46 @@ static auto carried_holder( const inventory_entry &entry ) -> item *
     return entry.any_item()->parent_item();
 }
 
-static auto hidden_by_collapse( const inventory_entry &entry ) -> bool
+// UI1: hide_entries_override is the column's "hide all contents" state (DDA is_hidden 590-592).
+static auto hidden_by_collapse( const inventory_entry &entry,
+                                const std::optional<bool> &hide_entries_override = std::nullopt ) -> bool
 {
     // Per DDA inventory_ui.cpp:575-585: collated entries are hidden while their header is collapsed.
     if( entry.is_collation_entry() && entry.collation_meta->collapsed ) {
         return true;
     }
+    // Per DDA inventory_ui.cpp:590-592: the hide-all override beats the pocket settings.
+    if( hide_entries_override && entry.is_item() && entry.topmost_parent != nullptr &&
+        entry.topmost_parent->is_container() ) {
+        return *hide_entries_override;
+    }
     // Per DDA inventory_ui.cpp:575-600: hierarchy rows under a collapsed pocket of their parents
     if( entry.is_item() && entry.topmost_parent != nullptr ) {
         const item *it = entry.any_item();
-        while( it->parent_item() != nullptr && it != entry.topmost_parent ) {
-            const item *parent = it->parent_item();
-            const item_pocket *pocket = parent->contents.pocket_of( it );
+        while( has_parent( *it ) && it != entry.topmost_parent ) {
+            const item_pocket *pocket = parent_pocket_of( *it );
             if( pocket != nullptr && pocket->settings.is_collapsed() ) {
                 return true;
             }
-            it = parent;
+            it = it->parent_item();
         }
     }
+    // CDF flat view: a carried row is hidden when a container it sits in (its holder or one above
+    // it) is collapsed. The row's own collapse state is never looked at, so toggling a row
+    // collapses what is inside it and never removes the row itself.
     const item *holder = carried_holder( entry );
-    return holder != nullptr && holder->is_collapsed();
+    if( holder == nullptr ) {
+        return false;
+    }
+    if( hide_entries_override ) {
+        return *hide_entries_override && holder->is_container();
+    }
+    for( const item *anc = holder; anc != nullptr; anc = anc->parent_item() ) {
+        if( anc->is_collapsed() ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Per DDA inventory_ui.cpp:139,1432 (path_to_top, indented_sort_compare), item * instead of item_location
@@ -1044,14 +1125,16 @@ void inventory_column::prepare_paging( const std::string &filter )
 
     entries_hidden.clear();
     for( size_t i = 0; i < entries.size(); ++i ) {
-        if( entries[i].is_item() && ( !filter_fn( entries[i] ) || hidden_by_collapse( entries[i] ) ) ) {
+        if( entries[i].is_item() &&
+            ( !filter_fn( entries[i] ) || hidden_by_collapse( entries[i], hide_entries_override ) ) ) {
             entries_hidden.push_back( entries[i] );
         }
     }
 
     const auto new_end = std::remove_if( entries.begin(),
-    entries.end(), [&filter_fn]( const inventory_entry & entry ) {
-        return !entry.is_item() || !filter_fn( entry ) || hidden_by_collapse( entry );
+    entries.end(), [&filter_fn, this]( const inventory_entry & entry ) {
+        return !entry.is_item() || !filter_fn( entry ) ||
+               hidden_by_collapse( entry, hide_entries_override );
     } );
     entries.erase( new_end, entries.end() );
     // don't sort with stale names
@@ -1191,7 +1274,8 @@ int inventory_column::reassign_custom_invlets( const player &p, int min_invlet, 
     return cur_invlet;
 }
 
-void inventory_column::draw( const catacurses::window &win, point pos ) const
+void inventory_column::draw( const catacurses::window &win, point pos,
+                             std::vector<inventory_entry_rect> *rects ) const
 {
     if( !visible() ) {
         return;
@@ -1217,6 +1301,13 @@ void inventory_column::draw( const catacurses::window &win, point pos ) const
         int x1 = pos.x + get_entry_indent( entry );
         int x2 = pos.x + std::max( static_cast<int>( reserved_width - get_cells_width() ), 0 );
         int yy = pos.y + line;
+
+        if( rects != nullptr ) {
+            // DDA inventory_ui.cpp:1733-1737. The map only reads the entry back as non-const.
+            const int hx_end = pos.x + get_width();
+            rects->push_back( { inclusive_rectangle<point>( point( x1, yy ), point( hx_end - 1, yy ) ),
+                                const_cast<inventory_entry *>( &entry ) } );
+        }
 
         const bool selected = active && is_selected( entry );
 
@@ -1271,16 +1362,29 @@ void inventory_column::draw( const catacurses::window &win, point pos ) const
 
                 // Per DDA inventory_ui.cpp:1800: chevron before an entry that has visible contents
                 if( cell_index == 0 && entry.chevron && entry.is_item() ) {
+                    // Per DDA inventory_ui.cpp:1801-1807: the hide-all override colours the chevron
+                    const bool hide_override = !entry.is_collation_header() && hide_entries_override &&
+                                               entry.any_item()->is_container();
                     const nc_color chevron_color = entry.is_collation_header() ? c_light_blue :
+                                                   hide_override ? ( *hide_entries_override ? c_red : c_green ) :
                                                    c_dark_gray;
                     const bool collapsed = entry.is_collation_header() ?
                                            entry.collation_meta->collapsed :
+                                           hide_override ? *hide_entries_override :
                                            entry.any_item()->is_collapsed();
                     trim_and_print( win, point( text_x - 1, yy ), 1, chevron_color,
                                     collapsed ? "▶" : "▼" );
                 }
                 if( entry.is_item() && ( selected || !entry.is_selectable() ) ) {
                     trim_and_print( win, point( text_x, yy ), text_width, selected ? h_white : c_dark_gray,
+                                    remove_color_tags( text ) );
+                } else if( entry.is_item() && entry.highlight_as_parent ) {
+                    // Per DDA inventory_ui.cpp:1812-1820 ("background" style; CDF has no
+                    // INVENTORY_HIGHLIGHT option)
+                    trim_and_print( win, point( text_x, yy ), text_width, c_white_white,
+                                    remove_color_tags( text ) );
+                } else if( entry.is_item() && entry.highlight_as_child ) {
+                    trim_and_print( win, point( text_x, yy ), text_width, c_black_white,
                                     remove_color_tags( text ) );
                 } else {
                     trim_and_print( win, point( text_x, yy ), text_width, entry_cell_cache.color, text );
@@ -1332,7 +1436,11 @@ size_t inventory_column::visible_cells() const
 
 selection_column::selection_column( const std::string &id, const std::string &name ) :
     inventory_column( selection_preset ),
-    selected_cat( id, no_translation( name ), 0 ) {}
+    selected_cat( id, no_translation( name ), 0 )
+{
+    // The selection column lists what the player marked; it never hides entries.
+    hide_entries_override = std::nullopt;
+}
 
 selection_column::~selection_column() = default;
 
@@ -1673,6 +1781,29 @@ bool inventory_selector::add_contained_items( item *container, inventory_column 
     }
     temp.move_entries_to( column );
     return vis_top;
+}
+
+void inventory_selector::add_contained_items( item *container )
+{
+    add_contained_items( container, own_inv_column );
+}
+
+void inventory_selector::action_examine( const item *sitem )
+{
+    // Per DDA inventory_ui.cpp:4315-4333
+    std::vector<iteminfo> info = sitem->info();
+    info.insert( info.begin(), iteminfo( "BASE", string_format( _( "Location: %s" ),
+                                         sitem->describe_location( &u ) ) ) );
+    const std::vector<iteminfo> dummy;
+    item_info_data data( sitem->tname( 1, false ), sitem->type_name(), info, dummy );
+    data.handle_scrolling = true;
+    draw_item_info( []() -> catacurses::window {
+        const int width = std::min( TERMX, FULL_SCREEN_WIDTH ) + std::max( 0,
+                          TERMX - FULL_SCREEN_WIDTH ) * ( 1.0 / 4 );
+        const int height = std::min( TERMY, FULL_SCREEN_HEIGHT ) + std::max( 0,
+                           TERMY - FULL_SCREEN_HEIGHT ) * ( 2.0 / 3 );
+        return catacurses::newwin( height, width, point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 ) );
+    }, data );
 }
 
 void inventory_selector::add_character_items( Character &character )
@@ -2127,9 +2258,12 @@ void inventory_selector::prepare_layout()
 
     prepare_layout( TERMX - nc_width, TERMY - nc_height );
 
-    const int win_width  = snap( get_layout_width() + nc_width, TERMX );
-    const int win_height = snap( std::max<int>( get_layout_height() + nc_height, FULL_SCREEN_HEIGHT ),
-                                 TERMY );
+    // Per DDA inventory_ui.cpp:2610-2615: a fixed size (the examiner) replaces the automatic one.
+    const int win_width  = _fixed_size.x < 0 ? snap( get_layout_width() + nc_width, TERMX )
+                           : _fixed_size.x;
+    const int win_height = _fixed_size.y < 0
+                           ? snap( std::max<int>( get_layout_height() + nc_height, FULL_SCREEN_HEIGHT ), TERMY )
+                           : _fixed_size.y;
 
     prepare_layout( win_width - nc_width, win_height - nc_height );
 
@@ -2147,6 +2281,7 @@ shared_ptr_fast<ui_adaptor> inventory_selector::create_or_get_ui_adaptor()
         current_ui->mark_resize();
 
         current_ui->on_redraw( [this]( const ui_adaptor & ) {
+            highlight();
             refresh_window();
         } );
     }
@@ -2758,8 +2893,11 @@ inventory_selector::header_stats inventory_selector::convert_stats_to_header_sta
 
 void inventory_selector::resize_window( int width, int height )
 {
-    w_inv = catacurses::newwin( height, width,
-                                point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 ) );
+    point origin = _fixed_origin;
+    if( origin.x < 0 || origin.y < 0 ) {
+        origin = point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 );
+    }
+    w_inv = catacurses::newwin( height, width, origin );
     if( spopup ) {
         spopup->window( w_inv, point( 4, getmaxy( w_inv ) - 1 ), ( getmaxx( w_inv ) / 2 ) - 4 );
     }
@@ -2817,6 +2955,11 @@ void inventory_selector::set_filter()
 void inventory_selector::set_filter( const std::string &str )
 {
     prepare_layout();
+    apply_filter( str );
+}
+
+void inventory_selector::apply_filter( const std::string &str )
+{
     filter = str;
     for( const auto elem : columns ) {
         elem->set_filter( filter );
@@ -2825,6 +2968,12 @@ void inventory_selector::set_filter( const std::string &str )
     if( current_ui ) {
         current_ui->mark_resize();
     }
+}
+
+// Per DDA inventory_ui.cpp:3671-3673.
+void inventory_selector::reset_filter()
+{
+    apply_filter( std::string() );
 }
 
 std::string inventory_selector::get_filter() const
@@ -2888,13 +3037,14 @@ void inventory_selector::draw_columns( const catacurses::window &w ) const
     size_t y = get_header_height() + border + 1;
     size_t active_x = 0;
 
+    rect_entry_map.clear();
     for( const auto &elem : columns ) {
         if( &elem == &columns.back() ) {
             x += gap_rounding_error;
         }
 
         if( !is_active_column( *elem ) ) {
-            elem->draw( w, point( x, y ) );
+            elem->draw( w, point( x, y ), &rect_entry_map );
         } else {
             active_x = x;
         }
@@ -2902,7 +3052,7 @@ void inventory_selector::draw_columns( const catacurses::window &w ) const
         x += elem->get_width() + gap;
     }
 
-    get_active_column().draw( w, point( active_x, y ) );
+    get_active_column().draw( w, point( active_x, y ), &rect_entry_map );
     if( empty() ) {
         center_print( w, getmaxy( w ) / 2, c_dark_gray, _( "Your inventory is empty." ) );
     }
@@ -2982,8 +3132,12 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "UP", to_translation( "Previous item" ) );
     ctxt.register_action( "PAGE_DOWN", to_translation( "Page down" ) );
     ctxt.register_action( "PAGE_UP", to_translation( "Page up" ) );
-    ctxt.register_action( "RIGHT", to_translation( "Next column" ) );
-    ctxt.register_action( "LEFT", to_translation( "Previous column" ) );
+    // Per DDA inventory_ui.cpp:3456-3457: the mouse wheel moves the cursor a page.
+    ctxt.register_action( "SCROLL_UP", to_translation( "Move cursor up" ) );
+    ctxt.register_action( "SCROLL_DOWN", to_translation( "Move cursor down" ) );
+    // UI1: DDA's column actions (inventory_ui.cpp:3460-3461). LEFT/RIGHT are no longer registered.
+    ctxt.register_action( "NEXT_COLUMN", to_translation( "Next column" ) );
+    ctxt.register_action( "PREV_COLUMN", to_translation( "Previous column" ) );
     ctxt.register_action( "CONFIRM", to_translation( "Confirm your selection" ) );
     ctxt.register_action( "QUIT", to_translation( "Cancel" ) );
     ctxt.register_action( "CATEGORY_SELECTION", to_translation( "Switch category selection mode" ) );
@@ -2999,7 +3153,13 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     // Per DDA inventory_ui.cpp:3481; registered here so auto-assigned invlets skip its key.
     ctxt.register_action( "ORGANIZE_MENU" );
     ctxt.register_action( "SHOW_HIDE_CONTENTS", to_translation( "Show/hide contents" ) );
-
+    // Per DDA inventory_ui.cpp:3469; the key comes from UI0.
+    ctxt.register_action( "EXAMINE_CONTENTS" );
+    // Per DDA inventory_ui.cpp:3470-3480
+    ctxt.register_action( "SHOW_HIDE_CONTENTS_ALL", to_translation( "Show/hide all contents" ) );
+    ctxt.register_action( "RESET_FILTER", to_translation( "Reset filter" ) );
+    ctxt.register_action( "TOGGLE_SKIP_UNSELECTABLE",
+                          to_translation( "Toggle skipping of unselectable items" ) );
 
     append_column( own_inv_column );
     append_column( map_column );
@@ -3071,48 +3231,222 @@ drop_location inventory_selector::get_only_choice() const
 
 inventory_input inventory_selector::get_input()
 {
-    inventory_input res;
+    const std::string &action = ctxt.handle_input();
+    const int ch = ctxt.get_raw_input().get_first_input();
+    return process_input( action, ch );
+}
 
-    res.action = ctxt.handle_input();
-    res.ch = ctxt.get_raw_input().get_first_input();
+// Per DDA inventory_ui.cpp:3551-3583. CDF window helper: window_contains_point_relative is
+// written out (the point is relative to w_inv, as get_coordinates_text returns).
+inventory_input inventory_selector::process_input( const std::string &action, int ch )
+{
+    inventory_input res{ action, ch, nullptr, false };
+
+    if( res.action == "SELECT" || res.action == "MOUSE_MOVE" || res.action == "CLICK_AND_DRAG" ) {
+        const std::optional<point> o_p = ctxt.get_coordinates_text( w_inv );
+        if( o_p ) {
+            point p = *o_p;
+            if( p.x >= 0 && p.y >= 0 && p.x < getmaxx( w_inv ) && p.y < getmaxy( w_inv ) ) {
+                res.entry = find_entry_by_coordinate( p );
+                if( res.entry != nullptr && res.entry->is_selectable() ) {
+                    res.mouse = true;
+                    return res;
+                }
+                if( res.entry == nullptr && res.action == "SELECT" ) {
+                    p.x++;
+                    res.entry = find_entry_by_coordinate( p );
+                    // a click just left of a pocket row hits its expander icon
+                    if( res.entry != nullptr && res.entry->is_selectable() && res.entry->chevron ) {
+                        res.action = "SHOW_HIDE_CONTENTS";
+                        res.mouse = true;
+                        return res;
+                    }
+                }
+            }
+        }
+    }
+
     res.entry = find_entry_by_invlet( res.ch );
-
     if( res.entry != nullptr && !res.entry->is_selectable() ) {
         res.entry = nullptr;
     }
-
     return res;
+}
+
+// Per DDA inventory_ui.cpp:2485-2493.
+inventory_entry *inventory_selector::find_entry_by_coordinate( const point &coordinate ) const
+{
+    for( const inventory_entry_rect &it : rect_entry_map ) {
+        if( it.rect.contains( coordinate ) ) {
+            return it.entry;
+        }
+    }
+    return nullptr;
+}
+
+std::function<bool( item &, item & )> inventory_selector::drag_drop_test_hook;
+
+// Per DDA inventory_ui.cpp:2049-2102. The menu is game_menus::inv::select_pocket_and_store.
+bool inventory_selector::drag_drop_item( item *source, item *dest )
+{
+    if( source == nullptr || dest == nullptr || source == dest ) {
+        return false;
+    }
+    if( drag_drop_test_hook ) {
+        return drag_drop_test_hook( *source, *dest );
+    }
+    return game_menus::inv::select_pocket_and_store( u, *source, *dest );
+}
+
+// DDA inventory_ui.cpp:3452-3453, 3468-3469 (COORDINATE is not registered: CDF records the mouse
+// position for every mouse event).
+void inventory_selector::register_mouse_actions()
+{
+    ctxt.register_action( "MOUSE_MOVE" );
+    ctxt.register_action( "CLICK_AND_DRAG" );
+    ctxt.register_action( "SELECT" );
+}
+
+void inventory_selector::toggle_selected_contents()
+{
+    // Per DDA inventory_ui.cpp:1340-1342 and set_collapsed 1294-1316: the selected row toggles its
+    // own pockets. CDF's old redirect to the holder garment is gone: it collapsed the holder and so
+    // hid the pressed row (see hidden_by_collapse). A holder row collapses its carried group by
+    // being the pressed row itself.
+    if( !has_available_choices() ) {
+        return;
+    }
+    const inventory_entry &sel = get_selected();
+    if( !sel.is_item() ) {
+        return;
+    }
+    const bool collapse = !sel.any_item()->is_collapsed();
+    for( item *const loc : sel.locations ) {
+        for( item_pocket *pocket : loc->get_standard_pockets() ) {
+            pocket->settings.set_collapse( collapse );
+        }
+    }
+    for( inventory_column *elem : columns ) {
+        elem->invalidate_paging();
+    }
+}
+
+// Per DDA inventory_ui.cpp:3688-3692.
+void inventory_selector::cycle_hide_override_all()
+{
+    for( inventory_column *col : columns ) {
+        col->cycle_hide_override();
+    }
+}
+
+// Per DDA inventory_ui.cpp:3744-3750.
+void inventory_selector::toggle_skip_unselectable()
+{
+    skip_unselectable = !skip_unselectable;
+    for( inventory_column *col : columns ) {
+        col->toggle_skip_unselectable( skip_unselectable );
+    }
+}
+
+bool inventory_selector::skip_unselectable = true;
+
+// Per DDA inventory_ui.cpp:3636-3639.
+bool inventory_selector::handle_column_action( const std::string &action )
+{
+    if( action == "PREV_COLUMN" ) {
+        toggle_active_column( scroll_direction::BACKWARD );
+    } else if( action == "NEXT_COLUMN" ) {
+        toggle_active_column( scroll_direction::FORWARD );
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Per DDA inventory_ui.cpp:4335-4371. CDF: item * instead of item_location; the old marks are
+// cleared here (DDA clears them while drawing).
+void inventory_selector::highlight()
+{
+    for( const inventory_column *column : get_all_columns() ) {
+        for( inventory_entry *entry : column->get_all_entries() ) {
+            entry->highlight_as_parent = false;
+            entry->highlight_as_child = false;
+        }
+    }
+    if( get_active_column().empty() ) {
+        return;
+    }
+    const inventory_entry &selected = get_active_column().get_selected();
+    if( !selected.is_item() ) {
+        return;
+    }
+    const item *parent = selected.any_item()->parent_item();
+    for( const inventory_column *column : get_all_columns() ) {
+        for( inventory_entry *entry : column->get_all_entries() ) {
+            if( !entry->is_item() ) {
+                continue;
+            }
+            // Find the parent of the selected item (it can be in a stack).
+            if( parent != nullptr &&
+                std::ranges::find( entry->locations, parent ) != entry->locations.end() ) {
+                entry->highlight_as_parent = true;
+            }
+            // Find the contents of the selected item (a stacked container selects several).
+            const item *entry_parent = entry->any_item()->parent_item();
+            if( entry_parent != nullptr &&
+                std::ranges::find( selected.locations, entry_parent ) != selected.locations.end() ) {
+                entry->highlight_as_child = true;
+            }
+        }
+    }
 }
 
 void inventory_selector::on_input( const inventory_input &input )
 {
     if( input.action == "CATEGORY_SELECTION" ) {
         toggle_navigation_mode();
-    } else if( input.action == "LEFT" ) {
-        toggle_active_column( scroll_direction::BACKWARD );
-    } else if( input.action == "RIGHT" ) {
-        toggle_active_column( scroll_direction::FORWARD );
+    } else if( handle_column_action( input.action ) ) {
+        // moved the active column
     } else if( input.action == "INVENTORY_FILTER" ) {
         set_filter();
-    } else if( input.action == "SHOW_HIDE_CONTENTS" ) {
-        // Per DDA inventory_ui.cpp:1295-1310 (set_collapsed), adapted to the flat view:
-        // a row of a carried group toggles its holder, any other row toggles itself.
+    } else if( input.action == "RESET_FILTER" ) {
+        // Per DDA inventory_ui.cpp:3671-3673
+        reset_filter();
+    } else if( input.action == "TOGGLE_SKIP_UNSELECTABLE" ) {
+        toggle_skip_unselectable();
+    } else if( input.action == "SHOW_HIDE_CONTENTS" || input.action == "SHOW_HIDE_CONTENTS_ALL" ) {
         if( has_available_choices() ) {
             const inventory_entry &sel = get_selected();
-            if( sel.is_item() ) {
-                item *target = carried_holder( sel );
-                if( target == nullptr ) {
-                    target = sel.any_item();
-                }
-                const bool collapse = !target->is_collapsed();
-                for( item_pocket *pocket : target->get_standard_pockets() ) {
-                    pocket->settings.set_collapse( collapse );
-                }
+            item *const kept = sel.is_item() ? sel.any_item() : nullptr;
+            if( input.action == "SHOW_HIDE_CONTENTS_ALL" ) {
+                cycle_hide_override_all();
+            } else {
+                toggle_selected_contents();
+            }
+            for( inventory_column *elem : columns ) {
+                elem->invalidate_paging();
+            }
+            refresh_active_column();
+            prepare_layout();
+            if( kept != nullptr ) {
+                select( kept );
+            }
+        }
+    } else if( input.action == "EXAMINE_CONTENTS" ) {
+        // Per DDA inventory_ui.cpp:3645-3661
+        const inventory_entry &selected = get_active_column().get_selected();
+        if( selected ) {
+            item *sitem = selected.locations.front();
+            inventory_examiner examine_contents( u, sitem );
+            examine_contents.add_contained_items( sitem );
+            const int examine_result = examine_contents.execute();
+            if( examine_result == EXAMINED_CONTENTS_WITH_CHANGES ) {
+                // The user changed something while examining, so rebuild paging
                 for( inventory_column *elem : columns ) {
                     elem->invalidate_paging();
                 }
-                refresh_active_column();
-                prepare_layout();
+            } else if( examine_result == NO_CONTENTS_TO_EXAMINE ) {
+                action_examine( sitem );
             }
         }
     } else if( input.action == "TOGGLE_FAVORITE" ) {
@@ -3237,6 +3571,7 @@ void inventory_selector::toggle_navigation_mode()
 void inventory_selector::append_column( inventory_column &column )
 {
     column.on_mode_change( mode );
+    column.toggle_skip_unselectable( skip_unselectable );
 
     if( columns.empty() ) {
         column.on_activate();
@@ -3277,6 +3612,50 @@ std::vector<char> inventory_selector::all_bound_keys() const
     return retv;
 }
 
+// Per DDA inventory_ui.cpp:3938-3963 (pick) and 5326-5350 (unload), shared. The row under the
+// mouse is hovered (MOUSE_MOVE), clicked (SELECT) or dragged from (CLICK_AND_DRAG).
+inventory_pick_selector::mouse_outcome inventory_pick_selector::handle_mouse_action(
+    const std::string &action, inventory_entry &entry )
+{
+    mouse_outcome res;
+    if( !entry.is_item() ) {
+        if( action == "SELECT" ) {
+            drag_active = false;
+            drag_source = nullptr;
+        }
+        return res;
+    }
+    if( action == "CLICK_AND_DRAG" ) {
+        if( drag_enabled ) {
+            drag_active = true;
+            drag_source = entry.locations.front();
+        }
+    } else if( action == "MOUSE_MOVE" ) {
+        if( !drag_active ) {
+            select( entry.any_item() );
+        }
+    } else if( action == "SELECT" ) {
+        drag_active = false;
+        item *const start = drag_source;
+        drag_source = nullptr;
+        item *const end = entry.locations.front();
+        if( start != nullptr && end != nullptr && start != end ) {
+            if( drag_drop_item( start, end ) ) {
+                clear_items();
+                add_character_items( u );
+                prepare_layout();
+            }
+        } else {
+            select( entry.any_item() );
+            res.picked = entry.any_item();
+        }
+    } else if( action == "SHOW_HIDE_CONTENTS" ) {
+        select( entry.any_item() );
+        res.toggle_contents = true;
+    }
+    return res;
+}
+
 item *inventory_pick_selector::execute()
 {
     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
@@ -3285,7 +3664,15 @@ item *inventory_pick_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( input.entry != nullptr ) {
+        if( input.entry != nullptr && input.mouse ) {
+            const mouse_outcome outcome = handle_mouse_action( input.action, *input.entry );
+            if( outcome.picked != nullptr ) {
+                return outcome.picked;
+            }
+            if( outcome.toggle_contents ) {
+                on_input( input );
+            }
+        } else if( input.entry != nullptr ) {
             if( select( input.entry->any_item() ) ) {
                 ui_manager::redraw();
             }
@@ -3316,9 +3703,8 @@ item *inventory_pick_selector::execute()
 }
 
 // CDF: P3-5-4, DDA inventory_ui.cpp:5302-5377. item * for item_location (D1), a named struct for
-// the pair, get_active_column().get_selected() for get_highlighted(). Not ported (owner rule D5, no
-// mouse paths): the CLICK_AND_DRAG, MOUSE_MOVE and drag-and-drop SELECT branches (5325-5350) and
-// drag_drop_item.
+// the pair, get_active_column().get_selected() for get_highlighted(). The mouse branches
+// (5325-5350) are in inventory_pick_selector::handle_mouse_action (UI6).
 unload_selector::unload_selector( player &p, const inventory_selector_preset &preset ) :
     inventory_pick_selector( p, preset )
 {
@@ -3341,7 +3727,15 @@ auto unload_selector::execute() -> unload_selection
         ui_manager::redraw();
         const inventory_input input = get_input();
 
-        if( input.entry != nullptr ) {
+        if( input.entry != nullptr && input.mouse ) {
+            const mouse_outcome outcome = handle_mouse_action( input.action, *input.entry );
+            if( outcome.picked != nullptr ) {
+                return { outcome.picked, uistate.unload_auto_contain };
+            }
+            if( outcome.toggle_contents ) {
+                on_input( input );
+            }
+        } else if( input.entry != nullptr ) {
             if( select( input.entry->any_item() ) ) {
                 ui_manager::redraw();
             }
@@ -3371,8 +3765,13 @@ inventory_multiselector::inventory_multiselector( player &p,
     inventory_selector( p, preset ),
     selection_col( new selection_column( "SELECTION_COLUMN", selection_column_title ) )
 {
-    ctxt.register_action( "RIGHT", to_translation( "Mark/unmark selected item" ) );
-    ctxt.register_action( "DROP_NON_FAVORITE", to_translation( "Mark/unmark non-favorite items" ) );
+    // Per DDA inventory_ui.cpp:4383-4388. These replace CDF's RIGHT and DROP_NON_FAVORITE here.
+    ctxt.register_action( "TOGGLE_ENTRY", to_translation( "Mark/unmark selected item" ) );
+    ctxt.register_action( "MARK_WITH_COUNT",
+                          to_translation( "Mark a specific amount of selected item" ) );
+    ctxt.register_action( "TOGGLE_NON_FAVORITE", to_translation( "Mark/unmark non-favorite items" ) );
+    ctxt.register_action( "INCREASE_COUNT" );
+    ctxt.register_action( "DECREASE_COUNT" );
 
     for( auto &elem : get_all_columns() ) {
         elem->set_multiselect( true );
@@ -3387,7 +3786,7 @@ void inventory_multiselector::rearrange_columns( size_t client_width )
     selection_col->set_visibility( !is_overflown( client_width ) );
 }
 
-size_t inventory_multiselector::query_count( size_t count = 0 )
+int inventory_multiselector::query_count( size_t count )
 {
     std::string count_str;
     if( count == 0 ) {
@@ -3410,12 +3809,14 @@ size_t inventory_multiselector::query_count( size_t count = 0 )
         spopup->query_string( /*loop=*/false );
     } while( !spopup->confirmed() && !spopup->canceled() );
 
+    int result = -1;
     if( spopup->confirmed() ) {
         count_str = spopup->text();
         try {
-            count = std::stoull( count_str );
+            result = static_cast<int>( std::min<unsigned long long>( std::stoull( count_str ),
+                                       static_cast<unsigned long long>( INT_MAX ) ) );
         } catch( const std::exception &e ) {
-            count = 0;
+            result = 0;
         }
 
         if( current_ui ) {
@@ -3424,7 +3825,7 @@ size_t inventory_multiselector::query_count( size_t count = 0 )
     }
 
     spopup.reset();
-    return count;
+    return result;
 }
 
 void inventory_multiselector::set_chosen_count( inventory_entry &entry, size_t count )
@@ -3433,6 +3834,253 @@ void inventory_multiselector::set_chosen_count( inventory_entry &entry, size_t c
         entry.chosen_count = std::min( count, entry.get_available_count() );
         on_change( entry );
     }
+}
+
+void inventory_multiselector::toggle_entry( inventory_entry &entry, size_t count )
+{
+    set_chosen_count( entry, count );
+    end_mark_batch();
+}
+
+void inventory_multiselector::end_mark_batch()
+{
+    if( !allow_select_contained ) {
+        deselect_contained_items();
+    }
+    selection_col->prepare_paging( get_filter() );
+    on_toggle();
+}
+
+namespace
+{
+/// True when `it` sits inside `container` at any depth.
+auto is_inside_item( const item *it, const item *container ) -> bool
+{
+    for( const item *parent = it->parent_item(); parent != nullptr; parent = parent->parent_item() ) {
+        if( parent == container ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// The items a chosen entry stands for: all its locations, or only the first chosen_count of a
+/// stack of separate items.
+auto chosen_holders( const inventory_entry &entry ) -> std::vector<const item *>
+{
+    std::vector<const item *> res;
+    const size_t limit = entry.locations.size() > 1 ?
+                         std::min( entry.locations.size(), entry.chosen_count ) : entry.locations.size();
+    for( size_t i = 0; i < limit; ++i ) {
+        res.push_back( entry.locations[i] );
+    }
+    return res;
+}
+} // namespace
+
+void inventory_multiselector::deselect_contained_items()
+{
+    // Per DDA inventory_ui.cpp:4702-4758 (frozen liquid part not ported: CDF has no such rule).
+    // The selection column only mirrors the other columns, so it is skipped.
+    const auto is_chosen = []( const inventory_entry & entry ) {
+        return entry.is_item() && entry.chosen_count > 0;
+    };
+    std::vector<inventory_entry *> chosen;
+    for( inventory_column *col : get_all_columns() ) {
+        if( col == selection_col.get() ) {
+            continue;
+        }
+        const std::vector<inventory_entry *> found = col->get_all_entries( is_chosen );
+        chosen.insert( chosen.end(), found.begin(), found.end() );
+    }
+    std::vector<inventory_entry *> to_clear;
+    for( inventory_entry *inner : chosen ) {
+        bool covered = false;
+        for( inventory_entry *outer : chosen ) {
+            if( outer == inner ) {
+                continue;
+            }
+            for( const item *holder : chosen_holders( *outer ) ) {
+                for( const item *contained : inner->locations ) {
+                    if( is_inside_item( contained, holder ) ) {
+                        covered = true;
+                        break;
+                    }
+                }
+                if( covered ) {
+                    break;
+                }
+            }
+            if( covered ) {
+                break;
+            }
+        }
+        if( covered ) {
+            to_clear.push_back( inner );
+        }
+    }
+    // Clear after the scan so a container and its contents are judged on the same state.
+    for( inventory_entry *entry : to_clear ) {
+        set_chosen_count( *entry, 0 );
+    }
+}
+
+void inventory_multiselector::toggle_entries( int &count, const toggle_mode mode )
+{
+    std::vector<inventory_entry *> selected;
+    switch( mode ) {
+        case toggle_mode::SELECTED:
+            selected = get_active_column().get_all_selected();
+            break;
+        case toggle_mode::NON_FAVORITE_NON_WORN: {
+            const auto filter_to_nonfavorite_and_nonworn = [this]( const inventory_entry & entry ) {
+                return entry.is_selectable() &&
+                       !entry.any_item()->is_favorite &&
+                       !u.is_worn( *entry.any_item() );
+            };
+
+            selected = get_active_column().get_entries( filter_to_nonfavorite_and_nonworn );
+            break;
+        }
+    }
+
+    // Entries that can be highlighted but not marked (disabled rows) are left alone.
+    selected.erase( std::remove_if( selected.begin(), selected.end(),
+    []( const inventory_entry * elem ) {
+        return !elem->is_selectable();
+    } ), selected.end() );
+
+    if( selected.empty() ) {
+        count = 0;
+        return;
+    }
+
+    // No amount entered, select all
+    if( count == 0 ) {
+        bool select_nonfav = true;
+        bool select_fav = true;
+        switch( mode ) {
+            case toggle_mode::SELECTED: {
+                count = max_chosen_count;
+
+                // Any non favorite item to select?
+                select_nonfav = std::any_of( selected.begin(), selected.end(),
+                []( const inventory_entry * elem ) {
+                    return ( !elem->any_item()->is_favorite ) && elem->chosen_count == 0;
+                } );
+
+                // Otherwise, any favorite item to select?
+                select_fav = !select_nonfav && std::any_of( selected.begin(), selected.end(),
+                []( const inventory_entry * elem ) {
+                    return elem->any_item()->is_favorite && elem->chosen_count == 0;
+                } );
+                break;
+            }
+            case toggle_mode::NON_FAVORITE_NON_WORN: {
+                const bool clear = std::none_of( selected.begin(), selected.end(),
+                []( const inventory_entry * elem ) {
+                    return elem->chosen_count > 0;
+                } );
+
+                if( clear ) {
+                    count = max_chosen_count;
+                }
+                break;
+            }
+        }
+
+        for( inventory_entry *elem : selected ) {
+            const bool is_favorite = elem->any_item()->is_favorite;
+            if( ( select_nonfav && !is_favorite ) || ( select_fav && is_favorite ) ) {
+                set_chosen_count( *elem, count );
+            } else if( !select_nonfav && !select_fav ) {
+                // Every element is selected, unselect all
+                set_chosen_count( *elem, 0 );
+            }
+        }
+        // Select the entered amount
+    } else {
+        for( inventory_entry *elem : selected ) {
+            set_chosen_count( *elem, count );
+        }
+    }
+
+    count = 0;
+    end_mark_batch();
+}
+
+bool inventory_multiselector::handle_mark_action( const std::string &action, int ch )
+{
+    int count = 0;
+    if( ch >= '0' && ch <= '9' ) {
+        // Checked first: UI0 also binds "1" to MARK_WITH_COUNT, and the digit must seed the prompt.
+        int query_result = query_count( ch - '0' );
+        if( query_result >= 0 ) {
+            toggle_entries( query_result, toggle_mode::SELECTED );
+        }
+    } else if( action == "TOGGLE_NON_FAVORITE" ) {
+        toggle_entries( count, toggle_mode::NON_FAVORITE_NON_WORN );
+    } else if( action == "MARK_WITH_COUNT" ) {
+        // Set count and mark selected with specific key
+        int query_result = query_count();
+        if( query_result >= 0 ) {
+            toggle_entries( query_result, toggle_mode::SELECTED );
+        }
+    } else if( action == "TOGGLE_ENTRY" ) {
+        toggle_entries( count, toggle_mode::SELECTED );
+    } else if( action == "INCREASE_COUNT" || action == "DECREASE_COUNT" ) {
+        if( !has_available_choices() ) {
+            return true;
+        }
+        inventory_entry &entry = get_active_column().get_highlighted();
+        if( entry.is_item() && entry.is_selectable() ) {
+            const size_t chosen = entry.chosen_count;
+            const size_t max = entry.get_available_count();
+            const size_t newcount = action == "INCREASE_COUNT"
+                                    ? chosen < max ? chosen + 1 : max
+                                    : chosen > 1 ? chosen - 1 : 0;
+            toggle_entry( entry, newcount );
+        }
+    } else if( action == "VIEW_CATEGORY_MODE" ) {
+        toggle_categorize_contained();
+    } else {
+        return false;
+    }
+    return true;
+}
+
+void inventory_multiselector::toggle_categorize_contained()
+{
+    // Per DDA inventory_ui.cpp:4760-4772. CDF rebuilds the entries when the view changes, so the
+    // chosen counts are read first and put back on the new entries by item.
+    std::vector<std::pair<const item *, size_t>> chosen;
+    for( inventory_column *col : get_all_columns() ) {
+        if( col == selection_col.get() ) {
+            continue;
+        }
+        for( const inventory_entry *entry : col->get_all_entries( []( const inventory_entry & e ) {
+        return e.is_item() && e.chosen_count > 0;
+    } ) ) {
+            chosen.emplace_back( entry->locations.front(), entry->chosen_count );
+        }
+    }
+    selection_col->clear();
+    inventory_selector::toggle_categorize_contained();
+    for( const std::pair<const item *, size_t> &saved : chosen ) {
+        for( inventory_column *col : get_all_columns() ) {
+            if( col == selection_col.get() ) {
+                continue;
+            }
+            for( inventory_entry *entry : col->get_all_entries( []( const inventory_entry & e ) {
+            return e.is_item();
+        } ) ) {
+                if( std::ranges::find( entry->locations, saved.first ) != entry->locations.end() ) {
+                    set_chosen_count( *entry, saved.second );
+                }
+            }
+        }
+    }
+    end_mark_batch();
 }
 
 std::vector<inventory_entry *> inventory_multiselector::get_selection_column_items() const
@@ -3458,7 +4106,7 @@ std::pair<const item *, const item *> inventory_compare_selector::execute()
             select( input.entry->any_item() );
             toggle_entry( input.entry );
             just_selected = input.entry;
-        } else if( input.action == "RIGHT" ) {
+        } else if( input.action == "TOGGLE_ENTRY" ) {
             const auto selection( get_active_column().get_all_selected() );
 
             for( auto &elem : selection ) {
@@ -3472,7 +4120,7 @@ std::pair<const item *, const item *> inventory_compare_selector::execute()
             }
         } else if( input.action == "CONFIRM" ) {
             popup_getkey( _( "You need two items for comparison.  Use %s to select them." ),
-                          ctxt.get_desc( "RIGHT" ) );
+                          ctxt.get_desc( "TOGGLE_ENTRY" ) );
         } else if( input.action == "QUIT" ) {
             return std::make_pair( nullptr, nullptr );
         } else {
@@ -3521,45 +4169,21 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
 {
     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
 
-    int count = 0;
     while( true ) {
         ui_manager::redraw();
 
         const inventory_input input = get_input();
 
-        if( input.ch >= '0' && input.ch <= '9' ) {
-            count = std::min( count, INT_MAX / 10 - 10 );
-            count *= 10;
-            count += input.ch - '0';
-        } else if( input.entry != nullptr ) {
+        if( input.entry != nullptr ) {
             select( input.entry->any_item() );
-            if( count == 0 && input.entry->chosen_count == 0 ) {
-                count = max_chosen_count;
-            }
-            set_chosen_count( *input.entry, count );
-            count = 0;
-        } else if( input.action == "RIGHT" ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            if( count == 0 ) {
-                const bool clear = std::none_of( selected.begin(), selected.end(),
-                []( const inventory_entry * elem ) {
-                    return elem->chosen_count > 0;
-                } );
-
-                if( clear ) {
-                    count = max_chosen_count;
-                }
-            }
-
-            for( const auto &elem : selected ) {
-                set_chosen_count( *elem, count );
-            }
-            count = 0;
+            set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
+            end_mark_batch();
+        } else if( handle_mark_action( input.action, input.ch ) ) {
+            // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             if( to_use.empty() ) {
                 popup_getkey( _( "No items were selected.  Use %s to select them." ),
-                              ctxt.get_desc( "RIGHT" ) );
+                              ctxt.get_desc( "TOGGLE_ENTRY" ) );
                 continue;
             }
             break;
@@ -3567,7 +4191,6 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
             return std::vector<iuse_location>();
         } else {
             on_input( input );
-            count = 0;
         }
     }
 
@@ -3632,24 +4255,118 @@ inventory_drop_selector::inventory_drop_selector( player &p,
 #endif
 }
 
-void inventory_drop_selector::process_selected( int &count,
-        const std::vector<inventory_entry *> &selected )
+inventory_drop_selector::inventory_drop_selector( player &p,
+        const inventory_selector_preset &preset, const std::string &selection_column_title ) :
+    inventory_multiselector( p, preset, selection_column_title )
 {
-    if( count == 0 ) {
-        const bool clear = std::none_of( selected.begin(), selected.end(),
-        []( const inventory_entry * elem ) {
-            return elem->chosen_count > 0;
-        } );
+#if defined(__ANDROID__)
+    ctxt.allow_text_entry = true;
+#endif
+}
 
-        if( clear ) {
-            count = max_chosen_count;
+// Per DDA inventory_ui.cpp:4690-4700. warn_liquid is DDA's liquid-spill warning of the drop
+// selector; CDF's drop selector has none, and the preset hides spilt liquid, so it is unused.
+inventory_insert_selector::inventory_insert_selector( player &p,
+        const inventory_selector_preset &preset, const std::string &selection_column_title,
+        bool /* warn_liquid */ ) :
+    inventory_drop_selector( p, preset, selection_column_title )
+{
+}
+
+bool eventually_contains( const item &container, const item &it )
+{
+    // Per DDA item_location::eventually_contains: walk up from it.
+    for( const item *parent = it.parent_item(); parent != nullptr; parent = parent->parent_item() ) {
+        if( parent == &container ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// CDF: P3-UI3. DDA item_location::get_pocket_constraints_recursive: the limits that the pockets
+// holding `it` put on its own pockets. DDA's pocket_constraint also carries the weight limit; the
+// CDF one keeps the field unused, so it is applied here.
+static auto outer_pocket_constraint( const item &it ) -> pocket_constraint
+{
+    pocket_constraint ret;
+    const item *child = &it;
+    for( const item *parent = it.parent_item(); parent != nullptr;
+         child = parent, parent = parent->parent_item() ) {
+        const item_pocket *pocket = parent->contents.pocket_of( child );
+        if( pocket != nullptr ) {
+            ret.constrain_by( pocket );
+            ret.weight_capacity = std::min( ret.weight_capacity, pocket->weight_capacity() );
+        }
+    }
+    return ret;
+}
+
+inventory_selector::header_stats inventory_selector::get_container_header_stats(
+    const item &container )
+{
+    const pocket_constraint container_constraints = outer_pocket_constraint( container );
+    std::vector<pocket_with_constraint> pockets;
+    units::volume rigid_capacity = 0_ml;
+    units::volume flex_capacity = 0_ml;
+    units::volume flex_contents = 0_ml;
+    for( const item_pocket *p : container.get_container_pockets() ) {
+        pocket_with_constraint pwc{ p, pocket_constraint( p ) };
+        pwc.constraint.constrain_by( container_constraints );
+        pockets.push_back( pwc );
+
+        if( p->rigid() ) {
+            rigid_capacity += p->volume_capacity();
+        } else {
+            flex_capacity += p->volume_capacity();
+            flex_contents += p->contents_volume();
         }
     }
 
-    for( const auto &elem : selected ) {
-        set_chosen_count( *elem, count );
+    const std::string weight_label_override = _( "Contents Weight:" );
+    return get_pocket_summary_header_stats(
+               container.get_total_contained_weight(),
+               std::min( container.get_total_weight_capacity(), container_constraints.weight_capacity ),
+               container.get_contents_volume(),
+               rigid_capacity + std::min( container_constraints.remaining_volume + flex_contents, flex_capacity ),
+               pockets, true, &weight_label_override, nullptr );
+}
+
+inventory_selector::header_stats container_inventory_selector::get_raw_stats() const
+{
+    return get_container_header_stats( *loc );
+}
+
+inventory_selector::header_stats inventory_insert_selector::get_raw_stats() const
+{
+    const item *holster = preset.get_holster();
+    if( holster == nullptr ) {
+        return inventory_drop_selector::get_raw_stats();
     }
-    count = 0;
+    units::mass weight = 0_gram;
+    units::volume volume = 0_ml;
+    // sum marked items; a marked item and its ancestor are never both marked (deselect_contained_items)
+    for( const auto &[marked, count] : get_marked() ) {
+        if( marked->count_by_charges() ) {
+            detached_ptr<item> copy = item::spawn( *marked );
+            copy->charges = count;
+            weight += copy->weight();
+            volume += copy->volume();
+        } else {
+            weight += marked->weight() * count;
+            volume += marked->volume() * count;
+        }
+    }
+    header_stats stats = get_container_header_stats( *holster );
+    stats.push_back( build_selection_stats_line( volume, weight ) );
+    return stats;
+}
+
+void inventory_drop_selector::on_toggle()
+{
+    // CDF: the drop preview follows every batch of marks right away, including the unmarking of
+    // contained items, so the "will be dropped" counts and the order are never stale.
+    update_drop_preview();
 }
 
 drop_locations inventory_drop_selector::execute()
@@ -3682,79 +4399,22 @@ drop_locations inventory_drop_selector::execute()
     }
 
     // main multidrop selection loop
-    int count = 0;
     while( true ) {
         update_drop_preview();
         ui_manager::redraw();
 
         const inventory_input input = get_input();
 
-        if( input.ch >= '0' && input.ch <= '9' ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            count = query_count( input.ch - '0' );
-            count = std::min( count, max_chosen_count );
-            for( const auto &elem : selected ) {
-                set_chosen_count( *elem, count );
-            }
-
-            count = 0;
-        } else if( input.entry != nullptr ) {
+        if( input.entry != nullptr ) {
             select( input.entry->any_item() );
-            if( count == 0 && input.entry->chosen_count == 0 ) {
-                count = max_chosen_count;
-            }
-            set_chosen_count( *input.entry, count );
-            count = 0;
-        } else if( input.action == "DROP_NON_FAVORITE" ) {
-            const auto filter_to_nonfavorite_and_nonworn = []( const inventory_entry & entry ) {
-                return entry.is_item() &&
-                       !entry.any_item()->is_favorite &&
-                       !g->u.is_worn( *entry.any_item() );
-            };
-
-            const auto selected( get_active_column().get_entries( filter_to_nonfavorite_and_nonworn ) );
-            process_selected( count, selected );
-        } else if( input.action == "RIGHT" ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            // No amount entered, select all
-            if( count == 0 ) {
-                count = max_chosen_count;
-
-                // Any non favorite item to select?
-                const bool select_nonfav = std::any_of( selected.begin(), selected.end(),
-                []( const inventory_entry * elem ) {
-                    return ( !elem->any_item()->is_favorite ) && elem->chosen_count == 0;
-                } );
-
-                // Otherwise, any favorite item to select?
-                const bool select_fav = !select_nonfav && std::any_of( selected.begin(), selected.end(),
-                []( const inventory_entry * elem ) {
-                    return elem->any_item()->is_favorite && elem->chosen_count == 0;
-                } );
-
-                for( const auto &elem : selected ) {
-                    const bool is_favorite = elem->any_item()->is_favorite;
-                    if( ( select_nonfav && !is_favorite ) || ( select_fav && is_favorite ) ) {
-                        set_chosen_count( *elem, count );
-                    } else if( !select_nonfav && !select_fav ) {
-                        // Every element is selected, unselect all
-                        set_chosen_count( *elem, 0 );
-                    }
-                }
-                // Select the entered amount
-            } else {
-                for( const auto &elem : selected ) {
-                    set_chosen_count( *elem, count );
-                }
-            }
-
-            count = 0;
+            set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
+            end_mark_batch();
+        } else if( handle_mark_action( input.action, input.ch ) ) {
+            // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             if( dropping.empty() ) {
                 popup_getkey( _( "No items were selected.  Use %s to select them." ),
-                              ctxt.get_desc( "RIGHT" ) );
+                              ctxt.get_desc( "TOGGLE_ENTRY" ) );
                 continue;
             }
             break;
@@ -3765,7 +4425,6 @@ drop_locations inventory_drop_selector::execute()
             if( input.action == "TOGGLE_FAVORITE" || input.action == "WEAR" || input.action == "WIELD" ) {
                 preview_dirty = true;
             }
-            count = 0;
         }
     }
 
@@ -3845,7 +4504,147 @@ inventory_selector::header_stats inventory_drop_selector::get_raw_stats() const
 
 inventory_pickup_selector::inventory_pickup_selector( player &p,
         const inventory_selector_preset &preset ) :
-    inventory_multiselector( p, preset, "ITEMS TO PICKUP" ) {}
+    inventory_multiselector( p, preset, _( "ITEMS TO PICKUP" ) )
+{
+    // Per DDA inventory_ui.cpp:4993-5016.
+    ctxt.register_action( "WEAR" );
+    ctxt.register_action( "WIELD" );
+#if defined(__ANDROID__)
+    // allow user to type a drop number without dismissing virtual keyboard after each keypress
+    ctxt.allow_text_entry = true;
+#endif
+
+    set_hint( string_format(
+                  _( "<color_yellow>%s</color> Wield  <color_yellow>%s</color> Wear  <color_yellow>%s</color> Expand  <color_yellow>%s</color> All  <color_yellow>%s</color> Examine\n"
+                     "Quantity: <color_yellow>%s</color> to mark selected  <color_yellow>%s</color>/<color_yellow>%s</color> to offset  type number then <color_yellow>%s</color> to set" ),
+                  ctxt.get_desc( "WIELD" ),
+                  ctxt.get_desc( "WEAR" ),
+                  ctxt.get_desc( "SHOW_HIDE_CONTENTS" ),
+                  ctxt.get_desc( "SHOW_HIDE_CONTENTS_ALL" ),
+                  ctxt.get_desc( "EXAMINE" ),
+                  ctxt.get_desc( "MARK_WITH_COUNT" ),
+                  ctxt.get_desc( "INCREASE_COUNT" ),
+                  ctxt.get_desc( "DECREASE_COUNT" ),
+                  ctxt.get_desc( "TOGGLE_ENTRY" ) ) );
+}
+
+std::vector<inventory_pickup_selector::marked_pickup> inventory_pickup_selector::get_marked_pickups()
+const
+{
+    std::vector<marked_pickup> result;
+    for( const inventory_column *col : get_all_columns() ) {
+        if( col == selection_col.get() ) {
+            continue;
+        }
+        const std::vector<inventory_entry *> chosen = col->get_all_entries(
+        []( const inventory_entry & entry ) {
+            return entry.is_item() && entry.chosen_count > 0;
+        } );
+        for( const inventory_entry *entry_ptr : chosen ) {
+            int count = 0;
+            int chosen_count = entry_ptr->chosen_count;
+            for( size_t i = 0; i < entry_ptr->locations.size() && count < chosen_count &&
+                 count < max_chosen_count; ++i ) {
+                item *target = entry_ptr->locations[i];
+                int needed_count = std::max( 0, chosen_count - count );
+                int to_add = std::min( needed_count, target->count() );
+                if( to_add > 0 ) {
+                    result.push_back( { target, to_add } );
+                    count += to_add;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+std::vector<pickup::pick_drop_selection> inventory_pickup_selector::build_selection() const
+{
+    std::vector<item *> locations;
+    std::vector<int> counts;
+    for( const marked_pickup &mark : get_marked_pickups() ) {
+        locations.push_back( mark.target );
+        counts.push_back( mark.count );
+    }
+    if( locations.empty() ) {
+        return std::vector<pickup::pick_drop_selection>();
+    }
+    return pickup::optimize_pickup( locations, counts );
+}
+
+std::string inventory_pickup_selector::no_selection_text() const
+{
+    return string_format( _( "No items were selected.  Use %s to select them." ),
+                          ctxt.get_desc( "TOGGLE_ENTRY" ) );
+}
+
+item *inventory_pickup_selector::item_after_in_active_column( const item &it ) const
+{
+    bool found = false;
+    for( const inventory_entry &entry : get_active_column().entries ) {
+        if( !entry.is_item() ) {
+            continue;
+        }
+        for( item *loc : entry.locations ) {
+            if( found ) {
+                return loc;
+            }
+            if( loc == &it ) {
+                found = true;
+            }
+        }
+    }
+    return nullptr;
+}
+
+void inventory_pickup_selector::remove_used_item( item &it )
+{
+    item *next = item_after_in_active_column( it );
+    remove_item( &it );
+    if( next != nullptr ) {
+        select( next );
+    }
+}
+
+bool inventory_pickup_selector::wield_highlighted()
+{
+    if( !has_available_choices() ) {
+        return false;
+    }
+    const inventory_entry &selected = get_active_column().get_highlighted();
+    if( !selected.is_item() ) {
+        return false;
+    }
+    item *it = selected.any_item();
+    const ret_val<bool> can = u.can_wield( *it );
+    if( !can.success() ) {
+        popup_getkey( can.c_str() );
+        return false;
+    }
+    remove_used_item( *it );
+    u.wield( *it );
+    return true;
+}
+
+bool inventory_pickup_selector::wear_highlighted()
+{
+    if( !has_available_choices() ) {
+        return false;
+    }
+    const inventory_entry &selected = get_active_column().get_highlighted();
+    if( !selected.is_item() ) {
+        return false;
+    }
+    item *it = selected.any_item();
+    const ret_val<bool> can = u.can_wear( *it );
+    if( !can.success() ) {
+        popup_getkey( can.c_str() );
+        return false;
+    }
+    remove_used_item( *it );
+    u.wear_item( it->detach() );
+    return true;
+}
 
 std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 {
@@ -3856,72 +4655,31 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( input.ch >= '0' && input.ch <= '9' ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            size_t count = query_count( input.ch - '0' );
-            for( const auto &elem : selected ) {
-                set_chosen_count( *elem, count );
-            }
-        } else if( input.entry != nullptr ) {
+        if( input.entry != nullptr ) {
             select( input.entry->any_item() );
             if( input.entry->chosen_count == 0 ) {
                 set_chosen_count( *input.entry, max_chosen_count );
+                end_mark_batch();
             }
-        } else if( input.action == "RIGHT" ) {
-            const auto selected( get_active_column().get_all_selected() );
-
-            size_t count = max_chosen_count;
-
-            // Any non favorite item to select?
-            const bool select_nonfav = std::any_of( selected.begin(), selected.end(),
-            []( const inventory_entry * elem ) {
-                return ( !elem->any_item()->is_favorite ) && elem->chosen_count == 0;
-            } );
-
-            // Otherwise, any favorite item to select?
-            const bool select_fav = !select_nonfav && std::any_of( selected.begin(), selected.end(),
-            []( const inventory_entry * elem ) {
-                return elem->any_item()->is_favorite && elem->chosen_count == 0;
-            } );
-
-            for( const auto &elem : selected ) {
-                const bool is_favorite = elem->any_item()->is_favorite;
-                if( ( select_nonfav && !is_favorite ) || ( select_fav && is_favorite ) ) {
-                    set_chosen_count( *elem, count );
-                } else if( !select_nonfav && !select_fav ) {
-                    // Every element is selected, unselect all
-                    set_chosen_count( *elem, 0 );
-                }
-            }
+        } else if( handle_mark_action( input.action, input.ch ) ) {
+            // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
-            std::vector<pickup::pick_drop_selection> result;
-            std::vector<item *> locations;
-            std::vector<int> counts;
-
-            for( auto entry_ptr : map_column.get_all_entries() ) {
-                int count = 0;
-                int chosen_count = entry_ptr->chosen_count;
-                for( size_t i = 0; i < entry_ptr->locations.size() && count < chosen_count &&
-                     count < max_chosen_count; ++i ) {
-                    item *item = entry_ptr->locations[i];
-                    int needed_count = std::max( 0, chosen_count - count );
-                    int to_add = std::min( needed_count, item->count() );
-                    if( to_add > 0 ) {
-                        locations.push_back( entry_ptr->locations[i] );
-                        counts.push_back( to_add );
-                        count += to_add;
-                    }
-                }
-            }
-
-            result = pickup::optimize_pickup( locations, counts );
+            // DDA 5028-5065: nothing marked is refused with a popup naming the mark key.
+            // CDF keeps optimize_pickup for the result.
+            std::vector<pickup::pick_drop_selection> result = build_selection();
             if( result.empty() ) {
-                popup_getkey( _( "No items were selected.  Use %s to select them." ),
-                              ctxt.get_desc( "RIGHT" ) );
+                popup_getkey( "%s", no_selection_text() );
                 continue;
-            } else {
-                return result;
+            }
+            return result;
+        } else if( input.action == "WIELD" ) {
+            // The menu stays open on the next item (DDA reopens it); it ends when nothing is left.
+            if( wield_highlighted() ) {
+                assign_invlet_hints();
+            }
+        } else if( input.action == "WEAR" ) {
+            if( wear_highlighted() ) {
+                assign_invlet_hints();
             }
         } else if( input.action == "QUIT" ) {
             return std::vector<pickup::pick_drop_selection>();
@@ -3947,37 +4705,20 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 
 inventory_selector::header_stats inventory_pickup_selector::get_raw_stats() const
 {
-    units::mass weight_carried = u.weight_carried();
-    units::volume volume_carried = u.carried_volume();
-    auto func = []( const inventory_entry & entry ) {
-        return entry.is_item() && entry.chosen_count > 0;
-    };
-    std::vector<inventory_entry *> selected_items = selection_col->get_all_entries( func );
-
-    //Add the weights and volumes of selected items
-    //which might be picked up
-    for( auto entry_ptr : selected_items ) {
-        int count = 0;
-        int chosen_count = entry_ptr->chosen_count;
-        for( size_t i = 0; i < entry_ptr->locations.size() && count < chosen_count &&
-             count < max_chosen_count; ++i ) {
-            item *item = entry_ptr->locations[i];
-            int needed_count = std::max( 0, chosen_count - count );
-            int to_add = std::min( needed_count, item->count() );
-            count += to_add;
-            //WARNING: This specific order of operations and casts are needed
-            //to ensure volume and weight are accurate, because of the fact the game
-            //works in base volumes of 1ml and 1mg
-            weight_carried += item->weight() * ( static_cast<double>( to_add ) / item->count() );
-            volume_carried += item->volume() * ( static_cast<double>( to_add ) / item->count() );
-        }
+    // Per DDA pickup_selector::get_raw_stats (5164-5186): the usual carried line, then a
+    // "Selected" line with the volume and weight of what is marked.
+    units::mass weight;
+    units::volume volume;
+    for( const marked_pickup &mark : get_marked_pickups() ) {
+        // WARNING: the ratio keeps volume and weight exact for stacks (base units are 1 ml, 1 mg)
+        const double share = static_cast<double>( mark.count ) / mark.target->count();
+        weight += mark.target->weight() * share;
+        volume += mark.target->volume() * share;
     }
 
-    return convert_stats_to_header_stats( get_weight_and_volume_stats(
-            weight_carried,
-            u.weight_capacity(),
-            volume_carried,
-            u.carried_capacity() ) );
+    header_stats stats = inventory_selector::get_raw_stats();
+    stats.push_back( build_selection_stats_line( volume, weight ) );
+    return stats;
 }
 
 // CDF: P3-5-2a, DDA item_location::can_reload_with( ammo, now ) (item_location.cpp 1524-1537),

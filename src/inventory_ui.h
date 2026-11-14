@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "color.h"
+#include "cuboid_rectangle.h"
 #include "cursesdef.h"
 #include "detached_ptr.h"
 #include "input.h"
@@ -24,6 +25,7 @@
 #include "pimpl.h"
 #include "units.h"
 #include "pickup_token.h"
+#include "translations.h"
 #include "type_id.h"
 
 class Character;
@@ -49,11 +51,19 @@ enum class scroll_direction : int {
 
 struct navigation_mode_data;
 struct inventory_input;
+class inventory_entry;
 
 /// Display-only key hint. Doesn't participate in inventory-letter lookup.
 struct inventory_invlet_hint {
     int invlet;
     nc_color color;
+};
+
+/// Screen rectangle (window-relative text cells) of one drawn row, for mouse lookup. DDA keeps a
+/// vector of std::pair; CDF uses a named struct. Filled by inventory_column::draw.
+struct inventory_entry_rect {
+    inclusive_rectangle<point> rect;
+    inventory_entry *entry = nullptr;
 };
 
 /// Per DDA inventory_ui.h:60-75. CDF: item * instead of item_location.
@@ -86,6 +96,10 @@ class inventory_entry
         /// Drawn when the entry has no letter of its own.
         std::optional<inventory_invlet_hint> invlet_hint;
         std::string cached_name;
+        /// Per DDA inventory_ui.h:186-187. Set by inventory_selector::highlight() for the rows
+        /// that hold the selected item (parent) or sit inside it (child); only drawn.
+        bool highlight_as_parent = false;
+        bool highlight_as_child = false;
 
         inventory_entry() = default;
 
@@ -133,6 +147,11 @@ class inventory_entry
         /** Whether the entry can be selected */
         bool is_selectable() const {
             return is_item() && enabled;
+        }
+        /// Per DDA inventory_ui.h:148-150. With skip_unselectable off the cursor may rest on a
+        /// disabled row (to read its denial); with it on, only selectable rows are highlightable.
+        bool is_highlightable( bool skip_unselectable ) const {
+            return is_item() && ( enabled || !skip_unselectable );
         }
         /// Per DDA inventory_ui.h:148-162.
         bool is_collated() const {
@@ -211,6 +230,15 @@ class inventory_selector_preset
         virtual std::string get_denial( const item * ) const {
             return std::string();
         }
+        /**
+         * CDF: P3-UI3. The container this preset inserts into, or nullptr. DDA reads it through
+         * inventory_holster_preset::get_holster() (inventory_ui.h:290-310); CDF has one preset class
+         * per call site, so the insert selector asks the preset. A preset that fills it makes
+         * inventory_insert_selector show the used and total space of that container.
+         */
+        virtual const item *get_holster() const {
+            return nullptr;
+        }
         /** Whether the first item is considered to go before the second. */
         virtual bool sort_compare( const inventory_entry &lhs, const inventory_entry &rhs ) const;
         /** Color that will be used to display the entry string. */
@@ -287,9 +315,8 @@ class pickup_inventory_preset : public inventory_selector_preset
 class inventory_column
 {
     public:
-        inventory_column( const inventory_selector_preset &preset = default_preset ) : preset( preset ) {
-            cells.resize( preset.get_cells_count() );
-        }
+        // CDF: defined in the .cpp; takes hide_entries_override from uistate (per DDA inventory_ui.cpp:691).
+        inventory_column( const inventory_selector_preset &preset = default_preset );
 
         virtual ~inventory_column() = default;
 
@@ -350,7 +377,9 @@ class inventory_column
         std::vector<inventory_entry *> get_all_entries() const;
         inventory_entry *find_by_invlet( int invlet ) const;
 
-        void draw( const catacurses::window &win, point pos ) const;
+        /// @param rects when set, receives the rectangle of every drawn row (DDA rect_entry_map).
+        void draw( const catacurses::window &win, point pos,
+                   std::vector<inventory_entry_rect> *rects = nullptr ) const;
 
         void add_entry( const inventory_entry &entry );
         void move_entries_to( inventory_column &dest );
@@ -358,6 +387,17 @@ class inventory_column
         void collate();
         void uncollate();
         void set_collapsed( inventory_entry &entry, bool collapse );
+        /// Per DDA inventory_ui.cpp:3585-3597: cycles false -> true -> nullopt and saves it in uistate.
+        virtual void cycle_hide_override();
+        /// nullopt: pocket settings decide; true: contents of all containers hidden; false: all shown.
+        std::optional<bool> hide_entries_override = std::nullopt;
+        /// Per DDA inventory_ui.cpp:737-740.
+        void toggle_skip_unselectable( bool skip );
+        bool get_skip_unselectable() const {
+            return skip_unselectable;
+        }
+        /// Per DDA inventory_ui.cpp:972-996. Next entry in dir that can be highlighted.
+        size_t next_highlightable_index( size_t index, scroll_direction dir ) const;
         void clear();
         void set_stack_favorite( const item *location, bool favorite );
 
@@ -391,6 +431,8 @@ class inventory_column
 
         void set_width( size_t new_width, const std::vector<inventory_column *> &all_columns );
         void set_height( size_t new_height );
+        /// Per DDA inventory_ui.cpp:1027 (mouse wheel): select the first row of the next/previous page.
+        void scroll_selection_page( scroll_direction dir );
         size_t get_width() const;
         size_t get_height() const;
         /** Expands the column to fit the new entry. */
@@ -453,7 +495,9 @@ class inventory_column
         void move_selection( scroll_direction dir );
         void move_selection_page( scroll_direction dir );
 
-        size_t next_selectable_index( size_t index, scroll_direction dir ) const;
+        /// CDF: the cursor skips disabled rows unless the player turned the skip off (DDA's
+        /// default is off; CDF keeps its old behaviour as the default).
+        bool skip_unselectable = true;
 
         size_t page_of( size_t index ) const;
         size_t page_of( const inventory_entry &entry ) const;
@@ -536,6 +580,8 @@ class selection_column : public inventory_column
         void on_mode_change( navigation_mode ) override {
             // Intentionally ignore mode change.
         }
+        // Per DDA inventory_ui.cpp:3627-3630: the selection column never hides entries.
+        void cycle_hide_override() override {}
 
     private:
         const pimpl<item_category> selected_cat;
@@ -574,6 +620,9 @@ class inventory_selector
         void set_hint( const std::string &hint ) {
             this->hint = hint;
         }
+        const std::string &get_hint() const {
+            return hint;
+        }
         /** Specify whether the header should show stats (weight and volume). */
         void set_display_stats( bool display_stats ) {
             this->display_stats = display_stats;
@@ -591,6 +640,38 @@ class inventory_selector
 
         /** Apply filter string to all columns */
         void set_filter( const std::string &str );
+        /** Per DDA inventory_ui.cpp:3671-3673. Clears the filter. Does not lay out the window. */
+        void reset_filter();
+        /** The part of set_filter( str ) that does not lay out the window. */
+        void apply_filter( const std::string &str );
+        /**
+         * CDF: UI1. Collapses or expands the pockets of the selected row itself (DDA
+         * inventory_ui.cpp:1340-1342). The row stays listed; on a holder garment row
+         * the carried rows under it hide. Does not lay out the window.
+         */
+        void toggle_selected_contents();
+        /** Per DDA inventory_ui.cpp:3688-3692. Cycles the hide override of all columns. */
+        void cycle_hide_override_all();
+        /** Per DDA inventory_ui.cpp:3744-3750. Toggles skipping of disabled rows. */
+        void toggle_skip_unselectable();
+        static bool get_skip_unselectable() {
+            return skip_unselectable;
+        }
+        /**
+         * Per DDA inventory_ui.cpp:3636-3639. Handles NEXT_COLUMN / PREV_COLUMN.
+         * @return true when the action was one of them.
+         */
+        bool handle_column_action( const std::string &action );
+        /**
+         * Per DDA inventory_ui.cpp:4335-4371. Marks the rows that hold the selected item
+         * (highlight_as_parent) and the rows inside it (highlight_as_child); clears the old marks.
+         */
+        void highlight();
+        /**
+         * Activates either previous or next column.
+         * @param dir Forward - next column, backward - previous.
+         */
+        void toggle_active_column( scroll_direction dir );
         /** Get last filter string set by set_filter or entered by player */
         std::string get_filter() const;
 
@@ -645,6 +726,24 @@ class inventory_selector
         bool add_contained_items( item *container, inventory_column &column,
                                   const item_category *custom_category = nullptr,
                                   const item *topmost_parent = nullptr, int indent = 0 );
+    public:
+        /** Per DDA inventory_ui.cpp:2485. The row drawn under a window-relative text cell, or nullptr. */
+        inventory_entry *find_entry_by_coordinate( const point &coordinate ) const;
+        /** Rows drawn by the last draw_columns (DDA rect_entry_map). Public so tests can fill it. */
+        mutable std::vector<inventory_entry_rect> rect_entry_map;
+        /**
+         * Per DDA inventory_ui.cpp:2049 drag_drop_item: store @p source in a pocket of @p dest through
+         * the "Select pocket" menu (game_menus::inv::select_pocket_and_store).
+         * @return true when the item was stored.
+         */
+        bool drag_drop_item( item *source, item *dest );
+        /** Test hook: when set, drag_drop_item calls it instead of the menu (tests reset it). */
+        static std::function<bool( item &, item & )> drag_drop_test_hook;
+        /** Per DDA inventory_ui.cpp:2143. Adds the items inside container to the own inventory column. */
+        void add_contained_items( item *container );
+        /** Per DDA inventory_ui.cpp:4315. Opens the item info window of sitem (full screen width, scrolling). */
+        void action_examine( const item *sitem );
+    protected:
 
         /**
          * CDF: P3-NESTAMMO1. add_character_items calls this after the carried stacks (categories mode).
@@ -723,6 +822,9 @@ class inventory_selector
         /** A multiline overview of the space available in @p pockets, with the constraints
          * from their outer pockets. If @p show_unconstrained_max_space is set the "max" lines
          * report the pocket's own size, ignoring outer constraints. */
+        /** CDF: P3-UI3. The pocket overview of @p container (DDA inventory_ui.cpp:3987-4016), shared
+         * by container_inventory_selector and inventory_insert_selector. Returns the lines only. */
+        static header_stats get_container_header_stats( const item &container );
         static header_stats get_pocket_summary_header_stats(
             const units::mass &weight_carried, const units::mass &weight_capacity,
             const units::volume &volume_in_pockets, const units::volume &volume_of_pockets,
@@ -747,6 +849,12 @@ class inventory_selector
 
         /** @return an entry from all entries by its invlet */
         inventory_entry *find_entry_by_invlet( int invlet ) const;
+        /// Per DDA inventory_ui.cpp:3551-3583: the entry under the mouse for the mouse actions.
+        inventory_input process_input( const std::string &action, int ch );
+        /// Registers MOUSE_MOVE, SELECT and CLICK_AND_DRAG (DDA 3453, 3468-3469). Only the pick
+        /// selectors call it: their loops handle those actions; the multiselectors would treat a
+        /// hover as a mark.
+        void register_mouse_actions();
 
         const std::vector<inventory_column *> &get_all_columns() const {
             return columns;
@@ -826,12 +934,6 @@ class inventory_selector
 
         void append_column( inventory_column &column );
 
-        /**
-         * Activates either previous or next column.
-         * @param dir Forward - next column, backward - previous.
-         */
-        void toggle_active_column( scroll_direction dir );
-
         void refresh_active_column() {
             if( !get_active_column().activatable() ) {
                 toggle_active_column( scroll_direction::FORWARD );
@@ -842,6 +944,9 @@ class inventory_selector
         const navigation_mode_data &get_navigation_data( navigation_mode m ) const;
         std::unique_ptr<string_input_popup> spopup;
         weak_ptr_fast<ui_adaptor> ui;
+        /** Per DDA inventory_ui.h:883. A window size or origin of -1 means automatic. */
+        point _fixed_origin{ -1, -1 };
+        point _fixed_size{ -1, -1 };
 
     private:
         catacurses::window w_inv;
@@ -863,6 +968,8 @@ class inventory_selector
         bool view_toggle_enabled = false;
         int nearby_radius = -1;
         bool fake_items_added = false;
+        // Per DDA inventory_ui.h:1007. Shared by all selectors; CDF default is on (old behaviour).
+        static bool skip_unselectable;
 
     public:
         std::string action_bound_to_key( char key ) const;
@@ -873,16 +980,39 @@ class inventory_selector
 inventory_selector::stat display_stat( const std::string &caption, int cur_value, int max_value,
                                        const std::function<std::string( int )> &disp_func );
 
+/** CDF: P3-UI3. True when `it` is inside `container` at any depth (DDA item_location::eventually_contains). */
+bool eventually_contains( const item &container, const item &it );
+
 class inventory_pick_selector : public inventory_selector
 {
     public:
         inventory_pick_selector( player &p,
                                  const inventory_selector_preset &preset = default_preset ) :
-            inventory_selector( p, preset ) {}
+            inventory_selector( p, preset ) {
+            register_mouse_actions();
+        }
 
         item *execute();
 
+        /// Per DDA inventory_ui.h:1032: drag and drop between rows is off unless a caller opts in.
+        bool drag_enabled = false;
+
+        /// What one mouse event did (DDA 3938-3963, factored out of execute so tests can drive it).
+        struct mouse_outcome {
+            item *picked = nullptr;      // the row was clicked: execute returns this item
+            bool toggle_contents = false; // chevron click: the caller runs on_input( SHOW_HIDE_CONTENTS )
+        };
+        /// Handles CLICK_AND_DRAG (drag start), MOUSE_MOVE (hover), SELECT (click or drag end) and the
+        /// chevron click (SHOW_HIDE_CONTENTS) on @p entry.
+        mouse_outcome handle_mouse_action( const std::string &action, inventory_entry &entry );
+        bool is_drag_active() const {
+            return drag_active;
+        }
+
     protected:
+        item *drag_source = nullptr;
+        bool drag_active = false;
+
         virtual auto handle_action( const std::string &/*action*/ ) -> bool {
             return false;
         }
@@ -913,12 +1043,42 @@ class unload_selector : public inventory_pick_selector
 class inventory_multiselector : public inventory_selector
 {
     public:
+        /// Per DDA inventory_ui.h toggle_mode: which entries toggle_entries() works on.
+        enum class toggle_mode {
+            SELECTED,
+            NON_FAVORITE_NON_WORN
+        };
+
         inventory_multiselector( player &p, const inventory_selector_preset &preset = default_preset,
                                  const std::string &selection_column_title = "" );
+
+        /// Per DDA inventory_ui.cpp:4702-4758: an entry whose item sits inside another chosen
+        /// entry's item (at any depth) is unmarked; marking the container covers its contents.
+        void deselect_contained_items();
+        /// Per DDA inventory_multiselector::toggle_entry (4399-4404).
+        void toggle_entry( inventory_entry &entry, size_t count );
+        /// Per DDA inventory_multiselector::toggle_entries (4463-4562). count 0 toggles, count > 0
+        /// marks that amount; count is reset to 0 afterwards.
+        void toggle_entries( int &count, toggle_mode mode = toggle_mode::SELECTED );
+        /// Per DDA inventory_multiselector::on_input (4774-4811), the mark actions only:
+        /// TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, INCREASE_COUNT, DECREASE_COUNT,
+        /// the number keys and VIEW_CATEGORY_MODE. Returns true when the input was used.
+        bool handle_mark_action( const std::string &action, int ch = 0 );
+        /// Per DDA inventory_ui.cpp:4760-4772: the chosen counts survive the view switch.
+        void toggle_categorize_contained();
+        /// Whether an entry may be marked together with the container that holds it (DDA
+        /// allow_select_contained). False for every CDF multiselector.
+        bool allow_select_contained = false;
+
     protected:
         void rearrange_columns( size_t client_width ) override;
-        size_t query_count( size_t count );
-        void set_chosen_count( inventory_entry &entry, size_t count );
+        /// @return the typed amount, or -1 when the prompt was cancelled
+        int query_count( size_t count = 0 );
+        virtual void set_chosen_count( inventory_entry &entry, size_t count );
+        /// Runs after every batch of marks, once the contained items are unmarked.
+        virtual void on_toggle() {}
+        /// Common tail of a batch of marks: pocket-aware unmarking, paging, on_toggle().
+        void end_mark_batch();
         std::vector<inventory_entry *> get_selection_column_items() const;
         std::unique_ptr<inventory_column> selection_col;
 };
@@ -950,11 +1110,26 @@ class inventory_iuse_selector : public inventory_multiselector
 
     protected:
         header_stats get_raw_stats() const override;
-        void set_chosen_count( inventory_entry &entry, size_t count );
+        void set_chosen_count( inventory_entry &entry, size_t count ) override;
 
     private:
         GetStats get_stats;
         std::map<const item *, std::vector<iuse_location>> to_use;
+};
+
+/** CDF: P3-UI3, DDA inventory_ui.h:1038. Pick one item; the header shows the space inside `loc`. */
+class container_inventory_selector : public inventory_pick_selector
+{
+    public:
+        explicit container_inventory_selector( player &p, item *loc,
+                                               const inventory_selector_preset &preset = default_preset ) :
+            inventory_pick_selector( p, preset ), loc( loc ) {}
+
+    protected:
+        header_stats get_raw_stats() const override;
+
+    private:
+        item *loc;
 };
 
 class inventory_drop_selector : public inventory_multiselector
@@ -962,6 +1137,9 @@ class inventory_drop_selector : public inventory_multiselector
     public:
         inventory_drop_selector( player &p,
                                  const inventory_selector_preset &preset = default_preset );
+        /** CDF: P3-UI3. The same with another title for the selection column. */
+        inventory_drop_selector( player &p, const inventory_selector_preset &preset,
+                                 const std::string &selection_column_title );
         drop_locations execute();
 
     protected:
@@ -972,9 +1150,12 @@ class inventory_drop_selector : public inventory_multiselector
          * @return size_t Number the prompt returns
          */
         header_stats get_raw_stats() const override;
+        /** CDF: P3-UI3. The marked stacks and their counts, for the insert selector's header. */
+        auto get_marked() const -> const excluded_stacks & { return dropping; } // *NOPAD*
         /** Toggle item dropping */
-        void set_chosen_count( inventory_entry &entry, size_t count );
-        void process_selected( int &count, const std::vector<inventory_entry *> &selected );
+        void set_chosen_count( inventory_entry &entry, size_t count ) override;
+        /** CDF: refresh the drop preview right after a batch of marks. */
+        void on_toggle() override;
         auto update_drop_preview() -> void;
         auto get_drop_preview() const -> const drop_locations & { return predicted_drops; } // *NOPAD*
 
@@ -986,11 +1167,52 @@ class inventory_drop_selector : public inventory_multiselector
 };
 
 
+/**
+ * CDF: P3-UI3, DDA inventory_ui.h:1181-1192. The drop selector as the insert menu: the header also shows
+ * the used and total volume and weight of the target container (preset.get_holster()) and the
+ * volume and weight of the marked items. Without a holster it behaves as the drop selector.
+ */
+class inventory_insert_selector : public inventory_drop_selector
+{
+    public:
+        explicit inventory_insert_selector( player &p, const inventory_selector_preset &preset,
+                                            const std::string &selection_column_title = _( "ITEMS TO INSERT" ),
+                                            bool warn_liquid = true );
+    protected:
+        header_stats get_raw_stats() const override;
+};
+
+/**
+ * CDF: P3-UI8, DDA inventory_ui.h pickup_selector (4993-5186). CDF keeps its own pickup pipeline: the
+ * result is still the optimize_pickup list that pickup.cpp turns into an activity. What comes from
+ * DDA is the menu: its hint line, the refusal text of an empty selection, the "Selected" header
+ * line and wield/wear that move the highlight to the next item.
+ */
 class inventory_pickup_selector : public inventory_multiselector
 {
     public:
+        /// One marked entry stack: the item and how many of it (charges for stacks) are taken.
+        struct marked_pickup {
+            item *target = nullptr;
+            int count = 0;
+        };
+
         inventory_pickup_selector( player &p, const inventory_selector_preset &preset = default_preset );
         std::vector<pickup::pick_drop_selection> execute();
+        /// The marked items with their counts, in column order (DDA to_use).
+        std::vector<marked_pickup> get_marked_pickups() const;
+        /// The marks as the pickup list (optimize_pickup of get_marked_pickups). Empty when nothing is marked.
+        std::vector<pickup::pick_drop_selection> build_selection() const;
+        /// The text of the popup shown when CONFIRM is pressed with nothing marked (names TOGGLE_ENTRY).
+        std::string no_selection_text() const;
+        /// DDA get_item_to_highlight_after_use: the item listed after `it` in the active column.
+        item *item_after_in_active_column( const item &it ) const;
+        /// DDA remove_from_to_use plus highlight-next: unlists the item (and its marks) and
+        /// moves the highlight to the item that followed it.
+        void remove_used_item( item &it );
+        /// DDA pickup_selector::wield / wear for the highlighted row. True when it was done.
+        bool wield_highlighted();
+        bool wear_highlighted();
     protected:
         header_stats get_raw_stats() const override;
 };

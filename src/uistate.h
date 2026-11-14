@@ -102,6 +102,11 @@ class uistatedata
         // or asks for a destination ("Manual"); per DDA uistate.h unload_auto_contain
         bool unload_auto_contain = false;
 
+        // Per DDA uistate.h:192: the "hide all contents" override of the inventory selector columns.
+        // nullopt: each container follows its own pocket setting; true: all contents hidden;
+        // false: all contents shown.
+        std::optional<bool> hide_entries_override = std::nullopt;
+
         advanced_inv_save_state transfer_save;
 
         bool editmap_nsa_viewmode = false;      // true: ignore LOS and lighting
