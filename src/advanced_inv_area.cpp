@@ -115,6 +115,10 @@ void advanced_inv_area::init()
                 desc[0] = _( "Invalid container!" );
             }
             break;
+        case AIM_PARENT:
+            // the pane decides (it needs a container); only a placeholder row in the header
+            canputitemsloc = false;
+            break;
         case AIM_ALL:
             desc[0] = _( "All 9 squares" );
             canputitemsloc = true;
@@ -227,16 +231,13 @@ bool advanced_inv_area::is_same( const advanced_inv_area &other ) const
 bool advanced_inv_area::canputitems( const advanced_inv_listitem *advitem )
 {
     bool canputitems = false;
-    bool from_vehicle = false;
     item *it = nullptr;
     switch( id ) {
         case AIM_CONTAINER:
+            // P3-UI5: the container lives in the pane now; this asks whether the given row can be
+            // entered as a container (DDA advanced_inv_area::canputitems)
             if( advitem != nullptr && advitem->is_item_entry() ) {
                 it = advitem->items.front();
-                from_vehicle = advitem->from_vehicle;
-            }
-            if( get_container( from_vehicle ) != nullptr ) {
-                it = get_container( from_vehicle );
             }
             if( it != nullptr ) {
                 // CDF: any container pocket, carry or not (DDA uses is_container())
@@ -470,3 +471,7 @@ advanced_inv_area::itemstack advanced_inv_area::i_stacked<vehicle_stack>( vehicl
 
 template
 advanced_inv_area::itemstack advanced_inv_area::i_stacked<map_stack>( map_stack items );
+
+// P3-UI5: the contents of a container shown in a pane
+template
+advanced_inv_area::itemstack advanced_inv_area::i_stacked<std::vector<item *>>( std::vector<item *> items );
