@@ -97,6 +97,8 @@ class advanced_inv_area
         bool is_same( const advanced_inv_area &other ) const;
         // does _not_ check vehicle storage, do that with `can_store_in_vehicle()' below
         bool canputitems( const advanced_inv_listitem *advitem = nullptr );
+        // P3-UI5: the container a pane shows is kept by the pane (advanced_inventory_pane::get_container).
+        // These two keep the old uistate container of the single-level case; AIM no longer sets it.
         // if you want vehicle cargo, specify so via `in_vehicle'
         item *get_container( bool in_vehicle = false );
         void set_container( const advanced_inv_listitem *advitem );
