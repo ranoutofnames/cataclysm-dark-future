@@ -11,9 +11,14 @@
 #include "ret_val.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "uistate.h"
 #include "units.h"
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
 
 // P3-UI5: advanced inventory container navigation (DDA advanced_inv.cpp 1355-1468 and
@@ -22,11 +27,17 @@
 namespace
 {
 // Puts a new item of type @p id into a container pocket of @p outer and returns it.
+// put_in does not hand the item back and pockets append, so the new item is the one of that
+// type that was not in the container before (the first match would be an older item).
 item *put_in_container( item &outer, const char *id )
 {
+    std::vector<const item *> before;
+    for( const item *it : outer.all_items_top() ) {
+        before.push_back( it );
+    }
     REQUIRE( outer.put_in( item::spawn( itype_id( id ) ), pocket_type::CONTAINER ).success() );
     for( item *it : outer.all_items_top() ) {
-        if( it->typeId() == itype_id( id ) ) {
+        if( it->typeId() == itype_id( id ) && std::ranges::find( before, it ) == before.end() ) {
             return it;
         }
     }
@@ -270,4 +281,96 @@ TEST_CASE( "home and end set the pane index to first and last row", "[advanced_i
         empty_pane.scroll_page( 10, +1 );
         CHECK( empty_pane.index == 0 );
     }
+}
+
+TEST_CASE( "pane notices a destroyed container", "[advanced_inv][ui][p3]" )
+{
+    clear_all_state();
+    advanced_inv_area square_south( AIM_SOUTH );
+    advanced_inv_area square_container( AIM_CONTAINER );
+    advanced_inventory_pane pane;
+    pane.set_area( square_south );
+    // no container is a valid state
+    CHECK( pane.container_is_valid() );
+
+    {
+        detached_ptr<item> bag_owner = item::spawn( itype_id( "backpack" ) );
+        pane.enter_container( &*bag_owner, square_container );
+        CHECK( pane.container_is_valid() );
+    }
+    // the bag is gone: advanced_inventory::validate_pane_containers resets such a pane
+    CHECK_FALSE( pane.container_is_valid() );
+
+    pane.leave_container();
+    CHECK( pane.container_is_valid() );
+}
+
+TEST_CASE( "pane container is restored only when the advanced inventory is re-entered",
+           "[advanced_inv][ui][p3]" )
+{
+    clear_all_state();
+    detached_ptr<item> bag_owner = item::spawn( itype_id( "backpack" ) );
+    item *bag = &*bag_owner;
+    // the squares are only looked at for their ids and (empty) positions here
+    const std::array<advanced_inv_area, NUM_AIM_LOCATIONS> squares = []<size_t... I>
+    ( std::index_sequence<I...> ) {
+        return std::array<advanced_inv_area, NUM_AIM_LOCATIONS> { advanced_inv_area( static_cast<aim_location>( I ) )... };
+    }
+    ( std::make_index_sequence<NUM_AIM_LOCATIONS>() );
+    advanced_inv_pane_save_state state;
+
+    advanced_inventory_pane pane;
+    pane.save_state = &state;
+    pane.set_area( squares[AIM_SOUTH] );
+    pane.enter_container( bag, squares[AIM_CONTAINER] );
+    pane.save_settings();
+    REQUIRE( state.area_idx == static_cast<int>( AIM_CONTAINER ) );
+
+    advanced_inventory_pane reopened;
+    reopened.save_state = &state;
+
+    SECTION( "an activity that returns to the advanced inventory" ) {
+        reopened.load_settings( AIM_INVENTORY, squares, true );
+        CHECK( reopened.get_container() == bag );
+        CHECK( reopened.get_area() == AIM_CONTAINER );
+    }
+
+    SECTION( "a fresh open shows the inventory and forgets the container" ) {
+        reopened.load_settings( AIM_INVENTORY, squares, false );
+        CHECK( reopened.get_container() == nullptr );
+        CHECK( reopened.get_area() == AIM_INVENTORY );
+
+        // the memory entry is gone, a later re-entry does not bring the container back
+        advanced_inventory_pane later;
+        later.save_state = &state;
+        state.area_idx = static_cast<int>( AIM_CONTAINER );
+        later.load_settings( AIM_INVENTORY, squares, true );
+        CHECK( later.get_container() == nullptr );
+        CHECK( later.get_area() == AIM_INVENTORY );
+    }
+}
+
+TEST_CASE( "inventory view leaves out the contents of the other pane's container",
+           "[advanced_inv][ui][p3]" )
+{
+    clear_all_state();
+    avatar &u = get_avatar();
+    clear_character( u, false );
+    u.update_body_storage();
+    u.wear_item( item::spawn( itype_id( "jeans" ) ) );
+    REQUIRE( u.try_add( item::spawn( itype_id( "rock" ) ) ).success() );
+
+    advanced_inv_area square_inventory( AIM_INVENTORY );
+    square_inventory.init();
+    advanced_inventory_pane pane;
+    pane.set_area( square_inventory );
+    pane.add_items_from_area( square_inventory );
+    REQUIRE( pane.items.size() == 1 );
+    const item *garment = pane.items.front().items.front()->parent_item();
+    REQUIRE( garment != nullptr );
+
+    pane.items.clear();
+    pane.other_pane_container = garment;
+    pane.add_items_from_area( square_inventory );
+    CHECK( pane.items.empty() );
 }
