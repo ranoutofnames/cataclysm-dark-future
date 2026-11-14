@@ -146,13 +146,78 @@ The following ammo types are (or will soon be) available in in-repo mods
 - `MOUTH`
 - `TORSO`
 
+### Specifically Covers
+
+Valid ids for `specifically_covers` in `armor_portion_data`; see [sub body parts](creatures/sub_body_parts.md).
+
+- `torso_upper`
+- `torso_neck`
+- `torso_lower`
+- `torso_hanging_front`
+- `torso_hanging_back`
+- `torso_waist`
+- `arm_shoulder_r`
+- `arm_upper_r`
+- `arm_elbow_r`
+- `arm_lower_r`
+- `arm_shoulder_l`
+- `arm_upper_l`
+- `arm_elbow_l`
+- `arm_lower_l`
+- `leg_hip_r`
+- `leg_upper_r`
+- `leg_knee_r`
+- `leg_lower_r`
+- `leg_hip_l`
+- `leg_upper_l`
+- `leg_knee_l`
+- `leg_lower_l`
+- `leg_draped_l`
+- `leg_draped_r`
+- `eyes_left`
+- `eyes_right`
+- `mouth_lips`
+- `mouth_nose`
+- `mouth_cheeks`
+- `mouth_chin`
+- `head_forehead`
+- `head_crown`
+- `head_nape`
+- `head_throat`
+- `head_ear_l`
+- `head_ear_r`
+- `hand_wrist_r`
+- `hand_palm_r`
+- `hand_back_r`
+- `hand_fingers_r`
+- `hand_wrist_l`
+- `hand_palm_l`
+- `hand_back_l`
+- `hand_fingers_l`
+- `foot_sole_l`
+- `foot_arch_l`
+- `foot_toes_l`
+- `foot_ankle_l`
+- `foot_heel_l`
+- `foot_sole_r`
+- `foot_arch_r`
+- `foot_toes_r`
+- `foot_ankle_r`
+- `foot_heel_r`
+
 ### Flags
 
 Some armor flags, such as `WATCH` and `ALARMCLOCK` are compatible with other item types. Experiment
 to find which flags work elsewhere.
 
+- `ABLATIVE_HELMET` item can be worn with Hub 01 headgear without encumbrance penalty; specifically
+  can be put in pocket for armor with this flag restriction.
 - `ABLATIVE_LARGE`, `ABLATIVE_MEDIUM` An armor plate size. A plate with the flag fits a plate slot
   (an `ablative` pocket) whose `flag_restriction` names it.
+- `ABLATIVE_MANTLE` item can be worn with Hub 01 armor without encumbrance penalty; specifically
+  can be put in pocket for armor with this flag restriction.
+- `ABLATIVE_SKIRT` item can be worn with Hub 01 armor without encumbrance penalty; specifically
+  can be put in pocket for armor with this flag restriction.
 - `ACTIVE_CLOAKING` While active, drains UPS to provide invisibility.
 - `ALARMCLOCK` Has an alarm-clock feature.
 - `ALLOWS_NATURAL_ATTACKS` Doesn't prevent any natural attacks or similar benefits from mutations,
@@ -165,6 +230,8 @@ to find which flags work elsewhere.
 - `BLIND` Blinds the wearer while worn, and provides nominal protection v. flashbang flashes.
 - `BLOCK_WHILE_WORN` Allows worn armor or shields to be used for blocking attacks. See also the
   `Techniques` section.
+- `BOOT_FINS` This item is attachable to commercial diving boots as fins.
+- `BOOT_FINS_CUSTOM` This item is attachable to custom diving boots as fins.
 - `BULLET_IMMNUE` Wearing an item with this flag makes you immune to bullet damage
 - `CLIMATE_CONTROL` This piece of clothing has climate control of some sort, keeping you warmer or
   cooler depending on ambient and bodily temperature.
@@ -179,6 +246,8 @@ to find which flags work elsewhere.
 - `FLOTATION` Prevents the player from drowning in deep water. Also prevents diving underwater.
 - `FRAGILE` This gear is less resistant to damage than normal.
 - `HELMET_COMPAT` Items that are not SKINTIGHT or OVERSIZE but can be worn with a helmet.
+- `HELMET_FACE_SHIELD` Item can be worn with different hard hats, as attachment; specifically can be
+  put in pocket for armor with this flag restriction.
 - `HOOD` Allow this clothing to conditionally cover the head, for additional warmth or water
   protection., if the player's head isn't encumbered
 - `HYGROMETER` This gear is equipped with an accurate hygrometer (which is used to measure
@@ -190,10 +259,14 @@ to find which flags work elsewhere.
 - `OUTER` Outer garment layer.
 - `OVERSIZE` Can always be worn no matter encumbrance/mutations/bionics/etc., but prevents any other
   clothing being worn over this.
+- `PAPR_BLOWER` This item functions as a powered air purifying respirator blower.
+- `PAPR_MASK` This item functions as a powered air purifying respirator.
 - `PARTIAL_DEAF` Reduces the volume of sounds to a safe level.
 - `PERSONAL` This item goes in the personal aura layer, intended for metaphysical effects.
 - `POCKETS` Increases warmth for hands if the player's hands are cold and the player is wielding
   nothing.
+- `PORTAL_PROOF` Label only in CDF: no C++ code reads this flag, so it has no effect yet. DDA makes
+  the wearer immune to personal portal storm effects through effects-on-condition, which CDF lacks.
 - `POWERARMOR_EXO` Marks the item as the main exoskeleton for power armor.
 - `POWERARMOR_EXTERNAL` Marks the item as external pieces that cover body parts the exoskeleton
   doesn't.
@@ -680,6 +753,14 @@ List of known flags, used in both `terrain.json` and `furniture.json`.
 
 ### Flags
 
+- `BATTERY_HEAVY` This item is a tool battery, and can be put in pockets that have tool battery
+  restriction.
+- `BATTERY_LIGHT` This item is a light battery, and can be put in pockets that have light battery
+  restriction.
+- `BATTERY_MEDIUM` This item is a medium battery, and can be put in pockets that have medium battery
+  restriction.
+- `BATTERY_ULTRA_LIGHT` This item is an ultra light battery, and can be put in pockets that have ultra
+  light battery restriction.
 - `BIONIC_NPC_USABLE` ... Safe CBMs that NPCs can use without extensive NPC rewrites to utilize
   toggle CBMs.
 - `BIONIC_TOGGLED` ... This bionic only has a function when activated, instead of causing its effect
@@ -716,6 +797,10 @@ List of known flags, used in both `terrain.json` and `furniture.json`.
   aerodynamic orientation. Typically used for javelins, spears, and darts.
 - `FRAGILE_MELEE` ... Fragile items that fall apart easily when used as a weapon due to poor
   construction quality and will break into components when broken.
+- `GASFILTER_MED` This is a medium size gas filter cartridge, that is used as magazine for various gas
+  masks.
+- `GASFILTER_SM` This is a small size gas filter cartridge, that is used as magazine for various gas
+  masks.
 - `GAS_DISCOUNT` ... Discount cards for the automated gas stations.
 - `IS_PET_ARMOR` ... Is armor for a pet monster, not armor for a person
 - `LEAK_ALWAYS` ... Leaks (may be combined with "RADIOACTIVE").
@@ -743,12 +828,16 @@ List of known flags, used in both `terrain.json` and `furniture.json`.
 - `BIONIC_TOOLS` ... Used by pseudo bionic tools to make clear that they need to use bionic power
 - `RADIOACTIVE` ... Is radioactive (can be used with LEAK_*).
 - `RAIN_PROTECT` ... Protects from sunlight and from rain, when wielded.
+- `REBREATHER_CART` This is a rebreather cartridge, and is used as magazine for various rebreather
+  masks.
 - `REDUCED_BASHING` ... Gunmod flag; reduces the item's bashing damage by 50%.
 - `REDUCED_WEIGHT` ... Gunmod flag; reduces the item's base weight by 25%.
 - `REQUIRES_TINDER` ... Requires tinder to be present on the tile this item tries to start a fire
   on.
 - `SHATTERS` ... This item can potentially shatter as if it as made of glass when used as a weapon,
   thrown, bashed, etc.
+- `SINGLE_USE` This item is deleted after being used.  Items that count by charge do not need this as
+  they are deleted when charges run out.
 - `SLEEP_AID` ... This item helps in sleeping.
 - `SLEEP_IGNORE` ... This item is not shown as before-sleep warning.
 - `SLOW_WIELD` ... Has an additional time penalty upon wielding. For melee weapons and guns this is
@@ -796,6 +885,8 @@ List of known flags, used in both `terrain.json` and `furniture.json`.
   you can fire it regularly in exchange for dispersion and recoil penalties. Wearing something with
   the `HEAVY_WEAPON_SUPPORT` flag also works.
 - `NEVER_JAMS` Never malfunctions.
+- `NO_TURRET` Prevents generation of a vehicle turret prototype for this gun. (CDF: hand-written turret
+  parts only; no generator reads it yet.)
 - `NO_UNLOAD` Cannot be unloaded.
 - `PRIMITIVE_RANGED_WEAPON` Allows using non-gunsmith tools to repair it (but not reinforce).
 - `PUMP_ACTION` Gun has a rails on its pump action, allowing to install only mods with
@@ -845,6 +936,8 @@ List of known flags, used in both `terrain.json` and `furniture.json`.
 - `MAG_EJECT` Magazine is ejected from the gun/tool when the last round is consumed
 - `SPEEDLOADER` Acts like a magazine, except it transfers rounds to the target gun instead of being
   inserted into it.
+- `SPEEDLOADER_CLIP` Acts like a `SPEEDLOADER`, except the target gun or magazine don't have to be
+  emptied to occur the transferments.
 
 ## MAP SPECIALS
 
