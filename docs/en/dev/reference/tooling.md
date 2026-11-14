@@ -42,6 +42,36 @@ Repeated launches reuse the same artifact directory and preserve its saves and c
 a new SHA or artifact ID gets a separate directory. Temporary-directory cleanup can remove these files,
 so copy any saves you want to keep elsewhere. Android saves remain on the device.
 
+## Keybinding self-check
+
+`tools/cdf_kbcheck.py` reports what a saved `config/keybindings.json` does to the shipped
+`data/raw/keybindings/*.json`: which action ids it overrides (default keys vs user keys), which it
+deletes, which keys end up bound to two actions in the same context, and the effective key of every
+action the DDA inventory screen needs. It only reads files; it never changes the user's bindings or
+the defaults. The merge rules mirror `input_manager::load` in `src/input.cpp:255-290`.
+
+```sh
+py -3 -I tools/cdf_kbcheck.py                  # find the usual config dir
+py -3 -I tools/cdf_kbcheck.py --user "<config>/keybindings.json"
+py -3 -I tools/cdf_kbcheck.py --contexts all   # every context, not just the inventory ones
+py -3 -I tools/cdf_kbcheck.py --selftest       # built-in merge/override/deletion/collision checks
+```
+
+Without `--user`, the script looks in the same places as the game (`src/utils/path_info.cpp`):
+`%LOCALAPPDATA%\cataclysm-bn\config\keybindings.json` on Windows, the XDG/HOME config paths on
+Linux/macOS, and `config/keybindings.json` for a portable build. The default `--defaults` is this
+repository's `data/raw/keybindings`.
+
+Findings are tab-separated on stdout with a header (`kind`, `context`, `action`, `default_keys`,
+`user_keys`, `effective_keys`, `detail`); summary counts go to stderr. `kind` is one of `override`,
+`deleted`, `collision`, `required`. Keys of one binding are joined with `+`, several bindings of the
+same action with `;`, and `NO KEY` means the action has no effective binding. The required list stays
+in sync with `required_inventory_actions` in `src/input.h`.
+
+The game runs the keybinding self-check at startup and writes the override count and the
+missing-required list to `debug.log`; the main menu shows the compiled-in `Build:` line next to
+`Version:`.
+
 ## Code style (C++)
 
 C++ formatting uses [Artistic Style](http://astyle.sourceforge.net/) only for top-level

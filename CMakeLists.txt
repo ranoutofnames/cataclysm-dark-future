@@ -123,6 +123,12 @@ if (NOT "${GIT_VERSION}" MATCHES "GIT-NOTFOUND")
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         OUTPUT_VARIABLE _sha1
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+    # CDF: AT2b. Compile the same build number and commit that VERSION.txt carries
+    # into the binary, so the main menu and debug.log show the running binary's id
+    # (not a file that may belong to another tree). version.h itself is rewritten
+    # by the build-time version.cmake, so these are compile definitions.
+    add_compile_definitions(CDF_BUILD_NUMBER="${_timestamp}")
+    add_compile_definitions(CDF_COMMIT_SHA="${_sha1}")
     file(WRITE VERSION.txt "\
 build type: ${BUILD_PRESET_NAME}\n\
 build number: ${_timestamp}\n\

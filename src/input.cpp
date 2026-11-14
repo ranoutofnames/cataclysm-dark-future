@@ -109,11 +109,26 @@ int input_event::get_first_input() const
 
 input_manager inp_mngr;
 
+// Keep in sync with REQUIRED_INVENTORY_ACTIONS in tools/cdf_kbcheck.py.
+const std::vector<std::string> required_inventory_actions = {
+    "NEXT_COLUMN",
+    "PREV_COLUMN",
+    "TOGGLE_ENTRY",
+    "MARK_WITH_COUNT",
+    "TOGGLE_NON_FAVORITE",
+    "EXAMINE_CONTENTS",
+    "SHOW_HIDE_CONTENTS_ALL",
+    "RESET_FILTER",
+    "SHOW_HIDE_CONTENTS",
+};
+
 void input_manager::init()
 {
     std::map<char, action_id> keymap;
     std::string keymap_file_loaded_from;
     std::set<action_id> unbound_keymap;
+    user_override_empty.clear();
+    user_deleted_actions.clear();
     init_keycode_mapping();
     reset_timeout();
 
@@ -132,6 +147,16 @@ void input_manager::init()
     } catch( const JsonError &err ) {
         throw std::runtime_error( err.what() );
     }
+
+    // AT2: the build line already tells the owner which binary is running; this
+    // line says whether the saved user bindings still expose the inventory keys.
+    const keybinding_self_check kb_check = check_keybindings();
+    DebugLog( DL::Info, DC::Main ) << "keybindings: user file overrides "
+                                   << kb_check.overridden_action_ids.size() << " action ids in "
+                                   << kb_check.override_contexts.size()
+                                   << " contexts; missing required actions: "
+                                   << ( kb_check.missing_required_actions.empty() ? "none" :
+                                        join( kb_check.missing_required_actions, ", " ) );
 
     if( keymap_file_loaded_from.empty() || ( keymap.empty() && unbound_keymap.empty() ) ) {
         // No keymap file was loaded, or the file has no mappings and no unmappings,
@@ -261,6 +286,9 @@ void input_manager::load( const std::string &file_name, bool is_user_preferences
                 attributes.is_user_created = false;
                 attributes.is_deleted = true;
             }
+            // AT2: remember that the user removed this binding for the self-check.
+            user_deleted_actions.emplace( context, action_id );
+            user_override_empty.erase( { context, action_id } );
             continue;
         }
 
@@ -285,6 +313,11 @@ void input_manager::load( const std::string &file_name, bool is_user_preferences
             attributes.is_deleted = false;
             if( action.has_member( "is_user_created" ) ) {
                 attributes.is_user_created = action.get_bool( "is_user_created" );
+            }
+            // AT2: remember the effective user entry for the self-check.
+            if( is_user_preferences ) {
+                user_override_empty[{ context, action_id }] = events.empty();
+                user_deleted_actions.erase( { context, action_id } );
             }
         }
     }
@@ -345,6 +378,61 @@ void input_manager::save()
         }
         jsout.end_array();
     }, _( "key bindings configuration" ) );
+}
+
+keybinding_self_check input_manager::check_keybindings() const
+{
+    keybinding_self_check result;
+
+    std::set<std::string> overridden_ids;
+    std::set<std::string> override_contexts;
+    for( const auto &entry : user_override_empty ) {
+        overridden_ids.insert( entry.first.second );
+        override_contexts.insert( entry.first.first );
+    }
+    result.overridden_action_ids.assign( overridden_ids.begin(), overridden_ids.end() );
+    result.override_contexts.assign( override_contexts.begin(), override_contexts.end() );
+
+    const t_action_contexts::const_iterator inventory = action_contexts.find( "INVENTORY" );
+    const t_action_contexts::const_iterator defaults = action_contexts.find( default_context_id );
+
+    // The effective binding in the INVENTORY context: a local action that is not
+    // deleted wins, otherwise the default context does (get_action_attributes).
+    const auto effective_is_empty = [&]( const std::string &action_id ) -> bool {
+        if( inventory != action_contexts.end() ) {
+            const t_actions::const_iterator local = inventory->second.find( action_id );
+            if( local != inventory->second.end() && !local->second.is_deleted ) {
+                return local->second.input_events.empty();
+            }
+        }
+        if( defaults != action_contexts.end() ) {
+            const t_actions::const_iterator global = defaults->second.find( action_id );
+            if( global != defaults->second.end() && !global->second.is_deleted ) {
+                return global->second.input_events.empty();
+            }
+        }
+        return true;
+    };
+    const auto user_unbound = [&]( const std::string &context,
+                                   const std::string &action_id ) -> bool {
+        if( user_deleted_actions.contains( { context, action_id } ) ) {
+            return true;
+        }
+        const auto entry = user_override_empty.find( { context, action_id } );
+        return entry != user_override_empty.end() && entry->second;
+    };
+
+    for( const std::string &action_id : required_inventory_actions ) {
+        const bool present =
+            ( inventory != action_contexts.end() && inventory->second.contains( action_id ) ) ||
+            ( defaults != action_contexts.end() && defaults->second.contains( action_id ) );
+        const bool removed_by_user = user_unbound( "INVENTORY", action_id ) ||
+                                     user_unbound( default_context_id, action_id );
+        if( !present || ( effective_is_empty( action_id ) && removed_by_user ) ) {
+            result.missing_required_actions.push_back( action_id );
+        }
+    }
+    return result;
 }
 
 void input_manager::add_keycode_pair( int ch, const std::string &name )

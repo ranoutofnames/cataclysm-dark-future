@@ -1,0 +1,10 @@
+[
+  {
+    "type": "keybinding",
+    "id": "NEXT_COLUMN",
+    "category": "INVENTORY",
+    "bindings": [
+      { "input_method": "keyboard", "key": "j" }
+    ]
+  }
+]
