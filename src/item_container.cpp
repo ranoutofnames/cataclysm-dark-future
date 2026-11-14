@@ -333,11 +333,13 @@ std::vector<item_pocket *> item::get_container_and_mod_pockets()
 
 void item::begin_bulk_fill()
 {
-    // CDF: no-op, the P1d size cache covers it (DEVIATION, perf only)
+    // CDF: the pocket level is still a no-op, the P1d size cache covers the sums
+    contents.begin_bulk_fill();
 }
 
 void item::end_bulk_fill()
 {
+    contents.end_bulk_fill();
 }
 
 item_pocket *item::contained_where( const item &contained )

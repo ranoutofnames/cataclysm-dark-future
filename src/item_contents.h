@@ -82,6 +82,9 @@ class item_contents
         auto invalidate_processing_cache() const -> void;
         /** Drops the cached volume and weight of every pocket (this level only). */
         void invalidate_pocket_caches() const;
+        /** Forward bulk-fill begin/end to every pocket (DDA item_contents.h:365-367). */
+        void begin_bulk_fill();
+        void end_bulk_fill();
 
         /** returns a list of pointers to all top-level items, in pocket order */
         const std::vector<item *> &all_items_top() const;
