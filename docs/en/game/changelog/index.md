@@ -42,4 +42,3 @@ of [CleverRaven/Cataclysm-DDA.](https://github.com/CleverRaven/Cataclysm-DDA)
   are split into their own sub-locations.
 - New armor ids that match DDA's are added.
 - Picking up something too heavy or too large cancels the pickup silently.
-- The pickup prompt does not offer Wear; wear the item from the inventory.
