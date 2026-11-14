@@ -903,6 +903,13 @@ static auto carried_holder( const inventory_entry &entry ) -> item *
     return entry.any_item()->parent_item();
 }
 
+// UI1: DDA's item::is_container() is "has a container pocket". CDF's is_container() leaves out worn
+// storage (`carry` pockets), so a garment holding items would never take the hide-all override.
+static auto holds_contents( const item &it ) -> bool
+{
+    return it.has_pocket_type( pocket_type::CONTAINER );
+}
+
 // UI1: hide_entries_override is the column's "hide all contents" state (DDA is_hidden 590-592).
 static auto hidden_by_collapse( const inventory_entry &entry,
                                 const std::optional<bool> &hide_entries_override = std::nullopt ) -> bool
@@ -913,7 +920,7 @@ static auto hidden_by_collapse( const inventory_entry &entry,
     }
     // Per DDA inventory_ui.cpp:590-592: the hide-all override beats the pocket settings.
     if( hide_entries_override && entry.is_item() && entry.topmost_parent != nullptr &&
-        entry.topmost_parent->is_container() ) {
+        holds_contents( *entry.topmost_parent ) ) {
         return *hide_entries_override;
     }
     // Per DDA inventory_ui.cpp:575-600: hierarchy rows under a collapsed pocket of their parents
@@ -935,7 +942,7 @@ static auto hidden_by_collapse( const inventory_entry &entry,
         return false;
     }
     if( hide_entries_override ) {
-        return *hide_entries_override && holder->is_container();
+        return *hide_entries_override && holds_contents( *holder );
     }
     for( const item *anc = holder; anc != nullptr; anc = anc->parent_item() ) {
         if( anc->is_collapsed() ) {
@@ -1358,7 +1365,7 @@ void inventory_column::draw( const catacurses::window &win, point pos,
                 if( cell_index == 0 && entry.chevron && entry.is_item() ) {
                     // Per DDA inventory_ui.cpp:1801-1807: the hide-all override colours the chevron
                     const bool hide_override = !entry.is_collation_header() && hide_entries_override &&
-                                               entry.any_item()->is_container();
+                                               holds_contents( *entry.any_item() );
                     const nc_color chevron_color = entry.is_collation_header() ? c_light_blue :
                                                    hide_override ? ( *hide_entries_override ? c_red : c_green ) :
                                                    c_dark_gray;
