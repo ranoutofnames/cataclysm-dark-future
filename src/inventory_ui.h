@@ -977,6 +977,16 @@ class inventory_selector
         // Per DDA inventory_ui.h:1007. Shared by all selectors; CDF default is on (old behaviour).
         static bool skip_unselectable;
 
+    protected:
+        /**
+         * CDF: P3-UI1 fix (A-L2). The "hide all contents" override (uistate.hide_entries_override) is for
+         * the full inventory screens. A selector that calls this in its constructor ignores it: its
+         * columns show everything, and SHOW_HIDE_CONTENTS_ALL does nothing, so a saved `true` cannot
+         * silently hide rows in a screen whose hint does not show the key.
+         */
+        void ignore_hide_override();
+        bool hide_override_ignored = false;
+
     public:
         std::string action_bound_to_key( char key ) const;
         /** Returns all keys in the current context which are bound to an action. Warning: may contain duplicates. */
@@ -1014,6 +1024,13 @@ class inventory_pick_selector : public inventory_selector
         bool is_drag_active() const {
             return drag_active;
         }
+        /// CDF: P3-UI6 fix (B-M1). Called with every input before it is acted on: a drag only lives
+        /// across CLICK_AND_DRAG and MOUSE_MOVE events and ends on a mouse click on a row. Any other
+        /// input (a release over no row, a key press) cancels it, so the next click is a plain click.
+        void end_stale_drag( const inventory_input &input );
+        /// CDF: P3-UI1 fix (A-M1). The row CONFIRM picks: the selected item, but only when its row
+        /// is selectable (with TOGGLE_SKIP_UNSELECTABLE off the cursor can rest on a disabled row).
+        item *confirmed_item() const;
 
     protected:
         item *drag_source = nullptr;
@@ -1070,6 +1087,8 @@ class inventory_multiselector : public inventory_selector
         /// TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, INCREASE_COUNT, DECREASE_COUNT,
         /// the number keys and VIEW_CATEGORY_MODE. Returns true when the input was used.
         bool handle_mark_action( const std::string &action, int ch = 0 );
+        /// A-L1 fix: a digit key seeds the count prompt (checked before the invlet lookup).
+        static bool is_count_digit( int ch );
         /// Per DDA inventory_ui.cpp:4760-4772: the chosen counts survive the view switch.
         void toggle_categorize_contained();
         /// Whether an entry may be marked together with the container that holds it (DDA
@@ -1129,7 +1148,9 @@ class container_inventory_selector : public inventory_pick_selector
     public:
         explicit container_inventory_selector( player &p, item *loc,
                                                const inventory_selector_preset &preset = default_preset ) :
-            inventory_pick_selector( p, preset ), loc( loc ) {}
+            inventory_pick_selector( p, preset ), loc( loc ) {
+            ignore_hide_override(); // A-L2 fix
+        }
 
     protected:
         header_stats get_raw_stats() const override;

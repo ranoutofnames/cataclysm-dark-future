@@ -1204,7 +1204,8 @@ bool inventory_column::select( const item *loc, bool front_only )
         inventory_entry &ent = entries[index];
         // CDF: DDA extract line 362 has no is_selectable gate; base 6d202a1ce8 required it
         // for the default path.
-        if( !ent.is_item() || ( !front_only && !ent.is_selectable() ) ) {
+        // A-M2 fix: with skip off the cursor may rest on a disabled row, so gate on highlightable.
+        if( !ent.is_item() || ( !front_only && !ent.is_highlightable( skip_unselectable ) ) ) {
             continue;
         }
         // CDF: guard, entries can have no locations.
@@ -1982,6 +1983,8 @@ void inventory_selector::toggle_categorize_contained()
 
 void inventory_selector::clear_items()
 {
+    // A-L5 fix: the rows the map points to are gone.
+    rect_entry_map.clear();
     is_empty = true;
     for( auto &column : columns ) {
         column->clear();
@@ -2215,6 +2218,8 @@ void inventory_selector::rearrange_columns( size_t client_width )
 
 void inventory_selector::prepare_layout( size_t client_width, size_t client_height )
 {
+    // A-L5 fix: paging is rebuilt below, so the entry pointers of the last draw may be stale.
+    rect_entry_map.clear();
     // This block adds categories and should go before any width evaluations
     for( auto &elem : columns ) {
         elem->set_height( client_height );
@@ -2953,6 +2958,7 @@ void inventory_selector::set_filter( const std::string &str )
 
 void inventory_selector::apply_filter( const std::string &str )
 {
+    rect_entry_map.clear(); // A-L5 fix: the filter rebuilds the visible rows
     filter = str;
     for( const auto elem : columns ) {
         elem->set_filter( filter );
@@ -3285,6 +3291,10 @@ bool inventory_selector::drag_drop_item( item *source, item *dest )
     if( source == nullptr || dest == nullptr || source == dest ) {
         return false;
     }
+    // B-M2 fix: never store a container in a pocket of something that sits inside it.
+    if( eventually_contains( *source, *dest ) ) {
+        return false;
+    }
     if( drag_drop_test_hook ) {
         return drag_drop_test_hook( *source, *dest );
     }
@@ -3327,6 +3337,9 @@ void inventory_selector::toggle_selected_contents()
 // Per DDA inventory_ui.cpp:3688-3692.
 void inventory_selector::cycle_hide_override_all()
 {
+    if( hide_override_ignored ) {
+        return;
+    }
     for( inventory_column *col : columns ) {
         col->cycle_hide_override();
     }
@@ -3342,6 +3355,15 @@ void inventory_selector::toggle_skip_unselectable()
 }
 
 bool inventory_selector::skip_unselectable = true;
+
+void inventory_selector::ignore_hide_override()
+{
+    hide_override_ignored = true;
+    for( inventory_column *col : columns ) {
+        col->hide_entries_override = std::nullopt;
+        col->invalidate_paging();
+    }
+}
 
 // Per DDA inventory_ui.cpp:3636-3639.
 bool inventory_selector::handle_column_action( const std::string &action )
@@ -3435,6 +3457,7 @@ void inventory_selector::on_input( const inventory_input &input )
             const int examine_result = examine_contents.execute();
             if( examine_result == EXAMINED_CONTENTS_WITH_CHANGES ) {
                 // The user changed something while examining, so rebuild paging
+                rect_entry_map.clear(); // A-L5 fix: the rows are rebuilt, the next draw refills it
                 for( inventory_column *elem : columns ) {
                     elem->invalidate_paging();
                 }
@@ -3649,6 +3672,25 @@ inventory_pick_selector::mouse_outcome inventory_pick_selector::handle_mouse_act
     return res;
 }
 
+void inventory_pick_selector::end_stale_drag( const inventory_input &input )
+{
+    if( !drag_active ) {
+        return;
+    }
+    const bool drag_event = input.action == "CLICK_AND_DRAG" || input.action == "MOUSE_MOVE";
+    const bool row_click = input.mouse && input.entry != nullptr && input.entry->is_item();
+    if( !drag_event && !row_click ) {
+        drag_active = false;
+        drag_source = nullptr;
+    }
+}
+
+item *inventory_pick_selector::confirmed_item() const
+{
+    const inventory_entry &selected = get_active_column().get_selected();
+    return selected && selected.is_selectable() ? selected.any_item() : nullptr;
+}
+
 item *inventory_pick_selector::execute()
 {
     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
@@ -3656,6 +3698,7 @@ item *inventory_pick_selector::execute()
         ui_manager::redraw();
 
         const inventory_input input = get_input();
+        end_stale_drag( input );
 
         if( input.entry != nullptr && input.mouse ) {
             const mouse_outcome outcome = handle_mouse_action( input.action, *input.entry );
@@ -3673,9 +3716,9 @@ item *inventory_pick_selector::execute()
         } else if( input.action == "QUIT" ) {
             return nullptr;
         } else if( input.action == "CONFIRM" ) {
-            const inventory_entry &selected = get_active_column().get_selected();
-            if( selected ) {
-                return selected.any_item();
+            // A-M1 fix: a disabled row (skip off) is not a choice.
+            if( item *const confirmed = confirmed_item() ) {
+                return confirmed;
             }
         } else if( handle_action( input.action ) ) {
             return nullptr;
@@ -3701,6 +3744,7 @@ item *inventory_pick_selector::execute()
 unload_selector::unload_selector( player &p, const inventory_selector_preset &preset ) :
     inventory_pick_selector( p, preset )
 {
+    ignore_hide_override(); // A-L2 fix
     ctxt.register_action( "CONTAIN_MODE" );
     set_hint( hint_string() );
 }
@@ -3719,10 +3763,15 @@ auto unload_selector::execute() -> unload_selection
     while( true ) {
         ui_manager::redraw();
         const inventory_input input = get_input();
+        end_stale_drag( input );
 
         if( input.entry != nullptr && input.mouse ) {
             const mouse_outcome outcome = handle_mouse_action( input.action, *input.entry );
             if( outcome.picked != nullptr ) {
+                // B-L2 fix: a click is a confirm, so it asks about stealing like CONFIRM does.
+                if( !avatar_action::check_stealing( get_player_character(), *outcome.picked ) ) {
+                    return { nullptr, uistate.unload_auto_contain };
+                }
                 return { outcome.picked, uistate.unload_auto_contain };
             }
             if( outcome.toggle_contents ) {
@@ -4002,10 +4051,15 @@ void inventory_multiselector::toggle_entries( int &count, const toggle_mode mode
     end_mark_batch();
 }
 
+bool inventory_multiselector::is_count_digit( int ch )
+{
+    return ch >= '0' && ch <= '9';
+}
+
 bool inventory_multiselector::handle_mark_action( const std::string &action, int ch )
 {
     int count = 0;
-    if( ch >= '0' && ch <= '9' ) {
+    if( is_count_digit( ch ) ) {
         // Checked first: UI0 also binds "1" to MARK_WITH_COUNT, and the digit must seed the prompt.
         int query_result = query_count( ch - '0' );
         if( query_result >= 0 ) {
@@ -4167,7 +4221,10 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( input.entry != nullptr ) {
+        if( is_count_digit( input.ch ) ) {
+            // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
+            handle_mark_action( input.action, input.ch );
+        } else if( input.entry != nullptr ) {
             select( input.entry->any_item() );
             set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
             end_mark_batch();
@@ -4242,6 +4299,7 @@ inventory_drop_selector::inventory_drop_selector( player &p,
         const inventory_selector_preset &preset ) :
     inventory_multiselector( p, preset, _( "ITEMS TO DROP" ) )
 {
+    ignore_hide_override(); // A-L2 fix
 #if defined(__ANDROID__)
     // allow user to type a drop number without dismissing virtual keyboard after each keypress
     ctxt.allow_text_entry = true;
@@ -4252,6 +4310,7 @@ inventory_drop_selector::inventory_drop_selector( player &p,
         const inventory_selector_preset &preset, const std::string &selection_column_title ) :
     inventory_multiselector( p, preset, selection_column_title )
 {
+    ignore_hide_override(); // A-L2 fix
 #if defined(__ANDROID__)
     ctxt.allow_text_entry = true;
 #endif
@@ -4418,7 +4477,10 @@ drop_locations inventory_drop_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( input.entry != nullptr ) {
+        if( is_count_digit( input.ch ) ) {
+            // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
+            handle_mark_action( input.action, input.ch );
+        } else if( input.entry != nullptr ) {
             select( input.entry->any_item() );
             set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
             end_mark_batch();
@@ -4527,14 +4589,29 @@ inventory_pickup_selector::inventory_pickup_selector( player &p,
     ctxt.allow_text_entry = true;
 #endif
 
+    // B-L1 fix: an action with no bound key (SHOW_HIDE_CONTENTS_ALL has none by default) is left
+    // out of the first line instead of reading "Unbound globally!".
+    const auto is_bound = [this]( const std::string & action ) {
+        return !inp_mngr.get_input_for_action( action, "INVENTORY" ).empty();
+    };
+    std::string actions_line;
+    const auto add_hint = [&]( const std::string & action, const std::string & text ) {
+        if( is_bound( action ) ) {
+            if( !actions_line.empty() ) {
+                actions_line += "  ";
+            }
+            actions_line += string_format( text, ctxt.get_desc( action ) );
+        }
+    };
+    add_hint( "WIELD", _( "<color_yellow>%s</color> Wield" ) );
+    add_hint( "WEAR", _( "<color_yellow>%s</color> Wear" ) );
+    add_hint( "SHOW_HIDE_CONTENTS", _( "<color_yellow>%s</color> Expand" ) );
+    add_hint( "SHOW_HIDE_CONTENTS_ALL", _( "<color_yellow>%s</color> All" ) );
+    add_hint( "EXAMINE", _( "<color_yellow>%s</color> Examine" ) );
     set_hint( string_format(
-                  _( "<color_yellow>%s</color> Wield  <color_yellow>%s</color> Wear  <color_yellow>%s</color> Expand  <color_yellow>%s</color> All  <color_yellow>%s</color> Examine\n"
+                  _( "%s\n"
                      "Quantity: <color_yellow>%s</color> to mark selected  <color_yellow>%s</color>/<color_yellow>%s</color> to offset  type number then <color_yellow>%s</color> to set" ),
-                  ctxt.get_desc( "WIELD" ),
-                  ctxt.get_desc( "WEAR" ),
-                  ctxt.get_desc( "SHOW_HIDE_CONTENTS" ),
-                  ctxt.get_desc( "SHOW_HIDE_CONTENTS_ALL" ),
-                  ctxt.get_desc( "EXAMINE" ),
+                  actions_line,
                   ctxt.get_desc( "MARK_WITH_COUNT" ),
                   ctxt.get_desc( "INCREASE_COUNT" ),
                   ctxt.get_desc( "DECREASE_COUNT" ),
@@ -4668,7 +4745,10 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( input.entry != nullptr ) {
+        if( is_count_digit( input.ch ) ) {
+            // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
+            handle_mark_action( input.action, input.ch );
+        } else if( input.entry != nullptr ) {
             select( input.entry->any_item() );
             if( input.entry->chosen_count == 0 ) {
                 set_chosen_count( *input.entry, max_chosen_count );
@@ -4890,6 +4970,7 @@ ammo_inventory_selector::ammo_inventory_selector( player &you, item &reload_loc,
         const inventory_selector_preset &preset ) :
     inventory_selector( you, preset ), reload_loc( reload_loc )
 {
+    ignore_hide_override(); // A-L2 fix
     ctxt.register_action( "INCREASE_COUNT" );
     ctxt.register_action( "DECREASE_COUNT" );
 

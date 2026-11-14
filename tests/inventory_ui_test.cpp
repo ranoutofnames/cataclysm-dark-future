@@ -10,6 +10,7 @@
 #include "type_id.h"
 #include "uistate.h"
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -1317,7 +1318,17 @@ TEST_CASE("pickup hint names the DDA action keys", "[inventory][ui][p3]") {
                                "TOGGLE_ENTRY"}) {
         CAPTURE(action);
         const std::string cell = "<color_yellow>" + f.sel.ctxt.get_desc(action) + "</color>";
-        CHECK(hint.find(cell) != std::string::npos);
+        // B-L1: the first-line hints of an action with no bound key are left out (no "Unbound" cell).
+        const bool bound = !inp_mngr.get_input_for_action(action, "INVENTORY").empty();
+        const bool first_line_item = std::string(action) != "MARK_WITH_COUNT" &&
+                                     std::string(action) != "INCREASE_COUNT" &&
+                                     std::string(action) != "DECREASE_COUNT" &&
+                                     std::string(action) != "TOGGLE_ENTRY";
+        if (bound || !first_line_item) {
+            CHECK(hint.find(cell) != std::string::npos);
+        } else {
+            CHECK(hint.find(cell) == std::string::npos);
+        }
     }
 }
 
@@ -1391,4 +1402,169 @@ TEST_CASE("optimize_pickup result unchanged for the same marks", "[inventory][ui
         CHECK(got[i].quantity == expected[i].quantity);
         CHECK(got[i].children.size() == expected[i].children.size());
     }
+}
+
+// CDF P3-UI fix tests (FIX3a): A-M1, A-M2, B-M1, B-M2.
+namespace {
+// The skip-unselectable flag is static; every test that changes it puts it back.
+struct skip_flag_guard {
+    bool before = inventory_selector::get_skip_unselectable();
+    void set(inventory_selector& sel, bool value) {
+        if (inventory_selector::get_skip_unselectable() != value) {
+            sel.toggle_skip_unselectable();
+        }
+        REQUIRE(inventory_selector::get_skip_unselectable() == value);
+    }
+    ~skip_flag_guard() {
+        if (inventory_selector::get_skip_unselectable() != before) {
+            inventory_selector tmp(get_avatar());
+            tmp.toggle_skip_unselectable();
+        }
+    }
+};
+} // namespace
+
+TEST_CASE("column select lands on a disabled row only while skipping is off", "[inventory][ui][p3]") {
+    clear_avatar();
+    std::vector<detached_ptr<item>> items;
+    for (int i = 0; i < 3; ++i) {
+        items.push_back(item::spawn("bandages"));
+    }
+    inventory_selector_preset preset;
+    inventory_column col(preset);
+    col.add_entry(inventory_entry({items[0].get()}, nullptr, true));
+    col.add_entry(inventory_entry({items[1].get()}, nullptr, false));
+    col.add_entry(inventory_entry({items[2].get()}, nullptr, true));
+    col.invalidate_paging();
+    col.prepare_paging();
+
+    size_t disabled_row = col.entries.size();
+    size_t last_row = col.entries.size();
+    for (size_t i = 0; i < col.entries.size(); ++i) {
+        if (col.entries[i].is_item() && col.entries[i].any_item() == items[1].get()) {
+            disabled_row = i;
+        }
+        if (col.entries[i].is_item() && col.entries[i].any_item() == items[2].get()) {
+            last_row = i;
+        }
+    }
+    REQUIRE(disabled_row < col.entries.size());
+    REQUIRE(last_row < col.entries.size());
+
+    col.toggle_skip_unselectable(true);
+    CHECK_FALSE(col.select(items[1].get()));
+
+    col.toggle_skip_unselectable(false);
+    REQUIRE(col.select(items[2].get()));
+    CHECK(col.get_selected_index() == last_row);
+    // A-M2: the cursor may rest on the disabled row, so re-selecting it must find it.
+    CHECK(col.select(items[1].get()));
+    CHECK(col.get_selected_index() == disabled_row);
+}
+
+TEST_CASE("pick selector confirm refuses a disabled row", "[inventory][ui][p3]") {
+    clear_avatar();
+    inventory_pick_selector sel(get_avatar());
+    auto enabled_item = item::spawn("bandages");
+    auto disabled_item = item::spawn("bandages");
+    sel.own_inv_column.add_entry(inventory_entry({enabled_item.get()}, nullptr, true));
+    sel.own_inv_column.add_entry(inventory_entry({disabled_item.get()}, nullptr, false));
+    sel.own_inv_column.prepare_paging();
+
+    skip_flag_guard skip;
+    skip.set(sel, false);
+    REQUIRE(sel.select(disabled_item.get()));
+    REQUIRE(sel.get_selected().any_item() == disabled_item.get());
+    CHECK(sel.confirmed_item() == nullptr);
+
+    REQUIRE(sel.select(enabled_item.get()));
+    CHECK(sel.confirmed_item() == enabled_item.get());
+}
+
+TEST_CASE("a drag that ends without a row click is cancelled", "[inventory][ui][p3]") {
+    mouse_selector_fixture f(3);
+    drag_hook_guard hook;
+    f.sel.drag_enabled = true;
+    inventory_entry* src = f.entry_of(f.items[0]);
+    inventory_entry* other = f.entry_of(f.items[1]);
+    REQUIRE(src != nullptr);
+    REQUIRE(other != nullptr);
+
+    f.sel.handle_mouse_action("CLICK_AND_DRAG", *src);
+    REQUIRE(f.sel.is_drag_active());
+
+    // moving the mouse keeps the drag
+    f.sel.end_stale_drag(inventory_input{"MOUSE_MOVE", 0, other, true});
+    CHECK(f.sel.is_drag_active());
+    // the release landed on no row: SELECT without an entry
+    f.sel.end_stale_drag(inventory_input{"SELECT", 0, nullptr, false});
+    CHECK_FALSE(f.sel.is_drag_active());
+
+    // the next ordinary click is a plain click, not a drop of the old source
+    const auto outcome = f.sel.handle_mouse_action("SELECT", *other);
+    CHECK(outcome.picked == f.items[1]);
+    CHECK(hook.calls.empty());
+
+    // a release on a row keeps the drag until handle_mouse_action ends it
+    f.sel.handle_mouse_action("CLICK_AND_DRAG", *src);
+    f.sel.end_stale_drag(inventory_input{"SELECT", 0, other, true});
+    CHECK(f.sel.is_drag_active());
+    // any other input (a key) ends it
+    f.sel.end_stale_drag(inventory_input{"ANY_INPUT", 'x', nullptr, false});
+    CHECK_FALSE(f.sel.is_drag_active());
+}
+
+TEST_CASE("drag and drop never stores a container inside its own contents", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    drag_hook_guard hook;
+    hook.result = true;
+    inventory_selector sel(f.u);
+
+    // the rock sits in the box: the box cannot be dropped into its own contents
+    CHECK_FALSE(sel.drag_drop_item(f.box, f.rock));
+    // and neither can the pack (two levels up)
+    CHECK_FALSE(sel.drag_drop_item(f.pack, f.rock));
+    CHECK(hook.calls.empty());
+
+    // the other way round is allowed: the flow is asked
+    CHECK(sel.drag_drop_item(f.rock, f.box));
+    REQUIRE(hook.calls.size() == 1);
+    CHECK(hook.calls[0].first == f.rock);
+    CHECK(hook.calls[0].second == f.box);
+}
+
+TEST_CASE("selectors that ignore the hide override show every row", "[inventory][ui][p3]") {
+    struct override_guard {
+        std::optional<bool> before = uistate.hide_entries_override;
+        ~override_guard() { uistate.hide_entries_override = before; }
+    } restore;
+    uistate.hide_entries_override = true;
+    clear_avatar();
+
+    inventory_selector plain(get_avatar());
+    CHECK(plain.own_inv_column.hide_entries_override == std::optional<bool>(true));
+
+    unload_selector unload(get_avatar());
+    CHECK_FALSE(unload.own_inv_column.hide_entries_override.has_value());
+    CHECK_FALSE(unload.own_gear_column.hide_entries_override.has_value());
+    unload.cycle_hide_override_all();
+    CHECK_FALSE(unload.own_inv_column.hide_entries_override.has_value());
+    // and it does not touch the saved setting
+    CHECK(uistate.hide_entries_override == std::optional<bool>(true));
+}
+
+TEST_CASE("rebuilding a selector clears the row rectangles", "[inventory][ui][p3]") {
+    mouse_selector_fixture f(2);
+    inventory_entry* first = f.entry_of(f.items[0]);
+    REQUIRE(first != nullptr);
+    f.sel.rect_entry_map.push_back({inclusive_rectangle<point>(point(2, 5), point(30, 5)), first});
+    REQUIRE(f.sel.find_entry_by_coordinate(point(3, 5)) == first);
+
+    f.sel.clear_items();
+    CHECK(f.sel.rect_entry_map.empty());
+    CHECK(f.sel.find_entry_by_coordinate(point(3, 5)) == nullptr);
+
+    f.sel.rect_entry_map.push_back({inclusive_rectangle<point>(point(2, 5), point(30, 5)), first});
+    f.sel.reset_filter();
+    CHECK(f.sel.rect_entry_map.empty());
 }
