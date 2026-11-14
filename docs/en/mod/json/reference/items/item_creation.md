@@ -144,6 +144,19 @@ or appearance. See [Field Types](../map/field_type.md) for field properties.
 "effects" : ["COOKOFF", "SHOT"]
 ```
 
+#### `ammunition_type`
+
+`ammunition_type` represents a category of ammo items that can fit certain magazines, usually representing a caliber.
+A magazine or tool names its ammo types by these ids (`ammo_type`, `tool_ammo`). CDF's categories are in
+`data/json/items/ammo_types.json`.
+
+```json
+"type": "ammunition_type",   // Defines a category of ammo
+"id": "22",                  // The id that magazines and tools use to name this category
+"name": ".22",              // Name shown on guns and magazines that take this type
+"default": "22_lr"           // Default AMMO item of this category, used for migration and to tell whether items in it are liquid
+```
+
 ### Magazine
 
 ```json
@@ -475,7 +488,7 @@ fields, `pocket_data` wins and `--check-mods` warns.
 ```json
 "pocket_data": [
   {
-    "pocket_type": "CONTAINER",          // CONTAINER (default), MAGAZINE, MAGAZINE_WELL, MOD, CORPSE or SOFTWARE
+    "pocket_type": "CONTAINER",          // CONTAINER (default), MAGAZINE, MAGAZINE_WELL, MOD, CABLE, CORPSE or SOFTWARE
     "max_contains_volume": "2 L",        // total volume of the contents
     "max_contains_weight": "10 kg",      // total weight of the contents
     "max_item_volume": "500 ml",         // largest single item (optional)
@@ -600,8 +613,15 @@ any, takes it. Their coverage and encumbrance count for the carrier.
 | `usb_drive` | one SOFTWARE pocket |
 
 A gun's `clip_size` makes no pocket: a gun with an integral magazine defines a MAGAZINE pocket in
-`pocket_data`. Armor `storage` isn't converted yet. A gunmod with `magazine_adaptor` replaces the magazines the
+`pocket_data`. Armor `storage` becomes pockets (see Item length). A gunmod with `magazine_adaptor` replaces the magazines the
 MAGAZINE_WELL accepts while it is installed.
+
+Some pockets are added by the game itself. A CABLE pocket (for extension cables, not rigid) is added
+to any item with a `link_up` use action that has none. A gun or tool with `pocket_data` and no MOD
+pocket gets one, as the legacy path already does for a gun or tool that takes mods. A tool with no
+pocket definitions logs the debugmsg `<id> needs pocket definitions` when it is synthesized; a
+third-party tool without `pocket_data` still synthesizes its integral magazine pocket from its
+legacy fields.
 
 ### Melee
 
@@ -775,6 +795,7 @@ Gun mods can be defined like this:
 "mod_target_category": [ [ "BOWS" ] ], // Optional. Weapon category requirements. Inner arrays are AND, outer array is OR. E.g. [["RIFLES","AUTOLOADING"]] = RIFLE AND AUTOLOADING; [["PISTOLS"],["REVOLVERS"]] = PISTOL OR REVOLVER.
 "mod_exclusions": [ "laser_rifle" ], // Optional. What specific weapons can't this gunmod be used with?
 "mod_exclusion_category": [ [ "ENERGY_WEAPONS" ] ], // Optional. Excluded weapon categories. Same logic as mod_target_category - matching any inner array prevents installation.
+"is_visible_when_installed": false, // Optional, if true, this gunmod is shown in your inventory akin to items in pockets. CDF hides an installed gunmod while this is false.
 "acceptable_ammo": [ "9mm" ],  // Optional filter restricting mod to guns with those base (before modifiers) ammo types
 "install_time": "30 s",        // Optional time installation takes. Installation is instantaneous if unspecified. An integer will be read as moves or a time string can be used.
 "ammo_modifier": [ "57" ],     // Optional field which if specified modifies parent gun to use these ammo types
@@ -1370,6 +1391,53 @@ All object defined use actions support the following two types.
 }
 ```
 
+#### `ammo_scale`
+
+`ammo_scale` is set on a use action object (`"ammo_scale": N`, a whole number) or as the second value of an
+array-form use action (`["NAME", N]`). A use method with no entry counts as 1 when the item's ammo is checked.
+CDF sets a scale of 0 for the gun methods `detach_gunmods` and `modify_gunmods`, and for the attach
+methods `GUNMOD_ATTACH` and `TOOLMOD_ATTACH`. DDA's wording: "For use when an item
+automatically transforms into another when its ammo drops to 0, or to allow guns to transform with 0 ammo"
+(`ITEM.md:1206`).
+
+#### `modify_gunmods` and PAPR actions
+
+- `modify_gunmods` ("Modify attached equipment" in `item_actions.json`): lists the installed gunmods of a
+  wielded gun that have a transform action, shows each one's name with its transform text, and runs the
+  transform you choose. The gun must be wielded and not worn. CDF only: DDA documents no such action.
+- `PAPR_BLOWER`: while it runs, each tick it takes in the gas on its tile and spends one charge of
+  `papr_blower_filter` for every 100 points of gas absorbed. Turning it off prints a message and reverts
+  the item to its tool `revert_to` form. CDF only: DDA's docs do not cover this action.
+- `PAPR_MASK_ACTIVATE`: activates a PAPR mask. It fails with a message if no PAPR blower is carried or the
+  mask is damaged. While the mask is worn and active, it stops working and deactivates when no PAPR blower
+  is carried. CDF only: DDA's docs do not cover this action.
+
+#### `link_up`
+
+`link_up` connects an item to a vehicle or appliance, such as plugging a chargeable device into a power
+source (DDA's wording for the action: `ITEM.md:1305`).
+
+```json
+"use_action": {
+  "type": "link_up",         // Connect item to a vehicle or appliance
+  "cable_length": 4,         // (optional) Maximum length of the cable. Default -1: the item type's maximum charges
+  "charge_rate": "60 W",     // (optional) A string with unit W (no unit also means W), kW or mW. A bare number is read as mW, not watts (DDA reads watts). Default 0
+  "efficiency": 0.85,        // (optional) Out of 1.0, the chance to add 1 charge every charge interval. Default 0.85. Below 0.001 the cable transfers nothing
+  "menu_text": "Plug in",    // (optional) Text displayed in the activation screen. Default: the action name "Plug in / Manage cables"
+  "move_cost": 50,           // (optional) Move cost of attaching the cable. Default 5
+  "targets": [ "no_link", "vehicle_port" ], // (optional) link_states the cable can connect to. Default in CDF: no_link and vehicle_port. DDA's comment says the default only allows disconnection; CDF's default also includes vehicle_port
+  "can_extend": [ "extension_cable" ] // (optional) Cable items that can extend this one. Default none
+}
+```
+
+- `targets` values: `no_link` (manual disconnection), `vehicle_port`, `vehicle_battery`, `vehicle_tow`,
+  `bio_cable`, `ups`, `solarpack`. An empty `targets` list logs the debugmsg `Link up action for <item>
+  doesn't have any targets!` and the action does nothing.
+- `can_extend`: the keyword `ELECTRICAL_DEVICES` lets this cable extend every electrical device that has a
+  `link_up` action (DDA's wording, `ITEM.md:1331`).
+
+`CABLE_ATTACH` and `TOW_ATTACH` are replaced by `link_up`.
+
 ### Random Descriptions
 
 Any item with a "snippet_category" entry will have random descriptions, based on that snippet
@@ -1459,7 +1527,10 @@ storage that bionics, mutations and `CARRY_STORAGE` enchantments add to). You ca
 yourself on a pocket: `"carry": true` makes a pocket of any item (for example a backpack with
 several compartments) carrying storage, and `"carry": false` keeps a pocket for the item's own use
 (a holster, a magazine). Per-pocket keys such as `max_item_length` and `volume_encumber_modifier`
-apply as usual. `item::get_storage()` returns the volume of the non-holster `carry` pockets.
+apply as usual. `item::get_storage()` returns the volume of the non-holster `carry` pockets. A
+CONTAINER pocket that a worn garment defines in its own `pocket_data` is `carry` by default, unless it
+sets `carry` itself or is a holster or ablative pocket. Holster pockets hold one item and add no storage
+capacity.
 Items that do not fit any pocket (too long, too big) are refused with a reason; overflow when
 picking up or starting the game is dropped at the character's feet.
 `data/json/items/cdf_overlay_garment_pockets.json` is generated from DDA by
