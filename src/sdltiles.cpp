@@ -3408,6 +3408,14 @@ static void CheckMessages()
                 }
                 break;
 
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                // Only the left press is reported (key name MOUSE_LEFT_PRESSED, the inventory drag
+                // start); input_context::handle_input drops it where nothing binds it.
+                if( ev.button.button == SDL_BUTTON_LEFT ) {
+                    last_input = input_event( MOUSE_BUTTON_LEFT_PRESSED, input_event_t::mouse );
+                }
+                break;
+
             case SDL_EVENT_MOUSE_BUTTON_UP:
                 switch( ev.button.button ) {
                     case SDL_BUTTON_LEFT:
@@ -4170,6 +4178,34 @@ std::optional<tripoint_bub_ms> input_context::get_coordinates( const catacurses:
     }
 
     return tripoint_bub_ms( p, g->get_levz() );
+}
+
+// DDA input_context.cpp:1246 (get_coordinates_text), TILES branch: the last mouse position as a
+// text cell relative to the window (can be negative or past the size; callers range-check).
+std::optional<point> input_context::get_coordinates_text( const catacurses::window &capture_win )
+const
+{
+    if( !coordinate_input_received ) {
+        return std::nullopt;
+    }
+    const window_dimensions dim = get_window_dimensions( capture_win );
+    point logical_coordinate = coordinate;
+    point font = dim.scaled_font_size;
+    // the mouse position is in window pixels; convert to logical pixels if the UI is scaled
+    if( scaling_factor > 1 ) {
+        logical_coordinate.x /= scaling_factor;
+        logical_coordinate.y /= scaling_factor;
+        font.x /= scaling_factor;
+        font.y /= scaling_factor;
+    }
+    if( font.x <= 0 || font.y <= 0 ) {
+        return std::nullopt;
+    }
+    const point screen_pos = logical_coordinate - dim.window_pos_pixel;
+    const auto floor_div = []( int a, int b ) {
+        return a / b - ( ( a % b != 0 && ( ( a < 0 ) != ( b < 0 ) ) ) ? 1 : 0 );
+    };
+    return point( floor_div( screen_pos.x, font.x ), floor_div( screen_pos.y, font.y ) );
 }
 
 int get_terminal_width()

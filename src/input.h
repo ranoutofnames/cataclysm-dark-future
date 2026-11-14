@@ -91,7 +91,9 @@ static constexpr int NUMPAD_0 = 0x40a;
 bool is_mouse_enabled();
 std::string get_input_string_from_file( const std::string &fname = "input.txt" );
 
-enum mouse_buttons { MOUSE_BUTTON_LEFT = 1, MOUSE_BUTTON_RIGHT, SCROLLWHEEL_UP, SCROLLWHEEL_DOWN, MOUSE_MOVE };
+enum mouse_buttons { MOUSE_BUTTON_LEFT = 1, MOUSE_BUTTON_RIGHT, SCROLLWHEEL_UP, SCROLLWHEEL_DOWN, MOUSE_MOVE,
+                     MOUSE_BUTTON_LEFT_PRESSED
+                   };
 
 enum class input_event_t : int  {
     error,
@@ -649,6 +651,12 @@ class input_context
          *       For overmap, we'll need another version that spits out tripoint_rel_omt
          */
         std::optional<tripoint_bub_ms> get_coordinates( const catacurses::window &capture_win_ );
+
+        /**
+         * Get the text cell (relative to @p capture_win) of the last mouse input, if any.
+         * DDA input_context::get_coordinates_text. The result can lie outside the window.
+         */
+        std::optional<point> get_coordinates_text( const catacurses::window &capture_win ) const;
 
         // Below here are shortcuts for registering common key combinations.
         void register_directions();

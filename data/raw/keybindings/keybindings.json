@@ -4269,5 +4269,12 @@
     "category": "INVENTORY",
     "name": "Open context menu",
     "bindings": [ { "input_method": "keyboard", "key": "RETURN" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "CLICK_AND_DRAG",
+    "category": "INVENTORY",
+    "name": "Drag item",
+    "bindings": [ { "input_method": "mouse", "key": "MOUSE_LEFT_PRESSED" } ]
   }
 ]
