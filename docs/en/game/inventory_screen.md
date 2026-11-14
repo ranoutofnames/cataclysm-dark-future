@@ -46,3 +46,13 @@ The menus where you pick a single item (and the unload menu) take the mouse as w
 - **Drag and drop**: in menus that allow it, press the left button on an item, drag to another item and release. The "Select pocket" menu opens, listing the pockets of the item you dropped on; pick one to store the dragged item there. Releasing on the item you started from is an ordinary click. Menus that do not allow dragging just treat the release as a click.
 
 The drag start uses the new key name `MOUSE_LEFT_PRESSED` (action `CLICK_AND_DRAG`, inventory context). Mouse support is meant for the graphical (tiles) build.
+
+## The pickup menu
+
+The multipickup menu (pick up from your tile or from the tiles around you) now behaves like the item menus of Cataclysm: DDA. It still hands the same pickup list to the game, so what is picked up, the carry checks and the messages are unchanged.
+
+- **Hint line**: the top of the menu lists the keys for wield, wear, expand, expand all, examine, mark with a count, raise or lower the count and "type a number then mark". The keys shown are your own bindings.
+- **Contents**: a container lying on the ground can be expanded, and its contents are marked like other items. Marking a container covers what is inside it.
+- **Nothing marked**: confirming with no item marked is refused with a popup that names the mark key.
+- **Header**: the usual carried volume and weight line is followed by a "Selected" line with the volume and weight of what you have marked (a partly marked stack counts only the part you marked).
+- **Wield and wear**: the highlighted item is wielded or worn at once and removed from the list, the highlight moves to the next item and the menu stays open. The menu closes when nothing is left.
