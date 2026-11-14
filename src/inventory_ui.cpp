@@ -94,6 +94,7 @@ struct inventory_input {
     std::string action;
     int ch;
     inventory_entry *entry;
+    bool mouse = false; // entry was found by screen position, not by inventory letter
 };
 
 bool inventory_entry::operator==( const inventory_entry &other ) const
@@ -483,6 +484,20 @@ void inventory_column::move_selection_page( scroll_direction dir )
     select( index, dir );
 }
 
+// Per DDA inventory_ui.cpp:1027-1039 (mouse wheel).
+void inventory_column::scroll_selection_page( scroll_direction dir )
+{
+    size_t index = selected_index;
+
+    while( page_of( index = next_highlightable_index( index, dir ) ) == page_index() ) {
+        if( index == selected_index && page_of( index ) == page_index() ) {
+            break; // If flipped and still on the same page - no need to flip
+        }
+    }
+
+    select( index, dir );
+}
+
 size_t inventory_column::get_entry_cell_width( size_t index, size_t cell_index ) const
 {
     size_t res = utf8_width( get_entry_cell_cache( index ).text[cell_index], true );
@@ -807,6 +822,10 @@ void inventory_column::on_input( const inventory_input &input )
         move_selection_page( scroll_direction::FORWARD );
     } else if( input.action == "PAGE_UP" ) {
         move_selection_page( scroll_direction::BACKWARD );
+    } else if( input.action == "SCROLL_DOWN" ) {
+        scroll_selection_page( scroll_direction::FORWARD );
+    } else if( input.action == "SCROLL_UP" ) {
+        scroll_selection_page( scroll_direction::BACKWARD );
     } else if( input.action == "HOME" ) {
         select( 0, scroll_direction::FORWARD );
     } else if( input.action == "EXAMINE" ) {
@@ -1255,7 +1274,8 @@ int inventory_column::reassign_custom_invlets( const player &p, int min_invlet, 
     return cur_invlet;
 }
 
-void inventory_column::draw( const catacurses::window &win, point pos ) const
+void inventory_column::draw( const catacurses::window &win, point pos,
+                             std::vector<inventory_entry_rect> *rects ) const
 {
     if( !visible() ) {
         return;
@@ -1281,6 +1301,13 @@ void inventory_column::draw( const catacurses::window &win, point pos ) const
         int x1 = pos.x + get_entry_indent( entry );
         int x2 = pos.x + std::max( static_cast<int>( reserved_width - get_cells_width() ), 0 );
         int yy = pos.y + line;
+
+        if( rects != nullptr ) {
+            // DDA inventory_ui.cpp:1733-1737. The map only reads the entry back as non-const.
+            const int hx_end = pos.x + get_width();
+            rects->push_back( { inclusive_rectangle<point>( point( x1, yy ), point( hx_end - 1, yy ) ),
+                                const_cast<inventory_entry *>( &entry ) } );
+        }
 
         const bool selected = active && is_selected( entry );
 
@@ -3010,13 +3037,14 @@ void inventory_selector::draw_columns( const catacurses::window &w ) const
     size_t y = get_header_height() + border + 1;
     size_t active_x = 0;
 
+    rect_entry_map.clear();
     for( const auto &elem : columns ) {
         if( &elem == &columns.back() ) {
             x += gap_rounding_error;
         }
 
         if( !is_active_column( *elem ) ) {
-            elem->draw( w, point( x, y ) );
+            elem->draw( w, point( x, y ), &rect_entry_map );
         } else {
             active_x = x;
         }
@@ -3024,7 +3052,7 @@ void inventory_selector::draw_columns( const catacurses::window &w ) const
         x += elem->get_width() + gap;
     }
 
-    get_active_column().draw( w, point( active_x, y ) );
+    get_active_column().draw( w, point( active_x, y ), &rect_entry_map );
     if( empty() ) {
         center_print( w, getmaxy( w ) / 2, c_dark_gray, _( "Your inventory is empty." ) );
     }
@@ -3104,6 +3132,9 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "UP", to_translation( "Previous item" ) );
     ctxt.register_action( "PAGE_DOWN", to_translation( "Page down" ) );
     ctxt.register_action( "PAGE_UP", to_translation( "Page up" ) );
+    // Per DDA inventory_ui.cpp:3456-3457: the mouse wheel moves the cursor a page.
+    ctxt.register_action( "SCROLL_UP", to_translation( "Move cursor up" ) );
+    ctxt.register_action( "SCROLL_DOWN", to_translation( "Move cursor down" ) );
     // UI1: DDA's column actions (inventory_ui.cpp:3460-3461). LEFT/RIGHT are no longer registered.
     ctxt.register_action( "NEXT_COLUMN", to_translation( "Next column" ) );
     ctxt.register_action( "PREV_COLUMN", to_translation( "Previous column" ) );
@@ -3200,17 +3231,80 @@ drop_location inventory_selector::get_only_choice() const
 
 inventory_input inventory_selector::get_input()
 {
-    inventory_input res;
+    const std::string &action = ctxt.handle_input();
+    const int ch = ctxt.get_raw_input().get_first_input();
+    return process_input( action, ch );
+}
 
-    res.action = ctxt.handle_input();
-    res.ch = ctxt.get_raw_input().get_first_input();
+// Per DDA inventory_ui.cpp:3551-3583. CDF window helper: window_contains_point_relative is
+// written out (the point is relative to w_inv, as get_coordinates_text returns).
+inventory_input inventory_selector::process_input( const std::string &action, int ch )
+{
+    inventory_input res{ action, ch, nullptr, false };
+
+    if( res.action == "SELECT" || res.action == "MOUSE_MOVE" || res.action == "CLICK_AND_DRAG" ) {
+        const std::optional<point> o_p = ctxt.get_coordinates_text( w_inv );
+        if( o_p ) {
+            point p = *o_p;
+            if( p.x >= 0 && p.y >= 0 && p.x < getmaxx( w_inv ) && p.y < getmaxy( w_inv ) ) {
+                res.entry = find_entry_by_coordinate( p );
+                if( res.entry != nullptr && res.entry->is_selectable() ) {
+                    res.mouse = true;
+                    return res;
+                }
+                if( res.entry == nullptr && res.action == "SELECT" ) {
+                    p.x++;
+                    res.entry = find_entry_by_coordinate( p );
+                    // a click just left of a pocket row hits its expander icon
+                    if( res.entry != nullptr && res.entry->is_selectable() && res.entry->chevron ) {
+                        res.action = "SHOW_HIDE_CONTENTS";
+                        res.mouse = true;
+                        return res;
+                    }
+                }
+            }
+        }
+    }
+
     res.entry = find_entry_by_invlet( res.ch );
-
     if( res.entry != nullptr && !res.entry->is_selectable() ) {
         res.entry = nullptr;
     }
-
     return res;
+}
+
+// Per DDA inventory_ui.cpp:2485-2493.
+inventory_entry *inventory_selector::find_entry_by_coordinate( const point &coordinate ) const
+{
+    for( const inventory_entry_rect &it : rect_entry_map ) {
+        if( it.rect.contains( coordinate ) ) {
+            return it.entry;
+        }
+    }
+    return nullptr;
+}
+
+std::function<bool( item &, item & )> inventory_selector::drag_drop_test_hook;
+
+// Per DDA inventory_ui.cpp:2049-2102. The menu is game_menus::inv::select_pocket_and_store.
+bool inventory_selector::drag_drop_item( item *source, item *dest )
+{
+    if( source == nullptr || dest == nullptr || source == dest ) {
+        return false;
+    }
+    if( drag_drop_test_hook ) {
+        return drag_drop_test_hook( *source, *dest );
+    }
+    return game_menus::inv::select_pocket_and_store( u, *source, *dest );
+}
+
+// DDA inventory_ui.cpp:3452-3453, 3468-3469 (COORDINATE is not registered: CDF records the mouse
+// position for every mouse event).
+void inventory_selector::register_mouse_actions()
+{
+    ctxt.register_action( "MOUSE_MOVE" );
+    ctxt.register_action( "CLICK_AND_DRAG" );
+    ctxt.register_action( "SELECT" );
 }
 
 void inventory_selector::toggle_selected_contents()
@@ -3518,6 +3612,50 @@ std::vector<char> inventory_selector::all_bound_keys() const
     return retv;
 }
 
+// Per DDA inventory_ui.cpp:3938-3963 (pick) and 5326-5350 (unload), shared. The row under the
+// mouse is hovered (MOUSE_MOVE), clicked (SELECT) or dragged from (CLICK_AND_DRAG).
+inventory_pick_selector::mouse_outcome inventory_pick_selector::handle_mouse_action(
+    const std::string &action, inventory_entry &entry )
+{
+    mouse_outcome res;
+    if( !entry.is_item() ) {
+        if( action == "SELECT" ) {
+            drag_active = false;
+            drag_source = nullptr;
+        }
+        return res;
+    }
+    if( action == "CLICK_AND_DRAG" ) {
+        if( drag_enabled ) {
+            drag_active = true;
+            drag_source = entry.locations.front();
+        }
+    } else if( action == "MOUSE_MOVE" ) {
+        if( !drag_active ) {
+            select( entry.any_item() );
+        }
+    } else if( action == "SELECT" ) {
+        drag_active = false;
+        item *const start = drag_source;
+        drag_source = nullptr;
+        item *const end = entry.locations.front();
+        if( start != nullptr && end != nullptr && start != end ) {
+            if( drag_drop_item( start, end ) ) {
+                clear_items();
+                add_character_items( u );
+                prepare_layout();
+            }
+        } else {
+            select( entry.any_item() );
+            res.picked = entry.any_item();
+        }
+    } else if( action == "SHOW_HIDE_CONTENTS" ) {
+        select( entry.any_item() );
+        res.toggle_contents = true;
+    }
+    return res;
+}
+
 item *inventory_pick_selector::execute()
 {
     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
@@ -3526,7 +3664,15 @@ item *inventory_pick_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( input.entry != nullptr ) {
+        if( input.entry != nullptr && input.mouse ) {
+            const mouse_outcome outcome = handle_mouse_action( input.action, *input.entry );
+            if( outcome.picked != nullptr ) {
+                return outcome.picked;
+            }
+            if( outcome.toggle_contents ) {
+                on_input( input );
+            }
+        } else if( input.entry != nullptr ) {
             if( select( input.entry->any_item() ) ) {
                 ui_manager::redraw();
             }
@@ -3557,9 +3703,8 @@ item *inventory_pick_selector::execute()
 }
 
 // CDF: P3-5-4, DDA inventory_ui.cpp:5302-5377. item * for item_location (D1), a named struct for
-// the pair, get_active_column().get_selected() for get_highlighted(). Not ported (owner rule D5, no
-// mouse paths): the CLICK_AND_DRAG, MOUSE_MOVE and drag-and-drop SELECT branches (5325-5350) and
-// drag_drop_item.
+// the pair, get_active_column().get_selected() for get_highlighted(). The mouse branches
+// (5325-5350) are in inventory_pick_selector::handle_mouse_action (UI6).
 unload_selector::unload_selector( player &p, const inventory_selector_preset &preset ) :
     inventory_pick_selector( p, preset )
 {
@@ -3582,7 +3727,15 @@ auto unload_selector::execute() -> unload_selection
         ui_manager::redraw();
         const inventory_input input = get_input();
 
-        if( input.entry != nullptr ) {
+        if( input.entry != nullptr && input.mouse ) {
+            const mouse_outcome outcome = handle_mouse_action( input.action, *input.entry );
+            if( outcome.picked != nullptr ) {
+                return { outcome.picked, uistate.unload_auto_contain };
+            }
+            if( outcome.toggle_contents ) {
+                on_input( input );
+            }
+        } else if( input.entry != nullptr ) {
             if( select( input.entry->any_item() ) ) {
                 ui_manager::redraw();
             }

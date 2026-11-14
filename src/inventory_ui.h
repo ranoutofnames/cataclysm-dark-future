@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "color.h"
+#include "cuboid_rectangle.h"
 #include "cursesdef.h"
 #include "detached_ptr.h"
 #include "input.h"
@@ -50,11 +51,19 @@ enum class scroll_direction : int {
 
 struct navigation_mode_data;
 struct inventory_input;
+class inventory_entry;
 
 /// Display-only key hint. Doesn't participate in inventory-letter lookup.
 struct inventory_invlet_hint {
     int invlet;
     nc_color color;
+};
+
+/// Screen rectangle (window-relative text cells) of one drawn row, for mouse lookup. DDA keeps a
+/// vector of std::pair; CDF uses a named struct. Filled by inventory_column::draw.
+struct inventory_entry_rect {
+    inclusive_rectangle<point> rect;
+    inventory_entry *entry = nullptr;
 };
 
 /// Per DDA inventory_ui.h:60-75. CDF: item * instead of item_location.
@@ -368,7 +377,9 @@ class inventory_column
         std::vector<inventory_entry *> get_all_entries() const;
         inventory_entry *find_by_invlet( int invlet ) const;
 
-        void draw( const catacurses::window &win, point pos ) const;
+        /// @param rects when set, receives the rectangle of every drawn row (DDA rect_entry_map).
+        void draw( const catacurses::window &win, point pos,
+                   std::vector<inventory_entry_rect> *rects = nullptr ) const;
 
         void add_entry( const inventory_entry &entry );
         void move_entries_to( inventory_column &dest );
@@ -481,6 +492,8 @@ class inventory_column
          */
         void move_selection( scroll_direction dir );
         void move_selection_page( scroll_direction dir );
+        /// Per DDA inventory_ui.cpp:1027 (mouse wheel): select the first row of the next/previous page.
+        void scroll_selection_page( scroll_direction dir );
 
         /// CDF: the cursor skips disabled rows unless the player turned the skip off (DDA's
         /// default is off; CDF keeps its old behaviour as the default).
@@ -711,6 +724,18 @@ class inventory_selector
                                   const item_category *custom_category = nullptr,
                                   const item *topmost_parent = nullptr, int indent = 0 );
     public:
+        /** Per DDA inventory_ui.cpp:2485. The row drawn under a window-relative text cell, or nullptr. */
+        inventory_entry *find_entry_by_coordinate( const point &coordinate ) const;
+        /** Rows drawn by the last draw_columns (DDA rect_entry_map). Public so tests can fill it. */
+        mutable std::vector<inventory_entry_rect> rect_entry_map;
+        /**
+         * Per DDA inventory_ui.cpp:2049 drag_drop_item: store @p source in a pocket of @p dest through
+         * the "Select pocket" menu (game_menus::inv::select_pocket_and_store).
+         * @return true when the item was stored.
+         */
+        bool drag_drop_item( item *source, item *dest );
+        /** Test hook: when set, drag_drop_item calls it instead of the menu (tests reset it). */
+        static std::function<bool( item &, item & )> drag_drop_test_hook;
         /** Per DDA inventory_ui.cpp:2143. Adds the items inside container to the own inventory column. */
         void add_contained_items( item *container );
         /** Per DDA inventory_ui.cpp:4315. Opens the item info window of sitem (full screen width, scrolling). */
@@ -821,6 +846,12 @@ class inventory_selector
 
         /** @return an entry from all entries by its invlet */
         inventory_entry *find_entry_by_invlet( int invlet ) const;
+        /// Per DDA inventory_ui.cpp:3551-3583: the entry under the mouse for the mouse actions.
+        inventory_input process_input( const std::string &action, int ch );
+        /// Registers MOUSE_MOVE, SELECT and CLICK_AND_DRAG (DDA 3453, 3468-3469). Only the pick
+        /// selectors call it: their loops handle those actions; the multiselectors would treat a
+        /// hover as a mark.
+        void register_mouse_actions();
 
         const std::vector<inventory_column *> &get_all_columns() const {
             return columns;
@@ -954,11 +985,31 @@ class inventory_pick_selector : public inventory_selector
     public:
         inventory_pick_selector( player &p,
                                  const inventory_selector_preset &preset = default_preset ) :
-            inventory_selector( p, preset ) {}
+            inventory_selector( p, preset ) {
+            register_mouse_actions();
+        }
 
         item *execute();
 
+        /// Per DDA inventory_ui.h:1032: drag and drop between rows is off unless a caller opts in.
+        bool drag_enabled = false;
+
+        /// What one mouse event did (DDA 3938-3963, factored out of execute so tests can drive it).
+        struct mouse_outcome {
+            item *picked = nullptr;      // the row was clicked: execute returns this item
+            bool toggle_contents = false; // chevron click: the caller runs on_input( SHOW_HIDE_CONTENTS )
+        };
+        /// Handles CLICK_AND_DRAG (drag start), MOUSE_MOVE (hover), SELECT (click or drag end) and the
+        /// chevron click (SHOW_HIDE_CONTENTS) on @p entry.
+        mouse_outcome handle_mouse_action( const std::string &action, inventory_entry &entry );
+        bool is_drag_active() const {
+            return drag_active;
+        }
+
     protected:
+        item *drag_source = nullptr;
+        bool drag_active = false;
+
         virtual auto handle_action( const std::string &/*action*/ ) -> bool {
             return false;
         }
