@@ -104,6 +104,12 @@ class advanced_inventory_pane
         void leave_container();
         /** What ITEMS_PARENT does now.  @p other_pane_container is the other pane's container. */
         aim_parent_target parent_target( const item *other_pane_container ) const;
+        /**
+         * P3-UI5: the container the other pane shows.  Its contents are listed there, so the
+         * inventory view leaves them out (DDA hides items added to the other pane).  Set by
+         * advanced_inventory::recalc_pane.
+         */
+        const item *other_pane_container = nullptr;
         /** Select this item after the next recalculation (the container we just left). */
         item *target_item_after_recalc = nullptr;
         advanced_inv_pane_save_state *save_state;

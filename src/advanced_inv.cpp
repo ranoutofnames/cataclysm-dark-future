@@ -624,6 +624,7 @@ void advanced_inventory::recalc_pane( side p )
     auto &pane = panes[p];
     pane.recalc = false;
     pane.items.clear();
+    pane.other_pane_container = panes[-p + 1].get_container();
     // Add items from the source location or in case of all 9 surrounding squares,
     // add items from several locations.
     if( pane.get_area() == AIM_ALL ) {
@@ -1244,7 +1245,8 @@ void advanced_inventory::change_square( const aim_location changeSquare,
                 return;
             }
             spane.enter_container( target_container, squares[AIM_CONTAINER] );
-            // Update dpane to hide items added to the spane.
+            // Update dpane to hide items that the spane lists now (the inventory view leaves out
+            // the contents of the other pane's container).
             dpane.recalc = true;
             return;
         }

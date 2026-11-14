@@ -153,7 +153,14 @@ void advanced_inventory_pane::add_items_from_area( advanced_inv_area &square,
         for( size_t x = 0; x < stacks.size(); ++x ) {
             std::list<item *> item_pointers;
             for( item * const &i : stacks[x] ) {
+                // listed by the other pane, which shows this container
+                if( other_pane_container != nullptr && i->parent_item() == other_pane_container ) {
+                    continue;
+                }
                 item_pointers.push_back( i );
+            }
+            if( item_pointers.empty() ) {
+                continue;
             }
             advanced_inv_listitem it( item_pointers, x, square.id, false );
             if( is_filtered( *it.items.front() ) ) {
