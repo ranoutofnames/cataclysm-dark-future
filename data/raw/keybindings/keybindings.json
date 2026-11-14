@@ -1762,7 +1762,7 @@
     "id": "CATEGORY_SELECTION",
     "category": "INVENTORY",
     "name": "Toggle category selection mode",
-    "bindings": [ { "input_method": "keyboard", "key": "TAB" } ]
+    "bindings": [ { "input_method": "keyboard", "key": "t" } ]
   },
   {
     "type": "keybinding",
@@ -1995,7 +1995,7 @@
     "name": "Set standing orders for followers",
     "category": "DEFAULTMODE",
     "id": "npc_orders",
-    "bindings": [  ]
+    "bindings": []
   },
   {
     "type": "keybinding",
@@ -2277,7 +2277,7 @@
     "name": "Salvage items",
     "category": "DEFAULTMODE",
     "id": "salvage",
-    "bindings": [  ]
+    "bindings": []
   },
   {
     "type": "keybinding",
@@ -2380,7 +2380,7 @@
     "name": "View Morale",
     "category": "DEFAULTMODE",
     "id": "morale",
-    "bindings": [  ]
+    "bindings": []
   },
   {
     "type": "keybinding",
@@ -2751,7 +2751,7 @@
     "id": "cast_last_spell",
     "name": "Cast Last Spell",
     "category": "DEFAULTMODE",
-    "bindings": [  ]
+    "bindings": []
   },
   {
     "type": "keybinding",
@@ -3170,7 +3170,93 @@
     "id": "DROP_NON_FAVORITE",
     "category": "INVENTORY",
     "name": "Mark/unmark non-favorite items in multidrop menu",
+    "bindings": [ { "input_method": "keyboard", "key": "N" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "NEXT_COLUMN",
+    "category": "INVENTORY",
+    "name": "Next column",
+    "bindings": [
+      { "input_method": "keyboard", "key": "h" },
+      { "input_method": "keyboard", "key": "LEFT" },
+      { "input_method": "keyboard", "key": "4" },
+      { "input_method": "keyboard", "key": "NUMPAD_4" }
+    ]
+  },
+  {
+    "type": "keybinding",
+    "id": "PREV_COLUMN",
+    "category": "INVENTORY",
+    "name": "Previous column",
+    "bindings": [
+      { "input_method": "keyboard", "key": "BACKTAB" },
+      { "input_method": "keyboard", "key": "TAB" }
+    ]
+  },
+  {
+    "type": "keybinding",
+    "id": "TOGGLE_ENTRY",
+    "category": "INVENTORY",
+    "name": "Select/unselect highlighted item",
+    "bindings": [
+      { "input_method": "keyboard", "key": "l" },
+      { "input_method": "keyboard", "key": "RIGHT" },
+      { "input_method": "keyboard", "key": "6" },
+      { "input_method": "keyboard", "key": "NUMPAD_6" }
+    ]
+  },
+  {
+    "type": "keybinding",
+    "id": "MARK_WITH_COUNT",
+    "category": "INVENTORY",
+    "name": "Select a specific amount of highlighted item",
+    "bindings": [
+      { "input_method": "keyboard", "key": "!" },
+      { "input_method": "keyboard", "key": "1" }
+    ]
+  },
+  {
+    "type": "keybinding",
+    "id": "TOGGLE_NON_FAVORITE",
+    "category": "INVENTORY",
+    "name": "Select/unselect non-favorite items in multidrop menu",
     "bindings": [ { "input_method": "keyboard", "key": "," } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "EXAMINE_CONTENTS",
+    "category": "INVENTORY",
+    "name": "Examine contents",
+    "bindings": [ { "input_method": "keyboard", "key": "o" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "SHOW_HIDE_CONTENTS_ALL",
+    "category": "INVENTORY",
+    "name": "Show/hide all contents",
+    "bindings": []
+  },
+  {
+    "type": "keybinding",
+    "id": "TOGGLE_SKIP_UNSELECTABLE",
+    "category": "INVENTORY",
+    "name": "Toggle skipping unselectable items",
+    "bindings": []
+  },
+  {
+    "type": "keybinding",
+    "id": "SCROLL_UP",
+    "category": "INVENTORY",
+    "name": "Scroll up",
+    "bindings": [ { "input_method": "mouse", "key": "SCROLL_UP" } ]
+  },
+  {
+    "type": "keybinding",
+    "id": "SCROLL_DOWN",
+    "category": "INVENTORY",
+    "name": "Scroll down",
+    "bindings": [ { "input_method": "mouse", "key": "SCROLL_DOWN" } ]
   },
   {
     "type": "keybinding",
@@ -4101,6 +4187,33 @@
   },
   {
     "type": "keybinding",
+    "id": "ITEMS_PARENT",
+    "category": "ADVANCED_INVENTORY",
+    "name": "Exit container to parent",
+    "bindings": [
+      { "input_method": "keyboard", "key": "x" },
+      { "input_method": "keyboard", "key": "X" }
+    ]
+  },
+  {
+    "type": "keybinding",
+    "id": "UNLOAD_CONTAINER",
+    "category": "ADVANCED_INVENTORY",
+    "name": "Unload item from container",
+    "bindings": [
+      { "input_method": "keyboard", "key": "u" },
+      { "input_method": "keyboard", "key": "U" }
+    ]
+  },
+  {
+    "type": "keybinding",
+    "id": "EXAMINE_CONTENTS",
+    "category": "ADVANCED_INVENTORY",
+    "name": "Examine items in container",
+    "bindings": [ { "input_method": "keyboard", "key": "o" } ]
+  },
+  {
+    "type": "keybinding",
     "id": "YES",
     "category": "YN_IGNORE_QUERY",
     "name": "Yes",
@@ -4268,6 +4381,6 @@
     "id": "FAV_CONTEXT_MENU",
     "category": "INVENTORY",
     "name": "Open context menu",
-    "bindings": [ { "input_method": "keyboard", "key": "RETURN" } ]
+    "bindings": [ { "input_method": "keyboard", "key": "RETURN" }, { "input_method": "mouse", "key": "MOUSE_LEFT" } ]
   }
 ]
