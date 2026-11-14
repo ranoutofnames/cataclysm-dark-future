@@ -1256,6 +1256,7 @@ struct ui8_pickup_selector : inventory_pickup_selector {
     using inventory_pickup_selector::inventory_pickup_selector;
     using inventory_pickup_selector::build_selection_stats_line;
     using inventory_pickup_selector::get_raw_stats;
+    using inventory_pickup_selector::ctxt;
 };
 
 struct pickup_menu_fixture {
