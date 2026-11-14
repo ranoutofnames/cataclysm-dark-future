@@ -5341,6 +5341,8 @@ void uistatedata::deserialize( const JsonObject &jo )
     jo.read( "adv_inv_container_type", adv_inv_container_type );
     jo.read( "adv_inv_container_content_type", adv_inv_container_content_type );
     jo.read( "unload_auto_contain", unload_auto_contain );
+    // a save without the key must give back the default (nullopt), not the value left in memory
+    hide_entries_override.reset();
     jo.read( "hide_entries_override", hide_entries_override );
     jo.read( "debug_menu", debug_menu );
     jo.read( "editmap_nsa_viewmode", editmap_nsa_viewmode );
