@@ -938,6 +938,17 @@ bool advanced_inventory::move_all_items( bool nested_call )
         return false;
     }
 
+    if( spane.get_area() == AIM_CONTAINER || dpane.get_area() == AIM_CONTAINER ) {
+        // P3-UI5: the container pane is not a map square, i_at( sarea.pos ) would list the items
+        // under the avatar and darea.off would drop everything on the avatar's tile
+        const bool queued = move_all_container_items( spane, dpane, nested_call );
+        // if dest was AIM_ALL then we used query_destination and should undo that
+        if( restore_area ) {
+            dpane.restore_area();
+        }
+        return queued;
+    }
+
     if( nested_call || !get_option<bool>( "CLOSE_ADV_INV" ) ) {
         // Why is this here? It's because the activity backlog can act
         // like a stack instead of a single deferred activity in order to
@@ -1081,6 +1092,136 @@ bool advanced_inventory::move_all_items( bool nested_call )
     // if dest was AIM_ALL then we used query_destination and should undo that
     if( restore_area ) {
         dpane.restore_area();
+    }
+    return true;
+}
+
+bool advanced_inventory::move_all_container_items( advanced_inventory_pane &spane,
+        advanced_inventory_pane &dpane, const bool nested_call )
+{
+    if( dpane.get_area() == AIM_WORN ) {
+        // as for the other sources, wearing clothes with move all is not implemented
+        popup( _( "You can't put items there!" ) );
+        return false;
+    }
+    const bool to_container = dpane.get_area() == AIM_CONTAINER;
+    const bool from_container = spane.get_area() == AIM_CONTAINER;
+    item *const dest_container = to_container ? dpane.get_container() : nullptr;
+    if( to_container && dest_container == nullptr ) {
+        popup( _( "Destination container isn't valid." ) );
+        return false;
+    }
+    const bool from_carried = from_container && spane.get_container() != nullptr &&
+                              aim_container_is_carried( *spane.get_container() );
+    // carried items are dropped, not picked up or moved from a tile
+    const bool drops_favorites_last = spane.get_area() == AIM_INVENTORY ||
+                                      spane.get_area() == AIM_WORN || from_carried;
+    const bool to_vehicle = !to_container && dpane.in_vehicle();
+
+    // The list comes from the rows of the source pane (the same items that are on screen)
+    std::vector<item *> targets;
+    std::vector<item *> favorites;
+    bool from_vehicle = false;
+    bool skipped_bucket = false;
+    bool skipped_self = false;
+    for( const advanced_inv_listitem &elem : spane.items ) {
+        if( !elem.is_item_entry() ) {
+            continue;
+        }
+        from_vehicle = elem.from_vehicle;
+        for( item *it : elem.items ) {
+            if( it->made_of( LIQUID ) ) {
+                continue;
+            }
+            if( spane.get_area() == AIM_WORN && !g->u.can_takeoff( *it ).success() ) {
+                continue;
+            }
+            // Moving them would cause tons of annoying prompts or spills
+            if( ( to_container || to_vehicle ) && it->is_bucket_nonempty() ) {
+                skipped_bucket = true;
+                continue;
+            }
+            if( to_container ) {
+                // an item can't go into itself, or into something it holds
+                bool holds_destination = false;
+                for( const item *holder = dest_container; holder != nullptr;
+                     holder = holder->parent_item() ) {
+                    if( holder == it ) {
+                        holds_destination = true;
+                        break;
+                    }
+                }
+                if( holds_destination ) {
+                    skipped_self = true;
+                    continue;
+                }
+            }
+            if( drops_favorites_last && it->is_favorite ) {
+                favorites.push_back( it );
+            } else {
+                targets.push_back( it );
+            }
+        }
+    }
+    if( skipped_bucket ) {
+        add_msg( m_info, _( "Skipping filled buckets to avoid spilling their contents." ) );
+    }
+    if( skipped_self ) {
+        add_msg( m_info, _( "Skipping the container that is the destination." ) );
+    }
+    if( targets.empty() ) {
+        if( favorites.empty() || !query_yn( _( "Really move all your favorite items?" ) ) ) {
+            return false;
+        }
+        targets = favorites;
+    }
+
+    // Check first if the destination still has enough room for moving all.
+    advanced_inv_area &sarea = squares[spane.get_area()];
+    advanced_inv_area &darea = squares[dpane.get_area()];
+    if( !is_processing() && sarea.volume > dpane.free_volume( darea ) &&
+        !query_yn( _( "There isn't enough room, do you really want to move all?" ) ) ) {
+        return false;
+    }
+
+    if( nested_call || !get_option<bool>( "CLOSE_ADV_INV" ) ) {
+        // see the comment in move_all_items: reopen the advanced inventory after the activity
+        do_return_entry();
+    }
+
+    if( to_container ) {
+        // as action_move_item does (DDA advanced_inv.cpp:1191), the actor picks the pockets
+        drop_locations items_to_insert;
+        for( item *it : targets ) {
+            items_to_insert.emplace_back( *it, it->count_by_charges() ? it->charges : 1 );
+        }
+        g->u.assign_activity( std::make_unique<player_activity>(
+                                  std::make_unique<insert_item_activity_actor>( *dest_container,
+                                          items_to_insert ) ) );
+    } else if( from_carried ) {
+        // the container is on the avatar: take the items out by dropping them
+        drop_locations to_move;
+        for( item *it : targets ) {
+            to_move.emplace_back( *it, it->count_by_charges() ? it->charges : 1 );
+        }
+        g->u.assign_activity( std::make_unique<player_activity>( std::make_unique<drop_activity_actor>
+                              ( g->u, to_move, !to_vehicle, darea.off ) ) );
+    } else {
+        // the container lies on a square or in vehicle cargo: item pointers, as start_activity does
+        // (quantity 0 means move all)
+        std::vector<int> quantities( targets.size(), 0 );
+        if( dpane.get_area() == AIM_INVENTORY ) {
+            std::vector<pickup::pick_drop_selection> pick_targets = pickup::optimize_pickup( targets,
+                    quantities );
+            g->u.assign_activity( std::make_unique<player_activity>( std::make_unique<pickup_activity_actor>(
+                                      pick_targets,
+                                      from_vehicle ? std::nullopt : std::optional<tripoint_bub_ms>( g->u.bub_pos() )
+                                  ) ) );
+        } else {
+            g->u.assign_activity( std::make_unique<player_activity>
+                                  ( std::make_unique<move_items_activity_actor>( targets, quantities, to_vehicle,
+                                          darea.off ) ) );
+        }
     }
     return true;
 }

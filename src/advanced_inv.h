@@ -153,6 +153,13 @@ class advanced_inventory
 
         static std::string get_sortname( advanced_inv_sortby sortby );
         bool move_all_items( bool nested_call = false );
+        /**
+         * P3-UI5: move_all_items for a pane that shows a container (as the source or as the
+         * destination).  The list is built from the rows of the source pane, not from a map tile.
+         * @return true if an activity was queued
+         */
+        bool move_all_container_items( advanced_inventory_pane &spane, advanced_inventory_pane &dpane,
+                                       bool nested_call );
         void print_items( const advanced_inventory_pane &pane, bool active );
         void recalc_pane( side p );
         /**
