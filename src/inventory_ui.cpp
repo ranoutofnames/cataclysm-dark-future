@@ -4504,7 +4504,147 @@ inventory_selector::header_stats inventory_drop_selector::get_raw_stats() const
 
 inventory_pickup_selector::inventory_pickup_selector( player &p,
         const inventory_selector_preset &preset ) :
-    inventory_multiselector( p, preset, "ITEMS TO PICKUP" ) {}
+    inventory_multiselector( p, preset, _( "ITEMS TO PICKUP" ) )
+{
+    // Per DDA inventory_ui.cpp:4993-5016.
+    ctxt.register_action( "WEAR" );
+    ctxt.register_action( "WIELD" );
+#if defined(__ANDROID__)
+    // allow user to type a drop number without dismissing virtual keyboard after each keypress
+    ctxt.allow_text_entry = true;
+#endif
+
+    set_hint( string_format(
+                  _( "<color_yellow>%s</color> Wield  <color_yellow>%s</color> Wear  <color_yellow>%s</color> Expand  <color_yellow>%s</color> All  <color_yellow>%s</color> Examine\n"
+                     "Quantity: <color_yellow>%s</color> to mark selected  <color_yellow>%s</color>/<color_yellow>%s</color> to offset  type number then <color_yellow>%s</color> to set" ),
+                  ctxt.get_desc( "WIELD" ),
+                  ctxt.get_desc( "WEAR" ),
+                  ctxt.get_desc( "SHOW_HIDE_CONTENTS" ),
+                  ctxt.get_desc( "SHOW_HIDE_CONTENTS_ALL" ),
+                  ctxt.get_desc( "EXAMINE" ),
+                  ctxt.get_desc( "MARK_WITH_COUNT" ),
+                  ctxt.get_desc( "INCREASE_COUNT" ),
+                  ctxt.get_desc( "DECREASE_COUNT" ),
+                  ctxt.get_desc( "TOGGLE_ENTRY" ) ) );
+}
+
+std::vector<inventory_pickup_selector::marked_pickup> inventory_pickup_selector::get_marked_pickups()
+const
+{
+    std::vector<marked_pickup> result;
+    for( const inventory_column *col : get_all_columns() ) {
+        if( col == selection_col.get() ) {
+            continue;
+        }
+        const std::vector<inventory_entry *> chosen = col->get_all_entries(
+        []( const inventory_entry & entry ) {
+            return entry.is_item() && entry.chosen_count > 0;
+        } );
+        for( const inventory_entry *entry_ptr : chosen ) {
+            int count = 0;
+            int chosen_count = entry_ptr->chosen_count;
+            for( size_t i = 0; i < entry_ptr->locations.size() && count < chosen_count &&
+                 count < max_chosen_count; ++i ) {
+                item *target = entry_ptr->locations[i];
+                int needed_count = std::max( 0, chosen_count - count );
+                int to_add = std::min( needed_count, target->count() );
+                if( to_add > 0 ) {
+                    result.push_back( { target, to_add } );
+                    count += to_add;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+std::vector<pickup::pick_drop_selection> inventory_pickup_selector::build_selection() const
+{
+    std::vector<item *> locations;
+    std::vector<int> counts;
+    for( const marked_pickup &mark : get_marked_pickups() ) {
+        locations.push_back( mark.target );
+        counts.push_back( mark.count );
+    }
+    if( locations.empty() ) {
+        return std::vector<pickup::pick_drop_selection>();
+    }
+    return pickup::optimize_pickup( locations, counts );
+}
+
+std::string inventory_pickup_selector::no_selection_text() const
+{
+    return string_format( _( "No items were selected.  Use %s to select them." ),
+                          ctxt.get_desc( "TOGGLE_ENTRY" ) );
+}
+
+item *inventory_pickup_selector::item_after_in_active_column( const item &it ) const
+{
+    bool found = false;
+    for( const inventory_entry &entry : get_active_column().entries ) {
+        if( !entry.is_item() ) {
+            continue;
+        }
+        for( item *loc : entry.locations ) {
+            if( found ) {
+                return loc;
+            }
+            if( loc == &it ) {
+                found = true;
+            }
+        }
+    }
+    return nullptr;
+}
+
+void inventory_pickup_selector::remove_used_item( item &it )
+{
+    item *next = item_after_in_active_column( it );
+    remove_item( &it );
+    if( next != nullptr ) {
+        select( next );
+    }
+}
+
+bool inventory_pickup_selector::wield_highlighted()
+{
+    if( !has_available_choices() ) {
+        return false;
+    }
+    const inventory_entry &selected = get_active_column().get_highlighted();
+    if( !selected.is_item() ) {
+        return false;
+    }
+    item *it = selected.any_item();
+    const ret_val<bool> can = u.can_wield( *it );
+    if( !can.success() ) {
+        popup_getkey( can.c_str() );
+        return false;
+    }
+    remove_used_item( *it );
+    u.wield( *it );
+    return true;
+}
+
+bool inventory_pickup_selector::wear_highlighted()
+{
+    if( !has_available_choices() ) {
+        return false;
+    }
+    const inventory_entry &selected = get_active_column().get_highlighted();
+    if( !selected.is_item() ) {
+        return false;
+    }
+    item *it = selected.any_item();
+    const ret_val<bool> can = u.can_wear( *it );
+    if( !can.success() ) {
+        popup_getkey( can.c_str() );
+        return false;
+    }
+    remove_used_item( *it );
+    u.wear_item( it->detach() );
+    return true;
+}
 
 std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 {
@@ -4524,33 +4664,22 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
         } else if( handle_mark_action( input.action, input.ch ) ) {
             // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
-            std::vector<pickup::pick_drop_selection> result;
-            std::vector<item *> locations;
-            std::vector<int> counts;
-
-            for( auto entry_ptr : map_column.get_all_entries() ) {
-                int count = 0;
-                int chosen_count = entry_ptr->chosen_count;
-                for( size_t i = 0; i < entry_ptr->locations.size() && count < chosen_count &&
-                     count < max_chosen_count; ++i ) {
-                    item *item = entry_ptr->locations[i];
-                    int needed_count = std::max( 0, chosen_count - count );
-                    int to_add = std::min( needed_count, item->count() );
-                    if( to_add > 0 ) {
-                        locations.push_back( entry_ptr->locations[i] );
-                        counts.push_back( to_add );
-                        count += to_add;
-                    }
-                }
-            }
-
-            result = pickup::optimize_pickup( locations, counts );
+            // DDA 5028-5065: nothing marked is refused with a popup naming the mark key.
+            // CDF keeps optimize_pickup for the result.
+            std::vector<pickup::pick_drop_selection> result = build_selection();
             if( result.empty() ) {
-                popup_getkey( _( "No items were selected.  Use %s to select them." ),
-                              ctxt.get_desc( "TOGGLE_ENTRY" ) );
+                popup_getkey( "%s", no_selection_text() );
                 continue;
-            } else {
-                return result;
+            }
+            return result;
+        } else if( input.action == "WIELD" ) {
+            // The menu stays open on the next item (DDA reopens it); it ends when nothing is left.
+            if( wield_highlighted() ) {
+                assign_invlet_hints();
+            }
+        } else if( input.action == "WEAR" ) {
+            if( wear_highlighted() ) {
+                assign_invlet_hints();
             }
         } else if( input.action == "QUIT" ) {
             return std::vector<pickup::pick_drop_selection>();
@@ -4576,37 +4705,20 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 
 inventory_selector::header_stats inventory_pickup_selector::get_raw_stats() const
 {
-    units::mass weight_carried = u.weight_carried();
-    units::volume volume_carried = u.carried_volume();
-    auto func = []( const inventory_entry & entry ) {
-        return entry.is_item() && entry.chosen_count > 0;
-    };
-    std::vector<inventory_entry *> selected_items = selection_col->get_all_entries( func );
-
-    //Add the weights and volumes of selected items
-    //which might be picked up
-    for( auto entry_ptr : selected_items ) {
-        int count = 0;
-        int chosen_count = entry_ptr->chosen_count;
-        for( size_t i = 0; i < entry_ptr->locations.size() && count < chosen_count &&
-             count < max_chosen_count; ++i ) {
-            item *item = entry_ptr->locations[i];
-            int needed_count = std::max( 0, chosen_count - count );
-            int to_add = std::min( needed_count, item->count() );
-            count += to_add;
-            //WARNING: This specific order of operations and casts are needed
-            //to ensure volume and weight are accurate, because of the fact the game
-            //works in base volumes of 1ml and 1mg
-            weight_carried += item->weight() * ( static_cast<double>( to_add ) / item->count() );
-            volume_carried += item->volume() * ( static_cast<double>( to_add ) / item->count() );
-        }
+    // Per DDA pickup_selector::get_raw_stats (5164-5186): the usual carried line, then a
+    // "Selected" line with the volume and weight of what is marked.
+    units::mass weight;
+    units::volume volume;
+    for( const marked_pickup &mark : get_marked_pickups() ) {
+        // WARNING: the ratio keeps volume and weight exact for stacks (base units are 1 ml, 1 mg)
+        const double share = static_cast<double>( mark.count ) / mark.target->count();
+        weight += mark.target->weight() * share;
+        volume += mark.target->volume() * share;
     }
 
-    return convert_stats_to_header_stats( get_weight_and_volume_stats(
-            weight_carried,
-            u.weight_capacity(),
-            volume_carried,
-            u.carried_capacity() ) );
+    header_stats stats = inventory_selector::get_raw_stats();
+    stats.push_back( build_selection_stats_line( volume, weight ) );
+    return stats;
 }
 
 // CDF: P3-5-2a, DDA item_location::can_reload_with( ammo, now ) (item_location.cpp 1524-1537),

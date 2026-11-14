@@ -620,6 +620,9 @@ class inventory_selector
         void set_hint( const std::string &hint ) {
             this->hint = hint;
         }
+        const std::string &get_hint() const {
+            return hint;
+        }
         /** Specify whether the header should show stats (weight and volume). */
         void set_display_stats( bool display_stats ) {
             this->display_stats = display_stats;
@@ -1179,11 +1182,37 @@ class inventory_insert_selector : public inventory_drop_selector
         header_stats get_raw_stats() const override;
 };
 
+/**
+ * CDF: P3-UI8, DDA inventory_ui.h pickup_selector (4993-5186). CDF keeps its own pickup pipeline: the
+ * result is still the optimize_pickup list that pickup.cpp turns into an activity. What comes from
+ * DDA is the menu: its hint line, the refusal text of an empty selection, the "Selected" header
+ * line and wield/wear that move the highlight to the next item.
+ */
 class inventory_pickup_selector : public inventory_multiselector
 {
     public:
+        /// One marked entry stack: the item and how many of it (charges for stacks) are taken.
+        struct marked_pickup {
+            item *target = nullptr;
+            int count = 0;
+        };
+
         inventory_pickup_selector( player &p, const inventory_selector_preset &preset = default_preset );
         std::vector<pickup::pick_drop_selection> execute();
+        /// The marked items with their counts, in column order (DDA to_use).
+        std::vector<marked_pickup> get_marked_pickups() const;
+        /// The marks as the pickup list (optimize_pickup of get_marked_pickups). Empty when nothing is marked.
+        std::vector<pickup::pick_drop_selection> build_selection() const;
+        /// The text of the popup shown when CONFIRM is pressed with nothing marked (names TOGGLE_ENTRY).
+        std::string no_selection_text() const;
+        /// DDA get_item_to_highlight_after_use: the item listed after `it` in the active column.
+        item *item_after_in_active_column( const item &it ) const;
+        /// DDA remove_from_to_use plus highlight-next: unlists the item (and its marks) and
+        /// moves the highlight to the item that followed it.
+        void remove_used_item( item &it );
+        /// DDA pickup_selector::wield / wear for the highlighted row. True when it was done.
+        bool wield_highlighted();
+        bool wear_highlighted();
     protected:
         header_stats get_raw_stats() const override;
 };
