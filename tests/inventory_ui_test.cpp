@@ -10,6 +10,7 @@
 #include "type_id.h"
 #include "uistate.h"
 
+#include <utility>
 #include <vector>
 
 TEST_CASE(
@@ -1079,4 +1080,171 @@ TEST_CASE("count keys change the chosen count within the stack", "[inventory][ui
         CHECK(chosen_of(sel, rock_a.get()) == expected);
     }
     CHECK_FALSE(sel.handle_mark_action("CONFIRM"));
+}
+
+// CDF P3-UI6: mouse in the pick selectors. No real mouse: the rectangle map is filled by hand and
+// the mouse actions go through handle_mouse_action (what execute() runs for a mouse event).
+namespace {
+struct mouse_selector_fixture {
+    std::vector<decltype(item::spawn("rock"))> owned;
+    std::vector<item*> items;
+    inventory_pick_selector sel;
+
+    static auto fresh_avatar() -> avatar& {
+        clear_avatar();
+        return get_avatar();
+    }
+
+    explicit mouse_selector_fixture(size_t count)
+        : sel(fresh_avatar()) {
+        for (size_t i = 0; i < count; ++i) {
+            owned.push_back(item::spawn("rock"));
+            items.push_back(owned.back().get());
+            sel.own_inv_column.add_entry(inventory_entry(std::vector<item*>{items.back()}));
+        }
+        sel.own_inv_column.prepare_paging();
+    }
+
+    auto entry_of(const item* it) -> inventory_entry* {
+        for (inventory_entry& e : sel.own_inv_column.entries) {
+            if (e.is_item() && e.any_item() == it) {
+                return &e;
+            }
+        }
+        return nullptr;
+    }
+};
+
+struct drag_hook_guard {
+    std::vector<std::pair<item*, item*>> calls;
+    bool result = false;
+    drag_hook_guard() {
+        inventory_selector::drag_drop_test_hook = [this](item& source, item& dest) {
+            calls.emplace_back(&source, &dest);
+            return result;
+        };
+    }
+    ~drag_hook_guard() { inventory_selector::drag_drop_test_hook = nullptr; }
+};
+} // namespace
+
+TEST_CASE("find_entry_by_coordinate returns the row under the point", "[inventory][ui][p3]") {
+    mouse_selector_fixture f(3);
+    inventory_entry* first = f.entry_of(f.items[0]);
+    inventory_entry* second = f.entry_of(f.items[1]);
+    REQUIRE(first != nullptr);
+    REQUIRE(second != nullptr);
+    inventory_entry* header = nullptr;
+    for (inventory_entry& e : f.sel.own_inv_column.entries) {
+        if (!e.is_item() && e) {
+            header = &e;
+        }
+    }
+
+    f.sel.rect_entry_map.clear();
+    f.sel.rect_entry_map.push_back({inclusive_rectangle<point>(point(2, 5), point(30, 5)), first});
+    f.sel.rect_entry_map.push_back({inclusive_rectangle<point>(point(2, 6), point(30, 6)), second});
+    if (header != nullptr) {
+        f.sel.rect_entry_map.push_back(
+            {inclusive_rectangle<point>(point(2, 7), point(30, 7)), header});
+    }
+
+    CHECK(f.sel.find_entry_by_coordinate(point(2, 5)) == first);
+    CHECK(f.sel.find_entry_by_coordinate(point(30, 5)) == first);
+    CHECK(f.sel.find_entry_by_coordinate(point(10, 6)) == second);
+    // empty space: above, below, left and right of the rows
+    CHECK(f.sel.find_entry_by_coordinate(point(10, 4)) == nullptr);
+    CHECK(f.sel.find_entry_by_coordinate(point(10, 8)) == nullptr);
+    CHECK(f.sel.find_entry_by_coordinate(point(1, 5)) == nullptr);
+    CHECK(f.sel.find_entry_by_coordinate(point(31, 6)) == nullptr);
+    if (header != nullptr) {
+        // a header row is found, but is not selectable, so process_input ignores it
+        inventory_entry* found = f.sel.find_entry_by_coordinate(point(10, 7));
+        CHECK(found == header);
+        CHECK_FALSE(found->is_selectable());
+    }
+}
+
+TEST_CASE("mouse move highlights without selecting", "[inventory][ui][p3]") {
+    mouse_selector_fixture f(3);
+    REQUIRE(f.sel.select(f.items[0]));
+    inventory_entry* third = f.entry_of(f.items[2]);
+    REQUIRE(third != nullptr);
+
+    const auto outcome = f.sel.handle_mouse_action("MOUSE_MOVE", *third);
+    CHECK(outcome.picked == nullptr);
+    CHECK_FALSE(outcome.toggle_contents);
+    CHECK(f.sel.get_selected().any_item() == f.items[2]);
+
+    SECTION("a click picks the row") {
+        const auto clicked = f.sel.handle_mouse_action("SELECT", *third);
+        CHECK(clicked.picked == f.items[2]);
+    }
+    SECTION("hover is ignored while a drag is active") {
+        drag_hook_guard hook;
+        f.sel.drag_enabled = true;
+        f.sel.handle_mouse_action("CLICK_AND_DRAG", *third);
+        REQUIRE(f.sel.is_drag_active());
+        inventory_entry* first = f.entry_of(f.items[0]);
+        f.sel.handle_mouse_action("MOUSE_MOVE", *first);
+        CHECK(f.sel.get_selected().any_item() == f.items[2]);
+    }
+}
+
+TEST_CASE("scroll actions move the highlight within bounds", "[inventory][ui][p3]") {
+    mouse_selector_fixture f(8);
+    inventory_column& col = f.sel.own_inv_column;
+    col.set_height(3);
+    col.prepare_paging();
+    REQUIRE(f.sel.select(f.items[0]));
+    const size_t start = col.get_selected_index();
+
+    col.scroll_selection_page(scroll_direction::FORWARD);
+    CHECK(col.get_selected_index() != start);
+    for (int i = 0; i < 20; ++i) {
+        col.scroll_selection_page(scroll_direction::FORWARD);
+        REQUIRE(col.get_selected_index() < col.entries.size());
+        CHECK(col.get_selected().is_item());
+    }
+    for (int i = 0; i < 20; ++i) {
+        col.scroll_selection_page(scroll_direction::BACKWARD);
+        REQUIRE(col.get_selected_index() < col.entries.size());
+        CHECK(col.get_selected().is_item());
+    }
+}
+
+TEST_CASE("drag between two items calls the select-pocket flow with source and destination",
+          "[inventory][ui][p3]") {
+    mouse_selector_fixture f(3);
+    drag_hook_guard hook;
+    inventory_entry* src = f.entry_of(f.items[0]);
+    inventory_entry* dst = f.entry_of(f.items[1]);
+    REQUIRE(src != nullptr);
+    REQUIRE(dst != nullptr);
+
+    SECTION("drag enabled") {
+        f.sel.drag_enabled = true;
+        f.sel.handle_mouse_action("CLICK_AND_DRAG", *src);
+        CHECK(f.sel.is_drag_active());
+        const auto outcome = f.sel.handle_mouse_action("SELECT", *dst);
+        CHECK(outcome.picked == nullptr);
+        CHECK_FALSE(f.sel.is_drag_active());
+        REQUIRE(hook.calls.size() == 1);
+        CHECK(hook.calls[0].first == f.items[0]);
+        CHECK(hook.calls[0].second == f.items[1]);
+    }
+    SECTION("release on the starting row is a plain click") {
+        f.sel.drag_enabled = true;
+        f.sel.handle_mouse_action("CLICK_AND_DRAG", *src);
+        const auto outcome = f.sel.handle_mouse_action("SELECT", *src);
+        CHECK(outcome.picked == f.items[0]);
+        CHECK(hook.calls.empty());
+    }
+    SECTION("drag disabled") {
+        f.sel.handle_mouse_action("CLICK_AND_DRAG", *src);
+        CHECK_FALSE(f.sel.is_drag_active());
+        const auto outcome = f.sel.handle_mouse_action("SELECT", *dst);
+        CHECK(outcome.picked == f.items[1]);
+        CHECK(hook.calls.empty());
+    }
 }

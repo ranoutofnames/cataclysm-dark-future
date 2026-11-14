@@ -431,6 +431,8 @@ class inventory_column
 
         void set_width( size_t new_width, const std::vector<inventory_column *> &all_columns );
         void set_height( size_t new_height );
+        /// Per DDA inventory_ui.cpp:1027 (mouse wheel): select the first row of the next/previous page.
+        void scroll_selection_page( scroll_direction dir );
         size_t get_width() const;
         size_t get_height() const;
         /** Expands the column to fit the new entry. */
@@ -492,8 +494,6 @@ class inventory_column
          */
         void move_selection( scroll_direction dir );
         void move_selection_page( scroll_direction dir );
-        /// Per DDA inventory_ui.cpp:1027 (mouse wheel): select the first row of the next/previous page.
-        void scroll_selection_page( scroll_direction dir );
 
         /// CDF: the cursor skips disabled rows unless the player turned the skip off (DDA's
         /// default is off; CDF keeps its old behaviour as the default).
