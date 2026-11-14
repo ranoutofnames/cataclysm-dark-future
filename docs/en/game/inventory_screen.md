@@ -27,3 +27,11 @@ These behaviours belong to the screens where you mark several items: drop, picku
 - **Drop preview**: the "will be dropped" list and counts of the drop screen are refreshed right after every mark, including the unmarking of contained items. This preview is CDF's own and DDA has no equivalent.
 - **Previous and next column** use `PREV_COLUMN` and `NEXT_COLUMN` here as everywhere else. The old `LEFT` and `RIGHT` actions are no longer used on these screens.
 - Switching between the category and container view keeps your marks.
+
+## Examining contents and the insert header
+
+These behaviours belong to the item selector and to the insert menu. They follow Cataclysm: Dark Days Ahead (DDA).
+
+- **Examine contents** (`EXAMINE_CONTENTS`, default `o`) opens a two-pane window for the highlighted container: its contents are listed on the left and the item info of the highlighted item is shown on the right. Move with the usual list keys; Page Up and Page Down scroll the item info; `>` shows or hides the contents of a nested container; Escape or Enter closes the window and returns to the list, which is rebuilt if you collapsed or expanded something. If the highlighted item has no contents, the normal item info opens instead.
+- **Insert menu header**: when you choose items to put into a container (the insert action), the header shows the container's used and total volume and weight, its largest free space, and a line with the volume and weight of the items you have marked. Items that cannot go in are greyed out with the reason, for example a plate when every large plate slot of a vest is full.
+- **Container pick header**: a menu that picks one item from inside a container shows the same used and total space of that container.
