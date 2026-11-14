@@ -892,17 +892,6 @@ static auto parent_pocket_of( const item &it ) -> const item_pocket *
     return parent == nullptr ? nullptr : parent->contents.pocket_of( &it );
 }
 
-// CDF: Q2 flat view; carried-item rows are hidden while the holding garment is collapsed.
-// Per DDA inventory_ui.cpp:585-600 (adapted: item * instead of item_location)
-static auto carried_holder( const inventory_entry &entry ) -> item *
-{
-    if( !entry.is_item() || entry.get_category_ptr() == nullptr ||
-        entry.get_category_ptr()->get_id().str().rfind( "CARRY_GROUP:", 0 ) != 0 ) {
-        return nullptr;
-    }
-    return entry.any_item()->parent_item();
-}
-
 // UI1: DDA's item::is_container() is "has a container pocket". CDF's is_container() leaves out worn
 // storage (`carry` pockets), so a garment holding items would never take the hide-all override.
 static auto holds_contents( const item &it ) -> bool
@@ -932,21 +921,6 @@ static auto hidden_by_collapse( const inventory_entry &entry,
                 return true;
             }
             it = it->parent_item();
-        }
-    }
-    // CDF flat view: a carried row is hidden when a container it sits in (its holder or one above
-    // it) is collapsed. The row's own collapse state is never looked at, so toggling a row
-    // collapses what is inside it and never removes the row itself.
-    const item *holder = carried_holder( entry );
-    if( holder == nullptr ) {
-        return false;
-    }
-    if( hide_entries_override ) {
-        return *hide_entries_override && holds_contents( *holder );
-    }
-    for( const item *anc = holder; anc != nullptr; anc = anc->parent_item() ) {
-        if( anc->is_collapsed() ) {
-            return true;
         }
     }
     return false;
@@ -1809,78 +1783,34 @@ void inventory_selector::action_examine( const item *sitem )
 
 void inventory_selector::add_character_items( Character &character )
 {
-    // Per DDA inventory_ui.cpp:2196: hierarchy mode lists gear with its contents as a tree
-    if( _uimode == uimode::hierarchy ) {
-        item &weapon = character.primary_weapon();
-        if( !weapon.is_null() ) {
-            const item_category *cat = &item_category_id( "WEAPON_HELD" ).obj();
-            add_entry_rec( own_gear_column, own_gear_column, &weapon, cat, cat, nullptr, 0 );
-        }
-        for( item *worn_item : character.top_items_loc() ) {
-            const item_category *cat = wielded_worn_category( worn_item, u );
-            add_entry_rec( own_gear_column, own_gear_column, worn_item, cat, cat, nullptr, 0 );
-        }
-        return;
+    // Per DDA inventory_ui.cpp:2195-2212: one listing path for both view modes. Every worn/wielded
+    // row is made by add_entry_rec, which sets the row's chevron when it has visible contents.
+    // CDF: item * instead of DDA's item_location (OPENCODE_RULES).
+    item &weapon = character.primary_weapon();
+    const bool hierarchy = _uimode == uimode::hierarchy;
+    if( !weapon.is_null() ) {
+        add_entry_rec( own_gear_column, hierarchy ? own_gear_column : own_inv_column, &weapon,
+                       &item_category_id( "WEAPON_HELD" ).obj(),
+                       hierarchy ? &item_category_id( "WEAPON_HELD" ).obj() : nullptr, nullptr, 0 );
     }
-    character.visit_items( [ this, &character ]( item * it ) {
-        if( character.is_wielding( *it ) ) {
-            add_item( own_gear_column,  it,
-                      &item_category_id( "WEAPON_HELD" ).obj() );
-        } else if( character.is_worn( *it ) ) {
-            add_item( own_gear_column, it,
-                      &item_category_id( "ITEMS_WORN" ).obj() );
-        } else if( const item *carrier = it->parent_item() ) {
-            // armor plates in a worn carrier are listed with the worn armor (DDA #55978)
-            const item_pocket *slot = carrier->contents.pocket_of( it );
-            if( slot != nullptr && slot->get_data().ablative && character.is_worn( *carrier ) ) {
-                add_item( own_gear_column, it,
-                          &item_category_id( "ITEMS_WORN" ).obj() );
-            }
-        }
-        return VisitResponse::NEXT;
-    } );
-    // Visitable interface does not support stacks so it has to be here
-    // CDF P1c step 22: carried items are grouped under a header per garment (or the body storage)
-    for( const carried_stack &elem : carried_item_stacks( character ) ) {
-        const std::vector<std::list<item *>> stacks = restack_items( elem.begin(), elem.end(),
-                preset.get_checking_components() );
-        for( const std::list<item *> &stack : stacks ) {
-            const item *holder = stack.front()->parent_item();
-            const item_category *group = nullptr;
-            if( holder != nullptr ) {
-                units::volume used = 0_ml;
-                units::volume cap = 0_ml;
-                for( const item_pocket &pocket : holder->contents.get_pockets() ) {
-                    if( pocket.is_carry() && pocket.is_type( pocket_type::CONTAINER ) ) {
-                        cap += pocket.volume_capacity();
-                        used += pocket.volume_capacity() - pocket.remaining_volume();
-                    }
-                }
-                const std::string title = string_format( "%s (%s / %s)",
-                                          to_upper_case( holder->tname( 1, false ) ),
-                                          format_volume( used ), format_volume( cap ) );
-                const item_category_id gid( "CARRY_GROUP:" + title );
-                const auto found = std::find_if( categories.begin(), categories.end(),
-                [&gid]( const item_category & c ) {
-                    return c.get_id() == gid;
-                } );
-                if( found != categories.end() ) {
-                    group = &*found;
-                } else {
-                    categories.emplace_back( gid, no_translation( title ), 100 );
-                    group = &categories.back();
-                }
-            }
-            std::vector<item *> locations( stack.begin(), stack.end() );
-            add_entry( own_inv_column, std::move( locations ), group );
+    for( item *worn_item : character.top_items_loc() ) {
+        const item_category *custom_cat = wielded_worn_category( worn_item, u );
+        add_entry_rec( own_gear_column, hierarchy ? own_gear_column : own_inv_column, worn_item,
+                       custom_cat, hierarchy ? custom_cat : nullptr, nullptr, 0 );
+    }
+    // Per DDA inventory_ui.cpp:2209-2211: in categories mode the contents of the worn/wielded rows
+    // keep their own categories in the inventory column instead of sitting indented under the parent.
+    // CDF: no indent override is needed, inventory_column::get_entry_indent only adds entry.indent
+    // when the column's own hierarchy flag is set (toggle_categorize_contained).
+    // CDF: no flat Character::inv (OPENCODE_RULES), the non-worn, non-wielded loose items live in
+    // the body storage. DDA's top_items_loc() lists them at the top level; do the same here so the
+    // loose inventory keeps its rows (CDF used to list them in the flat carried-group loop).
+    if( item *storage = character.get_body_storage() ) {
+        inventory_column &loose_column = hierarchy ? own_gear_column : own_inv_column;
+        for( item *it : storage->all_items_top() ) {
+            add_entry_rec( loose_column, loose_column, it, nullptr, nullptr, nullptr, 0 );
         }
     }
-    add_nested_character_items( character );
-}
-
-// CDF: P3-NESTAMMO1. Nothing nested is listed unless a selector asks for it (the ammo selector does).
-void inventory_selector::add_nested_character_items( Character & )
-{
 }
 
 void inventory_selector::add_map_items( const tripoint_bub_ms &target )
@@ -4986,10 +4916,8 @@ ammo_inventory_selector::ammo_inventory_selector( player &you, item &reload_loc,
 
 ammo_inventory_selector::~ammo_inventory_selector() = default;
 
-// CDF: P3-NESTAMMO1, DDA inventory_ui.cpp 2017-2047 (add_entry_rec) and 2109-2141 (add_contained_items),
-// which DDA's add_character_items runs for every carried item: whatever sits nested in a carried
-// container is a row when the preset shows it. add_character_items already lists the top level of
-// the carry pockets (grouped by carrier); this adds the items below it. Rows are made with
+// CDF: P3-NESTAMMO2, DDA inventory_ui.cpp:2337-2358 (_add_map_items). The map walk into the stacks of
+// a square or of vehicle cargo, which CDF's add_items lists only at the top level. Rows are made with
 // add_shown_entry, as DDA does, one per item (not restacked), in the own inventory column. A liquid
 // stays its own row: select_ammo turns it into the container that holds it when it builds the
 // option (CDF reload options carry the container, character_functions.cpp:1083-1087).
@@ -5014,23 +4942,11 @@ void ammo_inventory_selector::add_rows_below( inventory_column &column, item &co
     }
 }
 
-void ammo_inventory_selector::add_nested_character_items( Character &character )
-{
-    // Only items below a carried item are visited here, so none of them is a row of the carried stacks.
-    for( const carried_stack &stack : carried_item_stacks( character ) ) {
-        for( item *carried : stack ) {
-            add_rows_below( own_inv_column, *carried, []() -> const item_category * {
-                return nullptr;
-            } );
-        }
-    }
-}
-
 // CDF: P3-NESTAMMO2, DDA inventory_ui.cpp 2337-2358 (_add_map_items), which runs add_entry_rec on every
 // item of a map square and of vehicle cargo. The roots (the items of the stacks add_items listed) are
-// not rows here, add_items made those; this adds what is nested below them, by the same walk as the
-// carried items. The rows sit under the square's header like the loose items of that square (the header
-// is made at the first row, so a square with nothing nested adds no category).
+// not rows here, add_items made those; this adds what is nested below them. The rows sit under the
+// square's header like the loose items of that square (the header is made at the first row, so a
+// square with nothing nested adds no category).
 void ammo_inventory_selector::add_nested_map_items( inventory_column &target_column,
         const std::vector<item *> &roots, const item_category *custom_category )
 {

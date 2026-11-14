@@ -752,17 +752,10 @@ class inventory_selector
     protected:
 
         /**
-         * CDF: P3-NESTAMMO1. add_character_items calls this after the carried stacks (categories mode).
-         * It adds the rows for what sits nested in a carried container, as DDA's add_entry_rec does. Off
-         * (does nothing) in every selector but the ammo selector: drop, pick-up and the rest list the top
-         * level of the carry pockets on purpose (P1c step 22).
-         */
-        virtual void add_nested_character_items( Character &character );
-        /**
          * CDF: P3-NESTAMMO2. add_items calls this after the rows of the stacks of a map square or of vehicle
          * cargo. roots are the items of those stacks, custom_category their square header. It adds the rows
          * for what sits nested in them, as DDA's _add_map_items (add_entry_rec) does. Does nothing in every
-         * selector but the ammo selector, like add_nested_character_items.
+         * selector but the ammo selector.
          */
         virtual void add_nested_map_items( inventory_column &target_column,
                                            const std::vector<item *> &roots,
@@ -1310,13 +1303,11 @@ class ammo_inventory_selector : public inventory_selector
         }
     protected:
         void mod_chosen_count( inventory_entry &entry, int val );
-        /** CDF: P3-NESTAMMO1, DDA inventory_ui.cpp:2017-2047 and 2109-2141 (add_entry_rec, add_contained_items). */
-        void add_nested_character_items( Character &character ) override;
         /** CDF: P3-NESTAMMO2, DDA inventory_ui.cpp:2337-2358 (_add_map_items) for ground and vehicle stacks. */
         void add_nested_map_items( inventory_column &target_column, const std::vector<item *> &roots,
                                    const item_category *custom_category ) override;
     private:
-        /** The walk both overrides share: a row for everything below container that the preset shows. */
+        /** The map walk: a row for everything below container that the preset shows. */
         void add_rows_below( inventory_column &column, item &container,
                              const std::function<const item_category *()> &category );
         item &reload_loc;
