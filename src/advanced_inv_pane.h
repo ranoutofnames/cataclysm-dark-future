@@ -10,6 +10,7 @@
 #include "advanced_inv_area.h"
 #include "advanced_inv_listitem.h"
 #include "cursesdef.h"
+#include "safe_reference.h"
 #include "units.h"
 
 class item;
@@ -94,6 +95,11 @@ class advanced_inventory_pane
          * the first time it enters a container.  @p container_square is the AIM_CONTAINER square.
          */
         void enter_container( item *target, const advanced_inv_area &container_square );
+        /**
+         * False if the pane has a container that was destroyed (or moved: a moved item is a new
+         * object) since it was entered.  A pane without a container is valid.
+         */
+        bool container_is_valid() const;
         /** Forget the container (the caller switches the area). */
         void leave_container();
         /** What ITEMS_PARENT does now.  @p other_pane_container is the other pane's container. */
@@ -176,6 +182,7 @@ class advanced_inventory_pane
         void paginate( size_t itemsPerPage );
     private:
         item *container = nullptr;
+        safe_reference<item> container_ref;
         aim_location container_base_loc = NUM_AIM_LOCATIONS;
         /** Scroll to next non-header entry */
         void skip_category_headers( int offset );

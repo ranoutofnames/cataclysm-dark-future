@@ -70,15 +70,24 @@ void advanced_inventory_pane::load_settings( int saved_area_idx,
                            save_state->area_idx;
     aim_location location = static_cast<aim_location>( i_location );
     container = nullptr;
+    container_ref = safe_reference<item>();
     container_base_loc = NUM_AIM_LOCATIONS;
     const auto remembered = aim_container_memories().find( save_state );
-    if( remembered != aim_container_memories().end() && remembered->second.container ) {
-        container = remembered->second.container.get();
-        container_base_loc = remembered->second.base_loc;
+    if( remembered != aim_container_memories().end() ) {
+        // only an activity that re-enters the advanced inventory keeps the container view: a fresh
+        // open (or a new game) must not show a container the avatar may have walked away from
+        if( is_re_enter && remembered->second.container ) {
+            container = remembered->second.container.get();
+            container_ref = remembered->second.container;
+            container_base_loc = remembered->second.base_loc;
+        } else {
+            aim_container_memories().erase( remembered );
+        }
     }
     if( location != AIM_CONTAINER ) {
         // the container is only shown in the container area
         container = nullptr;
+        container_ref = safe_reference<item>();
         container_base_loc = NUM_AIM_LOCATIONS;
     }
     if( location == AIM_PARENT || ( location == AIM_CONTAINER && container == nullptr ) ) {
@@ -362,14 +371,22 @@ void advanced_inventory_pane::enter_container( item *target, const advanced_inv_
         container_base_loc = get_area();
     }
     container = target;
+    container_ref = safe_reference<item>( target );
     set_area( container_square, false );
     index = 0;
     recalc = true;
 }
 
+bool advanced_inventory_pane::container_is_valid() const
+{
+    // no container is not an error here; a destroyed (or replaced) one is
+    return container == nullptr || ( container_ref && container_ref.get() == container );
+}
+
 void advanced_inventory_pane::leave_container()
 {
     container = nullptr;
+    container_ref = safe_reference<item>();
     container_base_loc = NUM_AIM_LOCATIONS;
 }
 

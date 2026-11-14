@@ -155,6 +155,12 @@ class advanced_inventory
         bool move_all_items( bool nested_call = false );
         void print_items( const advanced_inventory_pane &pane, bool active );
         void recalc_pane( side p );
+        /**
+         * P3-UI5: a container shown by a pane can be destroyed or moved while the advanced
+         * inventory is open.  Panes whose container is gone fall back to the inventory.
+         * @return true if a pane was reset
+         */
+        bool validate_pane_containers();
         void redraw_pane( side p );
         void redraw_sidebar();
         // Returns the x coordinate where the header started. The header is

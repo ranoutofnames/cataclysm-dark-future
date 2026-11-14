@@ -597,8 +597,30 @@ int advanced_inventory::print_header( advanced_inventory_pane &pane, aim_locatio
     return min_x;
 }
 
+bool advanced_inventory::validate_pane_containers()
+{
+    bool reset = false;
+    for( advanced_inventory_pane &pane : panes ) {
+        if( !pane.container_is_valid() ) {
+            // do not touch the dangling item pointers in the rows
+            pane.leave_container();
+            pane.items.clear();
+            pane.set_area( squares[AIM_INVENTORY], false );
+            pane.index = 0;
+            pane.target_item_after_recalc = nullptr;
+            pane.recalc = true;
+            reset = true;
+        }
+    }
+    if( reset ) {
+        recalc = true;
+    }
+    return reset;
+}
+
 void advanced_inventory::recalc_pane( side p )
 {
+    validate_pane_containers();
     auto &pane = panes[p];
     pane.recalc = false;
     pane.items.clear();
@@ -1623,6 +1645,7 @@ void advanced_inventory::display()
             do_return_entry();
             return;
         }
+        validate_pane_containers();
         dest = src == advanced_inventory::side::left ? advanced_inventory::side::right :
                advanced_inventory::side::left;
 
@@ -2078,9 +2101,12 @@ char advanced_inventory::get_minimap_sym( side p ) const
 {
     static const std::array<char, NUM_PANES> c_side = {{'L', 'R'}};
     static const std::array<char, NUM_PANES> d_side = {{'^', 'v'}};
+    // one entry per aim_location, in enum order (the base table predates AIM_ABOVE and AIM_BELOW
+    // and had run out of entries for the last locations)
     static const std::array<char, NUM_AIM_LOCATIONS> g_nome = {{
             '@', '#', '#', '#', '#', '@', '#',
-            '#', '#', '#', 'D', '^', 'C', '@'
+            '#', '#', '#', '#', '#', 'D', '^',
+            'C', '@', '^'
         }
     };
     char ch = g_nome[panes[p].get_area()];
