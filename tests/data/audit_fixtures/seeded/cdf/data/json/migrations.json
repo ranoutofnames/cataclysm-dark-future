@@ -1,0 +1,32 @@
+[
+  {
+    "type": "MIGRATION",
+    "id": "old_bad",
+    "replace": "no_such_item"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "cycle_a",
+    "replace": "cycle_a"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "chain_1",
+    "replace": "chain_2"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "chain_2",
+    "replace": "chain_3"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "chain_3",
+    "replace": "chain_4"
+  },
+  {
+    "type": "MIGRATION",
+    "id": "chain_4",
+    "replace": "clean_vest"
+  }
+]

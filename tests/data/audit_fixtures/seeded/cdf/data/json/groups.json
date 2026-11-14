@@ -1,0 +1,14 @@
+[
+  {
+    "id": "bad_group",
+    "type": "item_group",
+    "subtype": "collection",
+    "entries": [ { "item": "missing_group_item" } ]
+  },
+  {
+    "id": "kit_group",
+    "type": "item_group",
+    "subtype": "collection",
+    "entries": [ { "item": "tiny_pouch", "contents-item": [ "big_item" ] } ]
+  }
+]

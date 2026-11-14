@@ -1,0 +1,62 @@
+[
+  {
+    "id": "clean_vest",
+    "type": "ITEM",
+    "subtypes": [ "ARMOR" ],
+    "flags": [ "CLEAN_FLAG" ],
+    "volume": "2 L",
+    "weight": "2 kg",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "flag_restriction": [ "ABLATIVE_LARGE" ],
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "3 kg",
+        "max_item_length": "30 cm"
+      }
+    ],
+    "armor": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_upper" ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "volume_encumber_modifier": 0.3
+      }
+    ]
+  },
+  {
+    "id": "clean_plate",
+    "type": "ITEM",
+    "subtypes": [ "ARMOR" ],
+    "flags": [ "ABLATIVE_LARGE", "CANT_WEAR" ],
+    "volume": "1 L",
+    "weight": "1 kg",
+    "longest_side": "20 cm"
+  },
+  {
+    "id": "planted_vest",
+    "type": "ITEM",
+    "subtypes": [ "ARMOR" ],
+    "flags": [ "CLEAN_FLAG", "DDA_ONLY_FLAG" ],
+    "volume": "2 L",
+    "weight": "2 kg",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "1 kg",
+        "moves": 800
+      }
+    ],
+    "armor": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_upper" ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "volume_encumber_modifier": 0.3
+      }
+    ]
+  }
+]
