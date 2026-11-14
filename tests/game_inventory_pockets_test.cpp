@@ -1,6 +1,7 @@
 #include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "flag.h"
 #include "game_inventory.h"
 #include "item.h"
 #include "item_pocket.h"
@@ -16,6 +17,10 @@ namespace game_menus::inv
 // game_inventory.h (a test hook there would rebuild its includers). Keep the signatures identical.
 std::string take_off_none_message();
 bool consume_meds_filter( const item &it );
+// CDF: FM5 amendment (G43), same pattern: the consume preset is file-local (src/game_inventory.cpp).
+bool consume_preset_shows( player &p, const item &it );
+// CDF: FM5 amendment (IC1/G11), same pattern: the unload menu filter is file-local.
+bool unload_menu_accepts( const item &container );
 // CDF: FM5b. Same pattern: the common selector class is file-local (src/game_inventory.cpp:119).
 struct common_selector_action {
     bool closes;
@@ -153,4 +158,72 @@ TEST_CASE( "view mode key toggles and does not close the inventory", "[inventory
     // unload_all still closes the screen: execute() returns and game_menus::inv::common runs the
     // unload through selected_unload_all().
     CHECK( game_menus::inv::probe_common_selector_action( you, "unload_all" ).closes );
+}
+
+// CDF: FM5 amendment (G43), DDA game_inventory.cpp:822 and consumption.cpp:1890-1895. The old
+// preset listed a container through Character::can_consume(), so a bottle with a drink in it had a
+// row of its own next to the drink. DDA lists an item only when the item itself is consumable.
+TEST_CASE( "consume menu hides a bottle that only holds a drink", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    item &bottle = you.i_add( item::spawn( "bottle_plastic", calendar::start_of_cataclysm ) );
+    const detached_ptr<item> water = item::spawn( "water_clean", calendar::start_of_cataclysm );
+    bottle.fill_with( *water );
+    REQUIRE_FALSE( bottle.is_container_empty() );
+    const item &drink = bottle.get_contained();
+
+    CHECK_FALSE( game_menus::inv::consume_preset_shows( you, bottle ) );
+    CHECK( game_menus::inv::consume_preset_shows( you, drink ) );
+}
+
+// CDF: FM5 amendment (G43), DDA consumption.cpp:1890-1895: frozen food is not offered, MELTS food is.
+// CDF: BN has no EDIBLE_FROZEN flag, so MELTS is the only DDA exception left.
+TEST_CASE( "consume menu hides frozen food", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    item &jerky = you.i_add( item::spawn( "jerky", calendar::start_of_cataclysm ) );
+    REQUIRE( jerky.is_comestible() );
+    REQUIRE_FALSE( jerky.has_flag( flag_FROZEN ) );
+    CHECK( game_menus::inv::consume_preset_shows( you, jerky ) );
+
+    jerky.set_flag( flag_FROZEN );
+    CHECK_FALSE( game_menus::inv::consume_preset_shows( you, jerky ) );
+
+    jerky.set_flag( flag_MELTS );
+    CHECK( game_menus::inv::consume_preset_shows( you, jerky ) );
+}
+
+// CDF: FM5 amendment (IC1/G11), DDA item_container.cpp:460. tool_belt (belts.json:428) has only
+// carry pockets, so CDF's is_container() is false while DDA's "has a container pocket" is true. Food
+// in its pouch must still be offered by the consume menu; the parent guard used to drop it.
+TEST_CASE( "consume menu lists food inside a belt pouch", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    detached_ptr<item> belt = item::spawn( "tool_belt", calendar::start_of_cataclysm );
+    detached_ptr<item> snack = item::spawn( "jerky", calendar::start_of_cataclysm );
+    item *snack_ptr = snack.get();
+    REQUIRE( belt->put_in( std::move( snack ), pocket_type::CONTAINER ).success() );
+
+    REQUIRE_FALSE( belt->is_container() );
+    REQUIRE( belt->has_pocket_type( pocket_type::CONTAINER ) );
+    REQUIRE( snack_ptr->where() == item_location_type::container );
+
+    CHECK( game_menus::inv::consume_preset_shows( you, *snack_ptr ) );
+}
+
+// CDF: FM5 amendment (IC1/G11), DDA item_container.cpp:460: a belt holding something is a valid
+// unload target in DDA, because a carry pocket is a container pocket.
+TEST_CASE( "unload menu accepts a belt with something in its pouch", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    detached_ptr<item> belt = item::spawn( "tool_belt", calendar::start_of_cataclysm );
+    REQUIRE_FALSE( belt->is_container() );
+    CHECK_FALSE( game_menus::inv::unload_menu_accepts( *belt ) );
+
+    REQUIRE( belt->put_in( item::spawn( "jerky", calendar::start_of_cataclysm ),
+                           pocket_type::CONTAINER ).success() );
+    CHECK( game_menus::inv::unload_menu_accepts( *belt ) );
 }

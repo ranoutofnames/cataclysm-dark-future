@@ -606,6 +606,20 @@ item *game_menus::inv::disassemble( player &p )
                          _( "You don't have any items you could disassemble." ) );
 }
 
+// CDF: FM5 amendment (G43). DDA's consume preset lists an item only when the item itself can be
+// consumed (DDA game_inventory.cpp:822), so a bottle is not listed next to the drink inside it.
+// DDA's frozen guard lives in Character::can_consume_as_is (DDA consumption.cpp:1890-1895); that
+// file is outside this packet's file lock, so the consume menu applies the same test here.
+// CDF: BN has no EDIBLE_FROZEN flag, so that DDA term is dropped.
+static bool consume_menu_accepts( const Character &p, const item &it )
+{
+    if( it.is_comestible() ) {
+        return !it.has_flag( flag_FROZEN ) || it.has_flag( flag_MELTS );
+    }
+    // CDF: BN's can_consume_as_is also covers bionic fuel (can_consume_for_bionic); DDA's does not.
+    return p.can_consume_as_is( it );
+}
+
 class comestible_inventory_preset : public inventory_selector_preset
 {
     public:
@@ -709,10 +723,16 @@ class comestible_inventory_preset : public inventory_selector_preset
         }
 
         bool is_shown( const item *loc ) const override {
-            // If an item was inserted into a non-container, we can't eat it.
-            // For example, we couldn't eat an item mod made of meat
-            return p.can_consume( *loc ) &&
-                   ( loc->where() != item_location_type::container || loc->parent_item()->is_container() );
+            // CDF: FM5 amendment (G43), DDA game_inventory.cpp:822: a container is not listed just
+            // because its contents are edible, and frozen food is not listed at all.
+            // CDF: BN keeps its guard for items inserted into a non-container (for example, we
+            // couldn't eat an item mod made of meat); DDA has no equivalent. DDA's is_container()
+            // is "has a container pocket", so a belt, pouch or holster (carry pocket) counts there
+            // while CDF's item::is_container() skips carry pockets (IC1/G11).
+            return ( consume_menu_accepts( p, *loc ) &&
+                     ( loc->where() != item_location_type::container ||
+                       loc->parent_item()->has_pocket_type( pocket_type::CONTAINER ) ) ) ||
+                   loc->is_medical_tool();
         }
 
         std::string get_denial( const item *loc ) const override {
@@ -839,6 +859,22 @@ class comestible_inventory_preset : public inventory_selector_preset
     private:
         const player &p;
 };
+
+// CDF: FM5 amendment (G43), test hook (precedent: FM5a take_off_none_message). Declared here and in
+// tests/game_inventory_pockets_test.cpp, not in game_inventory.h (a hook there would rebuild its
+// includers); keep the two signatures identical. The consume preset is file-local.
+namespace game_menus
+{
+namespace inv
+{
+bool consume_preset_shows( player &p, const item &it );
+} // namespace inv
+} // namespace game_menus
+
+bool game_menus::inv::consume_preset_shows( player &p, const item &it )
+{
+    return comestible_inventory_preset( p ).is_shown( &it );
+}
 
 static std::string get_consume_needs_hint( player &p )
 {
@@ -1535,7 +1571,9 @@ bool valid_unload_container( const item &container )
 {
     return
         // Item must be a container.
-        container.is_container()
+        // CDF: IC1/G11. DDA's item::is_container() is "has a container pocket", so a worn belt,
+        // pouch or holster (carry pocket) can be unloaded; CDF's is_container() skips carry pockets.
+        container.has_pocket_type( pocket_type::CONTAINER )
         // Item must be able to be unloaded
         && !container.has_flag( flag_NO_UNLOAD )
         // Container must contain at least one item
@@ -1645,6 +1683,22 @@ drop_locations game_menus::inv::unload_container()
         }
     }
     return dropped;
+}
+
+// CDF: FM5 amendment (IC1/G11), test hook (precedent: unload_selector_shows). The unload menu's
+// filter is file-local, so tests/ reach it through this. Declared here and in
+// tests/game_inventory_pockets_test.cpp, not in game_inventory.h.
+namespace game_menus
+{
+namespace inv
+{
+bool unload_menu_accepts( const item &container );
+} // namespace inv
+} // namespace game_menus
+
+bool game_menus::inv::unload_menu_accepts( const item &container )
+{
+    return valid_unload_container( container );
 }
 
 // CDF: P3-UI4, test hooks (precedent: unload_selector_shows). The insert preset is in an anonymous

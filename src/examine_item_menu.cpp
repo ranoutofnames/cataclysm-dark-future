@@ -215,14 +215,17 @@ bool run(
         return true;
     } );
 
-    if( itm.is_container() && !itm.is_corpse() ) {
+    // CDF: IC1/G11. DDA's item::is_container() is "has a container pocket"
+    // (DDA item_container.cpp:460), so a worn belt, pouch or holster (carry pocket) can be filled;
+    // CDF's item::is_container() (item_container.cpp:1001) skips carry pockets.
+    if( itm.has_pocket_type( pocket_type::CONTAINER ) && !itm.is_corpse() ) {
         add_entry( "INSERT", rate_action_insert( you, itm ), [&]() {
             game_menus::inv::insert_items( itm );
             return true;
         } );
     }
 
-    if( itm.is_container() && !itm.is_corpse() ) {
+    if( itm.has_pocket_type( pocket_type::CONTAINER ) && !itm.is_corpse() ) {
         // Per DDA game.cpp:2190,2434
         add_entry( "POCKET_SETTINGS", hint_rating::good, [&]() {
             itm.favorite_settings_menu();
