@@ -19,8 +19,6 @@
           "tac_fullhelmet",
           "pants_army",
           "tshirt",
-          "ballistic_vest_esapi",
-          "hard_ballistic_plate",
           "armguard_hard",
           "legguard_hard",
           "grenadebandolier",
@@ -32,6 +30,7 @@
           "hammer_sledge"
         ],
         "entries": [
+          { "item": "ballistic_vest_esapi", "contents-item": [ "hc_esapi_plate", "hc_esapi_plate", "hc_esbi_plate", "hc_esbi_plate" ] },
           { "item": "mossberg_500", "ammo-item": "shot_00", "charges": 8, "contents-item": [ "shoulder_strap" ] },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "shot_00", "charges": 12, "container-item": "bandolier_shotgun" },

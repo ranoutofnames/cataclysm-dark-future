@@ -843,6 +843,8 @@
       {
         "encumbrance": 3,
         "coverage": 80,
+        "cover_ranged": 95,
+        "cover_vitals": 100,
         "covers": [
           "arm_l",
           "arm_r"
@@ -885,6 +887,7 @@
       {
         "encumbrance": 2,
         "coverage": 75,
+        "cover_vitals": 100,
         "covers": [
           "leg_l",
           "leg_r"

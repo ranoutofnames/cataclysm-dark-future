@@ -1,0 +1,41 @@
+[
+  {
+    "id": "oldguard_protectors",
+    "type": "item_group",
+    "//": "CDF-only (P3-VEST2): the shoulder and groin protectors every Old Guard IOTV suit comes with (the collar is left out, its pocket stays free). DDA's ballistic_protectors (data/json/itemgroups/military.json) holds all three.",
+    "subtype": "collection",
+    "entries": [ { "item": "iotv_groin_plate" }, { "item": "iotv_shoulder_plate" } ]
+  },
+  {
+    "id": "kitted_oldguard_vest",
+    "type": "item_group",
+    "//": "CDF-only (P3-VEST2): ESAPI plates, groin and shoulder protectors and pouches for the Old Guard IOTV suit (DDA kitted_heavy_vest, military.json)",
+    "subtype": "collection",
+    "entries": [ { "group": "pristine_esapi_plates" }, { "group": "custom_heavy_lbv" }, { "group": "oldguard_protectors" } ]
+  },
+  {
+    "id": "used_kitted_oldguard_vest",
+    "type": "item_group",
+    "//": "CDF-only (P3-VEST2): as kitted_oldguard_vest with worn plates and damaged protectors (DDA used_kitted_heavy_vest, military.json)",
+    "subtype": "collection",
+    "entries": [
+      { "group": "some_esapi_plates" },
+      { "group": "custom_heavy_lbv" },
+      { "group": "oldguard_protectors", "damage": [ 0, 2 ] }
+    ]
+  },
+  {
+    "id": "oldguard_ballistic_vest_pristine",
+    "type": "item_group",
+    "//": "CDF-only (P3-VEST2): Old Guard IOTV suit plus plates, protectors and pouches (DDA military_ballistic_vest_heavy_pristine)",
+    "subtype": "collection",
+    "entries": [ { "item": "ballistic_vest_oldguard", "contents-group": "kitted_oldguard_vest" } ]
+  },
+  {
+    "id": "oldguard_ballistic_vest",
+    "type": "item_group",
+    "//": "CDF-only (P3-VEST2): Old Guard IOTV suit plus used plates, damaged protectors and pouches (DDA military_ballistic_vest_heavy)",
+    "subtype": "collection",
+    "entries": [ { "item": "ballistic_vest_oldguard", "contents-group": "used_kitted_oldguard_vest" } ]
+  }
+]
