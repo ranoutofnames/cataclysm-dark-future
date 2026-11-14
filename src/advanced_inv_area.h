@@ -25,6 +25,8 @@ enum aim_location : char {
     AIM_ALL,
     AIM_CONTAINER,
     AIM_WORN,
+    // DDA: the row that leaves the container shown in a pane (ITEMS_PARENT)
+    AIM_PARENT,
     NUM_AIM_LOCATIONS,
     // only useful for AIM_ALL
     AIM_AROUND_BEGIN = AIM_SOUTHWEST,
