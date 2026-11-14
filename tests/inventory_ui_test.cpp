@@ -10,6 +10,7 @@
 #include "type_id.h"
 #include "uistate.h"
 
+#include <array>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -1211,6 +1212,57 @@ TEST_CASE("scroll actions move the highlight within bounds", "[inventory][ui][p3
         col.scroll_selection_page(scroll_direction::BACKWARD);
         REQUIRE(col.get_selected_index() < col.entries.size());
         CHECK(col.get_selected().is_item());
+    }
+}
+
+// Exact page-scroll semantics (DDA inventory_column::scroll_selection_page, mouse wheel): jump to
+// the first highlightable entry of the next (FORWARD) or previous (BACKWARD) page, wrapping around
+// the whole column. Ten rocks at height 4 give three entries per page: every page is a category
+// header followed by two rocks, so the rocks sit at entry indices 1,2 4,5 7,8 10,11 13,14.
+TEST_CASE("page scroll lands on exact entries across several pages", "[inventory][ui][p3]") {
+    mouse_selector_fixture f(10);
+    inventory_column& col = f.sel.own_inv_column;
+    col.set_height(4);
+    col.prepare_paging();
+    REQUIRE(col.entries.size() == 15);
+    for (const size_t cat : {0u, 3u, 6u, 9u, 12u}) {
+        REQUIRE(col.entries[cat].is_category());
+    }
+    // rock number k lives at entry index item_index[k]
+    const std::array<size_t, 10> item_index = {1, 2, 4, 5, 7, 8, 10, 11, 13, 14};
+    for (size_t k = 0; k < item_index.size(); ++k) {
+        REQUIRE(col.entries[item_index[k]].any_item() == f.items[k]);
+    }
+
+    REQUIRE(f.sel.select(f.items[0]));
+    REQUIRE(col.get_selected_index() == 1);
+
+    SECTION("forward walks page by page, then wraps to the first page") {
+        for (const size_t expected : {4u, 7u, 10u, 13u, 1u, 4u}) {
+            col.scroll_selection_page(scroll_direction::FORWARD);
+            CHECK(col.get_selected_index() == expected);
+        }
+    }
+    SECTION("forward from the second row of a page still goes to the next page") {
+        REQUIRE(f.sel.select(f.items[1]));
+        REQUIRE(col.get_selected_index() == 2);
+        col.scroll_selection_page(scroll_direction::FORWARD);
+        CHECK(col.get_selected_index() == 4);
+    }
+    SECTION("forward past the last page wraps to the first row") {
+        REQUIRE(f.sel.select(f.items[9]));
+        REQUIRE(col.get_selected_index() == 14);
+        col.scroll_selection_page(scroll_direction::FORWARD);
+        CHECK(col.get_selected_index() == 1);
+        REQUIRE(f.sel.select(f.items[8]));
+        col.scroll_selection_page(scroll_direction::FORWARD);
+        CHECK(col.get_selected_index() == 1);
+    }
+    SECTION("backward from the first page wraps to the last row, then steps back page by page") {
+        for (const size_t expected : {14u, 11u, 8u, 5u, 2u, 14u}) {
+            col.scroll_selection_page(scroll_direction::BACKWARD);
+            CHECK(col.get_selected_index() == expected);
+        }
     }
 }
 
