@@ -6092,7 +6092,7 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
         tagtext += " " + enumerate_as_string( flag_tags, enumeration_conjunction::space );
     }
 
-    if( is_favorite ) {
+    if( is_favorite && get_option<std::string>( "ASTERISK_POSITION" ) == "suffix" ) {
         tagtext += _( " *" ); // Display asterisk for favorite items
     }
     if( has_var( "DROP_WITH_CLOTHING_NAME" ) ) {
@@ -6102,6 +6102,13 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
     //~ This is a string to construct the item name as it is displayed. This format string has been added for maximum flexibility. The strings are: %1$s: Damage text (e.g. "bruised"). %2$s: burn adjectives (e.g. "burnt"). %3$s: tool modifier text (e.g. "atomic"). %4$s: vehicle part text (e.g. "3.8-Liter"). $5$s: main item text (e.g. "apple"). %6s: tags (e.g. "(wet) (poor fit)").
     std::string ret = string_format( _( "%1$s%2$s%3$s%4$s%5$s%6$s" ), damtext, burntext, modtext,
                                      vehtext, maintext, tagtext );
+
+    // Per DDA item_tname.cpp:120 (FAVORITE_PRE): the prefix mark is part of the prefixed name
+    // only, as DDA item_tname.h:129 leaves it out of unprefixed_tname.
+    if( is_favorite && with_prefix &&
+        get_option<std::string>( "ASTERISK_POSITION" ) == "prefix" ) {
+        ret = _( "* " ) + ret;
+    }
 
     if( truncate != 0 ) {
         ret = utf8_truncate( ret, truncate + truncate_override );

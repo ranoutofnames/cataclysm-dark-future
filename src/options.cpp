@@ -2172,6 +2172,11 @@ void options_manager::add_options_interface()
          true
        );
 
+    add( "ITEM_BODYGRAPH", interface, translate_marker( "Show armor coverage map" ),
+         translate_marker( "If true, show a visual representation of armor coverage in the item info window." ),
+         true
+       );
+
     add( "ITEM_SYMBOLS", interface, translate_marker( "Show item symbols" ),
          translate_marker( "If true, show item symbols in inventory and pick up menu." ),
          false
@@ -2200,6 +2205,14 @@ void options_manager::add_options_interface()
         { "NONE", translate_marker( "None" ) }
     },
     "WORN" );
+
+    add( "ASTERISK_POSITION", interface, translate_marker( "Favorited item's mark position" ),
+         translate_marker( "Where to place mark of the favorited item (asterisk): before item's name (prefix) or after item's name (suffix)." ),
+    { { "prefix", translate_marker( "Prefix" ) }, { "suffix", translate_marker( "Suffix" ) } },
+    // CDF: DDA options.cpp:2299 passes "right", which is not one of the values; options_manager::add
+    // falls back to the first entry, so DDA's effective default is "prefix". Spell it out.
+    "prefix"
+       );
 
     add_empty_line();
 

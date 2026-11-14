@@ -1745,6 +1745,39 @@ TEST_CASE("disable mode marks nothing", "[inventory][ui][fm]") {
     CHECK_FALSE(row_for(sel, f.rock)->highlight_as_child);
 }
 
+// PL-64 OPT1: DDA ASTERISK_POSITION (item_tname.cpp:120, 652) puts the favourite mark
+// before the name (prefix, DDA's effective default) or after it (suffix).
+TEST_CASE("favourite mark honours ASTERISK_POSITION", "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    f.blanket->set_favorite(true);
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    const inventory_entry* row = row_for(sel, f.blanket);
+    REQUIRE(row != nullptr);
+
+    SECTION("default is prefix") {
+        CHECK(get_option<std::string>("ASTERISK_POSITION") == "prefix");
+        const std::string text = default_preset.get_cell_text(*row, 0);
+        CHECK(text.rfind("* ", 0) == 0);
+        CHECK(text.find(" *") == std::string::npos);
+        // DDA item_tname.h:129 leaves FAVORITE_PRE out of unprefixed_tname.
+        CHECK(f.blanket->tname(1, false).rfind("* ", 0) != 0);
+    }
+
+    SECTION("suffix puts it at the end") {
+        override_option opt("ASTERISK_POSITION", "suffix");
+        const std::string text = default_preset.get_cell_text(*row, 0);
+        CHECK(text.rfind("* ", 0) != 0);
+        REQUIRE(text.size() >= 2);
+        CHECK(text.compare(text.size() - 2, 2, " *") == 0);
+        // FAVORITE_POST is not a prefix segment, so it stays in the unprefixed name.
+        const std::string bare = f.blanket->tname(1, false);
+        REQUIRE(bare.size() >= 2);
+        CHECK(bare.compare(bare.size() - 2, 2, " *") == 0);
+    }
+}
+
 TEST_CASE(
     "worn container name carries volume weight and length with the default option",
     "[inventory][ui][fm]") {
