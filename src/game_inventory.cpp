@@ -1391,6 +1391,10 @@ class insert_inventory_preset : public inventory_selector_preset
             who( who ) {
         }
 
+        const item *get_holster() const override {
+            return &holster;
+        }
+
         bool is_shown( const item *contained ) const override {
             if( contained == &holster ) {
                 return false;
