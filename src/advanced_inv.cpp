@@ -32,6 +32,7 @@
 #include "panels.h"
 #include "player.h"
 #include "player_activity.h"
+#include "pocket_type.h"
 #include "point.h"
 #include "ret_val.h"
 #include "string_formatter.h"
@@ -1654,6 +1655,7 @@ void advanced_inventory::display()
                 if( pane.get_area() != location || location == AIM_ALL ) {
                     pane.recalc = true;
                 }
+                pane.leave_container();
                 pane.set_area( squares[location] );
             }
         } else if( action == "SAVE_DEFAULT" ) {
