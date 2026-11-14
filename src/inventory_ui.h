@@ -18,6 +18,7 @@
 #include "cuboid_rectangle.h"
 #include "cursesdef.h"
 #include "detached_ptr.h"
+#include "enum_traits.h"
 #include "input.h"
 #include "item_handling_util.h"
 #include "item_pocket.h"
@@ -35,6 +36,9 @@ class item_category;
 class string_input_popup;
 struct tripoint;
 class ui_adaptor;
+class JsonObject;
+class JsonOut;
+struct inventory_selector_save_state;
 
 using excluded_stack = std::pair<item *, int>;
 using excluded_stacks = std::map<item *, int>;
@@ -267,6 +271,9 @@ class inventory_selector_preset
         virtual std::function<bool( const inventory_entry & )> get_filter( const std::string &filter )
         const;
 
+        /// Per DDA inventory_ui.h:294: the saved view mode of this preset's selector.
+        inventory_selector_save_state *save_state = nullptr;
+
     protected:
         /** Text of the first column (default: item name) */
         virtual std::string get_caption( const inventory_entry &entry ) const;
@@ -311,7 +318,7 @@ const inventory_selector_preset default_preset;
 class pickup_inventory_preset : public inventory_selector_preset
 {
     public:
-        pickup_inventory_preset( const player &p ) : p( p ) {}
+        pickup_inventory_preset( const player &p );
         std::string get_denial( const item *loc ) const override;
 
     private:
@@ -1351,3 +1358,30 @@ class ammo_inventory_selector : public inventory_selector
         // inventory_entry::custom_category.
         std::list<item_category> reload_well_categories;
 };
+
+/**
+ * Per DDA inventory_ui.h:1019-1021: reading the enum back from its JSON name needs its last member.
+ */
+template <>
+struct enum_traits<inventory_selector::uimode> {
+    static constexpr inventory_selector::uimode last = inventory_selector::uimode::last;
+};
+
+/**
+ * Per DDA inventory_ui.h:1308-1317: the view mode (categories or the container hierarchy) that a
+ * selector remembers between openings and, through uistate, between sessions.
+ */
+struct inventory_selector_save_state {
+    public:
+        inventory_selector::uimode uimode = inventory_selector::uimode::categories;
+
+        void serialize( JsonOut &json ) const;
+        void deserialize( JsonObject const &jo );
+};
+
+// CDF: DDA keeps inventory_sel_default_state file-static; it is extern here so the tests can put the
+// fallback state back after a test that toggles the view mode (FM7).
+extern inventory_selector_save_state inventory_sel_default_state;
+extern inventory_selector_save_state inventory_ui_default_state;
+extern inventory_selector_save_state pickup_sel_default_state;
+extern inventory_selector_save_state pickup_ui_default_state;

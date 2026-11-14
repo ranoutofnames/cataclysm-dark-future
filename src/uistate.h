@@ -184,3 +184,8 @@ class uistatedata
         void deserialize( const JsonObject &jo );
 };
 extern uistatedata uistate;
+
+// Per DDA uistate.h:100-101: the saved inventory view modes. CDF: uistatedata::serialize/deserialize
+// belong to savegame_json.cpp here, which has to call these two (FM7).
+extern void save_inv_state( JsonOut &json );
+extern void load_inv_state( const JsonObject &jo );

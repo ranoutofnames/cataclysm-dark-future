@@ -5,6 +5,7 @@
 #include "item.h"
 #include "item_category.h"
 #include "item_pocket.h"
+#include "json.h"
 #include "options.h"
 #include "options_helpers.h"
 #include "player_helpers.h"
@@ -14,10 +15,31 @@
 #include "uistate.h"
 
 #include <array>
+#include <fstream>
+#include <iterator>
 #include <locale>
 #include <optional>
+#include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
+
+// FM7: a selector remembers its view mode in process-wide state. A test that switches the mode puts
+// the four saved states back, so that the next test still starts from the defaults.
+namespace {
+struct view_mode_state_guard {
+    inventory_selector::uimode sel = inventory_sel_default_state.uimode;
+    inventory_selector::uimode inv = inventory_ui_default_state.uimode;
+    inventory_selector::uimode pickup_sel = pickup_sel_default_state.uimode;
+    inventory_selector::uimode pickup_ui = pickup_ui_default_state.uimode;
+    ~view_mode_state_guard() {
+        inventory_sel_default_state.uimode = sel;
+        inventory_ui_default_state.uimode = inv;
+        pickup_sel_default_state.uimode = pickup_sel;
+        pickup_ui_default_state.uimode = pickup_ui;
+    }
+};
+} // namespace
 
 TEST_CASE(
     "inventory selector restores consume selection by item type", "[inventory][ui][consume]") {
@@ -288,6 +310,7 @@ auto item_rows(const inventory_column& col) -> std::vector<const inventory_entry
 
 TEST_CASE(
     "inventory hierarchy mode lists contents under the container", "[inventory][ui][hierarchy]") {
+    const view_mode_state_guard view_mode;
     clear_all_state();
     avatar& u = get_avatar();
     clear_character(u, true);
@@ -633,6 +656,7 @@ struct hide_override_guard {
 } // namespace
 
 TEST_CASE("collapse keeps the toggled row listed", "[inventory][ui][p3]") {
+    const view_mode_state_guard view_mode;
     carried_pack_fixture f;
     inventory_selector sel(f.u);
     sel.add_character_items(f.u);
@@ -704,6 +728,7 @@ TEST_CASE("holder row collapse hides its group", "[inventory][ui][p3]") {
 }
 
 TEST_CASE("hide override cycles", "[inventory][ui][p3]") {
+    const view_mode_state_guard view_mode;
     const hide_override_guard guard;
     carried_pack_fixture f;
     inventory_selector sel(f.u);
@@ -817,6 +842,7 @@ TEST_CASE("skip unselectable", "[inventory][ui][p3]") {
 }
 
 TEST_CASE("parent and child flags", "[inventory][ui][p3]") {
+    const view_mode_state_guard view_mode;
     carried_pack_fixture f;
     inventory_selector sel(f.u);
     sel.enable_view_mode_toggle();
@@ -848,6 +874,7 @@ TEST_CASE("parent and child flags", "[inventory][ui][p3]") {
 }
 
 TEST_CASE("column actions move the active column", "[inventory][ui][p3]") {
+    const view_mode_state_guard view_mode;
     clear_avatar();
     auto bandages = item::spawn("bandages");
     auto heroin = item::spawn("heroin");
@@ -1850,6 +1877,7 @@ TEST_CASE("a filter shows matching rows inside a collapsed container and clearin
 
 TEST_CASE("merging rows into the own column keeps the highlighted row and the indent",
           "[inventory][ui][fm]") {
+    const view_mode_state_guard view_mode;
     carried_pack_fixture f;
     fm3_selector sel(f.u);
     sel.enable_view_mode_toggle();
@@ -1974,6 +2002,7 @@ struct fm4_selector : inventory_selector {
     using inventory_selector::on_input;
     using inventory_selector::ctxt;
     void set_uimode(uimode mode) { _uimode = mode; }
+    auto get_uimode() const -> uimode { return _uimode; }
 };
 
 struct fm4_pick_selector : inventory_pick_selector {
@@ -2183,4 +2212,139 @@ TEST_CASE("pickup hint lists the five actions", "[inventory][ui][fm]") {
     CHECK(f.sel.ctxt.get_desc("SHOW_HIDE_CONTENTS_ALL") == _("Unbound locally!"));
     // The Quantity line stays.
     CHECK(hint.find("Quantity:") != std::string::npos);
+}
+
+// PL-63 FM7: saved UI state (DDA inventory_ui.cpp:345-364, 3446-3447, 3497-3503).
+// T1
+// CDF: uistatedata::serialize/deserialize live in savegame_json.cpp, which this change may not edit;
+// the round trip therefore goes through save_inv_state/load_inv_state, the pair that serializer has
+// to call on every save and load.
+TEST_CASE("view mode survives a uistate round trip", "[inventory][ui][fm]") {
+    const view_mode_state_guard view_mode;
+    clear_avatar();
+    avatar& u = get_avatar();
+
+    inventory_ui_default_state.uimode = inventory_selector::uimode::hierarchy;
+
+    std::ostringstream out;
+    JsonOut jsout(out);
+    jsout.start_object();
+    save_inv_state(jsout);
+    jsout.end_object();
+
+    // a later session starts from the compiled-in default; the load must bring the saved mode back
+    inventory_ui_default_state.uimode = inventory_selector::uimode::categories;
+    std::istringstream in(out.str());
+    JsonIn jsin(in);
+    load_inv_state(jsin.get_object());
+    CHECK(inventory_ui_default_state.uimode == inventory_selector::uimode::hierarchy);
+
+    // and a selector that carries the state starts in the saved mode
+    inventory_selector_preset preset;
+    preset.save_state = &inventory_ui_default_state;
+    fm4_selector sel(u, preset);
+    CHECK(sel.get_uimode() == inventory_selector::uimode::hierarchy);
+    // CDF: the columns are put in hierarchy mode too, so the nested rows are indented and grouped
+    CHECK(sel.own_gear_column.indent_entries());
+}
+
+// T2
+TEST_CASE("pickup selector defaults to hierarchy, inventory selector to categories",
+          "[inventory][ui][fm]") {
+    const view_mode_state_guard view_mode;
+    clear_avatar();
+    avatar& u = get_avatar();
+
+    // DDA inventory_ui.cpp:345-348: the four saved defaults
+    CHECK(inventory_sel_default_state.uimode == inventory_selector::uimode::categories);
+    CHECK(inventory_ui_default_state.uimode == inventory_selector::uimode::categories);
+    CHECK(pickup_sel_default_state.uimode == inventory_selector::uimode::categories);
+    CHECK(pickup_ui_default_state.uimode == inventory_selector::uimode::hierarchy);
+
+    // a preset without a state pointer falls back to the inventory default
+    fm4_selector plain(u);
+    CHECK(plain.get_uimode() == inventory_selector::uimode::categories);
+    CHECK_FALSE(plain.own_gear_column.indent_entries());
+
+    // the pickup screen's preset carries the pickup state, which opens in hierarchy
+    inventory_selector_preset pickup;
+    pickup.save_state = &pickup_ui_default_state;
+    fm4_selector pick(u, pickup);
+    CHECK(pick.get_uimode() == inventory_selector::uimode::hierarchy);
+
+    // DDA game_inventory.cpp:562-564: the pickup preset class remembers its own state
+    pickup_inventory_preset pickup_preset(u);
+    CHECK(pickup_preset.save_state == &pickup_sel_default_state);
+}
+
+// T3
+TEST_CASE("toggling in one selector kind does not change the other kind's default",
+          "[inventory][ui][fm]") {
+    const view_mode_state_guard view_mode;
+    clear_avatar();
+    avatar& u = get_avatar();
+
+    inventory_selector_preset inventory_preset;
+    inventory_preset.save_state = &inventory_ui_default_state;
+    inventory_selector_preset pickup_preset;
+    pickup_preset.save_state = &pickup_ui_default_state;
+
+    pickup_ui_default_state.uimode = inventory_selector::uimode::categories;
+    inventory_ui_default_state.uimode = inventory_selector::uimode::categories;
+
+    {
+        fm4_selector pick(u, pickup_preset);
+        REQUIRE(pick.get_uimode() == inventory_selector::uimode::categories);
+        pick.toggle_categorize_contained();
+    }
+    CHECK(pickup_ui_default_state.uimode == inventory_selector::uimode::hierarchy);
+    // the other kind and the fallback keep their own mode
+    CHECK(inventory_ui_default_state.uimode == inventory_selector::uimode::categories);
+    CHECK(inventory_sel_default_state.uimode == inventory_selector::uimode::categories);
+
+    {
+        fm4_selector inv(u, inventory_preset);
+        REQUIRE(inv.get_uimode() == inventory_selector::uimode::categories);
+        inv.toggle_categorize_contained();
+    }
+    CHECK(inventory_ui_default_state.uimode == inventory_selector::uimode::hierarchy);
+    CHECK(pickup_ui_default_state.uimode == inventory_selector::uimode::hierarchy);
+}
+
+// T5
+// The row lives in the INVENTORY context of data/raw/keybindings/keybindings.json; the selector
+// registers TOGGLE_NUMPAD_NAVIGATION in that context (DDA inventory_ui.cpp:3472).
+TEST_CASE("numpad key row exists and has no duplicate key in its context",
+          "[inventory][ui][fm]") {
+    std::ifstream file("data/raw/keybindings/keybindings.json", std::ios::binary);
+    REQUIRE(file.good());
+    const std::string contents{ std::istreambuf_iterator<char>(file),
+                                std::istreambuf_iterator<char>() };
+
+    std::istringstream in(contents);
+    JsonIn jsin(in);
+    std::vector<std::string> numpad_keys;
+    int other_inventory_f5 = 0;
+    for (JsonObject row : jsin.get_array()) {
+        if (!row.has_string("category") || row.get_string("category") != "INVENTORY") {
+            continue;
+        }
+        std::vector<std::string> keys;
+        for (JsonObject binding : row.get_array("bindings")) {
+            keys.push_back(binding.get_string("key"));
+        }
+        if (row.get_string("id") == "TOGGLE_NUMPAD_NAVIGATION") {
+            numpad_keys = keys;
+            continue;
+        }
+        for (const std::string& key : keys) {
+            if (key == "F5") {
+                ++other_inventory_f5;
+                CAPTURE(row.get_string("id"));
+            }
+        }
+    }
+    REQUIRE(numpad_keys.size() == 1);
+    CHECK(numpad_keys.front() == "F5");
+    CHECK(other_inventory_f5 == 0);
 }

@@ -21,6 +21,7 @@
 #include "item_search.h"
 #include "item_stack.h"
 #include "itype.h"
+#include "json.h"
 #include "line.h"
 #include "map/map.h"
 #include "map/map_selector.h"
@@ -124,6 +125,19 @@ struct container_data {
 };
 } // namespace
 
+// Per DDA inventory_ui.cpp:318-328.
+void inventory_selector_save_state::serialize( JsonOut &json ) const
+{
+    json.start_object();
+    json.member( "uimode", uimode );
+    json.end_object();
+}
+
+void inventory_selector_save_state::deserialize( JsonObject const &jo )
+{
+    jo.read( "uimode", uimode );
+}
+
 namespace io
 {
 // Per DDA inventory_ui.cpp:332-342: the footer's view-mode wording, with DDA's translation context.
@@ -140,6 +154,32 @@ std::string enum_to_string<inventory_selector::uimode>( inventory_selector::uimo
     return pgettext( "inventory ui mode", "categories" );
 }
 } // namespace io
+
+// Per DDA inventory_ui.cpp:345-348. inventory_sel_default_state is the fallback of every preset that
+// carries no state pointer; inventory_ui_default_state is the plain inventory menu's, and the pickup
+// menu has its own pair, which opens in hierarchy mode.
+inventory_selector_save_state inventory_sel_default_state{ inventory_selector::uimode::categories };
+inventory_selector_save_state inventory_ui_default_state{ inventory_selector::uimode::categories };
+inventory_selector_save_state pickup_sel_default_state{ inventory_selector::uimode::categories };
+inventory_selector_save_state pickup_ui_default_state{ inventory_selector::uimode::hierarchy };
+
+// Per DDA inventory_ui.cpp:350-364. CDF: uistatedata::serialize/deserialize live in savegame_json.cpp
+// and have to call these (FM7).
+void save_inv_state( JsonOut &json )
+{
+    json.member( "inventory_sel_default_state", inventory_sel_default_state );
+    json.member( "inventory_ui_state", inventory_ui_default_state );
+    json.member( "pickup_sel_state", pickup_sel_default_state );
+    json.member( "pickup_ui_state", pickup_ui_default_state );
+}
+
+void load_inv_state( const JsonObject &jo )
+{
+    jo.read( "inventory_sel_default_state", inventory_sel_default_state );
+    jo.read( "inventory_ui_state", inventory_ui_default_state );
+    jo.read( "pickup_sel_state", pickup_sel_default_state );
+    jo.read( "pickup_ui_state", pickup_ui_default_state );
+}
 
 constexpr int max_chosen_count = std::numeric_limits<int>::max();
 
@@ -211,6 +251,12 @@ class selection_column_preset : public inventory_selector_preset
 };
 
 static const selection_column_preset selection_preset{};
+
+pickup_inventory_preset::pickup_inventory_preset( const player &p ) : p( p )
+{
+    // Per DDA game_inventory.cpp:562-564: the pickup menu keeps its own view mode.
+    save_state = &pickup_sel_default_state;
+}
 
 std::string pickup_inventory_preset::get_denial( const item *loc ) const
 {
@@ -2036,6 +2082,13 @@ void inventory_selector::toggle_categorize_contained()
         highlighted = get_selected().any_item();
     }
     _uimode = _uimode == uimode::hierarchy ? uimode::categories : uimode::hierarchy;
+    // Per DDA inventory_ui.cpp:3497-3503: remember the mode for the next opening. CDF: DDA writes it
+    // back in the destructor; here the toggle is the only writer of _uimode, so it writes it back.
+    if( preset.save_state == nullptr ) {
+        inventory_sel_default_state.uimode = _uimode;
+    } else {
+        preset.save_state->uimode = _uimode;
+    }
     clear_items();
     for( inventory_column *col : columns ) {
         // Per DDA inventory_ui.cpp:3783-3822 (_categorize/_uncategorize tails): drop the
@@ -3237,6 +3290,8 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     : u( u )
     , preset( preset )
     , ctxt( "INVENTORY" )
+    , _uimode( preset.save_state == nullptr ? inventory_sel_default_state.uimode :
+               preset.save_state->uimode )
     , own_gear_column( preset )
     , active_column_index( 0 )
     , mode( navigation_mode::ITEM )
@@ -3282,6 +3337,12 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     append_column( own_inv_column );
     append_column( map_column );
     append_column( own_gear_column );
+
+    // CDF: a selector that starts in hierarchy mode must indent and group the nested rows too. DDA
+    // takes the indent from the preset; CDF keeps it in the column flag that the toggle sets.
+    for( inventory_column *column : columns ) {
+        column->set_hierarchy( _uimode == uimode::hierarchy );
+    }
 }
 
 inventory_selector::~inventory_selector() = default;
