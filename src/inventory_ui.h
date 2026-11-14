@@ -421,6 +421,8 @@ class inventory_column
         void select( size_t new_index, scroll_direction dir );
 
         /// Per DDA inventory_ui.h:538-543.
+        bool sort_compare( inventory_entry const &lhs, inventory_entry const &rhs );
+        bool indented_sort_compare( inventory_entry const &lhs, inventory_entry const &rhs );
         bool collated_sort_compare( inventory_entry const &lhs, inventory_entry const &rhs );
 
         size_t get_selected_index() {
@@ -442,7 +444,7 @@ class inventory_column
         size_t get_width() const;
         size_t get_height() const;
         /** Expands the column to fit the new entry. */
-        void expand_to_fit( const inventory_entry &entry );
+        void expand_to_fit( const inventory_entry &entry, bool with_denial = true );
         /** Resets width to original (unchanged). */
         virtual void reset_width( const std::vector<inventory_column *> &all_columns );
         /** Returns next custom inventory letter. */
@@ -481,7 +483,21 @@ class inventory_column
             hierarchy = value;
             invalidate_paging();
         }
+        /// Per DDA inventory_ui.h:489-506: an optional override of the hierarchy setting above.
+        bool indent_entries() const {
+            if( indent_entries_override ) {
+                return *indent_entries_override;
+            }
+            return hierarchy;
+        }
+        void set_indent_entries_override( bool entry_override ) {
+            indent_entries_override = entry_override;
+        }
+        void clear_indent_entries_override() {
+            indent_entries_override = std::nullopt;
+        }
         bool hierarchy = false;
+        std::optional<bool> indent_entries_override;
         // Per DDA inventory_ui.h:494-500.
         bool collate_entries() const {
             return preset.collate_entries();
@@ -533,7 +549,7 @@ class inventory_column
         bool multiselect = false;
         bool visibility = true;
 
-        size_t selected_index = 0;
+        size_t selected_index = std::numeric_limits<size_t>::max();
         size_t page_offset = 0;
         size_t entries_per_page = std::numeric_limits<size_t>::max();
         size_t height = std::numeric_limits<size_t>::max();

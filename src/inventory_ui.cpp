@@ -343,15 +343,10 @@ inventory_selector_preset::inventory_selector_preset()
 bool inventory_selector_preset::sort_compare( const inventory_entry &lhs,
         const inventory_entry &rhs ) const
 {
-    // Place items with an assigned inventory letter first, since the player cared enough to assign them
-    const bool left_fav  = g->u.invlet_is_assigned( lhs.any_item()->invlet );
-    const bool right_fav = g->u.invlet_is_assigned( rhs.any_item()->invlet );
-    if( left_fav == right_fav ) {
-        return lhs.cached_name.compare( rhs.cached_name ) < 0; // Simple alphabetic order
-    } else if( left_fav ) {
-        return true;
-    }
-    return false;
+    // Per DDA inventory_ui.cpp:755-763: the localized compare ignores case.
+    // CDF: the entry keeps one cached name (`tname( 1 )`) only, so there are no
+    // contents-count, unprefixed-name, link key or generation tie-breaks to add here.
+    return localized_compare( lhs.cached_name, rhs.cached_name );
 }
 
 nc_color inventory_selector_preset::get_color( const inventory_entry &entry ) const
@@ -699,7 +694,7 @@ void inventory_column::set_height( size_t new_height )
     }
 }
 
-void inventory_column::expand_to_fit( const inventory_entry &entry )
+void inventory_column::expand_to_fit( const inventory_entry &entry, bool with_denial )
 {
     if( !entry ) {
         return;
@@ -708,7 +703,7 @@ void inventory_column::expand_to_fit( const inventory_entry &entry )
     // Don't use cell cache here since the entry may not yet be placed into the vector of entries.
     const std::string denial = preset.get_denial( entry );
 
-    for( size_t i = 0, num = denial.empty() ? cells.size() : 1; i < num; ++i ) {
+    for( size_t i = 0, num = with_denial && denial.empty() ? cells.size() : 1; i < num; ++i ) {
         auto &cell = cells[i];
 
         cell.real_width = std::max( cell.real_width, get_entry_cell_width( entry, i ) );
@@ -720,7 +715,8 @@ void inventory_column::expand_to_fit( const inventory_entry &entry )
         }
     }
 
-    if( !denial.empty() ) {
+    // Per DDA inventory_ui.cpp:1178-1181: a caller can skip the denial space (the selection column).
+    if( with_denial && !denial.empty() ) {
         reserved_width = std::max( get_entry_cell_width( entry, 0 ) + min_denial_gap + utf8_width( denial,
                                    true ),
                                    reserved_width );
@@ -950,6 +946,11 @@ void inventory_column::move_entries_to( inventory_column &dest )
             dest.add_entry( elem );
         }
     }
+    // Per DDA inventory_ui.cpp:1401-1408: rows hidden by collapse or the filter move with the column.
+    for( const auto &elem : entries_hidden ) {
+        dest.entries_hidden.push_back( elem );
+    }
+    entries_hidden.clear();
     dest.prepare_paging();
     clear();
 }
@@ -1015,8 +1016,9 @@ static auto path_to_top( const inventory_entry &e,
     return path;
 }
 
-static auto indented_sort_compare( const inventory_entry &lhs, const inventory_entry &rhs,
-                                   const inventory_selector_preset &preset ) -> bool
+// Per DDA inventory_ui.cpp:1432-1458. CDF: item * instead of item_location.
+bool inventory_column::indented_sort_compare( const inventory_entry &lhs,
+        const inventory_entry &rhs )
 {
     // place children below all parents
     const std::vector<item *> path_lhs = path_to_top( lhs, preset );
@@ -1034,11 +1036,36 @@ static auto indented_sort_compare( const inventory_entry &lhs, const inventory_e
         p_lhs = path_lhs[li++];
         p_rhs = path_rhs[ri++];
     }
+    // CDF: the entry constructor has no indent/generation parameters.
     inventory_entry ep_lhs( { p_lhs }, nullptr, true );
     inventory_entry ep_rhs( { p_rhs }, nullptr, true );
     ep_lhs.update_cache();
     ep_rhs.update_cache();
-    return preset.sort_compare( ep_lhs, ep_rhs );
+    return sort_compare( ep_lhs, ep_rhs );
+}
+
+// Per DDA inventory_ui.cpp:1410-1430: disabled rows last, then assigned letters, then favourites,
+// and only then the preset's own order.
+bool inventory_column::sort_compare( inventory_entry const &lhs, inventory_entry const &rhs )
+{
+    if( lhs.is_selectable() != rhs.is_selectable() ) {
+        return lhs.is_selectable(); // Disabled items always go last
+    }
+    avatar &player_character = get_avatar();
+    // Place favorite items and items with an assigned inventory letter first,
+    // since the player cared enough to assign them
+    const bool left_has_invlet = player_character.invlet_is_assigned( lhs.any_item()->invlet );
+    const bool right_has_invlet = player_character.invlet_is_assigned( rhs.any_item()->invlet );
+    if( left_has_invlet != right_has_invlet ) {
+        return left_has_invlet;
+    }
+    const bool left_fav = lhs.any_item()->is_favorite;
+    const bool right_fav = rhs.any_item()->is_favorite;
+    if( left_fav != right_fav ) {
+        return left_fav;
+    }
+
+    return preset.sort_compare( lhs, rhs );
 }
 
 // Per DDA inventory_ui.cpp:1459-1548. CDF: item * instead of item_location; no indent/generation.
@@ -1052,7 +1079,7 @@ bool inventory_column::collated_sort_compare( inventory_entry const &lhs,
         if( rhs.is_collation_header() ) {
             return false;
         }
-        return preset.sort_compare( lhs, rhs );
+        return sort_compare( lhs, rhs );
     }
 
     item *p_lhs = lhs.is_collated() ? lhs.collation_meta->tip : lhs.any_item();
@@ -1065,10 +1092,10 @@ bool inventory_column::collated_sort_compare( inventory_entry const &lhs,
                             rhs.is_collated() ? rhs.collation_meta->enabled : rhs.is_selectable() );
     ep_lhs.update_cache();
     ep_rhs.update_cache();
-    if( hierarchy ) {
-        return indented_sort_compare( ep_lhs, ep_rhs, preset );
+    if( indent_entries() ) {
+        return indented_sort_compare( ep_lhs, ep_rhs );
     }
-    return preset.sort_compare( ep_lhs, ep_rhs );
+    return sort_compare( ep_lhs, ep_rhs );
 }
 
 // Per DDA inventory_ui.cpp:1489-1527.
@@ -1083,7 +1110,7 @@ void inventory_column::collate()
                 e->any_item()->is_favorite == outer->any_item()->is_favorite &&
                 e->any_item()->typeId() == outer->any_item()->typeId() &&
                 // CDF: link_length/is_same_relic not in CDF
-                ( !hierarchy || e->any_item()->parent_item() == outer->any_item()->parent_item() ) &&
+                ( !indent_entries() || e->any_item()->parent_item() == outer->any_item()->parent_item() ) &&
                 ( e->is_collation_header() || !e->chevron ) ) {
 
                 if( !outer->is_collated() ) {
@@ -1166,6 +1193,14 @@ void inventory_column::prepare_paging( const std::string &filter )
         return preset.get_filter( filter );
     } );
 
+    // Per DDA inventory_ui.cpp:1561-1564: with a filter typed, rows hidden by a collapsed
+    // parent are shown as well, except the entries of a collapsed collation group.
+    const auto is_visible = [&filter_fn, &filter, this]( const inventory_entry & it ) {
+        return it.is_item() && filter_fn( it ) &&
+               ( ( !filter.empty() && !it.is_collation_entry() ) ||
+                 !hidden_by_collapse( it, hide_entries_override ) );
+    };
+
     // First, remove all non-items
     for( size_t i = 0; i < entries_hidden.size(); ++i ) {
         entries.push_back( entries_hidden[i] );
@@ -1173,16 +1208,15 @@ void inventory_column::prepare_paging( const std::string &filter )
 
     entries_hidden.clear();
     for( size_t i = 0; i < entries.size(); ++i ) {
-        if( entries[i].is_item() &&
-            ( !filter_fn( entries[i] ) || hidden_by_collapse( entries[i], hide_entries_override ) ) ) {
+        // CDF: only item rows move to the hidden list; the category headers are rebuilt below.
+        if( entries[i].is_item() && !is_visible( entries[i] ) ) {
             entries_hidden.push_back( entries[i] );
         }
     }
 
-    const auto new_end = std::remove_if( entries.begin(),
-    entries.end(), [&filter_fn, this]( const inventory_entry & entry ) {
-        return !entry.is_item() || !filter_fn( entry ) ||
-               hidden_by_collapse( entry, hide_entries_override );
+    const auto new_end = std::remove_if( entries.begin(), entries.end(),
+    [&is_visible]( const inventory_entry & entry ) {
+        return !is_visible( entry );
     } );
     entries.erase( new_end, entries.end() );
     // don't sort with stale names
@@ -1193,10 +1227,10 @@ void inventory_column::prepare_paging( const std::string &filter )
             return *lhs.get_category_ptr() < *rhs.get_category_ptr();
         } else if( _collated ) {
             return collated_sort_compare( lhs, rhs );
-        } else if( hierarchy ) {
-            return indented_sort_compare( lhs, rhs, preset );
+        } else if( indent_entries() ) {
+            return indented_sort_compare( lhs, rhs );
         } else {
-            return preset.sort_compare( lhs, rhs );
+            return sort_compare( lhs, rhs );
         }
     };
     std::ranges::stable_sort( entries, sort_function );
@@ -1237,7 +1271,9 @@ void inventory_column::prepare_paging( const std::string &filter )
     entries_cell_cache.clear();
     paging_is_valid = true;
     // Select the uppermost possible entry
-    select( selected_index, selected_index ? scroll_direction::BACKWARD : scroll_direction::FORWARD );
+    // Per DDA inventory_ui.cpp:1625-1626.
+    const size_t ind = selected_index >= entries.size() ? 0 : selected_index;
+    select( ind, ind ? scroll_direction::BACKWARD : scroll_direction::FORWARD );
 }
 
 void inventory_column::clear()
@@ -1295,7 +1331,7 @@ size_t inventory_column::get_entry_indent( const inventory_entry &entry ) const
     }
 
     size_t res = 2;
-    if( hierarchy ) {
+    if( indent_entries() ) {
         res += entry.indent;
     }
     if( get_option<bool>( "ITEM_SYMBOLS" ) ) {
@@ -1514,7 +1550,8 @@ void selection_column::reset_width( const std::vector<inventory_column *> &all_c
         if( col && !dynamic_cast<const selection_column *>( col ) ) {
             for( const inventory_entry *const ent : col->get_entries( always_yes ) ) {
                 if( ent ) {
-                    expand_to_fit( *ent );
+                    // Per DDA inventory_ui.cpp:1890: the selection column does not reserve denial space.
+                    expand_to_fit( *ent, false );
                 }
             }
         }
@@ -1527,7 +1564,8 @@ void selection_column::prepare_paging( const std::string &filter )
 
     if( entries.empty() ) { // Category must always persist
         entries.emplace_back( &*selected_cat );
-        expand_to_fit( entries.back() );
+        // Per DDA inventory_ui.cpp:1904.
+        expand_to_fit( entries.back(), false );
     }
 
     if( !last_changed.is_null() ) {
@@ -1558,7 +1596,8 @@ void selection_column::on_change( const inventory_entry &entry )
             iter->chosen_count = my_entry.chosen_count;
             iter->automatic_drop_count = my_entry.automatic_drop_count;
             iter->drop_order = my_entry.drop_order;
-            expand_to_fit( my_entry );
+            // Per DDA inventory_ui.cpp:1929-1939: no denial space in the selection column.
+            expand_to_fit( my_entry, false );
         } else {
             iter = entries.erase( iter );
         }
@@ -2216,23 +2255,27 @@ inventory_entry *inventory_selector::find_entry_by_invlet( int invlet ) const
 // once screen width becomes enough for the columns.
 void inventory_selector::rearrange_columns( size_t client_width )
 {
+    // Per DDA inventory_ui.cpp:2510-2533.
+    const inventory_entry &prev_entry = get_selected();
+    const item *prev_selection = prev_entry.is_item() ? prev_entry.any_item() : nullptr;
+    const bool front_only = prev_entry.is_collation_entry();
     // CDF: single-column mode, DDA cpp:2521; off by default
-    if( force_single_column ) {
-        if( !own_gear_column.empty() ) {
-            own_gear_column.move_entries_to( own_inv_column );
+    if( ( is_overflown( client_width ) || force_single_column ) && !own_gear_column.empty() ) {
+        if( own_inv_column.empty() ) {
+            own_inv_column.set_indent_entries_override( own_gear_column.indent_entries() );
         }
-        if( !map_column.empty() ) {
-            map_column.move_entries_to( own_inv_column );
-        }
+        own_gear_column.move_entries_to( own_inv_column );
+        own_inv_column.reset_width( {} );
     }
-    while( is_overflown( client_width ) ) {
-        if( !own_gear_column.empty() ) {
-            own_gear_column.move_entries_to( own_inv_column );
-        } else if( !map_column.empty() ) {
-            map_column.move_entries_to( own_inv_column );
-        } else {
-            break;  // There's nothing we can do about it.
+    if( ( is_overflown( client_width ) || force_single_column ) && !map_column.empty() ) {
+        if( own_inv_column.empty() ) {
+            own_inv_column.set_indent_entries_override( map_column.indent_entries() );
         }
+        map_column.move_entries_to( own_inv_column );
+        own_inv_column.reset_width( {} );
+    }
+    if( prev_selection ) {
+        select( prev_selection, false, front_only );
     }
 }
 
@@ -2241,13 +2284,18 @@ void inventory_selector::prepare_layout( size_t client_width, size_t client_heig
     // A-L5 fix: paging is rebuilt below, so the entry pointers of the last draw may be stale.
     rect_entry_map.clear();
     // This block adds categories and should go before any width evaluations
+    // Per DDA inventory_ui.cpp:2538: the first layout starts the cursor on the first row.
+    const bool initial = get_active_column().get_selected_index() == static_cast<size_t>( -1 );
     for( auto &elem : columns ) {
         elem->set_height( client_height );
-        elem->reset_width( columns );
         elem->prepare_paging( filter );
+        elem->reset_width( columns );
     }
     // Handle screen overflow
     rearrange_columns( client_width );
+    if( initial ) {
+        get_active_column().select( 0, scroll_direction::FORWARD );
+    }
     // If we have a single column and it occupies more than a half of
     // the available with -> expand it
     auto visible_columns = get_visible_columns();
@@ -3082,8 +3130,11 @@ void inventory_selector::draw_frame( const catacurses::window &w ) const
     draw_border( w );
 
     const int y = border + get_header_height();
+    // Per DDA inventory_ui.cpp:3376-3385: the junction glyphs use the frame colour.
+    wattron( w, BORDER_COLOR );
     mvwhline( w, point( 0, y ), LINE_XXXO, 1 );
     mvwhline( w, point( getmaxx( w ) - border, y ), LINE_XOXX, 1 );
+    wattroff( w, BORDER_COLOR );
 }
 
 std::pair<std::string, nc_color> inventory_selector::get_footer( navigation_mode m ) const

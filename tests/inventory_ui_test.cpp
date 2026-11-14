@@ -9,10 +9,12 @@
 #include "options_helpers.h"
 #include "player_helpers.h"
 #include "state_helpers.h"
+#include "translations.h"
 #include "type_id.h"
 #include "uistate.h"
 
 #include <array>
+#include <locale>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -269,8 +271,8 @@ TEST_CASE(
     REQUIRE_FALSE(entries.front()->cached_name.empty());
     CHECK(entries.front()->cached_name == entries.front()->any_item()->tname(1));
 
-    // The column is now ordered by name deterministically.
-    CHECK(entries.front()->any_item()->tname(1) < entries.back()->any_item()->tname(1));
+    // The column is now ordered by name deterministically, in DDA's localized order (FM3).
+    CHECK(localized_compare(entries.front()->cached_name, entries.back()->cached_name));
 }
 
 // CDF P2-7c: hierarchy (container tree) mode of the inventory selector
@@ -1761,4 +1763,178 @@ TEST_CASE(
         CHECK(category.name() == expected.header);
         CHECK(category.sort_rank() == expected.rank);
     }
+}
+
+// FM3: DDA's column layout, row order, filter-with-collapse and selection width
+// (DDA b4b62254ae2 inventory_ui.cpp:755-763, 1410-1430, 1561-1564, 1882-1895, 2510-2560).
+namespace {
+struct denial_text_preset : inventory_selector_preset {
+    std::string denial;
+    std::string get_denial(const item*) const override { return denial; }
+};
+
+// rearrange_columns is protected; this mirrors the production call in prepare_layout.
+struct fm3_selector : inventory_selector {
+    using inventory_selector::inventory_selector;
+    using inventory_selector::prepare_layout;
+    using inventory_selector::rearrange_columns;
+};
+} // namespace
+
+TEST_CASE("favourites sort before other items in a category", "[inventory][ui][fm]") {
+    clear_avatar();
+    auto& u = get_avatar();
+
+    auto plain = item::spawn("bandages");
+    auto favourite = item::spawn("bandages");
+    favourite->set_favorite(true);
+
+    inventory_selector sel(u);
+    // The plain row is added first, so a stable sort without the favourites step keeps it first.
+    sel.add_item(sel.own_inv_column, plain.get());
+    sel.add_item(sel.own_inv_column, favourite.get());
+    refresh_columns(sel);
+
+    const std::vector<const inventory_entry*> rows = item_rows(sel.own_inv_column);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows[0]->any_item() == favourite.get());
+    CHECK(rows[1]->any_item() == plain.get());
+}
+
+TEST_CASE("names sort case-insensitively as DDA's localized compare does",
+          "[inventory][ui][fm]") {
+    const std::locale previous_locale = std::locale();
+    if (!try_set_utf8_locale()) {
+        WARN("Skipped: the platform has no UTF-8 locale for the collation");
+        return;
+    }
+    struct locale_restore {
+        std::locale before;
+        ~locale_restore() { std::locale::global(before); }
+    } restore{previous_locale};
+
+    auto apple_item = item::spawn("bandages");
+    auto banana_item = item::spawn("bandages");
+    auto cherry_item = item::spawn("bandages");
+
+    inventory_entry apple({apple_item.get()}, nullptr, true);
+    inventory_entry banana({banana_item.get()}, nullptr, true);
+    inventory_entry cherry({cherry_item.get()}, nullptr, true);
+    apple.update_cache();
+    banana.update_cache();
+    cherry.update_cache();
+    apple.cached_name = "Apple";
+    banana.cached_name = "banana";
+    cherry.cached_name = "Cherry";
+
+    // DDA's preset comparer is localized_compare, so raw byte order (Apple, Cherry, banana) is wrong.
+    CHECK(default_preset.sort_compare(apple, banana));
+    CHECK(default_preset.sort_compare(banana, cherry));
+    CHECK_FALSE(default_preset.sort_compare(cherry, apple));
+}
+
+TEST_CASE("a filter shows matching rows inside a collapsed container and clearing it hides them again",
+          "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+
+    REQUIRE(sel.select(f.pack));
+    sel.toggle_selected_contents();
+    refresh_columns(sel);
+    REQUIRE(f.pack->is_collapsed());
+    REQUIRE(row_for(sel, f.rock) == nullptr);
+
+    sel.own_inv_column.set_filter("rock");
+    CHECK(row_for(sel, f.rock) != nullptr);
+    CHECK(row_for(sel, f.blanket) == nullptr);
+
+    sel.own_inv_column.set_filter("");
+    CHECK(row_for(sel, f.rock) == nullptr);
+}
+
+TEST_CASE("merging rows into the own column keeps the highlighted row and the indent",
+          "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    fm3_selector sel(f.u);
+    sel.enable_view_mode_toggle();
+    sel.add_character_items(f.u);
+    sel.toggle_categorize_contained(); // hierarchy: every row lives in the gear column
+    refresh_columns(sel);
+    REQUIRE(sel.own_inv_column.empty());
+
+    const inventory_entry* before = nullptr;
+    for (inventory_entry& row : sel.own_gear_column.entries) {
+        if (row.is_item() && row.any_item() == f.rock) {
+            before = &row;
+        }
+    }
+    REQUIRE(before != nullptr);
+    const int indent = before->indent;
+    REQUIRE(indent > 0);
+    REQUIRE(sel.select(f.rock));
+    REQUIRE(sel.own_gear_column.get_selected().any_item() == f.rock);
+
+    // Widths as prepare_layout sets them before rearrange_columns.
+    sel.own_gear_column.reset_width({});
+    sel.own_inv_column.reset_width({});
+    // A one-cell-wide screen makes every column overflow, so the gear column is merged.
+    sel.rearrange_columns(1);
+
+    CHECK(sel.own_gear_column.empty());
+    const inventory_entry* merged = nullptr;
+    for (inventory_entry& row : sel.own_inv_column.entries) {
+        if (row.is_item() && row.any_item() == f.rock) {
+            merged = &row;
+        }
+    }
+    REQUIRE(merged != nullptr);
+    CHECK(sel.own_inv_column.indent_entries());
+    CHECK(merged->indent == indent);
+    CHECK(sel.get_selected().any_item() == f.rock);
+}
+
+TEST_CASE("selection column does not reserve denial width", "[inventory][ui][fm]") {
+    clear_avatar();
+    auto denied = item::spawn("bandages");
+    auto allowed = item::spawn("bandages");
+
+    denial_text_preset preset;
+    preset.denial = std::string(120, 'x');
+    inventory_entry denied_entry({denied.get()}, nullptr, false);
+
+    // The rule that the selection column relies on: no denial space when asked for text only.
+    inventory_column wide(preset);
+    wide.expand_to_fit(denied_entry, false);
+    const size_t text_width = wide.get_width();
+    wide.expand_to_fit(denied_entry, true);
+    CHECK(wide.get_width() > text_width);
+
+    // The selection column measures the rows of the other columns with the rule above.
+    inventory_column source(preset);
+    source.add_entry(denied_entry);
+    selection_column selection("FM3", "Selected");
+    selection.reset_width({&source});
+    const size_t denied_width = selection.get_width();
+
+    preset.denial.clear();
+    inventory_column source_allowed(preset);
+    source_allowed.add_entry(inventory_entry({allowed.get()}, nullptr, true));
+    selection.reset_width({&source_allowed});
+    CHECK(selection.get_width() == denied_width);
+}
+
+TEST_CASE("first layout highlights the first selectable row", "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    fm3_selector sel(f.u);
+    sel.add_character_items(f.u);
+    // Before the first layout nothing is highlighted.
+    CHECK(sel.get_active_column().get_selected_index() == static_cast<size_t>(-1));
+    CHECK_FALSE(sel.get_selected().is_item());
+
+    sel.prepare_layout(120, 40);
+
+    REQUIRE(sel.get_selected().is_item());
+    CHECK(sel.get_selected().any_item() == f.pack);
 }
