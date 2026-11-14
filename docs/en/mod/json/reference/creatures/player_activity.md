@@ -24,6 +24,15 @@ something that takes more than just one turn.
    newly constructed activity can then be assigned to the character and started using
    `Character::assign_activity`.
 
+### Built-in reload and unload actors
+
+| Activity | Actor class | Resumable | Serialized keys |
+|---|---|---|---|
+| `ACT_RELOAD` | `reload_activity_actor` | no (`"suspendable": false`) | `progress`, `moves_total`, `qty`, `pocket_index`, `target_loc`, `ammo_loc`, `seconds_per_round`, `already_loaded` |
+| `ACT_UNLOAD` | `unload_activity_actor` | no (`"no_resume": true`) | `progress`, `moves_total`, `target` |
+
+Read these as worked examples of the steps above.
+
 ## Lua-backed activities
 
 Lua scripts can assign any activity with Lua callbacks in `game.activity_functions[id]`:
