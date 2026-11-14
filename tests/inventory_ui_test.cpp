@@ -1248,3 +1248,146 @@ TEST_CASE("drag between two items calls the select-pocket flow with source and d
         CHECK(hook.calls.empty());
     }
 }
+
+// CDF P3-UI8: the pickup selector takes DDA's menu behaviour but keeps CDF's pickup pipeline.
+// Pure state, no ui_adaptor and no prompts; the items sit in the map column like ground items.
+namespace {
+struct ui8_pickup_selector : inventory_pickup_selector {
+    using inventory_pickup_selector::inventory_pickup_selector;
+    using inventory_pickup_selector::build_selection_stats_line;
+    using inventory_pickup_selector::get_raw_stats;
+};
+
+struct pickup_menu_fixture {
+    std::vector<decltype(item::spawn("rock"))> owned;
+    std::vector<item*> items;
+    ui8_pickup_selector sel;
+
+    static auto fresh_avatar() -> avatar& {
+        clear_avatar();
+        return get_avatar();
+    }
+
+    pickup_menu_fixture() : sel(fresh_avatar()) {}
+
+    // One row per rock.
+    void add_rows(size_t count) {
+        for (size_t i = 0; i < count; ++i) {
+            owned.push_back(item::spawn("rock"));
+            items.push_back(owned.back().get());
+            sel.map_column.add_entry(inventory_entry(std::vector<item*>{items.back()}));
+        }
+        sel.map_column.prepare_paging();
+    }
+
+    // One row standing for all the rocks (a stack).
+    void add_stack(size_t count) {
+        std::vector<item*> stack;
+        for (size_t i = 0; i < count; ++i) {
+            owned.push_back(item::spawn("rock"));
+            items.push_back(owned.back().get());
+            stack.push_back(items.back());
+        }
+        sel.map_column.add_entry(inventory_entry(stack));
+        sel.map_column.prepare_paging();
+    }
+
+    auto row_of(const item* it) -> inventory_entry* {
+        for (inventory_entry& e : sel.map_column.entries) {
+            if (e.is_item() && e.any_item() == it) {
+                return &e;
+            }
+        }
+        return nullptr;
+    }
+
+    void mark(const item* it, int count = 0) {
+        REQUIRE(sel.select(it));
+        sel.toggle_entries(count);
+    }
+};
+} // namespace
+
+TEST_CASE("pickup hint names the DDA action keys", "[inventory][ui][p3]") {
+    pickup_menu_fixture f;
+    const std::string& hint = f.sel.get_hint();
+    for (const char* action : {"WIELD", "WEAR", "SHOW_HIDE_CONTENTS", "SHOW_HIDE_CONTENTS_ALL",
+                               "EXAMINE", "MARK_WITH_COUNT", "INCREASE_COUNT", "DECREASE_COUNT",
+                               "TOGGLE_ENTRY"}) {
+        CAPTURE(action);
+        const std::string cell = "<color_yellow>" + f.sel.ctxt.get_desc(action) + "</color>";
+        CHECK(hint.find(cell) != std::string::npos);
+    }
+}
+
+TEST_CASE("empty selection is refused with the toggle-entry key named", "[inventory][ui][p3]") {
+    pickup_menu_fixture f;
+    f.add_rows(2);
+    // nothing marked: the confirm path has nothing to return
+    CHECK(f.sel.get_marked_pickups().empty());
+    CHECK(f.sel.build_selection().empty());
+    const std::string text = f.sel.no_selection_text();
+    CHECK_FALSE(text.empty());
+    CHECK(text.find(f.sel.ctxt.get_desc("TOGGLE_ENTRY")) != std::string::npos);
+
+    f.mark(f.items[0]);
+    CHECK(f.sel.get_marked_pickups().size() == 1);
+    CHECK_FALSE(f.sel.build_selection().empty());
+}
+
+TEST_CASE("pickup stats header", "[inventory][ui][p3]") {
+    pickup_menu_fixture f;
+    f.add_stack(3);
+    const item& rock = *f.items[0];
+    const auto before = f.sel.get_raw_stats();
+    REQUIRE_FALSE(before.empty());
+    CHECK(before.back() ==
+          ui8_pickup_selector::build_selection_stats_line(0_ml, 0_gram));
+
+    // two of the three rocks marked: the selected line counts exactly those two
+    f.mark(&rock, 2);
+    REQUIRE(f.row_of(&rock) != nullptr);
+    REQUIRE(f.row_of(&rock)->chosen_count == 2);
+    const auto after = f.sel.get_raw_stats();
+    REQUIRE(after.size() == before.size());
+    CHECK(after.back() ==
+          ui8_pickup_selector::build_selection_stats_line(rock.volume() * 2, rock.weight() * 2));
+    CHECK(after.back() != before.back());
+}
+
+TEST_CASE("wield from the pickup menu removes the item from the pickup list and keeps the menu",
+          "[inventory][ui][p3]") {
+    pickup_menu_fixture f;
+    f.add_rows(3);
+    f.mark(f.items[0]);
+    REQUIRE(f.sel.get_marked_pickups().size() == 1);
+    REQUIRE(f.sel.select(f.items[0]));
+    REQUIRE(f.sel.item_after_in_active_column(*f.items[0]) == f.items[1]);
+
+    // the data path of wield/wear: the item and its mark leave the list, the highlight moves on
+    f.sel.remove_used_item(*f.items[0]);
+    CHECK(f.row_of(f.items[0]) == nullptr);
+    CHECK(f.sel.get_marked_pickups().empty());
+    REQUIRE(f.row_of(f.items[1]) != nullptr);
+    REQUIRE(f.row_of(f.items[2]) != nullptr);
+    CHECK(f.sel.get_selected().any_item() == f.items[1]);
+    CHECK_FALSE(f.sel.empty());
+}
+
+TEST_CASE("optimize_pickup result unchanged for the same marks", "[inventory][ui][p3]") {
+    pickup_menu_fixture f;
+    f.add_rows(3);
+    f.mark(f.items[0]);
+    f.mark(f.items[2]);
+
+    const std::vector<item*> targets{f.items[0], f.items[2]};
+    const std::vector<int> quantities{1, 1};
+    const auto expected = pickup::optimize_pickup(targets, quantities);
+    const auto got = f.sel.build_selection();
+    REQUIRE_FALSE(expected.empty());
+    REQUIRE(got.size() == expected.size());
+    for (size_t i = 0; i < got.size(); ++i) {
+        CHECK(got[i].quantity == expected[i].quantity);
+        CHECK(got[i].children.size() == expected[i].children.size());
+    }
+}

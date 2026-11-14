@@ -2024,7 +2024,7 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( play
     inventory_pickup_selector inv_s( p, preset );
 
     inv_s.set_title( _( "Multipickup" ) );
-    inv_s.set_hint( _( "To pickup x items, type a number before selecting." ) );
+    // P3-UI8: the hint is the selector's own (DDA pickup_selector).
 
     while( true ) {
         inv_s.clear_items();
@@ -2048,7 +2048,7 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player 
     inventory_pickup_selector inv_s( p, preset );
 
     inv_s.set_title( _( "Multipickup" ) );
-    inv_s.set_hint( _( "To pickup x items, type a number before selecting." ) );
+    // P3-UI8: the hint is the selector's own (DDA pickup_selector).
 
     while( true ) {
         inv_s.clear_items();
