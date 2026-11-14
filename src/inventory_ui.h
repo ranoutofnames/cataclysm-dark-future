@@ -984,7 +984,7 @@ class inventory_multiselector : public inventory_selector
         /// Per DDA inventory_multiselector::on_input (4774-4811), the mark actions only:
         /// TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, INCREASE_COUNT, DECREASE_COUNT,
         /// the number keys and VIEW_CATEGORY_MODE. Returns true when the input was used.
-        bool handle_mark_action( const inventory_input &input );
+        bool handle_mark_action( const std::string &action, int ch = 0 );
         /// Per DDA inventory_ui.cpp:4760-4772: the chosen counts survive the view switch.
         void toggle_categorize_contained();
         /// Whether an entry may be marked together with the container that holds it (DDA

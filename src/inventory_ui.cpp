@@ -3808,25 +3808,26 @@ void inventory_multiselector::toggle_entries( int &count, const toggle_mode mode
     end_mark_batch();
 }
 
-bool inventory_multiselector::handle_mark_action( const inventory_input &input )
+bool inventory_multiselector::handle_mark_action( const std::string &action, int ch )
 {
     int count = 0;
-    if( input.action == "TOGGLE_NON_FAVORITE" ) {
+    if( ch >= '0' && ch <= '9' ) {
+        // Checked first: UI0 also binds "1" to MARK_WITH_COUNT, and the digit must seed the prompt.
+        int query_result = query_count( ch - '0' );
+        if( query_result >= 0 ) {
+            toggle_entries( query_result, toggle_mode::SELECTED );
+        }
+    } else if( action == "TOGGLE_NON_FAVORITE" ) {
         toggle_entries( count, toggle_mode::NON_FAVORITE_NON_WORN );
-    } else if( input.action == "MARK_WITH_COUNT" ) {
+    } else if( action == "MARK_WITH_COUNT" ) {
         // Set count and mark selected with specific key
         int query_result = query_count();
         if( query_result >= 0 ) {
             toggle_entries( query_result, toggle_mode::SELECTED );
         }
-    } else if( input.ch >= '0' && input.ch <= '9' ) {
-        int query_result = query_count( input.ch - '0' );
-        if( query_result >= 0 ) {
-            toggle_entries( query_result, toggle_mode::SELECTED );
-        }
-    } else if( input.action == "TOGGLE_ENTRY" ) {
+    } else if( action == "TOGGLE_ENTRY" ) {
         toggle_entries( count, toggle_mode::SELECTED );
-    } else if( input.action == "INCREASE_COUNT" || input.action == "DECREASE_COUNT" ) {
+    } else if( action == "INCREASE_COUNT" || action == "DECREASE_COUNT" ) {
         if( !has_available_choices() ) {
             return true;
         }
@@ -3834,12 +3835,12 @@ bool inventory_multiselector::handle_mark_action( const inventory_input &input )
         if( entry.is_item() && entry.is_selectable() ) {
             const size_t chosen = entry.chosen_count;
             const size_t max = entry.get_available_count();
-            const size_t newcount = input.action == "INCREASE_COUNT"
+            const size_t newcount = action == "INCREASE_COUNT"
                                     ? chosen < max ? chosen + 1 : max
                                     : chosen > 1 ? chosen - 1 : 0;
             toggle_entry( entry, newcount );
         }
-    } else if( input.action == "VIEW_CATEGORY_MODE" ) {
+    } else if( action == "VIEW_CATEGORY_MODE" ) {
         toggle_categorize_contained();
     } else {
         return false;
@@ -3976,7 +3977,7 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
             select( input.entry->any_item() );
             set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
             end_mark_batch();
-        } else if( handle_mark_action( input ) ) {
+        } else if( handle_mark_action( input.action, input.ch ) ) {
             // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             if( to_use.empty() ) {
@@ -4100,7 +4101,7 @@ drop_locations inventory_drop_selector::execute()
             select( input.entry->any_item() );
             set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
             end_mark_batch();
-        } else if( handle_mark_action( input ) ) {
+        } else if( handle_mark_action( input.action, input.ch ) ) {
             // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             if( dropping.empty() ) {
@@ -4212,7 +4213,7 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
                 set_chosen_count( *input.entry, max_chosen_count );
                 end_mark_batch();
             }
-        } else if( handle_mark_action( input ) ) {
+        } else if( handle_mark_action( input.action, input.ch ) ) {
             // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
             std::vector<pickup::pick_drop_selection> result;
