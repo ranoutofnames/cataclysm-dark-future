@@ -11473,7 +11473,10 @@ void game::drop()
 void game::insert_item()
 {
     item *container = inv_map_splice( [this]( const item & it ) {
-        return it.is_container() && !it.is_corpse() && examine_item_menu::rate_action_insert( u, it ) == examine_item_menu::hint_rating::good;
+        // CDF: IC1/G11. DDA's item::is_container() is "has a container pocket", so a worn belt,
+        // pouch or holster (carry pocket) can be filled; CDF's item::is_container() skips carry
+        // pockets.
+        return it.has_pocket_type( pocket_type::CONTAINER ) && !it.is_corpse() && examine_item_menu::rate_action_insert( u, it ) == examine_item_menu::hint_rating::good;
     }, _( "Insert item" ), 1, _( "You have no container to insert items." ) );
 
     if( container == nullptr ) {
