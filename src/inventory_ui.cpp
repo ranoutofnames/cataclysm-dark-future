@@ -8,6 +8,7 @@
 #include "debug.h"
 #include "detached_ptr.h"
 #include "drop_preview.h"
+#include "enum_conversions.h"
 #include "flag.h"
 #include "avatar_action.h"
 #include "game.h"
@@ -122,6 +123,23 @@ struct container_data {
     }
 };
 } // namespace
+
+namespace io
+{
+// Per DDA inventory_ui.cpp:332-342: the footer's view-mode wording, with DDA's translation context.
+template<>
+std::string enum_to_string<inventory_selector::uimode>( inventory_selector::uimode mode )
+{
+    switch( mode ) {
+        case inventory_selector::uimode::hierarchy:
+            return pgettext( "inventory ui mode", "hierarchy" );
+        case inventory_selector::uimode::last:
+        case inventory_selector::uimode::categories:
+            break;
+    }
+    return pgettext( "inventory ui mode", "categories" );
+}
+} // namespace io
 
 constexpr int max_chosen_count = std::numeric_limits<int>::max();
 
@@ -1532,8 +1550,8 @@ selection_column::selection_column( const std::string &id, const std::string &na
     inventory_column( selection_preset ),
     selected_cat( id, no_translation( name ), 0 )
 {
-    // The selection column lists what the player marked; it never hides entries.
-    hide_entries_override = std::nullopt;
+    // Per DDA inventory_ui.cpp:1877: the selection column always shows every marked entry.
+    hide_entries_override = { false };
 }
 
 selection_column::~selection_column() = default;
@@ -1558,9 +1576,10 @@ void selection_column::reset_width( const std::vector<inventory_column *> &all_c
     }
 }
 
-void selection_column::prepare_paging( const std::string &filter )
+void selection_column::prepare_paging( const std::string & )
 {
-    inventory_column::prepare_paging( filter );
+    // Per DDA inventory_ui.cpp:1897-1900: always show all selected items, filter or not.
+    inventory_column::prepare_paging( std::string() );
 
     if( entries.empty() ) { // Category must always persist
         entries.emplace_back( &*selected_cat );
@@ -2003,7 +2022,8 @@ void inventory_selector::add_fake_items( Character &character )
 
 void inventory_selector::enable_view_mode_toggle()
 {
-    view_toggle_enabled = true;
+    // The footer label is always drawn (DDA inventory_ui.cpp:3416-3418); this only opts the
+    // selector into the key.
     ctxt.register_action( "VIEW_CATEGORY_MODE", to_translation( "Switch view mode" ) );
 }
 
@@ -2303,14 +2323,25 @@ void inventory_selector::prepare_layout( size_t client_width, size_t client_heig
         visible_columns.front()->set_width( client_width, columns );
     }
 
-    int custom_invlet = '0';
     for( auto &elem : columns ) {
         elem->prepare_paging();
-        custom_invlet = elem->reassign_custom_invlets( u, custom_invlet, '9' );
     }
-    assign_invlet_hints();
+    reassign_invlets();
 
     refresh_active_column();
+}
+
+void inventory_selector::reassign_invlets()
+{
+    // Per DDA inventory_ui.cpp:2565: number keys move the cursor while numpad navigation is on,
+    // so map items get no numeric invlets then.
+    const bool use_num_invlet = !uistate.numpad_navigation;
+    int custom_invlet = use_num_invlet ? '0' : '\0';
+    for( auto &elem : columns ) {
+        custom_invlet = elem->reassign_custom_invlets( u, custom_invlet,
+                        use_num_invlet ? '9' : '\0' );
+    }
+    assign_invlet_hints();
 }
 
 void inventory_selector::prepare_layout()
@@ -2415,19 +2446,37 @@ size_t inventory_selector::get_footer_min_width() const
     return result;
 }
 
+std::string inventory_selector::header_numpad_text() const
+{
+    // Per DDA inventory_ui.cpp:2716-2718.
+    return uistate.numpad_navigation ? _( "Numpad ON" ) : std::string();
+}
+
+std::string inventory_selector::view_mode_footer_text() const
+{
+    // Per DDA inventory_ui.cpp:3416-3418.
+    return string_format( "< [%s] %s >", ctxt.get_desc( "VIEW_CATEGORY_MODE" ),
+                          _( io::enum_to_string( _uimode ) ) );
+}
+
 void inventory_selector::draw_header( const catacurses::window &w ) const
 {
     trim_and_print( w, point( border + 1, border ), getmaxx( w ) - 2 * ( border + 1 ), c_white, title );
     fold_and_print( w, point( border + 1, border + 1 ), getmaxx( w ) - 2 * ( border + 1 ), c_dark_gray,
                     hint );
 
-    mvwhline( w, point( border, border + get_header_height() ), LINE_OXOX, getmaxx( w ) - 2 * border );
+    const int bottom = border + get_header_height();
+    mvwhline( w, point( border, bottom ), LINE_OXOX, getmaxx( w ) - 2 * border );
 
     if( display_stats ) {
         size_t y = border;
         for( const std::string &elem : get_stats() ) {
             right_print( w, y++, border + 1, c_dark_gray, elem );
         }
+    }
+    const std::string numpad = header_numpad_text();
+    if( !numpad.empty() ) {
+        right_print( w, bottom, border + 1, c_dark_gray, numpad );
     }
 }
 
@@ -3166,12 +3215,8 @@ void inventory_selector::draw_footer( const catacurses::window &w ) const
             wprintz( w, c_light_gray, " >" );
         }
 
-        if( view_toggle_enabled ) {
-            // Per DDA inventory_ui.cpp:3416
-            right_print( w, getmaxy( w ) - border, border + 1, c_light_gray,
-                         string_format( "< [%s] %s >", ctxt.get_desc( "VIEW_CATEGORY_MODE" ),
-                                        _uimode == uimode::hierarchy ? _( "hierarchy" ) : _( "categories" ) ) );
-        }
+        // Per DDA inventory_ui.cpp:3416-3418: drawn in every selector.
+        right_print( w, getmaxy( w ) - border, border + 1, c_light_gray, view_mode_footer_text() );
         const auto footer = get_footer( mode );
         if( !footer.first.empty() ) {
             const int string_width = utf8_width( footer.first );
@@ -3211,6 +3256,9 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "CONFIRM", to_translation( "Confirm your selection" ) );
     ctxt.register_action( "QUIT", to_translation( "Cancel" ) );
     ctxt.register_action( "CATEGORY_SELECTION", to_translation( "Switch category selection mode" ) );
+    // Per DDA inventory_ui.cpp:3472. The keybinding row arrives with FM7; without it the action
+    // has no default key.
+    ctxt.register_action( "TOGGLE_NUMPAD_NAVIGATION" );
     ctxt.register_action( "TOGGLE_FAVORITE", to_translation( "Toggle favorite" ) );
     ctxt.register_action( "HOME", to_translation( "Home" ) );
     ctxt.register_action( "END", to_translation( "End" ) );
@@ -3431,6 +3479,11 @@ void inventory_selector::ignore_hide_override()
 {
     hide_override_ignored = true;
     for( inventory_column *col : columns ) {
+        // Per DDA inventory_ui.cpp:1877: the selection column always shows its entries, so it
+        // keeps its { false } override.
+        if( dynamic_cast<selection_column *>( col ) != nullptr ) {
+            continue;
+        }
         col->hide_entries_override = std::nullopt;
         col->invalidate_paging();
     }
@@ -3495,6 +3548,10 @@ void inventory_selector::on_input( const inventory_input &input )
 {
     if( input.action == "CATEGORY_SELECTION" ) {
         toggle_navigation_mode();
+    } else if( input.action == "TOGGLE_NUMPAD_NAVIGATION" ) {
+        // Per DDA inventory_ui.cpp:3642-3644.
+        uistate.numpad_navigation = !uistate.numpad_navigation;
+        reassign_invlets();
     } else if( handle_column_action( input.action ) ) {
         // moved the active column
     } else if( input.action == "INVENTORY_FILTER" ) {
@@ -3903,46 +3960,76 @@ void inventory_multiselector::rearrange_columns( size_t client_width )
     selection_col->set_visibility( !is_overflown( client_width ) );
 }
 
-int inventory_multiselector::query_count( size_t count )
+std::function<std::optional<std::string>( const std::string & )>
+inventory_multiselector::query_count_test_hook;
+std::function<void( const std::string & )> inventory_multiselector::query_count_error_test_hook;
+
+int inventory_multiselector::query_count( char init, bool /*end_with_toggle*/ )
 {
+    // Per DDA inventory_ui.cpp:3305-3323: the prompt starts with the typed digit, otherwise empty.
+    const std::string init_str = init != 0 ? std::string( 1, init ) : std::string();
     std::string count_str;
-    if( count == 0 ) {
-        count_str = "";
-    } else {
-        count_str = std::to_string( count );
-    }
+    bool confirmed = false;
 
-    spopup = std::make_unique<string_input_popup>();
-    spopup->max_length( 256 ).identifier( "inventory" )
-    .text( count_str );
-
-    shared_ptr_fast<ui_adaptor> current_ui = ui.lock();
-    if( current_ui ) {
-        current_ui->mark_resize();
-    }
-
-    do {
-        ui_manager::redraw();
-        spopup->query_string( /*loop=*/false );
-    } while( !spopup->confirmed() && !spopup->canceled() );
-
-    int result = -1;
-    if( spopup->confirmed() ) {
-        count_str = spopup->text();
-        try {
-            result = static_cast<int>( std::min<unsigned long long>( std::stoull( count_str ),
-                                       static_cast<unsigned long long>( INT_MAX ) ) );
-        } catch( const std::exception &e ) {
-            result = 0;
+    if( query_count_test_hook ) {
+        const std::optional<std::string> entered = query_count_test_hook( init_str );
+        confirmed = entered.has_value();
+        if( confirmed ) {
+            count_str = *entered;
         }
+    } else {
+        spopup = std::make_unique<string_input_popup>();
+        spopup->max_length( 256 ).identifier( "inventory" ).text( init_str );
+
+        // CDF: DDA also confirms the prompt on the TOGGLE_ENTRY key (3261-3275). CDF's
+        // string_input_popup has no public confirm()/add_callback, so only Enter confirms here;
+        // see the report for the files a full port would need.
+        shared_ptr_fast<ui_adaptor> current_ui = ui.lock();
+        if( current_ui ) {
+            current_ui->mark_resize();
+        }
+
+        do {
+            ui_manager::redraw();
+            spopup->query_string( /*loop=*/false );
+        } while( !spopup->confirmed() && !spopup->canceled() );
+
+        confirmed = spopup->confirmed();
+        if( confirmed ) {
+            count_str = spopup->text();
+        }
+        spopup.reset();
 
         if( current_ui ) {
             current_ui->mark_resize();
         }
     }
 
-    spopup.reset();
+    int result = -1;
+    if( confirmed ) {
+        try {
+            result = std::stoi( count_str );
+        } catch( const std::invalid_argument & ) {
+            // Per DDA inventory_ui.cpp:3315: tell the player instead of silently marking nothing.
+            if( query_count_error_test_hook ) {
+                query_count_error_test_hook( _( "That is not an integer." ) );
+            } else {
+                popup( _( "That is not an integer." ) );
+            }
+            result = -1;
+        } catch( const std::out_of_range & ) {
+            result = INT_MAX;
+        }
+    }
+
     return result;
+}
+
+inventory_selector::header_stats inventory_multiselector::get_raw_stats() const
+{
+    // Per DDA inventory_ui.cpp:4669-4675: without a stats callback the multiselector shows no
+    // stats bar (compare and haul menus).
+    return {};
 }
 
 void inventory_multiselector::set_chosen_count( inventory_entry &entry, size_t count )
@@ -4134,9 +4221,10 @@ bool inventory_multiselector::is_count_digit( int ch )
 bool inventory_multiselector::handle_mark_action( const std::string &action, int ch )
 {
     int count = 0;
-    if( is_count_digit( ch ) ) {
+    if( !uistate.numpad_navigation && is_count_digit( ch ) ) {
         // Checked first: UI0 also binds "1" to MARK_WITH_COUNT, and the digit must seed the prompt.
-        int query_result = query_count( ch - '0' );
+        // Per DDA inventory_ui.cpp:4788-4790: with numpad navigation on the digits move the cursor.
+        int query_result = query_count( static_cast<char>( ch ), true );
         if( query_result >= 0 ) {
             toggle_entries( query_result, toggle_mode::SELECTED );
         }
@@ -4296,7 +4384,7 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( is_count_digit( input.ch ) ) {
+        if( !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
             // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
@@ -4367,7 +4455,8 @@ inventory_selector::header_stats inventory_iuse_selector::get_raw_stats() const
         }
         return convert_stats_to_header_stats( get_stats( tmp ) );
     }
-    return convert_stats_to_header_stats( stats{{ stat{{ "", "", "", "" }}, stat{{ "", "", "", "" }} }} );
+    // Per DDA inventory_ui.cpp:4669-4675: no callback, no stats rows (header height 1).
+    return {};
 }
 
 inventory_drop_selector::inventory_drop_selector( player &p,
@@ -4552,7 +4641,7 @@ drop_locations inventory_drop_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( is_count_digit( input.ch ) ) {
+        if( !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
             // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
@@ -4645,11 +4734,35 @@ void inventory_drop_selector::set_chosen_count( inventory_entry &entry, size_t c
 
 inventory_selector::header_stats inventory_drop_selector::get_raw_stats() const
 {
-    return convert_stats_to_header_stats( get_weight_and_volume_stats(
+    // Per DDA inventory_ui.cpp:4917-4939: the carried pocket summary and the Selected line.
+    // CDF: Q3 keeps the predicted-drop Weight/Volume numbers as extra lines under the summary.
+    header_stats stats = inventory_selector::get_raw_stats();
+
+    header_stats predicted = convert_stats_to_header_stats( get_weight_and_volume_stats(
             u.weight_carried_reduced_by( predicted_counts ),
             u.weight_capacity(),
             u.volume_carried_reduced_by( predicted_counts ),
             u.volume_capacity_reduced_by( 0_ml, predicted_counts ) ) );
+    stats.insert( stats.end(), predicted.begin(), predicted.end() );
+
+    units::mass weight = 0_gram;
+    units::volume volume = 0_ml;
+    // sum the marked items; a marked item and its ancestor are never both marked (deselect_contained_items)
+    for( const std::pair<const item *const, int> &drop_pair : dropping ) {
+        const item *marked = drop_pair.first;
+        const int count = drop_pair.second;
+        if( marked->count_by_charges() ) {
+            detached_ptr<item> copy = item::spawn( *marked );
+            copy->charges = count;
+            weight += copy->weight();
+            volume += copy->volume();
+        } else {
+            weight += marked->weight() * count;
+            volume += marked->volume() * count;
+        }
+    }
+    stats.push_back( build_selection_stats_line( volume, weight ) );
+    return stats;
 }
 
 inventory_pickup_selector::inventory_pickup_selector( player &p,
@@ -4664,29 +4777,16 @@ inventory_pickup_selector::inventory_pickup_selector( player &p,
     ctxt.allow_text_entry = true;
 #endif
 
-    // B-L1 fix: an action with no bound key (SHOW_HIDE_CONTENTS_ALL has none by default) is left
-    // out of the first line instead of reading "Unbound globally!".
-    const auto is_bound = [this]( const std::string & action ) {
-        return !inp_mngr.get_input_for_action( action, "INVENTORY" ).empty();
-    };
-    std::string actions_line;
-    const auto add_hint = [&]( const std::string & action, const std::string & text ) {
-        if( is_bound( action ) ) {
-            if( !actions_line.empty() ) {
-                actions_line += "  ";
-            }
-            actions_line += string_format( text, ctxt.get_desc( action ) );
-        }
-    };
-    add_hint( "WIELD", _( "<color_yellow>%s</color> Wield" ) );
-    add_hint( "WEAR", _( "<color_yellow>%s</color> Wear" ) );
-    add_hint( "SHOW_HIDE_CONTENTS", _( "<color_yellow>%s</color> Expand" ) );
-    add_hint( "SHOW_HIDE_CONTENTS_ALL", _( "<color_yellow>%s</color> All" ) );
-    add_hint( "EXAMINE", _( "<color_yellow>%s</color> Examine" ) );
+    // Per DDA inventory_ui.cpp:5004-5015: a fixed five-item line. An action with no bound key
+    // (SHOW_HIDE_CONTENTS_ALL) prints whatever get_desc returns for it.
     set_hint( string_format(
-                  _( "%s\n"
+                  _( "<color_yellow>%s</color> Wield  <color_yellow>%s</color> Wear  <color_yellow>%s</color> Expand  <color_yellow>%s</color> All  <color_yellow>%s</color> Examine\n"
                      "Quantity: <color_yellow>%s</color> to mark selected  <color_yellow>%s</color>/<color_yellow>%s</color> to offset  type number then <color_yellow>%s</color> to set" ),
-                  actions_line,
+                  ctxt.get_desc( "WIELD" ),
+                  ctxt.get_desc( "WEAR" ),
+                  ctxt.get_desc( "SHOW_HIDE_CONTENTS" ),
+                  ctxt.get_desc( "SHOW_HIDE_CONTENTS_ALL" ),
+                  ctxt.get_desc( "EXAMINE" ),
                   ctxt.get_desc( "MARK_WITH_COUNT" ),
                   ctxt.get_desc( "INCREASE_COUNT" ),
                   ctxt.get_desc( "DECREASE_COUNT" ),
@@ -4820,7 +4920,7 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
 
         const inventory_input input = get_input();
 
-        if( is_count_digit( input.ch ) ) {
+        if( !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
             // A-L1 fix: a digit opens the count prompt even when a row has that digit as invlet.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {

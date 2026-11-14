@@ -18,7 +18,8 @@ Screens that use the selector: inventory, drop (multidrop), item use, wield, wea
 | `DECREASE_COUNT` | `-` | Decrease the selected amount for the highlighted item. |
 | `TOGGLE_NON_FAVORITE` | `,` | Select or unselect all non-favorite items (multidrop). |
 | `CATEGORY_SELECTION` | `t` | Toggle category selection mode. |
-| `VIEW_CATEGORY_MODE` | `;` | Toggle the inventory view to show item categories (CDF only). |
+| `VIEW_CATEGORY_MODE` | `;` | Toggle the view between categories and the container hierarchy. |
+| `TOGGLE_NUMPAD_NAVIGATION` | none yet | Turn number-row navigation on or off. The keybinding row arrives with the saved UI state work, so it has no default key for now. |
 | `SHOW_HIDE_CONTENTS` | `>` | Show or hide the contents of the highlighted container. |
 | `SHOW_HIDE_CONTENTS_ALL` | none | Show or hide the contents of all containers. |
 | `TOGGLE_SKIP_UNSELECTABLE` | none | Toggle skipping items that cannot be selected. |
@@ -107,13 +108,24 @@ These behaviours belong to the item selector (the `INVENTORY` context). They fol
 These behaviours belong to the screens where you mark several items: drop, pickup and item use. They follow Cataclysm: Dark Days Ahead (DDA).
 
 - **Mark or unmark** (`TOGGLE_ENTRY`, default `l`, Right arrow) marks the highlighted item, or all of it if you pressed it on a stack. Pressing it again unmarks. If every unmarked item in the selection is a favorite, favorites are marked only when nothing else is left to mark.
-- **Mark a specific amount** (`MARK_WITH_COUNT`, default `!`) asks for a number and marks that many of the highlighted stack. A number key does the same with the typed digit already filled in. Entering 0 toggles the mark as `TOGGLE_ENTRY` does. In item use the number keys now open the same prompt (they used to build up a count that the mark key then used).
+- **Mark a specific amount** (`MARK_WITH_COUNT`, default `!`) asks for a number and marks that many of the highlighted stack. The prompt starts empty; a number key does the same with the typed digit already filled in. Entering 0 toggles the mark as `TOGGLE_ENTRY` does. Text that is not an integer is refused with "That is not an integer." and marks nothing. In item use the number keys now open the same prompt (they used to build up a count that the mark key then used).
 - **Mark or unmark all non-favorite items** (`TOGGLE_NON_FAVORITE`, default `,`) marks every non-favorite item in the active column that you are not wearing. Pressing it again clears them.
 - **Increase or decrease the amount** (`INCREASE_COUNT`, `DECREASE_COUNT`) changes the marked amount of the highlighted stack by one. It never goes below 0 or above the size of the stack.
 - **Containers**: marking a container covers what is inside it, at any depth. When you mark a container, any marked item inside it is unmarked, and marking an item inside an already marked container has no effect. Unmarking the container does not bring the contents back. Other items next to the container stay marked.
 - **Drop preview**: the "will be dropped" list and counts of the drop screen are refreshed right after every mark, including the unmarking of contained items. This preview is CDF's own and DDA has no equivalent.
 - **Previous and next column** use `PREV_COLUMN` and `NEXT_COLUMN` here as everywhere else. The old `LEFT` and `RIGHT` actions are no longer used on these screens.
 - Switching between the category and container view keeps your marks.
+
+## Header, footer and stats bars
+
+These behaviours belong to the item selector and follow Cataclysm: Dark Days Ahead (DDA).
+
+- **Footer view mode**: every selector draws the `< [key] categories >` line (or `< [key] hierarchy >` in the container view) at the bottom right, whether or not that screen registered the switch key. The words come from DDA's "inventory ui mode" translation context.
+- **Numpad marker**: while number-row navigation is on, the header's bottom separator shows "Numpad ON", and the number keys move the cursor instead of opening the count prompt or selecting a numeric invlet.
+- **Drop header**: the drop screen shows the carried pocket summary (Bulk Volume, Total Weight, Largest Space, Longest Space, Other), then CDF's predicted-drop Weight and Volume lines, then a "Selected" line with the volume and weight of what is marked. The predicted lines are CDF-only and stay because they show the result of the drop.
+- **Compare header**: the compare screen has no stats bar at all, like DDA's compare menu. The same holds for any multi-select screen built without a stats callback.
+- **Item-use header**: with no stats callback the item-use screen reserves a single empty header row, not two.
+- **Selection column**: the marked-item column on the right always lists every marked item. Typing a filter does not hide marked items, and neither the filter nor the "hide all contents" override can remove them from that column.
 
 ## Examining contents and the insert header
 
@@ -138,7 +150,7 @@ The drag start uses the new key name `MOUSE_LEFT_PRESSED` (action `CLICK_AND_DRA
 
 The multipickup menu (pick up from your tile or from the tiles around you) now behaves like the item menus of Cataclysm: DDA. It still hands the same pickup list to the game, so what is picked up, the carry checks and the messages are unchanged.
 
-- **Hint line**: the top of the menu lists the keys for wield, wear, expand, expand all, examine, mark with a count, raise or lower the count and "type a number then mark". The keys shown are your own bindings.
+- **Hint line**: the top of the menu always lists the five actions wield, wear, expand, expand all and examine, then the keys for mark with a count, raise or lower the count and "type a number then mark". The keys shown are your own bindings; an action with no bound key prints the context's unbound text (for example "Unbound locally!" for expand all).
 - **Contents**: a container lying on the ground can be expanded, and its contents are marked like other items. Marking a container covers what is inside it.
 - **Nothing marked**: confirming with no item marked is refused with a popup that names the mark key.
 - **Header**: the usual carried volume and weight line is followed by a "Selected" line with the volume and weight of what you have marked (a partly marked stack counts only the part you marked).

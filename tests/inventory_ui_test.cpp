@@ -889,6 +889,9 @@ struct ui2_drop_selector : inventory_drop_selector {
     using inventory_drop_selector::inventory_drop_selector;
     using inventory_drop_selector::update_drop_preview;
     using inventory_drop_selector::get_drop_preview;
+    using inventory_drop_selector::get_raw_stats;
+    using inventory_drop_selector::view_mode_footer_text;
+    using inventory_drop_selector::get_selection_column_items;
 };
 
 auto entry_for(const inventory_selector& sel, const item* it) -> inventory_entry* {
@@ -1376,17 +1379,8 @@ TEST_CASE("pickup hint names the DDA action keys", "[inventory][ui][p3]") {
                                "TOGGLE_ENTRY"}) {
         CAPTURE(action);
         const std::string cell = "<color_yellow>" + f.sel.ctxt.get_desc(action) + "</color>";
-        // B-L1: the first-line hints of an action with no bound key are left out (no "Unbound" cell).
-        const bool bound = !inp_mngr.get_input_for_action(action, "INVENTORY").empty();
-        const bool first_line_item = std::string(action) != "MARK_WITH_COUNT" &&
-                                     std::string(action) != "INCREASE_COUNT" &&
-                                     std::string(action) != "DECREASE_COUNT" &&
-                                     std::string(action) != "TOGGLE_ENTRY";
-        if (bound || !first_line_item) {
-            CHECK(hint.find(cell) != std::string::npos);
-        } else {
-            CHECK(hint.find(cell) == std::string::npos);
-        }
+        // FM4: DDA prints the fixed five-action line, including an unbound action ("Unbound").
+        CHECK(hint.find(cell) != std::string::npos);
     }
 }
 
@@ -1937,4 +1931,256 @@ TEST_CASE("first layout highlights the first selectable row", "[inventory][ui][f
 
     REQUIRE(sel.get_selected().is_item());
     CHECK(sel.get_selected().any_item() == f.pack);
+}
+
+// PL-63 FM4: header, footer, stats bars, count prompt and selection column
+// (DDA inventory_ui.cpp:2663-2719, 3305-3323, 3416-3418, 4669-4675, 4917-4939, 1897-1900).
+namespace {
+auto header_stats_to_lines(const inventory_selector::header_stats& stats)
+    -> std::vector<std::string> {
+    std::vector<std::string> lines;
+    for (const inventory_selector::header_stats_line& line : stats) {
+        std::string joined;
+        for (const std::string& cell : line) {
+            joined += cell;
+        }
+        lines.push_back(joined);
+    }
+    return lines;
+}
+
+auto any_line_has(const std::vector<std::string>& lines, const std::string& text) -> bool {
+    return std::any_of(lines.begin(), lines.end(),
+                       [&text](const std::string& line) { return line.find(text) != std::string::npos; });
+}
+
+struct numpad_state_guard {
+    bool saved = uistate.numpad_navigation;
+    ~numpad_state_guard() { uistate.numpad_navigation = saved; }
+};
+
+struct count_hook_guard {
+    ~count_hook_guard() {
+        inventory_multiselector::query_count_test_hook = nullptr;
+        inventory_multiselector::query_count_error_test_hook = nullptr;
+    }
+};
+
+struct fm4_selector : inventory_selector {
+    using inventory_selector::inventory_selector;
+    using inventory_selector::view_mode_footer_text;
+    using inventory_selector::header_numpad_text;
+    using inventory_selector::reassign_invlets;
+    using inventory_selector::on_input;
+    using inventory_selector::ctxt;
+    void set_uimode(uimode mode) { _uimode = mode; }
+};
+
+struct fm4_pick_selector : inventory_pick_selector {
+    using inventory_pick_selector::inventory_pick_selector;
+    using inventory_pick_selector::view_mode_footer_text;
+    using inventory_pick_selector::ctxt;
+};
+
+struct fm4_multiselector : inventory_multiselector {
+    using inventory_multiselector::inventory_multiselector;
+    using inventory_multiselector::get_raw_stats;
+    using inventory_multiselector::query_count;
+    using inventory_multiselector::get_selection_column_items;
+};
+
+struct fm4_compare_selector : inventory_compare_selector {
+    using inventory_compare_selector::inventory_compare_selector;
+    using inventory_compare_selector::get_raw_stats;
+};
+
+struct fm4_iuse_selector : inventory_iuse_selector {
+    using inventory_iuse_selector::inventory_iuse_selector;
+    using inventory_iuse_selector::get_raw_stats;
+    using inventory_iuse_selector::view_mode_footer_text;
+    using inventory_selector::get_header_height;
+};
+} // namespace
+
+// T1
+TEST_CASE("footer shows the view-mode line in every selector", "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    fm4_selector base(f.u);
+    const std::string expected = string_format(
+        "< [%s] %s >", base.ctxt.get_desc("VIEW_CATEGORY_MODE"), _("categories"));
+    CHECK(base.view_mode_footer_text() == expected);
+    base.set_uimode(inventory_selector::uimode::hierarchy);
+    CHECK(base.view_mode_footer_text().find(_("hierarchy")) != std::string::npos);
+    CHECK(base.view_mode_footer_text().find(_("categories")) == std::string::npos);
+
+    fm4_pick_selector pick(f.u);
+    CHECK(pick.view_mode_footer_text().find(_("categories")) != std::string::npos);
+
+    fm4_iuse_selector iuse(f.u, "test");
+    CHECK(iuse.view_mode_footer_text().find(_("categories")) != std::string::npos);
+
+    ui2_drop_selector drop(f.u);
+    CHECK(drop.view_mode_footer_text().find(_("categories")) != std::string::npos);
+}
+
+// T2
+TEST_CASE("numpad marker appears only when the state is on", "[inventory][ui][fm]") {
+    numpad_state_guard guard;
+    carried_pack_fixture f;
+    fm4_selector sel(f.u);
+    uistate.numpad_navigation = false;
+    CHECK(sel.header_numpad_text().empty());
+
+    auto rock = item::spawn("rock");
+    sel.add_item(sel.map_column, rock.get());
+    sel.map_column.prepare_paging();
+    sel.reassign_invlets();
+    const inventory_entry* row = row_for(sel, rock.get());
+    REQUIRE(row != nullptr);
+    CHECK(row->get_invlet() == '0');
+
+    sel.on_input(inventory_input{"TOGGLE_NUMPAD_NAVIGATION", 0, nullptr});
+    CHECK(uistate.numpad_navigation);
+    CHECK(sel.header_numpad_text() == _("Numpad ON"));
+    CHECK(row->get_invlet() == 0);
+
+    sel.on_input(inventory_input{"TOGGLE_NUMPAD_NAVIGATION", 0, nullptr});
+    CHECK_FALSE(uistate.numpad_navigation);
+    CHECK(row->get_invlet() == '0');
+
+    count_hook_guard hook;
+    bool queried = false;
+    inventory_multiselector::query_count_test_hook =
+        [&queried](const std::string&) {
+        queried = true;
+        return std::optional<std::string>("1");
+    };
+    fm4_multiselector ms(f.u);
+    uistate.numpad_navigation = true;
+    CHECK_FALSE(ms.handle_mark_action("", '3'));
+    CHECK_FALSE(queried);
+    uistate.numpad_navigation = false;
+    ms.handle_mark_action("", '3');
+    CHECK(queried);
+}
+
+// T3
+TEST_CASE("compare and haul style multiselector has an empty stats list", "[inventory][ui][fm]") {
+    clear_avatar();
+    avatar& u = get_avatar();
+    fm4_compare_selector compare(u);
+    compare.add_character_items(u);
+    compare.own_inv_column.prepare_paging();
+    CHECK(compare.get_raw_stats().empty());
+
+    // The 3-argument multiselector without a stats callback (DDA's compare/haul shape).
+    fm4_multiselector plain(u);
+    CHECK(plain.get_raw_stats().empty());
+}
+
+// T4
+TEST_CASE("iuse selector header height is 1 without a callback", "[inventory][ui][fm]") {
+    clear_avatar();
+    fm4_iuse_selector sel(get_avatar(), "test");
+    CHECK(sel.get_raw_stats().empty());
+    CHECK(sel.get_header_height() == 1);
+}
+
+// T5
+TEST_CASE("drop selector stats list has the summary and a Selected line", "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    ui2_drop_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+
+    std::vector<std::string> lines = header_stats_to_lines(sel.get_raw_stats());
+    REQUIRE_FALSE(lines.empty());
+    CHECK(lines.front().find("Bulk Volume:") != std::string::npos);
+    CHECK(lines.front().find("Total Weight:") != std::string::npos);
+    CHECK(lines.back().find("Selected") != std::string::npos);
+    // the predicted-drop numbers stay as extra lines (QUESTIONS Q3)
+    CHECK(any_line_has(lines, "Weight ("));
+    CHECK(any_line_has(lines, "Volume ("));
+
+    const std::string empty_selection = lines.back();
+    press_toggle_entry(sel, f.blanket);
+    lines = header_stats_to_lines(sel.get_raw_stats());
+    REQUIRE_FALSE(lines.empty());
+    CHECK(lines.back().find("Selected") != std::string::npos);
+    CHECK(lines.back() != empty_selection);
+}
+
+// T6
+TEST_CASE("selection column keeps non-matching marked items when a filter is set",
+          "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    ui2_drop_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    press_toggle_entry(sel, f.box);
+    press_toggle_entry(sel, f.blanket);
+
+    sel.apply_filter("blanket");
+
+    bool has_box = false;
+    bool has_blanket = false;
+    for (const inventory_entry* entry : sel.get_selection_column_items()) {
+        has_box |= entry->any_item() == f.box;
+        has_blanket |= entry->any_item() == f.blanket;
+    }
+    CHECK(has_box);
+    CHECK(has_blanket);
+}
+
+// T7
+TEST_CASE("count prompt rejects text and starts empty", "[inventory][ui][fm]") {
+    clear_avatar();
+    fm4_multiselector sel(get_avatar(), default_preset);
+    count_hook_guard hook;
+    std::string initial = "unset";
+    inventory_multiselector::query_count_test_hook =
+        [&initial](const std::string& text) {
+        initial = text;
+        return std::optional<std::string>("5");
+    };
+
+    CHECK(sel.query_count() == 5);
+    CHECK(initial.empty());
+    CHECK(sel.query_count('7', true) == 5);
+    CHECK(initial == "7");
+
+    std::string error;
+    inventory_multiselector::query_count_test_hook =
+        [](const std::string&) {
+        return std::optional<std::string>("x");
+    };
+    inventory_multiselector::query_count_error_test_hook =
+        [&error](const std::string& text) {
+        error = text;
+    };
+    CHECK(sel.query_count() == -1);
+    CHECK(error == _("That is not an integer."));
+
+    inventory_multiselector::query_count_test_hook =
+        [](const std::string&) {
+        return std::optional<std::string>();
+    };
+    CHECK(sel.query_count() == -1);
+}
+
+// T8
+TEST_CASE("pickup hint lists the five actions", "[inventory][ui][fm]") {
+    pickup_menu_fixture f;
+    const std::string& hint = f.sel.get_hint();
+    for (const char* action : {"WIELD", "WEAR", "SHOW_HIDE_CONTENTS", "SHOW_HIDE_CONTENTS_ALL",
+                               "EXAMINE"}) {
+        CAPTURE(action);
+        const std::string cell = "<color_yellow>" + f.sel.ctxt.get_desc(action) + "</color>";
+        CHECK(hint.find(cell) != std::string::npos);
+    }
+    // An unbound action prints what the context prints for it (DDA's All entry). The action has
+    // an INVENTORY keybinding row with no keys, so get_desc reports it as unbound locally.
+    CHECK(f.sel.ctxt.get_desc("SHOW_HIDE_CONTENTS_ALL") == _("Unbound locally!"));
+    // The Quantity line stays.
+    CHECK(hint.find("Quantity:") != std::string::npos);
 }

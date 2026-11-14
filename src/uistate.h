@@ -107,6 +107,10 @@ class uistatedata
         // false: all contents shown.
         std::optional<bool> hide_entries_override = std::nullopt;
 
+        // Per DDA uistate.h:235: number-row navigation in the inventory selector.
+        // CDF: serialization arrives with the saved UI state work (FM7).
+        bool numpad_navigation = false;
+
         advanced_inv_save_state transfer_save;
 
         bool editmap_nsa_viewmode = false;      // true: ignore LOS and lighting

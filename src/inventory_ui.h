@@ -623,7 +623,7 @@ class inventory_selector
         void add_fake_items( Character &character );
         /** Per DDA inventory_ui.cpp:3821: switch between category columns and the container tree. */
         void toggle_categorize_contained();
-        /** Registers VIEW_CATEGORY_MODE and shows its footer label (opt-in per selector). */
+        /** Registers VIEW_CATEGORY_MODE for this selector. The footer label is always drawn. */
         void enable_view_mode_toggle();
 
         /** Per DDA inventory_ui.h:941: category columns (default) or the container hierarchy. */
@@ -786,6 +786,13 @@ class inventory_selector
                         const item_category *custom_category = nullptr );
 
         inventory_input get_input();
+
+        /** Per DDA inventory_ui.cpp:3416-3418: the "< [key] categories >" footer label. */
+        std::string view_mode_footer_text() const;
+        /** Per DDA inventory_ui.cpp:2716-2718: "Numpad ON" while number-row navigation is on. */
+        std::string header_numpad_text() const;
+        /** Per DDA inventory_ui.cpp:2565: numeric invlets are off while numpad navigation is on. */
+        void reassign_invlets();
 
         /** Given an action from the input_context, try to act according to it. */
         void on_input( const inventory_input &input );
@@ -980,7 +987,6 @@ class inventory_selector
 
         bool is_empty = true;
         bool display_stats = true;
-        bool view_toggle_enabled = false;
         int nearby_radius = -1;
         bool fake_items_added = false;
         // Per DDA inventory_ui.h:1007. Shared by all selectors; CDF default is on (old behaviour).
@@ -1098,6 +1104,13 @@ class inventory_multiselector : public inventory_selector
         bool handle_mark_action( const std::string &action, int ch = 0 );
         /// A-L1 fix: a digit key seeds the count prompt (checked before the invlet lookup).
         static bool is_count_digit( int ch );
+        /**
+         * Test hook: when set, query_count asks this for the entered text instead of opening the
+         * prompt. The argument is the text the prompt starts with; nullopt means cancelled.
+         */
+        static std::function<std::optional<std::string>( const std::string & )> query_count_test_hook;
+        /// Test hook: when set, the "not an integer" message goes here instead of the popup.
+        static std::function<void( const std::string & )> query_count_error_test_hook;
         /// Per DDA inventory_ui.cpp:4760-4772: the chosen counts survive the view switch.
         void toggle_categorize_contained();
         /// Whether an entry may be marked together with the container that holds it (DDA
@@ -1106,8 +1119,11 @@ class inventory_multiselector : public inventory_selector
 
     protected:
         void rearrange_columns( size_t client_width ) override;
-        /// @return the typed amount, or -1 when the prompt was cancelled
-        int query_count( size_t count = 0 );
+        /// Per DDA inventory_ui.cpp:3305-3323. @param init the digit the prompt starts with.
+        /// @return the typed amount, or -1 when the prompt was cancelled or the text is not an integer.
+        int query_count( char init = 0, bool end_with_toggle = false );
+        /// Per DDA inventory_ui.cpp:4669-4675: no callback, no stats bar.
+        header_stats get_raw_stats() const override;
         virtual void set_chosen_count( inventory_entry &entry, size_t count );
         /// Runs after every batch of marks, once the contained items are unmarked.
         virtual void on_toggle() {}
