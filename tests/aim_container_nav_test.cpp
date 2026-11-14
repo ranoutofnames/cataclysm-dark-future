@@ -190,8 +190,11 @@ TEST_CASE( "container pane free volume", "[advanced_inv][ui][p3]" )
 TEST_CASE( "container pane lists the contents of its container", "[advanced_inv][ui][p3]" )
 {
     clear_all_state();
-    detached_ptr<item> bag_owner = item::spawn( itype_id( "backpack" ) );
-    item *bag = &*bag_owner;
+    // the pane asks the container where it is (item::where), so it has to be carried
+    avatar &u = get_avatar();
+    clear_character( u, true );
+    item *bag = &u.i_add( item::spawn( itype_id( "backpack" ) ) );
+    REQUIRE( bag->is_loaded() );
     item *rock = put_in_container( *bag, "rock" );
     advanced_inv_area square_container( AIM_CONTAINER );
     advanced_inventory_pane pane;
@@ -221,10 +224,11 @@ TEST_CASE( "unload container selects the container's items for the unload activi
     item *bag = &*bag_owner;
     CHECK( advanced_inv_unload_targets( *bag ).empty() );
 
+    // two items of different types: a second rock would stack with the first and leave one item
     item *plain = put_in_container( *bag, "rock" );
-    item *kept = put_in_container( *bag, "rock" );
+    item *kept = put_in_container( *bag, "stick" );
     kept->set_favorite( true );
-    REQUIRE( plain != kept );
+    REQUIRE( bag->all_items_top( pocket_type::CONTAINER ).size() == 2 );
 
     const std::vector<item *> targets = advanced_inv_unload_targets( *bag );
     // favorites stay in the bag
@@ -293,10 +297,17 @@ TEST_CASE( "pane notices a destroyed container", "[advanced_inv][ui][p3]" )
     // no container is a valid state
     CHECK( pane.container_is_valid() );
 
+    // a safe_reference only resolves for an item that is somewhere in the world (a loose,
+    // detached item counts as unloaded), so the bag has to be carried
+    avatar &u = get_avatar();
+    clear_character( u, true );
+    item &bag = u.i_add( item::spawn( itype_id( "backpack" ) ) );
+    REQUIRE( bag.is_loaded() );
+    pane.enter_container( &bag, square_container );
+    CHECK( pane.container_is_valid() );
     {
-        detached_ptr<item> bag_owner = item::spawn( itype_id( "backpack" ) );
-        pane.enter_container( &*bag_owner, square_container );
-        CHECK( pane.container_is_valid() );
+        // the avatar loses the bag and the detached item is destroyed with the scope
+        detached_ptr<item> lost = bag.detach();
     }
     // the bag is gone: advanced_inventory::validate_pane_containers resets such a pane
     CHECK_FALSE( pane.container_is_valid() );
@@ -309,8 +320,12 @@ TEST_CASE( "pane container is restored only when the advanced inventory is re-en
            "[advanced_inv][ui][p3]" )
 {
     clear_all_state();
-    detached_ptr<item> bag_owner = item::spawn( itype_id( "backpack" ) );
-    item *bag = &*bag_owner;
+    // the remembered container is a safe_reference, which only resolves for an item that is
+    // somewhere in the world (a loose, detached item counts as unloaded): carry the bag
+    avatar &u = get_avatar();
+    clear_character( u, true );
+    item *bag = &u.i_add( item::spawn( itype_id( "backpack" ) ) );
+    REQUIRE( bag->is_loaded() );
     // the squares are only looked at for their ids and (empty) positions here
     const std::array<advanced_inv_area, NUM_AIM_LOCATIONS> squares = []<size_t... I>
     ( std::index_sequence<I...> ) {
