@@ -98,3 +98,108 @@ A gun can jam when it fires. This is CDF's damage-based model.
 | `TOGGLE_UNLOAD_RAS_WEAPON` | Keep or unload the bow etc after quitting | Aim screen | `-` |
 
 `reload_weapon`, `reload_wielded` and `unload_all` have no default key; bind them in the keybindings menu if you want them.
+
+## Carried bar
+
+The carried bar shows how much you carry as `used / max`. You see it in the sidebar, in the trade window, in the pickup header, in the advanced inventory header, and in the headers of the inventory and pickup selectors. The bar changes colour as you fill up: above 65% full, and again above 85%.
+
+Only carry pockets add to the maximum. A carry pocket is a container pocket that counts as storage. Carry pockets count in the items you wield, in the worn items and in body storage. Holsters and plates do not count.
+
+- The container pockets of a worn garment count as carry by default. A pocket can opt out with `"carry": false` in its data.
+- The Packmule mutation raises the carry pockets you wear. It does not raise body storage.
+
+When you trade with an NPC, the NPC's room is what the NPC can carry minus what the NPC already carries. The check looks only at the NPC. If a trade would take the NPC over its room, the trade is refused with "<name> can't carry all that.", where `<name>` is the NPC's name. Shopkeepers are set to 5000 litres and 5000 kg, so they do not run out of room in practice.
+
+## Pockets and storage
+
+- `i` opens "Inventory Organization", the pocket menu, from the inventory.
+- `v` on a container in the inventory opens that item's pocket menu, with the text "Modify pocket settings and move items between pockets."
+- Enter opens the action list for the item. It has these entries: move item, item, category, whitelist, blacklist, priority, auto pickup, auto unload, save, apply and delete preset, whitelist contents, and clear.
+- `*` marks an item as a favourite. `f` adds or removes the favourite mark on the highlighted item.
+- `,` marks or unmarks the non-favourite items in the multidrop menu.
+- `;` switches between the categories view and the hierarchy (tree) view. The footer shows `< [;] hierarchy >` or `< [;] categories >`. In hierarchy view, a container's contents are listed under it.
+
+If you put a magazine into a gun that has no pocket for it, the magazine stays in your hands. The put is only completed when it succeeds, so the magazine is not lost when it fails.
+
+## Item info and names
+
+The item info text uses these labels.
+
+- Magazine: `Capacity: ` followed by `<n> round of <ammo>` or `<n> rounds of <ammo>`, one for each ammo type. `Variants: ` lists the variants.
+- Gun: `Magazine: ` when one magazine is loaded, or `Magazines: ` with a count when there are several. For a gun that needs firing requirements, each well gets `Capacity: ` or `Capacity (<pocket name>): `. `Variants: ` appears only when the gun's magazine is not built in.
+- Ammo: `Ammunition: ` shows the ammo loaded in each well, or the ammo name when nothing is loaded. `Ammunition consumed per shot: ` appears when a shot uses more than one unit of ammo. A gun with a magazine that is not built in shows `Compatible magazines:` and a `Types:` list. Without a list of magazines, only the header shows.
+
+Names show the ammo for guns and magazines with more than one well. Each well shows `current/max ammo name`, and the wells are joined with `, `. The ammo name always shows in this form. The number is coloured by how full the well is:
+
+- empty: light red;
+- under one third: red;
+- under two thirds: yellow;
+- otherwise: light green;
+- full: white.
+
+For a gun or magazine with one well, the ammo name shows only when the option "Add ammo to weapon/magazine names" is on.
+
+The Wield line is described in [Aim screen](#aim-screen). A gun with neither a well nor a built-in magazine shows `(cur)`, with the current count and no maximum. The ammo text follows the item name.
+
+## Tools
+
+A tool with a magazine pocket keeps its charge in that pocket. You reload it on the ammo screen, the same way as a gun; see [Ammo screen](#ammo-screen). A battery tool starts with its charges loaded into that pocket.
+
+- A tool that uses charges shows its cost in the use menu as `(-N)`, where `N` is the number of charges the action takes.
+- A cash card keeps its money as loose charges. You cannot unload it or reload it.
+
+## Power
+
+Cables link power and towing between vehicles and the items around them. A cable has a loose end. Use the cable to attach that end to a target, such as a dashboard or electronics control unit, a vehicle battery, an electric grid connector, a tow cable on a towing vehicle, a Cable Charger System CBM, a UPS or a solar pack. You can extend another cable, remove the cable extensions, or detach a cable. Cables use the `link_up` item action.
+
+The menu entries are these exact texts:
+
+- "Attach to dashboard or electronics control unit"
+- "Attach to vehicle battery"
+- "Attach to electric grid connector"
+- "Attach tow cable to towing vehicle"
+- "Attach to Cable Charger System CBM"
+- "Attach to UPS"
+- "Attach to solar pack"
+- "Extend another cable" (for a cable), or "Extend with another cable" (for another item)
+- "Remove cable extensions"
+- "Detach"
+- "Attach loose end to Cable Charger System CBM"
+
+The game prints these messages:
+
+- "You attach the cable to your Cable Charger System."
+- "You attach the cable to the UPS."
+- "You attach the cable to the solar pack."
+- "You connect the %1$s to the %2$s."
+- "You extend the %1$s with the %2$s."
+- "You disconnect the %1$s from the %2$s."
+- "You reel in the %s and wind it up."
+
+The vehicle menu has two entries for taking cables off: "Disconnect power connections" and "Disconnect items and tow cables". No key is shown for either entry.
+
+Plutonium fuel is stored in packs. One fuel cell holds 500 charges. Unloading a pack gives back whole cells: the charges divided by 500 come out as cells, and any remainder is lost. A pack with less than one cell's worth gives back nothing.
+
+| Pack | Cells | Charges | Taken by |
+|---|---|---|---|
+| Small plutonium fuel pack | 2 | 1000 | holo cloak, dimensional anchor |
+| Medium plutonium fuel pack | 5 | 2500 | phase immersion suit |
+| Large plutonium fuel pack | 10 | 5000 | RM13 armor |
+| Reactor plutonium fuel pack | 20 | 10000 | minireactor (vehicle part) |
+
+No recipe, item group or shop yet supplies the small, medium or large packs. The reactor pack has a recipe.
+
+The minireactor vehicle part takes the reactor pack, and also the small and large packs. Load a fuel cell into a pack to refill it.
+
+## Turret rows
+
+On the vehicle screen, a turret with several ammo pockets shows one row for each pocket. The row gives the pocket name, the ammo and the count. A `[v] ` mark shows that the ammo comes from the vehicle's supply. A row is red when its pocket holds less than one shot.
+
+`Reload <turret>` (key `r`) appears when the turret can be reloaded. It opens the same ammo picker as a gun, and the reload runs as a gun reload does.
+
+When you aim a manual turret with several ammo pockets, each pocket gets one row:
+
+- `<pocket>: <ammo> (vehicle N, need M)` when the ammo comes from the vehicle;
+- `<pocket>: <ammo> (N, need M)` otherwise.
+
+`N` is the count in the pocket and `M` is the amount one shot needs. The row is red when `N` is below one shot. The rest of the aim screen is in the Aim section above.
