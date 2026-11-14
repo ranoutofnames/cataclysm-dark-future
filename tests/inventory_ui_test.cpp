@@ -1258,6 +1258,7 @@ struct ui8_pickup_selector : inventory_pickup_selector {
     using inventory_pickup_selector::build_selection_stats_line;
     using inventory_pickup_selector::get_raw_stats;
     using inventory_pickup_selector::ctxt;
+    using inventory_pickup_selector::add_entry;
 };
 
 struct pickup_menu_fixture {
@@ -1277,7 +1278,8 @@ struct pickup_menu_fixture {
         for (size_t i = 0; i < count; ++i) {
             owned.push_back(item::spawn("rock"));
             items.push_back(owned.back().get());
-            sel.map_column.add_entry(inventory_entry(std::vector<item*>{items.back()}));
+            // through the selector, like add_map_items does, so it knows it holds items
+            sel.add_item(sel.map_column, items.back());
         }
         sel.map_column.prepare_paging();
     }
@@ -1290,7 +1292,7 @@ struct pickup_menu_fixture {
             items.push_back(owned.back().get());
             stack.push_back(items.back());
         }
-        sel.map_column.add_entry(inventory_entry(stack));
+        sel.add_entry(sel.map_column, std::move(stack));
         sel.map_column.prepare_paging();
     }
 
