@@ -57,6 +57,7 @@
 #include "ui_manager.h"
 #include "units.h"
 #include "units_utility.h"
+#include "uistate.h"
 #include "value_ptr.h"
 
 #include <algorithm>
@@ -119,7 +120,8 @@ namespace
 class common_inventory_selector : public inventory_pick_selector
 {
     public:
-        explicit common_inventory_selector( player &p ) : inventory_pick_selector( p ) {
+        explicit common_inventory_selector( player &p ) :
+            inventory_pick_selector( p, common_preset() ) {
             ctxt.register_action( "unload_all",
                                   to_translation( "Unload every carried item that can be unloaded" ) );
             enable_view_mode_toggle();
@@ -141,8 +143,11 @@ class common_inventory_selector : public inventory_pick_selector
                 return true;
             }
             if( action == "VIEW_CATEGORY_MODE" ) {
+                // CDF: FM5b. DDA inventory_ui.cpp:3640 toggles in inventory_selector::on_input;
+                // CDF's on_input (inventory_ui.cpp:3426) has no such branch, so the toggle stays
+                // here and returns false: execute() (inventory_ui.cpp:3730) only closes on true.
                 toggle_categorize_contained();
-                return true;
+                return false;
             }
             if( action != "unload_all" ) {
                 return false;
@@ -152,7 +157,36 @@ class common_inventory_selector : public inventory_pick_selector
         }
 
     private:
+        // Per DDA game_inventory.cpp:270-271: the plain inventory menu remembers its view mode.
+        // DDA builds the preset in game_menus::inv::common() and the selector stores it by reference
+        // (inventory_ui.h:730), so this copy has to live as long as any selector; a local in the
+        // constructor would dangle.
+        static const inventory_selector_preset &common_preset() {
+            static const inventory_selector_preset preset = []() {
+                inventory_selector_preset p = default_preset;
+                p.save_state = &inventory_ui_default_state;
+                return p;
+            }();
+            return preset;
+        }
+
         bool unload_all_selected = false;
+};
+
+// CDF: FM5b, test hook. handle_action is protected and the class is file-local, so the test reaches
+// it through game_menus::inv::probe_common_selector_action below (precedent: plain_selector_probe in
+// tests/cdf_item_ui_p3_test.cpp).
+class common_selector_test_probe : public common_inventory_selector
+{
+    public:
+        using common_inventory_selector::common_inventory_selector;
+
+        auto probe( const std::string &action ) -> bool {
+            return handle_action( action );
+        }
+        auto in_category_mode() const -> bool {
+            return _uimode == uimode::categories;
+        }
 };
 
 std::string good_bad_none( int value )
@@ -177,6 +211,30 @@ int anesthetic_requirement( int mult )
 
 } // namespace
 
+// CDF: FM5b, test hook (precedent: FM5a take_off_none_message). Declared here and in
+// tests/game_inventory_pockets_test.cpp, not in game_inventory.h (a hook there would rebuild its
+// includers); keep the two signatures identical. closes mirrors inventory_pick_selector::execute()
+// (inventory_ui.cpp:3730): true when the action makes the selector return and close the screen.
+namespace game_menus
+{
+namespace inv
+{
+struct common_selector_action {
+    bool closes;
+    bool category_mode;
+};
+common_selector_action probe_common_selector_action( player &p, const std::string &action );
+} // namespace inv
+} // namespace game_menus
+
+game_menus::inv::common_selector_action game_menus::inv::probe_common_selector_action(
+    player &p, const std::string &action )
+{
+    common_selector_test_probe sel( p );
+    const bool closes = sel.probe( action );
+    return { closes, sel.in_category_mode() };
+}
+
 inventory_filter_preset::inventory_filter_preset( const item_filter &filter )
     : filter( filter )
 {}
@@ -190,13 +248,17 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
                            const std::string &title, int radius,
                            const std::string &none_message,
                            const std::string &hint = std::string(),
-                           bool include_fake_items = false )
+                           bool include_fake_items = false,
+                           bool using_consume_menu = false )
 {
     inventory_pick_selector inv_s( u, preset );
 
     inv_s.set_title( title );
     inv_s.set_hint( hint );
     inv_s.set_display_stats( false );
+
+    // Per DDA game_inventory.cpp:162: the consume menu's remembered filter.
+    const consume_menu_uistate &cm_uistate = uistate.consume_uistate;
 
     std::pair<size_t, size_t> init_pair;
     bool init_selection = false;
@@ -219,6 +281,10 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
     if( u.has_activity( consuming ) && !u.activity->str_values.empty() ) {
         init_filter = u.activity->str_values[0];
         has_init_filter = true;
+    } else if( using_consume_menu ) {
+        // Per DDA game_inventory.cpp:178-183: a new consume menu opens with the last filter.
+        init_filter = cm_uistate.consume_menu_filter;
+        has_init_filter = !init_filter.empty();
     }
     if( u.has_activity( consuming ) && u.activity->str_values.size() >= 2 &&
         !u.activity->str_values[1].empty() ) {
@@ -254,6 +320,10 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
                                     ? _( "You don't have the necessary item at hand." )
                                     : none_message;
             popup( msg, PF_GET_KEY );
+            if( using_consume_menu ) {
+                // Per DDA game_inventory.cpp:1109-1111: leaving without a choice forgets the filter.
+                uistate.consume_uistate.clear();
+            }
             return nullptr;
         }
 
@@ -273,6 +343,12 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
             u.activity->str_values.emplace_back( inv_s.get_filter() );
             u.activity->str_values.emplace_back( location != nullptr ? location->typeId().str() :
                                                  std::string() );
+        }
+        if( using_consume_menu ) {
+            // Per DDA game_inventory.cpp:210-225, :1109-1111: a choice stores the filter, a cancel
+            // forgets it.
+            uistate.consume_uistate.consume_menu_filter =
+                location != nullptr ? inv_s.get_filter() : std::string();
         }
 
         return location;
@@ -446,10 +522,27 @@ class take_off_inventory_preset: public armor_inventory_preset
         }
 };
 
+// CDF: FM5a, test hook (precedent: P3-5-3b reload_destination_labels). Declared here and in
+// tests/game_inventory_pockets_test.cpp, not in game_inventory.h (a hook there would rebuild its
+// includers); keep the two signatures identical. DDA game_inventory.cpp:487 has this text at the
+// take_off call, where popup() is a no-op in the test build; the test reads it through here.
+namespace game_menus
+{
+namespace inv
+{
+std::string take_off_none_message();
+} // namespace inv
+} // namespace game_menus
+
+std::string game_menus::inv::take_off_none_message()
+{
+    return _( "You're not wearing anything." );
+}
+
 item *game_menus::inv::take_off( avatar &you )
 {
     return inv_internal( you, take_off_inventory_preset( you, "color_red" ), _( "Take off item" ), 1,
-                         _( "You aren't wearing anything." ) );
+                         take_off_none_message() );
 }
 
 item *game::inv_map_splice( const item_filter &filter, const std::string &title, int radius,
@@ -544,6 +637,20 @@ item *game_menus::inv::disassemble( player &p )
     return inv_internal( p, disassemble_inventory_preset( p, p.crafting_inventory() ),
                          _( "Disassemble item" ), 1,
                          _( "You don't have any items you could disassemble." ) );
+}
+
+// CDF: FM5 amendment (G43). DDA's consume preset lists an item only when the item itself can be
+// consumed (DDA game_inventory.cpp:822), so a bottle is not listed next to the drink inside it.
+// DDA's frozen guard lives in Character::can_consume_as_is (DDA consumption.cpp:1890-1895); that
+// file is outside this packet's file lock, so the consume menu applies the same test here.
+// CDF: BN has no EDIBLE_FROZEN flag, so that DDA term is dropped.
+static bool consume_menu_accepts( const Character &p, const item &it )
+{
+    if( it.is_comestible() ) {
+        return !it.has_flag( flag_FROZEN ) || it.has_flag( flag_MELTS );
+    }
+    // CDF: BN's can_consume_as_is also covers bionic fuel (can_consume_for_bionic); DDA's does not.
+    return p.can_consume_as_is( it );
 }
 
 class comestible_inventory_preset : public inventory_selector_preset
@@ -649,10 +756,16 @@ class comestible_inventory_preset : public inventory_selector_preset
         }
 
         bool is_shown( const item *loc ) const override {
-            // If an item was inserted into a non-container, we can't eat it.
-            // For example, we couldn't eat an item mod made of meat
-            return p.can_consume( *loc ) &&
-                   ( loc->where() != item_location_type::container || loc->parent_item()->is_container() );
+            // CDF: FM5 amendment (G43), DDA game_inventory.cpp:822: a container is not listed just
+            // because its contents are edible, and frozen food is not listed at all.
+            // CDF: BN keeps its guard for items inserted into a non-container (for example, we
+            // couldn't eat an item mod made of meat); DDA has no equivalent. DDA's is_container()
+            // is "has a container pocket", so a belt, pouch or holster (carry pocket) counts there
+            // while CDF's item::is_container() skips carry pockets (IC1/G11).
+            return ( consume_menu_accepts( p, *loc ) &&
+                     ( loc->where() != item_location_type::container ||
+                       loc->parent_item()->has_pocket_type( pocket_type::CONTAINER ) ) ) ||
+                   loc->is_medical_tool();
         }
 
         std::string get_denial( const item *loc ) const override {
@@ -780,6 +893,22 @@ class comestible_inventory_preset : public inventory_selector_preset
         const player &p;
 };
 
+// CDF: FM5 amendment (G43), test hook (precedent: FM5a take_off_none_message). Declared here and in
+// tests/game_inventory_pockets_test.cpp, not in game_inventory.h (a hook there would rebuild its
+// includers); keep the two signatures identical. The consume preset is file-local.
+namespace game_menus
+{
+namespace inv
+{
+bool consume_preset_shows( player &p, const item &it );
+} // namespace inv
+} // namespace game_menus
+
+bool game_menus::inv::consume_preset_shows( player &p, const item &it )
+{
+    return comestible_inventory_preset( p ).is_shown( &it );
+}
+
 static std::string get_consume_needs_hint( player &p )
 {
     auto hint = std::string();
@@ -806,7 +935,7 @@ item *game_menus::inv::consume( player &p )
     return inv_internal( p, comestible_inventory_preset( p ),
                          _( "Consume item" ), 1,
                          _( "You have nothing to consume." ),
-                         get_consume_needs_hint( p ) );
+                         get_consume_needs_hint( p ), false, true );
 }
 
 class comestible_filtered_inventory_preset : public comestible_inventory_preset
@@ -836,7 +965,7 @@ item *game_menus::inv::consume_food( player &p )
     } ),
     _( "Consume food" ), 1,
     _( "You have no food to consume." ),
-    get_consume_needs_hint( p ) );
+    get_consume_needs_hint( p ), false, true );
 }
 
 item *game_menus::inv::consume_drink( player &p )
@@ -851,7 +980,22 @@ item *game_menus::inv::consume_drink( player &p )
     } ),
     _( "Consume drink" ), 1,
     _( "You have no drink to consume." ),
-    get_consume_needs_hint( p ) );
+    get_consume_needs_hint( p ), false, true );
+}
+
+// CDF: FM5a, test hook (precedent: P3-5-3b reload_destination_labels). Declared here and in
+// tests/game_inventory_pockets_test.cpp, not in game_inventory.h. DDA game_inventory.cpp:1096-1098.
+namespace game_menus
+{
+namespace inv
+{
+bool consume_meds_filter( const item &it );
+} // namespace inv
+} // namespace game_menus
+
+bool game_menus::inv::consume_meds_filter( const item &it )
+{
+    return it.is_medication() || it.is_medical_tool();
 }
 
 item *game_menus::inv::consume_meds( player &p )
@@ -861,11 +1005,11 @@ item *game_menus::inv::consume_meds( player &p )
     }
 
     return inv_internal( p, comestible_filtered_inventory_preset( p, []( const item & it ) {
-        return it.is_medication();
+        return game_menus::inv::consume_meds_filter( it );
     } ),
     _( "Consume medication" ), 1,
     _( "You have no medication to consume." ),
-    get_consume_needs_hint( p ) );
+    get_consume_needs_hint( p ), false, true );
 }
 
 class activatable_inventory_preset : public pickup_inventory_preset
@@ -1460,7 +1604,9 @@ bool valid_unload_container( const item &container )
 {
     return
         // Item must be a container.
-        container.is_container()
+        // CDF: IC1/G11. DDA's item::is_container() is "has a container pocket", so a worn belt,
+        // pouch or holster (carry pocket) can be unloaded; CDF's is_container() skips carry pockets.
+        container.has_pocket_type( pocket_type::CONTAINER )
         // Item must be able to be unloaded
         && !container.has_flag( flag_NO_UNLOAD )
         // Container must contain at least one item
@@ -1552,7 +1698,8 @@ drop_locations game_menus::inv::unload_container()
     avatar &you = get_avatar();
     const inventory_filter_preset unload_preset( valid_unload_container );
 
-    inventory_drop_selector insert_menu( you, unload_preset );
+    // DDA game_inventory.cpp:2124 passes the selection caption "CONTAINERS TO UNLOAD" to the selector.
+    inventory_drop_selector insert_menu( you, unload_preset, _( "CONTAINERS TO UNLOAD" ) );
     insert_menu.add_character_items( you );
     insert_menu.add_nearby_items( 1 );
     insert_menu.set_display_stats( false );
@@ -1569,6 +1716,22 @@ drop_locations game_menus::inv::unload_container()
         }
     }
     return dropped;
+}
+
+// CDF: FM5 amendment (IC1/G11), test hook (precedent: unload_selector_shows). The unload menu's
+// filter is file-local, so tests/ reach it through this. Declared here and in
+// tests/game_inventory_pockets_test.cpp, not in game_inventory.h.
+namespace game_menus
+{
+namespace inv
+{
+bool unload_menu_accepts( const item &container );
+} // namespace inv
+} // namespace game_menus
+
+bool game_menus::inv::unload_menu_accepts( const item &container )
+{
+    return valid_unload_container( container );
 }
 
 // CDF: P3-UI4, test hooks (precedent: unload_selector_shows). The insert preset is in an anonymous
@@ -2039,9 +2202,11 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( play
 {
 
     pickup_inventory_preset preset( p );
+    // Per DDA game_inventory.cpp:2545: the pickup screen remembers its own view mode.
+    preset.save_state = &pickup_ui_default_state;
     inventory_pickup_selector inv_s( p, preset );
 
-    inv_s.set_title( _( "Multipickup" ) );
+    inv_s.set_title( _( "Pickup" ) );
     // P3-UI8: the hint is the selector's own (DDA pickup_selector).
 
     while( true ) {
@@ -2050,7 +2215,7 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( play
         inv_s.add_vehicle_items( target );
 
         if( inv_s.empty() ) {
-            popup( std::string( _( "You have nothing to pickup." ) ), PF_GET_KEY );
+            add_msg( m_info, _( "There is nothing to pick up." ) );
             return std::vector<pickup::pick_drop_selection>();
         }
 
@@ -2063,9 +2228,11 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player 
 {
 
     pickup_inventory_preset preset( p );
+    // Per DDA game_inventory.cpp:2545: the pickup screen remembers its own view mode.
+    preset.save_state = &pickup_ui_default_state;
     inventory_pickup_selector inv_s( p, preset );
 
-    inv_s.set_title( _( "Multipickup" ) );
+    inv_s.set_title( _( "Pickup" ) );
     // P3-UI8: the hint is the selector's own (DDA pickup_selector).
 
     while( true ) {
@@ -2073,7 +2240,7 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player 
         inv_s.add_nearby_items();
 
         if( inv_s.empty() ) {
-            popup( std::string( _( "You have nothing to pickup." ) ), PF_GET_KEY );
+            add_msg( m_info, _( "There is nothing to pick up nearby." ) );
             return std::vector<pickup::pick_drop_selection>();
         }
 
@@ -3012,4 +3179,18 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
     }
 
     return opt;
+}
+
+// Per DDA game_inventory.cpp:3435-3453. CDF: the selected row is remembered on the consuming
+// activity, so only the filter is written here (see uistate.h).
+void consume_menu_uistate::serialize( JsonOut &json ) const
+{
+    json.start_object();
+    json.member( "consume_menu_filter", consume_menu_filter );
+    json.end_object();
+}
+
+void consume_menu_uistate::deserialize( const JsonObject &jo )
+{
+    jo.read( "consume_menu_filter", consume_menu_filter );
 }

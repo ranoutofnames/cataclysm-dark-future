@@ -1,14 +1,64 @@
 #include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "flag.h"
 #include "game_inventory.h"
+#include "inventory_ui.h"
 #include "item.h"
 #include "item_pocket.h"
+#include "json.h"
 #include "player_helpers.h"
 #include "state_helpers.h"
+#include "uistate.h"
 
+#include <sstream>
 #include <string>
 #include <utility>
+
+// PL-63 FM7b: the saved UI state is process-wide. A test that switches it puts it back, so that the
+// next test (and the FM7 defaults) still sees the compiled-in values.
+namespace
+{
+struct view_mode_state_guard {
+    inventory_selector::uimode sel = inventory_sel_default_state.uimode;
+    inventory_selector::uimode inv = inventory_ui_default_state.uimode;
+    inventory_selector::uimode pickup_sel = pickup_sel_default_state.uimode;
+    inventory_selector::uimode pickup_ui = pickup_ui_default_state.uimode;
+    ~view_mode_state_guard() {
+        inventory_sel_default_state.uimode = sel;
+        inventory_ui_default_state.uimode = inv;
+        pickup_sel_default_state.uimode = pickup_sel;
+        pickup_ui_default_state.uimode = pickup_ui;
+    }
+};
+
+struct consume_state_guard {
+    consume_menu_uistate consume = uistate.consume_uistate;
+    bool numpad = uistate.numpad_navigation;
+    ~consume_state_guard() {
+        uistate.consume_uistate = consume;
+        uistate.numpad_navigation = numpad;
+    }
+};
+} // namespace
+
+namespace game_menus::inv
+{
+// CDF: FM5a. Defined in src/game_inventory.cpp, which declares them itself; they are not in
+// game_inventory.h (a test hook there would rebuild its includers). Keep the signatures identical.
+std::string take_off_none_message();
+bool consume_meds_filter( const item &it );
+// CDF: FM5 amendment (G43), same pattern: the consume preset is file-local (src/game_inventory.cpp).
+bool consume_preset_shows( player &p, const item &it );
+// CDF: FM5 amendment (IC1/G11), same pattern: the unload menu filter is file-local.
+bool unload_menu_accepts( const item &container );
+// CDF: FM5b. Same pattern: the common selector class is file-local (src/game_inventory.cpp:119).
+struct common_selector_action {
+    bool closes;
+    bool category_mode;
+};
+common_selector_action probe_common_selector_action( player &p, const std::string &action );
+} // namespace game_menus::inv
 
 // ---------------------------------------------------------------------------
 // CDF: P3-UI4 (the insert picker, DDA game_inventory.cpp:2060-2086 and the preset
@@ -83,4 +133,161 @@ TEST_CASE( "insert_preset_hides_the_holster_and_its_direct_contents", "[inventor
     CHECK_FALSE( game_menus::inv::insert_preset_shows( *vest, get_avatar(), *vest ) );
     CHECK_FALSE( game_menus::inv::insert_preset_shows( *vest, get_avatar(), *plate_ptr ) );
     CHECK( game_menus::inv::insert_preset_shows( *vest, get_avatar(), *knife ) );
+}
+
+// CDF: FM5a, DDA game_inventory.cpp:487. The empty branch shows its text through popup(), a no-op
+// in the test build (popup.cpp:269), so take_off and this test share take_off_none_message().
+TEST_CASE( "take off with nothing worn says \"You're not wearing anything.\"",
+           "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    REQUIRE( you.worn.empty() );
+
+    CHECK( game_menus::inv::take_off_none_message() == "You're not wearing anything." );
+    CHECK( game_menus::inv::take_off( you ) == nullptr );
+}
+
+// CDF: FM5a, DDA game_inventory.cpp:1096-1098. bandages are comestible MED (med.json:218-233);
+// rag is not a medication but has the heal use_action (generic.json:1899-1906), so it is a medical
+// tool (item_gun_tool_ammo.cpp:156-159) and the filter must list it. knife_combat is neither.
+TEST_CASE( "medication filter includes medical tools", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    detached_ptr<item> bandages = item::spawn( "bandages", calendar::start_of_cataclysm );
+    detached_ptr<item> rag = item::spawn( "rag", calendar::start_of_cataclysm );
+    detached_ptr<item> knife = item::spawn( "knife_combat", calendar::start_of_cataclysm );
+
+    REQUIRE( bandages->is_medication() );
+    REQUIRE_FALSE( rag->is_medication() );
+    REQUIRE( rag->is_medical_tool() );
+    REQUIRE_FALSE( knife->is_medication() );
+    REQUIRE_FALSE( knife->is_medical_tool() );
+
+    CHECK( game_menus::inv::consume_meds_filter( *bandages ) );
+    CHECK( game_menus::inv::consume_meds_filter( *rag ) );
+    CHECK_FALSE( game_menus::inv::consume_meds_filter( *knife ) );
+}
+
+// CDF: FM5b. `;` is VIEW_CATEGORY_MODE. inventory_pick_selector::execute (inventory_ui.cpp:3730)
+// closes the screen whenever the selector's handle_action returns true, which is what used to
+// happen here. DDA handles the key in inventory_selector::on_input (DDA inventory_ui.cpp:3640) and
+// stays open; CDF's on_input (inventory_ui.cpp:3426) has no such branch, so the common selector
+// toggles and returns false itself. The class is file-local, so the test drives handle_action
+// through game_menus::inv::probe_common_selector_action, as the P3-UI4 tests do for the presets.
+TEST_CASE( "view mode key toggles and does not close the inventory", "[inventory][ui][fm]" )
+{
+    // FM7b: the common selector now writes its mode to inventory_ui_default_state (DDA
+    // game_inventory.cpp:270-271), so put the saved states back after the toggle.
+    const view_mode_state_guard view_mode;
+    clear_all_state();
+    avatar &you = get_avatar();
+
+    const game_menus::inv::common_selector_action toggled =
+        game_menus::inv::probe_common_selector_action( you, "VIEW_CATEGORY_MODE" );
+    CHECK_FALSE( toggled.closes );
+    // A fresh selector starts in the category view (inventory_ui.h:771), so the key switched it.
+    CHECK_FALSE( toggled.category_mode );
+
+    // unload_all still closes the screen: execute() returns and game_menus::inv::common runs the
+    // unload through selected_unload_all().
+    CHECK( game_menus::inv::probe_common_selector_action( you, "unload_all" ).closes );
+}
+
+// CDF: FM5 amendment (G43), DDA game_inventory.cpp:822 and consumption.cpp:1890-1895. The old
+// preset listed a container through Character::can_consume(), so a bottle with a drink in it had a
+// row of its own next to the drink. DDA lists an item only when the item itself is consumable.
+TEST_CASE( "consume menu hides a bottle that only holds a drink", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    item &bottle = you.i_add( item::spawn( "bottle_plastic", calendar::start_of_cataclysm ) );
+    const detached_ptr<item> water = item::spawn( "water_clean", calendar::start_of_cataclysm );
+    bottle.fill_with( *water );
+    REQUIRE_FALSE( bottle.is_container_empty() );
+    const item &drink = bottle.get_contained();
+
+    CHECK_FALSE( game_menus::inv::consume_preset_shows( you, bottle ) );
+    CHECK( game_menus::inv::consume_preset_shows( you, drink ) );
+}
+
+// CDF: FM5 amendment (G43), DDA consumption.cpp:1890-1895: frozen food is not offered, MELTS food is.
+// CDF: BN has no EDIBLE_FROZEN flag, so MELTS is the only DDA exception left.
+TEST_CASE( "consume menu hides frozen food", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    item &jerky = you.i_add( item::spawn( "jerky", calendar::start_of_cataclysm ) );
+    REQUIRE( jerky.is_comestible() );
+    REQUIRE_FALSE( jerky.has_flag( flag_FROZEN ) );
+    CHECK( game_menus::inv::consume_preset_shows( you, jerky ) );
+
+    jerky.set_flag( flag_FROZEN );
+    CHECK_FALSE( game_menus::inv::consume_preset_shows( you, jerky ) );
+
+    jerky.set_flag( flag_MELTS );
+    CHECK( game_menus::inv::consume_preset_shows( you, jerky ) );
+}
+
+// CDF: FM5 amendment (IC1/G11), DDA item_container.cpp:460. tool_belt (belts.json:428) has only
+// carry pockets, so CDF's is_container() is false while DDA's "has a container pocket" is true. Food
+// in its pouch must still be offered by the consume menu; the parent guard used to drop it.
+TEST_CASE( "consume menu lists food inside a belt pouch", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    detached_ptr<item> belt = item::spawn( "tool_belt", calendar::start_of_cataclysm );
+    detached_ptr<item> snack = item::spawn( "jerky", calendar::start_of_cataclysm );
+    item *snack_ptr = snack.get();
+    REQUIRE( belt->put_in( std::move( snack ), pocket_type::CONTAINER ).success() );
+
+    REQUIRE_FALSE( belt->is_container() );
+    REQUIRE( belt->has_pocket_type( pocket_type::CONTAINER ) );
+    REQUIRE( snack_ptr->where() == item_location_type::container );
+
+    CHECK( game_menus::inv::consume_preset_shows( you, *snack_ptr ) );
+}
+
+// CDF: FM5 amendment (IC1/G11), DDA item_container.cpp:460: a belt holding something is a valid
+// unload target in DDA, because a carry pocket is a container pocket.
+TEST_CASE( "unload menu accepts a belt with something in its pouch", "[inventory][ui][fm]" )
+{
+    clear_all_state();
+    detached_ptr<item> belt = item::spawn( "tool_belt", calendar::start_of_cataclysm );
+    REQUIRE_FALSE( belt->is_container() );
+    CHECK_FALSE( game_menus::inv::unload_menu_accepts( *belt ) );
+
+    REQUIRE( belt->put_in( item::spawn( "jerky", calendar::start_of_cataclysm ),
+                           pocket_type::CONTAINER ).success() );
+    CHECK( game_menus::inv::unload_menu_accepts( *belt ) );
+}
+
+// PL-63 FM7b T4. DDA game_inventory.cpp:178-183,210-225,1109-1111: the consume menu keeps the
+// filter it was last used with, and uistatedata serializes it (DDA game_inventory.cpp:3435-3453)
+// together with the number-row toggle (DDA inventory_ui.cpp:436). CDF's
+// uistatedata::serialize/deserialize live in savegame_json.cpp, so the round trip goes through them.
+TEST_CASE( "consume filter memory round trip", "[inventory][ui][fm]" )
+{
+    // the filter and the toggle are process-wide; put them back after the test
+    const consume_state_guard guard;
+
+    uistate.consume_uistate.consume_menu_filter = "apple";
+    uistate.numpad_navigation = true;
+    REQUIRE_FALSE( uistate.consume_uistate.empty() );
+
+    std::ostringstream out;
+    JsonOut jsout( out );
+    uistate.serialize( jsout );
+
+    // a later session starts from the compiled-in values and loads the save
+    std::istringstream in( out.str() );
+    JsonIn jsin( in );
+    uistatedata loaded;
+    loaded.deserialize( jsin.get_object() );
+    CHECK( loaded.consume_uistate.consume_menu_filter == "apple" );
+    CHECK( loaded.numpad_navigation );
+
+    // cancelling the menu forgets the filter (DDA game_inventory.cpp:1102-1111)
+    loaded.consume_uistate.clear();
+    CHECK( loaded.consume_uistate.empty() );
 }
