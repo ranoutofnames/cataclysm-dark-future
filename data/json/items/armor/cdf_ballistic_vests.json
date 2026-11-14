@@ -368,7 +368,9 @@
           "torso"
         ],
         "coverage": 100,
-        "encumbrance": 8
+        "cover_vitals": 90,
+        "encumbrance": 8,
+        "volume_encumber_modifier": 0.25
       }
     ]
   },
