@@ -8,6 +8,7 @@
 #include "player_helpers.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "uistate.h"
 
 #include <vector>
 
@@ -568,4 +569,308 @@ TEST_CASE("collated header caption and sibling navigation", "[inventory][p3][ui]
     REQUIRE(selector.select(bandage_a.get()));
     REQUIRE(selector.get_selected().is_collation_header());
     CHECK(selector.get_collation_next() == bandage_a.get());
+}
+
+// CDF P3-UI1: selector core (collapse fix, hide-all, reset filter, skip-unselectable,
+// parent/child highlight, DDA column actions). Pure state, no ui_adaptor.
+namespace {
+auto row_for(const inventory_selector& sel, const item* it) -> const inventory_entry* {
+    for (const inventory_column* col :
+         {&sel.own_gear_column, &sel.own_inv_column, &sel.map_column}) {
+        for (const inventory_entry* e : item_rows(*col)) {
+            if (e->any_item() == it) {
+                return e;
+            }
+        }
+    }
+    return nullptr;
+}
+
+// A worn hiking pack holding a small box (with a rock) and a blanket.
+struct carried_pack_fixture {
+    static auto fresh_avatar() -> avatar& {
+        clear_all_state();
+        return get_avatar();
+    }
+    avatar& u = fresh_avatar();
+    item* pack = nullptr;
+    item* box = nullptr;
+    item* blanket = nullptr;
+    item* rock = nullptr;
+
+    carried_pack_fixture() {
+        clear_character(u, true);
+        u.wear_item(item::spawn(itype_id("backpack_hiking"), calendar::turn), false);
+        pack = u.worn.front();
+        // the blanket (5 L) cannot nest in the small box, so both stay top level in the pack
+        blanket = &u.i_add(item::spawn(itype_id("blanket"), calendar::turn));
+        box = &u.i_add(item::spawn(itype_id("box_small"), calendar::turn));
+        REQUIRE(box->try_put_in(item::spawn(itype_id("test_rock"), calendar::turn)).success());
+        rock = box->contents.all_items_top().front();
+        REQUIRE(box->parent_item() == pack);
+        REQUIRE(blanket->parent_item() == pack);
+        REQUIRE(rock->parent_item() == box);
+    }
+};
+
+void refresh_columns(inventory_selector& sel) {
+    sel.own_gear_column.prepare_paging();
+    sel.own_inv_column.prepare_paging();
+    sel.map_column.prepare_paging();
+}
+
+struct hide_override_guard {
+    hide_override_guard() { uistate.hide_entries_override.reset(); }
+    ~hide_override_guard() { uistate.hide_entries_override.reset(); }
+};
+} // namespace
+
+TEST_CASE("collapse keeps the toggled row listed", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    REQUIRE(row_for(sel, f.box) != nullptr);
+    REQUIRE(row_for(sel, f.blanket) != nullptr);
+
+    SECTION("carried group view") {
+        REQUIRE(sel.select(f.box));
+        sel.toggle_selected_contents();
+        refresh_columns(sel);
+        // the pressed row toggled its own pockets, not the holder's
+        CHECK(f.box->is_collapsed());
+        CHECK_FALSE(f.pack->is_collapsed());
+        CHECK(row_for(sel, f.box) != nullptr);
+        CHECK(row_for(sel, f.blanket) != nullptr);
+
+        REQUIRE(sel.select(f.box));
+        sel.toggle_selected_contents();
+        refresh_columns(sel);
+        CHECK_FALSE(f.box->is_collapsed());
+        CHECK(row_for(sel, f.box) != nullptr);
+        CHECK(row_for(sel, f.blanket) != nullptr);
+    }
+
+    SECTION("hierarchy view hides the contents of the pressed row only") {
+        sel.toggle_categorize_contained();
+        refresh_columns(sel);
+        REQUIRE(row_for(sel, f.box) != nullptr);
+        REQUIRE(row_for(sel, f.rock) != nullptr);
+
+        REQUIRE(sel.select(f.box));
+        sel.toggle_selected_contents();
+        refresh_columns(sel);
+        CHECK(row_for(sel, f.box) != nullptr);
+        CHECK(row_for(sel, f.blanket) != nullptr);
+        CHECK(row_for(sel, f.rock) == nullptr);
+
+        REQUIRE(sel.select(f.box));
+        sel.toggle_selected_contents();
+        refresh_columns(sel);
+        CHECK(row_for(sel, f.rock) != nullptr);
+    }
+}
+
+TEST_CASE("holder row collapse hides its group", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    REQUIRE(row_for(sel, f.pack) != nullptr);
+    REQUIRE(row_for(sel, f.box) != nullptr);
+    REQUIRE(row_for(sel, f.blanket) != nullptr);
+
+    REQUIRE(sel.select(f.pack));
+    sel.toggle_selected_contents();
+    refresh_columns(sel);
+    CHECK(f.pack->is_collapsed());
+    CHECK(row_for(sel, f.pack) != nullptr);
+    CHECK(row_for(sel, f.box) == nullptr);
+    CHECK(row_for(sel, f.blanket) == nullptr);
+
+    REQUIRE(sel.select(f.pack));
+    sel.toggle_selected_contents();
+    refresh_columns(sel);
+    CHECK_FALSE(f.pack->is_collapsed());
+    CHECK(row_for(sel, f.box) != nullptr);
+    CHECK(row_for(sel, f.blanket) != nullptr);
+}
+
+TEST_CASE("hide override cycles", "[inventory][ui][p3]") {
+    const hide_override_guard guard;
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.enable_view_mode_toggle();
+    sel.add_character_items(f.u);
+    sel.toggle_categorize_contained();
+    refresh_columns(sel);
+    REQUIRE_FALSE(sel.own_gear_column.hide_entries_override.has_value());
+    REQUIRE(row_for(sel, f.rock) != nullptr);
+
+    sel.cycle_hide_override_all();
+    REQUIRE(sel.own_gear_column.hide_entries_override.has_value());
+    CHECK_FALSE(*sel.own_gear_column.hide_entries_override);
+    CHECK(uistate.hide_entries_override == sel.own_gear_column.hide_entries_override);
+    // false shows every container's contents, even a collapsed one
+    for (item_pocket* pocket : f.box->get_standard_pockets()) {
+        pocket->settings.set_collapse(true);
+    }
+    refresh_columns(sel);
+    CHECK(row_for(sel, f.rock) != nullptr);
+
+    sel.cycle_hide_override_all();
+    REQUIRE(sel.own_gear_column.hide_entries_override.has_value());
+    CHECK(*sel.own_gear_column.hide_entries_override);
+    refresh_columns(sel);
+    CHECK(row_for(sel, f.pack) != nullptr);
+    CHECK(row_for(sel, f.box) == nullptr);
+    CHECK(row_for(sel, f.blanket) == nullptr);
+    CHECK(row_for(sel, f.rock) == nullptr);
+
+    sel.cycle_hide_override_all();
+    CHECK_FALSE(sel.own_gear_column.hide_entries_override.has_value());
+    CHECK_FALSE(uistate.hide_entries_override.has_value());
+    // back to the pocket settings: the box is still collapsed, the blanket shows again
+    refresh_columns(sel);
+    CHECK(row_for(sel, f.box) != nullptr);
+    CHECK(row_for(sel, f.blanket) != nullptr);
+    CHECK(row_for(sel, f.rock) == nullptr);
+
+    // a new column starts from the saved state
+    uistate.hide_entries_override = true;
+    const inventory_column fresh;
+    CHECK(fresh.hide_entries_override.has_value());
+}
+
+TEST_CASE("reset filter clears", "[inventory][ui][p3]") {
+    clear_avatar();
+    auto bandages = item::spawn("bandages");
+    auto heroin = item::spawn("heroin");
+
+    inventory_selector sel(get_avatar());
+    sel.add_item(sel.own_inv_column, bandages.get());
+    sel.add_item(sel.own_inv_column, heroin.get());
+    sel.own_inv_column.prepare_paging();
+    REQUIRE(item_rows(sel.own_inv_column).size() == 2);
+
+    sel.apply_filter("zzz_no_such_item");
+    REQUIRE(sel.get_filter() == "zzz_no_such_item");
+    REQUIRE(item_rows(sel.own_inv_column).empty());
+
+    sel.reset_filter();
+    CHECK(sel.get_filter().empty());
+    CHECK(item_rows(sel.own_inv_column).size() == 2);
+}
+
+TEST_CASE("skip unselectable", "[inventory][ui][p3]") {
+    clear_avatar();
+    std::vector<detached_ptr<item>> items;
+    for (int i = 0; i < 3; ++i) {
+        items.push_back(item::spawn("bandages"));
+    }
+    inventory_selector_preset preset;
+    inventory_column col(preset);
+    // enabled, disabled, enabled
+    col.add_entry(inventory_entry({items[0].get()}, nullptr, true));
+    col.add_entry(inventory_entry({items[1].get()}, nullptr, false));
+    col.add_entry(inventory_entry({items[2].get()}, nullptr, true));
+    col.invalidate_paging();
+    col.prepare_paging();
+
+    std::vector<size_t> row_index;
+    for (size_t i = 0; i < col.entries.size(); ++i) {
+        if (col.entries[i].is_item()) {
+            row_index.push_back(i);
+        }
+    }
+    REQUIRE(row_index.size() == 3);
+    REQUIRE(col.entries[row_index[0]].any_item() == items[0].get());
+    REQUIRE(col.entries[row_index[1]].any_item() == items[1].get());
+    REQUIRE_FALSE(col.entries[row_index[1]].is_selectable());
+
+    col.toggle_skip_unselectable(true);
+    CHECK(col.next_highlightable_index(row_index[0], scroll_direction::FORWARD) == row_index[2]);
+    CHECK(col.next_highlightable_index(row_index[2], scroll_direction::BACKWARD) == row_index[0]);
+
+    col.toggle_skip_unselectable(false);
+    CHECK(col.next_highlightable_index(row_index[0], scroll_direction::FORWARD) == row_index[1]);
+    CHECK(col.next_highlightable_index(row_index[2], scroll_direction::BACKWARD) == row_index[1]);
+
+    SECTION("the selector flag reaches its columns") {
+        const bool before = inventory_selector::get_skip_unselectable();
+        inventory_selector sel(get_avatar());
+        sel.toggle_skip_unselectable();
+        CHECK(inventory_selector::get_skip_unselectable() == !before);
+        CHECK(sel.own_inv_column.get_skip_unselectable() == !before);
+        CHECK(sel.own_gear_column.get_skip_unselectable() == !before);
+        sel.toggle_skip_unselectable();
+        CHECK(inventory_selector::get_skip_unselectable() == before);
+        CHECK(sel.map_column.get_skip_unselectable() == before);
+    }
+}
+
+TEST_CASE("parent and child flags", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.enable_view_mode_toggle();
+    sel.add_character_items(f.u);
+    sel.toggle_categorize_contained();
+    refresh_columns(sel);
+    REQUIRE(row_for(sel, f.pack) != nullptr);
+    REQUIRE(row_for(sel, f.box) != nullptr);
+    REQUIRE(row_for(sel, f.blanket) != nullptr);
+    REQUIRE(row_for(sel, f.rock) != nullptr);
+
+    REQUIRE(sel.select(f.box));
+    sel.highlight();
+    CHECK(row_for(sel, f.pack)->highlight_as_parent);
+    CHECK(row_for(sel, f.rock)->highlight_as_child);
+    CHECK_FALSE(row_for(sel, f.box)->highlight_as_parent);
+    CHECK_FALSE(row_for(sel, f.box)->highlight_as_child);
+    CHECK_FALSE(row_for(sel, f.blanket)->highlight_as_child);
+    CHECK_FALSE(row_for(sel, f.blanket)->highlight_as_parent);
+    CHECK_FALSE(row_for(sel, f.pack)->highlight_as_child);
+
+    // moving the highlight clears the old marks
+    REQUIRE(sel.select(f.rock));
+    sel.highlight();
+    CHECK(row_for(sel, f.box)->highlight_as_parent);
+    CHECK_FALSE(row_for(sel, f.pack)->highlight_as_parent);
+    CHECK_FALSE(row_for(sel, f.rock)->highlight_as_child);
+    CHECK_FALSE(row_for(sel, f.box)->highlight_as_child);
+}
+
+TEST_CASE("column actions move the active column", "[inventory][ui][p3]") {
+    clear_avatar();
+    auto bandages = item::spawn("bandages");
+    auto heroin = item::spawn("heroin");
+    auto rock = item::spawn("rock");
+
+    SECTION("three columns") {
+        inventory_selector sel(get_avatar());
+        sel.add_item(sel.own_inv_column, bandages.get());
+        sel.add_item(sel.map_column, heroin.get());
+        sel.add_item(sel.own_gear_column, rock.get());
+        REQUIRE(sel.get_selection_position().first == 0);
+
+        CHECK(sel.handle_column_action("NEXT_COLUMN"));
+        CHECK(sel.get_selection_position().first == 1);
+        CHECK(sel.handle_column_action("PREV_COLUMN"));
+        CHECK(sel.get_selection_position().first == 0);
+        CHECK(sel.handle_column_action("PREV_COLUMN"));
+        CHECK(sel.get_selection_position().first == 2);
+        CHECK(sel.handle_column_action("NEXT_COLUMN"));
+        CHECK(sel.get_selection_position().first == 0);
+        CHECK_FALSE(sel.handle_column_action("CONFIRM"));
+        CHECK(sel.get_selection_position().first == 0);
+    }
+
+    SECTION("a single column does not move") {
+        inventory_selector sel(get_avatar());
+        sel.add_item(sel.own_inv_column, bandages.get());
+        CHECK(sel.handle_column_action("NEXT_COLUMN"));
+        CHECK(sel.get_selection_position().first == 0);
+        CHECK(sel.handle_column_action("PREV_COLUMN"));
+        CHECK(sel.get_selection_position().first == 0);
+    }
 }

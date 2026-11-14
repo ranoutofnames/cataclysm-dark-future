@@ -86,6 +86,10 @@ class inventory_entry
         /// Drawn when the entry has no letter of its own.
         std::optional<inventory_invlet_hint> invlet_hint;
         std::string cached_name;
+        /// Per DDA inventory_ui.h:186-187. Set by inventory_selector::highlight() for the rows
+        /// that hold the selected item (parent) or sit inside it (child); only drawn.
+        bool highlight_as_parent = false;
+        bool highlight_as_child = false;
 
         inventory_entry() = default;
 
@@ -133,6 +137,11 @@ class inventory_entry
         /** Whether the entry can be selected */
         bool is_selectable() const {
             return is_item() && enabled;
+        }
+        /// Per DDA inventory_ui.h:148-150. With skip_unselectable off the cursor may rest on a
+        /// disabled row (to read its denial); with it on, only selectable rows are highlightable.
+        bool is_highlightable( bool skip_unselectable ) const {
+            return is_item() && ( enabled || !skip_unselectable );
         }
         /// Per DDA inventory_ui.h:148-162.
         bool is_collated() const {
@@ -287,9 +296,8 @@ class pickup_inventory_preset : public inventory_selector_preset
 class inventory_column
 {
     public:
-        inventory_column( const inventory_selector_preset &preset = default_preset ) : preset( preset ) {
-            cells.resize( preset.get_cells_count() );
-        }
+        // CDF: defined in the .cpp; takes hide_entries_override from uistate (per DDA inventory_ui.cpp:691).
+        inventory_column( const inventory_selector_preset &preset = default_preset );
 
         virtual ~inventory_column() = default;
 
@@ -358,6 +366,17 @@ class inventory_column
         void collate();
         void uncollate();
         void set_collapsed( inventory_entry &entry, bool collapse );
+        /// Per DDA inventory_ui.cpp:3585-3597: cycles false -> true -> nullopt and saves it in uistate.
+        virtual void cycle_hide_override();
+        /// nullopt: pocket settings decide; true: contents of all containers hidden; false: all shown.
+        std::optional<bool> hide_entries_override = std::nullopt;
+        /// Per DDA inventory_ui.cpp:737-740.
+        void toggle_skip_unselectable( bool skip );
+        bool get_skip_unselectable() const {
+            return skip_unselectable;
+        }
+        /// Per DDA inventory_ui.cpp:972-996. Next entry in dir that can be highlighted.
+        size_t next_highlightable_index( size_t index, scroll_direction dir ) const;
         void clear();
         void set_stack_favorite( const item *location, bool favorite );
 
@@ -453,7 +472,9 @@ class inventory_column
         void move_selection( scroll_direction dir );
         void move_selection_page( scroll_direction dir );
 
-        size_t next_selectable_index( size_t index, scroll_direction dir ) const;
+        /// CDF: the cursor skips disabled rows unless the player turned the skip off (DDA's
+        /// default is off; CDF keeps its old behaviour as the default).
+        bool skip_unselectable = true;
 
         size_t page_of( size_t index ) const;
         size_t page_of( const inventory_entry &entry ) const;
@@ -536,6 +557,8 @@ class selection_column : public inventory_column
         void on_mode_change( navigation_mode ) override {
             // Intentionally ignore mode change.
         }
+        // Per DDA inventory_ui.cpp:3627-3630: the selection column never hides entries.
+        void cycle_hide_override() override {}
 
     private:
         const pimpl<item_category> selected_cat;
@@ -591,6 +614,38 @@ class inventory_selector
 
         /** Apply filter string to all columns */
         void set_filter( const std::string &str );
+        /** Per DDA inventory_ui.cpp:3671-3673. Clears the filter. Does not lay out the window. */
+        void reset_filter();
+        /** The part of set_filter( str ) that does not lay out the window. */
+        void apply_filter( const std::string &str );
+        /**
+         * CDF: UI1. Collapses or expands the pockets of the selected row itself (DDA
+         * inventory_ui.cpp:1340-1342). The row stays listed; on a holder garment row
+         * the carried rows under it hide. Does not lay out the window.
+         */
+        void toggle_selected_contents();
+        /** Per DDA inventory_ui.cpp:3688-3692. Cycles the hide override of all columns. */
+        void cycle_hide_override_all();
+        /** Per DDA inventory_ui.cpp:3744-3750. Toggles skipping of disabled rows. */
+        void toggle_skip_unselectable();
+        static bool get_skip_unselectable() {
+            return skip_unselectable;
+        }
+        /**
+         * Per DDA inventory_ui.cpp:3636-3639. Handles NEXT_COLUMN / PREV_COLUMN.
+         * @return true when the action was one of them.
+         */
+        bool handle_column_action( const std::string &action );
+        /**
+         * Per DDA inventory_ui.cpp:4335-4371. Marks the rows that hold the selected item
+         * (highlight_as_parent) and the rows inside it (highlight_as_child); clears the old marks.
+         */
+        void highlight();
+        /**
+         * Activates either previous or next column.
+         * @param dir Forward - next column, backward - previous.
+         */
+        void toggle_active_column( scroll_direction dir );
         /** Get last filter string set by set_filter or entered by player */
         std::string get_filter() const;
 
@@ -826,12 +881,6 @@ class inventory_selector
 
         void append_column( inventory_column &column );
 
-        /**
-         * Activates either previous or next column.
-         * @param dir Forward - next column, backward - previous.
-         */
-        void toggle_active_column( scroll_direction dir );
-
         void refresh_active_column() {
             if( !get_active_column().activatable() ) {
                 toggle_active_column( scroll_direction::FORWARD );
@@ -863,6 +912,8 @@ class inventory_selector
         bool view_toggle_enabled = false;
         int nearby_radius = -1;
         bool fake_items_added = false;
+        // Per DDA inventory_ui.h:1007. Shared by all selectors; CDF default is on (old behaviour).
+        static bool skip_unselectable;
 
     public:
         std::string action_bound_to_key( char key ) const;

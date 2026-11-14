@@ -241,11 +241,39 @@ const item_category *inventory_entry::get_category_ptr() const
     return &any_item()->get_category();
 }
 
+inventory_column::inventory_column( const inventory_selector_preset &preset ) : preset( preset )
+{
+    hide_entries_override = uistate.hide_entries_override;
+    cells.resize( preset.get_cells_count() );
+}
+
 bool inventory_column::activatable() const
 {
-    return std::ranges::any_of( entries, []( const inventory_entry & e ) {
-        return e.is_selectable();
+    return std::ranges::any_of( entries, [this]( const inventory_entry & e ) {
+        return e.is_highlightable( skip_unselectable );
     } );
+}
+
+// Per DDA inventory_ui.cpp:737-740.
+void inventory_column::toggle_skip_unselectable( const bool skip )
+{
+    skip_unselectable = skip;
+}
+
+// Per DDA inventory_ui.cpp:3585-3597.
+void inventory_column::cycle_hide_override()
+{
+    if( hide_entries_override ) {
+        if( *hide_entries_override ) {
+            hide_entries_override = std::nullopt;
+        } else {
+            hide_entries_override = true;
+        }
+    } else {
+        hide_entries_override = false;
+    }
+    uistate.hide_entries_override = hide_entries_override;
+    paging_is_valid = false;
 }
 
 inventory_entry *inventory_column::find_by_invlet( int invlet ) const
@@ -390,8 +418,8 @@ std::string  inventory_selector_preset::cell_t::get_text( const inventory_entry 
 void inventory_column::select( size_t new_index, scroll_direction dir )
 {
     if( new_index < entries.size() ) {
-        if( !entries[new_index].is_selectable() ) {
-            new_index = next_selectable_index( new_index, dir );
+        if( !entries[new_index].is_highlightable( skip_unselectable ) ) {
+            new_index = next_highlightable_index( new_index, dir );
         }
 
         selected_index = new_index;
@@ -400,7 +428,8 @@ void inventory_column::select( size_t new_index, scroll_direction dir )
     }
 }
 
-size_t inventory_column::next_selectable_index( size_t index, scroll_direction dir ) const
+// Per DDA inventory_ui.cpp:972-996. CDF: was next_selectable_index.
+size_t inventory_column::next_highlightable_index( size_t index, scroll_direction dir ) const
 {
     if( entries.empty() ) {
         return index;
@@ -414,9 +443,9 @@ size_t inventory_column::next_selectable_index( size_t index, scroll_direction d
         //     N = entries.size()  - number of elements,
         //     k = |step|          - absolute step (k <= N).
         new_index = ( new_index + static_cast<int>( dir ) + entries.size() ) % entries.size();
-    } while( new_index != index && !entries[new_index].is_selectable() );
+    } while( new_index != index && !entries[new_index].is_highlightable( skip_unselectable ) );
 
-    if( !entries[new_index].is_selectable() ) {
+    if( !entries[new_index].is_highlightable( skip_unselectable ) ) {
         return static_cast<size_t>( -1 );
     }
 
@@ -428,7 +457,7 @@ void inventory_column::move_selection( scroll_direction dir )
     size_t index = selected_index;
 
     do {
-        index = next_selectable_index( index, dir );
+        index = next_highlightable_index( index, dir );
     } while( index != selected_index && is_selected_by_category( entries[index] ) );
 
     select( index, dir );
@@ -439,7 +468,7 @@ void inventory_column::move_selection_page( scroll_direction dir )
     size_t index = selected_index;
 
     do {
-        const size_t next_index = next_selectable_index( index, dir );
+        const size_t next_index = next_highlightable_index( index, dir );
         const bool flipped = next_index == selected_index ||
                              ( next_index > selected_index ) != ( static_cast<int>( dir ) > 0 );
 
@@ -448,7 +477,7 @@ void inventory_column::move_selection_page( scroll_direction dir )
         }
 
         index = next_index;
-    } while( page_of( next_selectable_index( index, dir ) ) == page_index() );
+    } while( page_of( next_highlightable_index( index, dir ) ) == page_index() );
 
     select( index, dir );
 }
@@ -838,6 +867,18 @@ void inventory_column::move_entries_to( inventory_column &dest )
     clear();
 }
 
+// CDF adapters for DDA's item_location::has_parent() / parent_pocket() (PL-61 RESULT.md section 3).
+static auto has_parent( const item &it ) -> bool
+{
+    return it.parent_item() != nullptr;
+}
+
+static auto parent_pocket_of( const item &it ) -> const item_pocket *
+{
+    const item *parent = it.parent_item();
+    return parent == nullptr ? nullptr : parent->contents.pocket_of( &it );
+}
+
 // CDF: Q2 flat view; carried-item rows are hidden while the holding garment is collapsed.
 // Per DDA inventory_ui.cpp:585-600 (adapted: item * instead of item_location)
 static auto carried_holder( const inventory_entry &entry ) -> item *
@@ -849,26 +890,46 @@ static auto carried_holder( const inventory_entry &entry ) -> item *
     return entry.any_item()->parent_item();
 }
 
-static auto hidden_by_collapse( const inventory_entry &entry ) -> bool
+// UI1: hide_entries_override is the column's "hide all contents" state (DDA is_hidden 590-592).
+static auto hidden_by_collapse( const inventory_entry &entry,
+                                const std::optional<bool> &hide_entries_override = std::nullopt ) -> bool
 {
     // Per DDA inventory_ui.cpp:575-585: collated entries are hidden while their header is collapsed.
     if( entry.is_collation_entry() && entry.collation_meta->collapsed ) {
         return true;
     }
+    // Per DDA inventory_ui.cpp:590-592: the hide-all override beats the pocket settings.
+    if( hide_entries_override && entry.is_item() && entry.topmost_parent != nullptr &&
+        entry.topmost_parent->is_container() ) {
+        return *hide_entries_override;
+    }
     // Per DDA inventory_ui.cpp:575-600: hierarchy rows under a collapsed pocket of their parents
     if( entry.is_item() && entry.topmost_parent != nullptr ) {
         const item *it = entry.any_item();
-        while( it->parent_item() != nullptr && it != entry.topmost_parent ) {
-            const item *parent = it->parent_item();
-            const item_pocket *pocket = parent->contents.pocket_of( it );
+        while( has_parent( *it ) && it != entry.topmost_parent ) {
+            const item_pocket *pocket = parent_pocket_of( *it );
             if( pocket != nullptr && pocket->settings.is_collapsed() ) {
                 return true;
             }
-            it = parent;
+            it = it->parent_item();
         }
     }
+    // CDF flat view: a carried row is hidden when a container it sits in (its holder or one above
+    // it) is collapsed. The row's own collapse state is never looked at, so toggling a row
+    // collapses what is inside it and never removes the row itself.
     const item *holder = carried_holder( entry );
-    return holder != nullptr && holder->is_collapsed();
+    if( holder == nullptr ) {
+        return false;
+    }
+    if( hide_entries_override ) {
+        return *hide_entries_override && holder->is_container();
+    }
+    for( const item *anc = holder; anc != nullptr; anc = anc->parent_item() ) {
+        if( anc->is_collapsed() ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Per DDA inventory_ui.cpp:139,1432 (path_to_top, indented_sort_compare), item * instead of item_location
@@ -1044,14 +1105,16 @@ void inventory_column::prepare_paging( const std::string &filter )
 
     entries_hidden.clear();
     for( size_t i = 0; i < entries.size(); ++i ) {
-        if( entries[i].is_item() && ( !filter_fn( entries[i] ) || hidden_by_collapse( entries[i] ) ) ) {
+        if( entries[i].is_item() &&
+            ( !filter_fn( entries[i] ) || hidden_by_collapse( entries[i], hide_entries_override ) ) ) {
             entries_hidden.push_back( entries[i] );
         }
     }
 
     const auto new_end = std::remove_if( entries.begin(),
-    entries.end(), [&filter_fn]( const inventory_entry & entry ) {
-        return !entry.is_item() || !filter_fn( entry ) || hidden_by_collapse( entry );
+    entries.end(), [&filter_fn, this]( const inventory_entry & entry ) {
+        return !entry.is_item() || !filter_fn( entry ) ||
+               hidden_by_collapse( entry, hide_entries_override );
     } );
     entries.erase( new_end, entries.end() );
     // don't sort with stale names
@@ -1271,16 +1334,29 @@ void inventory_column::draw( const catacurses::window &win, point pos ) const
 
                 // Per DDA inventory_ui.cpp:1800: chevron before an entry that has visible contents
                 if( cell_index == 0 && entry.chevron && entry.is_item() ) {
+                    // Per DDA inventory_ui.cpp:1801-1807: the hide-all override colours the chevron
+                    const bool hide_override = !entry.is_collation_header() && hide_entries_override &&
+                                               entry.any_item()->is_container();
                     const nc_color chevron_color = entry.is_collation_header() ? c_light_blue :
+                                                   hide_override ? ( *hide_entries_override ? c_red : c_green ) :
                                                    c_dark_gray;
                     const bool collapsed = entry.is_collation_header() ?
                                            entry.collation_meta->collapsed :
+                                           hide_override ? *hide_entries_override :
                                            entry.any_item()->is_collapsed();
                     trim_and_print( win, point( text_x - 1, yy ), 1, chevron_color,
                                     collapsed ? "▶" : "▼" );
                 }
                 if( entry.is_item() && ( selected || !entry.is_selectable() ) ) {
                     trim_and_print( win, point( text_x, yy ), text_width, selected ? h_white : c_dark_gray,
+                                    remove_color_tags( text ) );
+                } else if( entry.is_item() && entry.highlight_as_parent ) {
+                    // Per DDA inventory_ui.cpp:1812-1820 ("background" style; CDF has no
+                    // INVENTORY_HIGHLIGHT option)
+                    trim_and_print( win, point( text_x, yy ), text_width, c_white_white,
+                                    remove_color_tags( text ) );
+                } else if( entry.is_item() && entry.highlight_as_child ) {
+                    trim_and_print( win, point( text_x, yy ), text_width, c_black_white,
                                     remove_color_tags( text ) );
                 } else {
                     trim_and_print( win, point( text_x, yy ), text_width, entry_cell_cache.color, text );
@@ -1332,7 +1408,11 @@ size_t inventory_column::visible_cells() const
 
 selection_column::selection_column( const std::string &id, const std::string &name ) :
     inventory_column( selection_preset ),
-    selected_cat( id, no_translation( name ), 0 ) {}
+    selected_cat( id, no_translation( name ), 0 )
+{
+    // The selection column lists what the player marked; it never hides entries.
+    hide_entries_override = std::nullopt;
+}
 
 selection_column::~selection_column() = default;
 
@@ -2147,6 +2227,7 @@ shared_ptr_fast<ui_adaptor> inventory_selector::create_or_get_ui_adaptor()
         current_ui->mark_resize();
 
         current_ui->on_redraw( [this]( const ui_adaptor & ) {
+            highlight();
             refresh_window();
         } );
     }
@@ -2817,6 +2898,11 @@ void inventory_selector::set_filter()
 void inventory_selector::set_filter( const std::string &str )
 {
     prepare_layout();
+    apply_filter( str );
+}
+
+void inventory_selector::apply_filter( const std::string &str )
+{
     filter = str;
     for( const auto elem : columns ) {
         elem->set_filter( filter );
@@ -2825,6 +2911,12 @@ void inventory_selector::set_filter( const std::string &str )
     if( current_ui ) {
         current_ui->mark_resize();
     }
+}
+
+// Per DDA inventory_ui.cpp:3671-3673.
+void inventory_selector::reset_filter()
+{
+    apply_filter( std::string() );
 }
 
 std::string inventory_selector::get_filter() const
@@ -2982,8 +3074,10 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "UP", to_translation( "Previous item" ) );
     ctxt.register_action( "PAGE_DOWN", to_translation( "Page down" ) );
     ctxt.register_action( "PAGE_UP", to_translation( "Page up" ) );
-    ctxt.register_action( "RIGHT", to_translation( "Next column" ) );
-    ctxt.register_action( "LEFT", to_translation( "Previous column" ) );
+    // UI1: DDA's column actions (inventory_ui.cpp:3460-3461). LEFT/RIGHT are no longer registered
+    // here; the multiselectors register their own (RIGHT marks), see inventory_multiselector.
+    ctxt.register_action( "NEXT_COLUMN", to_translation( "Next column" ) );
+    ctxt.register_action( "PREV_COLUMN", to_translation( "Previous column" ) );
     ctxt.register_action( "CONFIRM", to_translation( "Confirm your selection" ) );
     ctxt.register_action( "QUIT", to_translation( "Cancel" ) );
     ctxt.register_action( "CATEGORY_SELECTION", to_translation( "Switch category selection mode" ) );
@@ -2999,7 +3093,11 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     // Per DDA inventory_ui.cpp:3481; registered here so auto-assigned invlets skip its key.
     ctxt.register_action( "ORGANIZE_MENU" );
     ctxt.register_action( "SHOW_HIDE_CONTENTS", to_translation( "Show/hide contents" ) );
-
+    // Per DDA inventory_ui.cpp:3470-3480
+    ctxt.register_action( "SHOW_HIDE_CONTENTS_ALL", to_translation( "Show/hide all contents" ) );
+    ctxt.register_action( "RESET_FILTER", to_translation( "Reset filter" ) );
+    ctxt.register_action( "TOGGLE_SKIP_UNSELECTABLE",
+                          to_translation( "Toggle skipping of unselectable items" ) );
 
     append_column( own_inv_column );
     append_column( map_column );
@@ -3084,37 +3182,137 @@ inventory_input inventory_selector::get_input()
     return res;
 }
 
+void inventory_selector::toggle_selected_contents()
+{
+    // Per DDA inventory_ui.cpp:1340-1342 and set_collapsed 1294-1316: the selected row toggles its
+    // own pockets. CDF's old redirect to the holder garment is gone: it collapsed the holder and so
+    // hid the pressed row (see hidden_by_collapse). A holder row collapses its carried group by
+    // being the pressed row itself.
+    if( !has_available_choices() ) {
+        return;
+    }
+    const inventory_entry &sel = get_selected();
+    if( !sel.is_item() ) {
+        return;
+    }
+    const bool collapse = !sel.any_item()->is_collapsed();
+    for( item *const loc : sel.locations ) {
+        for( item_pocket *pocket : loc->get_standard_pockets() ) {
+            pocket->settings.set_collapse( collapse );
+        }
+    }
+    for( inventory_column *elem : columns ) {
+        elem->invalidate_paging();
+    }
+}
+
+// Per DDA inventory_ui.cpp:3688-3692.
+void inventory_selector::cycle_hide_override_all()
+{
+    for( inventory_column *col : columns ) {
+        col->cycle_hide_override();
+    }
+}
+
+// Per DDA inventory_ui.cpp:3744-3750.
+void inventory_selector::toggle_skip_unselectable()
+{
+    skip_unselectable = !skip_unselectable;
+    for( inventory_column *col : columns ) {
+        col->toggle_skip_unselectable( skip_unselectable );
+    }
+}
+
+bool inventory_selector::skip_unselectable = true;
+
+// Per DDA inventory_ui.cpp:3636-3639.
+bool inventory_selector::handle_column_action( const std::string &action )
+{
+    if( action == "PREV_COLUMN" ) {
+        toggle_active_column( scroll_direction::BACKWARD );
+    } else if( action == "NEXT_COLUMN" ) {
+        toggle_active_column( scroll_direction::FORWARD );
+    } else {
+        return false;
+    }
+    return true;
+}
+
+// Per DDA inventory_ui.cpp:4335-4371. CDF: item * instead of item_location; the old marks are
+// cleared here (DDA clears them while drawing).
+void inventory_selector::highlight()
+{
+    for( const inventory_column *column : get_all_columns() ) {
+        for( inventory_entry *entry : column->get_all_entries() ) {
+            entry->highlight_as_parent = false;
+            entry->highlight_as_child = false;
+        }
+    }
+    if( get_active_column().empty() ) {
+        return;
+    }
+    const inventory_entry &selected = get_active_column().get_selected();
+    if( !selected.is_item() ) {
+        return;
+    }
+    const item *parent = selected.any_item()->parent_item();
+    for( const inventory_column *column : get_all_columns() ) {
+        for( inventory_entry *entry : column->get_all_entries() ) {
+            if( !entry->is_item() ) {
+                continue;
+            }
+            // Find the parent of the selected item (it can be in a stack).
+            if( parent != nullptr &&
+                std::ranges::find( entry->locations, parent ) != entry->locations.end() ) {
+                entry->highlight_as_parent = true;
+            }
+            // Find the contents of the selected item (a stacked container selects several).
+            const item *entry_parent = entry->any_item()->parent_item();
+            if( entry_parent != nullptr &&
+                std::ranges::find( selected.locations, entry_parent ) != selected.locations.end() ) {
+                entry->highlight_as_child = true;
+            }
+        }
+    }
+}
+
 void inventory_selector::on_input( const inventory_input &input )
 {
     if( input.action == "CATEGORY_SELECTION" ) {
         toggle_navigation_mode();
+    } else if( handle_column_action( input.action ) ) {
+        // moved the active column
     } else if( input.action == "LEFT" ) {
+        // only registered by the multiselectors until UI2 renames their keys
         toggle_active_column( scroll_direction::BACKWARD );
     } else if( input.action == "RIGHT" ) {
         toggle_active_column( scroll_direction::FORWARD );
     } else if( input.action == "INVENTORY_FILTER" ) {
         set_filter();
-    } else if( input.action == "SHOW_HIDE_CONTENTS" ) {
-        // Per DDA inventory_ui.cpp:1295-1310 (set_collapsed), adapted to the flat view:
-        // a row of a carried group toggles its holder, any other row toggles itself.
+    } else if( input.action == "RESET_FILTER" ) {
+        // Per DDA inventory_ui.cpp:3671-3673
+        reset_filter();
+    } else if( input.action == "TOGGLE_SKIP_UNSELECTABLE" ) {
+        toggle_skip_unselectable();
+    } else if( input.action == "SHOW_HIDE_CONTENTS" || input.action == "SHOW_HIDE_CONTENTS_ALL" ) {
         if( has_available_choices() ) {
             const inventory_entry &sel = get_selected();
-            if( sel.is_item() ) {
-                item *target = carried_holder( sel );
-                if( target == nullptr ) {
-                    target = sel.any_item();
-                }
-                const bool collapse = !target->is_collapsed();
-                for( item_pocket *pocket : target->get_standard_pockets() ) {
-                    pocket->settings.set_collapse( collapse );
-                }
-                for( inventory_column *elem : columns ) {
-                    elem->invalidate_paging();
-                }
-                refresh_active_column();
-                prepare_layout();
+            item *const kept = sel.is_item() ? sel.any_item() : nullptr;
+            if( input.action == "SHOW_HIDE_CONTENTS_ALL" ) {
+                cycle_hide_override_all();
+            } else {
+                toggle_selected_contents();
+            }
+            for( inventory_column *elem : columns ) {
+                elem->invalidate_paging();
+            }
+            refresh_active_column();
+            prepare_layout();
+            if( kept != nullptr ) {
+                select( kept );
             }
         }
+    }
     } else if( input.action == "TOGGLE_FAVORITE" ) {
         if( has_available_choices() ) {
             for( inventory_column *elem : columns ) {
@@ -3237,6 +3435,7 @@ void inventory_selector::toggle_navigation_mode()
 void inventory_selector::append_column( inventory_column &column )
 {
     column.on_mode_change( mode );
+    column.toggle_skip_unselectable( skip_unselectable );
 
     if( columns.empty() ) {
         column.on_activate();
@@ -3371,6 +3570,8 @@ inventory_multiselector::inventory_multiselector( player &p,
     inventory_selector( p, preset ),
     selection_col( new selection_column( "SELECTION_COLUMN", selection_column_title ) )
 {
+    // UI1: the base selector no longer registers LEFT/RIGHT; the multiselectors keep them until UI2.
+    ctxt.register_action( "LEFT", to_translation( "Previous column" ) );
     ctxt.register_action( "RIGHT", to_translation( "Mark/unmark selected item" ) );
     ctxt.register_action( "DROP_NON_FAVORITE", to_translation( "Mark/unmark non-favorite items" ) );
 
