@@ -35,3 +35,14 @@ These behaviours belong to the item selector and to the insert menu. They follow
 - **Examine contents** (`EXAMINE_CONTENTS`, default `o`) opens a two-pane window for the highlighted container: its contents are listed on the left and the item info of the highlighted item is shown on the right. Move with the usual list keys; Page Up and Page Down scroll the item info; `>` shows or hides the contents of a nested container; Escape or Enter closes the window and returns to the list, which is rebuilt if you collapsed or expanded something. If the highlighted item has no contents, the normal item info opens instead.
 - **Insert menu header**: when you choose items to put into a container (the insert action), the header shows the container's used and total volume and weight, its largest free space, and a line with the volume and weight of the items you have marked. Items that cannot go in are greyed out with the reason, for example a plate when every large plate slot of a vest is full.
 - **Container pick header**: a menu that picks one item from inside a container shows the same used and total space of that container.
+
+## Mouse and drag and drop in the item picker
+
+The menus where you pick a single item (and the unload menu) take the mouse as well as the keyboard.
+
+- **Hover**: moving the mouse over a row highlights it. Nothing is chosen until you click.
+- **Click**: a left click on a row chooses that item, the same as pressing its letter. A click just left of a row that has contents (on the arrow) opens or closes the contents instead.
+- **Wheel**: the mouse wheel moves the highlight a page up or down, in every item menu (picker, drop, pickup and so on).
+- **Drag and drop**: in menus that allow it, press the left button on an item, drag to another item and release. The "Select pocket" menu opens, listing the pockets of the item you dropped on; pick one to store the dragged item there. Releasing on the item you started from is an ordinary click. Menus that do not allow dragging just treat the release as a click.
+
+The drag start uses the new key name `MOUSE_LEFT_PRESSED` (action `CLICK_AND_DRAG`, inventory context). Mouse support is meant for the graphical (tiles) build.
