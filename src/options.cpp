@@ -1973,6 +1973,17 @@ void options_manager::add_options_interface()
          true
        );
 
+    add( "INVENTORY_HIGHLIGHT", interface,
+         translate_marker( "Inventory highlight mode" ),
+         translate_marker( "Highlight selected item's contents and parent container in inventory screen.  "
+    "\"Symbol\" shows a highlighted caret and \"Highlight\" uses font highlighting." ), {
+        { "symbol", translate_marker( "Symbol" ) },
+        { "highlight", translate_marker( "Highlight" ) },
+        { "disable", translate_marker( "Disabled" ) }
+    },
+    "symbol"
+       );
+
     add_empty_line();
 
     add( "DIAG_MOVE_WITH_MODIFIERS_MODE", interface,
@@ -2181,6 +2192,14 @@ void options_manager::add_options_interface()
          translate_marker( "If true, the default ammo is added to weapon and magazine names.  For example \"Mosin-Nagant M44 (4/5)\" becomes \"Mosin-Nagant M44 (4/5 7.62x54mm)\"." ),
          true
        );
+    add( "DETAILED_CONTAINERS", interface, translate_marker( "Detailed containers" ),
+         translate_marker( "All: every container has detailed remaining volume info.  - Worn: only worn containers have detailed remaining volume info.  - None: no additional info is provided." ),
+    {
+        { "ALL", translate_marker( "All" ) },
+        { "WORN", translate_marker( "Worn" ) },
+        { "NONE", translate_marker( "None" ) }
+    },
+    "WORN" );
 
     add_empty_line();
 

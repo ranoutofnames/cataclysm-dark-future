@@ -5,6 +5,8 @@
 #include "item.h"
 #include "item_category.h"
 #include "item_pocket.h"
+#include "options.h"
+#include "options_helpers.h"
 #include "player_helpers.h"
 #include "state_helpers.h"
 #include "type_id.h"
@@ -1621,4 +1623,142 @@ TEST_CASE("rebuilding a selector clears the row rectangles", "[inventory][ui][p3
     f.sel.rect_entry_map.push_back({inclusive_rectangle<point>(point(2, 5), point(30, 5)), first});
     f.sel.reset_filter();
     CHECK(f.sel.rect_entry_map.empty());
+}
+
+// PL-63 FM2: row format (DDA inventory_ui.cpp:1799-1829, 810-860; item_category.json).
+TEST_CASE(
+    "symbol mode marks the parent row with a caret and the children with another",
+    "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    REQUIRE(row_for(sel, f.pack) != nullptr);
+    REQUIRE(row_for(sel, f.rock) != nullptr);
+    REQUIRE(sel.select(f.box));
+
+    SECTION("the default option is symbol") {
+        CHECK(get_option<std::string>("INVENTORY_HIGHLIGHT") == "symbol");
+        sel.highlight();
+        CHECK(row_for(sel, f.pack)->highlight_as_parent);
+        CHECK(row_for(sel, f.rock)->highlight_as_child);
+    }
+
+    SECTION("highlight keeps the marks") {
+        override_option highlight("INVENTORY_HIGHLIGHT", "highlight");
+        sel.highlight();
+        CHECK(row_for(sel, f.pack)->highlight_as_parent);
+        CHECK(row_for(sel, f.rock)->highlight_as_child);
+    }
+}
+
+TEST_CASE("disable mode marks nothing", "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    REQUIRE(sel.select(f.box));
+
+    override_option highlight("INVENTORY_HIGHLIGHT", "disable");
+    sel.highlight();
+    CHECK_FALSE(row_for(sel, f.pack)->highlight_as_parent);
+    CHECK_FALSE(row_for(sel, f.rock)->highlight_as_child);
+}
+
+TEST_CASE(
+    "worn container name carries volume weight and length with the default option",
+    "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    const inventory_entry* pack_row = row_for(sel, f.pack);
+    const inventory_entry* box_row = row_for(sel, f.box);
+    REQUIRE(pack_row != nullptr);
+    REQUIRE(box_row != nullptr);
+
+    SECTION("default is WORN") {
+        CHECK(get_option<std::string>("DETAILED_CONTAINERS") == "WORN");
+        const std::string pack_text = default_preset.get_cell_text(*pack_row, 0);
+        CHECK(pack_text.find("(remains") != std::string::npos);
+        CHECK(pack_text.find("max length") != std::string::npos);
+        // the box is carried, not worn, so it gets no suffix
+        CHECK(default_preset.get_cell_text(*box_row, 0).find("(remains") == std::string::npos);
+    }
+
+    SECTION("NONE adds nothing") {
+        override_option detailed("DETAILED_CONTAINERS", "NONE");
+        CHECK(default_preset.get_cell_text(*pack_row, 0).find("(remains") == std::string::npos);
+    }
+
+    SECTION("ALL covers the carried box too") {
+        override_option detailed("DETAILED_CONTAINERS", "ALL");
+        CHECK(default_preset.get_cell_text(*pack_row, 0).find("(remains") != std::string::npos);
+        CHECK(default_preset.get_cell_text(*box_row, 0).find("(remains") != std::string::npos);
+    }
+}
+
+TEST_CASE("restricted-only pockets get no suffix", "[inventory][ui][fm]") {
+    carried_pack_fixture f;
+    f.u.wear_item(item::spawn(itype_id("chestpouch"), calendar::turn), false);
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    refresh_columns(sel);
+    const item* pouch = nullptr;
+    for (item* worn : f.u.top_items_loc()) {
+        if (worn->typeId() == itype_id("chestpouch")) {
+            pouch = worn;
+        }
+    }
+    REQUIRE(pouch != nullptr);
+    const inventory_entry* pouch_row = row_for(sel, pouch);
+    REQUIRE(pouch_row != nullptr);
+    CHECK(default_preset.get_cell_text(*pouch_row, 0).find("(remains") == std::string::npos);
+
+    override_option detailed("DETAILED_CONTAINERS", "ALL");
+    CHECK(default_preset.get_cell_text(*pouch_row, 0).find("(remains") == std::string::npos);
+}
+
+TEST_CASE(
+    "category headers and ranks match the DDA table for shared ids", "[inventory][ui][fm]") {
+    // The 23 ids both games share, from DDA b4b62254ae2 data/json/item_category.json
+    // (the table behind PL-63 work/category-diff.tsv).
+    struct expected_category {
+        const char* id;
+        const char* header;
+        int rank;
+    };
+    static const std::array<expected_category, 23> dda_categories = {{
+            { "WEAPON_HELD", "Weapon held", -200 },
+            { "ITEMS_WORN", "Items worn", -100 },
+            { "guns", "Guns", -23 },
+            { "magazines", "Magazines", -22 },
+            { "ammo", "Ammo", -21 },
+            { "weapons", "Weapons", -20 },
+            { "tools", "Tools", -19 },
+            { "food", "Food", -18 },
+            { "drugs", "Drugs", -17 },
+            { "books", "Books", -15 },
+            { "maps", "Maps", -14 },
+            { "mods", "Mods", -13 },
+            { "bionics", "Bionics", -12 },
+            { "mutagen", "Mutagens", -12 },
+            { "veh_parts", "Vehicle parts", -10 },
+            { "other", "Other", -9 },
+            { "fuel", "Fuel", -8 },
+            { "seeds", "Seeds", -7 },
+            { "chems", "Chemical stuff", 5 },
+            { "spare_parts", "Spare parts", 8 },
+            { "container", "Containers", 9 },
+            { "artifacts", "Artifacts", 10 },
+            { "clothing", "Clothing", 19 },
+        }
+    };
+
+    for (const expected_category& expected : dda_categories) {
+        CAPTURE(expected.id);
+        const item_category& category = item_category_id(expected.id).obj();
+        CHECK(category.name() == expected.header);
+        CHECK(category.sort_rank() == expected.rank);
+    }
 }

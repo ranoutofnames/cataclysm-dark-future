@@ -48,6 +48,7 @@
 #endif
 
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <limits>
 #include <map>
@@ -81,6 +82,46 @@ static const double min_ratio_to_center = 0.85;
 
 /** These categories should keep their original order and can't be re-sorted by inventory presets */
 static const std::set<std::string> ordered_categories = {{ "ITEMS_WORN" }};
+
+namespace
+{
+// Per DDA inventory_ui.cpp:183-187. CDF has no INTEGRATED or BIONIC_FUEL_SOURCE categories.
+bool is_worn_id( const item_category_id &id )
+{
+    return id == item_category_id( "ITEMS_WORN" );
+}
+
+// CDF: DDA's unit_to_string/vol_to_string (DDA units_utility.cpp:367-446) is not ported, so
+// these build the same compact strings ("1.5L", "0.2kg", "30cm") from the CDF unit helpers.
+std::string format_volume_compact( const units::volume &volume )
+{
+    int scale = 0;
+    const double value = convert_volume( units::to_milliliter( volume ), &scale );
+    return string_format( "%g%s", std::round( value * 1000.0 ) / 1000.0, volume_units_abbr() );
+}
+
+std::string format_weight_compact( const units::mass &weight )
+{
+    return string_format( "%g%s", std::round( convert_weight( weight ) * 100.0 ) / 100.0,
+                          weight_units() );
+}
+
+// Per DDA inventory_ui.cpp:250-265.
+struct container_data {
+    units::volume actual_capacity;
+    units::volume total_capacity;
+    units::mass actual_capacity_weight;
+    units::mass total_capacity_weight;
+    units::length max_containable_length;
+
+    std::string to_formatted_string() const {
+        return string_format( _( "(remains %s, %s) max length %s" ),
+                              format_volume_compact( total_capacity - actual_capacity ),
+                              format_weight_compact( total_capacity_weight - actual_capacity_weight ),
+                              string_format_length( max_containable_length, true ) );
+    }
+};
+} // namespace
 
 constexpr int max_chosen_count = std::numeric_limits<int>::max();
 
@@ -362,10 +403,43 @@ std::string inventory_selector_preset::get_cell_text( const inventory_entry &ent
     if( !entry ) {
         return std::string();
     } else if( entry.is_item() ) {
-        return cells[cell_index].get_text( entry );
+        std::string text = cells[cell_index].get_text( entry );
+        const item &actual_item = *entry.any_item();
+        const std::string info_display = get_option<std::string>( "DETAILED_CONTAINERS" );
+        // if we want no additional info skip this
+        if( info_display != "NONE" ) {
+            // if we want additional info for all items or it is worn then add the additional info
+            if( info_display == "ALL" || ( info_display == "WORN" &&
+                                           is_worn_id( entry.get_category_ptr()->get_id() ) &&
+                                           get_avatar().is_worn( actual_item ) ) ) {
+                if( cell_index == 0 && !text.empty() &&
+                    actual_item.is_container() && actual_item.has_unrestricted_pockets() ) {
+                    auto ok_unrestricted_container = []( const item_pocket & pocket ) {
+                        return item_pocket::ok_default_containers( pocket ) && !pocket.is_restricted();
+                    };
+                    const units::volume total_capacity = actual_item.get_volume_capacity( ok_unrestricted_container );
+                    const units::mass total_capacity_weight = actual_item.get_total_weight_capacity( true );
+                    const units::length max_containable_length = actual_item.max_containable_length( true );
+
+                    const units::volume actual_capacity = actual_item.get_contents_volume( ok_unrestricted_container );
+                    const units::mass actual_capacity_weight = actual_item.get_total_contained_weight( true );
+
+                    const container_data container_data = {
+                        actual_capacity,
+                        total_capacity,
+                        actual_capacity_weight,
+                        total_capacity_weight,
+                        max_containable_length
+                    };
+                    text = text + string_format( " %s", container_data.to_formatted_string() );
+                }
+            }
+        }
+        return text;
     } else if( cell_index != 0 ) {
         return replace_colors( cells[cell_index].title );
     } else {
+        // CDF: item_category has one name field; item_category.json carries DDA's header text.
         return entry.get_category_ptr()->name();
     }
 }
@@ -1350,17 +1424,26 @@ void inventory_column::draw( const catacurses::window &win, point pos,
                     trim_and_print( win, point( text_x - 1, yy ), 1, chevron_color,
                                     collapsed ? "▶" : "▼" );
                 }
+                const std::string &hl_option = get_option<std::string>( "INVENTORY_HIGHLIGHT" );
                 if( entry.is_item() && ( selected || !entry.is_selectable() ) ) {
                     trim_and_print( win, point( text_x, yy ), text_width, selected ? h_white : c_dark_gray,
                                     remove_color_tags( text ) );
                 } else if( entry.is_item() && entry.highlight_as_parent ) {
-                    // Per DDA inventory_ui.cpp:1812-1820 ("background" style; CDF has no
-                    // INVENTORY_HIGHLIGHT option)
-                    trim_and_print( win, point( text_x, yy ), text_width, c_white_white,
-                                    remove_color_tags( text ) );
+                    if( hl_option == "symbol" ) {
+                        trim_and_print( win, point( text_x - 1, yy ), 1, h_white, "<" );
+                        trim_and_print( win, point( text_x, yy ), text_width, entry_cell_cache.color, text );
+                    } else {
+                        trim_and_print( win, point( text_x, yy ), text_width, c_white_white,
+                                        remove_color_tags( text ) );
+                    }
                 } else if( entry.is_item() && entry.highlight_as_child ) {
-                    trim_and_print( win, point( text_x, yy ), text_width, c_black_white,
-                                    remove_color_tags( text ) );
+                    if( hl_option == "symbol" ) {
+                        trim_and_print( win, point( text_x - 1, yy ), 1, h_white, ">" );
+                        trim_and_print( win, point( text_x, yy ), text_width, entry_cell_cache.color, text );
+                    } else {
+                        trim_and_print( win, point( text_x, yy ), text_width, c_black_white,
+                                        remove_color_tags( text ) );
+                    }
                 } else {
                     trim_and_print( win, point( text_x, yy ), text_width, entry_cell_cache.color, text );
                 }
@@ -3324,6 +3407,10 @@ void inventory_selector::highlight()
             entry->highlight_as_parent = false;
             entry->highlight_as_child = false;
         }
+    }
+    // Per DDA inventory_ui.cpp:3247-3249: "disable" marks nothing.
+    if( get_option<std::string>( "INVENTORY_HIGHLIGHT" ) == "disable" ) {
+        return;
     }
     if( get_active_column().empty() ) {
         return;

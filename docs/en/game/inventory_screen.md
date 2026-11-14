@@ -96,7 +96,8 @@ These behaviours belong to the item selector (the `INVENTORY` context). They fol
 - **Reset filter** (`RESET_FILTER`) clears the filter text and shows the whole list again.
 - **Toggle skipping of unselectable items** (`TOGGLE_SKIP_UNSELECTABLE`, no default key) controls whether the cursor skips rows that cannot be chosen (greyed out). In CDF the cursor skips them by default. Turn the skip off to stop on a greyed row and see why it is unavailable.
 - **Next and previous column** (`NEXT_COLUMN`, `PREV_COLUMN`) move between the columns of the selector. The older `LEFT` and `RIGHT` actions are no longer used by the plain selector; the multi-select screens (drop, item use, pickup) still use `RIGHT` to mark an item until their keys are updated.
-- **Parent and child highlight**: when a container is highlighted, the items inside it are drawn in an inverted colour, and the container that holds it is drawn in a bright inverted colour.
+- **Parent and child highlight**: when a container is highlighted, the items inside it and the container that holds it are marked. The `INVENTORY_HIGHLIGHT` option chooses how (DDA default "Symbol"): "Symbol" draws a highlighted `<` one column left of the parent container's name and a `>` next to the rows inside the highlighted item and keeps the item colours; "Highlight" uses font highlighting instead (bright inverted for the parent, dark inverted for the children); "Disabled" marks nothing.
+- **Detailed containers** (`DETAILED_CONTAINERS`, DDA default "Worn"): the name of a worn container with unrestricted pockets carries its remaining volume and weight and the longest item it takes, for example "(remains 1.5L, 0.2kg) max length 30cm". "All" does the same for every container, "None" turns the suffix off. Containers whose pockets are all restricted (ammo pouches, holsters) get no suffix.
 
 ## Multi-select screens: marking, counts and containers
 

@@ -2,37 +2,37 @@
   {
     "id": "guns",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "GUNS" },
+    "name": { "str": "Guns" },
     "zone": "LOOT_GUNS",
-    "sort_rank": -42
+    "sort_rank": -23
   },
   {
     "id": "magazines",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "MAGAZINES" },
+    "name": { "str": "Magazines" },
     "zone": "LOOT_MAGAZINES",
-    "sort_rank": -39
+    "sort_rank": -22
   },
   {
     "id": "ammo",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "AMMO" },
+    "name": { "str": "Ammo" },
     "zone": "LOOT_AMMO",
-    "sort_rank": -36
+    "sort_rank": -21
   },
   {
     "id": "weapons",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "WEAPONS" },
+    "name": { "str": "Weapons" },
     "zone": "LOOT_WEAPONS",
-    "sort_rank": -33
+    "sort_rank": -20
   },
   {
     "id": "tools",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "OTHER TOOLS" },
+    "name": { "str": "Tools" },
     "zone": "LOOT_TOOLS",
-    "sort_rank": -30
+    "sort_rank": -19
   },
   {
     "id": "tools_entry",
@@ -86,16 +86,16 @@
   {
     "id": "clothing",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "CLOTHING" },
+    "name": { "str": "Clothing" },
     "zone": "LOOT_CLOTHING",
-    "sort_rank": -6
+    "sort_rank": 19
   },
   {
     "id": "food",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "FOOD" },
+    "name": { "str": "Food" },
     "//": "zone is hardcoded",
-    "sort_rank": -3
+    "sort_rank": -18
   },
   {
     "id": "cooking_ingredients",
@@ -107,16 +107,16 @@
   {
     "id": "drugs",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "DRUGS" },
+    "name": { "str": "Drugs" },
     "zone": "LOOT_DRUGS",
-    "sort_rank": 4
+    "sort_rank": -17
   },
   {
     "id": "books",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "BOOKS" },
+    "name": { "str": "Books" },
     "zone": "LOOT_BOOKS",
-    "sort_rank": 7
+    "sort_rank": -15
   },
   {
     "id": "spellbooks",
@@ -128,58 +128,58 @@
   {
     "id": "mods",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "MODS" },
+    "name": { "str": "Mods" },
     "zone": "LOOT_MODS",
-    "sort_rank": 13
+    "sort_rank": -13
   },
   {
     "id": "mutagen",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "MUTAGENS" },
+    "name": { "str": "Mutagens" },
     "zone": "LOOT_MUTAGENS",
-    "sort_rank": 16
+    "sort_rank": -12
   },
   {
     "id": "bionics",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "BIONICS" },
+    "name": { "str": "Bionics" },
     "zone": "LOOT_BIONICS",
-    "sort_rank": 19
+    "sort_rank": -12
   },
   {
     "id": "veh_parts",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "VEHICLE PARTS" },
+    "name": { "str": "Vehicle parts" },
     "zone": "LOOT_VEHICLE_PARTS",
-    "sort_rank": 22
+    "sort_rank": -10
   },
   {
     "id": "other",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "OTHER" },
+    "name": { "str": "Other" },
     "zone": "LOOT_OTHER",
-    "sort_rank": 25
+    "sort_rank": -9
   },
   {
     "id": "fuel",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "FUEL" },
+    "name": { "str": "Fuel" },
     "zone": "LOOT_FUEL",
-    "sort_rank": 28
+    "sort_rank": -8
   },
   {
     "id": "seeds",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "SEEDS" },
+    "name": { "str": "Seeds" },
     "zone": "LOOT_SEEDS",
-    "sort_rank": 31
+    "sort_rank": -7
   },
   {
     "id": "chems",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "CHEMICAL STUFF" },
+    "name": { "str": "Chemical stuff" },
     "zone": "LOOT_CHEMICAL",
-    "sort_rank": 34
+    "sort_rank": 5
   },
   {
     "id": "battery",
@@ -191,9 +191,9 @@
   {
     "id": "spare_parts",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "SPARE PARTS" },
+    "name": { "str": "Spare parts" },
     "zone": "LOOT_SPARE_PARTS",
-    "sort_rank": 40
+    "sort_rank": 8
   },
   {
     "id": "scrap_metal",
@@ -268,34 +268,34 @@
   {
     "id": "container",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "CONTAINERS" },
+    "name": { "str": "Containers" },
     "zone": "LOOT_CONTAINERS",
-    "sort_rank": 73
+    "sort_rank": 9
   },
   {
     "id": "artifacts",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "ARTIFACTS" },
+    "name": { "str": "Artifacts" },
     "zone": "LOOT_ARTIFACTS",
-    "sort_rank": 76
+    "sort_rank": 10
   },
   {
     "id": "maps",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "MAPS" },
+    "name": { "str": "Maps" },
     "zone": "LOOT_MAP",
-    "sort_rank": 80
+    "sort_rank": -14
   },
   {
     "id": "ITEMS_WORN",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "ITEMS WORN" },
+    "name": { "str": "Items worn" },
     "sort_rank": -100
   },
   {
     "id": "WEAPON_HELD",
     "type": "ITEM_CATEGORY",
-    "name": { "str": "WEAPON HELD" },
+    "name": { "str": "Weapon held" },
     "sort_rank": -200
   },
   {
