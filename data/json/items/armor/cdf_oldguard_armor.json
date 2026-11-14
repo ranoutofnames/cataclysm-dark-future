@@ -1,0 +1,151 @@
+[
+  {
+    "id": "ballistic_vest_oldguard",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF-only (P3-VEST2): the Old Guard IOTV suit as its own item, a copy of ballistic_vest_heavy (DDA data/json/items/armor/ballistic_armor.json:655; same 4976 g / 6 L, torso portions with cover_vitals 90 and the 0.3 pouch modifier, 2 large + 2 medium plate pockets and the shoulder, groin and collar protector pockets). BN's five Old Guard suits (oldguard_armor and the four plated ones) migrate to this id with the shoulder and groin protectors already installed (data/json/obsoletion/cdf_vest_migration.json); the collar pocket stays free. Kitted spawns: data/json/itemgroups/cdf_oldguard.json. ballistic_vest_heavy stays the DDA item used by DDA's military groups.",
+    "name": {
+      "str": "Old Guard IOTV suit"
+    },
+    "description": "A military ballistic vest, modified with additional protective panels to improve coverage at the expense of encumbrance.  Made and used by military remnants to provide robust protection against the new threats of the cataclysm.  It has pockets on the front, back, and sides for armor plates, and attachment points for shoulder, groin, and neck protection.",
+    "weight": "4976 g",
+    "volume": "6 L",
+    "price": "1600 USD",
+    "price_postapoc": "10 USD",
+    "material": [
+      "kevlar"
+    ],
+    "symbol": "[",
+    "color": "light_gray",
+    "looks_like": "oldguard_armor",
+    "repairs_like": "survivor_suit",
+    "warmth": 15,
+    "material_thickness": 7,
+    "use_action": [ { "type": "attach_molle", "size": 10 }, { "type": "detach_molle" } ],
+    "flags": [
+      "STURDY",
+      "OUTER",
+      "WATER_FRIENDLY",
+      "ALLOWS_WINGS"
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_upper"
+        ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "encumbrance": 6,
+        "volume_encumber_modifier": 0.3
+      },
+      {
+        "covers": [
+          "torso"
+        ],
+        "specifically_covers": [
+          "torso_lower"
+        ],
+        "coverage": 90,
+        "cover_vitals": 90,
+        "encumbrance": 0,
+        "volume_encumber_modifier": 0.3
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2000 ml",
+        "max_contains_weight": "5 kg",
+        "max_item_length": "33 cm",
+        "moves": 800,
+        "description": "Pocket for a large armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_LARGE"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Pocket for a medium armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_MEDIUM"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "2 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Pocket for a medium armor plate.",
+        "flag_restriction": [
+          "ABLATIVE_MEDIUM"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "1000 ml",
+        "max_contains_weight": "1200 kg",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Attachment for shoulder protectors.",
+        "item_restriction": [
+          "iotv_shoulder_plate"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "800 g",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Attachment for a groin protector.",
+        "item_restriction": [
+          "iotv_groin_plate"
+        ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "800 ml",
+        "max_contains_weight": "800 g",
+        "max_item_length": "21 cm",
+        "moves": 800,
+        "description": "Attachment for a collar.",
+        "item_restriction": [
+          "iotv_neck_plate"
+        ]
+      }
+    ]
+  }
+]
