@@ -3371,6 +3371,8 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     ctxt.register_action( "RESET_FILTER", to_translation( "Reset filter" ) );
     ctxt.register_action( "TOGGLE_SKIP_UNSELECTABLE",
                           to_translation( "Toggle skipping of unselectable items" ) );
+    // Per DDA inventory_ui.cpp:3452-3453, 3468-3469: mouse actions in every selector.
+    register_mouse_actions();
 
     append_column( own_inv_column );
     append_column( map_column );
@@ -3459,7 +3461,8 @@ inventory_input inventory_selector::process_input( const std::string &action, in
 {
     inventory_input res{ action, ch, nullptr, false };
 
-    if( res.action == "SELECT" || res.action == "MOUSE_MOVE" || res.action == "CLICK_AND_DRAG" ) {
+    if( res.action == "SELECT" || res.action == "COORDINATE" || res.action == "MOUSE_MOVE" ||
+        res.action == "CLICK_AND_DRAG" ) {
         const std::optional<point> o_p = ctxt.get_coordinates_text( w_inv );
         if( o_p ) {
             point p = *o_p;
@@ -3479,6 +3482,8 @@ inventory_input inventory_selector::process_input( const std::string &action, in
                         return res;
                     }
                 }
+                // DDA 3580-3582: a row that cannot be selected is not passed on to execute().
+                res.entry = nullptr;
             }
         }
     }
@@ -3524,10 +3529,11 @@ bool inventory_selector::drag_drop_item( item *source, item *dest )
     return game_menus::inv::select_pocket_and_store( u, *source, *dest );
 }
 
-// DDA inventory_ui.cpp:3452-3453, 3468-3469 (COORDINATE is not registered: CDF records the mouse
-// position for every mouse event).
+// Per DDA inventory_ui.cpp:3452-3453, 3468-3469. COORDINATE makes input_context keep the mouse
+// position of an event no action claims (DDA uses the same marker).
 void inventory_selector::register_mouse_actions()
 {
+    ctxt.register_action( "COORDINATE" );
     ctxt.register_action( "MOUSE_MOVE" );
     ctxt.register_action( "CLICK_AND_DRAG" );
     ctxt.register_action( "SELECT" );
@@ -4366,6 +4372,23 @@ bool inventory_multiselector::handle_mark_action( const std::string &action, int
     return true;
 }
 
+bool inventory_multiselector::handle_entry_action( const inventory_input &input )
+{
+    if( input.entry == nullptr || !input.entry->is_item() ) {
+        return false;
+    }
+    // Per DDA inventory_multiselector::on_input: the row under the mouse is highlighted on every
+    // mouse event; only a click (SELECT) or an invlet (ANY_INPUT) marks or unmarks it.
+    select( input.entry->any_item() );
+    if( input.action == "SELECT" || input.action == "ANY_INPUT" ) {
+        int count = 0;
+        toggle_entries( count, toggle_mode::SELECTED );
+    } else {
+        inventory_selector::on_input( input );
+    }
+    return true;
+}
+
 void inventory_multiselector::toggle_categorize_contained()
 {
     // Per DDA inventory_ui.cpp:4760-4772. CDF rebuilds the entries when the view changes, so the
@@ -4420,9 +4443,16 @@ std::pair<const item *, const item *> inventory_compare_selector::execute()
         inventory_entry *just_selected = nullptr;
 
         if( input.entry != nullptr ) {
+            // Per DDA inventory_compare_selector::execute (4612-4618): hover highlights the row,
+            // SELECT/ANY_INPUT compares it, any other event goes to the normal handler so a
+            // chevron click still expands and the wheel still scrolls.
             select( input.entry->any_item() );
-            toggle_entry( input.entry );
-            just_selected = input.entry;
+            if( input.action == "SELECT" || input.action == "ANY_INPUT" ) {
+                toggle_entry( input.entry );
+                just_selected = input.entry;
+            } else if( input.action != "MOUSE_MOVE" ) {
+                inventory_selector::on_input( input );
+            }
         } else if( input.action == "TOGGLE_ENTRY" ) {
             const auto selection( get_active_column().get_all_selected() );
 
@@ -4497,9 +4527,8 @@ std::vector<iuse_location> inventory_iuse_selector::execute()
             // invlet. G19: a bound digit (4, 6) keeps its action.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
-            select( input.entry->any_item() );
-            set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
-            end_mark_batch();
+            // Per DDA inventory_multiselector::on_input: hover highlights, click marks/unmarks.
+            handle_entry_action( input );
         } else if( handle_mark_action( input.action, input.ch ) ) {
             // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
@@ -4755,9 +4784,9 @@ drop_locations inventory_drop_selector::execute()
             // invlet. G19: a bound digit (4, 6) keeps its action.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
-            select( input.entry->any_item() );
-            set_chosen_count( *input.entry, input.entry->chosen_count == 0 ? max_chosen_count : 0 );
-            end_mark_batch();
+            // Per DDA inventory_drop_selector::execute (4963): every event on a row goes to
+            // on_input, so a hover only highlights and a click marks/unmarks.
+            handle_entry_action( input );
         } else if( handle_mark_action( input.action, input.ch ) ) {
             // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
@@ -5036,11 +5065,9 @@ std::vector<pickup::pick_drop_selection> inventory_pickup_selector::execute()
             // invlet. G19: a bound digit (4, 6) keeps its action.
             handle_mark_action( input.action, input.ch );
         } else if( input.entry != nullptr ) {
-            select( input.entry->any_item() );
-            if( input.entry->chosen_count == 0 ) {
-                set_chosen_count( *input.entry, max_chosen_count );
-                end_mark_batch();
-            }
+            // Per DDA pickup_selector::execute through inventory_multiselector::on_input: hover
+            // highlights; a click toggles the mark (an already marked row is unmarked).
+            handle_entry_action( input );
         } else if( handle_mark_action( input.action, input.ch ) ) {
             // TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, count keys: see the base class
         } else if( input.action == "CONFIRM" ) {
@@ -5444,8 +5471,7 @@ void ammo_inventory_selector::mod_chosen_count( inventory_entry &entry, int valu
 
 // CDF: P3-5-2c, DDA inventory_ui.cpp 4266-4313. Items are item pointers (D1): `chosen` is an
 // item *const and the result is drop_location( *chosen, count ), highlight( loc ) is select( loc ).
-// Cut: the MOUSE_MOVE branch (DDA 4275-4278) and the SELECT action of 4279 (D5 keyboard only; the
-// CDF selector registers neither) and debug_print_timer (4269, no CDF symbol).
+// debug_print_timer (4269) has no CDF symbol.
 drop_location ammo_inventory_selector::execute()
 {
     shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
@@ -5454,7 +5480,13 @@ drop_location ammo_inventory_selector::execute()
         const inventory_input input = get_input();
 
         if( input.entry != nullptr ) {
-            if( input.action == "ANY_INPUT" ) {
+            if( input.action == "MOUSE_MOVE" || input.action == "COORDINATE" ) {
+                // Per DDA inventory_ui.cpp:4275-4278: hover only moves the highlight.
+                if( select( input.entry->any_item() ) ) {
+                    ui_manager::redraw();
+                }
+            } else if( input.action == "ANY_INPUT" || input.action == "SELECT" ) {
+                // Per DDA inventory_ui.cpp:4279-4287: a click (or an invlet) picks the row.
                 item *const chosen = input.entry->any_item();
                 last_player_adjusted = std::find( player_adjusted_ammo_locs.begin(),
                                                   player_adjusted_ammo_locs.end(),

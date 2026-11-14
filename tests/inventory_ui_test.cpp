@@ -2538,3 +2538,85 @@ TEST_CASE("examine with no highlighted row is a no-op", "[inventory][ui][in2]") 
     col.on_input(inventory_input{"EXAMINE", 0, nullptr});
     CHECK_FALSE(col.get_selected().is_item());
 }
+
+// PL-64 MS1: mouse in every selector (DDA inventory_ui.cpp:3452-3453, 3468-3469, 4774-4781).
+namespace {
+struct ms1_iuse_probe : inventory_iuse_selector {
+    using inventory_iuse_selector::inventory_iuse_selector;
+    using inventory_multiselector::handle_entry_action;
+    using inventory_selector::ctxt;
+    auto actions() const -> std::vector<std::string> {
+        return ctxt.get_registered_actions_copy();
+    }
+};
+
+struct ms1_ammo_probe : ammo_inventory_selector {
+    using ammo_inventory_selector::ammo_inventory_selector;
+    using inventory_selector::ctxt;
+    auto actions() const -> std::vector<std::string> {
+        return ctxt.get_registered_actions_copy();
+    }
+};
+} // namespace
+
+TEST_CASE("mouse actions are registered in every selector kind", "[inventory][ui][ms1]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    auto rock = item::spawn("rock");
+
+    in2_pick_probe pick(you);
+    in2_drop_probe drop(you);
+    in2_compare_probe compare(you);
+    in2_pickup_probe pickup(you);
+    ms1_iuse_probe iuse(you, "test");
+    ms1_ammo_probe ammo(you, *rock);
+
+    struct named_actions {
+        const char* name;
+        std::vector<std::string> actions;
+    };
+    const std::vector<named_actions> probes{
+        {"pick", pick.actions()},
+        {"drop/insert", drop.actions()},
+        {"compare", compare.actions()},
+        {"pickup", pickup.actions()},
+        {"iuse", iuse.actions()},
+        {"ammo", ammo.actions()},
+    };
+    for (const named_actions& probe : probes) {
+        CAPTURE(probe.name);
+        for (const char* action : {"COORDINATE", "MOUSE_MOVE", "SELECT", "CLICK_AND_DRAG"}) {
+            CAPTURE(action);
+            CHECK(in2_has_action(probe.actions, action));
+        }
+    }
+}
+
+TEST_CASE("multiselector hover highlights a row and a click toggles it",
+          "[inventory][ui][ms1]") {
+    clear_all_state();
+    avatar& you = get_avatar();
+    item& rock = you.i_add(item::spawn("rock"));
+
+    ms1_iuse_probe sel(you, "test");
+    sel.add_character_items(you);
+    sel.own_inv_column.prepare_paging();
+    inventory_entry* row = entry_for(sel, &rock);
+    REQUIRE(row != nullptr);
+
+    sel.handle_entry_action(inventory_input{"MOUSE_MOVE", 0, row, true});
+    CHECK(sel.get_selected().any_item() == &rock);
+    CHECK(row->chosen_count == 0);
+
+    sel.handle_entry_action(inventory_input{"CLICK_AND_DRAG", 0, row, true});
+    CHECK(row->chosen_count == 0);
+
+    sel.handle_entry_action(inventory_input{"SELECT", 0, row, true});
+    CHECK(row->chosen_count > 0);
+    sel.handle_entry_action(inventory_input{"SELECT", 0, row, true});
+    CHECK(row->chosen_count == 0);
+
+    // a key invlet is still a mark, as in DDA's ANY_INPUT branch
+    sel.handle_entry_action(inventory_input{"ANY_INPUT", rock.invlet, row, false});
+    CHECK(row->chosen_count > 0);
+}

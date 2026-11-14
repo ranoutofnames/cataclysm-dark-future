@@ -893,9 +893,9 @@ class inventory_selector
         inventory_entry *find_entry_by_invlet( int invlet ) const;
         /// Per DDA inventory_ui.cpp:3551-3583: the entry under the mouse for the mouse actions.
         inventory_input process_input( const std::string &action, int ch );
-        /// Registers MOUSE_MOVE, SELECT and CLICK_AND_DRAG (DDA 3453, 3468-3469). Only the pick
-        /// selectors call it: their loops handle those actions; the multiselectors would treat a
-        /// hover as a mark.
+        /// Registers COORDINATE, MOUSE_MOVE, SELECT and CLICK_AND_DRAG (DDA 3452-3453, 3468-3469).
+        /// The base constructor calls it, so every selector receives mouse events; each execute()
+        /// loop decides what a hover, a click and a drag mean.
         void register_mouse_actions();
 
         // Called from resizing/redraw callbacks of ui_adaptor and from the pick selectors
@@ -1055,9 +1055,7 @@ class inventory_pick_selector : public inventory_selector
     public:
         inventory_pick_selector( player &p,
                                  const inventory_selector_preset &preset = default_preset ) :
-            inventory_selector( p, preset ) {
-            register_mouse_actions();
-        }
+            inventory_selector( p, preset ) {}
 
         item *execute();
 
@@ -1134,6 +1132,11 @@ class inventory_multiselector : public inventory_selector
         /// TOGGLE_ENTRY, MARK_WITH_COUNT, TOGGLE_NON_FAVORITE, INCREASE_COUNT, DECREASE_COUNT,
         /// the number keys and VIEW_CATEGORY_MODE. Returns true when the input was used.
         bool handle_mark_action( const std::string &action, int ch = 0 );
+        /// Per DDA inventory_multiselector::on_input (4774-4781): the row under the mouse is
+        /// highlighted; SELECT or ANY_INPUT marks/unmarks it, and any other mouse event goes to the
+        /// normal selector handler (chevron clicks expand, the wheel scrolls). Returns false when
+        /// the input carries no row.
+        bool handle_entry_action( const inventory_input &input );
         /// A-L1 fix: a digit key seeds the count prompt (checked before the invlet lookup).
         static bool is_count_digit( int ch );
         /**
