@@ -994,6 +994,9 @@ class inventory_selector
     private:
         catacurses::window w_inv;
 
+        // PL-62 AT3: the headless draw-dump tests size this window and call the four private draw
+        // functions in refresh_window() order, without a live ui_adaptor.
+        friend struct inventory_selector_test_access;
 
         std::vector<inventory_column *> columns;
 

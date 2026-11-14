@@ -222,6 +222,15 @@ To run the plugin on multiple files, use [GNU parallel](https://www.gnu.org/soft
 $ parallel ./build-scripts/clang-tidy-wrapper.sh -fix ::: src/*.cpp
 ```
 
+## UI smoke tests
+
+`tests/selector_draw_test.cpp` renders an `inventory_selector` into a headless curses window and
+reads the cell grid back (`cata_cursesport::window_cells`), so row layout, container chevrons and
+the footer can be asserted without a live `ui_adaptor`.  The tests carry the `[audit][ui]` tags and
+run with the rest of the suite (`cata_test-tiles` on the tiles build); the font test parses the
+`cmap` table of `data/font/Terminus.ttf` and `data/font/unifont.ttf` directly to check that every
+non-ASCII glyph the selector draws is covered.
+
 ## include-what-you-use
 
 [include-what-you-use](https://github.com/include-what-you-use/include-what-you-use) (IWYU) is a
