@@ -3,6 +3,8 @@
 Here are some snippets to help you get familiar with Lua APIs and learn how to use them.
 To test these examples, paste the code into the in-game Lua console by pressing the `` ` `` (backtick) key.
 
+The bindings for pockets, loaded magazines and ammo are in [Pockets and ammo bindings](pockets_and_ammo.md).
+
 ## Items
 
 ### Getting list of all wielded and worn items in your inventory
