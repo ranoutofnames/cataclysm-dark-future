@@ -190,6 +190,8 @@ static const efftype_id effect_heating_bionic( "heating_bionic" );
 static const efftype_id effect_heavysnare( "heavysnare" );
 static const efftype_id effect_hot( "hot" );
 static const efftype_id effect_hot_speed( "hot_speed" );
+// CDF: DDA's incorporeal effect is not defined in base CDF data (BN base); kept for mods.
+static const efftype_id effect_incorporeal( "incorporeal" );
 static const efftype_id effect_in_pit( "in_pit" );
 static const efftype_id effect_infected( "infected" );
 static const efftype_id effect_jetinjector( "jetinjector" );
@@ -277,9 +279,17 @@ static const trait_id trait_DEBUG_STAMINA( "DEBUG_STAMINA" );
 static const trait_id trait_DEFT( "DEFT" );
 static const trait_id trait_PROF_SKATER( "PROF_SKATER" );
 static const trait_id trait_QUILLS( "QUILLS" );
+// CDF: DDA's SQUEAMISH and VEGAN traits are not defined in base CDF data (BN base); kept for mods.
+static const trait_id trait_SQUEAMISH( "SQUEAMISH" );
+static const trait_id trait_VEGAN( "VEGAN" );
 static const trait_id trait_SPINES( "SPINES" );
 static const trait_id trait_THORNS( "THORNS" );
 static const trait_id trait_WOOLALLERGY( "WOOLALLERGY" );
+
+// CDF: DDA's FILTHY and ANIMAL_PRODUCT flags are not defined in base CDF data (BN base); kept
+// for mods. CDF's own DIRTY flag is DDA's separate flag_DIRTY, not DDA's is_filthy().
+static const flag_id flag_ANIMAL_PRODUCT( "ANIMAL_PRODUCT" );
+static const flag_id flag_FILTHY( "FILTHY" );
 
 static const bionic_id bio_ads( "bio_ads" );
 static const bionic_id bio_blindfold( "bio_blindfold" );
@@ -3640,6 +3650,10 @@ bool Character::can_use( const item &it, const item *context ) const
 
 ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) const
 {
+    if( has_effect( effect_incorporeal ) ) {
+        return ret_val<bool>::make_failure( _( "You can't wear anything while incorporeal." ) );
+    }
+
     if( !it.is_armor() ) {
         return ret_val<bool>::make_failure( _( "Putting on a %s would be tricky." ), it.tname() );
     }
@@ -3647,6 +3661,26 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
     // armor plates are inserted into a carrier, not worn
     if( it.has_flag( flag_CANT_WEAR ) ) {
         return ret_val<bool>::make_failure( _( "%s must be inserted into a carrier." ), it.tname() );
+    }
+
+    if( has_trait( trait_WOOLALLERGY ) && ( it.made_of( material_id( "wool" ) ) ||
+                                            it.has_own_flag( flag_wooled ) ) ) {
+        return ret_val<bool>::make_failure( _( "Can't wear that, it's made of wool!" ) );
+    }
+
+    if( has_trait( trait_VEGAN ) && ( it.made_of( material_id( "leather" ) ) ||
+                                      it.has_own_flag( flag_ANIMAL_PRODUCT ) ||
+                                      it.made_of( material_id( "fur" ) ) ||
+                                      it.made_of( material_id( "wool" ) ) ||
+                                      it.made_of( material_id( "chitin" ) ) ||
+                                      it.made_of( material_id( "bone" ) ) ||
+                                      it.made_of( material_id( "gutskin" ) ) ||
+                                      it.made_of( material_id( "acidchitin" ) ) ) ) {
+        return ret_val<bool>::make_failure( _( "Can't wear that, it's made from an animal!" ) );
+    }
+
+    if( it.has_flag( flag_FILTHY ) && has_trait( trait_SQUEAMISH ) ) {
+        return ret_val<bool>::make_failure( _( "Can't wear that, it's filthy!" ) );
     }
 
     // During multithreaded mapgen this can be called on NPC gen

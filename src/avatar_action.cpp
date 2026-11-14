@@ -1422,9 +1422,14 @@ void avatar_action::wield( item &loc )
 
         if( !ret.success() ) {
             add_msg( m_info, "%s", ret.c_str() );
+            return;
         }
 
-        u.unwield();
+        // DDA Character::wield returns false and leaves the item where it is when the
+        // "Stop wielding" prompt is cancelled; do not fall through to the forced item moves below.
+        if( !u.unwield() ) {
+            return;
+        }
 
         if( is_unwielding ) {
             if( !u.martial_arts_data->selected_is_none() ) {
@@ -1437,6 +1442,7 @@ void avatar_action::wield( item &loc )
     const auto ret = u.can_wield( loc );
     if( !ret.success() ) {
         add_msg( m_info, "%s", ret.c_str() );
+        return;
     }
 
     // Need to do this here because holster_actor::use() checks if/where the item is worn
@@ -1465,13 +1471,14 @@ void avatar_action::wield( item &loc )
         if( item_pos != INT_MIN ) {
             worn_index = Character::worn_position_to_index( item_pos );
         }
+        // DDA Character::wield runs the takeoff effects before moving a worn item to the hands.
+        loc.on_takeoff( u );
     }
     if( !u.wield( *to_wield ) ) {
         switch( location_type ) {
             case item_location_type::container:
-                // this will not cause things to spill, as it is inside another item
-                loc.obtain( u );
-                wield( loc );
+                // DDA Character::wield returns before removing the item, so a failed wield
+                // leaves a container-sourced item in its container.
                 break;
             case item_location_type::character:
                 if( worn_index != INT_MIN ) {
