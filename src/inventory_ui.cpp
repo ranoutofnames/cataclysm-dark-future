@@ -256,6 +256,9 @@ pickup_inventory_preset::pickup_inventory_preset( const player &p ) : p( p )
 {
     // Per DDA game_inventory.cpp:562-564: the pickup menu keeps its own view mode.
     save_state = &pickup_sel_default_state;
+    // Per DDA game_inventory.cpp:565: the pickup menu lists the standard pockets, not only the
+    // container pocket.
+    _pk_type = { pocket_type::LAST };
 }
 
 std::string pickup_inventory_preset::get_denial( const item *loc ) const
@@ -1929,9 +1932,23 @@ bool inventory_selector::add_contained_items( item *container, inventory_column 
     if( container->has_flag( flag_NO_UNLOAD ) ) {
         return false;
     }
+    // Per DDA inventory_ui.cpp:2109-2141: the preset's pocket types decide which contents are
+    // listed. The default is the container pocket alone, so gun mods, cable items and magazine
+    // wells are not child rows; { pocket_type::LAST } lists the standard pockets instead.
+    // CDF: the untyped item_contents::all_items_top() returns the items of every pocket (PL-64
+    // G32); item::all_items_top() is the standard walk here, so it stands in for DDA's untyped call.
+    std::vector<item *> items;
+    if( preset.get_pocket_type().size() == 1 && preset.has_pocket_type( pocket_type::LAST ) ) {
+        items = container->all_items_top();
+    } else {
+        for( const pocket_type pt : preset.get_pocket_type() ) {
+            const std::vector<item *> pocket_items = container->all_items_top( pt );
+            items.insert( items.begin(), pocket_items.begin(), pocket_items.end() );
+        }
+    }
     bool vis_top = false;
     inventory_column temp( preset );
-    for( item *it : container->all_items_top() ) {
+    for( item *it : items ) {
         const item_category *hacked_cat = custom_category;
         inventory_column *hacked_col = &column;
         if( is_worn_ablative( u, container, it ) ) {

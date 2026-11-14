@@ -2348,3 +2348,69 @@ TEST_CASE("numpad key row exists and has no duplicate key in its context",
     CHECK(numpad_keys.front() == "F5");
     CHECK(other_inventory_f5 == 0);
 }
+
+// PL-64 G32: the carried tree lists the pocket types the preset asks for (DDA inventory_ui.cpp:
+// 2109-2141, default { pocket_type::CONTAINER }), so a gun's mod and magazine well are not child
+// rows, while the contents of a worn bag still are.
+TEST_CASE("contained items follow the preset pocket types", "[inventory][ui][fm]") {
+    const view_mode_state_guard view_mode;
+    clear_all_state();
+    avatar& u = get_avatar();
+    clear_character(u, true);
+
+    // a box in a worn bag: a container pocket row
+    u.wear_item(item::spawn(itype_id("backpack_hiking"), calendar::turn), false);
+    item& bag = *u.worn.front();
+    item& box = u.i_add(item::spawn(itype_id("box_small"), calendar::turn));
+    REQUIRE(box.parent_item() == &bag);
+
+    // a gun in the same bag with a mod in its MOD pocket: the mod is not a child row
+    detached_ptr<item> gun_ptr = item::spawn(itype_id("glock_19"), calendar::turn);
+    REQUIRE(gun_ptr->has_pocket_type(pocket_type::MOD));
+    detached_ptr<item> mod = item::spawn(itype_id("holo_sight"), calendar::turn);
+    item* const mod_ptr = mod.get();
+    REQUIRE(gun_ptr->put_in(std::move(mod), pocket_type::MOD).success());
+    // and an empty magazine in its well: the well is not a listing pocket either
+    detached_ptr<item> mag = item::spawn(itype_id("glockmag"), calendar::turn);
+    item* const mag_ptr = mag.get();
+    REQUIRE(gun_ptr->put_in(std::move(mag), pocket_type::MAGAZINE_WELL).success());
+    item& gun = u.i_add(std::move(gun_ptr));
+    REQUIRE(gun.parent_item() == &bag);
+    REQUIRE(mod_ptr->parent_item() == &gun);
+    REQUIRE(mag_ptr->parent_item() == &gun);
+
+    inventory_selector sel(u);
+    sel.enable_view_mode_toggle();
+    sel.add_character_items(u);
+    sel.toggle_categorize_contained();
+    sel.own_gear_column.prepare_paging();
+
+    const std::vector<const inventory_entry*> rows = item_rows(sel.own_gear_column);
+    REQUIRE(rows.size() == 3);
+    CHECK(rows[0]->any_item() == &bag);
+    CHECK(rows[0]->chevron);
+
+    const auto row_of = [&rows](const item* it) -> const inventory_entry* {
+        for (const inventory_entry* row : rows) {
+            if (row->any_item() == it) {
+                return row;
+            }
+        }
+        return nullptr;
+    };
+
+    const inventory_entry* box_row = row_of(&box);
+    REQUIRE(box_row != nullptr);
+    CHECK(box_row->indent == 2);
+    CHECK(box_row->topmost_parent == &bag);
+
+    const inventory_entry* gun_row = row_of(&gun);
+    REQUIRE(gun_row != nullptr);
+    CHECK(gun_row->indent == 2);
+    // the gun has no listed contents, so it gets no chevron
+    CHECK_FALSE(gun_row->chevron);
+    // the mod in the gun's MOD pocket is not a row of its own
+    CHECK(row_of(mod_ptr) == nullptr);
+    // neither is the magazine in its well
+    CHECK(row_of(mag_ptr) == nullptr);
+}

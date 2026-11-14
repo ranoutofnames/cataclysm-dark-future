@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <climits>
 #include <cstddef>
@@ -268,6 +269,14 @@ class inventory_selector_preset
             return check_components;
         }
 
+        /** Per DDA inventory_ui.h:275-281: the pocket types the contained-items walk lists. */
+        std::vector<pocket_type> get_pocket_type() const {
+            return _pk_type;
+        }
+        bool has_pocket_type( pocket_type pt ) const {
+            return std::find( _pk_type.begin(), _pk_type.end(), pt ) != _pk_type.end();
+        }
+
         virtual std::function<bool( const inventory_entry & )> get_filter( const std::string &filter )
         const;
 
@@ -290,6 +299,12 @@ class inventory_selector_preset
                           const std::string &title = std::string(),
                           const std::string &stub = std::string() );
         bool check_components = false;
+        /**
+         * Per DDA inventory_ui.h:317: what add_contained_items lists. The default is the container
+         * pocket alone; { pocket_type::LAST } asks for the standard pockets (container, magazine,
+         * magazine well).
+         */
+        std::vector<pocket_type> _pk_type = { pocket_type::CONTAINER };
 
     private:
         class cell_t
