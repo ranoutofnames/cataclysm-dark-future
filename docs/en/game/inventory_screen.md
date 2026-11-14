@@ -17,7 +17,6 @@ Screens that use the selector: inventory, drop (multidrop), item use, wield, wea
 | `INCREASE_COUNT` | `=`, `+` | Increase the selected amount for the highlighted item. |
 | `DECREASE_COUNT` | `-` | Decrease the selected amount for the highlighted item. |
 | `TOGGLE_NON_FAVORITE` | `,` | Select or unselect all non-favorite items (multidrop). |
-| `DROP_NON_FAVORITE` | `N` | Older id for the same job as `TOGGLE_NON_FAVORITE`; moved off `,` so it no longer clashes. |
 | `CATEGORY_SELECTION` | `t` | Toggle category selection mode. |
 | `VIEW_CATEGORY_MODE` | `;` | Toggle the inventory view to show item categories (CDF only). |
 | `SHOW_HIDE_CONTENTS` | `>` | Show or hide the contents of the highlighted container. |
@@ -31,6 +30,20 @@ Screens that use the selector: inventory, drop (multidrop), item use, wield, wea
 | `WEAR` | `W` | Wear the highlighted item. |
 | `ORGANIZE_MENU` | `i` | Open the organize-contents menu. |
 | `CONTAIN_MODE` | `U` | Toggle contain mode for unloaded items. |
+
+### Changed keys
+
+The selector keys follow DDA, so some defaults differ from earlier CDF builds. Existing custom bindings of the removed or renamed actions are not carried over.
+
+| Action | Default key now | Before |
+|---|---|---|
+| `PREV_COLUMN` | Tab, Shift+Tab | Tab was category selection |
+| `NEXT_COLUMN` | `h`, Left, `4`, Numpad 4 | Left and Right moved between columns (`LEFT`, `RIGHT` actions) |
+| `CATEGORY_SELECTION` | `t` | Tab |
+| `TOGGLE_NON_FAVORITE` | `,` | Not available in the selector |
+| `DROP_NON_FAVORITE` | removed | `N` (the action is gone; nothing reads it) |
+| `SHOW_HIDE_CONTENTS_ALL` | none (new, unbound) | Not available |
+| `TOGGLE_SKIP_UNSELECTABLE` | none (new, unbound) | Not available |
 
 Mouse actions of the selector:
 
@@ -91,7 +104,7 @@ These behaviours belong to the screens where you mark several items: drop, picku
 
 - **Mark or unmark** (`TOGGLE_ENTRY`, default `l`, Right arrow) marks the highlighted item, or all of it if you pressed it on a stack. Pressing it again unmarks. If every unmarked item in the selection is a favorite, favorites are marked only when nothing else is left to mark.
 - **Mark a specific amount** (`MARK_WITH_COUNT`, default `!`) asks for a number and marks that many of the highlighted stack. A number key does the same with the typed digit already filled in. Entering 0 toggles the mark as `TOGGLE_ENTRY` does. In item use the number keys now open the same prompt (they used to build up a count that the mark key then used).
-- **Mark or unmark all non-favorite items** (`TOGGLE_NON_FAVORITE`, default `,`) marks every non-favorite item in the active column that you are not wearing. Pressing it again clears them. This replaces the older `DROP_NON_FAVORITE` action on these screens.
+- **Mark or unmark all non-favorite items** (`TOGGLE_NON_FAVORITE`, default `,`) marks every non-favorite item in the active column that you are not wearing. Pressing it again clears them.
 - **Increase or decrease the amount** (`INCREASE_COUNT`, `DECREASE_COUNT`) changes the marked amount of the highlighted stack by one. It never goes below 0 or above the size of the stack.
 - **Containers**: marking a container covers what is inside it, at any depth. When you mark a container, any marked item inside it is unmarked, and marking an item inside an already marked container has no effect. Unmarking the container does not bring the contents back. Other items next to the container stay marked.
 - **Drop preview**: the "will be dropped" list and counts of the drop screen are refreshed right after every mark, including the unmarking of contained items. This preview is CDF's own and DDA has no equivalent.

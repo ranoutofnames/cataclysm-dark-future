@@ -3167,13 +3167,6 @@
   },
   {
     "type": "keybinding",
-    "id": "DROP_NON_FAVORITE",
-    "category": "INVENTORY",
-    "name": "Mark/unmark non-favorite items in multidrop menu",
-    "bindings": [ { "input_method": "keyboard", "key": "N" } ]
-  },
-  {
-    "type": "keybinding",
     "id": "NEXT_COLUMN",
     "category": "INVENTORY",
     "name": "Next column",
