@@ -1817,7 +1817,8 @@ void inventory_selector::add_items( inventory_column &target_column,
         add_entry( target_column, std::move( locations ), nat_category );
     }
 
-    // CDF: P3-NESTAMMO2. What sits nested in the items of the stacks (the ammo selector only).
+    // CDF: PK1/G36. What sits nested in the items of the stacks; the base walk adds the rows and the
+    // parent chevron, the ammo selector overrides it (P3-NESTAMMO2).
     std::vector<item *> roots;
     for( const std::list<item *> &stack : stacks ) {
         std::transform( stack.begin(), stack.end(), std::back_inserter( roots ), locator );
@@ -1825,10 +1826,39 @@ void inventory_selector::add_items( inventory_column &target_column,
     add_nested_map_items( target_column, roots, custom_category );
 }
 
-// CDF: P3-NESTAMMO2. Nothing nested is listed unless a selector asks for it (the ammo selector does).
-void inventory_selector::add_nested_map_items( inventory_column &, const std::vector<item *> &,
-        const item_category * )
+// CDF: PK1/G36, DDA inventory_ui.cpp:2337-2358 (_add_map_items): the items of a map square and of
+// vehicle cargo are walked with add_entry_rec, so what sits inside a box on the tile is listed as
+// child rows and the box row gets a chevron. add_items made the top-level rows (stacked, as CDF
+// does); this adds what is nested below them. The ammo selector overrides this with its own walk.
+void inventory_selector::add_nested_map_items( inventory_column &target_column,
+        const std::vector<item *> &roots, const item_category *custom_category )
 {
+    for( item *root : roots ) {
+        const bool shown = preset.is_shown( root );
+        // Per DDA inventory_ui.cpp:2006-2044 (add_entry_rec), the contents are walked even when the
+        // root itself is hidden; a shown root becomes the topmost parent of its children.
+        const item *topmost = shown ? root : nullptr;
+        const int child_indent = shown ? 2 : 0;
+        // Per DDA inventory_ui.cpp:2226-2262: map rows keep the square's category in the container
+        // hierarchy, and their own natural categories in the category view.
+        const item_category *children_category = nullptr;
+        if( _uimode == uimode::hierarchy && custom_category != nullptr ) {
+            children_category = naturalize_category( *custom_category, root->bub_pos() );
+        }
+        inventory_column temp( preset );
+        const bool vis_contents = add_contained_items( root, temp, children_category, topmost,
+                                  child_indent );
+        if( vis_contents && shown ) {
+            for( inventory_entry &entry : target_column.entries ) {
+                if( entry.is_item() &&
+                    std::ranges::find( entry.locations, root ) != entry.locations.end() ) {
+                    entry.chevron = true;
+                    break;
+                }
+            }
+        }
+        temp.move_entries_to( target_column );
+    }
 }
 
 void inventory_selector::remove_item( item *location )

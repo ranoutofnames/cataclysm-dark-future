@@ -788,10 +788,11 @@ class inventory_selector
     protected:
 
         /**
-         * CDF: P3-NESTAMMO2. add_items calls this after the rows of the stacks of a map square or of vehicle
-         * cargo. roots are the items of those stacks, custom_category their square header. It adds the rows
-         * for what sits nested in them, as DDA's _add_map_items (add_entry_rec) does. Does nothing in every
-         * selector but the ammo selector.
+         * CDF: PK1/G36, DDA inventory_ui.cpp:2337-2358 (_add_map_items). add_items calls this after
+         * the rows of the stacks of a map square or of vehicle cargo. roots are the items of those
+         * stacks, custom_category their square header. It adds the rows for what sits nested in
+         * them and marks the parent row with a chevron. The ammo selector overrides it with its own
+         * walk (P3-NESTAMMO2).
          */
         virtual void add_nested_map_items( inventory_column &target_column,
                                            const std::vector<item *> &roots,

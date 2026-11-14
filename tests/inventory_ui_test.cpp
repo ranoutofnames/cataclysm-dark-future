@@ -6,6 +6,7 @@
 #include "item_category.h"
 #include "item_pocket.h"
 #include "json.h"
+#include "map/map.h"
 #include "options.h"
 #include "options_helpers.h"
 #include "player_helpers.h"
@@ -364,6 +365,61 @@ TEST_CASE(
         REQUIRE(carried.size() == 1);
         CHECK(carried[0]->any_item() == &rock);
         CHECK(carried[0]->indent == 0);
+    }
+}
+
+// PL-64 PK1/G36: the pickup selector lists what sits inside a box on the tile as child rows, as
+// DDA's _add_map_items (inventory_ui.cpp:2337-2358) does: add_entry_rec on every map item, with the
+// box row carrying the chevron.
+TEST_CASE("pickup selector lists the contents of a box on the tile", "[inventory][ui][fm]") {
+    const view_mode_state_guard view_mode;
+    clear_all_state();
+    avatar& u = get_avatar();
+    clear_character(u, true);
+    // The pickup menu opens in the container hierarchy (pickup_ui_default_state).
+    pickup_ui_default_state.uimode = inventory_selector::uimode::hierarchy;
+
+    detached_ptr<item> box_ptr = item::spawn(itype_id("box_small"), calendar::turn);
+    item& box = *box_ptr;
+    REQUIRE(box.put_in(item::spawn(itype_id("test_rock"), calendar::turn),
+                       pocket_type::CONTAINER).success());
+    item& rock = box.contents.front();
+    get_map().add_item(u.bub_pos(), std::move(box_ptr));
+    REQUIRE(rock.parent_item() == &box);
+
+    pickup_inventory_preset preset(u);
+    preset.save_state = &pickup_ui_default_state;
+    inventory_pickup_selector sel(u, preset);
+    sel.add_map_items(u.bub_pos());
+    sel.map_column.prepare_paging();
+
+    REQUIRE(sel.map_column.indent_entries());
+    const std::vector<const inventory_entry*> rows = item_rows(sel.map_column);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows[0]->any_item() == &box);
+    CHECK(rows[0]->indent == 0);
+    CHECK(rows[0]->chevron);
+    CHECK(rows[1]->any_item() == &rock);
+    CHECK(rows[1]->indent == 2);
+    CHECK(rows[1]->topmost_parent == &box);
+
+    SECTION("collapsing the box hides the child row") {
+        for (item_pocket* pocket : box.get_standard_pockets()) {
+            pocket->settings.set_collapse(true);
+        }
+        sel.map_column.invalidate_paging();
+        sel.map_column.prepare_paging();
+        const std::vector<const inventory_entry*> collapsed = item_rows(sel.map_column);
+        REQUIRE(collapsed.size() == 1);
+        CHECK(collapsed[0]->any_item() == &box);
+        CHECK(collapsed[0]->chevron);
+
+        for (item_pocket* pocket : box.get_standard_pockets()) {
+            pocket->settings.set_collapse(false);
+        }
+        sel.map_column.invalidate_paging();
+        sel.map_column.prepare_paging();
+        CHECK(item_rows(sel.map_column).size() == 2);
     }
 }
 
