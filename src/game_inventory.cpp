@@ -291,6 +291,7 @@ void game_menus::inv::common( avatar &you )
 
     bool started_action = false;
     do {
+        inv_s.drag_enabled = true;
         inv_s.clear_items();
         inv_s.add_character_items( you );
 
