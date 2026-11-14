@@ -179,6 +179,71 @@ TEST_CASE( "page indicator on a single page", "[advanced_inv][ui][fm]" )
     CHECK( advanced_inv_page_count( 5, 0 ) == 1 );
 }
 
+TEST_CASE( "move-all pre-check weighs the load as well as the volume", "[advanced_inv][ui][fm]" )
+{
+    clear_all_state();
+    // FM6, G46 (DDA advanced_inv.cpp:1127-1156): the move-all pre-check compares the source pane's
+    // totals with what the destination has free, and for the inventory and a container also with
+    // its free weight capacity.  The prompt then names whichever is short (DDA 1185-1189).
+    SECTION( "everything fits" ) {
+        const advanced_inv_move_all_limit fits = advanced_inv_move_all_limit_for(
+                    5_liter, 5_kilogram, 10_liter, 10_kilogram, true );
+        CHECK( fits.over_volume == -5_liter );
+        CHECK( fits.over_weight == -5_kilogram );
+        CHECK( fits.limitation.empty() );
+    }
+
+    SECTION( "only the room is short" ) {
+        const advanced_inv_move_all_limit limit = advanced_inv_move_all_limit_for(
+                    12_liter, 5_kilogram, 10_liter, 10_kilogram, true );
+        CHECK( limit.over_volume == 2_liter );
+        CHECK( limit.over_weight == -5_kilogram );
+        CHECK( limit.limitation == "room" );
+    }
+
+    SECTION( "only the weight capacity is short" ) {
+        const advanced_inv_move_all_limit limit = advanced_inv_move_all_limit_for(
+                    5_liter, 12_kilogram, 10_liter, 10_kilogram, true );
+        CHECK( limit.over_volume == -5_liter );
+        CHECK( limit.over_weight == 2_kilogram );
+        CHECK( limit.limitation == "weight capacity" );
+    }
+
+    SECTION( "both are short" ) {
+        const advanced_inv_move_all_limit limit = advanced_inv_move_all_limit_for(
+                    12_liter, 12_kilogram, 10_liter, 10_kilogram, true );
+        CHECK( limit.over_volume == 2_liter );
+        CHECK( limit.over_weight == 2_kilogram );
+        CHECK( limit.limitation == "room or weight capacity" );
+    }
+
+    SECTION( "a map square has no weight limit" ) {
+        // DDA advanced_inv.cpp:1138-1142 weighs only the inventory and a container
+        const advanced_inv_move_all_limit limit = advanced_inv_move_all_limit_for(
+                    5_liter, 12_kilogram, 10_liter, 10_kilogram, false );
+        CHECK( limit.over_volume == -5_liter );
+        CHECK( limit.over_weight == 0_gram );
+        CHECK( limit.limitation.empty() );
+    }
+
+    SECTION( "a container's remaining capacity" ) {
+        detached_ptr<item> bag_owner = item::spawn( itype_id( "backpack" ) );
+        item *bag = &*bag_owner;
+        advanced_inv_area square_container( AIM_CONTAINER );
+        advanced_inventory_pane pane;
+        pane.enter_container( bag, square_container );
+
+        // one gram more than the bag can still take, and nothing to add volume-wise
+        const units::volume free_volume = pane.free_volume( square_container );
+        const advanced_inv_move_all_limit limit = advanced_inv_move_all_limit_for(
+                    0_ml, bag->get_remaining_weight_capacity() + 1_gram,
+                    free_volume, pane.free_weight_capacity(), true );
+        CHECK( limit.over_volume == -free_volume );
+        CHECK( limit.over_weight == 1_gram );
+        CHECK( limit.limitation == "weight capacity" );
+    }
+}
+
 TEST_CASE( "sort names match DDA for the shared sorts", "[advanced_inv][ui][fm]" )
 {
     // DDA advanced_inv.cpp:211-244

@@ -78,6 +78,26 @@ nc_color advanced_inv_capacity_color( bool over_capacity );
  */
 int advanced_inv_page_count( size_t item_count, int items_per_page );
 
+/**
+ * FM6, G46 (DDA advanced_inv.cpp:1127-1156): how much of the source pane's load does not fit in
+ * the destination.  @ref over_volume and @ref over_weight are the source totals minus what the
+ * destination has free, so they are positive only when something is short.  @ref limitation is
+ * DDA's wording for the prompt, empty when everything fits.
+ */
+struct advanced_inv_move_all_limit {
+    units::volume over_volume = 0_ml;
+    units::mass over_weight = 0_gram;
+    std::string limitation;
+};
+
+/**
+ * FM6, G46: the move-all pre-check.  @p check_weight is true for the destinations that carry
+ * weight (the inventory and a container), as in DDA; a map square has no weight limit.
+ */
+advanced_inv_move_all_limit advanced_inv_move_all_limit_for(
+    units::volume src_volume, units::mass src_weight,
+    units::volume dest_volume_free, units::mass dest_weight_free, bool check_weight );
+
 /** FM6 b (DDA advanced_inv.cpp:211-244): the "Sort:" header and menu label of a sort mode. */
 std::string advanced_inv_sort_name( advanced_inv_sortby sortby );
 
@@ -199,6 +219,12 @@ class advanced_inventory
 
         static std::string get_sortname( advanced_inv_sortby sortby );
         bool move_all_items( bool nested_call = false );
+        /**
+         * FM6, G46 (DDA advanced_inv.cpp:1127-1189): does the destination have room and weight
+         * capacity for everything in the source pane?  If not, ask whether to move as much as
+         * fits, naming what is short.  Move-all may proceed only if the player agrees.
+         */
+        bool move_all_fits( advanced_inventory_pane &spane, advanced_inventory_pane &dpane );
         /**
          * P3-UI5: move_all_items for a pane that shows a container (as the source or as the
          * destination).  The list is built from the rows of the source pane, not from a map tile.

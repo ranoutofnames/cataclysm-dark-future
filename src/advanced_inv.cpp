@@ -269,6 +269,30 @@ int advanced_inv_page_count( size_t item_count, int items_per_page )
     return std::max( pages, 1 );
 }
 
+// FM6, G46 (DDA advanced_inv.cpp:1127-1156): the same subtraction DDA does, with the weight half
+// only for the destinations whose weight matters.
+// CDF: DDA's sort_priority is not ported; CDF's move-all hands the source pane's rows to the
+// activity and does not build a prioritised list of pane items.
+advanced_inv_move_all_limit advanced_inv_move_all_limit_for(
+    const units::volume src_volume, const units::mass src_weight,
+    const units::volume dest_volume_free, const units::mass dest_weight_free,
+    const bool check_weight )
+{
+    advanced_inv_move_all_limit limit;
+    limit.over_volume = src_volume - dest_volume_free;
+    if( check_weight ) {
+        limit.over_weight = src_weight - dest_weight_free;
+    }
+    if( limit.over_volume > 0_ml && limit.over_weight > 0_gram ) {
+        limit.limitation = _( "room or weight capacity" );
+    } else if( limit.over_volume > 0_ml ) {
+        limit.limitation = pgettext( "As in \"not enough room in the backpack\"", "room" );
+    } else if( limit.over_weight > 0_gram ) {
+        limit.limitation = _( "weight capacity" );
+    }
+    return limit;
+}
+
 bool advanced_inventory::get_square( const std::string &action, aim_location &ret )
 {
     for( advanced_inv_area &s : squares ) {
@@ -985,6 +1009,28 @@ enum aim_entry {
     ENTRY_RESET     = 3
 };
 
+bool advanced_inventory::move_all_fits( advanced_inventory_pane &spane,
+                                        advanced_inventory_pane &dpane )
+{
+    if( is_processing() ) {
+        return true;
+    }
+    const aim_location dest_area = dpane.get_area();
+    // DDA advanced_inv.cpp:1138-1142: only the inventory and a container have a weight limit
+    const bool check_weight = dest_area == AIM_INVENTORY || dest_area == AIM_CONTAINER;
+    // CDF: a square keeps one volume/weight pair, filled from whatever the pane shows
+    // (advanced_inv_pane::add_items_from_area), so DDA's *_veh variants do not exist here.
+    advanced_inv_area &sarea = squares[spane.get_area()];
+    advanced_inv_area &darea = squares[dest_area];
+    const advanced_inv_move_all_limit limit = advanced_inv_move_all_limit_for(
+                sarea.volume, sarea.weight, dpane.free_volume( darea ),
+                check_weight ? dpane.free_weight_capacity() : units::mass_max, check_weight );
+    // DDA advanced_inv.cpp:1185-1189: one prompt naming whatever is short
+    return limit.limitation.empty() ||
+           query_yn( _( "There isn't enough %s.  Attempt to move as much as you can?" ),
+                     limit.limitation );
+}
+
 bool advanced_inventory::move_all_items( bool nested_call )
 {
     advanced_inventory_pane &spane = panes[src];
@@ -1206,9 +1252,7 @@ bool advanced_inventory::move_all_items( bool nested_call )
             debugmsg( "Wearing clothes using move all is not yet implemented" );
         } else {
             // Vehicle and map destinations are handled the same.
-            // Check first if the destination area still have enough room for moving all.
-            if( !is_processing() && sarea.volume > darea.free_volume( dpane.in_vehicle() ) &&
-                !query_yn( _( "There isn't enough room, do you really want to move all?" ) ) ) {
+            if( !move_all_fits( spane, dpane ) ) {
                 return false;
             }
 
@@ -1362,11 +1406,9 @@ bool advanced_inventory::move_all_container_items( advanced_inventory_pane &span
         targets = favorites;
     }
 
-    // Check first if the destination still has enough room for moving all.
-    advanced_inv_area &sarea = squares[spane.get_area()];
+    // Check first if the destination still has enough room and weight capacity for moving all.
     advanced_inv_area &darea = squares[dpane.get_area()];
-    if( !is_processing() && sarea.volume > dpane.free_volume( darea ) &&
-        !query_yn( _( "There isn't enough room, do you really want to move all?" ) ) ) {
+    if( !move_all_fits( spane, dpane ) ) {
         return false;
     }
 
