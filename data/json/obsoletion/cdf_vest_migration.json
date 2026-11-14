@@ -193,5 +193,29 @@
         "count": 2
       }
     ]
+  },
+  {
+    "type": "MIGRATION",
+    "//": "P3-VEST2: BN's loose plate items (flag ARMOR_PLATE, no ABLATIVE_*) fit no pocket of the DDA vests ('holster does not accept this item type or form factor'). Each retires into the DDA plate of the matching tier; the tiers follow this file's vest migration (modularvestceramic -> esapi, modularvesthard -> hc, modularvestsuper -> qt). The item definitions stay in data/json/items/armor/ballistic_armor.json (merge friendliness), the recipes in recipes/armor/torso.json are dropped at load because the replacement plates have their own recipes (recipes/armor/cdf_ballistic_armor.json).",
+    "id": "ceramic_ballistic_plate",
+    "replace": "esapi_plate"
+  },
+  {
+    "type": "MIGRATION",
+    "//": "BN hardsteel plate -> hc_esapi_plate, the tier modularvesthard / oldguard_armor_hardsteel use (DDA hc plates are hardened steel).",
+    "id": "hard_ballistic_plate",
+    "replace": "hc_esapi_plate"
+  },
+  {
+    "type": "MIGRATION",
+    "//": "BN superalloy plate -> qt_esapi_plate, the tier modularvestsuper / oldguard_armor_superalloy use.",
+    "id": "super_ballistic_plate",
+    "replace": "qt_esapi_plate"
+  },
+  {
+    "type": "MIGRATION",
+    "//": "BN scrap (rag-wrapped sheet metal) plate -> scrap_esapi_plate, DDA's scrap tier.",
+    "id": "scrap_ballistic_plate",
+    "replace": "scrap_esapi_plate"
   }
 ]

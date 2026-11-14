@@ -2054,7 +2054,8 @@
         ],
         "entries": [
           { "group": "charged_two_way_radio" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_m4" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_m4" },
           { "item": "ceramic_ballistic_plate" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "e_tool", "container-item": "webbing_belt" },
@@ -2142,7 +2143,8 @@
         ],
         "entries": [
           { "group": "charged_two_way_radio" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_m17" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_m17" },
           { "item": "ceramic_ballistic_plate" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "e_tool", "container-item": "webbing_belt" },
@@ -2200,7 +2202,8 @@
         ],
         "entries": [
           { "group": "charged_two_way_radio" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_m4" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_m4" },
           { "item": "ceramic_ballistic_plate" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "e_tool", "container-item": "webbing_belt" },
@@ -2252,7 +2255,8 @@
         ],
         "entries": [
           { "group": "charged_two_way_radio" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_m14" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_m14" },
           { "item": "ceramic_ballistic_plate" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "e_tool", "container-item": "webbing_belt" },
@@ -2385,7 +2389,8 @@
           { "group": "deluxe_first_aid_kit" },
           { "group": "charged_two_way_radio" },
           { "item": "webbing_belt", "contents-item": "e_tool" },
-          { "item": "ballistic_vest_heavy", "contents-group": "army_mags_m4" },
+          { "item": "ballistic_vest_heavy" },
+          { "group": "army_mags_m4" },
           { "item": "ceramic_ballistic_plate" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "knife_combat", "container-item": "sheath" },
@@ -2438,7 +2443,8 @@
           { "group": "charged_headseat", "custom-flags": [ "no_auto_equip" ] },
           { "item": "kukri", "container-item": "sheath" },
           { "item": "jacket_flannel" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_mp5" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_mp5" },
           { "item": "super_ballistic_plate" },
           { "item": "tac_helmet" },
           {
@@ -4595,7 +4601,8 @@
             "charges": 50,
             "contents-item": [ "shoulder_strap", "hybrid_sight" ]
           },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_rm51" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_rm51" },
           { "item": "ceramic_ballistic_plate" }
         ]
       },
@@ -6276,7 +6283,8 @@
             "charges": 750
           },
           { "group": "charged_two_way_radio" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_m4" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_m4" },
           { "item": "ceramic_ballistic_plate" }
         ]
       },
@@ -8245,7 +8253,8 @@
         ],
         "entries": [
           { "group": "charged_two_way_radio" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_m4" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_m4" },
           { "item": "ceramic_ballistic_plate" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "e_tool", "container-item": "webbing_belt" },
@@ -8819,7 +8828,8 @@
         ],
         "entries": [
           { "group": "charged_two_way_radio" },
-          { "item": "ballistic_vest_esapi", "contents-group": "army_mags_m4" },
+          { "item": "ballistic_vest_esapi" },
+          { "group": "army_mags_m4" },
           { "item": "ceramic_ballistic_plate" },
           { "item": "ear_plugs", "custom-flags": [ "no_auto_equip" ] },
           { "item": "e_tool", "container-item": "webbing_belt" },
