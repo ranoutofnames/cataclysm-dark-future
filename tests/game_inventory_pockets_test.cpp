@@ -3,13 +3,44 @@
 #include "catch/catch.hpp"
 #include "flag.h"
 #include "game_inventory.h"
+#include "inventory_ui.h"
 #include "item.h"
 #include "item_pocket.h"
+#include "json.h"
 #include "player_helpers.h"
 #include "state_helpers.h"
+#include "uistate.h"
 
+#include <sstream>
 #include <string>
 #include <utility>
+
+// PL-63 FM7b: the saved UI state is process-wide. A test that switches it puts it back, so that the
+// next test (and the FM7 defaults) still sees the compiled-in values.
+namespace
+{
+struct view_mode_state_guard {
+    inventory_selector::uimode sel = inventory_sel_default_state.uimode;
+    inventory_selector::uimode inv = inventory_ui_default_state.uimode;
+    inventory_selector::uimode pickup_sel = pickup_sel_default_state.uimode;
+    inventory_selector::uimode pickup_ui = pickup_ui_default_state.uimode;
+    ~view_mode_state_guard() {
+        inventory_sel_default_state.uimode = sel;
+        inventory_ui_default_state.uimode = inv;
+        pickup_sel_default_state.uimode = pickup_sel;
+        pickup_ui_default_state.uimode = pickup_ui;
+    }
+};
+
+struct consume_state_guard {
+    consume_menu_uistate consume = uistate.consume_uistate;
+    bool numpad = uistate.numpad_navigation;
+    ~consume_state_guard() {
+        uistate.consume_uistate = consume;
+        uistate.numpad_navigation = numpad;
+    }
+};
+} // namespace
 
 namespace game_menus::inv
 {
@@ -146,6 +177,9 @@ TEST_CASE( "medication filter includes medical tools", "[inventory][ui][fm]" )
 // through game_menus::inv::probe_common_selector_action, as the P3-UI4 tests do for the presets.
 TEST_CASE( "view mode key toggles and does not close the inventory", "[inventory][ui][fm]" )
 {
+    // FM7b: the common selector now writes its mode to inventory_ui_default_state (DDA
+    // game_inventory.cpp:270-271), so put the saved states back after the toggle.
+    const view_mode_state_guard view_mode;
     clear_all_state();
     avatar &you = get_avatar();
 
@@ -226,4 +260,34 @@ TEST_CASE( "unload menu accepts a belt with something in its pouch", "[inventory
     REQUIRE( belt->put_in( item::spawn( "jerky", calendar::start_of_cataclysm ),
                            pocket_type::CONTAINER ).success() );
     CHECK( game_menus::inv::unload_menu_accepts( *belt ) );
+}
+
+// PL-63 FM7b T4. DDA game_inventory.cpp:178-183,210-225,1109-1111: the consume menu keeps the
+// filter it was last used with, and uistatedata serializes it (DDA game_inventory.cpp:3435-3453)
+// together with the number-row toggle (DDA inventory_ui.cpp:436). CDF's
+// uistatedata::serialize/deserialize live in savegame_json.cpp, so the round trip goes through them.
+TEST_CASE( "consume filter memory round trip", "[inventory][ui][fm]" )
+{
+    // the filter and the toggle are process-wide; put them back after the test
+    const consume_state_guard guard;
+
+    uistate.consume_uistate.consume_menu_filter = "apple";
+    uistate.numpad_navigation = true;
+    REQUIRE_FALSE( uistate.consume_uistate.empty() );
+
+    std::ostringstream out;
+    JsonOut jsout( out );
+    uistate.serialize( jsout );
+
+    // a later session starts from the compiled-in values and loads the save
+    std::istringstream in( out.str() );
+    JsonIn jsin( in );
+    uistatedata loaded;
+    loaded.deserialize( jsin.get_object() );
+    CHECK( loaded.consume_uistate.consume_menu_filter == "apple" );
+    CHECK( loaded.numpad_navigation );
+
+    // cancelling the menu forgets the filter (DDA game_inventory.cpp:1102-1111)
+    loaded.consume_uistate.clear();
+    CHECK( loaded.consume_uistate.empty() );
 }

@@ -70,6 +70,24 @@ struct debug_menu_state {
         void serialize( JsonOut &json ) const;
         void deserialize( const JsonObject &jo );
 };
+
+// Per DDA uistate.h:117-141: the consume menu reopens with the filter it last used.
+// CDF: the selected row is remembered on the consuming activity (game_inventory.cpp:262-270), so
+// only the filter crosses openings and sessions here.
+struct consume_menu_uistate {
+    public:
+        // str_values[0] = filter (the one you type in, not the new comestype filter)
+        std::string consume_menu_filter;
+
+        bool empty() const {
+            return consume_menu_filter.empty();
+        }
+        void clear() {
+            consume_menu_filter.clear();
+        }
+        void serialize( JsonOut &json ) const;
+        void deserialize( const JsonObject &jo );
+};
 /*
   centralized depot for trivial ui data such as sorting, string_input_popup history, etc.
   To use this, see the ****notes**** below
@@ -107,8 +125,10 @@ class uistatedata
         // false: all contents shown.
         std::optional<bool> hide_entries_override = std::nullopt;
 
+        // Per DDA uistate.h:215: the consume menu's last filter (game_inventory.cpp:178-183).
+        consume_menu_uistate consume_uistate;
+
         // Per DDA uistate.h:235: number-row navigation in the inventory selector.
-        // CDF: serialization arrives with the saved UI state work (FM7).
         bool numpad_navigation = false;
 
         advanced_inv_save_state transfer_save;
@@ -186,6 +206,6 @@ class uistatedata
 extern uistatedata uistate;
 
 // Per DDA uistate.h:100-101: the saved inventory view modes. CDF: uistatedata::serialize/deserialize
-// belong to savegame_json.cpp here, which has to call these two (FM7).
+// live in savegame_json.cpp and call these two.
 extern void save_inv_state( JsonOut &json );
 extern void load_inv_state( const JsonObject &jo );

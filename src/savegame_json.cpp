@@ -5271,6 +5271,8 @@ void uistatedata::serialize( JsonOut &json ) const
     json.start_object();
 
     transfer_save.serialize( json, "transfer_save_" );
+    // Per DDA inventory_ui.cpp:372: the four saved inventory view modes.
+    save_inv_state( json );
 
     /**** if you want to save whatever so it's whatever when the game is started next, declare here and.... ****/
     // non array stuffs
@@ -5281,6 +5283,9 @@ void uistatedata::serialize( JsonOut &json ) const
     json.member( "adv_inv_container_content_type", adv_inv_container_content_type );
     json.member( "unload_auto_contain", unload_auto_contain );
     json.member( "hide_entries_override", hide_entries_override );
+    // Per DDA inventory_ui.cpp:436,441: the number-row toggle and the consume menu's last filter.
+    json.member( "numpad_navigation", numpad_navigation );
+    json.member( "consume_menu_uistate", consume_uistate );
     json.member( "debug_menu", debug_menu );
     json.member( "editmap_nsa_viewmode", editmap_nsa_viewmode );
     json.member( "overmap_blinking", overmap_blinking );
@@ -5333,6 +5338,8 @@ void uistatedata::serialize( JsonOut &json ) const
 void uistatedata::deserialize( const JsonObject &jo )
 {
     transfer_save.deserialize( jo, "transfer_save_" );
+    // Per DDA inventory_ui.cpp:475: the four saved inventory view modes.
+    load_inv_state( jo );
 
     // the rest
     jo.read( "adv_inv_container_location", adv_inv_container_location );
@@ -5344,6 +5351,8 @@ void uistatedata::deserialize( const JsonObject &jo )
     // a save without the key must give back the default (nullopt), not the value left in memory
     hide_entries_override.reset();
     jo.read( "hide_entries_override", hide_entries_override );
+    jo.read( "numpad_navigation", numpad_navigation );
+    jo.read( "consume_menu_uistate", consume_uistate );
     jo.read( "debug_menu", debug_menu );
     jo.read( "editmap_nsa_viewmode", editmap_nsa_viewmode );
     jo.read( "overmap_blinking", overmap_blinking );

@@ -57,6 +57,7 @@
 #include "ui_manager.h"
 #include "units.h"
 #include "units_utility.h"
+#include "uistate.h"
 #include "value_ptr.h"
 
 #include <algorithm>
@@ -119,7 +120,8 @@ namespace
 class common_inventory_selector : public inventory_pick_selector
 {
     public:
-        explicit common_inventory_selector( player &p ) : inventory_pick_selector( p ) {
+        explicit common_inventory_selector( player &p ) :
+            inventory_pick_selector( p, common_preset() ) {
             ctxt.register_action( "unload_all",
                                   to_translation( "Unload every carried item that can be unloaded" ) );
             enable_view_mode_toggle();
@@ -155,6 +157,19 @@ class common_inventory_selector : public inventory_pick_selector
         }
 
     private:
+        // Per DDA game_inventory.cpp:270-271: the plain inventory menu remembers its view mode.
+        // DDA builds the preset in game_menus::inv::common() and the selector stores it by reference
+        // (inventory_ui.h:730), so this copy has to live as long as any selector; a local in the
+        // constructor would dangle.
+        static const inventory_selector_preset &common_preset() {
+            static const inventory_selector_preset preset = []() {
+                inventory_selector_preset p = default_preset;
+                p.save_state = &inventory_ui_default_state;
+                return p;
+            }();
+            return preset;
+        }
+
         bool unload_all_selected = false;
 };
 
@@ -233,13 +248,17 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
                            const std::string &title, int radius,
                            const std::string &none_message,
                            const std::string &hint = std::string(),
-                           bool include_fake_items = false )
+                           bool include_fake_items = false,
+                           bool using_consume_menu = false )
 {
     inventory_pick_selector inv_s( u, preset );
 
     inv_s.set_title( title );
     inv_s.set_hint( hint );
     inv_s.set_display_stats( false );
+
+    // Per DDA game_inventory.cpp:162: the consume menu's remembered filter.
+    const consume_menu_uistate &cm_uistate = uistate.consume_uistate;
 
     std::pair<size_t, size_t> init_pair;
     bool init_selection = false;
@@ -262,6 +281,10 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
     if( u.has_activity( consuming ) && !u.activity->str_values.empty() ) {
         init_filter = u.activity->str_values[0];
         has_init_filter = true;
+    } else if( using_consume_menu ) {
+        // Per DDA game_inventory.cpp:178-183: a new consume menu opens with the last filter.
+        init_filter = cm_uistate.consume_menu_filter;
+        has_init_filter = !init_filter.empty();
     }
     if( u.has_activity( consuming ) && u.activity->str_values.size() >= 2 &&
         !u.activity->str_values[1].empty() ) {
@@ -297,6 +320,10 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
                                     ? _( "You don't have the necessary item at hand." )
                                     : none_message;
             popup( msg, PF_GET_KEY );
+            if( using_consume_menu ) {
+                // Per DDA game_inventory.cpp:1109-1111: leaving without a choice forgets the filter.
+                uistate.consume_uistate.clear();
+            }
             return nullptr;
         }
 
@@ -316,6 +343,12 @@ static item *inv_internal( player &u, const inventory_selector_preset &preset,
             u.activity->str_values.emplace_back( inv_s.get_filter() );
             u.activity->str_values.emplace_back( location != nullptr ? location->typeId().str() :
                                                  std::string() );
+        }
+        if( using_consume_menu ) {
+            // Per DDA game_inventory.cpp:210-225, :1109-1111: a choice stores the filter, a cancel
+            // forgets it.
+            uistate.consume_uistate.consume_menu_filter =
+                location != nullptr ? inv_s.get_filter() : std::string();
         }
 
         return location;
@@ -902,7 +935,7 @@ item *game_menus::inv::consume( player &p )
     return inv_internal( p, comestible_inventory_preset( p ),
                          _( "Consume item" ), 1,
                          _( "You have nothing to consume." ),
-                         get_consume_needs_hint( p ) );
+                         get_consume_needs_hint( p ), false, true );
 }
 
 class comestible_filtered_inventory_preset : public comestible_inventory_preset
@@ -932,7 +965,7 @@ item *game_menus::inv::consume_food( player &p )
     } ),
     _( "Consume food" ), 1,
     _( "You have no food to consume." ),
-    get_consume_needs_hint( p ) );
+    get_consume_needs_hint( p ), false, true );
 }
 
 item *game_menus::inv::consume_drink( player &p )
@@ -947,7 +980,7 @@ item *game_menus::inv::consume_drink( player &p )
     } ),
     _( "Consume drink" ), 1,
     _( "You have no drink to consume." ),
-    get_consume_needs_hint( p ) );
+    get_consume_needs_hint( p ), false, true );
 }
 
 // CDF: FM5a, test hook (precedent: P3-5-3b reload_destination_labels). Declared here and in
@@ -976,7 +1009,7 @@ item *game_menus::inv::consume_meds( player &p )
     } ),
     _( "Consume medication" ), 1,
     _( "You have no medication to consume." ),
-    get_consume_needs_hint( p ) );
+    get_consume_needs_hint( p ), false, true );
 }
 
 class activatable_inventory_preset : public pickup_inventory_preset
@@ -2169,6 +2202,8 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( play
 {
 
     pickup_inventory_preset preset( p );
+    // Per DDA game_inventory.cpp:2545: the pickup screen remembers its own view mode.
+    preset.save_state = &pickup_ui_default_state;
     inventory_pickup_selector inv_s( p, preset );
 
     inv_s.set_title( _( "Pickup" ) );
@@ -2193,6 +2228,8 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player 
 {
 
     pickup_inventory_preset preset( p );
+    // Per DDA game_inventory.cpp:2545: the pickup screen remembers its own view mode.
+    preset.save_state = &pickup_ui_default_state;
     inventory_pickup_selector inv_s( p, preset );
 
     inv_s.set_title( _( "Pickup" ) );
@@ -3142,4 +3179,18 @@ item_reload_option game_menus::inv::select_ammo( player &you, item &loc, bool pr
     }
 
     return opt;
+}
+
+// Per DDA game_inventory.cpp:3435-3453. CDF: the selected row is remembered on the consuming
+// activity, so only the filter is written here (see uistate.h).
+void consume_menu_uistate::serialize( JsonOut &json ) const
+{
+    json.start_object();
+    json.member( "consume_menu_filter", consume_menu_filter );
+    json.end_object();
+}
+
+void consume_menu_uistate::deserialize( const JsonObject &jo )
+{
+    jo.read( "consume_menu_filter", consume_menu_filter );
 }
