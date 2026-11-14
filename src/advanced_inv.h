@@ -4,6 +4,7 @@
 #include <cctype>
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "advanced_inv_area.h"
 #include "advanced_inv_listitem.h"
@@ -33,6 +34,12 @@ struct advanced_inv_inventory_head_data {
 };
 
 advanced_inv_inventory_head_data advanced_inv_inventory_head( const Character &who );
+
+/**
+ * P3-UI5: the items UNLOAD_CONTAINER takes out of @p container (the top items of its container
+ * pockets; no liquids, no favorites).  Split out so a test can see the list.
+ */
+std::vector<item *> advanced_inv_unload_targets( item &container );
 
 class advanced_inventory
 {
@@ -130,6 +137,10 @@ class advanced_inventory
                                const std::string &action );
 
         void action_examine( advanced_inv_listitem *sitem, advanced_inventory_pane &spane );
+
+        /** Unload the selected container (DDA advanced_inv.cpp:1823-1841); returns true if it did. */
+        bool action_unload( advanced_inv_listitem *sitem, advanced_inventory_pane &spane,
+                            advanced_inventory_pane &dpane );
 
         // store/load settings (such as index, filter, etc)
         void save_settings( bool only_panes );
