@@ -5,8 +5,9 @@
 #include "units.h"
 
 // P3-UI9: item_contents bulk-fill forwarders (DDA item_contents.cpp:1610-1621).
-// CDF's pocket level is still a no-op (the P1d size cache covers the sums), so the
-// contract tested here is that bracketing a fill never changes the reported volume.
+// The forwarders (begin_bulk_fill / end_bulk_fill) are no-ops in CDF: there is no item temperature
+// model, so nothing is deferred or recomputed at the pocket level. The tests therefore only assert
+// that bracketing a fill never changes the reported volume.
 // heat_up/cold_up are NOT ported: CDF has no item temperature/specific_energy state.
 
 TEST_CASE( "bulk fill on a container reports the running volume", "[item][pocket][p3]" )
