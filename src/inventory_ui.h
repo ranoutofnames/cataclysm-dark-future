@@ -1162,6 +1162,8 @@ class inventory_drop_selector : public inventory_multiselector
         void set_chosen_count( inventory_entry &entry, size_t count ) override;
         /** CDF: refresh the drop preview right after a batch of marks. */
         void on_toggle() override;
+        /** CDF: kept for the drop preview tests; applies count to the selected entries. */
+        void process_selected( int &count, const std::vector<inventory_entry *> &selected );
         auto update_drop_preview() -> void;
         auto get_drop_preview() const -> const drop_locations & { return predicted_drops; } // *NOPAD*
 

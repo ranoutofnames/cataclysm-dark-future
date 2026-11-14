@@ -4355,6 +4355,26 @@ inventory_selector::header_stats inventory_insert_selector::get_raw_stats() cons
     return stats;
 }
 
+void inventory_drop_selector::process_selected( int &count,
+        const std::vector<inventory_entry *> &selected )
+{
+    if( count == 0 ) {
+        const bool clear = std::none_of( selected.begin(), selected.end(),
+        []( const inventory_entry * elem ) {
+            return elem->chosen_count > 0;
+        } );
+
+        if( clear ) {
+            count = max_chosen_count;
+        }
+    }
+
+    for( const auto &elem : selected ) {
+        set_chosen_count( *elem, count );
+    }
+    count = 0;
+}
+
 void inventory_drop_selector::on_toggle()
 {
     // CDF: the drop preview follows every batch of marks right away, including the unmarking of
