@@ -3965,6 +3965,10 @@ input_event input_manager::get_input_event()
 {
     ZoneScopedN( "sdl_input_get_input_event" );
     previously_pressed_key = 0;
+    if( test_input_queue_enabled ) {
+        // Test hook: scripted keys only, never the window or the blocking loops below.
+        return test_next_input_event();
+    }
 
     // standards note: getch is sometimes required to call refresh
     // see, e.g., http://linux.die.net/man/3/getch

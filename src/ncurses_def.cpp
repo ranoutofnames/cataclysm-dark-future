@@ -345,6 +345,11 @@ void input_manager::pump_events()
 
 input_event input_manager::get_input_event()
 {
+    if( test_input_queue_enabled ) {
+        // Test hook: scripted keys only, never getch() (which needs a terminal).
+        previously_pressed_key = 0;
+        return test_next_input_event();
+    }
     int key = ERR;
     input_event rval;
     do {
