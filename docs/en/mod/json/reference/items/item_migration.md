@@ -51,6 +51,27 @@ contents. Contents go in through the normal item router, so a plate lands in a m
 slot of a carrier, and an item the old type left in the MIGRATION pocket is re-homed into a
 pocket of the new type when one now accepts it.
 
+### Example: gas filter cartridges
+
+The gas filter migration is `data/json/obsoletion/cdf_filter_migration.json`. Its object has the
+`"type"`, `"id"` and `"replace"` fields:
+
+```json
+{
+  "type": "MIGRATION",
+  "id": "rebreather_filter",
+  "replace": "rebreather_cartridge_air"
+}
+```
+
+It retires the loose `rebreather_filter` and replaces it with `rebreather_cartridge_air`. The
+file's own note (dropped above) says that DDA has no loose rebreather filter item, so the scrubber
+is the cartridge. `gasfilter_s` and `gasfilter_m` are not migrated and stay valid, because their
+ammo is inside the cartridges. (CDF: cdf_filter_migration.json, MIGRATION)
+
+DDA data uses the same `MIGRATION` shape, and its generated migrations are in
+`obsoletion/migration_dda.json`. (CDF: migration_dda.json, MIGRATION objects)
+
 ## Where a migration is applied
 
 When a save is loaded, an item with a retired id becomes the replacement with the migration's
