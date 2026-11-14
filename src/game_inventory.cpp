@@ -291,6 +291,7 @@ void game_menus::inv::common( avatar &you )
 
     bool started_action = false;
     do {
+        inv_s.drag_enabled = true;
         inv_s.clear_items();
         inv_s.add_character_items( you );
 
@@ -1391,6 +1392,10 @@ class insert_inventory_preset : public inventory_selector_preset
             who( who ) {
         }
 
+        const item *get_holster() const override {
+            return &holster;
+        }
+
         bool is_shown( const item *contained ) const override {
             if( contained == &holster ) {
                 return false;
@@ -1466,8 +1471,8 @@ bool valid_unload_container( const item &container )
 } // namespace
 
 // Per DDA game_inventory.cpp:2064 (game_menus::inv::holster, multi-select insert menu).
-// CDF: the selector is the drop selector with the insert preset, the stats header of DDA's
-// inventory_insert_selector is not rebuilt.
+// CDF: P3-UI4, the selector is UI3's inventory_insert_selector (DDA inventory_ui.h:1181-1192), the
+// drop selector with the DDA stats header, and warn_liquid is false as in DDA game_inventory.cpp:2076.
 static drop_locations choose_items_to_insert( item &holster )
 {
     avatar &you = get_avatar();
@@ -1484,7 +1489,7 @@ static drop_locations choose_items_to_insert( item &holster )
 
     const insert_inventory_preset holster_preset( holster, you );
 
-    inventory_drop_selector insert_menu( you, holster_preset );
+    inventory_insert_selector insert_menu( you, holster_preset, _( "ITEMS TO INSERT" ), false );
     insert_menu.add_character_items( you );
     insert_menu.add_nearby_items( 1 );
     insert_menu.set_display_stats( true );
@@ -1564,6 +1569,19 @@ drop_locations game_menus::inv::unload_container()
         }
     }
     return dropped;
+}
+
+// CDF: P3-UI4, test hooks (precedent: unload_selector_shows). The insert preset is in an anonymous
+// namespace, so tests/ reach its is_shown and get_denial through these.
+bool game_menus::inv::insert_preset_shows( item &holster, const Character &who, const item &it )
+{
+    return insert_inventory_preset( holster, who ).is_shown( &it );
+}
+
+std::string game_menus::inv::insert_preset_denial( item &holster, const Character &who,
+        const item &it )
+{
+    return insert_inventory_preset( holster, who ).get_denial( &it );
 }
 
 // CDF: P3-5-4, DDA game_inventory.cpp:3124-3128 (unload_selector_preset::is_shown) as a function on

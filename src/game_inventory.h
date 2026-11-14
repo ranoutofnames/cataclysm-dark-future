@@ -87,6 +87,11 @@ item *use( avatar &you );
 item *wield( avatar &you );
 /** Choose items to insert into @p holster and start the insert activity (DDA game_inventory.cpp:2088). */
 void insert_items( item &holster );
+// CDF: P3-UI4, test hooks. is_shown and get_denial of the insert preset (DDA inventory_ui.cpp:907-958,
+// inventory_holster_preset) for @p it as a candidate to go into @p holster, because the preset class is
+// in an anonymous namespace.
+bool insert_preset_shows( item &holster, const Character &who, const item &it );
+std::string insert_preset_denial( item &holster, const Character &who, const item &it );
 /** Choose another container for items that could not be inserted (DDA game.cpp:6590). */
 void insert_items_again( const drop_locations &targets );
 /** Choose containers to unload; returns their contents (DDA game_inventory.cpp:2119). */
