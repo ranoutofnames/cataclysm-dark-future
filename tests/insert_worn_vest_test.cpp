@@ -60,6 +60,34 @@ void wear_backpack( avatar &you )
     REQUIRE( !you.wear_item( item::spawn( "backpack", calendar::start_of_cataclysm ), false ) );
 }
 
+// Puts a fresh item straight into the worn backpack, so that it is carried loose in the bag. `i_add`
+// would not do for a plate: with a plate vest worn, the plate is picked up into a plate slot of the
+// vest (the vest's slots are holsters the pick-up fills, as in DDA), so it is not loose any more.
+auto carry_loose( avatar &you, const itype_id &id ) -> item &
+{
+    item *bag = nullptr;
+    you.visit_items( [&]( item * it ) -> VisitResponse {
+        if( it->typeId() == itype_id( "backpack" ) )
+        {
+            bag = it;
+            return VisitResponse::ABORT;
+        }
+        return VisitResponse::NEXT;
+    } );
+    REQUIRE( bag != nullptr );
+    REQUIRE( bag->put_in( item::spawn( id, calendar::start_of_cataclysm ),
+                          pocket_type::CONTAINER ).success() );
+    item *found = nullptr;
+    for( item *it : bag->all_items_top() ) {
+        if( it->typeId() == id ) {
+            found = it;
+        }
+    }
+    REQUIRE( found != nullptr );
+    REQUIRE( found->parent_item() == bag );
+    return *found;
+}
+
 // How many items of the given type the avatar has anywhere (carried, wielded, worn, inside worn items).
 auto count_of( avatar &you, const itype_id &id ) -> int
 {
@@ -112,8 +140,7 @@ TEST_CASE( "insert_a_carried_plate_into_a_worn_ballistic_vest", "[inventory][ui]
     item &vest = wear_vest( you );
     wear_backpack( you );
 
-    item &plate = you.i_add( item::spawn( itype_esapi_plate, calendar::start_of_cataclysm ) );
-    REQUIRE( plate.parent_item() != nullptr );
+    item &plate = carry_loose( you, itype_esapi_plate );
     REQUIRE( plate.parent_item() != &vest );
     REQUIRE( count_of( you, itype_esapi_plate ) == 1 );
     const safe_reference<item> original( &plate );
@@ -133,6 +160,24 @@ TEST_CASE( "insert_a_carried_plate_into_a_worn_ballistic_vest", "[inventory][ui]
     CHECK( slot_flag_of( vest, stored ) == "ABLATIVE_LARGE" );
     CHECK( count_of( you, itype_esapi_plate ) == 1 );
     CHECK( you.is_worn( vest ) );
+}
+
+TEST_CASE( "a_plate_picked_up_with_a_worn_ballistic_vest_goes_into_its_slot", "[inventory][ui][p3]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    item &vest = wear_vest( you );
+    wear_backpack( you );
+
+    // DDA: the plate slots of a worn vest are holsters that the pick-up fills first, so a plate that
+    // is picked up (i_add) is already inside the vest and there is nothing left to Insert.
+    item &plate = you.i_add( item::spawn( itype_esapi_plate, calendar::start_of_cataclysm ) );
+    CHECK( plate.parent_item() == &vest );
+    REQUIRE( ablative::plates( vest ).size() == 1 );
+    CHECK( slot_flag_of( vest, *ablative::plates( vest ).front() ) == "ABLATIVE_LARGE" );
+    CHECK( count_of( you, itype_esapi_plate ) == 1 );
+    // the Insert picker does not list what is already inside the vest
+    CHECK_FALSE( game_menus::inv::insert_preset_shows( vest, you, plate ) );
 }
 
 TEST_CASE( "insert_a_wielded_plate_into_a_worn_ballistic_vest", "[inventory][ui][p3]" )
@@ -167,7 +212,7 @@ TEST_CASE( "insert_plates_into_the_slots_of_a_worn_ballistic_vest", "[inventory]
     wear_backpack( you );
 
     SECTION( "a medium plate goes into a medium slot" ) {
-        item &plate = you.i_add( item::spawn( itype_esbi_plate, calendar::start_of_cataclysm ) );
+        item &plate = carry_loose( you, itype_esbi_plate );
         CHECK( game_menus::inv::insert_preset_denial( vest, you, plate ).empty() );
         CHECK( run_insert( you, vest, plate ).empty() );
         REQUIRE( ablative::plates( vest ).size() == 1 );
@@ -179,7 +224,7 @@ TEST_CASE( "insert_plates_into_the_slots_of_a_worn_ballistic_vest", "[inventory]
 
     SECTION( "two large plates take both large slots and the third is refused" ) {
         for( int i = 0; i < 2; i++ ) {
-            item &plate = you.i_add( item::spawn( itype_esapi_plate, calendar::start_of_cataclysm ) );
+            item &plate = carry_loose( you, itype_esapi_plate );
             CHECK( game_menus::inv::insert_preset_denial( vest, you, plate ).empty() );
             CHECK( run_insert( you, vest, plate ).empty() );
         }
@@ -191,7 +236,7 @@ TEST_CASE( "insert_plates_into_the_slots_of_a_worn_ballistic_vest", "[inventory]
         CHECK( vest.contents.pocket_of( ablative::plates( vest )[0] ) !=
                vest.contents.pocket_of( ablative::plates( vest )[1] ) );
 
-        item &third = you.i_add( item::spawn( itype_esapi_plate, calendar::start_of_cataclysm ) );
+        item &third = carry_loose( you, itype_esapi_plate );
         REQUIRE( count_of( you, itype_esapi_plate ) == 3 );
         const safe_reference<item> third_ref( &third );
         const std::string denial = game_menus::inv::insert_preset_denial( vest, you, third );
