@@ -874,3 +874,209 @@ TEST_CASE("column actions move the active column", "[inventory][ui][p3]") {
         CHECK(sel.get_selection_position().first == 0);
     }
 }
+
+// CDF P3-UI2: multiselect parity (DDA TOGGLE_ENTRY / MARK_WITH_COUNT / TOGGLE_NON_FAVORITE,
+// pocket-aware deselect). Pure state, no ui_adaptor and no prompts.
+namespace {
+struct ui2_drop_selector : inventory_drop_selector {
+    using inventory_drop_selector::inventory_drop_selector;
+    using inventory_drop_selector::update_drop_preview;
+    using inventory_drop_selector::get_drop_preview;
+};
+
+auto entry_for(const inventory_selector& sel, const item* it) -> inventory_entry* {
+    return const_cast<inventory_entry*>(row_for(sel, it));
+}
+
+auto chosen_of(const inventory_selector& sel, const item* it) -> size_t {
+    const inventory_entry* e = row_for(sel, it);
+    return e == nullptr ? 0 : e->chosen_count;
+}
+
+auto chosen_rows(const inventory_selector& sel) -> size_t {
+    size_t n = 0;
+    for (const inventory_column* col :
+         {&sel.own_gear_column, &sel.own_inv_column, &sel.map_column}) {
+        for (const inventory_entry* e : item_rows(*col)) {
+            if (e->chosen_count > 0) {
+                ++n;
+            }
+        }
+    }
+    return n;
+}
+
+// Container tree view: pack, box, rock and blanket each get their own row.
+void load_hierarchy(inventory_selector& sel, avatar& u) {
+    sel.enable_view_mode_toggle();
+    sel.add_character_items(u);
+    sel.toggle_categorize_contained();
+    refresh_columns(sel);
+}
+
+// TOGGLE_ENTRY on one item.
+void press_toggle_entry(inventory_multiselector& sel, const item* it) {
+    REQUIRE(sel.select(it));
+    int count = 0;
+    sel.toggle_entries(count);
+}
+
+void check_container_marking(inventory_multiselector& sel, carried_pack_fixture& f) {
+    load_hierarchy(sel, f.u);
+    REQUIRE(entry_for(sel, f.box) != nullptr);
+    REQUIRE(entry_for(sel, f.rock) != nullptr);
+
+    press_toggle_entry(sel, f.rock);
+    CHECK(chosen_of(sel, f.rock) > 0);
+    CHECK(chosen_rows(sel) == 1);
+
+    press_toggle_entry(sel, f.box);
+    CHECK(chosen_of(sel, f.box) > 0);
+    CHECK(chosen_of(sel, f.rock) == 0);
+    CHECK(chosen_rows(sel) == 1);
+}
+} // namespace
+
+TEST_CASE("marking a container deselects its contained items", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    SECTION("drop") {
+        ui2_drop_selector sel(f.u);
+        check_container_marking(sel, f);
+    }
+    SECTION("iuse") {
+        inventory_iuse_selector sel(f.u, "test");
+        check_container_marking(sel, f);
+    }
+    SECTION("pickup") {
+        inventory_pickup_selector sel(f.u);
+        check_container_marking(sel, f);
+    }
+}
+
+TEST_CASE("marking a contained item after its container keeps both consistent",
+          "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    ui2_drop_selector sel(f.u);
+    load_hierarchy(sel, f.u);
+    REQUIRE(entry_for(sel, f.pack) != nullptr);
+    REQUIRE(entry_for(sel, f.box) != nullptr);
+    REQUIRE(entry_for(sel, f.rock) != nullptr);
+    REQUIRE(entry_for(sel, f.blanket) != nullptr);
+
+    SECTION("a direct child") {
+        press_toggle_entry(sel, f.box);
+        press_toggle_entry(sel, f.rock);
+        CHECK(chosen_of(sel, f.box) > 0);
+        CHECK(chosen_of(sel, f.rock) == 0);
+        CHECK(chosen_rows(sel) == 1);
+    }
+
+    SECTION("a grandchild and a child of the outer container") {
+        press_toggle_entry(sel, f.pack);
+        press_toggle_entry(sel, f.rock);
+        press_toggle_entry(sel, f.blanket);
+        CHECK(chosen_of(sel, f.pack) > 0);
+        CHECK(chosen_of(sel, f.rock) == 0);
+        CHECK(chosen_of(sel, f.blanket) == 0);
+        CHECK(chosen_rows(sel) == 1);
+    }
+
+    SECTION("a sibling stays marked") {
+        press_toggle_entry(sel, f.box);
+        press_toggle_entry(sel, f.blanket);
+        CHECK(chosen_of(sel, f.box) > 0);
+        CHECK(chosen_of(sel, f.blanket) > 0);
+        CHECK(chosen_of(sel, f.rock) == 0);
+        CHECK(chosen_rows(sel) == 2);
+    }
+}
+
+TEST_CASE("unmarking a container unmarks its items", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    ui2_drop_selector sel(f.u);
+    load_hierarchy(sel, f.u);
+    REQUIRE(entry_for(sel, f.box) != nullptr);
+    REQUIRE(entry_for(sel, f.rock) != nullptr);
+
+    press_toggle_entry(sel, f.rock);
+    press_toggle_entry(sel, f.box);
+    REQUIRE(chosen_rows(sel) == 1);
+
+    press_toggle_entry(sel, f.box);
+    CHECK(chosen_of(sel, f.box) == 0);
+    CHECK(chosen_of(sel, f.rock) == 0);
+    CHECK(chosen_rows(sel) == 0);
+}
+
+TEST_CASE("non-favorite toggle marks only non-favorite non-worn entries", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    auto bandages = item::spawn("bandages");
+    auto rock = item::spawn("rock");
+    auto heroin = item::spawn("heroin");
+    heroin->is_favorite = true;
+    REQUIRE(f.u.is_worn(*f.pack));
+
+    inventory_iuse_selector sel(f.u, "test");
+    sel.add_item(sel.own_inv_column, bandages.get());
+    sel.add_item(sel.own_inv_column, rock.get());
+    sel.add_item(sel.own_inv_column, heroin.get());
+    sel.add_item(sel.own_inv_column, f.pack);
+    sel.own_inv_column.prepare_paging();
+    REQUIRE(sel.select(bandages.get()));
+
+    int count = 0;
+    sel.toggle_entries(count, inventory_multiselector::toggle_mode::NON_FAVORITE_NON_WORN);
+    CHECK(chosen_of(sel, bandages.get()) > 0);
+    CHECK(chosen_of(sel, rock.get()) > 0);
+    CHECK(chosen_of(sel, heroin.get()) == 0);
+    CHECK(chosen_of(sel, f.pack) == 0);
+
+    // a second press clears them again
+    count = 0;
+    sel.toggle_entries(count, inventory_multiselector::toggle_mode::NON_FAVORITE_NON_WORN);
+    CHECK(chosen_rows(sel) == 0);
+}
+
+TEST_CASE("drop preview still counts after a mark", "[inventory][ui][p3]") {
+    carried_pack_fixture f;
+    ui2_drop_selector sel(f.u);
+    load_hierarchy(sel, f.u);
+    REQUIRE(entry_for(sel, f.blanket) != nullptr);
+    CHECK_FALSE(entry_for(sel, f.blanket)->drop_order.has_value());
+
+    // no update_drop_preview() call here: the mark itself refreshes the preview
+    press_toggle_entry(sel, f.blanket);
+    CHECK_FALSE(sel.get_drop_preview().empty());
+    REQUIRE(entry_for(sel, f.blanket) != nullptr);
+    CHECK(entry_for(sel, f.blanket)->drop_order.has_value());
+    CHECK(entry_for(sel, f.blanket)->automatic_drop_count == 0);
+
+    press_toggle_entry(sel, f.blanket);
+    CHECK(sel.get_drop_preview().empty());
+    CHECK_FALSE(entry_for(sel, f.blanket)->drop_order.has_value());
+}
+
+TEST_CASE("count keys change the chosen count within the stack", "[inventory][ui][p3]") {
+    clear_avatar();
+    auto rock_a = item::spawn("rock");
+    auto rock_b = item::spawn("rock");
+    auto rock_c = item::spawn("rock");
+    const std::vector<item*> stack{rock_a.get(), rock_b.get(), rock_c.get()};
+
+    inventory_iuse_selector sel(get_avatar(), "test");
+    sel.own_inv_column.add_entry(inventory_entry(stack));
+    sel.own_inv_column.prepare_paging();
+    REQUIRE(sel.select(rock_a.get()));
+    REQUIRE(entry_for(sel, rock_a.get()) != nullptr);
+    REQUIRE(entry_for(sel, rock_a.get())->get_available_count() == 3);
+
+    for (size_t expected : {1, 2, 3, 3, 3}) {
+        CHECK(sel.handle_mark_action("INCREASE_COUNT"));
+        CHECK(chosen_of(sel, rock_a.get()) == expected);
+    }
+    for (size_t expected : {2, 1, 0, 0}) {
+        CHECK(sel.handle_mark_action("DECREASE_COUNT"));
+        CHECK(chosen_of(sel, rock_a.get()) == expected);
+    }
+    CHECK_FALSE(sel.handle_mark_action("CONFIRM"));
+}
