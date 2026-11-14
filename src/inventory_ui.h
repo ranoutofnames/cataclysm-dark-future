@@ -24,6 +24,7 @@
 #include "pimpl.h"
 #include "units.h"
 #include "pickup_token.h"
+#include "translations.h"
 #include "type_id.h"
 
 class Character;
@@ -219,6 +220,15 @@ class inventory_selector_preset
          */
         virtual std::string get_denial( const item * ) const {
             return std::string();
+        }
+        /**
+         * CDF: P3-UI3. The container this preset inserts into, or nullptr. DDA reads it through
+         * inventory_holster_preset::get_holster() (inventory_ui.h:290-310); CDF has one preset class
+         * per call site, so the insert selector asks the preset. A preset that fills it makes
+         * inventory_insert_selector show the used and total space of that container.
+         */
+        virtual const item *get_holster() const {
+            return nullptr;
         }
         /** Whether the first item is considered to go before the second. */
         virtual bool sort_compare( const inventory_entry &lhs, const inventory_entry &rhs ) const;
@@ -700,6 +710,12 @@ class inventory_selector
         bool add_contained_items( item *container, inventory_column &column,
                                   const item_category *custom_category = nullptr,
                                   const item *topmost_parent = nullptr, int indent = 0 );
+    public:
+        /** Per DDA inventory_ui.cpp:2143. Adds the items inside container to the own inventory column. */
+        void add_contained_items( item *container );
+        /** Per DDA inventory_ui.cpp:4315. Opens the item info window of sitem (full screen width, scrolling). */
+        void action_examine( const item *sitem );
+    protected:
 
         /**
          * CDF: P3-NESTAMMO1. add_character_items calls this after the carried stacks (categories mode).
@@ -778,6 +794,9 @@ class inventory_selector
         /** A multiline overview of the space available in @p pockets, with the constraints
          * from their outer pockets. If @p show_unconstrained_max_space is set the "max" lines
          * report the pocket's own size, ignoring outer constraints. */
+        /** CDF: P3-UI3. The pocket overview of @p container (DDA inventory_ui.cpp:3987-4016), shared
+         * by container_inventory_selector and inventory_insert_selector. Returns the lines only. */
+        static header_stats get_container_header_stats( const item &container );
         static header_stats get_pocket_summary_header_stats(
             const units::mass &weight_carried, const units::mass &weight_capacity,
             const units::volume &volume_in_pockets, const units::volume &volume_of_pockets,
@@ -891,6 +910,9 @@ class inventory_selector
         const navigation_mode_data &get_navigation_data( navigation_mode m ) const;
         std::unique_ptr<string_input_popup> spopup;
         weak_ptr_fast<ui_adaptor> ui;
+        /** Per DDA inventory_ui.h:883. A window size or origin of -1 means automatic. */
+        point _fixed_origin{ -1, -1 };
+        point _fixed_size{ -1, -1 };
 
     private:
         catacurses::window w_inv;
@@ -923,6 +945,9 @@ class inventory_selector
 
 inventory_selector::stat display_stat( const std::string &caption, int cur_value, int max_value,
                                        const std::function<std::string( int )> &disp_func );
+
+/** CDF: P3-UI3. True when `it` is inside `container` at any depth (DDA item_location::eventually_contains). */
+bool eventually_contains( const item &container, const item &it );
 
 class inventory_pick_selector : public inventory_selector
 {
@@ -1038,11 +1063,29 @@ class inventory_iuse_selector : public inventory_multiselector
         std::map<const item *, std::vector<iuse_location>> to_use;
 };
 
+/** CDF: P3-UI3, DDA inventory_ui.h:1038. Pick one item; the header shows the space inside `loc`. */
+class container_inventory_selector : public inventory_pick_selector
+{
+    public:
+        explicit container_inventory_selector( player &p, item *loc,
+                                               const inventory_selector_preset &preset = default_preset ) :
+            inventory_pick_selector( p, preset ), loc( loc ) {}
+
+    protected:
+        header_stats get_raw_stats() const override;
+
+    private:
+        item *loc;
+};
+
 class inventory_drop_selector : public inventory_multiselector
 {
     public:
         inventory_drop_selector( player &p,
                                  const inventory_selector_preset &preset = default_preset );
+        /** CDF: P3-UI3. The same with another title for the selection column. */
+        inventory_drop_selector( player &p, const inventory_selector_preset &preset,
+                                 const std::string &selection_column_title );
         drop_locations execute();
 
     protected:
@@ -1053,6 +1096,8 @@ class inventory_drop_selector : public inventory_multiselector
          * @return size_t Number the prompt returns
          */
         header_stats get_raw_stats() const override;
+        /** CDF: P3-UI3. The marked stacks and their counts, for the insert selector's header. */
+        auto get_marked() const -> const excluded_stacks & { return dropping; } // *NOPAD*
         /** Toggle item dropping */
         void set_chosen_count( inventory_entry &entry, size_t count ) override;
         /** CDF: refresh the drop preview right after a batch of marks. */
@@ -1067,6 +1112,21 @@ class inventory_drop_selector : public inventory_multiselector
         bool preview_dirty = true;
 };
 
+
+/**
+ * CDF: P3-UI3, DDA inventory_ui.h:1181-1192. The drop selector as the insert menu: the header also shows
+ * the used and total volume and weight of the target container (preset.get_holster()) and the
+ * volume and weight of the marked items. Without a holster it behaves as the drop selector.
+ */
+class inventory_insert_selector : public inventory_drop_selector
+{
+    public:
+        explicit inventory_insert_selector( player &p, const inventory_selector_preset &preset,
+                                            const std::string &selection_column_title = _( "ITEMS TO INSERT" ),
+                                            bool warn_liquid = true );
+    protected:
+        header_stats get_raw_stats() const override;
+};
 
 class inventory_pickup_selector : public inventory_multiselector
 {

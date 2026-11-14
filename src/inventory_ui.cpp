@@ -14,6 +14,7 @@
 #include "game_inventory.h"
 #include "ime.h"
 #include "inventory.h"
+#include "inventory_examiner.h"
 #include "item.h"
 #include "item_category.h"
 #include "item_search.h"
@@ -1755,6 +1756,29 @@ bool inventory_selector::add_contained_items( item *container, inventory_column 
     return vis_top;
 }
 
+void inventory_selector::add_contained_items( item *container )
+{
+    add_contained_items( container, own_inv_column );
+}
+
+void inventory_selector::action_examine( const item *sitem )
+{
+    // Per DDA inventory_ui.cpp:4315-4333
+    std::vector<iteminfo> info = sitem->info();
+    info.insert( info.begin(), iteminfo( "BASE", string_format( _( "Location: %s" ),
+                                         sitem->describe_location( &u ) ) ) );
+    const std::vector<iteminfo> dummy;
+    item_info_data data( sitem->tname( 1, false ), sitem->type_name(), info, dummy );
+    data.handle_scrolling = true;
+    draw_item_info( []() -> catacurses::window {
+        const int width = std::min( TERMX, FULL_SCREEN_WIDTH ) + std::max( 0,
+                          TERMX - FULL_SCREEN_WIDTH ) * ( 1.0 / 4 );
+        const int height = std::min( TERMY, FULL_SCREEN_HEIGHT ) + std::max( 0,
+                           TERMY - FULL_SCREEN_HEIGHT ) * ( 2.0 / 3 );
+        return catacurses::newwin( height, width, point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 ) );
+    }, data );
+}
+
 void inventory_selector::add_character_items( Character &character )
 {
     // Per DDA inventory_ui.cpp:2196: hierarchy mode lists gear with its contents as a tree
@@ -2207,9 +2231,12 @@ void inventory_selector::prepare_layout()
 
     prepare_layout( TERMX - nc_width, TERMY - nc_height );
 
-    const int win_width  = snap( get_layout_width() + nc_width, TERMX );
-    const int win_height = snap( std::max<int>( get_layout_height() + nc_height, FULL_SCREEN_HEIGHT ),
-                                 TERMY );
+    // Per DDA inventory_ui.cpp:2610-2615: a fixed size (the examiner) replaces the automatic one.
+    const int win_width  = _fixed_size.x < 0 ? snap( get_layout_width() + nc_width, TERMX )
+                           : _fixed_size.x;
+    const int win_height = _fixed_size.y < 0
+                           ? snap( std::max<int>( get_layout_height() + nc_height, FULL_SCREEN_HEIGHT ), TERMY )
+                           : _fixed_size.y;
 
     prepare_layout( win_width - nc_width, win_height - nc_height );
 
@@ -2839,8 +2866,11 @@ inventory_selector::header_stats inventory_selector::convert_stats_to_header_sta
 
 void inventory_selector::resize_window( int width, int height )
 {
-    w_inv = catacurses::newwin( height, width,
-                                point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 ) );
+    point origin = _fixed_origin;
+    if( origin.x < 0 || origin.y < 0 ) {
+        origin = point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 );
+    }
+    w_inv = catacurses::newwin( height, width, origin );
     if( spopup ) {
         spopup->window( w_inv, point( 4, getmaxy( w_inv ) - 1 ), ( getmaxx( w_inv ) / 2 ) - 4 );
     }
@@ -3092,6 +3122,8 @@ inventory_selector::inventory_selector( player &u, const inventory_selector_pres
     // Per DDA inventory_ui.cpp:3481; registered here so auto-assigned invlets skip its key.
     ctxt.register_action( "ORGANIZE_MENU" );
     ctxt.register_action( "SHOW_HIDE_CONTENTS", to_translation( "Show/hide contents" ) );
+    // Per DDA inventory_ui.cpp:3469; the key comes from UI0.
+    ctxt.register_action( "EXAMINE_CONTENTS" );
     // Per DDA inventory_ui.cpp:3470-3480
     ctxt.register_action( "SHOW_HIDE_CONTENTS_ALL", to_translation( "Show/hide all contents" ) );
     ctxt.register_action( "RESET_FILTER", to_translation( "Reset filter" ) );
@@ -3306,7 +3338,23 @@ void inventory_selector::on_input( const inventory_input &input )
                 select( kept );
             }
         }
-    }
+    } else if( input.action == "EXAMINE_CONTENTS" ) {
+        // Per DDA inventory_ui.cpp:3645-3661
+        const inventory_entry &selected = get_active_column().get_selected();
+        if( selected ) {
+            item *sitem = selected.locations.front();
+            inventory_examiner examine_contents( u, sitem );
+            examine_contents.add_contained_items( sitem );
+            const int examine_result = examine_contents.execute();
+            if( examine_result == EXAMINED_CONTENTS_WITH_CHANGES ) {
+                // The user changed something while examining, so rebuild paging
+                for( inventory_column *elem : columns ) {
+                    elem->invalidate_paging();
+                }
+            } else if( examine_result == NO_CONTENTS_TO_EXAMINE ) {
+                action_examine( sitem );
+            }
+        }
     } else if( input.action == "TOGGLE_FAVORITE" ) {
         if( has_available_choices() ) {
             for( inventory_column *elem : columns ) {
@@ -4052,6 +4100,113 @@ inventory_drop_selector::inventory_drop_selector( player &p,
     // allow user to type a drop number without dismissing virtual keyboard after each keypress
     ctxt.allow_text_entry = true;
 #endif
+}
+
+inventory_drop_selector::inventory_drop_selector( player &p,
+        const inventory_selector_preset &preset, const std::string &selection_column_title ) :
+    inventory_multiselector( p, preset, selection_column_title )
+{
+#if defined(__ANDROID__)
+    ctxt.allow_text_entry = true;
+#endif
+}
+
+// Per DDA inventory_ui.cpp:4690-4700. warn_liquid is DDA's liquid-spill warning of the drop
+// selector; CDF's drop selector has none, and the preset hides spilt liquid, so it is unused.
+inventory_insert_selector::inventory_insert_selector( player &p,
+        const inventory_selector_preset &preset, const std::string &selection_column_title,
+        bool /* warn_liquid */ ) :
+    inventory_drop_selector( p, preset, selection_column_title )
+{
+}
+
+bool eventually_contains( const item &container, const item &it )
+{
+    // Per DDA item_location::eventually_contains: walk up from it.
+    for( const item *parent = it.parent_item(); parent != nullptr; parent = parent->parent_item() ) {
+        if( parent == &container ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// CDF: P3-UI3. DDA item_location::get_pocket_constraints_recursive: the limits that the pockets
+// holding `it` put on its own pockets. DDA's pocket_constraint also carries the weight limit; the
+// CDF one keeps the field unused, so it is applied here.
+static auto outer_pocket_constraint( const item &it ) -> pocket_constraint
+{
+    pocket_constraint ret;
+    const item *child = &it;
+    for( const item *parent = it.parent_item(); parent != nullptr;
+         child = parent, parent = parent->parent_item() ) {
+        const item_pocket *pocket = parent->contents.pocket_of( child );
+        if( pocket != nullptr ) {
+            ret.constrain_by( pocket );
+            ret.weight_capacity = std::min( ret.weight_capacity, pocket->weight_capacity() );
+        }
+    }
+    return ret;
+}
+
+inventory_selector::header_stats inventory_selector::get_container_header_stats(
+    const item &container )
+{
+    const pocket_constraint container_constraints = outer_pocket_constraint( container );
+    std::vector<pocket_with_constraint> pockets;
+    units::volume rigid_capacity = 0_ml;
+    units::volume flex_capacity = 0_ml;
+    units::volume flex_contents = 0_ml;
+    for( const item_pocket *p : container.get_container_pockets() ) {
+        pocket_with_constraint pwc{ p, pocket_constraint( p ) };
+        pwc.constraint.constrain_by( container_constraints );
+        pockets.push_back( pwc );
+
+        if( p->rigid() ) {
+            rigid_capacity += p->volume_capacity();
+        } else {
+            flex_capacity += p->volume_capacity();
+            flex_contents += p->contents_volume();
+        }
+    }
+
+    const std::string weight_label_override = _( "Contents Weight:" );
+    return get_pocket_summary_header_stats(
+               container.get_total_contained_weight(),
+               std::min( container.get_total_weight_capacity(), container_constraints.weight_capacity ),
+               container.get_contents_volume(),
+               rigid_capacity + std::min( container_constraints.remaining_volume + flex_contents, flex_capacity ),
+               pockets, true, &weight_label_override, nullptr );
+}
+
+inventory_selector::header_stats container_inventory_selector::get_raw_stats() const
+{
+    return get_container_header_stats( *loc );
+}
+
+inventory_selector::header_stats inventory_insert_selector::get_raw_stats() const
+{
+    const item *holster = preset.get_holster();
+    if( holster == nullptr ) {
+        return inventory_drop_selector::get_raw_stats();
+    }
+    units::mass weight = 0_gram;
+    units::volume volume = 0_ml;
+    // sum marked items; a marked item and its ancestor are never both marked (deselect_contained_items)
+    for( const auto &[marked, count] : get_marked() ) {
+        if( marked->count_by_charges() ) {
+            detached_ptr<item> copy = item::spawn( *marked );
+            copy->charges = count;
+            weight += copy->weight();
+            volume += copy->volume();
+        } else {
+            weight += marked->weight() * count;
+            volume += marked->volume() * count;
+        }
+    }
+    header_stats stats = get_container_header_stats( *holster );
+    stats.push_back( build_selection_stats_line( volume, weight ) );
+    return stats;
 }
 
 void inventory_drop_selector::on_toggle()
