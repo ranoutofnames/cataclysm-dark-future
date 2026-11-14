@@ -64,9 +64,20 @@ The Zone manager `(Y)` allows you to set sorting zones to auto-sort your loot, d
 or vehicles automatically, construction blueprints, or farm fish and chop trees. It is a powerful
 tool for minimizing keystrokes.
 
+In the zone manager:
+
+- `+` and `-` move the selected zone one place up or down the list. The selection moves with the zone.
+- The up and down keys wrap from the last zone to the first and back. Page up and page down jump several zones and stop at the ends. Home and end go to the first and last zone.
+- Quitting with unsaved changes asks "Save changes?". Yes saves and closes. No closes without saving. Quit goes back to the zone manager.
+- A zone type marked `hidden` in the data is not listed. No zone type that ships with the game is marked `hidden`.
+
+The zone keys and the UNLOAD_ALL zone are on the [reload and unload storage](reload_unload_storage.md#zones) page.
+
 ### Zone activities
 
 Using `(O)` your character can do zone activities once you have at least one zone.
+
+- An UNLOAD_ALL zone empties the containers in it during the sort; see [Zones](reload_unload_storage.md#zones).
 
 ### Sorting
 

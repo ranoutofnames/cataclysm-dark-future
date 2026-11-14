@@ -203,3 +203,64 @@ When you aim a manual turret with several ammo pockets, each pocket gets one row
 - `<pocket>: <ammo> (N, need M)` otherwise.
 
 `N` is the count in the pocket and `M` is the amount one shot needs. The row is red when `N` is below one shot. The rest of the aim screen is in the Aim section above.
+
+## Zones
+
+Zones are set in the zone manager, `(Y)`. The [new player guide](new_player_guide.md#the-zone-manager) has the basics.
+
+### Zone manager keys
+
+| Key | Action (data id) | What it does |
+|---|---|---|
+| `a`, `A` | `ADD_ZONE` | Add a zone. |
+| `r`, `R` | `REMOVE_ZONE` | Remove the selected zone. |
+| `+` | `MOVE_ZONE_UP` | Move the selected zone one place up the list. |
+| `-` | `MOVE_ZONE_DOWN` | Move the selected zone one place down the list. |
+| `m`, `M` | `SHOW_ZONE_ON_MAP` | Show the position of the selected zone on the overmap. |
+| `e`, `E` | `ENABLE_ZONE` | Turn the selected zone on. |
+| `d`, `D` | `DISABLE_ZONE` | Turn the selected zone off. |
+| `c`, `C` | `ENABLE_VEHICLE_ZONES` | Turn on the vehicle zones in the list. |
+| `v`, `V` | `DISABLE_VEHICLE_ZONES` | Turn off the vehicle zones in the list. |
+| `F`, `f` | `CHANGE_FACTION` | Choose the faction whose zones are listed. Debug mode only. |
+| `s`, `S` | `SHOW_ALL_ZONES` | Show all zones, or hide zones that are far away. Far zones are hidden at first. |
+| `o`, `O` | `TOGGLE_ZONE_OVERLAY` | Show or hide the zone overlay on the map. |
+
+The list keys also work in the zone manager. Up and down move one zone and wrap from the last zone to the first and back. Page up and page down move several zones and stop at the ends. Home goes to the first zone and End goes to the last.
+
+| Key | Action (data id) | What it does |
+|---|---|---|
+| Up arrow, `k`, `8` | `UP` | Move up one zone, wrapping. |
+| Down arrow, `j`, `2` | `DOWN` | Move down one zone, wrapping. |
+| Page Up | `PAGE_UP` | Move up several zones. Stops at the first zone. |
+| Page Down | `PAGE_DOWN` | Move down several zones. Stops at the last zone. |
+| Home | `HOME` | Go to the first zone. |
+| End | `END` | Go to the last zone. |
+
+The `-` key on the aim screen is a different action, `TOGGLE_UNLOAD_RAS_WEAPON`; see [Keys](#keys) above.
+
+### Zone data
+
+Quitting with unsaved changes asks "Save changes?". Yes saves and closes. No closes without saving. Quit goes back to the zone manager.
+
+A zone type marked `hidden` in the data is not listed in the zone manager unless debug mode is on. No zone type that ships with the game is marked `hidden`.
+
+A zone is used only in the dimension it was made in. This version does not move zones with you between dimensions.
+
+### UNLOAD_ALL zone
+
+The UNLOAD_ALL zone is called "Loot: Unload Everything" in the game. Its description is: "Any containers in this zone you don't otherwise sort will have their contents dumped out and placed on the same tile. This includes magazines and magazine wells."
+
+A new UNLOAD_ALL zone asks four questions. Cancelling the stack-size question cancels the zone.
+
+| Question | Option | Default | What it does |
+|---|---|---|---|
+| "Detach MOLLE attached pouches?" | `molle` | no | Yes: a pouch attached to an item is taken off the item and handled by the sort. A pouch that can be attached to an item is kept whole, not emptied. |
+| "Detach mods from weapons? (Be careful as you may not have the skills to reattach them)" | `mods` | no | The answer is saved with the zone. This version does not remove gunmods, so it has no effect yet. |
+| "Avoid unloading items stacks (not charges) greater than a certain amount? (Amount defined in next window)" | `sparse_only` | no | Yes: the next question asks for the limit. In a container, a solid item type with more top-level items of that type than the limit stays put. Magazines and magazine wells are not limited. |
+| "What is the maximum stack size to unload?" | `sparse_threshold` | 20 | Asked only when the question above is yes. A value below 1 counts as 1. |
+| "Always unload? (Unload even if the container has a valid sorting location)" | `always_unload` | no | Yes: contents are emptied even when a sorting zone for the item is near. No: contents are emptied only when no sorting zone for the item is near. |
+
+The zone name is suggested from the options, for example `Unload: MOLLE, unload unmatched`.
+
+The options are saved with the zone. The four questions do not set the item filter (`mark`), which is saved with the zone and is empty when the questions are answered.
+
