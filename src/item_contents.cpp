@@ -123,6 +123,20 @@ void item_contents::copy_from( const item_contents &source )
     contents_changed();
 }
 
+void item_contents::begin_bulk_fill()
+{
+    for( item_pocket &pocket : pockets ) {
+        pocket.begin_bulk_fill();
+    }
+}
+
+void item_contents::end_bulk_fill()
+{
+    for( item_pocket &pocket : pockets ) {
+        pocket.end_bulk_fill();
+    }
+}
+
 void item_contents::invalidate_pocket_caches() const
 {
     for( const item_pocket &pocket : pockets ) {
