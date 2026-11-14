@@ -50,8 +50,14 @@ enum class scroll_direction : int {
 };
 
 struct navigation_mode_data;
-struct inventory_input;
 class inventory_entry;
+
+struct inventory_input {
+    std::string action;
+    int ch;
+    inventory_entry *entry;
+    bool mouse = false; // entry was found by screen position, not by inventory letter
+};
 
 /// Display-only key hint. Doesn't participate in inventory-letter lookup.
 struct inventory_invlet_hint {
@@ -856,17 +862,17 @@ class inventory_selector
         /// hover as a mark.
         void register_mouse_actions();
 
+        // Called from resizing/redraw callbacks of ui_adaptor and from the pick selectors
+        // mouse handling.
+        void prepare_layout( size_t client_width, size_t client_height );
+        void prepare_layout();
+
         const std::vector<inventory_column *> &get_all_columns() const {
             return columns;
         }
         std::vector<inventory_column *> get_visible_columns() const;
 
     private:
-        // These functions are called from resizing/redraw callbacks of ui_adaptor
-        // and should not be made protected or public.
-        void prepare_layout( size_t client_width, size_t client_height );
-        void prepare_layout();
-
         void resize_window( int width, int height );
         void refresh_window() const;
 

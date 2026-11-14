@@ -90,13 +90,6 @@ struct navigation_mode_data {
     nc_color color;
 };
 
-struct inventory_input {
-    std::string action;
-    int ch;
-    inventory_entry *entry;
-    bool mouse = false; // entry was found by screen position, not by inventory letter
-};
-
 bool inventory_entry::operator==( const inventory_entry &other ) const
 {
     return get_category_ptr() == other.get_category_ptr() && locations == other.locations;

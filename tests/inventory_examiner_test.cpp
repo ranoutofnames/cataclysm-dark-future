@@ -6,6 +6,7 @@
 #include "inventory_ui.h"
 #include "item.h"
 #include "item_pocket.h"
+#include "output.h"
 #include "player_helpers.h"
 #include "string_formatter.h"
 #include "state_helpers.h"
