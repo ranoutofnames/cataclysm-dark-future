@@ -2074,7 +2074,7 @@
     "name": "Army Infantry",
     "description": "One moment you were scrambling for cover in a shell crater, on some burnt-out island in the Pacific.  Then a bright flash, and next thing you know you're stateside again.  Except the cities don't look anything like how you remember them, and the smell of death hangs in the air like it followed you home",
     "traits": [ "PROF_MILITARY" ],
-    "//": "About as close as we can get with current existing items.",
+    "//": "About as close as we can get with current existing items.  CDF: kd1 B12a, the Garand clips are carried loose as DDA's sheltered_militia kit does (DDA professions.json:855): a loaded en-bloc clip is 330 ml, more than the belt's 250 ml pouch takes, so nesting them in belt_magazine sent them to the MIGRATION pocket",
     "items": {
       "both": {
         "items": [
@@ -2092,7 +2092,8 @@
           "rucksack"
         ],
         "entries": [
-          { "item": "belt_magazine", "contents-group": "temporal_soldier_garand" },
+          { "item": "belt_magazine" },
+          { "group": "temporal_soldier_garand" },
           { "item": "knife_combat", "container-item": "sheath" },
           { "item": "grenadebandolier", "contents-item": [ "grenade", "grenade" ] },
           { "item": "garand", "ammo-item": "3006", "charges": 8, "contents-item": [ "shoulder_strap" ] }
