@@ -1892,6 +1892,16 @@ void inventory_selector::remove_item( item *location )
 }
 
 
+// NEST1: worn gear that sits in the pockets of a worn item (armor plates, protectors, nested
+// garments) keeps the worn column, so it can be listed under its worn row. CDF: DDA only does this
+// for ablative inserts (is_worn_ablative, inventory_ui.cpp:2109-2141); the set of items is wider
+// here by owner request. The item category alone is not enough: CDF calculates "clothing" for every
+// ARMOR type (item_factory.cpp:5201), so is_armor() is the actual test for a garment or armor piece.
+static auto is_worn_gear( const item &it ) -> bool
+{
+    return it.is_armor() || is_worn_id( it.get_category().get_id() );
+}
+
 // Per DDA inventory_ui.cpp:208 (is_worn_ablative), adapted: item * and pocket_of() instead of
 // item_location::parent_pocket()
 static auto is_worn_ablative( const Character &who, const item *container,
@@ -1988,7 +1998,11 @@ bool inventory_selector::add_contained_items( item *container, inventory_column 
     for( item *it : items ) {
         const item_category *hacked_cat = custom_category;
         inventory_column *hacked_col = &column;
-        if( is_worn_ablative( u, container, it ) ) {
+        // NEST1: contents of a worn row that are themselves armor or clothing stay in the worn
+        // column and get the worn category, so they are listed (indented) under the worn row
+        // instead of as flat rows of the inventory column. Other contents keep their own category.
+        const bool worn_parent = topmost_parent != nullptr && u.is_worn( *topmost_parent );
+        if( is_worn_ablative( u, container, it ) || ( worn_parent && is_worn_gear( *it ) ) ) {
             hacked_cat = &item_category_id( "ITEMS_WORN" ).obj();
             hacked_col = &own_gear_column;
         }
@@ -2030,6 +2044,12 @@ void inventory_selector::add_character_items( Character &character )
     // CDF: item * instead of DDA's item_location (OPENCODE_RULES).
     item &weapon = character.primary_weapon();
     const bool hierarchy = _uimode == uimode::hierarchy;
+    // NEST1: the worn column keeps its container tree in the categories view too. Its nested rows
+    // carry entry.indent (see add_contained_items) and the column has to apply that indent and group
+    // each child under its worn row. CDF: DDA takes the indent flag from the preset (default on,
+    // inventory_ui.h:314) but its categories toggle clears it on every column (inventory_ui.cpp:3788).
+    own_gear_column.set_indent_entries_override( true );
+    own_gear_column.invalidate_paging();
     if( !weapon.is_null() ) {
         add_entry_rec( own_gear_column, hierarchy ? own_gear_column : own_inv_column, &weapon,
                        &item_category_id( "WEAPON_HELD" ).obj(),
@@ -2040,10 +2060,11 @@ void inventory_selector::add_character_items( Character &character )
         add_entry_rec( own_gear_column, hierarchy ? own_gear_column : own_inv_column, worn_item,
                        custom_cat, hierarchy ? custom_cat : nullptr, nullptr, 0 );
     }
-    // Per DDA inventory_ui.cpp:2209-2211: in categories mode the contents of the worn/wielded rows
-    // keep their own categories in the inventory column instead of sitting indented under the parent.
-    // CDF: no indent override is needed, inventory_column::get_entry_indent only adds entry.indent
-    // when the column's own hierarchy flag is set (toggle_categorize_contained).
+    // Per DDA inventory_ui.cpp:2209-2211: in categories mode the non-worn contents of the
+    // worn/wielded rows keep their own categories in the inventory column instead of sitting
+    // indented under the parent. CDF: no indent override is needed there, because
+    // inventory_column::get_entry_indent adds entry.indent only while the column indents; NEST1
+    // above turns that on for the worn column alone.
     // CDF: no flat Character::inv (OPENCODE_RULES), the non-worn, non-wielded loose items live in
     // the body storage. DDA's top_items_loc() lists them at the top level; do the same here so the
     // loose inventory keeps its rows (CDF used to list them in the flat carried-group loop).

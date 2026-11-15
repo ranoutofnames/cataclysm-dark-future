@@ -370,6 +370,126 @@ TEST_CASE(
     }
 }
 
+// NEST1: a worn vest with two ESAPI plates in its large plate pockets.
+namespace {
+struct worn_vest_fixture {
+    static auto fresh_avatar() -> avatar& {
+        clear_all_state();
+        return get_avatar();
+    }
+    avatar& u = fresh_avatar();
+    item* vest = nullptr;
+    std::vector<item*> plates;
+
+    worn_vest_fixture() {
+        clear_character(u, true);
+        u.wear_item(item::spawn(itype_id("ballistic_vest_esapi"), calendar::turn), false);
+        vest = u.worn.front();
+        for (int i = 0; i < 2; ++i) {
+            REQUIRE(vest->put_in(item::spawn(itype_id("esapi_plate"), calendar::turn),
+                                 pocket_type::CONTAINER).success());
+        }
+        for (item* top : vest->contents.all_items_top()) {
+            plates.push_back(top);
+            REQUIRE(top->parent_item() == vest);
+        }
+        REQUIRE(plates.size() == 2);
+    }
+};
+} // namespace
+
+// NEST1: armor pieces that sit in the pockets of a worn item are child rows of the worn row in the
+// worn column, in the categories view too. There is no option: this is simply the listing.
+TEST_CASE("worn armor pieces nest under their worn row", "[inventory][nest]") {
+    const view_mode_state_guard view_mode;
+    worn_vest_fixture f;
+    REQUIRE(f.u.is_worn(*f.vest));
+
+    inventory_selector sel(f.u);
+    sel.add_character_items(f.u);
+    sel.own_gear_column.prepare_paging();
+    sel.own_inv_column.prepare_paging();
+
+    const std::vector<const inventory_entry*> rows = item_rows(sel.own_gear_column);
+    REQUIRE(rows.size() == 3);
+    CHECK(rows[0]->any_item() == f.vest);
+    CHECK(rows[0]->indent == 0);
+    CHECK(rows[0]->chevron);
+    const item_category* worn_cat = rows[0]->get_category_ptr();
+    REQUIRE(worn_cat != nullptr);
+    CHECK(worn_cat->get_id().str() == "ITEMS_WORN");
+
+    // The two plates sit directly under the vest, indented, in the worn category.
+    for (size_t i = 1; i < rows.size(); ++i) {
+        CAPTURE(i);
+        CHECK(std::find(f.plates.begin(), f.plates.end(), rows[i]->any_item()) != f.plates.end());
+        CHECK(rows[i]->indent == 2);
+        CHECK(rows[i]->topmost_parent == f.vest);
+        CHECK(rows[i]->get_category_ptr() == worn_cat);
+        CHECK_FALSE(rows[i]->chevron);
+    }
+    // They are not top-level rows of the inventory column.
+    for (const inventory_entry* row : item_rows(sel.own_inv_column)) {
+        CHECK(std::find(f.plates.begin(), f.plates.end(), row->any_item()) == f.plates.end());
+    }
+
+    SECTION("collapsing the vest hides the plate rows") {
+        REQUIRE(sel.select(f.vest));
+        sel.toggle_selected_contents();
+        sel.own_gear_column.invalidate_paging();
+        sel.own_gear_column.prepare_paging();
+        const std::vector<const inventory_entry*> collapsed = item_rows(sel.own_gear_column);
+        REQUIRE(collapsed.size() == 1);
+        CHECK(collapsed[0]->any_item() == f.vest);
+
+        // The filter still finds a plate inside the collapsed vest.
+        sel.own_gear_column.set_filter("ESAPI");
+        const std::vector<const inventory_entry*> filtered = item_rows(sel.own_gear_column);
+        REQUIRE(filtered.size() == 2);
+        for (const inventory_entry* row : filtered) {
+            CHECK(std::find(f.plates.begin(), f.plates.end(), row->any_item()) != f.plates.end());
+        }
+        sel.own_gear_column.set_filter("");
+
+        for (item_pocket* pocket : f.vest->get_standard_pockets()) {
+            pocket->settings.set_collapse(false);
+        }
+        sel.own_gear_column.invalidate_paging();
+        sel.own_gear_column.prepare_paging();
+        CHECK(item_rows(sel.own_gear_column).size() == 3);
+    }
+}
+
+// NEST1: the same for clothing that is not an ablative insert: a helmet in a worn bag's pocket.
+TEST_CASE("worn clothing in a worn bag's pocket nests under the bag", "[inventory][nest]") {
+    const view_mode_state_guard view_mode;
+    clear_all_state();
+    avatar& u = get_avatar();
+    clear_character(u, true);
+    u.wear_item(item::spawn(itype_id("backpack_hiking"), calendar::turn), false);
+    item& pack = *u.worn.front();
+    item& helmet = u.i_add(item::spawn(itype_id("helmet_army"), calendar::turn));
+    REQUIRE(helmet.parent_item() == &pack);
+    REQUIRE(helmet.is_armor());
+
+    inventory_selector sel(u);
+    sel.add_character_items(u);
+    sel.own_gear_column.prepare_paging();
+    sel.own_inv_column.prepare_paging();
+
+    const std::vector<const inventory_entry*> rows = item_rows(sel.own_gear_column);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows[0]->any_item() == &pack);
+    CHECK(rows[0]->chevron);
+    CHECK(rows[1]->any_item() == &helmet);
+    CHECK(rows[1]->indent == 2);
+    CHECK(rows[1]->topmost_parent == &pack);
+    CHECK(rows[1]->get_category_ptr()->get_id().str() == "ITEMS_WORN");
+    for (const inventory_entry* row : item_rows(sel.own_inv_column)) {
+        CHECK(row->any_item() != &helmet);
+    }
+}
+
 // PL-64 PK1/G36: the pickup selector lists what sits inside a box on the tile as child rows, as
 // DDA's _add_map_items (inventory_ui.cpp:2337-2358) does: add_entry_rec on every map item, with the
 // box row carrying the chevron.
@@ -2730,4 +2850,36 @@ TEST_CASE("multiselector hover highlights a row and a click toggles it",
     // a key invlet is still a mark, as in DDA's ANY_INPUT branch
     sel.handle_entry_action(inventory_input{"ANY_INPUT", rock.invlet, row, false});
     CHECK(row->chosen_count > 0);
+}
+
+// NEST1: the drop, pickup and unload selectors list and act on the nested armor rows (they share
+// add_character_items and the column entries).
+TEST_CASE("drop pickup and unload selectors list the nested plates", "[inventory][nest]") {
+    const view_mode_state_guard view_mode;
+    worn_vest_fixture f;
+    item* const plate = f.plates.front();
+
+    SECTION("drop selector marks a nested plate") {
+        ui2_drop_selector sel(f.u);
+        sel.add_character_items(f.u);
+        refresh_columns(sel);
+        REQUIRE(row_for(sel, plate) != nullptr);
+        REQUIRE(row_for(sel, plate)->is_selectable());
+        press_toggle_entry(sel, plate);
+        CHECK(chosen_of(sel, plate) > 0);
+    }
+    SECTION("pickup selector lists a nested plate") {
+        inventory_pickup_selector sel(f.u);
+        sel.add_character_items(f.u);
+        refresh_columns(sel);
+        REQUIRE(row_for(sel, plate) != nullptr);
+        CHECK(row_for(sel, plate)->topmost_parent == f.vest);
+    }
+    SECTION("unload selector lists a nested plate") {
+        unload_selector sel(f.u);
+        sel.add_character_items(f.u);
+        refresh_columns(sel);
+        REQUIRE(row_for(sel, plate) != nullptr);
+        CHECK(row_for(sel, plate)->is_selectable());
+    }
 }
