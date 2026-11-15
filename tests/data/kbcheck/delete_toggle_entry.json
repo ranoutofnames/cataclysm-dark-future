@@ -1,0 +1,9 @@
+[
+  {
+    "type": "keybinding",
+    "id": "TOGGLE_ENTRY",
+    "category": "INVENTORY",
+    "is_deleted": true,
+    "bindings": []
+  }
+]

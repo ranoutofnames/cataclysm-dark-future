@@ -5,7 +5,9 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 #include <optional>
 
@@ -214,6 +216,31 @@ struct action_attributes {
     std::vector<input_event> input_events;
 };
 
+/**
+ * AT2: actions the DDA inventory screen needs in the INVENTORY context.
+ * Keep in sync with REQUIRED_INVENTORY_ACTIONS in tools/cdf_kbcheck.py.
+ * SHOW_HIDE_CONTENTS is the collapse action; SHOW_HIDE_CONTENTS_ALL has no
+ * default key in the shipped data, so it is always reported as unbound.
+ */
+extern const std::vector<std::string> required_inventory_actions;
+
+/**
+ * AT2: what the user's keybindings.json did, and which required actions it
+ * left without an effective key. Filled by input_manager::check_keybindings.
+ */
+struct keybinding_self_check {
+    std::vector<std::string> overridden_action_ids;
+    std::vector<std::string> override_contexts;
+    std::vector<std::string> missing_required_actions;
+};
+
+/**
+ * AT2b: "<build number> <commit sha12>" from the configure-time generator
+ * (CMakeLists.txt), or the version string when those fields are not defined.
+ * Defined in debug.cpp because this is the only header in the AT2 file lock.
+ */
+std::string get_build_id_string();
+
 // Definitions for joystick/gamepad.
 
 // On the joystick there's a maximum of 256 key states.
@@ -276,6 +303,12 @@ class input_manager
          * and possibly been modified.
          */
         void save();
+
+        /**
+         * AT2: report the user-file overrides and the required actions the user
+         * removed. Meaningful after @ref init.
+         */
+        keybinding_self_check check_keybindings() const;
 
         /**
          * Return the previously pressed key, or 0 if there is no previous input
@@ -353,6 +386,11 @@ class input_manager
         using t_actions = std::map<std::string, action_attributes>;
         using t_action_contexts = std::map<std::string, t_actions>;
         t_action_contexts action_contexts;
+
+        // AT2: what the current user file did, recorded by load( ..., true ).
+        // (context, action_id) -> true when the user left the action unbound.
+        std::map<std::pair<std::string, std::string>, bool> user_override_empty;
+        std::set<std::pair<std::string, std::string>> user_deleted_actions;
 
         using t_key_to_name_map = std::map<int, std::string>;
         t_key_to_name_map keycode_to_keyname;

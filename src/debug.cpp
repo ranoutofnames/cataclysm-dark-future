@@ -749,6 +749,24 @@ std::ostream &DebugFile::get_file()
     return *file;
 }
 
+std::string get_build_id_string()
+{
+    // AT2b: the build number and commit are supplied by CMakeLists.txt, the
+    // same generator that writes VERSION.txt, so the line describes this binary.
+#if defined( CDF_BUILD_NUMBER ) && defined( CDF_COMMIT_SHA )
+    static const std::string build_id = []() {
+        std::string sha = CDF_COMMIT_SHA;
+        if( sha.size() > 12 ) {
+            sha.resize( 12 );
+        }
+        return std::string( CDF_BUILD_NUMBER ) + " " + sha;
+    }();
+    return build_id;
+#else
+    return getVersionString();
+#endif
+}
+
 void DebugFile::init( DebugOutput output_mode, const std::string &filename )
 {
     std::shared_ptr<std::ostringstream> str_buffer = std::dynamic_pointer_cast<std::ostringstream>
@@ -775,6 +793,7 @@ void DebugFile::init( DebugOutput output_mode, const std::string &filename )
             *file << get_time() << " : Starting log.\n";
             DebugLog( DL::Info, DC::Main ) << "Cataclysm BN version " << getVersionString() << " " <<
                                            game_info::bitness_string();
+            DebugLog( DL::Info, DC::Main ) << "Build: " << get_build_id_string();
             if( rename_failed ) {
                 DebugLog( DL::Info, DC::Main ) << "Moving the previous log file to "
                                                << oldfile << " failed.\n"
