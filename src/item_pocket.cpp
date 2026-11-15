@@ -1787,6 +1787,44 @@ bool item_pocket::spill_contents( const tripoint_bub_ms &pos )
     return true;
 }
 
+// DDA item_pocket.cpp:2014-2047
+void item_pocket::leak( map &here, Character *carrier, const tripoint_bub_ms &pos,
+                        item_pocket *pocke )
+{
+    for( auto iter = contents.begin(); iter != contents.end(); ) {
+        if( ( *iter )->leak( here, carrier, pos, this ) ) {
+            if( watertight() ) {
+                ++iter;
+                continue;
+            }
+            // CDF: T3/T4, the item is detached and moved instead of copied
+            if( pocke != nullptr ) {
+                if( pocke->watertight() ) {
+                    ++iter;
+                    continue;
+                }
+                detached_ptr<item> det;
+                iter = contents.erase( iter, &det );
+                pocke->add( std::move( det ) );
+            } else {
+                ( *iter )->unset_flag( flag_FROM_FROZEN_LIQUID );
+                detached_ptr<item> det;
+                iter = contents.erase( iter, &det );
+                det->on_drop( pos );
+                here.add_item_or_charges( pos, std::move( det ) );
+                if( carrier != nullptr ) {
+                    // CDF: no weight-carried cache to invalidate
+                    carrier->add_msg_if_player( _( "Liquid leaked out from the %s and dripped onto the ground!" ),
+                                                this->get_name().translated() );
+                }
+            }
+        } else {
+            ++iter;
+        }
+    }
+    invalidate_cache();
+}
+
 std::vector<detached_ptr<item>> item_pocket::clear_items()
 {
     invalidate_cache();

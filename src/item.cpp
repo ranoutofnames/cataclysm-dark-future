@@ -7390,6 +7390,26 @@ auto item::is_in_preserving_container() const -> bool
     return false;
 }
 
+auto item::pocket_spoil_multiplier() const -> float
+{
+    // DDA item_pocket::process (item_pocket.cpp:1997-2007): a pocket's multiplier is not
+    // applied on top of its parent's, the lowest one wins; item_contents::process only descends
+    // through these pocket types. CDF: the chain is walked from the item instead of passed down.
+    float multiplier = 1.0f;
+    const item *current = this;
+    for( const item *parent = parent_item(); parent != nullptr; parent = parent->parent_item() ) {
+        const item_pocket *pocket = parent->contents.pocket_of( current );
+        if( pocket != nullptr &&
+            ( pocket->is_type( pocket_type::CONTAINER ) ||
+              pocket->is_type( pocket_type::MOD ) ||
+              pocket->is_type( pocket_type::MAGAZINE_WELL ) ) ) {
+            multiplier = std::min( multiplier, pocket->spoil_multiplier() );
+        }
+        current = parent;
+    }
+    return multiplier;
+}
+
 auto item::is_in_sealing_container() const -> bool
 {
     for( const item *parent = parent_item(); parent != nullptr; parent = parent->parent_item() ) {
@@ -7523,7 +7543,8 @@ auto get_hourly_rotpoints_at_temp( const units::temperature temp ) -> int
     return rot_chart[std::round( temp_c )];
 }
 
-auto item::calc_rot( time_point time, const units::temperature temp ) const -> time_duration
+auto item::calc_rot( time_point time, const units::temperature temp,
+                     const float spoil_multiplier ) const -> time_duration
 {
     // Avoid needlessly calculating already rotten things.  Corpses should
     // always rot away and food rots away at twice the shelf life.  If the food
@@ -7535,6 +7556,8 @@ auto item::calc_rot( time_point time, const units::temperature temp ) const -> t
 
     // rot modifier
     auto factor = get_option<float>( "ROT_RATE" );
+    // DDA item_degrade.cpp:1384,1418: the pockets the item is in scale the rot it gains
+    factor *= spoil_multiplier;
     if( is_corpse() && has_flag( flag_FIELD_DRESS ) ) {
         factor *= 0.75f;
     }
@@ -8903,6 +8926,25 @@ void item::set_kcal_mult( float val )
 bool item::is_container_empty() const
 {
     return contents.empty();
+}
+
+// DDA item_container.cpp:894-910
+bool item::leak( map &here, Character *carrier, const tripoint_bub_ms &pos, item_pocket *pocke )
+{
+    if( is_container() ) {
+        contents.leak( here, carrier, pos, pocke );
+        return false;
+    } else if( this->made_of( phase_id::LIQUID ) && !this->is_frozen_liquid() ) {
+        if( pocke ) {
+            if( pocke->watertight() ) {
+                unset_flag( flag_FROM_FROZEN_LIQUID );
+                return false;
+            }
+            return true;
+        }
+        return true;
+    }
+    return false;
 }
 
 int item::get_pocket_size() const
@@ -10967,11 +11009,16 @@ auto item::actualize_rot( detached_ptr<item> &&self,
         }
         return std::move( self );
     }
+    // CDF: the item's parent chain is intact here (saved location while processing contents),
+    // so the pocket multipliers are read directly; the lowest one on the chain wins.
+    rot_context item_context = context;
+    item_context.spoil_multiplier = std::min( context.spoil_multiplier,
+                                    self->pocket_spoil_multiplier() );
     if( self->goes_bad() ) {
         return process_rot( std::move( self ), {
             .seals = seals,
             .carrier = nullptr,
-            .context = context,
+            .context = item_context,
         } );
     } else if( self->type->container && self->type->container->preserves ) {
         // Containers like tin cans preserve all items inside; they do not rot at all.
@@ -10981,8 +11028,8 @@ auto item::actualize_rot( detached_ptr<item> &&self,
     const auto child_seals = seals || ( self->type->container && self->type->container->seals );
     // Check and remove rotten contents, but always keep the container.
     // If this item or an ancestor seals its contents, nested rotten contents rot but stay contained.
-    self->contents.remove_top_items_with( [&context, child_seals]( detached_ptr<item> &&it ) {
-        return actualize_rot( std::move( it ), context, child_seals );
+    self->contents.remove_top_items_with( [&item_context, child_seals]( detached_ptr<item> &&it ) {
+        return actualize_rot( std::move( it ), item_context, child_seals );
     } );
     return std::move( self );
 }
@@ -11262,17 +11309,19 @@ void item::update_rot_from_location( const temperature_flag temperature )
     }
 
     const auto loc = rot_location_of( *this, temperature );
-    update_rot( loc.pos, loc.flag, get_weather() );
+    // CDF: the parent chain is intact here, so read the pocket multipliers directly
+    update_rot( loc.pos, loc.flag, get_weather(), pocket_spoil_multiplier() );
 }
 
 auto item::update_rot( const tripoint_bub_ms &pos, const temperature_flag flag,
-                       const weather_manager &weather ) -> void
+                       const weather_manager &weather, const float spoil_multiplier ) -> void
 {
     update_rot( {
         .position = bub_to_abs( pos ),
         .temperature = flag,
         .weather = &weather,
         .local_temperature = g != nullptr && !g->new_game ? get_map().get_temperature( pos ) : 0,
+        .spoil_multiplier = spoil_multiplier,
     } );
 }
 
@@ -11326,7 +11375,7 @@ auto item::update_rot( const rot_context &context ) -> void
                                            context.temperature );
 
             // Calculate item rot
-            rot += calc_rot( time, env_temperature_clipped );
+            rot += calc_rot( time, env_temperature_clipped, context.spoil_multiplier );
             last_rot_check = time;
         }
     }
@@ -11334,7 +11383,7 @@ auto item::update_rot( const rot_context &context ) -> void
     // Remaining <1 h from above
     // and items that are held near the player
     if( now - time > smallest_interval ) {
-        rot += calc_rot( now, temp );
+        rot += calc_rot( now, temp, context.spoil_multiplier );
         last_rot_check = now;
     }
 }
@@ -11342,7 +11391,7 @@ auto item::update_rot( const rot_context &context ) -> void
 auto item::process_rot( detached_ptr<item> &&self, const bool seals,
                         const tripoint_bub_ms &pos,
                         player *carrier, const temperature_flag flag,
-                        const weather_manager &weather ) -> detached_ptr<item>
+                        const weather_manager &weather, const float spoil_multiplier ) -> detached_ptr<item>
 {
     return process_rot( std::move( self ), {
         .seals = seals,
@@ -11352,6 +11401,7 @@ auto item::process_rot( detached_ptr<item> &&self, const bool seals,
             .temperature = flag,
             .weather = &weather,
             .local_temperature = g != nullptr && !g->new_game ? get_map().get_temperature( pos ) : 0,
+            .spoil_multiplier = spoil_multiplier,
         },
     } );
 }
@@ -11938,6 +11988,21 @@ detached_ptr<item> item::process( detached_ptr<item> &&self, player *carrier,
     struct content_processing_options {
         bool parent_preserves = false;
         bool parent_seals = false;
+        float spoil_multiplier = 1.0f;
+    };
+
+    // DDA item_pocket::process (item_pocket.cpp:1997-2007): a pocket's multiplier is not
+    // applied on top of its parent's, the lowest one wins.
+    const auto content_spoil_multiplier = []( const item_contents & contents, const item & content,
+    const float parent ) {
+        const item_pocket *pocket = contents.pocket_of( &content );
+        if( pocket != nullptr &&
+            ( pocket->is_type( pocket_type::CONTAINER ) ||
+              pocket->is_type( pocket_type::MOD ) ||
+              pocket->is_type( pocket_type::MAGAZINE_WELL ) ) ) {
+            return std::min( parent, pocket->spoil_multiplier() );
+        }
+        return parent;
     };
 
     const auto processing_items = []( const auto & contents ) {
@@ -11964,10 +12029,15 @@ detached_ptr<item> item::process( detached_ptr<item> &&self, player *carrier,
             if( !content_item ) {
                 continue;
             }
+            // read before the detach: a count-by-charges item is split into a copy that has no
+            // parent any more (CDF: BN keeps the item and hands back a split copy)
+            const float nested_spoil = content_spoil_multiplier( it->contents, *content_item,
+                                       opts.spoil_multiplier );
             content_item->attempt_detach( [&]( detached_ptr<item> &&nested ) {
                 return process_content( process_content, std::move( nested ), {
                     .parent_preserves = content_preserves,
-                    .parent_seals = content_seals
+                    .parent_seals = content_seals,
+                    .spoil_multiplier = nested_spoil
                 } );
             } );
         }
@@ -11977,30 +12047,32 @@ detached_ptr<item> item::process( detached_ptr<item> &&self, player *carrier,
             it->last_rot_check = calendar::turn;
         }
         return process_internal( std::move( it ), carrier, pos, activate, content_seals, flag,
-                                 weather_generator, ticks );
+                                 weather_generator, ticks, opts.spoil_multiplier );
     };
 
     for( const cache_reference<item> &content_item : processing_items( obj.contents ) ) {
         if( !content_item ) {
             continue;
         }
+        const float content_spoil = content_spoil_multiplier( obj.contents, *content_item, 1.0f );
         content_item->attempt_detach( [&]( detached_ptr<item> &&it ) {
             return process_content( process_content, std::move( it ), {
                 .parent_preserves = preserves,
-                .parent_seals = seals
+                .parent_seals = seals,
+                .spoil_multiplier = content_spoil
             } );
         } );
     }
 
     auto res = process_internal( std::move( self ), carrier, pos, activate, seals, flag,
-                                 weather_generator, ticks );
+                                 weather_generator, ticks, 1.0f );
     return res;
 }
 
 detached_ptr<item> item::process_internal( detached_ptr<item> &&self, player *carrier,
         const tripoint_bub_ms &pos, bool activate,
         const bool seals, const temperature_flag flag,
-        const weather_manager &weather_generator, const int ticks )
+        const weather_manager &weather_generator, const int ticks, const float spoil_multiplier )
 {
     ZoneScopedN( "item_process_internal" );
     if( !self ) {
@@ -12197,7 +12269,8 @@ detached_ptr<item> item::process_internal( detached_ptr<item> &&self, player *ca
         ZoneScopedN( "item_process_rot" );
         auto removed_snapshot = self->is_comestible() || self->is_corpse() ?
                                 item::spawn( *self ) : detached_ptr<item>();
-        self = process_rot( std::move( self ), seals, pos, carrier, flag, weather_generator );
+        self = process_rot( std::move( self ), seals, pos, carrier, flag, weather_generator,
+                            spoil_multiplier );
         // If the item has rotted away, then self becomes a null pointer.
         if( !self && removed_snapshot ) {
             MAPBUFFER_REGISTRY.get( here.get_bound_dimension() ).handle_rotten_away_item(

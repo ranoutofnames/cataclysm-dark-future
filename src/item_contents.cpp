@@ -1015,6 +1015,19 @@ bool item_contents::spill_contents( const tripoint_bub_ms &pos )
     return spilled;
 }
 
+// DDA item_contents.cpp:2766-2774
+void item_contents::leak( map &here, Character *carrier, const tripoint_bub_ms &pos,
+                          item_pocket *pocke )
+{
+    ensure_pockets();
+    for( item_pocket &pocket : pockets ) {
+        if( pocket.is_type( pocket_type::CONTAINER ) ) {
+            pocket.leak( here, carrier, pos, pocke );
+        }
+    }
+    contents_changed();
+}
+
 void item_contents::handle_liquid_or_spill( Character &guy, const item *const avoid )
 {
     ensure_pockets();
