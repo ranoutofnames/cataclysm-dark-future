@@ -123,7 +123,6 @@ static std::string compat_key_hint( const std::string &name )
         { "freezing_point", "not read by CDF; CDF sets freeze_point on the material" },
         { "growth_stages", "not read by CDF" },
         { "tick_action", "not read by CDF" },
-        { "max_worn", "not read by CDF (no max_worn field yet)" },
     };
     const auto it = hints.find( name );
     return it == hints.end() ? std::string() : it->second;

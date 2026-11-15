@@ -1351,6 +1351,9 @@ struct itype {
          */
         float solar_efficiency = 0;
 
+        // Max amount of this type that can be worn (DDA itype.h:1661, item::max_worn()).
+        int max_worn = MAX_WORN_PER_TYPE;
+
         // Sets repair difficulty for items
         // Overrides recipe difficulty
         int repair_difficulty = -1;

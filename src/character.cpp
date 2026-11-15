@@ -3834,8 +3834,11 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
                                               : string_format( _( "%s doesn't have a hand free to wear that." ), name ) ) );
     }
 
+    // DDA only_one_conflicts (Character::can_wear, src/character_attire.cpp:1360): an item with
+    // max_worn 1 refuses a second copy. CDF: BN's ONLY_ONE flag keeps its meaning here too.
     for( auto &i : worn ) {
-        if( i->has_flag( flag_ONLY_ONE ) && i->typeId() == it.typeId() ) {
+        if( i->typeId() == it.typeId() &&
+            ( i->has_flag( flag_ONLY_ONE ) || i->type->max_worn == 1 ) ) {
             return ret_val<bool>::make_failure( _( "Can't wear more than one %s!" ), it.tname() );
         }
     }
@@ -3885,9 +3888,11 @@ ret_val<bool> Character::can_wear( const item &it, bool with_equip_change ) cons
         }
     }
 
-    if( amount_worn( it.typeId() ) >= MAX_WORN_PER_TYPE ) {
+    // Per-item limit: DDA Character::can_wear (src/character_attire.cpp:262) counts the worn
+    // copies of the same itype against that type's max_worn (2 unless the JSON says otherwise).
+    if( amount_worn( it.typeId() ) >= it.type->max_worn ) {
         return ret_val<bool>::make_failure( _( "Can't wear %i or more %s at once." ),
-                                            MAX_WORN_PER_TYPE + 1, it.tname( MAX_WORN_PER_TYPE + 1 ) );
+                                            it.type->max_worn + 1, it.tname( it.type->max_worn + 1 ) );
     }
 
     // CDF: BN's "You're already wearing footwear!" rule is removed. DDA has no such rule
