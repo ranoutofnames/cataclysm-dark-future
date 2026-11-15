@@ -3483,10 +3483,10 @@ drop_location inventory_selector::get_only_choice() const
 inventory_input inventory_selector::get_input()
 {
     const std::string &action = ctxt.handle_input();
-    // PL-64 IN1: the scripted key queue ran out (input_context::handle_input reports the timeout
-    // event of input_manager::test_next_input_event as TIMEOUT), so the screen closes through its
-    // normal QUIT path. A screen that never closes still ends, and the key-script harness reads
-    // test_input_exhausted() for its still_open result.
+    // PL-64 IN1: the scripted key queue ran out (input_context::handle_input reports a spent
+    // script as QUIT), so the screen closes through its normal QUIT path. A screen that never
+    // closes still ends, and the key-script harness reads test_input_exhausted() for its
+    // still_open result.
     if( inp_mngr.test_input_exhausted() ) {
         return inventory_input{ "QUIT", 0, nullptr, false };
     }

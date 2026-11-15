@@ -449,11 +449,13 @@ TEST_CASE( "fixture wears its items", "[audit][ui]" ) {
     CHECK( f.u.is_worn( *f.jacket ) );
     REQUIRE( f.box->parent_item() == f.jacket );
     REQUIRE( f.rock->parent_item() == f.box );
-    // CDF: item_location of a nested item is its owning top-level location, so a box (and a rock)
-    // inside a worn jacket reports character, not container (src/item.cpp:12830-12840);
-    // parent_item() above is what proves the nesting.
+    // CDF: the box sits in the carry pocket of the worn jacket, so its location is the owning
+    // top-level location, the character (src/locations.cpp:737-742). The rock sits in the box's
+    // CONTAINER pocket, which is not a carry pocket, so its location is the box
+    // (contents_item_location::where() is container, src/locations.cpp:678-681); parent_item()
+    // above is what proves both nesting steps.
     CHECK( f.box->where() == item_location_type::character );
-    CHECK( f.rock->where() == item_location_type::character );
+    CHECK( f.rock->where() == item_location_type::container );
 }
 
 // T4 and T5: the owner case.  A worn jacket holding a box shows the open chevron; collapsing the

@@ -1834,14 +1834,20 @@ TEST_CASE( "cdf_inventory_column_update_entry_cell_cache_and_get_highlighted",
         REQUIRE( col.entries.size() == 1 );
         // CDF: an un-paged column keeps selected_index = SIZE_MAX, so get_selected() returns the
         // static dummy (src/inventory_ui.cpp:841-849); DDA guards it the same way, and a layout
-        // pages the column before any draw.
+        // pages the column before any draw. prepare_paging() then inserts the category header
+        // above the row, so the highlighted entry is the item row, not entries.front().
         col.prepare_paging();
 
+        const auto item_row = std::find_if( col.entries.begin(), col.entries.end(),
+        []( const inventory_entry & entry ) {
+            return entry.is_item();
+        } );
+        REQUIRE( item_row != col.entries.end() );
         inventory_entry &highlighted = col.get_highlighted();
-        CHECK( &highlighted == &col.entries.front() );
+        CHECK( &highlighted == &*item_row );
         CHECK( &highlighted == &col.get_selected() );
         highlighted.chosen_count = 4;
-        CHECK( col.entries.front().chosen_count == 4 );
+        CHECK( item_row->chosen_count == 4 );
     }
 
     SECTION( "update_entry_cell_cache recomputes one entry's cached cells" ) {

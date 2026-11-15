@@ -2046,6 +2046,9 @@ TEST_CASE("selection column does not reserve denial width", "[inventory][ui][fm]
 }
 
 TEST_CASE("first layout highlights the first selectable row", "[inventory][ui][fm]") {
+    const view_mode_state_guard view_mode;
+    const hide_override_guard hide_override;
+    inventory_sel_default_state.uimode = inventory_selector::uimode::categories;
     carried_pack_fixture f;
     fm3_selector sel(f.u);
     sel.add_character_items(f.u);
@@ -2055,9 +2058,19 @@ TEST_CASE("first layout highlights the first selectable row", "[inventory][ui][f
     sel.prepare_layout(120, 40);
 
     REQUIRE(sel.get_selected().is_item());
-    // DDA's categories view puts the worn contents in the inventory column, whose first
-    // selectable row is the rock, not the worn pack in the gear column.
-    CHECK(sel.get_selected().any_item() == f.rock);
+    // The layout puts the cursor on the first selectable row of the active (inventory) column.
+    const inventory_column &active = sel.get_active_column();
+    const auto first = std::find_if(active.entries.begin(), active.entries.end(),
+    [](const inventory_entry &entry) {
+        return entry.is_item() && entry.is_selectable();
+    });
+    REQUIRE(first != active.entries.end());
+    CHECK(sel.get_selected().any_item() == first->any_item());
+    // DDA's categories view puts the worn contents in the inventory column. A container is listed
+    // under the category of its contents (item::get_category, src/item.cpp:10910), so the box row
+    // (spare parts, like the rock it holds) is the first selectable row, not the worn pack in the
+    // gear column and not the rock: the box's name sorts before "TEST rock".
+    CHECK(sel.get_selected().any_item() == f.box);
 }
 
 // PL-63 FM4: header, footer, stats bars, count prompt and selection column

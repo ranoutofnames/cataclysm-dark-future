@@ -27,19 +27,22 @@
 static const skill_id skill_barter( "barter" );
 static const flag_id json_flag_NO_UNWIELD( "NO_UNWIELD" );
 
-// CDF: character_inventory.cpp and visitable.cpp keep their own static copy. The pockets whose
-// items are carried: nested rows must use the same pockets as carried_item_stacks(), so a loaded
-// tool's own ammo never becomes a trade row (DDA items_with walks every pocket).
-static auto is_listed_pocket( const item_pocket &pocket ) -> bool
+// CDF: G35/TR1. The contents of a traded row: DDA npctrade.cpp:127 items_with() lists every
+// carried item, nested ones too, so a bag inside a backpack and the items inside that bag are
+// rows of their own. CDF lists what sits in a container pocket of a listed row; a tool's or
+// gun's magazine pockets stay inside the row that owns them (they are not CONTAINER pockets).
+// The top-level rows come from carried_item_stacks(), which walks the carry/holster pockets of
+// the worn items (character.cpp); every level below a row is walked here.
+static auto is_row_pocket( const item_pocket &pocket ) -> bool
 {
-    return ( pocket.is_carry() || pocket.is_holster() ) && pocket.is_type( pocket_type::CONTAINER );
+    return pocket.is_type( pocket_type::CONTAINER );
 }
 
 // DDA npctrade.cpp:184 (adjusted_price) and :213 (_trading_price) price a trade entry from
 // item::price_no_contents and walk its pockets for the contents. CDF's list gives the items in a
-// listed carry/holster pocket a trade row of their own (TR1), so those are left out here: adding
-// them would price the nested rows a second time when a container and its contents are sold
-// together. DDA's faction price rules are not ported, and the barter adjustment stays in
+// container pocket of a listed row a trade row of their own (TR1), so those are left out here:
+// adding them would price the nested rows a second time when a container and its contents are
+// sold together. DDA's faction price rules are not ported, and the barter adjustment stays in
 // item_pricing::adjust_values().
 static auto trading_price( const item &it ) -> float
 {
@@ -49,7 +52,7 @@ static auto trading_price( const item &it ) -> float
         return price;
     }
     for( const item_pocket &pocket : it.contents.get_pockets() ) {
-        if( is_listed_pocket( pocket ) ) {
+        if( is_row_pocket( pocket ) ) {
             continue;
         }
         for( const item *child : pocket.items() ) {
@@ -249,11 +252,12 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
 
     // DDA: npctrade.cpp:127 items_with() lists every carried item, nested ones too, so one item
     // can be sold out of a container while the container and the rest stay (G35). The outer
-    // stacks keep carried_item_stacks() grouping; nested siblings group the same way.
+    // stacks keep carried_item_stacks() grouping; nested siblings group the same way. Every
+    // level below a row is walked through its container pockets (a bag's contents are rows too).
     const auto add_nested = [&]( item &parent, auto &&self ) -> void {
         auto stacks = std::vector<carried_stack> {};
         for( item_pocket &pocket : parent.contents.get_pockets() ) {
-            if( !is_listed_pocket( pocket ) ) {
+            if( !is_row_pocket( pocket ) ) {
                 continue;
             }
             for( item *child : pocket.items() ) {

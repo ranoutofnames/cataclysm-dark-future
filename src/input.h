@@ -338,9 +338,10 @@ class input_manager
          *
          * With the queue enabled, a read when it is empty sets test_input_exhausted() and returns
          * an input_event_t::timeout event instead of throwing: input_context::handle_input()
-         * reports it as "TIMEOUT", and the screen driven by the key-script harness closes through
-         * its own QUIT path. The harness reads test_input_exhausted() for its still_open result,
-         * so a screen that never closes fails its test instead of blocking on the real keyboard.
+         * reports it as QUIT for the screen being driven, so the screen closes through its own
+         * QUIT path, including a nested input loop such as the item info window. The harness reads
+         * test_input_exhausted() for its still_open result, so a screen that never closes fails its
+         * test instead of blocking on the real keyboard.
          */
         void test_enable_input_queue();
         /** Push one scripted event; also switches the queue on. */
@@ -411,8 +412,9 @@ class input_manager
 
         /**
          * Pop the next scripted event, or set test_input_queue_exhausted and return an
-         * input_event_t::timeout event when the script is spent. Called from get_input_event() in
-         * both implementations only while test_input_queue_enabled is set.
+         * input_event_t::timeout event when the script is spent; input_context::handle_input()
+         * reports a spent script as QUIT. Called from get_input_event() in both implementations
+         * only while test_input_queue_enabled is set.
          */
         input_event test_next_input_event();
 
