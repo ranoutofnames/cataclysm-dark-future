@@ -172,6 +172,8 @@
     ],
     "initial_charges": 500,
     "flags": [ "WATCH", "ALARMCLOCK", "RECHARGE", "NO_UNLOAD", "NO_RELOAD", "DIGITAL_STORAGE", "DIGITAL_READER" ],
+    "//": "CDF: the digital content group of the laptop the control laptop was copied from (data/json/items/tool/electronics.json:804); a standalone item does not inherit item_vars, and without the group the reader generates no personal files (tests/digital_media_test.cpp readers_generate_personal_files_once_and_keep_them_across_modes).",
+    "item_vars": { "digital_content": "digital_content_reader", "digital_reader_ports": "USB,HARD_DRIVE" },
     "relic_data": { "passive_effects": [ { "id": "DRONE_CAM" } ] },
     "pocket_data": [
       {

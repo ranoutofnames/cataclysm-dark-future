@@ -442,13 +442,22 @@ TEST_CASE("worn armor pieces nest under their worn row", "[inventory][nest]") {
         REQUIRE(collapsed.size() == 1);
         CHECK(collapsed[0]->any_item() == f.vest);
 
-        // The filter still finds a plate inside the collapsed vest.
+        // The filter still finds a plate inside the collapsed vest. item_search matches the item
+        // name including the CONTENTS suffix (item_search.cpp:208-212), so the vest row matches
+        // too: its name is "US ballistic vest > 2 ESAPI ballistic plates". DDA behaves the same
+        // way, so the collapsed parent is one of the three rows, not hidden by the filter.
         sel.own_gear_column.set_filter("ESAPI");
         const std::vector<const inventory_entry*> filtered = item_rows(sel.own_gear_column);
-        REQUIRE(filtered.size() == 2);
+        REQUIRE(filtered.size() == 3);
+        std::size_t plate_rows = 0;
         for (const inventory_entry* row : filtered) {
-            CHECK(std::find(f.plates.begin(), f.plates.end(), row->any_item()) != f.plates.end());
+            if (std::find(f.plates.begin(), f.plates.end(), row->any_item()) != f.plates.end()) {
+                ++plate_rows;
+            } else {
+                CHECK(row->any_item() == f.vest);
+            }
         }
+        CHECK(plate_rows == 2);
         sel.own_gear_column.set_filter("");
 
         for (item_pocket* pocket : f.vest->get_standard_pockets()) {
@@ -1963,36 +1972,37 @@ TEST_CASE("restricted-only pockets get no suffix", "[inventory][ui][fm]") {
 TEST_CASE(
     "category headers and ranks match the DDA table for shared ids", "[inventory][ui][fm]") {
     // The 23 ids both games share, from DDA b4b62254ae2 data/json/item_category.json
-    // (the table behind PL-63 work/category-diff.tsv).
+    // (the table behind PL-63 work/category-diff.tsv). cat1 (data/json/item_category.json)
+    // uppercases the header names to match the owner's request; the ids and ranks are DDA's.
     struct expected_category {
         const char* id;
         const char* header;
         int rank;
     };
     static const std::array<expected_category, 23> dda_categories = {{
-            { "WEAPON_HELD", "Weapon held", -200 },
-            { "ITEMS_WORN", "Items worn", -100 },
-            { "guns", "Guns", -23 },
-            { "magazines", "Magazines", -22 },
-            { "ammo", "Ammo", -21 },
-            { "weapons", "Weapons", -20 },
-            { "tools", "Tools", -19 },
-            { "food", "Food", -18 },
-            { "drugs", "Drugs", -17 },
-            { "books", "Books", -15 },
-            { "maps", "Maps", -14 },
-            { "mods", "Mods", -13 },
-            { "bionics", "Bionics", -12 },
-            { "mutagen", "Mutagens", -12 },
-            { "veh_parts", "Vehicle parts", -10 },
-            { "other", "Other", -9 },
-            { "fuel", "Fuel", -8 },
-            { "seeds", "Seeds", -7 },
-            { "chems", "Chemical stuff", 5 },
-            { "spare_parts", "Spare parts", 8 },
-            { "container", "Containers", 9 },
-            { "artifacts", "Artifacts", 10 },
-            { "clothing", "Clothing", 19 },
+            { "WEAPON_HELD", "WEAPON HELD", -200 },
+            { "ITEMS_WORN", "ITEMS WORN", -100 },
+            { "guns", "GUNS", -23 },
+            { "magazines", "MAGAZINES", -22 },
+            { "ammo", "AMMO", -21 },
+            { "weapons", "WEAPONS", -20 },
+            { "tools", "TOOLS", -19 },
+            { "food", "FOOD", -18 },
+            { "drugs", "DRUGS", -17 },
+            { "books", "BOOKS", -15 },
+            { "maps", "MAPS", -14 },
+            { "mods", "MODS", -13 },
+            { "bionics", "BIONICS", -12 },
+            { "mutagen", "MUTAGENS", -12 },
+            { "veh_parts", "VEHICLE PARTS", -10 },
+            { "other", "OTHER", -9 },
+            { "fuel", "FUEL", -8 },
+            { "seeds", "SEEDS", -7 },
+            { "chems", "CHEMICAL STUFF", 5 },
+            { "spare_parts", "SPARE PARTS", 8 },
+            { "container", "CONTAINERS", 9 },
+            { "artifacts", "ARTIFACTS", 10 },
+            { "clothing", "CLOTHING", 19 },
         }
     };
 

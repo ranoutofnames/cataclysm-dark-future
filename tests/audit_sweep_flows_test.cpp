@@ -509,6 +509,7 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
         add_row( rows, container_id, "F6", false, "cannot spawn" );
         return;
     }
+    const units::mass base_weight = container->weight();
     if( candidate ) {
         container->put_in( item::spawn( *candidate ) );
     }
@@ -528,6 +529,13 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
     // CDF: item::spawn( JsonIn ) applies item migrations, so a migrated container loads under its
     // replacement id (all 40 F6 failures are MIGRATION ids in data/json/obsoletion).
     const itype_id expected_id = item_controller->migrate_id( container_id );
+    // CDF: a migrated id loads as its replacement, whose own weight differs from the obsoleted
+    // item's (a BN plate is heavier than the DDA plate it retires into). What F6 checks is that
+    // the inserted contents survive, so the expected weight is the replacement's base weight plus
+    // the contents weight the spawned item carried.
+    const units::mass expected_base = expected_id == container_id ? base_weight :
+                                      item::spawn( expected_id )->weight();
+    const units::mass expected_weight = expected_base + ( before_weight - base_weight );
     if( !loaded ) {
         reason = "load returned nothing";
     } else if( loaded->typeId() != expected_id ) {
@@ -536,8 +544,8 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
         reason = string_format( "count %d (want %d)",
                                 static_cast<int>( loaded->contents.all_items_ptr().size() ),
                                 static_cast<int>( before_count ) );
-    } else if( loaded->weight() != before_weight ) {
-        reason = "weight " + to_g( loaded->weight() ) + " g (want " + to_g( before_weight ) + ")";
+    } else if( loaded->weight() != expected_weight ) {
+        reason = "weight " + to_g( loaded->weight() ) + " g (want " + to_g( expected_weight ) + ")";
     }
     add_row( rows, container_id, "F6", reason.empty(), reason );
 }

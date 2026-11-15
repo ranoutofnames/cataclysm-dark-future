@@ -696,9 +696,13 @@ TEST_CASE("digital_item_actions_require_installation", "[digital_media][iuse]") 
     auto dummy = avatar{};
     auto media = item::spawn("usb_drive");
     media->put_in(item::spawn("test_digital_action"));
-    auto& source_file = media->contents.front();
-    auto* source = &*media;
-    dummy.i_add(std::move(media));
+    // CDF: i_add stores a copy of the item (item_pocket::add), so the file is looked up in what
+    // the avatar really holds; a pointer taken before i_add would go stale.
+    item& stored_media = dummy.i_add(std::move(media));
+    const auto source_files = digital_files_on(stored_media);
+    REQUIRE(source_files.size() == 1);
+    item& source_file = *source_files.front();
+    auto* source = &stored_media;
 
     CHECK_FALSE(dummy.invoke_item(&source_file, "transform"));
     CHECK(source_file.typeId() == itype_id("test_digital_action"));
@@ -708,8 +712,10 @@ TEST_CASE("digital_item_actions_require_installation", "[digital_media][iuse]") 
     REQUIRE(download_digital_files(*device, *source, dummy) == 1);
     const auto installed = digital_files_on(*device);
     REQUIRE(installed.size() == 1);
-    auto& installed_file = *installed.front();
-    dummy.i_add(std::move(device));
+    item& stored_device = dummy.i_add(std::move(device));
+    const auto stored = digital_files_on(stored_device);
+    REQUIRE(stored.size() == 1);
+    item& installed_file = *stored.front();
     dummy.invoke_item(&installed_file, "transform");
     CHECK(installed_file.typeId() == itype_id("test_digital_instruction"));
 }
@@ -1048,31 +1054,40 @@ TEST_CASE(
     REQUIRE(found != music.end());
     auto& collection = **found;
     const auto identity = collection.get_var("DIGITAL_FILE_ID");
-    dummy.i_add(std::move(device));
+    // CDF: i_add stores a copy of the item (item_pocket::add), so the reader and its files are
+    // used through the item the avatar really holds from here on.
+    item& held = dummy.i_add(std::move(device));
+    const auto held_files = digital_files_on(held);
+    const auto held_music = std::ranges::find_if(held_files, [](const auto* file) {
+        return file->has_flag(flag_id("DIGITAL_MUSIC"));
+    });
+    REQUIRE(held_music != held_files.end());
+    item& held_collection = **held_music;
+    CHECK(held_collection.get_var("DIGITAL_FILE_ID") == identity);
 
-    if (reader.type->can_use("transform")) {
-        dummy.invoke_item(&reader, "transform");
-        REQUIRE(reader.is_active());
-        reader.type->tick(dummy, reader, dummy.bub_pos());
-        CHECK(reader.is_active());
-        CHECK(reader.get_use("EINKTABLETPC") != nullptr);
-        CHECK(digital_reader_ready(reader, dummy));
-        CHECK(digital_reader_for(dummy, collection));
+    if (held.type->can_use("transform")) {
+        dummy.invoke_item(&held, "transform");
+        REQUIRE(held.is_active());
+        held.type->tick(dummy, held, dummy.bub_pos());
+        CHECK(held.is_active());
+        CHECK(held.get_use("EINKTABLETPC") != nullptr);
+        CHECK(digital_reader_ready(held, dummy));
+        CHECK(digital_reader_for(dummy, held_collection));
     }
-    REQUIRE(listen_to_digital_music(dummy, reader, collection));
-    CHECK(reader.type->can_use("MP3_ON"));
-    CHECK(reader.get_use("EINKTABLETPC") != nullptr);
-    dummy.invoke_item(&reader, "MP3_ON");
-    CHECK(reader.typeId() == itype_id(base));
-    CHECK_FALSE(reader.is_active());
-    initialize_digital_media(reader);
-    CHECK(reader.contents.num_item_stacks() == count);
-    CHECK(collection.get_var("DIGITAL_FILE_ID") == identity);
+    REQUIRE(listen_to_digital_music(dummy, held, held_collection));
+    CHECK(held.type->can_use("MP3_ON"));
+    CHECK(held.get_use("EINKTABLETPC") != nullptr);
+    dummy.invoke_item(&held, "MP3_ON");
+    CHECK(held.typeId() == itype_id(base));
+    CHECK_FALSE(held.is_active());
+    initialize_digital_media(held);
+    CHECK(held.contents.num_item_stacks() == count);
+    CHECK(held_collection.get_var("DIGITAL_FILE_ID") == identity);
 
-    auto loaded = reload_item(reader);
+    auto loaded = reload_item(held);
     initialize_digital_media(*loaded);
     CHECK(loaded->contents.num_item_stacks() == count);
-    CHECK(digital_music_on(*loaded).songs == digital_music_on(reader).songs);
+    CHECK(digital_music_on(*loaded).songs == digital_music_on(held).songs);
 }
 
 TEST_CASE("downloading_initializes_unopened_media_once", "[digital_media]") {

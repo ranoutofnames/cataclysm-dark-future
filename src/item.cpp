@@ -1542,6 +1542,15 @@ void item::put_in( detached_ptr<item> &&payload )
         return;
     }
     initialize_digital_recipe_file( *payload );
+    // DDA item_container.cpp:267 / item_contents.cpp:905-925: a live insert of an item that no
+    // pocket accepts is refused. CDF used to park it in the MIGRATION pocket here, which let an
+    // oversized item survive inside a container it never fit (and made put_in disagree with
+    // put_in_copies); the MIGRATION pocket is for loads and migrations only.
+    if( !contents.has_pocket_for( *payload ) ) {
+        debugmsg( "tried to put an item (%s) in a container (%s) that cannot contain it",
+                  payload->typeId().str(), typeId().str() );
+        return;
+    }
     contents.insert_item( std::move( payload ) );
 }
 
@@ -1634,9 +1643,14 @@ ret_val<bool> item::try_put_in( detached_ptr<item> &&payload, pocket_type type )
     // a plate that doesn't fit says which slot it needs
     const std::string plate_reason = type == pocket_type::CONTAINER ?
                                      ablative::refusal_reason( *this, *payload ) : std::string();
+    // CDF: a refusal always has a reason for the player. A plate that matches no slot of the
+    // carrier (a stab insert in a plate carrier, a charged item that is not a plate) used to
+    // return an empty text, which the sweep flows test reports as its own finding.
+    const std::string reason = !plate_reason.empty() ? plate_reason :
+                               !why.str().empty() ? why.str() :
+                               _( "it has no pocket that takes it" );
     return ret_val<bool>::make_failure( _( "The %1$s won't fit in the %2$s: %3$s." ),
-                                        payload->tname(), tname(),
-                                        plate_reason.empty() ? why.str() : plate_reason );
+                                        payload->tname(), tname(), reason );
 }
 
 void item::add_item_with_id( const itype_id &itype, int count )

@@ -1582,6 +1582,11 @@
    },
    "other_pockets": [
     {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 1250,
+     "carry": false
+    },
+    {
      "pocket_type": "MOD"
     }
    ]
@@ -1598,6 +1603,11 @@
     "note": "the synthesized well replaced by batt1_pin.json"
    },
    "other_pockets": [
+    {
+     "pocket_type": "CONTAINER",
+     "volume_ml": 1250,
+     "carry": false
+    },
     {
      "pocket_type": "MOD"
     }

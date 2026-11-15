@@ -1,9 +1,9 @@
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                                                                              │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│ Items worn                                                                   │
+│ ITEMS WORN                                                                   │
 │  ▼|| windbreaker (poor fit) > small cardboard box > 1 item (remains 1.9L, 7… │
-│ Spare parts                                                                  │
+│ SPARE PARTS                                                                  │
 │  ▼small cardboard box > TEST 1kg cube                                        │
 │   TEST 1kg cube                                                              │
 │                                                                              │

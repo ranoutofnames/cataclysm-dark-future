@@ -1,12 +1,10 @@
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                            Total Volume: 3.83/5.60 L Contents Weight: 5.0/0.0 kg │
+│                                            Total Volume: 4.61/5.60 L Contents Weight: 6.0/0.0 kg │
 │                                           Largest Space Free: 0.80 L* 21 cm | Max: 2.00 L* 33 cm │
-│                                           Longest Space Free: 0.09 L* 33 cm | Max: 2.00 L* 33 cm │
 │                                                                           Selected 0.00 L 0.0 kg │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Clothing                                                              ITEMS TO INSERT            │
-│   - || ESBI ballistic plate                                                                      │
-│   - || ESAPI ballistic plate  not enough space                                                   │
+│ ARMOR                                                                 ITEMS TO INSERT            │
+│   || ESAPI ballistic plate  ablative pocket already contains a plate                             │
 │                                                                                                  │
 │                                                                                                  │
 │                                                                                                  │
@@ -37,4 +35,6 @@
 │                                                                                                  │
 │                                                                                                  │
 │                                                                                                  │
-└─< [/] Filter >────────────────────────────────────────────────────────────────< [;] categories >─┘
+│                                                                                                  │
+│                                                                                                  │
+└────────────────────────────────┤ There are no available choices

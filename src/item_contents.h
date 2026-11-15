@@ -142,6 +142,13 @@ class item_contents
          */
         ret_val<bool> insert_item( detached_ptr<item> &&it );
         /**
+         * DDA item_contents::find_pocket_for as a yes/no answer: true when a live insert of @p it
+         * would land in one of the owner's real pockets. False means no pocket accepts it, which
+         * is how DDA refuses an insert (item_contents.cpp:905-925); the MIGRATION pocket is never
+         * a routing result here.
+         */
+        bool has_pocket_for( const item &it );
+        /**
          * Attempts to insert an item into these item contents, stipulating that it must go into a
          * pocket of the given type (DDA item_contents.h). Fails if the contents have no pocket with
          * that type. T2: the detached_ptr form is only consumed on success; the const item &

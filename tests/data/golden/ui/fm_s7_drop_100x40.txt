@@ -1,9 +1,9 @@
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                                                                  │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Spare parts                                    ITEMS TO DROP                                     │
-│   # TEST rock (3)                                2 of 3 TEST rock (3)                            │
-│ Containers                                       small cardboard box                             │
+│ SPARE PARTS                    ITEMS TO DROP                                                     │
+│   # TEST rock (3)                2 of 3 TEST rocks (3)                                           │
+│ CONTAINERS                       small cardboard box                                             │
 │   + small cardboard box                                                                          │
 │                                                                                                  │
 │                                                                                                  │

@@ -1,11 +1,11 @@
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                                                                  │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Items worn                                                                                       │
+│ ITEMS WORN                                                                                       │
 │   || cargo pants (poor fit) (remains 7.16L, 24kg) max length 19cm                                │
-│  ▼|| hiking backpack > small cardboard box > 1 item (remains 73.25L, 83.19kg) max length 120cm   │
+│  ▼|| hiking backpack > small cardboard box > 1 item (remains 78.25L, 89.19kg) max length 120cm   │
 │    ▼small cardboard box > TEST rock                                                              │
-│       TEST rock                                                                                  │
+│       TEST rock (1)                                                                              │
 │   || windbreaker (poor fit) (remains 2.9L, 9kg) max length 21cm                                  │
 │                                                                                                  │
 │                                                                                                  │

@@ -705,6 +705,11 @@ item_pocket *item_contents::route( const item &it )
     return fitting_pocket( it );
 }
 
+bool item_contents::has_pocket_for( const item &it )
+{
+    return route( it ) != nullptr;
+}
+
 item_pocket *item_contents::fitting_pocket( const item &it, bool allow_ablative )
 {
     ensure_pockets();

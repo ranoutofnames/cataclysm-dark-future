@@ -270,8 +270,11 @@ TEST_CASE( "apply_menu_denies_a_drug_without_its_tool", "[inventory][apply]" )
            "You need a " + item::nname( itype_id( "thc_liquid" ) ) + " to consume that!" );
 
     // With the tool carried the drug check passes and DDA's charge check (1191-1202) is next: the
-    // pen has no battery and its single use costs 1 charge.
-    you.i_add( item::spawn( "thc_liquid", bday, 5 ) );
+    // pen has no battery and its single use costs 1 charge. CDF: a liquid needs a container, so it
+    // is handed over in a plastic bottle (i_add of a loose liquid drops it on the floor, as in DDA).
+    detached_ptr<item> bottle = item::spawn( "bottle_plastic", bday );
+    REQUIRE( bottle->put_in( item::spawn( "thc_liquid", bday, 5 ), pocket_type::CONTAINER ).success() );
+    you.i_add( std::move( bottle ) );
     REQUIRE( you.has_charges( itype_id( "thc_liquid" ), 1 ) );
     REQUIRE_FALSE( pen->ammo_sufficient( &you, "consume_drug" ) );
     REQUIRE( pen->ammo_required() == 1 );

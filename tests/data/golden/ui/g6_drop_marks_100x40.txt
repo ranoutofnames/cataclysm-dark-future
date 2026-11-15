@@ -1,9 +1,9 @@
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                                                                  │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Items worn                                                                                       │
+│ ITEMS WORN                                                                                       │
 │   -▼|| windbreaker (poor fit) > 2 spare parts (remains 1.15L, 5.88kg) max length 21cm            │
-│ Spare parts                                                                                      │
+│ SPARE PARTS                                                                                      │
 │   +▼small cardboard box > TEST 1kg cube                                                          │
 │   - TEST 1kg cube                                                                                │
 │   # TEST rock (3)                                                                                │
