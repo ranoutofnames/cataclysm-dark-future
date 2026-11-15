@@ -16,6 +16,7 @@
 #include "catch/catch.hpp"
 #include "debug.h"
 #include "detached_ptr.h"
+#include "digital_media.h"
 #include "game.h"
 #include "item.h"
 #include "item_contents.h"
@@ -527,23 +528,29 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
 
     std::string reason;
     // CDF: item::spawn( JsonIn ) applies item migrations, so a migrated container loads under its
-    // replacement id (all 40 F6 failures are MIGRATION ids in data/json/obsoletion).
-    const itype_id expected_id = item_controller->migrate_id( container_id );
-    // CDF: a migrated id loads as its replacement, whose own weight differs from the obsoleted
-    // item's (a BN plate is heavier than the DDA plate it retires into). What F6 checks is that
-    // the inserted contents survive, so the expected weight is the replacement's base weight plus
-    // the contents weight the spawned item carried.
-    const units::mass expected_base = expected_id == container_id ? base_weight :
-                                      item::spawn( expected_id )->weight();
-    const units::mass expected_weight = expected_base + ( before_weight - base_weight );
+    // replacement id (all 40 F6 failures are MIGRATION ids in data/json/obsoletion). It also adds
+    // the migration's contents (a conversion kit) and applies BN's digital-media legacy migration
+    // on load, so the expected item is built the same way: spawn_migrated() plus the digital
+    // migration, with the carried contents added on top.
+    detached_ptr<item> origin = item::spawn( container_id );
+    const std::size_t origin_count = origin->contents.all_items_ptr().size();
+    detached_ptr<item> expected = item_controller->spawn_migrated( container_id, calendar::turn );
+    migrate_legacy_digital_media( *expected );
+    const itype_id expected_id = expected->typeId();
+    // CDF: only the contents the migration adds are new; the spawn-time contents `origin` has are
+    // already counted in @p before_count. A migrated replacement weighs its own base weight plus
+    // the same delta (the contents carried into the round trip).
+    const std::size_t expected_count = before_count + expected->contents.all_items_ptr().size() -
+                                       origin_count;
+    const units::mass expected_weight = expected->weight() + ( before_weight - base_weight );
     if( !loaded ) {
         reason = "load returned nothing";
     } else if( loaded->typeId() != expected_id ) {
         reason = "loaded type " + loaded->typeId().str() + " (want " + expected_id.str() + ")";
-    } else if( loaded->contents.all_items_ptr().size() != before_count ) {
+    } else if( loaded->contents.all_items_ptr().size() != expected_count ) {
         reason = string_format( "count %d (want %d)",
                                 static_cast<int>( loaded->contents.all_items_ptr().size() ),
-                                static_cast<int>( before_count ) );
+                                static_cast<int>( expected_count ) );
     } else if( loaded->weight() != expected_weight ) {
         reason = "weight " + to_g( loaded->weight() ) + " g (want " + to_g( expected_weight ) + ")";
     }
@@ -604,12 +611,25 @@ auto run_plate_rule( std::vector<audit::row> &rows,
                 add_row( rows, plate_type->get_id(), flow + ":fill" + std::to_string( i ),
                          filled.success(), filled.str() );
             }
+            const std::size_t plates_before = ablative::plates( *carrier ).size();
             const ret_val<bool> extra = carrier->try_put_in( item::spawn( plate_type->get_id() ) );
+            const std::size_t plates_after = ablative::plates( *carrier ).size();
             const std::string extra_reason = extra.str();
             // Any non-empty refusal text is a reason; the wording ("taken", "plate", "too heavy")
             // comes from the pocket, not from this rule.
             const bool refused_with_reason = !extra.success() && !extra_reason.empty();
-            add_row( rows, plate_type->get_id(), flow + ":extra", refused_with_reason, extra_reason );
+            // CDF: a small or soft plate can still go into an ordinary storage pocket of the
+            // carrier (the stab panel fits the light vest's shoulder/storage pouch). That is not
+            // a plate-slot violation; the rule only fails when an ablative pocket takes a second
+            // plate.
+            const bool stored_outside_slots = extra.success() && plates_after == plates_before;
+            std::string extra_detail = extra_reason;
+            if( extra.success() ) {
+                extra_detail = stored_outside_slots ? "stored outside the plate slots" :
+                               "a plate slot took a second plate";
+            }
+            add_row( rows, plate_type->get_id(), flow + ":extra",
+                     refused_with_reason || stored_outside_slots, extra_detail );
             if( !extra.success() && extra_reason.empty() ) {
                 // A refusal without any reason is a finding of its own (stab_plate,
                 // test_plate_broken): the player would see no explanation.

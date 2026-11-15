@@ -1546,7 +1546,15 @@ void item::put_in( detached_ptr<item> &&payload )
     // pocket accepts is refused. CDF used to park it in the MIGRATION pocket here, which let an
     // oversized item survive inside a container it never fit (and made put_in disagree with
     // put_in_copies); the MIGRATION pocket is for loads and migrations only.
+    // CDF: BN digital media is the exception. A reader or storage device keeps its files without
+    // a physical pocket (item::can_contain accepts any digital file on DIGITAL_STORAGE,
+    // digital_files_on() reads all_items_top()), so they stay in the MIGRATION pocket as before
+    // the DDA refusal. Everything else is still refused.
     if( !contents.has_pocket_for( *payload ) ) {
+        if( has_flag( flag_id( "DIGITAL_STORAGE" ) ) && is_digital_file( *payload ) ) {
+            contents.insert_item( std::move( payload ) );
+            return;
+        }
         debugmsg( "tried to put an item (%s) in a container (%s) that cannot contain it",
                   payload->typeId().str(), typeId().str() );
         return;

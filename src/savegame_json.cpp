@@ -261,10 +261,12 @@ void item_contents::deserialize( JsonIn &jsin )
 void item_contents::deserialize( const JsonObject &data )
 {
     data.allow_omitted_members();
-    // reading replaces whatever was there, as it did before pockets
+    // CDF: DDA savegame_json.cpp:3455 "contents may not be empty if other migration happened in
+    // item::io". item::io applies the item migration before this runs, and the migration adds
+    // contents (an adaptor kit, plates, an attached pouch). Keep them and add the saved contents
+    // on top, as DDA's combine() does: clearing them lost the adaptor and left the saved
+    // magazine in the MIGRATION pocket with no well to load into.
     ensure_pockets();
-    clear_items();
-    clear_added_pockets();
 
     // the attached pouches come first: their pockets follow the type's own in the saved order
     if( data.has_array( "additional_pockets" ) ) {
