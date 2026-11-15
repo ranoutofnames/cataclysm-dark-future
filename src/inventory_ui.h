@@ -781,6 +781,14 @@ class inventory_selector
         bool drag_drop_item( item *source, item *dest );
         /** Test hook: when set, drag_drop_item calls it instead of the menu (tests reset it). */
         static std::function<bool( item &, item & )> drag_drop_test_hook;
+        /**
+         * Test hook: lays the columns out once before a scripted run. ui_manager::redraw() is a
+         * no-op in test mode, so the frame pump never calls prepare_layout() and every column would
+         * keep selected_index = entries_per_page = SIZE_MAX (src/ui_manager.cpp:328).
+         */
+        void test_prepare_layout() {
+            prepare_layout();
+        }
         /** Per DDA inventory_ui.cpp:2143. Adds the items inside container to the own inventory column. */
         void add_contained_items( item *container );
         /** Per DDA inventory_ui.cpp:4315. Opens the item info window of sitem (full screen width, scrolling). */

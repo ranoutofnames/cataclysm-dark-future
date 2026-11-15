@@ -107,14 +107,6 @@ enum class input_event_t : int  {
 };
 
 /**
- * Thrown by input_manager::get_input_event() while the test input queue is enabled and has run
- * out: a screen asked for more keys than the test scripted, so it is stuck and the test must
- * fail instead of hang. A plain type (not std::exception) so that no screen's catch can eat it.
- */
-struct test_input_exhausted {
-};
-
-/**
  * An instance of an input, like a keypress etc.
  *
  * Gamepad, mouse and keyboard keypresses will be represented as `int`.
@@ -344,9 +336,11 @@ class input_manager
          * interface (both the SDL and the curses implementation check it first). The queue is
          * inert while disabled, so the game path pays one predictable branch per raw event.
          *
-         * With the queue enabled, a read when it is empty sets test_input_exhausted() and throws
-         * test_input_exhausted: a screen that never closes fails its test instead of blocking
-         * forever on the real keyboard (a timeout sentinel would only be ignored and spin).
+         * With the queue enabled, a read when it is empty sets test_input_exhausted() and returns
+         * an input_event_t::timeout event instead of throwing: input_context::handle_input()
+         * reports it as "TIMEOUT", and the screen driven by the key-script harness closes through
+         * its own QUIT path. The harness reads test_input_exhausted() for its still_open result,
+         * so a screen that never closes fails its test instead of blocking on the real keyboard.
          */
         void test_enable_input_queue();
         /** Push one scripted event; also switches the queue on. */
@@ -416,8 +410,8 @@ class input_manager
         int input_timeout;
 
         /**
-         * Pop the next scripted event, or set test_input_queue_exhausted and throw
-         * test_input_exhausted when the script is spent. Called from get_input_event() in
+         * Pop the next scripted event, or set test_input_queue_exhausted and return an
+         * input_event_t::timeout event when the script is spent. Called from get_input_event() in
          * both implementations only while test_input_queue_enabled is set.
          */
         input_event test_next_input_event();
