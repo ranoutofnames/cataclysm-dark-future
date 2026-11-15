@@ -71,6 +71,10 @@ struct WINDOW {
 extern std::array<pairs, 100> colorpairs;
 void curses_drawwindow( const catacurses::window &win );
 
+// PL-62 AT3: read-only snapshot of a window's cell grid for the headless draw-dump tests.
+// One vector per screen line, one cursecell per column; empty for an invalid window.
+std::vector<std::vector<cursecell>> window_cells( const catacurses::window &win );
+
 // Allow extra logic for framebuffer clears
 extern void handle_additional_window_clear( WINDOW *win );
 

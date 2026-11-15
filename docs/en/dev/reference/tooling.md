@@ -252,6 +252,37 @@ To run the plugin on multiple files, use [GNU parallel](https://www.gnu.org/soft
 $ parallel ./build-scripts/clang-tidy-wrapper.sh -fix ::: src/*.cpp
 ```
 
+## UI smoke tests
+
+`tests/selector_draw_test.cpp` renders an `inventory_selector` into a headless curses window and
+reads the cell grid back (`cata_cursesport::window_cells`), so row layout, container chevrons and
+the footer can be asserted without a live `ui_adaptor`.  The tests carry the `[audit][ui]` tags and
+run with the rest of the suite (`cata_test-tiles` on the tiles build); the font test parses the
+`cmap` table of `data/font/Terminus.ttf` and `data/font/unifont.ttf` directly to check that every
+non-ASCII glyph the selector draws is covered.
+
+## Updating golden files
+
+`tests/selector_golden_test.cpp` (`[audit][golden]`) renders fixed selector scenes and compares the
+dumped text with `tests/data/golden/ui/<scene>.txt`, one line per window row, trailing blanks
+trimmed.  A changed row fails the test and prints a unified diff of the first 40 differing rows.
+
+The scenes switch the header stats rows off (`set_display_stats( false )`) so the golden does not
+encode the avatar's body weight and pocket capacities; what the goldens pin is the column layout,
+the category rows, the chevrons, the marks and the footer.  The AT4 goldens were written by hand
+from `src/inventory_ui.cpp` and the DDA `inventory_ui.cpp` because AT4 had no game build; the first
+run with a build should be treated as the review of that derivation.
+
+After an intended screen change, regenerate the files and review the diff before committing:
+
+```sh
+CDF_GOLDEN_UPDATE=1 ./cata_test-tiles "[audit][golden]"
+git diff tests/data/golden/ui/
+```
+
+The update path rewrites the named file and passes with a warning; it never invents a scene.  A
+missing golden file is a failure, not a silent pass.
+
 ## include-what-you-use
 
 [include-what-you-use](https://github.com/include-what-you-use/include-what-you-use) (IWYU) is a

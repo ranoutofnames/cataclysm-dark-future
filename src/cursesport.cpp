@@ -208,6 +208,21 @@ void catacurses::doupdate()
     refresh_display();
 }
 
+std::vector<std::vector<cata_cursesport::cursecell>> cata_cursesport::window_cells(
+    const catacurses::window &win )
+{
+    const cata_cursesport::WINDOW *const impl = win.get<cata_cursesport::WINDOW>();
+    if( impl == nullptr ) {
+        return {};
+    }
+    std::vector<std::vector<cursecell>> result;
+    result.reserve( impl->line.size() );
+    for( const cata_cursesport::curseline &line : impl->line ) {
+        result.push_back( line.chars );
+    }
+    return result;
+}
+
 void catacurses::wredrawln( const window &/*win*/, int /*beg_line*/, int /*num_lines*/ )
 {
     /**
