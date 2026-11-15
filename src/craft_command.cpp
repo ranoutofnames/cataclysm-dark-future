@@ -12,6 +12,7 @@
 #include "game_constants.h"
 #include "inventory.h"
 #include "item.h"
+#include "itype.h"
 #include "json.h"
 #include "output.h"
 #include "recipe.h"
@@ -279,7 +280,9 @@ detached_ptr<item> craft_command::create_in_progress_craft()
     for( const comp_selection<tool_comp> &tool_sel : tool_selections ) {
         const auto type = tool_sel.comp.type;
         if( tool_sel.comp.count > 0 ) {
-            const auto full_cost = tool_sel.comp.count * batch_size;
+            // CDF: itype_id resolves the itype (item::find_type does not exist here)
+            const auto full_cost = tool_sel.comp.count * batch_size *
+                                   tool_sel.comp.type->charge_factor();
             switch( tool_sel.use_from ) {
                 case usage_from::player:
                     if( !crafter->has_charges( type, full_cost ) ) {
@@ -343,7 +346,9 @@ detached_ptr<item> craft_command::create_in_progress_craft()
                 continue;
             }
             const auto full_cost = tool_sel.comp.count * batch_size;
-            const auto start_cost = crafting::charges_for_starting( full_cost );
+            // consume_tools() multiplies the selected count by itype::charge_factor()
+            const auto start_cost = crafting::charges_for_starting( full_cost ) *
+                                    tool_sel.comp.type->charge_factor();
             bool has_start = false;
             switch( tool_sel.use_from ) {
                 case usage_from::player:
@@ -457,7 +462,8 @@ std::vector<comp_selection<tool_comp>> craft_command::check_tool_components_miss
     for( const auto &tool_sel : tool_selections ) {
         itype_id type = tool_sel.comp.type;
         if( tool_sel.comp.count > 0 ) {
-            const int count = tool_sel.comp.count * batch_size;
+            // consume_tools() multiplies the selected count by itype::charge_factor()
+            const int count = tool_sel.comp.count * batch_size * type->charge_factor();
             switch( tool_sel.use_from ) {
                 case usage_from::player:
                     if( !crafter->has_charges( type, count ) ) {
