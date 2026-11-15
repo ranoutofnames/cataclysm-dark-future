@@ -42,6 +42,7 @@
 #include "point.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
+#include "relic.h"
 #include "reload/reload.h"
 #include "reload/reload_selection.h"
 #include "requirements.h"
@@ -997,30 +998,40 @@ item *game_menus::inv::consume_meds( player &p )
     get_consume_needs_hint( p ), false, true );
 }
 
+// CDF: DDA game_inventory.cpp:1131-1135 asks item::has_relic_activation(). CDF's item has no such
+// accessor and item::relic_data is private, so the active spells stored on the type are the test
+// (nothing in CDF creates a relic at runtime). Passive-only relics stay unlisted, as in DDA.
+static bool has_relic_activation( const item &it )
+{
+    return it.type->relic_data && !it.type->relic_data->get_spells().empty();
+}
+
 class activatable_inventory_preset : public pickup_inventory_preset
 {
     public:
         activatable_inventory_preset( const player &p ) : pickup_inventory_preset( p ), p( p ) {
+            // Per DDA game_inventory.cpp:1123: an item's CONTAINER and MOD pockets are the ones a
+            // use menu walks; magazine wells, magazines and cable pockets are not.
+            _pk_type = { pocket_type::CONTAINER, pocket_type::MOD };
             if( get_option<bool>( "INV_USE_ACTION_NAMES" ) ) {
                 append_cell( [ this ]( const item * loc ) {
-                    const item &it = !( *loc ).is_container_empty() && ( *loc ).get_contained().is_medication() &&
-                                     ( *loc ).get_contained().type->has_use() ? ( *loc ).get_contained() : *loc;
-                    return string_format( "<color_light_green>%s</color>", get_action_name( it ) );
+                    return string_format( "<color_light_green>%s</color>", get_action_name( *loc ) );
                 }, _( "ACTION" ) );
             }
         }
 
         bool is_shown( const item *loc ) const override {
-            if( !( *loc ).is_container_empty() && ( *loc ).get_contained().is_medication() &&
-                ( *loc ).get_contained().type->has_use() ) {
-                return true;
-            }
-            return loc->type->has_use();
+            // CDF: DDA game_inventory.cpp:1131-1135. A craft is always listed; a usable item is
+            // listed unless it is a comestible with a use that is not PETFOOD; an installed gunmod
+            // that is invisible when installed is never a row of its own.
+            return ( loc->is_craft() ||
+                     ( ( loc->type->has_use() || has_relic_activation( *loc ) ) &&
+                       ( !loc->is_comestible() || loc->type->can_use( "PETFOOD" ) ) ) ) &&
+                   !item_funcs::is_invisible_installed_gunmod( *loc );
         }
 
         std::string get_denial( const item *loc ) const override {
-            const item &it = !( *loc ).is_container_empty() && ( *loc ).get_contained().is_medication() &&
-                             ( *loc ).get_contained().type->has_use() ? ( *loc ).get_contained() : *loc;
+            const item &it = *loc;
             const auto &uses = it.type->use_methods;
 
             if( uses.size() == 1 ) {
@@ -1071,6 +1082,28 @@ item *game_menus::inv::use( avatar &you )
                          _( "Use item" ), 1,
                          _( "You don't have any items you can use." ),
                          std::string(), true );
+}
+
+// CDF: FM1 amendment (G40), test hooks (precedent: consume_preset_shows). Declared here and in
+// tests/apply_menu_test.cpp, not in game_inventory.h (a hook there would rebuild its includers);
+// keep the two signatures identical. The apply preset is file-local.
+namespace game_menus
+{
+namespace inv
+{
+bool use_preset_shows( const player &p, const item &it );
+std::vector<pocket_type> use_preset_pocket_types();
+} // namespace inv
+} // namespace game_menus
+
+bool game_menus::inv::use_preset_shows( const player &p, const item &it )
+{
+    return activatable_inventory_preset( p ).is_shown( &it );
+}
+
+std::vector<pocket_type> game_menus::inv::use_preset_pocket_types()
+{
+    return activatable_inventory_preset( get_avatar() ).get_pocket_type();
 }
 
 class gunmod_inventory_preset : public inventory_selector_preset
