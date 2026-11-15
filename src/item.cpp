@@ -1542,15 +1542,12 @@ void item::put_in( detached_ptr<item> &&payload )
         return;
     }
     initialize_digital_recipe_file( *payload );
-    // DDA item_container.cpp:267 / item_contents.cpp:905-925: a live insert of an item that no
-    // pocket accepts is refused. CDF used to park it in the MIGRATION pocket here, which let an
-    // oversized item survive inside a container it never fit (and made put_in disagree with
-    // put_in_copies); the MIGRATION pocket is for loads and migrations only.
-    if( !contents.has_pocket_for( *payload ) ) {
-        debugmsg( "tried to put an item (%s) in a container (%s) that cannot contain it",
-                  payload->typeId().str(), typeId().str() );
-        return;
-    }
+    // CDF: put_in is the load/migration path and always keeps the item. item_contents::insert_item
+    // routes it to a real pocket, or to the MIGRATION pocket when no pocket accepts it (as DDA's
+    // combine() and apply_migration keep what they have to place). A live insert that must refuse
+    // an item no pocket takes uses insert_copies (spawns), insert_item( it, pk_type ) or
+    // try_put_in (the player); refusing here dropped batteries, files and seeds that CDF game code
+    // and tests hand to put_in.
     contents.insert_item( std::move( payload ) );
 }
 
