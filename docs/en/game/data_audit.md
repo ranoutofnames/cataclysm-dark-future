@@ -223,3 +223,35 @@ the self-test required by PLAN section 6: it force-inserts a 20 L television
 into a worn backpack's 15 L pocket and requires a K1 row, and points a
 migration at a missing id and requires an M1 row. If either stops reporting,
 the sweep is broken, not green.
+
+## Formatting scenes (FM8)
+
+`tests/audit_fm_golden_test.cpp` (`[audit][golden][fm]`) renders the FM1-FM7 formatting scenes
+with the AT3 headless draw helper and compares the dump row by row with
+`tests/data/golden/ui/fm_*.txt`. The PL-62 AT4 scenes in
+`tests/selector_golden_test.cpp` (`[audit][golden]`) remain the base case; FM8 adds the scenes of
+the FM8 draft that need another fixture:
+
+| Scene | Fixture | What the golden pins |
+|---|---|---|
+| `fm_s1_*` | worn windbreaker, cargo pants, hiking backpack; the pack holds a box, the box a rock | the default view: three worn rows with the `DETAILED_CONTAINERS` suffix, `▼` on the pack, the box and rock under `Spare parts` |
+| `fm_s3_once_*`, `fm_s3_twice_*` | same | `SHOW_HIDE_CONTENTS_ALL` pressed once (show all) and twice (only worn rows, `▶` on the pack) |
+| `fm_s4_hierarchy_*` | same | hierarchy mode: no category headers, box under the pack, rock indented twice as far |
+| `fm_s5_carets_*` | same, box selected | `<` on the pack row and `>` on the rock row (the `INVENTORY_HIGHLIGHT` symbol mode) |
+| `fm_s6_filter_rock_*` | same, pack collapsed, filter `rock` | the filter re-shows the rows hidden by the collapse (the box and the rock) and drops the worn rows |
+| `fm_s7_drop_*` | an empty box and a three-rock stack carried, marks `+` and `2 of 3 #` | the mark column and the right-hand `ITEMS TO DROP` list |
+| `fm_s8_pickup_*` | a rock and a box with a cube on the avatar's tile | the `Pickup` title, the two-line hint and the map rows with their square name as the category |
+| `fm_s9_insert_*` | a worn US ballistic vest with two ESAPI plates, a loose ESBI and a loose ESAPI plate carried | the container header lines, the offered ESBI plate and the ESAPI plate greyed with `not enough space` |
+| `fm_s10_unload_*` | the AT4 fixture | the unload screen at 80x24 (the AT4 `g8` only pins 100x40) |
+
+Every scene is rendered at 100x40 and 80x24. `CDF_GOLDEN_UPDATE=1` rewrites the files and passes
+with a warning, as in AT4. The header stat numbers are pinned only for S9, where they come from
+the vest's pockets; S7 depends on the avatar's body summary, so its test checks only that the
+`Bulk Volume:` and `Selected` lines exist. `TEST_CASE("FM seeded defect: clearing the chevrons
+breaks the S1 golden", ...)` clears the chevron flags and requires the dump to differ from
+`fm_s1_100x40`, and `TEST_CASE("FM golden compare fails on a changed line", ...)` proves the diff
+report on a temp file.
+
+The expected rows are hand-written from DDA `b4b62254ae2`; the REPORT lists the DDA file:line for
+each scene, and the goldens are expected to fail where CDF still differs (a later run shows the
+exact rows).

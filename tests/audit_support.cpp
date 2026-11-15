@@ -1,5 +1,12 @@
 #include "audit_support.h"
 
+#include "avatar.h"
+#include "calendar.h"
+#include "detached_ptr.h"
+#include "item.h"
+#include "item_pocket.h"
+#include "type_id.h"
+
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -116,6 +123,89 @@ std::string join( const std::vector<std::string> &values, const std::string &sep
         out += values[i];
     }
     return out;
+}
+
+namespace
+{
+// Spawns @p id and returns both the raw pointer (for the scene) and the owning pointer.
+detached_ptr<item> spawn_item( const char *id, int charges = 0 )
+{
+    if( charges > 0 ) {
+        return item::spawn( itype_id( id ), calendar::turn, charges );
+    }
+    return item::spawn( itype_id( id ), calendar::turn );
+}
+
+// Puts @p id into @p outer's container pocket; the raw pointer goes to @p out.
+bool put_container_item( item &outer, const char *id, item *&out, int charges = 0 )
+{
+    detached_ptr<item> ptr = spawn_item( id, charges );
+    item *const raw = ptr.get();
+    if( !outer.put_in( std::move( ptr ), pocket_type::CONTAINER ).success() ) {
+        return false;
+    }
+    out = raw;
+    return true;
+}
+
+// Wears @p id and returns the worn item (wear_item inserts by layer, not at the end).
+item *wear( avatar &u, const char *id )
+{
+    const itype_id type( id );
+    u.wear_item( spawn_item( id ), false );
+    for( item *worn_item : u.worn.as_vector() ) {
+        if( worn_item->typeId() == type ) {
+            return worn_item;
+        }
+    }
+    return nullptr;
+}
+} // namespace
+
+bool build_pack_scene( avatar &u, item *&jacket, item *&pants, item *&pack, item *&box,
+                       item *&rock )
+{
+    jacket = wear( u, "jacket_windbreaker" );
+    pants = wear( u, "pants_cargo" );
+    pack = wear( u, "backpack_hiking" );
+    if( jacket == nullptr || pants == nullptr || pack == nullptr ) {
+        return false;
+    }
+    return put_container_item( *pack, "box_small", box ) &&
+           put_container_item( *box, "test_rock", rock );
+}
+
+bool build_jacket_box_scene( avatar &u, item *&jacket, item *&box, item *&cube )
+{
+    jacket = wear( u, "jacket_windbreaker" );
+    if( jacket == nullptr ) {
+        return false;
+    }
+    return put_container_item( *jacket, "box_small", box ) &&
+           put_container_item( *box, "test_1kg_cube", cube );
+}
+
+bool build_drop_scene( avatar &u, item *&box, item *&rock )
+{
+    box = &u.i_add( spawn_item( "box_small" ) );
+    rock = &u.i_add( spawn_item( "test_rock", 3 ) );
+    return true;
+}
+
+bool build_vest_scene( avatar &u, item *&vest, item *&medium_plate, item *&large_plate )
+{
+    vest = wear( u, "ballistic_vest_esapi" );
+    if( vest == nullptr ) {
+        return false;
+    }
+    item *ignored = nullptr;
+    if( !put_container_item( *vest, "esapi_plate", ignored ) ||
+        !put_container_item( *vest, "esapi_plate", ignored ) ) {
+        return false;
+    }
+    medium_plate = &u.i_add( spawn_item( "esbi_plate" ) );
+    large_plate = &u.i_add( spawn_item( "esapi_plate" ) );
+    return true;
 }
 
 } // namespace audit

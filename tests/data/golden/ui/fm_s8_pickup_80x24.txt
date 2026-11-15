@@ -1,0 +1,24 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ Pickup                                                                       │
+│ w Wield  W Wear  > Expand  Unbound globally! All  e Examine                  │
+│ Quantity: ! or 1 to mark selected  = or + / - to offset  type number then    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│         GRASS                                                  ITEMS TO PICKUP
+│         0 -▼small cardboard box > TEST 1kg cube                              │
+│         1 -   TEST 1kg cube                                                  │
+│         2 - TEST rock                                                        │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└─< [/] Filter >─────────────────────────────────────────────< [;] hierarchy >─┘
