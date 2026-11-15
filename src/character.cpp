@@ -12643,6 +12643,21 @@ void Character::drop_inv( const int count )
     }
 }
 
+// DDA character.cpp:6332-6334 (place_corpse): the dead character's gear goes inside the
+// corpse's CONTAINER pocket. DDA's force_insert_item has no checks; a pocket that refuses
+// the item (too big for the corpse) hands it back so the caller drops it on the tile.
+static auto put_into_corpse( item &corpse, detached_ptr<item> &&itm ) -> detached_ptr<item>
+{
+    for( item_pocket *pocket : corpse.get_contents().get_pockets( pocket_type::CONTAINER ) ) {
+        if( pocket->can_contain( *itm ).success() ) {
+            pocket->insert( std::move( itm ) );
+            corpse.on_contents_changed();
+            return detached_ptr<item>();
+        }
+    }
+    return std::move( itm );
+}
+
 void Character::place_corpse()
 {
     //If the character/NPC is on a distant mission, don't drop their their gear when they die since they still have a local pos
@@ -12651,9 +12666,13 @@ void Character::place_corpse()
     }
     std::vector<detached_ptr<item>> tmp = remove_all_carried( *this );
     detached_ptr<item> body = item::make_corpse( mtype_id::NULL_ID(), calendar::turn, name );
+    // CDF: no item temperature API (DDA character.cpp:6336 set_item_temperature)
     map &here = get_map();
     for( auto &itm : tmp ) {
-        here.add_item_or_charges( bub_pos(), std::move( itm ) );
+        detached_ptr<item> not_stored = put_into_corpse( *body, std::move( itm ) );
+        if( not_stored ) {
+            here.add_item_or_charges( bub_pos(), std::move( not_stored ) );
+        }
     }
     for( const bionic &bio : get_bionic_collection() ) {
         if( bio.info().itype().is_valid() ) {
@@ -12694,9 +12713,12 @@ void Character::place_corpse( const tripoint_abs_omt &om_target )
     std::vector<detached_ptr<item>> tmp = remove_all_carried( *this );
     detached_ptr<item> body = item::make_corpse( mtype_id::NULL_ID(), calendar::turn, name );
     for( auto &itm : tmp ) {
-        get_mapbuffer().add_item_or_charges( fin, std::move( itm ), {
-            .lookup = mapbuffer_lookup_mode::load_or_generate,
-        } );
+        detached_ptr<item> not_stored = put_into_corpse( *body, std::move( itm ) );
+        if( not_stored ) {
+            get_mapbuffer().add_item_or_charges( fin, std::move( not_stored ), {
+                .lookup = mapbuffer_lookup_mode::load_or_generate,
+            } );
+        }
     }
     for( const bionic &bio : get_bionic_collection() ) {
         if( bio.info().itype().is_valid() ) {

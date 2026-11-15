@@ -1323,11 +1323,34 @@ void activity_handlers::butcher_finish( player_activity *act, player *p )
     // and the liquid handling was interrupted, then the activity was canceled,
     // therefore operations on this activities targets and values may be invalidated.
     // reveal hidden items / hidden content
+    // CDF: DDA butchery.cpp:1026-1048 (butchery_drops_harvest) reveals the corpse's CONTAINER
+    // gear before the corpse is destroyed. CDF's add_item_or_charges takes a detached item, so
+    // the gear is removed from the corpse pocket before it is moved to the tile. The roll is
+    // CDF's local roll_butchery(): CDF has no roll_butchery_dissect.
+    if( action != F_DRESS && action != SKIN && action != BLEED && action != DISMEMBER ) {
+        for( item *content : corpse_item.all_items_top( pocket_type::CONTAINER ) ) {
+            if( ( roll_butchery() + 10 ) * 5 > rng( 0, 100 ) ) {
+                //~ %1$s - item name, %2$s - monster name
+                p->add_msg_if_player( m_good, _( "You discover a %1$s in the %2$s!" ), content->tname(),
+                                      corpse_item.get_mtype()->nname() );
+                detached_ptr<item> revealed = corpse_item.contents.remove_top( content );
+                if( revealed ) {
+                    here.add_item_or_charges( p->bub_pos(), std::move( revealed ) );
+                }
+            } else if( content->is_bionic() ) {
+                here.spawn_item( p->bub_pos(), itype_burnt_out_bionic, 1, 0, calendar::turn );
+                corpse_item.contents.remove_top( content );
+            }
+        }
+    }
+
     if( action == DISSECT ) {
         int roll = roll_butchery() - corpse_item.damage_level( 4 );
         roll = roll < 1 ? 1 : roll;
         add_msg( m_debug, _( "Roll penalty for corpse damage = %s" ), 0 - corpse_item.damage_level( 4 ) );
         std::vector<detached_ptr<item>> cbms = corpse_item.remove_components();
+        // CDF: CONTAINER gear went through the gear roll above; what is left here is hidden
+        // content (DDA's CORPSE pocket), which belongs to the bionic roll.
         std::vector<detached_ptr<item>> contents = corpse_item.contents.clear_items();
         for( detached_ptr<item> &it : contents ) {
             cbms.push_back( std::move( it ) );
