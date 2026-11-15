@@ -162,6 +162,12 @@ void item_contents::contents_changed()
     } else {
         invalidate_processing_cache();
     }
+    // CDF: an item's inherited flags come from the contents of its inheriting pockets, so every
+    // item above a changed one has to drop its cache too (DDA item.cpp:1488 rebuilds it from
+    // item_container.cpp:294 on each contents change; the parent's stale cache is a DDA gap).
+    for( item *current = owner; current != nullptr; current = current->parent_item() ) {
+        current->invalidate_inherited_flags();
+    }
 }
 
 bool item_contents::empty() const

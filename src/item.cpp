@@ -589,6 +589,8 @@ item &item::operator=( const item &source )
     activated_by = source.activated_by;
     is_favorite = source.is_favorite;
 
+    // CDF: the inherited flag cache is derived from the new contents and mods
+    invalidate_inherited_flags();
     contents.clear_items();
 
     contents.copy_from( source.contents );
@@ -651,6 +653,11 @@ void item::convert( const itype_id &new_type )
     type = &*new_type;
     // re-home contents into the new type's pockets (CDF P1a)
     contents.rebuild_pockets();
+    // CDF: the derived type's flags may be inherited by the container it sits in (DDA
+    // item.cpp:455 updates only this item, the parent's cache stays stale there).
+    for( item *current = this; current != nullptr; current = current->parent_item() ) {
+        current->invalidate_inherited_flags();
+    }
     invalidate_processing_cache_upwards();
     // a new type means new volume and weight
     invalidate_pocket_caches_upwards();
@@ -5761,6 +5768,8 @@ void item::on_contents_changed()
     encumbrance_update_ = true;
     invalidate_processing_cache_upwards();
     invalidate_pocket_caches_upwards();
+    // DDA item_container.cpp:299 update_inherited_flags()
+    invalidate_inherited_flags();
     if( empty_container() ) {
         clear_automatic_whitelist();
     }
@@ -7094,12 +7103,19 @@ void item::unset_flags()
                                     item_tags.count( flag_ETHEREAL_ITEM ) ||
                                     item_tags.count( flag_PROCESSING );
     const bool affects_size = affects_size_flag( item_tags );
+    const bool had_flags = !item_tags.empty();
     item_tags.clear();
     if( affects_processing ) {
         invalidate_processing_cache_upwards();
     }
     if( affects_size ) {
         invalidate_pocket_caches_upwards();
+    }
+    if( had_flags ) {
+        // CDF: a flag on a mod or on a pocketed item can be inherited by its container
+        for( item *current = this; current != nullptr; current = current->parent_item() ) {
+            current->invalidate_inherited_flags();
+        }
     }
 }
 
@@ -7113,26 +7129,65 @@ bool item::has_own_flag( const flag_id &f ) const
     return item_tags.count( f );
 }
 
-bool item::has_flag( const flag_id &f ) const
+// DDA item.cpp:1488 update_inherited_flags(). CDF: the cache is rebuilt lazily from has_flag()
+// (inherited_tags_dirty) instead of at every contents change, so a loaded save or a direct
+// pocket mutation can never leave it stale.
+void item::update_inherited_flags() const
 {
-    // Check if we have any gun/toolmods with the flag, and if we do
-    // check if that flag should be inherited.
-    // `json_flag::get` is pretty expensive so it's faster to do it
-    // last as frequently there are no gun/toolmods with the flag f
-    auto mods = is_gun() ? gunmods() : toolmods();
+    inherited_tags_cache.clear();
+    inherited_tags_dirty = false;
 
-    const auto flag_in_mods = [&f]( const auto & mods ) -> bool {
-        return std::any_of( mods.begin(), mods.end(), [&f]( const item * e )-> bool {
-            return ( !e->is_gun() && e->has_flag( f ) );
-        } );
+    // CDF: DDA flags.json marks these five "inherit": false (DDA flags.json:343/592/1016/1713/1877)
+    // but CDF's data/json/flags.json omits the key, and that file is outside this packet's lock.
+    // Without the guard a helmet would inherit CANT_WEAR from its ear muffs, a container FRAGILE
+    // from its contents, and so on. Drop this list once the data lane adds "inherit": false.
+    static const cata::flat_set<flag_id> never_inherited = {
+        flag_CANT_WEAR, flag_FRAGILE, flag_STURDY, flag_IS_UPS, flag_NO_UNLOAD
+    };
+    const auto inherit_flags = [this]( const auto & flags ) {
+        for( const flag_id &f : flags ) {
+            if( f->inherit() && never_inherited.find( f ) == never_inherited.end() ) {
+                inherited_tags_cache.insert( f );
+            }
+        }
     };
 
-    if( f->inherit() && flag_in_mods( mods ) ) {
+    for( const item *e : is_gun() ? gunmods() : toolmods() ) {
+        // gunmods fired separately do not contribute to base gun flags
+        if( !e->is_gun() ) {
+            inherit_flags( e->get_flags() );
+            inherit_flags( e->type->get_flags() );
+        }
+    }
+
+    for( const item_pocket *pocket : contents.get_container_pockets() ) {
+        if( pocket->inherits_flags() ) {
+            for( const item *e : pocket->all_items_top() ) {
+                inherit_flags( e->get_flags() );
+                inherit_flags( e->type->get_flags() );
+            }
+        }
+    }
+}
+
+void item::invalidate_inherited_flags() const
+{
+    inherited_tags_dirty = true;
+}
+
+bool item::has_flag( const flag_id &f ) const
+{
+    // DDA item.cpp:2353: the type flags cover the common case, then the inherited ones, then
+    // the item's own flags. The mod check DDA keeps in the cache is rebuilt here on demand.
+    if( inherited_tags_dirty ) {
+        update_inherited_flags();
+    }
+
+    if( type->has_flag( f ) ) {
         return true;
     }
 
-    // other item type flags
-    if( type->has_flag( f ) ) {
+    if( inherited_tags_cache.find( f ) != inherited_tags_cache.end() ) {
         return true;
     }
 
@@ -7173,6 +7228,12 @@ void item::set_flag( const flag_id &flag )
         if( inserted && is_size_flag( flag ) ) {
             invalidate_pocket_caches_upwards();
         }
+        if( inserted ) {
+            // CDF: a flag on a mod or on a pocketed item can be inherited by its container
+            for( item *current = this; current != nullptr; current = current->parent_item() ) {
+                current->invalidate_inherited_flags();
+            }
+        }
     } else {
         debugmsg( "Attempted to set invalid flag_id %s", flag.str() );
     }
@@ -7188,6 +7249,12 @@ void item::unset_flag( const flag_id &flag )
     }
     if( erased && is_size_flag( flag ) ) {
         invalidate_pocket_caches_upwards();
+    }
+    if( erased ) {
+        // CDF: a flag on a mod or on a pocketed item can be inherited by its container
+        for( item *current = this; current != nullptr; current = current->parent_item() ) {
+            current->invalidate_inherited_flags();
+        }
     }
 }
 
