@@ -1,8 +1,10 @@
 // Pocket process behaviour from PL-64 G13 (leak) and G37 (pocket spoil_multiplier), ported from
 // DDA pin b4b62254ae2: item_pocket::leak (item_pocket.cpp:2014-2047) and the spoil multiplier
 // that item_pocket::process passes down (item_pocket.cpp:1997-2007, applied in item_degrade.cpp).
+#include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "character.h"
 #include "coordinates.h"
 #include "item.h"
 #include "item_contents.h"
@@ -10,6 +12,7 @@
 #include "itype.h"
 #include "map/map.h"
 #include "map_helpers.h"
+#include "player_helpers.h"
 #include "pocket_data.h"
 #include "state_helpers.h"
 #include "type_id.h"
@@ -92,6 +95,58 @@ TEST_CASE( "watertight pocket does not leak", "[pocket][fm][leak]" )
     REQUIRE( pocket->size() == 1 );
 
     can->leak( here, nullptr, origin, nullptr );
+
+    CHECK( pocket->size() == 1 );
+    CHECK( pocket->front().typeId() == itype_id( "test_liquid_1ml" ) );
+    CHECK( pocket->front().charges == 5 );
+    CHECK( liquid_on_ground( origin, itype_id( "test_liquid_1ml" ) ) == 0 );
+}
+
+// G13: DDA character_inventory.cpp:2847, Character::leak_items (the per-turn caller). A carried
+// (worn) non-watertight container drips its liquid onto the tile.
+TEST_CASE( "character leak_items drips a carried non-watertight container", "[pocket][fm][leak]" )
+{
+    clear_all_state();
+    avatar &u = get_avatar();
+    clear_character( u, false );
+    const tripoint_bub_ms origin = u.bub_pos();
+    get_map().i_clear( origin );
+
+    detached_ptr<item> belt = item::spawn( itype_id( "test_utility_belt" ) );
+    item_pocket *pocket = container_pocket( *belt, []( const item_pocket & p ) {
+        return !p.watertight();
+    } );
+    REQUIRE( pocket != nullptr );
+    // Unchecked insert: a non-watertight pocket refuses liquids through insert_item().
+    pocket->add( item::spawn( itype_id( "test_liquid_1ml" ), calendar::turn, 5 ) );
+    REQUIRE( pocket->size() == 1 );
+
+    u.add_worn( std::move( belt ) );
+    u.leak_items();
+
+    CHECK( pocket->empty() );
+    CHECK( liquid_on_ground( origin, itype_id( "test_liquid_1ml" ) ) == 5 );
+}
+
+// G13: the same Character-level caller must keep liquid in a watertight pocket.
+TEST_CASE( "character leak_items keeps liquid in a carried watertight container", "[pocket][fm][leak]" )
+{
+    clear_all_state();
+    avatar &u = get_avatar();
+    clear_character( u, false );
+    const tripoint_bub_ms origin = u.bub_pos();
+    get_map().i_clear( origin );
+
+    detached_ptr<item> belt = item::spawn( itype_id( "test_utility_belt" ) );
+    item_pocket *pocket = container_pocket( *belt, []( const item_pocket & p ) {
+        return p.watertight();
+    } );
+    REQUIRE( pocket != nullptr );
+    pocket->add( item::spawn( itype_id( "test_liquid_1ml" ), calendar::turn, 5 ) );
+    REQUIRE( pocket->size() == 1 );
+
+    u.add_worn( std::move( belt ) );
+    u.leak_items();
 
     CHECK( pocket->size() == 1 );
     CHECK( pocket->front().typeId() == itype_id( "test_liquid_1ml" ) );

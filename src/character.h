@@ -643,6 +643,8 @@ class Character : public Creature, public location_visitable<Character>
         void process_one_effect( effect &it, bool is_new ) override;
         /** Process active items */
         void process_items( int turns = 1 );
+        /** DDA character_inventory.cpp:2847: drips liquid out of carried non-watertight pockets. */
+        void leak_items();
 
         /** Recalculates HP after a change to max strength */
         void recalc_hp();

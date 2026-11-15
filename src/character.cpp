@@ -6048,6 +6048,11 @@ void Character::update_body( const time_duration &duration )
     }
 
     do_skill_rust( duration );
+
+    // CDF: DDA runs Character::leak_items from Character::process_turn (character.cpp:2288,
+    // right after process_items); CDF's Character::process_turn is in character_turn.cpp, so
+    // the per-turn leak call lives in the body update game.cpp runs every turn.
+    leak_items();
 }
 
 item *Character::best_quality_item( const quality_id &qual )

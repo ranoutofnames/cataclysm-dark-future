@@ -959,6 +959,44 @@ void Character::drop_invalid_inventory()
     cache_inventory_is_valid = true;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Per-turn leaking (DDA character_inventory.cpp:2847)
+// ---------------------------------------------------------------------------------------------
+
+// CDF: item* handles instead of item_location; carried items are nested, so top_items_loc()
+// only hands out the worn items and item::leak recurses into their pockets.
+void Character::leak_items()
+{
+    map &here = get_map();
+
+    item &weapon = primary_weapon();
+    if( weapon.is_container() ) {
+        if( weapon.leak( here, this, bub_pos() ) ) {
+            weapon.spill_contents( bub_pos() );
+        }
+    } else if( weapon.made_of( phase_id::LIQUID ) ) {
+        if( weapon.leak( here, this, bub_pos() ) ) {
+            const std::string name = weapon.tname();
+            here.add_item_or_charges( bub_pos(), remove_primary_weapon() );
+            add_msg_if_player( m_warning, _( "%s spilled from your hand." ), name );
+        }
+    }
+
+    std::vector<item *> removed_items;
+    for( item *it : top_items_loc() ) {
+        if( !it || ( !it->is_container() && !it->made_of( phase_id::LIQUID ) ) ) {
+            continue;
+        }
+        if( it->leak( here, this, bub_pos() ) ) {
+            it->spill_contents( bub_pos() );
+            removed_items.push_back( it );
+        }
+    }
+    for( item *removed : removed_items ) {
+        inv_remove_item( removed );
+    }
+}
+
 // Per DDA character_inventory.cpp:112 (Character::handle_contents_changed), over
 // safe_reference<item> (J6, T5/T11): containers are unsealed and handled from the innermost
 // to the outermost, so inner containers are always handled before outer ones are removed.
