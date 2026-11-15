@@ -1817,7 +1817,8 @@ find_tool_component( const Character *player_with_inv, const std::vector<tool_co
     std::vector<avail_tool_comp> available_tools;
 
     auto calc_charges = [&]( const tool_comp & t ) {
-        const int full_craft_charges = std::max( 1, t.count * batch );
+        // CDF: itype_id resolves the itype (item::find_type does not exist here)
+        const int full_craft_charges = std::max( 1, t.type->charge_factor() * t.count * batch );
         switch( charge_mod ) {
             case cost_adjustment::none:
                 return std::make_pair( charges_for_complete( full_craft_charges ),
@@ -2012,9 +2013,11 @@ bool Character::craft_consume_tools( item &craft, int mulitplier, bool start_cra
         itype_id type = tool_sel.comp.type;
         if( tool_sel.comp.count > 0 ) {
             const int count = calc_charges( tool_sel.comp.count );
+            // consume_tools() multiplies the selected count by itype::charge_factor()
+            const int quantity = count * type->charge_factor();
             switch( tool_sel.use_from ) {
                 case usage_from::player:
-                    if( !has_charges( type, count ) ) {
+                    if( !has_charges( type, quantity ) ) {
                         add_msg_player_or_npc(
                             _( "You have insufficient %s charges and can't continue crafting" ),
                             _( "<npcname> has insufficient %s charges and can't continue crafting" ),
@@ -2024,7 +2027,7 @@ bool Character::craft_consume_tools( item &craft, int mulitplier, bool start_cra
                     }
                     break;
                 case usage_from::map:
-                    if( !map_inv.charges_of( type ) >= count ) {
+                    if( !map_inv.charges_of( type ) >= quantity ) {
                         add_msg_player_or_npc(
                             _( "You have insufficient %s charges and can't continue crafting" ),
                             _( "<npcname> has insufficient %s charges and can't continue crafting" ),
@@ -2072,6 +2075,8 @@ void Character::consume_tools( map &m, const comp_selection<tool_comp> &tool, in
     }
 
     int quantity = tool.comp.count * batch;
+    // CDF: itype_id resolves the itype (item::find_type does not exist here)
+    quantity *= tool.comp.type->charge_factor();
     if( tool.use_from & usage_from::player ) {
         use_charges( tool.comp.type, quantity );
     }
