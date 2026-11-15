@@ -617,11 +617,18 @@ class item : public location_visitable<item>, public game_object<item>
 
         const std::string &symbol() const;
         /**
-         * Returns the monetary value of an item.
+         * Returns the monetary value of an item, including its contents.
          * If `practical` is false, returns pre-cataclysm market value,
          * otherwise returns approximate post-cataclysm value.
          */
         auto price( bool practical ) const -> float;
+        /**
+         * Returns the monetary value of this item itself, without its contents
+         * (DDA item::price_no_contents, item.cpp:1945).
+         * If `practical` is false, returns pre-cataclysm market value,
+         * otherwise returns approximate post-cataclysm value.
+         */
+        auto price_no_contents( bool practical ) const -> float;
 
         /**
          * Whether two items should stack when displayed in a inventory menu.
