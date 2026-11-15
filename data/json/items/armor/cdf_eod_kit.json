@@ -207,6 +207,7 @@
         "max_contains_weight": "1 kg",
         "max_item_length": "50 cm",
         "item_restriction": [ "solder_wire", "cable", "copper_wire" ],
+        "transparent": true,
         "moves": 200
       }
     ]

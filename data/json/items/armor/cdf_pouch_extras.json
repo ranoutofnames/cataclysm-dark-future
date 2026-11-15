@@ -261,7 +261,8 @@
     },
     "extend": {
       "flags": [
-        "OVERSIZE"
+        "OVERSIZE",
+        "BELTED"
       ]
     },
     "//4": "CDF: dropped or converted: flags PREFIX_XL are not defined in CDF (flags.json) and are dropped; OVERSIZE/UNDERSIZE stay."
@@ -282,7 +283,8 @@
     },
     "extend": {
       "flags": [
-        "UNDERSIZE"
+        "UNDERSIZE",
+        "BELTED"
       ]
     },
     "//4": "CDF: dropped or converted: flags PREFIX_XS are not defined in CDF (flags.json) and are dropped; OVERSIZE/UNDERSIZE stay."

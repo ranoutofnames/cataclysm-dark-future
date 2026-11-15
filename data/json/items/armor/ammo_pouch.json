@@ -353,7 +353,7 @@
         "max_contains_volume": "500 ml",
         "max_contains_weight": "2 kg",
         "moves": 40,
-        "flag_restriction": [ "MAG_COMPACT" ],
+        "flag_restriction": [ "MAG_COMPACT", "SPEEDLOADER" ],
         "volume_encumber_modifier": 0.3
       },
       {
@@ -362,7 +362,7 @@
         "max_contains_volume": "500 ml",
         "max_contains_weight": "2 kg",
         "moves": 40,
-        "flag_restriction": [ "MAG_COMPACT" ],
+        "flag_restriction": [ "MAG_COMPACT", "SPEEDLOADER" ],
         "volume_encumber_modifier": 0.3
       }
     ]

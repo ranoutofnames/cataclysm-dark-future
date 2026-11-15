@@ -2330,7 +2330,8 @@
             "charges": 9,
             "contents-item": [ "shoulder_strap", "holo_sight" ]
           },
-          { "item": "grenadebandolier", "contents-item": [ "c4_breaching", "c4_breaching", "c4", "c4" ] }
+          { "item": "grenadebandolier", "contents-item": [ "c4_breaching", "c4_breaching" ] },
+          { "item": "c4", "count": 2 }
         ]
       },
       "male": [ "boxer_shorts" ],
