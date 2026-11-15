@@ -13,9 +13,27 @@
     ],
     "description": "A dead body.",
     "//": "most of the properties depend on the monster type and are created at runtime!",
+    "//2": "CDF: the explicit list also spells out the CORPSE pocket, which item_factory adds to explicit pocket lists only as MOD/CABLE.",
     "price": "0 cent",
     "volume": "0 ml",
-    "flags": [ "NO_UNLOAD", "TRADER_AVOID", "CORPSE", "NO_SALVAGE" ]
+    "flags": [ "NO_UNLOAD", "TRADER_AVOID", "CORPSE", "NO_SALVAGE" ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "moves": 100,
+        "max_contains_volume": "1650 L",
+        "max_contains_weight": "2000 kg",
+        "max_item_volume": "150 L",
+        "max_item_length": "60 meter",
+        "rigid": false,
+        "forbidden": true,
+        "transparent": true
+      },
+      {
+        "pocket_type": "CORPSE",
+        "rigid": true
+      }
+    ]
   },
   {
     "type": "GENERIC",
