@@ -1,0 +1,99 @@
+[
+  {
+    "id": "clean_vest",
+    "type": "ARMOR",
+    "flags": [ "CLEAN_FLAG" ],
+    "volume": "2 L",
+    "weight": "2 kg",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "flag_restriction": [ "ABLATIVE_LARGE" ],
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "3 kg",
+        "max_item_length": "30 cm"
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_upper" ],
+        "coverage": 100,
+        "cover_vitals": 90,
+        "volume_encumber_modifier": 0.3,
+        "cover_ranged": 80
+      }
+    ]
+  },
+  {
+    "id": "clean_plate",
+    "type": "ARMOR",
+    "flags": [ "ABLATIVE_LARGE", "CANT_WEAR" ],
+    "volume": "1 L",
+    "weight": "1 kg",
+    "longest_side": "20 cm"
+  },
+  {
+    "id": "planted_vest",
+    "type": "ARMOR",
+    "flags": [ "CLEAN_FLAG", "CDF_ONLY_FLAG" ],
+    "volume": "2 L",
+    "weight": "2 kg",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "1 kg"
+      }
+    ],
+    "armor_portion_data": [
+      {
+        "covers": [ "torso" ],
+        "specifically_covers": [ "torso_upper" ],
+        "coverage": 100
+      }
+    ]
+  },
+  {
+    "id": "dead_plate",
+    "type": "ARMOR",
+    "flags": [ "ABLATIVE_LARGE", "CANT_WEAR" ],
+    "volume": "10 L",
+    "weight": "1 kg",
+    "longest_side": "20 cm"
+  },
+  {
+    "id": "dead_pocket_holder",
+    "type": "ARMOR",
+    "flags": [ "CLEAN_FLAG" ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "flag_restriction": [ "ABLATIVE_XL" ],
+        "max_contains_volume": "1 L"
+      }
+    ]
+  },
+  {
+    "id": "bad_flag_item",
+    "type": "GENERIC",
+    "flags": [ "NOT_A_FLAG" ]
+  },
+  {
+    "id": "tiny_pouch",
+    "type": "ARMOR",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "100 ml",
+        "max_contains_weight": "100 g"
+      }
+    ]
+  },
+  {
+    "id": "big_item",
+    "type": "GENERIC",
+    "volume": "1 L",
+    "weight": "50 g"
+  }
+]

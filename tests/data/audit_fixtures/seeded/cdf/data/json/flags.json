@@ -1,0 +1,7 @@
+[
+  { "id": "CLEAN_FLAG", "type": "json_flag" },
+  { "id": "CDF_ONLY_FLAG", "type": "json_flag" },
+  { "id": "ABLATIVE_LARGE", "type": "json_flag" },
+  { "id": "ABLATIVE_XL", "type": "json_flag" },
+  { "id": "CANT_WEAR", "type": "json_flag" }
+]

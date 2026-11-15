@@ -1,0 +1,7 @@
+[
+  {
+    "type": "recipe",
+    "result": "clean_vest",
+    "components": [ [ [ "missing_recipe_item", 1 ] ] ]
+  }
+]

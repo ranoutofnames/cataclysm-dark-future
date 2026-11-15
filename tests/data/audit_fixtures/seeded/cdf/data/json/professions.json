@@ -1,0 +1,9 @@
+[
+  {
+    "type": "profession",
+    "id": "bad_prof",
+    "items": {
+      "both": { "items": [ "missing_prof_item" ] }
+    }
+  }
+]
