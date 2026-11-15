@@ -127,8 +127,6 @@ if (NOT "${GIT_VERSION}" MATCHES "GIT-NOTFOUND")
     # into the binary, so the main menu and debug.log show the running binary's id
     # (not a file that may belong to another tree). version.h itself is rewritten
     # by the build-time version.cmake, so these are compile definitions.
-    add_compile_definitions(CDF_BUILD_NUMBER="${_timestamp}")
-    add_compile_definitions(CDF_COMMIT_SHA="${_sha1}")
     file(WRITE VERSION.txt "\
 build type: ${BUILD_PRESET_NAME}\n\
 build number: ${_timestamp}\n\
@@ -798,6 +796,14 @@ if (CCACHE_FOUND AND CATA_CCACHE)
 endif ()
 
 add_subdirectory(src)
+# CDF: only src/debug.cpp reads the build number and commit. Setting them on that one source
+# file (not add_compile_definitions) keeps a reconfigure with a new minute or commit from changing
+# every compile command and forcing a full rebuild.
+if (DEFINED _sha1 AND DEFINED _timestamp)
+    set_property(SOURCE ${CMAKE_SOURCE_DIR}/src/debug.cpp DIRECTORY ${CMAKE_SOURCE_DIR}/src
+        APPEND PROPERTY COMPILE_DEFINITIONS
+        "CDF_BUILD_NUMBER=\"${_timestamp}\"" "CDF_COMMIT_SHA=\"${_sha1}\"")
+endif ()
 add_subdirectory(data)
 
 if (UNIX AND DYNAMIC_LINKING)
