@@ -353,18 +353,20 @@ TEST_CASE(
         CHECK(item_rows(sel.own_gear_column).size() == 2);
     }
 
-    SECTION("toggling back restores the carried-group category view") {
+    SECTION("toggling back puts the worn contents in the category view") {
         sel.toggle_categorize_contained();
         sel.own_gear_column.prepare_paging();
         sel.own_inv_column.prepare_paging();
         const std::vector<const inventory_entry*> gear = item_rows(sel.own_gear_column);
         REQUIRE(gear.size() == 1);
         CHECK(gear[0]->any_item() == &pack);
-        CHECK_FALSE(gear[0]->chevron);
+        // DDA FM1: add_entry_rec marks every parent whose contents are listed, in either view.
+        CHECK(gear[0]->chevron);
         const std::vector<const inventory_entry*> carried = item_rows(sel.own_inv_column);
         REQUIRE(carried.size() == 1);
         CHECK(carried[0]->any_item() == &rock);
-        CHECK(carried[0]->indent == 0);
+        // DDA FM1: the nested row keeps its tree indent; the category column does not apply it.
+        CHECK(carried[0]->indent == 2);
     }
 }
 

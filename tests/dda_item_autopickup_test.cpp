@@ -692,7 +692,8 @@ TEST_CASE("auto_pickup_should_not_implicitly_pickup_corpses", "[autopickup][item
 
                 item& found = item_corpse.find_on_ground(ground);
                 REQUIRE(!found.is_null());
-                // CDF: a corpse has a CORPSE pocket (item_contents.cpp), not a CONTAINER pocket
+                // CDF: corpses.json gives a corpse a CONTAINER pocket (the dead character's gear)
+                // and a CORPSE pocket; autopickup walks the CORPSE pocket too (auto_pickup.cpp:124-131).
                 found.force_insert_item(*item_cigarette.get(), pocket_type::CORPSE);
                 found.force_insert_item(*item_rolling_paper.get(), pocket_type::CORPSE);
 

@@ -585,19 +585,20 @@ TEST_CASE( "ammo_selector_lists_what_is_nested_in_a_carried_container", "[p3][ui
         CHECK( listed_candidates( you, gun ) == 0 );
     }
 
-    SECTION( "only the ammo selector walks into carried containers" ) {
+    SECTION( "a plain selector walks into carried containers too" ) {
         item &canteen = you.i_add( item::spawn( itype_id( "2lcanteen" ) ) );
         item &jug = you.i_add( item::spawn( itype_id( "jug_plastic" ) ) );
         REQUIRE( jug.put_in( item::spawn( itype_id( "water_clean" ), calendar::turn_zero, 2 ),
                              pocket_type::CONTAINER ).success() );
         REQUIRE( listed_candidates( you, canteen ) == 1 );
 
-        // The same preset on any other selector: drop, pick-up and the rest keep their top-level list.
+        // DDA FM1: every selector lists the contents of the items it lists (add_entry_rec), so the
+        // plain selector finds the water in the jug as well; only the ammo preset used to walk.
         const select_ammo_shows_preset preset( canteen, true );
         plain_selector_probe plain( you, preset );
         plain.clear_items();
         plain.add_character_items( you );
-        CHECK( plain.item_entry_count() == 0 );
+        CHECK( plain.item_entry_count() == 1 );
     }
 }
 
@@ -857,7 +858,7 @@ TEST_CASE( "ammo_selector_lists_what_is_nested_in_containers_on_the_map", "[p3][
         CHECK( listed_with_map( you, gun ) == 0 );
     }
 
-    SECTION( "only the ammo selector walks into containers on the map" ) {
+    SECTION( "a plain selector walks into containers on the map too" ) {
         item *in_gun = nullptr;
         item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
         detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
@@ -866,12 +867,13 @@ TEST_CASE( "ammo_selector_lists_what_is_nested_in_containers_on_the_map", "[p3][
         get_map().add_item( next_to_you, std::move( box_ptr ) );
         REQUIRE( listed_with_map( you, gun ) == 1 );
 
-        // The same preset on any other selector: drop, pick-up and the rest keep their top-level list.
+        // DDA PK1b: add_items walks the contents of every stack on the square (add_nested_map_items),
+        // so the plain selector lists the box's ammo as well.
         const select_ammo_shows_preset preset( gun, true );
         plain_selector_probe plain( you, preset );
         plain.clear_items();
         plain.add_nearby_items( 1 );
-        CHECK( plain.item_entry_count() == 0 );
+        CHECK( plain.item_entry_count() == 1 );
     }
 }
 
@@ -970,7 +972,7 @@ TEST_CASE( "ammo_selector_lists_what_is_nested_in_vehicle_cargo", "[p3][ui][nest
         CHECK( listed_with_map( you, gun ) == 0 );
     }
 
-    SECTION( "only the ammo selector walks into vehicle cargo" ) {
+    SECTION( "a plain selector walks into vehicle cargo too" ) {
         item *in_gun = nullptr;
         item &gun = you.i_add( gun_with_glockmag( 5, in_gun ) );
         detached_ptr<item> box_ptr = item::spawn( itype_id( "box_small" ) );
@@ -983,7 +985,8 @@ TEST_CASE( "ammo_selector_lists_what_is_nested_in_vehicle_cargo", "[p3][ui][nest
         plain_selector_probe plain( you, preset );
         plain.clear_items();
         plain.add_vehicle_items( origin );
-        CHECK( plain.item_entry_count() == 0 );
+        // DDA PK1b: the plain selector walks the cargo stacks as well, so the box's ammo is a row.
+        CHECK( plain.item_entry_count() == 1 );
     }
 }
 
