@@ -162,8 +162,8 @@ item *item_pocket::restack( /*const*/ item *it )
             }
             if( contents.as_vector()[i]->can_combine( *contents.as_vector()[i + 1] ) ) {
                 combine_into( i, i + 1 );
-                // DDA continues after the item that was merged into
-                ++i;
+                // DDA item_pocket.cpp:328-334: keep the same outer item and try to merge the
+                // next stack into it, so a run of stacks becomes one
             } else {
                 ++i;
             }
@@ -409,27 +409,11 @@ units::mass item_pocket::weight_capacity() const
 
 units::volume item_pocket::volume_capacity() const
 {
-    // CDF: the per-instance override (body storage) and the cheap ammo capacity stay here;
-    // pocket_data::volume_capacity() scans every item type (J2-F12)
+    // CDF: the per-instance override (body storage) stays. DDA item_pocket.cpp:600-603 returns
+    // pocket_data::volume_capacity(), so an ammo pocket is sized by the largest ammo it accepts,
+    // not only by the ammotype's default ammo.
     if( capacity_override ) {
         return *capacity_override;
-    }
-    if( !data->ammo_restriction.empty() ) {
-        // capacity follows the largest accepted ammo, as in DDA
-        units::volume best = 0_ml;
-        for( const auto &ammo_res : data->ammo_restriction ) {
-            const itype_id &def = ammo_res.first->default_ammotype();
-            if( def.is_null() || !def.is_valid() || def->stack_size <= 0 ) {
-                continue;
-            }
-            // CDF: round up like DDA pocket_data::volume_capacity() (item_pocket.cpp:2559-2575). item::volume() of
-            // N charges rounds up, so a pocket filled to its ammo_restriction needs a rounded-up capacity or
-            // overflow() sheds the full stack as too big.
-            const units::volume v = 1_ml * ( ( def->volume * ammo_res.second / 1_ml + def->stack_size - 1 ) /
-                                             def->stack_size );
-            best = std::max( best, v );
-        }
-        return best;
     }
     return data->volume_capacity();
 }
