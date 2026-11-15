@@ -24,6 +24,10 @@ TEST_CASE( "nested carried items are listed and sold individually", "[npc][trade
     npc &buyer = spawn_npc( u.bub_pos() + point( 5, 0 ), "test_talker" );
     clear_character( buyer, true );
     buyer.set_attitude( NPCATT_FOLLOW );
+    // CDF: faction_api_version is 2, so attitude FOLLOW alone is no alliance; the follower faction
+    // makes is_player_ally() true and wants_to_buy() accepts cheap items (src/npc.cpp:1880-1888,
+    // 2280-2293). CDF: the setter is npc::set_fac (npc.h:791).
+    buyer.set_fac( faction_id( "your_followers" ) );
 
     REQUIRE( !u.wear_item( item::spawn( itype_id( "backpack" ) ), false ) );
     item *pack = u.worn.back();

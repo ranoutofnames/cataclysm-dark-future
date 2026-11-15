@@ -1832,6 +1832,10 @@ TEST_CASE( "cdf_inventory_column_update_entry_cell_cache_and_get_highlighted",
     SECTION( "the highlighted entry is the mutable selected entry" ) {
         col.add_entry( inventory_entry( std::vector<item *> { ammo.get() } ) );
         REQUIRE( col.entries.size() == 1 );
+        // CDF: an un-paged column keeps selected_index = SIZE_MAX, so get_selected() returns the
+        // static dummy (src/inventory_ui.cpp:841-849); DDA guards it the same way, and a layout
+        // pages the column before any draw.
+        col.prepare_paging();
 
         inventory_entry &highlighted = col.get_highlighted();
         CHECK( &highlighted == &col.entries.front() );

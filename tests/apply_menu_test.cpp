@@ -210,7 +210,8 @@ TEST_CASE( "apply_menu_does_not_list_a_container_holding_a_medication", "[invent
 }
 
 // DDA game_inventory.cpp:1131: loc->is_craft() is listed before the use test, so an in-progress
-// craft is a row even though the "craft" item type has no use_action.
+// craft is a row. The "craft" item type carries use_action CRAFT (data/json/items/generic.json, as
+// in DDA b4b62254ae2:3227), so the old premise that it has no use does not hold.
 TEST_CASE( "apply_menu_lists_an_in_progress_craft", "[inventory][apply]" )
 {
     clear_all_state();
@@ -218,7 +219,6 @@ TEST_CASE( "apply_menu_lists_an_in_progress_craft", "[inventory][apply]" )
     const recipe &rec = recipe_id( "cudgel" ).obj();
     item craft( &rec, 1, {}, {} );
     REQUIRE( craft.is_craft() );
-    REQUIRE_FALSE( craft.type->has_use() );
     CHECK( game_menus::inv::use_preset_shows( you, craft ) );
 }
 

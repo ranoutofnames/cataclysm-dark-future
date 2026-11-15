@@ -197,7 +197,7 @@ auto find_liquid_probe( item_pocket &pocket ) -> std::optional<itype_id>
             continue;
         }
         detached_ptr<item> probe = item::spawn( t->get_id() );
-        if( probe && pocket.can_contain( *probe, true ).success() ) {
+        if( probe && pocket.can_contain( *probe ).success() ) {
             return t->get_id();
         }
     }
@@ -249,7 +249,9 @@ auto build_plans( item &container ) -> std::vector<pocket_plan>
                 !p.watertight ) {
                 continue;
             }
-            if( pocket.can_contain( *probe, true ).success() ) {
+            // Not ignore_contents: that skips the volume/weight/ammo checks against the pocket's
+            // contents (src/item_pocket.cpp:1454-1465), so it accepts inserts that then refuse.
+            if( pocket.can_contain( *probe ).success() ) {
                 plan.accepted.push_back( t->get_id() );
             }
         }
@@ -274,7 +276,7 @@ auto build_plans( item &container ) -> std::vector<pocket_plan>
                 if( !probe ) {
                     continue;
                 }
-                const ret_val<item_pocket::contain_code> res = pocket.can_contain( *probe, true );
+                const ret_val<item_pocket::contain_code> res = pocket.can_contain( *probe );
                 if( !res.success() && !res.str().empty() ) {
                     plan.refused = t->get_id();
                     break;
@@ -510,10 +512,13 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
     detached_ptr<item> loaded = item::spawn( jsin );
 
     std::string reason;
+    // CDF: item::spawn( JsonIn ) applies item migrations, so a migrated container loads under its
+    // replacement id (all 40 F6 failures are MIGRATION ids in data/json/obsoletion).
+    const itype_id expected_id = item_controller->migrate_id( container_id );
     if( !loaded ) {
         reason = "load returned nothing";
-    } else if( loaded->typeId() != container_id ) {
-        reason = "loaded type " + loaded->typeId().str();
+    } else if( loaded->typeId() != expected_id ) {
+        reason = "loaded type " + loaded->typeId().str() + " (want " + expected_id.str() + ")";
     } else if( loaded->contents.all_items_ptr().size() != before_count ) {
         reason = string_format( "count %d (want %d)",
                                 static_cast<int>( loaded->contents.all_items_ptr().size() ),
@@ -580,10 +585,16 @@ auto run_plate_rule( std::vector<audit::row> &rows,
             }
             const ret_val<bool> extra = carrier->try_put_in( item::spawn( plate_type->get_id() ) );
             const std::string extra_reason = extra.str();
-            const bool refused_with_reason = !extra.success() && !extra_reason.empty() &&
-                                             ( extra_reason.find( "taken" ) != std::string::npos ||
-                                               extra_reason.find( "plate" ) != std::string::npos );
+            // Any non-empty refusal text is a reason; the wording ("taken", "plate", "too heavy")
+            // comes from the pocket, not from this rule.
+            const bool refused_with_reason = !extra.success() && !extra_reason.empty();
             add_row( rows, plate_type->get_id(), flow + ":extra", refused_with_reason, extra_reason );
+            if( !extra.success() && extra_reason.empty() ) {
+                // A refusal without any reason is a finding of its own (stab_plate,
+                // test_plate_broken): the player would see no explanation.
+                add_row( rows, plate_type->get_id(), flow + ":extra-no-reason", false,
+                         "refusal has no reason" );
+            }
         }
     }
 
