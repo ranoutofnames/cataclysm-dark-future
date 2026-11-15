@@ -522,7 +522,6 @@ void DynamicDataLoader::initialize()
     add( "character_mod", &load_dda_inert_type );
     add( "conduct", &load_dda_inert_type );
     add( "climbing_aid", &load_dda_inert_type );
-    add( "body_graph", &load_dda_inert_type );
     add( "damage_info_order", &load_dda_inert_type );
     // CDF: COMPAT5 (A6): DDA migration-family types. CDF has no migration table for traits,
     // bionics, effects, vehicle parts, terrain/furniture, overmap specials or camps, so each
