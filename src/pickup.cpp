@@ -253,16 +253,7 @@ static auto pick_one_up( const pick_one_up_options &opts ) -> bool
 
     auto with_det = [&]( detached_ptr<item> &&newloc ) {
 
-        // Ammo can sometimes be picked up into containers
-        if( !opts.preferred_option ) {
-            newloc = u.i_add_to_container( std::move( newloc ), false );
-        }
-
-        if( !newloc || ( newloc->count_by_charges() && newloc->charges == 0 ) ) {
-            // We've picked up everything into containers, skip the options part
-            picked_up = true;
-            option = NUM_ANSWERS;
-        } else if( newloc->made_of( LIQUID ) ) {
+        if( newloc->made_of( LIQUID ) ) {
             got_water = true;
         } else if( opts.preferred_option ) {
             option = *opts.preferred_option;
