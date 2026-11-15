@@ -1474,6 +1474,46 @@ int input_manager::get_previously_pressed_key() const
     return previously_pressed_key;
 }
 
+void input_manager::test_enable_input_queue()
+{
+    test_input_queue_enabled = true;
+}
+
+void input_manager::test_push_event( const input_event &event )
+{
+    test_input_queue_enabled = true;
+    test_input_queue.push_back( event );
+}
+
+void input_manager::test_clear_input_queue()
+{
+    test_input_queue.clear();
+    test_input_queue_enabled = false;
+    test_input_queue_exhausted = false;
+}
+
+bool input_manager::test_input_exhausted() const
+{
+    return test_input_queue_exhausted;
+}
+
+input_event input_manager::test_next_input_event()
+{
+    if( test_input_queue.empty() ) {
+        // The screen wants a key the script does not have: it would block (or spin on a timeout
+        // sentinel) forever. Fail the test that drove it instead.
+        test_input_queue_exhausted = true;
+        throw test_input_exhausted();
+    }
+    const input_event event = test_input_queue.front();
+    test_input_queue.pop_front();
+    // Same bookkeeping as the real keyboard path in sdltiles.cpp / ncurses_def.cpp.
+    if( event.type == input_event_t::keyboard && !event.sequence.empty() ) {
+        previously_pressed_key = event.get_first_input();
+    }
+    return event;
+}
+
 void input_manager::wait_for_any_key()
 {
 #if defined(__ANDROID__)

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <deque>
 #include <functional>
 #include <map>
 #include <string>
@@ -101,6 +102,14 @@ enum class input_event_t : int  {
     keyboard,
     gamepad,
     mouse
+};
+
+/**
+ * Thrown by input_manager::get_input_event() while the test input queue is enabled and has run
+ * out: a screen asked for more keys than the test scripted, so it is stuck and the test must
+ * fail instead of hang. A plain type (not std::exception) so that no screen's catch can eat it.
+ */
+struct test_input_exhausted {
 };
 
 /**
@@ -296,6 +305,23 @@ class input_manager
          * Defined in the respective platform wrapper, e.g. sdlcurse.cpp
          */
         input_event get_input_event();
+
+        /**
+         * Test hooks: a scripted input queue read by get_input_event() in place of the real
+         * interface (both the SDL and the curses implementation check it first). The queue is
+         * inert while disabled, so the game path pays one predictable branch per raw event.
+         *
+         * With the queue enabled, a read when it is empty sets test_input_exhausted() and throws
+         * test_input_exhausted: a screen that never closes fails its test instead of blocking
+         * forever on the real keyboard (a timeout sentinel would only be ignored and spin).
+         */
+        void test_enable_input_queue();
+        /** Push one scripted event; also switches the queue on. */
+        void test_push_event( const input_event &event );
+        /** Drop the scripted events, switch the queue off and clear the exhausted flag. */
+        void test_clear_input_queue();
+        /** Whether the queue ran empty while a screen was still reading input. */
+        bool test_input_exhausted() const;
         /**
          * Resize & refresh if necessary, process all pending window events, and ignore keypresses
          */
@@ -350,6 +376,18 @@ class input_manager
         void load( const std::string &file_name, bool is_user_preferences );
 
         int input_timeout;
+
+        /**
+         * Pop the next scripted event, or set test_input_queue_exhausted and throw
+         * test_input_exhausted when the script is spent. Called from get_input_event() in
+         * both implementations only while test_input_queue_enabled is set.
+         */
+        input_event test_next_input_event();
+
+        // Scripted input for the tests (see test_push_event). Empty and disabled in the game.
+        std::deque<input_event> test_input_queue;
+        bool test_input_queue_enabled = false;
+        bool test_input_queue_exhausted = false;
 
         t_input_event_list &get_or_create_event_list( const std::string &action_descriptor,
                 const std::string &context );
