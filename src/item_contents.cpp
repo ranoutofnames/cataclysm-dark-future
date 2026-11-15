@@ -677,7 +677,13 @@ void item_contents::rebuild_pockets()
     pockets.splice( pockets.end(), kept );
     for( detached_ptr<item> &it : held ) {
         item_pocket *dest = route( *it );
-        dest->insert( std::move( it ) );
+        if( dest != nullptr ) {
+            dest->insert( std::move( it ) );
+        } else {
+            // CDF: DDA combine() re-homes an item the new layout accepts nowhere into the
+            // MIGRATION pocket (item_contents.cpp:813); the overflow pass below moves it out.
+            insert_item( std::move( it ), pocket_type::MIGRATION, true );
+        }
     }
     // CDF: DDA restamps and validates at the end of every update (item_container.cpp 181-200)
     reselect_gun_mode();
@@ -692,8 +698,11 @@ void item_contents::rebuild_pockets()
 
 item_pocket *item_contents::route( const item &it )
 {
-    item_pocket *dest = fitting_pocket( it );
-    return dest != nullptr ? dest : migration_pocket( true );
+    // CDF: DDA has no router at all. Its insert_item asks find_pocket_for and refuses an item
+    // that no pocket accepts (DDA item_contents.cpp:905-925). The MIGRATION pocket is filled
+    // only where a load or a migration has to keep an item (DDA combine(), item_contents.cpp:813;
+    // item_factory.cpp:4766-4768), never by the router. Those callers ask for it explicitly.
+    return fitting_pocket( it );
 }
 
 item_pocket *item_contents::fitting_pocket( const item &it, bool allow_ablative )
@@ -702,7 +711,9 @@ item_pocket *item_contents::fitting_pocket( const item &it, bool allow_ablative 
 
     // Force-insert routing, after DDA migrate_content_item: mods, magazines and ammo,
     // software, corpses, then the best container that has room. Sealed pockets are
-    // allowed: spawns fill factory-sealed cans. Anything else goes to MIGRATION.
+    // allowed: spawns fill factory-sealed cans. nullptr when no pocket accepts the item.
+    // CDF: the caller decides what to do with a refusal (a load or a migration keeps it in
+    // MIGRATION, a spawn does not store it); see route().
     const auto best_fitting = [&]( pocket_type type ) -> item_pocket * {
         item_pocket *best = nullptr;
         for( item_pocket &pocket : pockets )
@@ -887,7 +898,8 @@ int item_contents::overflow( Character *carrier, const tripoint_bub_ms &pos, ite
             }
             it = std::move( left );
         }
-        // nowhere to put it: keep it, never lose it
+        // nowhere to put it: keep it, never lose it. This is the overflow net, not an insert:
+        // the next overflow pass tries the parent, the carrier and the ground again.
         migration_pocket( true )->insert( std::move( it ) );
     }
     contents_changed();
@@ -948,7 +960,15 @@ ret_val<bool> item_contents::insert_item( detached_ptr<item> &&it )
         return ret_val<bool>::make_failure();
     }
     const bool adaptor = mod_needs_rebuild( *it );
+    // CDF: this overload is the load/migration insert (item_contents::deserialize,
+    // contents_item_location::attach). DDA keeps an item that no pocket accepts for a load
+    // (combine(), item_contents.cpp:813) or a migration (item_factory.cpp:4766-4768) in its
+    // MIGRATION pocket, and the overflow pass re-homes it later. A live insert must be refused:
+    // see insert_copies() and insert_item( it, pk_type ).
     item_pocket *dest = route( *it );
+    if( dest == nullptr ) {
+        dest = migration_pocket( true );
+    }
     dest->insert( std::move( it ) );
     contents_changed();
     if( adaptor ) {
@@ -966,27 +986,60 @@ void item_contents::insert_copies( const item &proto, int n )
     const bool adaptor = mod_needs_rebuild( proto );
     if( adaptor ) {
         // changes the layout with every copy: nothing to share
-        for( int i = 0; i < n; i++ ) {
-            insert_item( item::spawn( proto ) );
+        int left = n;
+        while( left > 0 ) {
+            detached_ptr<item> copy = item::spawn( proto );
+            if( route( *copy ) == nullptr ) {
+                break;
+            }
+            // rebuilds the pockets after the layout change
+            insert_item( std::move( copy ) );
+            left--;
+        }
+        if( left > 0 ) {
+            debugmsg( "%s takes %d of %d spawned copies of %s",
+                      owner != nullptr ? owner->typeId().str() : std::string( "the contents" ),
+                      n - left, n, proto.typeId().str() );
         }
         return;
     }
-    // The pocket insert_item would route to: while it is the only pocket of its type, can
-    // still hold a copy and no pocket of an earlier type took the copy, every further copy
-    // goes there too, so route() is not repeated.
+    // The pocket the router picks: while it is the only pocket of its type and can still hold a
+    // copy, every further copy goes there too, so route() is not repeated.
     ensure_pockets();
     int left = n;
+    bool refused = false;
     while( left > 0 ) {
         detached_ptr<item> copy = item::spawn( proto );
         item_pocket *dest = route( *copy );
-        const bool sole = dest->get_type() != pocket_type::MIGRATION &&
-                          get_pockets( dest->get_type() ).size() == 1;
-        dest->insert( std::move( copy ) );
+        if( dest == nullptr ) {
+            // CDF: DDA item_group.cpp:746 inserts every spawned item with the checked put_in, so
+            // an item that no pocket takes is not stored at all. The MIGRATION pocket is not a
+            // home for a spawned item (K1/G2: cu_pipe in an mbag).
+            refused = true;
+            break;
+        }
+        const bool sole = get_pockets( dest->get_type() ).size() == 1;
+        // the checked insert DDA has (item_pocket::insert_item): an overfull pocket refuses too
+        if( !dest->insert_item( std::move( copy ), false, true ).success() ) {
+            refused = true;
+            break;
+        }
         left--;
-        while( sole && left > 0 && dest->can_contain( proto ).success() ) {
-            dest->insert( item::spawn( proto ) );
+        while( sole && left > 0 ) {
+            if( !dest->insert_item( item::spawn( proto ), false, true ).success() ) {
+                refused = true;
+                break;
+            }
             left--;
         }
+        if( refused ) {
+            break;
+        }
+    }
+    if( refused && left > 0 ) {
+        debugmsg( "%s takes %d of %d spawned copies of %s",
+                  owner != nullptr ? owner->typeId().str() : std::string( "the contents" ),
+                  n - left, n, proto.typeId().str() );
     }
     contents_changed();
 }
@@ -1128,8 +1181,14 @@ void item_contents::migrate_item( item &obj, const std::vector<migration_content
                 }
                 continue;
             }
-            // goes through the router, so a plate lands in a matching plate slot
-            obj.put_in( std::move( migrated ) );
+            // DDA item_factory.cpp:4758-4769 (apply_migration): the router places it if it fits,
+            // a migrated item that fits nowhere waits in the MIGRATION pocket.
+            item_pocket *dest = route( *migrated );
+            if( dest != nullptr ) {
+                dest->insert( std::move( migrated ) );
+            } else {
+                insert_item( std::move( migrated ), pocket_type::MIGRATION, true );
+            }
             added = true;
         }
     }
