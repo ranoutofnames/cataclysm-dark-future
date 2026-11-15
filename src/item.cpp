@@ -8,6 +8,7 @@
 #include "bionics.h"
 #include "ablative_coverage.h"
 #include "bodypart.h"
+#include "bodygraph.h"
 #include "subbodypart.h"
 #include "cached_item_options.h"
 #include "calendar.h"
@@ -5200,6 +5201,8 @@ std::vector<iteminfo> item::info( const iteminfo_query &parts_ref, int batch,
 
     gunmod_info( info, parts, batch, debug );
     armor_info( info, parts, batch, debug );
+    // Packet BG1: armor coverage body graph, as DDA item_info.cpp:2432 does in armor_info()
+    item_bodygraph_info( *this, info, *parts );
     animal_armor_info( info, parts, batch, debug );
     book_info( info, parts, batch, debug );
     battery_info( info, parts, batch, debug );

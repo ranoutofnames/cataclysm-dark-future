@@ -10,6 +10,7 @@
 #include "behavior.h"
 #include "bionics.h"
 #include "bodypart.h"
+#include "bodygraph.h"
 #include "subbodypart.h"
 #include "cata_utility.h"
 #include "catalua.h"
@@ -564,6 +565,8 @@ void DynamicDataLoader::initialize()
     add( "rotatable_symbol", &rotatable_symbols::load );
     add( "body_part", &body_part_type::load_bp );
     add( "sub_body_part", &sub_body_part_type::load_bp );
+    // DDA init.cpp:494
+    add( "body_graph", &bodygraph::load_bodygraphs );
     add( "anatomy", &anatomy::load_anatomy );
     add( "morale_type", &morale_type_data::load_type );
     add( "SPELL", &spell_type::load_spell );
@@ -692,6 +695,7 @@ void DynamicDataLoader::unload_data()
     bionic_data::reset();
     body_part_type::reset();
     sub_body_part_type::reset();
+    bodygraph::reset();
     charge_removal_blacklist::reset();
     clear_techniques_and_martial_arts();
     clothing_mods::reset();
@@ -811,6 +815,7 @@ void DynamicDataLoader::finalize_loaded_data( loading_ui &ui )
             { _( "Mutation Flags" ), &json_trait_flag::finalize_all },
             { _( "Body parts" ), &body_part_type::finalize_all },
             { _( "Sub body parts" ), &sub_body_part_type::finalize_all },
+            { _( "Body graphs" ), &bodygraph::finalize_all },
             { _( "Bionics" ), &bionic_data::finalize_all },
             { _( "Weather types" ), &weather_types::finalize_all },
             { _( "Weather patterns" ), &weather_patterns::finalize_all },
@@ -963,6 +968,7 @@ void DynamicDataLoader::check_consistency( loading_ui &ui )
             { _( "NPC templates" ), &npc_template::check_consistency },
             { _( "Body parts" ), &body_part_type::check_consistency },
             { _( "Sub body parts" ), &sub_body_part_type::check_consistency },
+            { _( "Body graphs" ), &bodygraph::check_all },
             { _( "Anatomies" ), &anatomy::check_consistency },
             { _( "Spells" ), &spell_type::check_consistency },
             { _( "Enchantments" ), &enchantment::check_consistency },
