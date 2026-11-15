@@ -97,7 +97,7 @@ A gun can jam when it fires. This is CDF's damage-based model.
 | `FIRE` | Fire | Aim screen | `f`, `RETURN`, `MOUSE_RIGHT` |
 | `TOGGLE_UNLOAD_RAS_WEAPON` | Keep or unload the bow etc after quitting | Aim screen | `-` |
 
-`reload_weapon`, `reload_wielded` and `unload_all` have no default key; bind them in the keybindings menu if you want them.
+`reload_weapon` and `reload_wielded` have no default key; bind them in the keybindings menu if you want them. `unload_all` has no key in play, but in the inventory screen `U` (the `unload_all` action in the `INVENTORY` context) unloads every carried item that can be unloaded.
 
 ## Carried bar
 
