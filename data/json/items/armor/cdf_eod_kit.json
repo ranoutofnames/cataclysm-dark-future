@@ -70,6 +70,7 @@
     "symbol": "[",
     "color": "light_gray",
     "flags": [ "STURDY", "OUTER", "NO_SALVAGE" ],
+    "max_worn": 1,
     "armor_portion_data": [ { "covers": [ "hand_l", "hand_r" ], "coverage": 40, "encumbrance": 10 } ]
   },
   {
@@ -90,6 +91,7 @@
     "color": "light_green",
     "environmental_protection": 2,
     "flags": [ "STURDY", "OUTER", "RAINPROOF" ],
+    "max_worn": 1,
     "use_action": [ { "type": "attach_molle", "size": 4 }, { "type": "detach_molle" } ],
     "armor_portion_data": [ { "covers": [ "leg_l", "leg_r" ], "coverage": 100, "cover_vitals": 100, "encumbrance": 80 } ]
   },
@@ -111,6 +113,7 @@
     "color": "light_gray",
     "environmental_protection": 2,
     "flags": [ "STURDY", "OUTER", "RAINPROOF" ],
+    "max_worn": 1,
     "use_action": [ { "type": "attach_molle", "size": 6 }, { "type": "detach_molle" } ],
     "armor_portion_data": [ { "covers": [ "leg_l", "leg_r" ], "coverage": 100, "cover_vitals": 100, "encumbrance": 40 } ]
   },

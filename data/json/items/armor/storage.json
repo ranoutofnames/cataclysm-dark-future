@@ -53,6 +53,7 @@
     "material_thickness": 2,
     "use_action": { "type": "holster", "holster_prompt": "Sheath blade", "holster_msg": "You sheath your %s" },
     "flags": [ "BELTED", "WATERPROOF", "ONLY_ONE", "OVERSIZE" ],
+    "max_worn": 1,
     "pocket_data": [
       {
         "pocket_type": "CONTAINER",
@@ -272,7 +273,8 @@
     "storage": "65 L",
     "warmth": 10,
     "material_thickness": 2,
-    "flags": [ "BELTED", "WATERPROOF", "ONLY_ONE", "OVERSIZE" ]
+    "flags": [ "BELTED", "WATERPROOF", "ONLY_ONE", "OVERSIZE" ],
+    "max_worn": 1
   },
   {
     "id": "basket_laundry",
@@ -321,7 +323,8 @@
     "storage": "80 L",
     "warmth": 10,
     "material_thickness": 2,
-    "flags": [ "BELTED", "WATERPROOF", "ONLY_ONE", "OVERSIZE" ]
+    "flags": [ "BELTED", "WATERPROOF", "ONLY_ONE", "OVERSIZE" ],
+    "max_worn": 1
   },
   {
     "id": "bindle",
