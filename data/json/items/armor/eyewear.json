@@ -93,6 +93,7 @@
   {
     "id": "glasses_bal",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of ballistic glasses", "str_pl": "pairs of ballistic glasses" },
     "description": "Modern tactical eyewear that protects from small projectiles and fragments.  Provides excellent protection from environmental dangers.",
     "weight": "184 g",
@@ -253,6 +254,7 @@
   {
     "id": "goggles_welding",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of welding goggles", "str_pl": "pairs of welding goggles" },
     "description": "A dark pair of goggles.  They make seeing very difficult, but protect you from bright flashes.",
     "weight": "153 g",
@@ -323,6 +325,7 @@
   {
     "id": "survivor_goggles",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "survivor goggles", "str_pl": "pairs of survivor goggles" },
     "description": "A custom-built pair of armored goggles with tinted lenses.  Comfortable and built to last, they provide excellent protection from environmental dangers.",
     "weight": "212 g",

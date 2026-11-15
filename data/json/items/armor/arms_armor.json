@@ -2,6 +2,7 @@
   {
     "id": "2byarm_guard",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of 2-by-arm guards", "str_pl": "pairs of 2-by-arm guards" },
     "description": "A pair of improvised arm guards made from broken pieces of a two by four that are tied to your arms with rags and string.  They offer good protection, but are really uncomfortable to wear.",
     "weight": "300 g",
@@ -25,6 +26,7 @@
   {
     "id": "armguard_chitin",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of chitin arm guards", "str_pl": "pairs of chitin arm guards" },
     "description": "A pair of arm guards made from the exoskeletons of insects.  Light and durable.",
     "weight": "392 g",
@@ -49,6 +51,7 @@
     "copy-from": "armguard_chitin",
     "looks_like": "armguard_chitin",
     "type": "ARMOR",
+    "category": "armor",
     "price_postapoc": "1250 cent",
     "name": { "str": "pair of biosilicified chitin arm guards", "str_pl": "pairs of biosilicified chitin arm guards" },
     "description": "A pair of arm guards crafted from the carefully cleaned and pruned biosilicified exoskeletons of acidic ants.  Acid-resistant and very durable.",
@@ -60,6 +63,7 @@
   {
     "id": "armguard_hard",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of hard arm guards", "str_pl": "pairs of hard arm guards" },
     "description": "A pair of neoprene arm sleeves covered with molded plastic sheaths.",
     "weight": "350 g",
@@ -81,6 +85,7 @@
   {
     "id": "armguard_larmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of leather arm guards", "str_pl": "pairs of leather arm guards" },
     "description": "A pair of tough leather arm guards.  Light and comfortable.",
     "weight": "400 g",
@@ -103,6 +108,7 @@
   {
     "id": "armguard_lightplate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of steel arm guards", "str_pl": "pairs of steel arm guards" },
     "description": "A full assembly of medieval arm protection.  Rerebraces, couters, and vambraces, with leather straps to secure each piece and connect it as part of a set.",
     "weight": "2720 g",
@@ -125,6 +131,7 @@
     "id": "armguard_lightplate_superalloy",
     "copy-from": "armguard_lightplate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of superalloy arm guards", "str_pl": "pairs of superalloy arm guards" },
     "description": "A full assembly of medieval arm protection, made from cutting-edge superalloy.  Rerebraces, couters, and vambraces, with leather straps to secure each piece and connect it as part of a set.",
     "material": [ "superalloy" ],
@@ -136,6 +143,7 @@
   {
     "id": "armguard_metal",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of metal arm guards", "str_pl": "pairs of metal arm guards" },
     "description": "A pair of arm guards hammered out from metal.  Perfect for the Post-Apocalyptic Warrior look.",
     "weight": "1080 g",
@@ -158,6 +166,7 @@
     "id": "armguard_bronze",
     "copy-from": "armguard_metal",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of bronze arm guards", "str_pl": "pairs of bronze arm guards" },
     "description": "A pair of arm guards hammered out from sheets of bronze, for a classical take on the Post-Apocalyptic Warrior look.",
     "weight": "1500 g",
@@ -170,6 +179,7 @@
   {
     "id": "armguard_paper",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of paper arm guards", "str_pl": "pairs of paper arm guards" },
     "description": "Arm guards made of stacked paper sheets held together with duct tape.",
     "weight": "360 g",
@@ -191,6 +201,7 @@
   {
     "id": "armguard_scrap",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of scrap arm guards", "str_pl": "pairs of scrap arm guards" },
     "description": "A pair of arm guards made from scraps of metal secured by simple strings; the loose collection of plates provides decent but not the most convenient protection.",
     "weight": "3064 g",
@@ -214,6 +225,7 @@
   {
     "id": "armguard_soft",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of neoprene arm sleeves", "str_pl": "pairs of neoprene arm sleeves" },
     "description": "A pair of soft neoprene arm sleeves.  Often used in contact sports.",
     "weight": "258 g",
@@ -236,6 +248,7 @@
   {
     "id": "chainmail_arms",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of chainmail sleeves", "str_pl": "pairs of chainmail sleeves" },
     "description": "Customized chainmail arms.  Each sleeve has straps to connect them with each other.  The lack of fingers makes them less cumbersome and allows them to be used with gloves.",
     "weight": "2812 g",
@@ -256,6 +269,7 @@
   {
     "id": "elbow_pads",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of elbow pads", "str_pl": "pairs of elbow pads" },
     "description": "A pair of elbow pads made of stout plastic and cloth.",
     "weight": "110 g",
@@ -276,6 +290,7 @@
   {
     "id": "vambrace_larmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of leather vambraces", "str_pl": "pairs of leather vambraces" },
     "description": "A pair of light leather arm guards, made for archery.",
     "weight": "362 g",
@@ -300,6 +315,7 @@
     "id": "armguard_bone",
     "copy-from": "vambrace_larmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "pair of bone vambraces", "str_pl": "pairs of bone vambraces" },
     "description": "Arm protection made from strips of carved bone, laced together as splint armor.  Tough but stiff, and a bit brittle.",
     "material": [ "bone_heavy" ],
@@ -315,6 +331,7 @@
   {
     "id": "carbon_armguard",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "carbon fiber arm guards" },
     "description": "Custom armguards of layered carbon fiber armor made using a 3D printer.  Its rigid plates are more comparable to a suit of armor than kevlar, but it's very protective and lightweight.",
     "copy-from": "armguard_lightplate",
@@ -324,6 +341,7 @@
   {
     "id": "armguard_scute",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "scaleskin armguards" },
     "description": "Arm guards made from the hardened scales of large reptiles.",
     "copy-from": "armguard_larmor",

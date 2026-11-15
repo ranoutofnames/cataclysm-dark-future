@@ -2,6 +2,7 @@
   {
     "id": "aep_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "AEP suit" },
     "description": "An armored environmental protection suit.  Custom-built from a cleansuit and body armor, it provides excellent protection against both physical harm and ambient radiation.",
     "weight": "7200 g",
@@ -23,6 +24,7 @@
   {
     "id": "anbc_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "ANBC suit" },
     "description": "An armored, impermeable full-body suit that functions as body armor, as well as protecting from nuclear, biological, and chemical hazards.  It requires a separate gas mask for full protection.",
     "weight": "8700 g",
@@ -45,6 +47,7 @@
   {
     "id": "armor_blarmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "boiled leather armor" },
     "description": "Thick leather body armor that has been hardened via chemical treatment.  Light and strong.",
     "weight": "2108 g",
@@ -72,6 +75,7 @@
   {
     "id": "armor_chitin",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "chitinous armor" },
     "description": "Leg and body armor made from the exoskeletons of insects.  Light and durable.",
     "weight": "2632 g",
@@ -97,6 +101,7 @@
     "copy-from": "armor_chitin",
     "looks_like": "armor_chitin",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "biosilicified chitin armor" },
     "description": "Leg and body armor crafted from the carefully cleaned and pruned biosilicified exoskeletons of acidic ants.  Acid-resistant and very durable.",
     "material": [ "acidchitin", "leather" ],
@@ -108,6 +113,7 @@
   {
     "id": "armor_farmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "fur body armor" },
     "description": "Thick body armor made from furs.  Warm and comfortable.",
     "weight": "3414 g",
@@ -132,6 +138,7 @@
   {
     "id": "armor_larmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "leather body armor" },
     "description": "Thick leather body armor.  Light and comfortable.",
     "weight": "1498 g",
@@ -159,6 +166,7 @@
   {
     "id": "armor_lightplate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "plate armor" },
     "description": "A suit of Gothic plate armor, forged from solid steel and shaped to deflect blows.  It's heavy, but surprisingly easy to move in.",
     "weight": "11000 g",
@@ -183,6 +191,7 @@
     "id": "armor_lightplate_superalloy",
     "copy-from": "armor_lightplate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "superalloy plate armor" },
     "description": "A suit of Gothic plate armor, forged from modern superalloy and shaped to deflect blows.  It's lighter than steel armor.",
     "material": [ "superalloy" ],
@@ -264,6 +273,7 @@
     "id": "armor_plarmor",
     "copy-from": "armor_larmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "plated leather armor" },
     "description": "Thick leather body armor that has been reinforced with strategically-placed metal plates.  Strong and comfortable.",
     "material": [ "leather", "iron" ],
@@ -275,6 +285,7 @@
   {
     "id": "armor_plate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "ornamental plate armor" },
     "description": "An extremely heavy suit of plate armor, with a prominent codpiece.  The decorative etchings inlaid with gold make it look more like a display piece than serious armor, but the heavy steel plating should be more than enough to keep the wearer safe.",
     "weight": "18000 g",
@@ -299,6 +310,7 @@
     "id": "armor_plate_superalloy",
     "copy-from": "armor_plate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "ornamental superalloy plate armor" },
     "description": "A heavy suit of plate armor, forged from modern superalloy, with a prominent codpiece.  It is decorated with menacing spikes and has been polished to a mirror shine.",
     "material": [ "superalloy" ],
@@ -354,6 +366,7 @@
   {
     "id": "armor_samurai",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "O-yoroi" },
     "description": "An ornamental suit of Japanese samurai armor.",
     "weight": "9220 g",
@@ -375,6 +388,7 @@
   {
     "id": "armor_scavenger",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "scavenger gear" },
     "description": "A sturdy scavenger's outfit made from refitted protective gear and reinforced with kevlar and heavy plastic.  It has a lot of storage space.",
     "weight": "7915 g",
@@ -410,6 +424,7 @@
   {
     "id": "armor_scrapsuit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "scrap suit" },
     "description": "A suit of armor made from scraps of metal secured by simple strings; the loose collection of plates provides decent but not the most convenient protection.",
     "weight": "9534 g",
@@ -457,6 +472,7 @@
   {
     "id": "chainmail_hauberk",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "chainmail hauberk" },
     "description": "A fully customized chainmail outfit, leaving the head uncovered.  The shirt, arms, and leggings have been modified with straps and combined with a gambeson to deal with uneven weight distribution, cold environments and to allow them to be used separately.",
     "weight": "14430 g",
@@ -479,6 +495,7 @@
   {
     "id": "chainmail_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "chainmail armor" },
     "description": "A fully customized chainmail suit.  The coif, shirt, arms, and leggings have been modified with straps and combined with a gambeson to deal with uneven weight distribution, cold environments and to allow them to be used separately.",
     "weight": "16436 g",
@@ -500,6 +517,7 @@
   {
     "id": "chainmail_suit_faraday",
     "type": "ARMOR",
+    "category": "armor",
     "//": "CDF: DDA suits_protection.json chainmail_suit_faraday covers the toes, ankle, heel and arch only; the foot aggregate drops from the flat 100 to 75 (rule 4, DDA shape). The other body parts keep CDF's flat 100 coverage and 30 encumbrance in one plain portion (rule 5).",
     "copy-from": "chainmail_suit",
     "name": { "str": "faraday chainmail suit" },
@@ -548,6 +566,7 @@
   {
     "id": "entry_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "entry suit" },
     "description": "A flame-resistant whole-body garment worn by firefighters as protection against extreme heat.  Though very restrictive, wearing it will provide excellent protection against fire and smoke.  It requires a separate gas mask for full protection.",
     "weight": "2900 g",
@@ -569,6 +588,7 @@
   {
     "id": "fsurvivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "survivor firesuit" },
     "description": "Heavy, hand-built combination armor made from a cut-down bulletproof vest and a reinforced flame-resistant Nomex jumpsuit.  Protects the wearer from fire and the elements.",
     "weight": "6800 g",
@@ -595,6 +615,7 @@
   {
     "id": "gambeson",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "gambeson" },
     "description": "A thick jacket of quilted fabric extending down to your knees, designed to be worn underneath mail or other armor.  Or worn on its own, if you can't afford proper armor.",
     "weight": "500 g",
@@ -634,6 +655,7 @@
     "id": "hazmat_suit",
     "repairs_like": "aep_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "hazmat suit" },
     "description": "An impermeable whole-body garment worn as protection against hazardous materials.  Though very restrictive and fragile, wearing it will provide complete protection against ambient radiation.  It requires a separate gas mask for full protection.",
     "weight": "5000 g",
@@ -656,6 +678,7 @@
   {
     "id": "hsurvivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "heavy survivor suit" },
     "description": "A heavy, hand-built combination armor made from a reinforced bulletproof vest and a metal-plated jumpsuit.  Protects from the elements as well as from harm.",
     "weight": "15500 g",
@@ -682,6 +705,7 @@
     "id": "sasurvivor_suit",
     "copy-from": "hsurvivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "superalloy survivor suit" },
     "description": "A heavy, hand-built combination armor made from a reinforced bulletproof vest and a superalloy-plated jumpsuit.  Lighter and easier to move in than an equivalent suit made with steel.  Protects from the elements as well as from harm.",
     "material": [ "kevlar", "superalloy" ],
@@ -707,6 +731,7 @@
     "id": "salsurvivor_suit",
     "copy-from": "lsurvivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "light superalloy survivor suit" },
     "description": "A lightweight, hand-built combination armor made from a bulletproof vest and a fabric jumpsuit, all reinforced with superalloy.  It's fairly protective, but less so than a thicker, more comprehensive suit.",
     "material": [ "kevlar", "superalloy", "cotton" ],
@@ -733,6 +758,7 @@
   {
     "id": "lsurvivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "light survivor suit" },
     "description": "A lightweight, hand-built combination armor made from a cut-down bulletproof vest and a reinforced fabric jumpsuit.  Protects from the elements as well as from harm.",
     "weight": "5100 g",
@@ -780,6 +806,7 @@
     "id": "robofac_enviro_suit",
     "repairs_like": "aep_suit",
     "type": "ARMOR",
+    "category": "armor",
     "//": "CDF: the foot and hand portions are DDA's; the other body parts keep CDF's flat 100 coverage and 15 encumbrance in one plain portion (rules 5 and 8). HAND1: the hand back portion takes CDF's total 15, not DDA's 16 (rule A).",
     "name": { "str": "Hub 01 environmental suit" },
     "description": "A lightweight environmental suit worn by Hub personnel in their rare forays aboveground.  Colored brown and blue, the white seal of Hub 01 is embroidered on both of its upper arms.  It requires a separate gas mask for full protection.",
@@ -893,6 +920,7 @@
   {
     "id": "survivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "survivor suit" },
     "description": "A hand-built combination armor made from a bulletproof vest and a reinforced leather jumpsuit.  Protects from the elements as well as from harm.",
     "weight": "6800 g",
@@ -918,6 +946,7 @@
     "id": "swat_armor",
     "repairs_like": "survivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "SWAT armor" },
     "//": "This is well within the pricing structure I found for ballistic vest, shins, and LBE.  LEO gear ain't cheap.",
     "description": "A suit of black bulletproof armor with lots of pockets.  The word SWAT is emblazoned across the back.",
@@ -946,6 +975,7 @@
     "id": "touring_suit",
     "repairs_like": "armor_larmor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "leather touring suit" },
     "description": "A thick leather body suit made for protection while riding motorcycles.  Light and very comfortable.",
     "weight": "2214 g",
@@ -971,6 +1001,7 @@
   {
     "id": "wsurvivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "winter survivor suit" },
     "description": "A warm and heavy hand-built combination armor made from a reinforced bulletproof vest and an insulated leather jumpsuit.  Protects from the elements as well as from harm.",
     "weight": "7800 g",
@@ -997,6 +1028,7 @@
   {
     "id": "armor_carbonplate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "carbon fiber armor" },
     "description": "A custom suit of layered carbon fiber armor over neoprene padding made using a 3D printer.  Its rigid plates are more comparable to a suit of armor than kevlar, but it's very protective and moves surprisingly well.",
     "copy-from": "armor_lightplate",
@@ -1008,6 +1040,7 @@
   {
     "id": "armor_scute",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "scaleskin armor" },
     "description": "Leg and body armor made from the hardened scales of large reptiles.",
     "copy-from": "armor_larmor",

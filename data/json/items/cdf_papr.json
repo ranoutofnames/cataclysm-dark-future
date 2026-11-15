@@ -121,7 +121,6 @@
     "id": "modular_papr_strap",
     "//": "CDF: DDA ammo_pouch.json modular_papr_strap in BN ARMOR format; DDA's [3, 4] encumbrance range becomes encumbrance 3 + max_encumbrance 4; sided comes from leg_either.",
     "type": "ARMOR",
-    "category": "armor",
     "looks_like": "holster",
     "name": { "str": "modular PAPR strap" },
     "description": "A patch of velcro and MOLLE straps for attaching a modular PAPR blower to a compatible MOLLE unit.  It can also be strapped to the hip.",

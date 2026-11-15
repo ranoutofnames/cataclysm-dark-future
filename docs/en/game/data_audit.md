@@ -255,3 +255,123 @@ report on a temp file.
 The expected rows are hand-written from DDA `b4b62254ae2`; the REPORT lists the DDA file:line for
 each scene, and the goldens are expected to fail where CDF still differs (a later run shows the
 exact rows).
+
+## Item category audit (cat1)
+
+`tools/cdf_category_audit.py` answers "which category does each item end up in?"
+for CDF and for DDA at a pinned revision, using each game's own rule:
+
+- `item_factory.cpp` `optional( jo, "category", category_force )`; when JSON does
+  not set it, `calc_category()` (CDF `item_factory.cpp:5183`, DDA
+  `item_factory.cpp:5263`) picks guns, magazines, ammo, tools, clothing, food or
+  drugs, books, mods, bionics, weapons, other, in that order. An `ARMOR` item is
+  therefore **clothing** unless its JSON says otherwise: the `armor` category is
+  data, as in DDA.
+- `item::get_category_shallow()` (CDF `item.cpp:1318`, DDA `item.cpp:4097`)
+  returns `category_force`; `item_category.json` must define every id an item
+  uses, or the loader logs "undefined category" and the item shows the empty
+  dummy category.
+
+It reads DDA through `git cat-file --batch` at `--rev` (default
+`b4b62254ae2`), so the DDA checkout may be at another revision, and writes
+`report/category-diff.tsv` (`id`, `cdf category`, `dda category`, `cdf rule`,
+`dda rule`, `verdict`). Verdicts: `same`, `diff`, `cdf-only` (the id is absent
+from DDA), `cdf-undefined-cat` (the CDF category id has no `ITEM_CATEGORY`).
+
+Run it from the repository root; it only reads files:
+
+```
+py -3 -I tools/cdf_category_audit.py --cdf . --dda <DDA checkout> --rev b4b62254ae2
+```
+
+The cat1 run fixed the armor/clothing split: every item DDA puts in `armor`
+now carries `"category": "armor"` (DDA's plates, vests, helmets, arm and leg
+guards, masks, shields and survivor gear), every CDF item that wore `armor`
+but is a plain garment or pouch in DDA lost it, and CDF-only protective gear
+was put in `armor` by the same rule. The category names in
+`data/json/item_category.json` are all caps, `ARMOR` included.
+
+The remaining 1068 `diff` rows are left for a separate category-scheme
+port, not the armor split: 678 have a CDF-only (BN) category on the CDF side
+(`tools_*`, `scrap_*`, `cooking_ingredients`, `deployables`, `electronics`,
+`battery`, `valuables`, `rocks`, `soil`, `spellbooks`), 275 have a category
+CDF does not define on the DDA side (`manuals`, `ma_manuals`, `tool_magazine`,
+`corpses`, `currency`, `traps`, `software`, `keys`, plus DDA's own `tool` and
+`FOOD` typos), and 155 sit in categories both games define but assign
+differently (alcohol in `drugs` vs `food`, worn tools in `clothing` vs
+`tools`, canteens in `container` vs `clothing`, ...). Moving those changes
+loot-zone and crafting filters, so they need their own owner decision.
+Obsolete items under `data/json/obsoletion/` are not edited (migrations
+rewrite them).
+
+### CDF-only items (cat1)
+
+No DDA row exists for these, so the DDA rule was applied to their type and
+protection level: protective gear, plates and shields are `armor`, plain
+garments, costumes, jewelry and worn containers/holders are `clothing`.
+143 CDF-only ids end up in `ARMOR` (130 got the tag here; the other 13 already
+carried it or inherit it from a base):
+
+aep_suit, anbc_suit, armguard_bone, armguard_lightplate, armguard_lightplate_superalloy,
+armguard_scute, armor_bone, armor_carbonplate, armor_lamellar_plated, armor_lightplate,
+armor_lightplate_superalloy, armor_plate, armor_plate_superalloy, armor_scavenger, armor_scute,
+armor_trench, armored_helmet_liner, ballistic_vest_empty, ballistic_vest_oldguard,
+boots_h20survivor, boots_lsurvivor, boots_plarmor, boots_plate_superalloy, boots_sasurvivor,
+boots_scute, bucket_helmet, cap_arming, carbon_armguard, carbon_boots, carbon_buckler,
+carbon_chestguard, carbon_gloves, carbon_helmet, carbon_legguard, carbon_shield,
+ceramic_ballistic_plate, chainmail_arms, chainmail_feet, chainmail_hands, chainmail_hauberk,
+chainmail_hood, chainmail_legs, chainmail_suit, chainmail_vest, cuirass_bone,
+cuirass_lightplate_superalloy, depowered_armor, depowered_exo, depowered_helmet,
+depowered_plating, depowered_plating_on, dragonskin, duster_survivor, exosuit_industrial,
+exosuit_industrial_on, exosuit_military, exosuit_military_on, exosuit_survivor,
+exosuit_survivor_on, flotation_vest_sandbag, gauntlets_bone, gauntlets_plarmor,
+gauntlets_scute, gloves_h20survivor, gloves_lsurvivor, gloves_plate_superalloy,
+gloves_sasurvivor, gloves_survivor_fingerless, greaves_bone, hard_ballistic_plate,
+heavy_power_armor_frame, helm_trench, helmet_barbute_superalloy, helmet_bone, helmet_hsurvivor,
+helmet_lobster, helmet_plarmor, helmet_plate_superalloy, helmet_sasurvivor, helmet_scute,
+helmet_steel, helmet_survivor, hood_h20survivor, hood_lsurvivor, legguard_lightplate,
+legguard_lightplate_superalloy, lsurvivor_pants, mask_cavalry_bronze, mask_cavalry_iron,
+mask_halfsurvivor, mask_sasurvivor, mask_wsurvivor, miner_hat, miner_hat_on, modularvestkevlar,
+pants_survivor, power_armor_frame, power_armor_helmet_basic, power_armor_helmet_basic_on,
+power_armor_helmet_heavy, power_armor_helmet_heavy_on, power_armor_helmet_light,
+power_armor_helmet_light_on, power_armor_plating_1, power_armor_plating_1_on,
+power_armor_plating_2, power_armor_plating_2_on, power_armor_plating_3,
+power_armor_plating_3_on, salsurvivor_suit, sandal_armor, sasurvivor_suit,
+scrap_ballistic_plate, shield_ballistic, shield_ballistic_large, shield_banded,
+shield_banded_large, shield_bronze, shield_buckler, shield_buckler_superalloy, shield_kevlar,
+shield_kevlar_large, shield_leather, shield_leather_large, shield_riot, shield_scute,
+shield_spiked, shield_spiked_large, shield_targe_wooden, shield_welded,
+shield_welded_composite, shield_welded_hard, shield_welded_superalloy, shield_wooden,
+shield_wooden_large, skirt_armor, skirt_armor_leather, skirt_armor_plate,
+sleeveless_duster_survivor, sleeveless_trenchcoat_survivor, super_ballistic_plate, swat_armor,
+trenchcoat_survivor
+
+The remaining CDF-only `ARMOR`-type items stay in `CLOTHING` (90 ids the rule
+reads as garments, costumes, jewelry, eyewear, bags/quivers/holsters, or the
+pouches that hang on a power-armor suit):
+
+afs_quilt, afs_quilt_patchwork, alohashirt, ammo_satchel_leg, army_top, aviators, badge_IRS,
+badge_cybercop, bandolier_grenade, bandolier_knife, bearskin_hat, belt_magazine, coat_fur_sf,
+crocs, crocs_sport, dinosuit, fancy_sunglasses, flag_shirt, gloves_bag, gloves_fur_fingerless,
+gloves_light_fingerless, gloves_liner_wool, gold_chain, hoodie_drugrug, jacket_leather_red,
+jacket_tacticool, jeans_red, linuxtshirt, mag_satchel_leg, makeshift_headwrap, mask_guy_fawkes,
+modularvest, modularvestceramic, modularvesthard, modularveststeel, modularvestsuper,
+nature_ghillie, oldguard_armor, oldguard_armor_ceramic, oldguard_armor_hardsteel,
+oldguard_armor_steel, oldguard_armor_superalloy, pack_basket, pants_tacticool, pirate_flag,
+power_armor_XL_holster, power_armor_ammo_pouch, power_armor_ammo_satchel,
+power_armor_ammo_satchel_leg, power_armor_axe_ring, power_armor_back_hardpoint,
+power_armor_back_holster, power_armor_baldric, power_armor_bscabbard, power_armor_chest_rig,
+power_armor_grenade_pouch, power_armor_grenadebandolier, power_armor_holster,
+power_armor_leg_hardpoint, power_armor_legpouch_large, power_armor_mag_satchel_leg,
+power_armor_scabbard, power_armor_sheath, power_armor_sholster, power_armor_shoulder_holster,
+power_armor_shoulder_pouch, quiver_atlatl, quiver_birchbark_atlatl, robofac_jumpsuit,
+saddlebag_small_quadruped, sheriffshirt, shoe_covers_noslip, shoulder_pouch, socks_thick,
+stillsuit, stockings_snake_tail, stockings_snake_tail_fur, stockings_snake_tail_leather,
+stockings_snake_tail_wool, stockings_wool, striped_shirt, subsuit_xl, survivor_hiking_backpack,
+test_enchanted_hawkeye, tshirt_text, tshirt_tour, urban_ghillie, wolfsuit, wristholster,
+wristsheath
+
+Obsolete ids under `data/json/obsoletion/` keep their category
+(`modularvest`, `oldguard_armor*`, `power_armor_basic/light/heavy` stay
+`clothing` there; `modularvestkevlar` was already `armor`): they are retired,
+migrations rewrite every spawn, and that file was outside the cat1 edit lock.

@@ -2,6 +2,7 @@
   {
     "id": "depowered_exo",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "salvaged power armor exoskeleton" },
     "//": "These are much cheaper than powered suits, because they're extremely heavy and impractical.  The good stuff is gone!",
     "description": "This used to be a powered exoskeleton with an integrated chemical resistant bodyglove, its chassis, machinery, and bodyglove stripped down.  More cumbersome and without the bells and whistles of a proper powered exoskeleton, but less encumbering than an unpowered exoskeleton.  Stripping out most of the chemical bodyglove allows wearing it over other equipment, at the expense of environmental protection.",
@@ -32,6 +33,7 @@
   {
     "id": "depowered_plating",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "salvaged power armor plating" },
     "//": "These are much cheaper than powered suits, because they're extremely heavy and impractical.  The good stuff is gone!",
     "description": "This used to be a set of heavy power armor plates, now stripped down, but still having standard power armor attachment points.  Removing much of the cumbersome plating results in a less encumbering set of plates that come at the expense of ballistic resistance.",
@@ -69,6 +71,7 @@
     "repairs_like": "depowered_plating",
     "looks_like": "depowered_plating",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "salvaged power armor plating (active)", "str_pl": "sets of salvaged power armor plating (active)" },
     "//": "These are much cheaper than powered suits, because they're extremely heavy and impractical.  The good stuff is gone!",
     "description": "This used to be a set of heavy power armor plates, now stripped down, but still having standard power armor attachment points.  Removing much of the cumbersome plating results in a less encumbering set of plates that come at the expense of ballistic resistance.",
@@ -88,6 +91,7 @@
   {
     "id": "depowered_armor",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "salvaged power armor suit" },
     "//": "These are much cheaper than powered suits, because they're extremely heavy and impractical.  The good stuff is gone!",
     "description": "This used to be a powered exoskeleton with a set of heavy armor plates, its chassis and bodyglove stripped down.  More cumbersome and without the bells and whistles of a proper powered suit, but less encumbering than an unpowered suit.  Stripping out most of the chemical bodyglove allows wearing it over other equipment, at the expense of environmental protection, and the stripped down plates are lighter at the expense of worse ballistic resistance.",
@@ -118,6 +122,7 @@
   {
     "id": "depowered_helmet",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "salvaged power armor helmet" },
     "description": "This used to be a military-grade full-head helmet, its advanced optics and environmental filters having been stripped for parts.  While still quite durable, it's harder to see out of than an active power helmet.",
     "weight": "1 kg",
@@ -218,6 +223,7 @@
   {
     "id": "power_armor_plating_1",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "heavy power armor plating", "str_pl": "sets of heavy power armor plating" },
     "description": "These thick segmented armor plates were tested in military service a few years back and determined to be too heavy and expensive for regular use.  Now that they're in your hands, though, you have a set of massive armor plates with standard power armor exoskeleton attachment points, capable of negating anything up to armor-piercing .30-06 rounds.  On the other hand, they are tremendously heavy and somewhat encumbering, even when used with an active exoskeleton.",
     "//": "Armor makes up 90% the weight and volume of the combined set, helm the other 10%",
@@ -256,6 +262,7 @@
     "repairs_like": "power_armor_plating_1",
     "looks_like": "power_armor_plating_1",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "heavy power armor plating (active)", "str_pl": "sets of heavy power armor plating (active)" },
     "description": "These thick segmented armor plates were tested in military service a few years back and determined to be too heavy and expensive for regular use.  Now that they're in your hands, though, you have a set of massive armor plates with standard power armor exoskeleton attachment points, capable of negating anything up to armor-piercing .30-06 rounds.  On the other hand, they are tremendously heavy and somewhat encumbering, even when used with an active exoskeleton.",
     "extend": { "flags": [ "TRADER_AVOID" ] },
@@ -348,6 +355,7 @@
   {
     "id": "power_armor_plating_2",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "power armor plating", "str_pl": "sets of power armor plating" },
     "description": "These were made with the second wave of military combat exoskeleton, and got a lot of media attention, with popular Navy commercials featuring them heavily.  It consists of overlayed segmented alloy plating with standard power armor exoskeleton attachment points, rated to provide complete protection against 7.62x51mm rounds.",
     "//": "Armor makes up 90% the weight and volume of the combined set, helm the other 10%",
@@ -386,6 +394,7 @@
     "repairs_like": "power_armor_plating_2",
     "looks_like": "power_armor_plating_2",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "power armor plating (active)", "str_pl": "sets of power armor plating (active)" },
     "description": "These were made with the second wave of military combat exoskeleton, and got a lot of media attention, with popular Navy commercials featuring them heavily.  It consists of overlayed segmented alloy plating with standard power armor exoskeleton attachment points, rated to provide complete protection against 7.62x51mm rounds.",
     "extend": { "flags": [ "TRADER_AVOID" ] },
@@ -478,6 +487,7 @@
   {
     "id": "power_armor_plating_3",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "light power armor plating", "str_pl": "sets of light power armor plating" },
     "description": "The final iteration of military power armor plating before the fall of civilization, this type - made with lightweight high-tech segmented plating with standard power armor exoskeleton attachment points - was designed for actual widespread combat use and was seen on the front lines during the last days of the cataclysm.  Much more light and maneuverable than heavier plates, and still reliably protects against anything up to 5.56x45mm.  Unfortunately, the world ended before it could roll out in significant numbers.",
     "//": "Armor makes up 90% the weight and volume of the combined set, helm the other 10%",
@@ -516,6 +526,7 @@
     "repairs_like": "power_armor_plating_3",
     "looks_like": "power_armor_plating_3",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "light power armor plating (active)", "str_pl": "sets of light power armor plating (active)" },
     "description": "The final iteration of military power armor plating before the fall of civilization, this type - made with lightweight high-tech segmented plating with standard power armor exoskeleton attachment points - was designed for actual widespread combat use and was seen on the front lines during the last days of the cataclysm.  Much more light and maneuverable than heavier plates, and still reliably protects against anything up to 5.56x45mm.  Unfortunately, the world ended before it could roll out in significant numbers.",
     "extend": { "flags": [ "TRADER_AVOID" ] },
@@ -534,6 +545,7 @@
   {
     "id": "power_armor_helmet_basic",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "power armor helmet" },
     "description": "A fully enclosed combat helmet for hazardous environments, this was designed to fit with a powered exoskeleton, using cameras to expand visual range.  In practice, the cameras were unreliable and easily fouled.  The environmental controls function best with direct-skin contact.",
     "weight": "4 kg",
@@ -573,6 +585,7 @@
     "repairs_like": "power_armor_helmet_basic",
     "looks_like": "power_armor_helmet_basic",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "power armor helmet (active)", "str_pl": "power armor helmets (active)" },
     "description": "A fully enclosed combat helmet for hazardous environments, this was designed to fit with a powered exoskeleton, using cameras to expand visual range.  In practice, the cameras were unreliable and easily fouled.  The environmental controls function best with direct-skin contact.",
     "extend": { "flags": [ "THERMOMETER", "RECON_VISION", "TRADER_AVOID" ] },
@@ -596,6 +609,7 @@
   {
     "id": "power_armor_helmet_heavy",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "heavy power armor helmet" },
     "description": "An extremely heavy-duty fully enclosed combat helmet for hazardous environments, this was designed to fit with a powered exoskeleton.  In the field, soldiers reported that the protection was not worth the awkward size and limited visuals.  The environmental controls function best with direct-skin contact.",
     "weight": "6 kg",
@@ -634,6 +648,7 @@
     "repairs_like": "power_armor_helmet_heavy",
     "looks_like": "power_armor_helmet_heavy",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "heavy power armor helmet (active)", "str_pl": "heavy power armor helmets (active)" },
     "description": "An extremely heavy-duty fully enclosed combat helmet for hazardous environments, this was designed to fit with a powered exoskeleton.  In the field, soldiers reported that the protection was not worth the awkward size and limited visuals.  The environmental controls function best with direct-skin contact.",
     "extend": { "flags": [ "THERMOMETER", "RECON_VISION", "TRADER_AVOID" ] },
@@ -657,6 +672,7 @@
   {
     "id": "power_armor_helmet_light",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "light power armor helmet" },
     "description": "This full-enclosure helmet was designed based on commercial diving equipment, in response to complaints that earlier designs were impossible to use in combat.  While still a little more restrictive than regular combat headgear - and frustrating should your nose itch - this one received far better reviews from soldiers.  Sadly, civilization ended before they could roll out in significant numbers.  The environmental controls function best with direct-skin contact.",
     "weight": "2 kg",
@@ -696,6 +712,7 @@
     "repairs_like": "power_armor_helmet_light",
     "looks_like": "power_armor_helmet_light",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "light power armor helmet (active)", "str_pl": "light power armor helmets (active)" },
     "description": "This full-enclosure helmet was designed based on commercial diving equipment, in response to complaints that earlier designs were impossible to use in combat.  While still a little more restrictive than regular combat headgear - and frustrating should your nose itch - this one received far better reviews from soldiers.  Sadly, civilization ended before they could roll out in significant numbers.  The environmental controls function best with direct-skin contact.",
     "extend": { "flags": [ "THERMOMETER", "RECON_VISION", "TRADER_AVOID" ] },
@@ -719,6 +736,7 @@
   {
     "id": "power_armor_frame",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "power armor hauling frame" },
     "description": "A heavy duty hauling frame designed to interface with power armor exoskeletons.",
     "weight": "1640 g",
@@ -753,6 +771,7 @@
   {
     "id": "heavy_power_armor_frame",
     "type": "TOOL_ARMOR",
+    "category": "armor",
     "name": { "str": "advanced power armor hauling frame" },
     "description": "A cutting-edge advanced hauling frame made from superalloy designed to interface with power armor exoskeletons, and compact enough to be used alongside a normal hauling frame.  Barely deployed before the Cataclysm struck.",
     "weight": "1300 g",

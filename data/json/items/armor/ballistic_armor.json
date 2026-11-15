@@ -3,6 +3,7 @@
     "id": "kevlar",
     "repairs_like": "survivor_suit",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "Kevlar vest" },
     "description": "A lightweight, concealable bullet resistant vest.  It will reliably protect against anything up to 9x19mm, but will struggle against tougher rounds like .45 ACP or .357 Magnum.",
     "weight": "2860 g",
@@ -26,6 +27,7 @@
   {
     "id": "dragonskin",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "lamellar ballistic vest" },
     "description": "A flexible bullet-resistant vest based on the failed \"dragon skin\" design from decades ago, made from a composite of overlapping superalloy plates sandwiched between layers of kevlar.  More durable and covers gaps normal ballistic plates leave exposed, but only protects against rounds up to 5.56x45mm.  It has four pouches capable of carrying magazines.",
     "//": "Weight matches a ballistic vest plus 10 superalloy sheets, 2 extra used to fill gaps and provide overlap.",
@@ -91,6 +93,7 @@
   {
     "id": "ceramic_ballistic_plate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str_sp": "ESAPI ballistic plates" },
     "description": "A set of polygonal ceramic ballistic plates.  They are highly protective and relatively lightweight, and reliably negate anything up to armor-piercing .30-06 rounds when worn with soft armor, but are fragile and cannot maintain integrity for many shots, nor can they be repaired.  These are intended to be worn in a plate carrier.",
     "weight": "4 kg",
@@ -113,6 +116,7 @@
   {
     "id": "hard_ballistic_plate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str_sp": "hard steel ballistic plates" },
     "description": "A set of polygonal hard steel ballistic plates.  They are highly protective and durable, and reliably negate anything up to 7.62x51mm, but practically require soft armor and cost a great deal of weight and loss of flexibility.  These are intended to be worn in a plate carrier.",
     "weight": "12 kg",
@@ -136,6 +140,7 @@
   {
     "id": "super_ballistic_plate",
     "type": "ARMOR",
+    "category": "armor",
     "//": "CDF: standalone (BN copy-from steel_ballistic_plate): CDF's steel_ballistic_plate is the DDA ablative plate, so BN's flat steel-plate fields are spelled out here.",
     "name": { "str_sp": "superalloy ballistic plates" },
     "description": "A set of polygonal superalloy ballistic plates.  They are highly protective and durable, and reliably negate anything up to 5.56x45mm, all with marginal flexibility loss and additional weight, but practically require soft armor.  These are intended to be worn in a plate carrier.",
@@ -160,6 +165,7 @@
   {
     "id": "scrap_ballistic_plate",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str_sp": "scrap ballistic plates" },
     "description": "Pieces of scrap metal crudely cut, taped, and bent into the shape of polygonal ballistic plates, wrapped in rags to cover the sharp edges.  When paired with a proper vest it will just barely protect against .223 Remington, and won't stop armor-piercing 5.56x45mm rounds or anything stronger, but it's better than nothing.  Must be worn in a plate carrier.",
     "//": "Matches weight of metal and rags used to make it.",
@@ -185,6 +191,7 @@
     "id": "flotation_vest_sandbag",
     "copy-from": "flotation_vest",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "makeshift ballistic vest" },
     "description": "A flotation vest, cut open and tightly packed with sand or earth as improvised ballistic protection.  Incredibly cumbersome, it won't do much but it'll keep your organs inside your torso against anything up to .40 S&W.",
     "weight": "20 kg",
@@ -201,6 +208,7 @@
   {
     "id": "armor_trench",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "hard steel trench armor" },
     "description": "Cumbersome body armor forged from hardened steel plating.  Very heavy, but able to take considerable punishment, laughing off anything up to .44 Magnum.",
     "//": "44-45 kg is the commonly cited value for the complete set, possible figure of 9 kg for the helm.",
@@ -225,6 +233,7 @@
   {
     "id": "helm_trench",
     "type": "ARMOR",
+    "category": "armor",
     "name": { "str": "hard steel trench helmet" },
     "description": "A cumbersome full-face helm forged from hardened steel plating.  Very heavy, but able to take considerable punishment, laughing off anything up to .44 Magnum.",
     "weight": "9 kg",

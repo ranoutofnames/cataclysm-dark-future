@@ -2,7 +2,6 @@
   {
     "id": "radio_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:914 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "tactical radio pouch",
@@ -53,7 +52,6 @@
   {
     "id": "gadget_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:943 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "gadget pouch",
@@ -104,7 +102,6 @@
   {
     "id": "h2o_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:972 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "H2O pouch",
@@ -163,7 +160,6 @@
   {
     "id": "canteen_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1009 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "canteen pouch",
@@ -214,7 +210,6 @@
   {
     "id": "tool_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1038 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "tactical tool pouch",
@@ -265,7 +260,6 @@
   {
     "id": "flashlight_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1067 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "flashlight pouch",
@@ -317,7 +311,6 @@
   {
     "id": "tactical_holster",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1097 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "tactical holster"
@@ -377,7 +370,6 @@
   {
     "id": "gas_mask_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1137 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "looks_like": "holster",
     "name": {
@@ -454,7 +446,6 @@
   {
     "id": "tactical_grenade_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1235 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "tactical grenade pouch",
@@ -507,7 +498,6 @@
   {
     "id": "triple_stacker_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1264 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "triple stacker ammo pouch",
@@ -616,7 +606,6 @@
   {
     "id": "tactical_shotshell_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1339 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "tactical shotshell pouch",
@@ -668,7 +657,6 @@
   {
     "id": "sustainment_pouch",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1554 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "sustainment pouch",
