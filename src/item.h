@@ -2104,6 +2104,14 @@ class item : public location_visitable<item>, public game_object<item>
         /** returs read-only set of flags of this item (not including flags from item type or gunmods) */
         const FlagsSetType &get_flags() const;
 
+        /**
+         * Drops the inherited flag cache on this item; it is rebuilt on the next has_flag().
+         * DDA item.cpp:1488 update_inherited_flags() rebuilds it from the mods and from the
+         * contents of pockets with `inherits_flags`; CDF computes it lazily so that a save
+         * load or a direct pocket mutation cannot leave the cache stale.
+         */
+        void invalidate_inherited_flags() const;
+
         /** Sets an item specific flag. */
         void set_flag( const flag_id &flag );
 
@@ -3200,6 +3208,14 @@ class item : public location_visitable<item>, public game_object<item>
         cata::value_ptr<relic> relic_data;
     private:
         location_vector<item> components;
+        /**
+         * Flags inherited by this item from its gun/tool mods and from the contents of pockets
+         * with `inherits_flags` (DDA item.cpp:1488 inherited_tags_cache). Rebuilt lazily on the
+         * next has_flag() after invalidate_inherited_flags(); never serialized.
+         */
+        mutable FlagsSetType inherited_tags_cache; // NOLINT(cata-serialize)
+        mutable bool inherited_tags_dirty = true; // NOLINT(cata-serialize)
+        void update_inherited_flags() const;
         const itype *curammo = nullptr;
         data_vars::data_set item_vars_ = {};
         const mtype *corpse = nullptr;

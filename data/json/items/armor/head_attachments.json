@@ -1,0 +1,276 @@
+[
+  {
+    "id": "attachable_ear_muffs",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:3. DDA's per-layer armor is the item material list with DDA's thickness; CANT_WEAR keeps the muffs out of the worn list, so they can only sit in a helmet pocket.",
+    "name": { "str_sp": "attachable ear muffs" },
+    "description": "A pair of ear muffs attachable to a hard hat or helmet to reduce noise exposures to safe levels.  Activate to put ear muffs into a working position, blocking most sounds.",
+    "weight": "185 g",
+    "volume": "250 ml",
+    "price": "10 USD",
+    "price_postapoc": "80 cent",
+    "material": [ "thermo_resin", "cotton" ],
+    "symbol": "[",
+    "color": "yellow",
+    "material_thickness": 1,
+    "warmth": 8,
+    "flags": [ "HELMET_EAR_ATTACHMENT", "CANT_WEAR" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
+    "use_action": {
+      "type": "transform",
+      "menu_text": "Press tightly to ears",
+      "target": "attachable_ear_muffs_on",
+      "msg": "You put the ear muffs tightly to your ears.",
+      "moves": 100
+    }
+  },
+  {
+    "id": "attachable_ear_muffs_on",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:36.",
+    "copy-from": "attachable_ear_muffs",
+    "name": { "str_sp": "attachable ear muffs (on)" },
+    "description": "A pair of ear muffs attachable to a hard hat or helmet to reduce noise exposures to safe levels.  Activate to put ear muffs into a standby position, letting you clearly hear again.",
+    "extend": { "flags": [ "DEAF" ] },
+    "use_action": {
+      "type": "transform",
+      "menu_text": "Put away from ears",
+      "target": "attachable_ear_muffs",
+      "msg": "You put the ear muffs away from your ears.",
+      "moves": 100
+    }
+  },
+  {
+    "id": "ballistic_mandible_guard",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:52.",
+    "name": { "str_sp": "ballistic mandible guard" },
+    "description": "A ballistic jaw guard designed to be attached on a military helmet, but easily adjustable to helmets with any kind of rail system installed.",
+    "weight": "250 g",
+    "volume": "250 ml",
+    "price": "60 USD",
+    "price_postapoc": "2 USD 50 cent",
+    "material": [ "thermo_resin" ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "material_thickness": 1,
+    "flags": [ "HELMET_MANDIBLE_GUARD", "CANT_WEAR" ],
+    "armor_portion_data": [ { "covers": [ "mouth" ], "coverage": 100, "encumbrance": 12 } ]
+  },
+  {
+    "id": "plastic_mandible_guard",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:70.",
+    "name": { "str_sp": "plastic mandible guard" },
+    "description": "A plastic jaw guard designed to be strapped to any common hard hat or helmet, it was probably part of some costume before the world ended.",
+    "weight": "250 g",
+    "volume": "200 ml",
+    "price": "40 USD",
+    "price_postapoc": "50 cent",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_blue",
+    "material_thickness": 1,
+    "flags": [ "HELMET_MANDIBLE_GUARD_STRAPPED", "CANT_WEAR" ],
+    "armor_portion_data": [ { "covers": [ "mouth" ], "coverage": 95, "encumbrance": 10 } ]
+  },
+  {
+    "id": "plastic_chin_guard",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:88. CDF: material_thickness is an int, DDA's 0.1 is stored as 1.",
+    "name": { "str_sp": "plastic chin guard" },
+    "description": "A common plastic chin guard designed to be attached to the straps of any common hard hat or helmet.",
+    "weight": "5 g",
+    "volume": "10 ml",
+    "price": "1 USD",
+    "price_postapoc": "1 cent",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_gray",
+    "material_thickness": 1,
+    "flags": [ "HELMET_MANDIBLE_GUARD_STRAPPED", "CANT_WEAR" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "mouth" ],
+        "specifically_covers": [ "mouth_chin" ],
+        "coverage": 60
+      }
+    ]
+  },
+  {
+    "id": "counterweight_pouch",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:106. CDF: material_thickness is an int, DDA's 0.1 is stored as 1.",
+    "name": { "str_sp": "counterweight pouch" },
+    "description": "A counterweight pouch attachable to the back of a hard hat or helmet to balance the weight on your head.  You can store batteries or some other very small items in it.",
+    "weight": "150 g",
+    "volume": "150 ml",
+    "price": "4 USD",
+    "price_postapoc": "10 cent",
+    "material": [ "nylon" ],
+    "symbol": "[",
+    "color": "green",
+    "material_thickness": 1,
+    "flags": [ "HELMET_BACK_POUCH", "CANT_WEAR" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "coverage": 10,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ],
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "max_contains_volume": "250 ml",
+        "max_contains_weight": "250 g",
+        "max_item_length": "4 cm",
+        "moves": 250
+      }
+    ]
+  },
+  {
+    "id": "shield_visor",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:149.",
+    "name": { "str": "shield visor" },
+    "description": "A common shield visor intended to be attached on a hard hat or helmet.",
+    "weight": "40 g",
+    "volume": "150 ml",
+    "price": "6 USD",
+    "price_postapoc": "50 cent",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_blue",
+    "material_thickness": 1,
+    "flags": [ "HELMET_FACE_SHIELD", "CANT_WEAR" ],
+    "armor_portion_data": [ { "covers": [ "eyes" ], "coverage": 90, "encumbrance": 2 } ]
+  },
+  {
+    "id": "face_shield",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:167. CDF: material_thickness is an int, DDA's 1.5 is stored as 2.",
+    "name": { "str": "face shield" },
+    "description": "A thermoplastic face shield with a mounting bracket intended to be attached over a hard hat or helmet.",
+    "weight": "170 g",
+    "volume": "250 ml",
+    "price": "8 USD",
+    "price_postapoc": "1 USD",
+    "material": [ "thermo_resin" ],
+    "symbol": "[",
+    "color": "light_blue",
+    "material_thickness": 2,
+    "flags": [ "HELMET_FACE_SHIELD", "CANT_WEAR", "OUTER" ],
+    "armor_portion_data": [ { "covers": [ "eyes", "mouth" ], "coverage": 100, "encumbrance": 4 } ]
+  },
+  {
+    "id": "face_shield_plastic",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:203. The EOD face shield is face_shield_eod in cdf_eod_kit.json (EOD1).",
+    "name": { "str": "plastic face shield" },
+    "description": "A plastic face shield with a mounting bracket intended to be attached over a hard hat or helmet.  It doesn't protects you as much as one made from thermoplastic, but it's cheaper and more common.",
+    "weight": "120 g",
+    "volume": "250 ml",
+    "price": "6 USD 50 cent",
+    "price_postapoc": "50 cent",
+    "material": [ "plastic" ],
+    "symbol": "[",
+    "color": "light_blue",
+    "material_thickness": 1,
+    "flags": [ "HELMET_FACE_SHIELD", "CANT_WEAR", "OUTER" ],
+    "armor_portion_data": [ { "covers": [ "eyes", "mouth" ], "coverage": 100, "encumbrance": 4 } ]
+  },
+  {
+    "id": "nape_protector",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:417. CDF: material_thickness is an int, DDA's 0.4 is stored as 1.",
+    "name": { "str": "nape protector" },
+    "description": "A common nape protector intended to be attached on a hard hat or helmet to protect against the sun and dust.",
+    "weight": "15 g",
+    "volume": "150 ml",
+    "price": "50 cent",
+    "price_postapoc": "10 cent",
+    "material": [ "cotton" ],
+    "symbol": "[",
+    "color": "cyan",
+    "material_thickness": 1,
+    "warmth": 4,
+    "flags": [ "HELMET_NAPE_PROTECTOR", "CANT_WEAR", "OUTER" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape", "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ]
+  },
+  {
+    "id": "mesh_nape_protector",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:443. CDF: material_thickness is an int, DDA's 0.1 is stored as 1.",
+    "name": { "str": "mesh nape protector" },
+    "description": "A common mesh nape protector intended to be attached on a hard hat or helmet to protect against the sun while letting the cold wind refresh your nape.",
+    "weight": "10 g",
+    "volume": "100 ml",
+    "price": "50 cent",
+    "price_postapoc": "10 cent",
+    "material": [ "cotton" ],
+    "symbol": "[",
+    "color": "yellow",
+    "material_thickness": 1,
+    "flags": [ "HELMET_NAPE_PROTECTOR", "CANT_WEAR", "OUTER" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape", "head_ear_r", "head_ear_l" ],
+        "coverage": 95,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ]
+  },
+  {
+    "id": "kevlar_nape_protector",
+    "type": "ARMOR",
+    "category": "armor",
+    "//": "CDF: HD1 (G07), DDA head_attachments.json:468. CDF: the two DDA layers (cotton 0.4, Kevlar 1.5) are the item material list with the main layer's thickness, 1.5 stored as 2.",
+    "name": { "str": "Kevlar nape protector" },
+    "description": "A custom-made Kevlar strengthened nape protector intended to be attached on a hard hat or helmet to protect your nape against cuts and slashing attacks.",
+    "weight": "40 g",
+    "volume": "500 ml",
+    "price": "65 USD",
+    "price_postapoc": "1 USD",
+    "material": [ "cotton", "kevlar" ],
+    "symbol": "[",
+    "color": "dark_gray",
+    "material_thickness": 2,
+    "warmth": 8,
+    "flags": [ "HELMET_NAPE_PROTECTOR", "CANT_WEAR", "OUTER" ],
+    "armor_portion_data": [
+      {
+        "covers": [ "head" ],
+        "specifically_covers": [ "head_nape", "head_ear_r", "head_ear_l" ],
+        "coverage": 100,
+        "encumbrance_modifiers": [ "NONE" ]
+      }
+    ]
+  }
+]

@@ -130,6 +130,71 @@
     ],
     "warmth": 20,
     "material_thickness": 8,
+    "//": "CDF: HD1 (G07), DDA helmets.json:164 helmet attachment pockets (face shield/front NVG, ear, nape, strapped mandible, back pouch, flashlight); the PADDED flag stays unported with the flag lane.",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "2 kg",
+        "moves": 250,
+        "description": "Pocket for a face shield, or a front night vision attachment.",
+        "flag_restriction": [ "HELMET_FACE_SHIELD", "HELMET_FRONT_ATTACHMENT" ],
+        "inherits_flags": false
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for an ear attachment.",
+        "flag_restriction": [ "HELMET_EAR_ATTACHMENT" ],
+        "inherits_flags": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "250 g",
+        "moves": 250,
+        "description": "Pocket for a nape protector.",
+        "flag_restriction": [ "HELMET_NAPE_PROTECTOR" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for a strapped mandible guard.",
+        "flag_restriction": [ "HELMET_MANDIBLE_GUARD_STRAPPED" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "400 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for a counterweight pouch.",
+        "flag_restriction": [ "HELMET_BACK_POUCH" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "300 ml",
+        "max_contains_weight": "500 g",
+        "max_item_length": "14 cm",
+        "moves": 100,
+        "description": "Pocket for a flashlight attachment.",
+        "flag_restriction": [ "HELMET_HEAD_ATTACHMENT" ],
+        "transparent": true
+      }
+    ],
     "techniques": [ "WBLOCK_1" ],
     "flags": [ "VARSIZE", "WATERPROOF", "STURDY" ]
   },
@@ -162,6 +227,8 @@
     "material": [ "hardsteel" ],
     "color": "dark_gray",
     "material_thickness": 5,
+    "//": "CDF: HD1. This BN helmet copies helmet_army but has no DDA counterpart, and the steel helmets of DDA carry no attachment pockets, so the ones inherited from helmet_army are cleared here.",
+    "pocket_data": [],
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded" ]
   },
   {
@@ -187,6 +254,20 @@
     "material_thickness": 6,
     "resistance": { "bullet": 50 },
     "environmental_protection": 2,
+    "//": "CDF: HD1 (G07), DDA helmets.json:390: one front attachment pocket (night vision).",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "2 kg",
+        "moves": 250,
+        "description": "Pocket for a front night vision attachment.",
+        "flag_restriction": [ "HELMET_FRONT_ATTACHMENT" ],
+        "inherits_flags": false
+      }
+    ],
     "techniques": [ "WBLOCK_1" ],
     "flags": [ "VARSIZE", "STURDY", "SUN_GLASSES" ]
   },
@@ -223,6 +304,71 @@
     "warmth": 20,
     "material_thickness": 6,
     "resistance": { "bullet": 50 },
+    "//": "CDF: HD1 (G07), DDA helmets.json:431: the six pockets (face shield/front NVG, ear, nape, rail-mounted mandible, back pouch, flashlight).",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "2 L",
+        "max_contains_weight": "2 kg",
+        "moves": 250,
+        "description": "Pocket for a face shield, or a front night vision attachment.",
+        "flag_restriction": [ "HELMET_FACE_SHIELD", "HELMET_FRONT_ATTACHMENT" ],
+        "inherits_flags": false
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for an ear attachment.",
+        "flag_restriction": [ "HELMET_EAR_ATTACHMENT" ],
+        "inherits_flags": true
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "250 g",
+        "moves": 250,
+        "description": "Pocket for a nape protector.",
+        "flag_restriction": [ "HELMET_NAPE_PROTECTOR" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for a rail-mounted mandible guard.",
+        "flag_restriction": [ "HELMET_MANDIBLE_GUARD" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "400 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for a counterweight pouch.",
+        "flag_restriction": [ "HELMET_BACK_POUCH" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "300 ml",
+        "max_contains_weight": "500 g",
+        "max_item_length": "14 cm",
+        "moves": 100,
+        "description": "Pocket for a flashlight attachment.",
+        "flag_restriction": [ "HELMET_HEAD_ATTACHMENT" ],
+        "transparent": true
+      }
+    ],
     "techniques": [ "WBLOCK_1" ],
     "flags": [ "VARSIZE", "WATER_FRIENDLY", "STURDY" ]
   },
@@ -421,6 +567,29 @@
     ],
     "warmth": 15,
     "material_thickness": 4,
+    "//": "CDF: HD1 (G07), DDA helmets.json:745: a shield visor pocket and a strapped mandible guard pocket.",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "200 ml",
+        "max_contains_weight": "50 g",
+        "moves": 250,
+        "description": "Pocket for a shield visor.",
+        "flag_restriction": [ "HELMET_FACE_SHIELD" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for a strapped mandible guard.",
+        "flag_restriction": [ "HELMET_MANDIBLE_GUARD_STRAPPED" ]
+      }
+    ],
     "techniques": [ "WBLOCK_1" ]
   },
   {
@@ -930,6 +1099,19 @@
     ],
     "warmth": 10,
     "material_thickness": 4,
+    "//": "CDF: HD1 (G07), DDA helmets.json:1488: one partial or full aventail pocket.",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "600 ml",
+        "max_contains_weight": "2000 g",
+        "moves": 250,
+        "description": "attachment for a partial or full aventail.",
+        "flag_restriction": [ "HELMET_AVENTAIL" ]
+      }
+    ],
     "techniques": [ "WBLOCK_1" ],
     "flags": [ "VARSIZE", "STURDY" ]
   },
@@ -1231,6 +1413,29 @@
     ],
     "warmth": 15,
     "material_thickness": 3,
+    "//": "CDF: HD1 (G07), DDA helmets.json:2023: a nape protector pocket and a strapped mandible guard pocket.",
+    "pocket_data": [
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "250 g",
+        "moves": 250,
+        "description": "Pocket for a nape protector.",
+        "flag_restriction": [ "HELMET_NAPE_PROTECTOR" ]
+      },
+      {
+        "pocket_type": "CONTAINER",
+        "ablative": true,
+        "volume_encumber_modifier": 0,
+        "max_contains_volume": "500 ml",
+        "max_contains_weight": "400 g",
+        "moves": 250,
+        "description": "Pocket for a strapped mandible guard.",
+        "flag_restriction": [ "HELMET_MANDIBLE_GUARD_STRAPPED" ]
+      }
+    ],
     "valid_mods": [ "steel_padded", "hard_steel_padded", "alloy_padded", "resized_large", "resized_small" ],
     "flags": [ "FANCY", "STAB" ]
   },
