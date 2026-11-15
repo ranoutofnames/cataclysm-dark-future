@@ -5947,8 +5947,21 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
                   contents_item.charges > 1 )
                 ? contents_item.charges
                 : quantity;
-            maintext = string_format( pgettext( "item name", "%2$s (%1$s)" ), labeltext,
-                                      contents_item.tname( contents_count, with_prefix ) );
+            // DDA item_tname.cpp:285-340 (segment CONTENTS): "container > contents".  A contents
+            // item that is itself a container is the nested level, and DDA abbreviates it to its
+            // own content count (CONTENTS_ABREV, item_tname.cpp:331-339) instead of recursing
+            // again.  CDF's tname has no segment parameter, so the nested level is decided here.
+            const size_t nested_stacks = contents_item.contents.num_item_stacks();
+            if( nested_stacks > 0 ) {
+                maintext = labeltext + string_format(
+                               vpgettext( "item name",
+                                          //~ [container item name] " > [count] item"
+                                          " > %1$zd item", " > %1$zd items", nested_stacks ),
+                               nested_stacks );
+            } else {
+                maintext = string_format( pgettext( "item name", "%1$s > %2$s" ), labeltext,
+                                          contents_item.tname( contents_count, with_prefix ) );
+            }
         } else if( !contents.empty() ) {
             maintext = string_format( vpgettext( "item name",
                                                  //~ %1$s: item name, %2$zd: content size
@@ -6301,9 +6314,6 @@ std::string item::display_name( unsigned int quantity ) const
     static const itype_id itype_battery( "battery" );
     int amount = 0;
     int max_amount = 0;
-    bool has_item = is_container() && contents.num_item_stacks() == 1;
-    bool has_ammo = is_ammo_container() && contents.num_item_stacks() == 1;
-    bool contains = has_item || has_ammo;
     bool show_amt = false;
     bool amt_built_for_multimag = false;
     // CDF: DDA 1650-1661 builds a wells-only list and, for a multimag host, ammo_pockets with a ternary;
@@ -6316,10 +6326,7 @@ std::string item::display_name( unsigned int quantity ) const
         } );
     }
     // We should handle infinite charges properly in all cases.
-    if( contains ) {
-        amount = contents.front().charges;
-        max_amount = contents.front().charges_per_volume( get_container_capacity() );
-    } else if( is_book() && get_chapters() > 0 ) {
+    if( is_book() && get_chapters() > 0 ) {
         // a book which has remaining unread chapters
         amount = get_remaining_chapters( you );
     } else if( ammo_pockets.size() > 1 ) {
@@ -6376,30 +6383,26 @@ std::string item::display_name( unsigned int quantity ) const
             }
 
             if( max_amount != 0 ) {
-                if( !contains ) {
-                    // CDF: single wells and plain items keep BN's percentage colour bands (ADV-14
-                    // ruling 7, REPLAN U7); DDA's ratio thresholds (item.cpp 1853-1876) colour the
-                    // multi-well segments only.
-                    int percentage = ( static_cast<float>( amount ) / max_amount ) * 100;
-                    nc_color color = c_green;
-                    if( percentage >= 100 ) {
-                        color = c_green;
-                    } else if( percentage >= 75 ) {
-                        color = c_light_green;
-                    } else if( percentage >= 50 ) {
-                        color = c_yellow;
-                    } else if( percentage >= 25 ) {
-                        color = c_light_red;
-                    } else if( percentage > 0 ) {
-                        color = c_red;
-                    } else if( percentage <= 0 ) {
-                        color = c_light_gray;
-                    }
-                    amt = colorize( string_format( " (%i/%i%s)", amount, max_amount, ammotext ),
-                                    color );
-                } else {
-                    amt = string_format( " (%i/%i%s)", amount, max_amount, ammotext );
+                // CDF: single wells and plain items keep BN's percentage colour bands (ADV-14
+                // ruling 7, REPLAN U7); DDA's ratio thresholds (item.cpp 1853-1876) colour the
+                // multi-well segments only.
+                int percentage = ( static_cast<float>( amount ) / max_amount ) * 100;
+                nc_color color = c_green;
+                if( percentage >= 100 ) {
+                    color = c_green;
+                } else if( percentage >= 75 ) {
+                    color = c_light_green;
+                } else if( percentage >= 50 ) {
+                    color = c_yellow;
+                } else if( percentage >= 25 ) {
+                    color = c_light_red;
+                } else if( percentage > 0 ) {
+                    color = c_red;
+                } else if( percentage <= 0 ) {
+                    color = c_light_gray;
                 }
+                amt = colorize( string_format( " (%i/%i%s)", amount, max_amount, ammotext ),
+                                color );
 
             } else {
                 amt = string_format( " (%i%s)", amount, ammotext );
