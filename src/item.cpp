@@ -131,6 +131,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -5814,7 +5815,188 @@ void item::on_map_placement( const tripoint_abs_ms &abs_pos )
     }
 }
 
-std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int truncate ) const
+namespace
+{
+
+const item_category_id &category_container()
+{
+    static const item_category_id id( "container" );
+    return id;
+}
+
+// DDA item::aggregate_t (item.h) keeps the tname segment bits of the dominant contents group.
+// CDF's stacks_with returns a bool, so only what the CONTENTS segment needs is tracked: whether
+// the group's own type name can be printed, or its category noun is needed instead.
+struct contents_aggregate {
+    const item *header = nullptr;
+    unsigned int count = 0;
+    bool type_name = true;      // the whole group shares the item type (DDA TYPE segment)
+    bool category_noun = false; // the type does not dominate, print the category noun
+
+    contents_aggregate() = default;
+    explicit contents_aggregate( const item *i ) : header( i ), count( 1 ) {}
+
+    explicit operator bool() const noexcept {
+        return header != nullptr;
+    }
+};
+
+// DDA item_container.cpp:990-1014 (_aggregate)
+template <class C>
+void aggregate_contents_item( C &groups, const typename C::key_type &key, const item *it,
+                              contents_aggregate *&running_max, contents_aggregate *&max_type,
+                              bool by_category )
+{
+    auto const [iter, emplaced] = groups.emplace( key, contents_aggregate( it ) );
+    if( emplaced && running_max == nullptr ) {
+        running_max = &iter->second;
+        max_type = running_max;
+    } else if( !emplaced ) {
+        iter->second.type_name = iter->second.type_name &&
+                                 iter->second.header->stacks_with( *it );
+        iter->second.category_noun = true;
+        if( by_category ) {
+            // DDA item_container.cpp:1008: a category group never keeps the item type
+            iter->second.type_name = false;
+        }
+        ++iter->second.count;
+
+        if( !by_category ) {
+            max_type = max_type->count < iter->second.count ? &iter->second : max_type;
+        }
+
+        running_max = running_max->count < iter->second.count ? &iter->second : running_max;
+    }
+}
+
+// DDA item::aggregated_contents (item_container.cpp:1016-1072): the dominant group of the
+// contents, by item type or, when no type dominates, by category.
+contents_aggregate aggregated_contents( const item &it )
+{
+    constexpr double cutoff = 0.5;
+
+    std::unordered_map<itype_id, contents_aggregate> types;
+    std::unordered_map<item_category_id, contents_aggregate> cats;
+    unsigned int total = 0;
+    contents_aggregate *running_max = nullptr;
+    contents_aggregate *max_type = nullptr;
+    auto const cont_and_soft = []( const item_pocket & pkt ) {
+        return pkt.is_type( pocket_type::CONTAINER );
+    };
+
+    for( const item_pocket *pk : it.get_contents().get_pockets( cont_and_soft ) ) {
+        for( const item *pkit : pk->all_items_top() ) {
+            total++;
+            item_category_id const cat = pkit->get_category_of_contents().get_id();
+            bool const type_ok = pkit->type->category_force != category_container() ||
+                                 cat == category_container();
+            if( type_ok ) {
+                aggregate_contents_item( types, pkit->typeId(), pkit, running_max, max_type, false );
+            }
+            aggregate_contents_item( cats, cat, pkit, running_max, max_type, true );
+        }
+    }
+    if( running_max == nullptr ) {
+        return {};
+    }
+
+    unsigned int const cutoff_check =
+        total < 3 ? total - 1 : static_cast<int>( std::floor( total * cutoff ) );
+
+    // allow a type to still dominate over its own category
+    if( max_type->count > cutoff_check &&
+        max_type->header->type->category_force != category_container() &&
+        max_type->header->get_category_shallow().get_id() ==
+        running_max->header->get_category_shallow().get_id() ) {
+        max_type->type_name = true;
+        return *max_type;
+    }
+
+    return running_max->count > cutoff_check ? *running_max : contents_aggregate{};
+}
+
+// CDF: DDA's "ammo-exclusive" items (item_tname.cpp:314-315) are the ones with a non-empty
+// ammo_types(). CDF's item::ammo_types() covers guns, tools and magazines only, so a quiver is
+// not among them; its ammo-restricted CONTAINER pocket is the DDA data behind that list.
+bool is_ammo_exclusive( const item &it )
+{
+    if( !it.ammo_types().empty() ) {
+        return true;
+    }
+    for( const item_pocket &pkt : it.get_contents().get_pockets() ) {
+        if( !pkt.is_type( pocket_type::CONTAINER ) ) {
+            continue;
+        }
+        if( pkt.get_pocket_data() != nullptr && !pkt.get_pocket_data()->ammo_restriction.empty() ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// DDA item_tname.cpp:285-340 (segment CONTENTS): the " > contents" part of a name.
+std::string contents_segment( const item &it, bool with_prefix, item::contents_mode mode )
+{
+    item_contents const &contents = it.get_contents();
+    if( mode == item::contents_mode::full ) {
+        if( contents_aggregate const aggi = aggregated_contents( it ); aggi ) {
+            const item &contents_item = *aggi.header;
+            const unsigned aggi_count = contents_item.count_by_charges() && contents_item.charges > 1
+                                        ? contents_item.charges
+                                        : aggi.count;
+            const unsigned total_count = contents_item.count_by_charges() && contents_item.charges > 1
+                                         ? contents_item.charges
+                                         : contents.num_item_stacks();
+
+            // Without full contents for nested items, to prevent excessively long names.
+            // CDF: tname has no segment bitset, so the child's CONTENTS mode is passed in; DDA
+            // sets CONTENTS_ABBREV only when the dominant group is a single item.
+            const item::contents_mode child_mode =
+                aggi_count == 1 ? item::contents_mode::abbrev : item::contents_mode::none;
+            std::string ctnc;
+            if( aggi.category_noun && !aggi.type_name ) {
+                // DDA item_tname.cpp:686-692 (CATEGORY segment).
+                // CDF: item_category has no name_noun (DDA item_category.cpp:96-99); its header
+                // name stands in, lower-cased because DDA's noun is lower-case ("spare parts").
+                ctnc = colorize( to_lower_case( contents_item.get_category_of_contents().name() ),
+                                 c_magenta );
+            } else {
+                ctnc = colorize( contents_item.tname( aggi_count, with_prefix, 0, child_mode ),
+                                 contents_item.color_in_inventory() );
+            }
+
+            // Don't append an item count for single items, or items that are ammo-exclusive
+            // (eg: quivers), as they format their own counts.
+            if( total_count > 1 && !is_ammo_exclusive( it ) ) {
+                if( total_count == aggi_count ) {
+                    // DDA uses itype::item_measure_prefix(total_count) (itype.cpp:141-156);
+                    // CDF has no item display types, so the count is always the plain number.
+                    return string_format( pgettext( "item name", " > %1$s %2$s" ),
+                                          std::to_string( total_count ), ctnc );
+                }
+                //~ %1$zd: count of the dominant type or category, %2$s: its name,
+                //~ %3$zd: number of item stacks in the container
+                return string_format( pgettext( "item name", " > %1$zd %2$s / %3$zd items" ),
+                                      aggi_count, ctnc, total_count );
+            }
+            return " > " + ctnc;
+        }
+    } else if( mode == item::contents_mode::abbrev && !contents.empty_container() &&
+               contents.num_item_stacks() != 0 ) {
+        // DDA item_tname.cpp:331-344 (CONTENTS_ABBREV)
+        return string_format( vpgettext( "item name",
+                                         //~ [container item name] " > [count] item"
+                                         " > %1$zd item", " > %1$zd items",
+                                         contents.num_item_stacks() ),
+                              contents.num_item_stacks() );
+    }
+    return {};
+}
+
+} // namespace
+
+std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int truncate,
+                         contents_mode contents_seg ) const
 {
     int dirt_level = get_var( "dirt", 0 ) / 2000;
     std::string dirt_symbol;
@@ -5887,6 +6069,7 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
         }
     }
 
+    std::string contents_text;
     std::string maintext;
     if( is_corpse() || item_vars_.contains( "name" ) ) {
         maintext = type_name( quantity );
@@ -5940,35 +6123,11 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
 
         if( is_gun() || is_tool() || is_magazine() || has_flag( flag_MC_ENCRYPTED ) ) {
             maintext = labeltext;
-        } else if( contents.num_item_stacks() == 1 ) {
-            const item &contents_item = contents.front();
-            const unsigned contents_count =
-                ( ( contents_item.made_of( LIQUID ) || contents_item.is_food() ) &&
-                  contents_item.charges > 1 )
-                ? contents_item.charges
-                : quantity;
-            // DDA item_tname.cpp:285-340 (segment CONTENTS): "container > contents".  A contents
-            // item that is itself a container is the nested level, and DDA abbreviates it to its
-            // own content count (CONTENTS_ABREV, item_tname.cpp:331-339) instead of recursing
-            // again.  CDF's tname has no segment parameter, so the nested level is decided here.
-            const size_t nested_stacks = contents_item.contents.num_item_stacks();
-            if( nested_stacks > 0 ) {
-                maintext = labeltext + string_format(
-                               vpgettext( "item name",
-                                          //~ [container item name] " > [count] item"
-                                          " > %1$zd item", " > %1$zd items", nested_stacks ),
-                               nested_stacks );
-            } else {
-                maintext = string_format( pgettext( "item name", "%1$s > %2$s" ), labeltext,
-                                          contents_item.tname( contents_count, with_prefix ) );
-            }
-        } else if( !contents.empty() ) {
-            maintext = string_format( vpgettext( "item name",
-                                                 //~ %1$s: item name, %2$zd: content size
-                                                 "%1$s with %2$zd item",
-                                                 "%1$s with %2$zd items", contents.num_item_stacks() ),
-                                      labeltext, contents.num_item_stacks() );
         } else {
+            // DDA item_tname.cpp:285-340 (segment CONTENTS): "container > contents", printed
+            // after the tags so that e.g. the clothing size precedes it (item_tname.cpp:460-478,
+            // CONTENTS is the fixed last segment, item_tname.h:103-130).
+            contents_text = contents_segment( *this, with_prefix, contents_seg );
             maintext = labeltext;
         }
     }
@@ -6127,6 +6286,10 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
     //~ This is a string to construct the item name as it is displayed. This format string has been added for maximum flexibility. The strings are: %1$s: Damage text (e.g. "bruised"). %2$s: burn adjectives (e.g. "burnt"). %3$s: tool modifier text (e.g. "atomic"). %4$s: vehicle part text (e.g. "3.8-Liter"). $5$s: main item text (e.g. "apple"). %6s: tags (e.g. "(wet) (poor fit)").
     std::string ret = string_format( _( "%1$s%2$s%3$s%4$s%5$s%6$s" ), damtext, burntext, modtext,
                                      vehtext, maintext, tagtext );
+
+    // DDA item_tname.cpp:859 makes CONTENTS the fixed last segment, after CLOTHING_SIZE and
+    // every tag, so the contents suffix is appended here instead of inside maintext.
+    ret += contents_text;
 
     // Per DDA item_tname.cpp:120 (FAVORITE_PRE): the prefix mark is part of the prefixed name
     // only, as DDA item_tname.h:129 leaves it out of unprefixed_tname.

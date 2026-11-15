@@ -474,15 +474,27 @@ class item : public location_visitable<item>, public game_object<item>
         // e.g. giving them unmatching food or allergic thing.
         nc_color color_in_inventory( const player &p ) const;
         /**
+         * Which part of the CONTENTS segment a tname carries (DDA item_tname.h:103-130): a listed
+         * item gets the full aggregated suffix, a contents item that is itself a container is
+         * abbreviated to " > N item" so names do not nest without end.
+         */
+        enum class contents_mode : int {
+            full,   // CONTENTS_FULL
+            abbrev, // CONTENTS_ABBREV
+            none,   // neither: the name stops at its tags
+        };
+        /**
          * Return the (translated) item name.
          * @param quantity used for translation to the proper plural form of the name, e.g.
          * returns "rock" for quantity 1 and "rocks" for quantity > 0.
          * @param with_prefix determines whether to include more item properties, such as
          * the extent of damage and burning (was created to sort by name without prefix
          * in additional inventory)
+         * @param contents_seg which part of the CONTENTS segment the name carries
          */
         std::string tname( unsigned int quantity = 1, bool with_prefix = true,
-                           unsigned int truncate = 0 ) const;
+                           unsigned int truncate = 0,
+                           contents_mode contents_seg = contents_mode::full ) const;
         std::string display_money( unsigned int quantity, unsigned int total,
                                    const std::optional<unsigned int> &selected = std::nullopt ) const;
         /**
