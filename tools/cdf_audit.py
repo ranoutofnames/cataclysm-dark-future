@@ -26,17 +26,22 @@ Checks (PL-62 AT1):
                     test).
 
 Usage:
-  py -3 -I tools/cdf_audit.py [--cdf DIR] [--dda DIR] [--out FILE]
-  py -3 -I tools/cdf_audit.py --section
+  py -3 -I tools/cdf_audit.py [--cdf DIR] [--dda DIR] [--out FILE] [--allow FILE]
+  py -3 -I tools/cdf_audit.py --section [--allow FILE]
   py -3 -I tools/cdf_audit.py --selftest [--fixture DIR]
 
 --cdf      CDF checkout (default: the repository this file lives in).
 --dda      DDA checkout (default: env CDF_DDA_SRC, else C:\\CDF\\CDDA SRC).
---out      write the TSV to FILE instead of stdout.
---section  print one line "data-audit<TAB>PASS|FAIL<TAB>N findings" for AT0;
-           exit 0 on PASS, 1 on FAIL. AT0 can also import section(cdf, dda).
---selftest run the fixture tree: the seeded tree must match seeded/expected.tsv
-           and the clean tree must report nothing (exit 1 on a mismatch).
+--out      write the TSV to FILE instead of stdout (never allow-filtered).
+--allow    allowed-findings TSV (default: tests/data/audit/allow.tsv when it
+           exists). Rows it matches are dropped from section findings and
+           counted as "allowed N"; the TSV itself is unchanged.
+--section  print one line "data-audit<TAB>PASS|FAIL<TAB>N findings[,
+           allowed M]" for AT0; exit 0 on PASS, 1 on FAIL. AT0 can also
+           import section(cdf, dda, allow) -> (result, count, rows, allowed).
+--selftest run the fixture tree: the seeded tree must match seeded/expected.tsv,
+           its allow file must drop the expected rows, and the clean tree must
+           report nothing (exit 1 on a mismatch).
 --fixture  fixture root for --selftest (default tests/data/audit_fixtures).
 
 The copy-from resolver is the approximation PLAN.md section 8.3 warns about:
@@ -64,6 +69,7 @@ from cdf_dda_probe import iter_json  # noqa: E402
 DEFAULT_CDF = os.path.dirname(HERE)
 DEFAULT_DDA = os.environ.get("CDF_DDA_SRC", r"C:\CDF\CDDA SRC")
 DEFAULT_FIXTURE = os.path.join(DEFAULT_CDF, "tests", "data", "audit_fixtures")
+DEFAULT_ALLOW = os.path.join(DEFAULT_CDF, "tests", "data", "audit", "allow.tsv")
 
 ITEM_TYPES = {
     "ITEM", "GENERIC", "ARMOR", "TOOL_ARMOR", "TOOL", "AMMO", "GUN", "GUNMOD",
@@ -414,21 +420,30 @@ def pocket_fillers(container, tree, facts_by_id):
 
 # ---------------------------------------------------------------- entries
 
-def iter_group_entries(obj, seen=None):
-    """Yield every entry dict of an item_group, at any nesting depth."""
+def iter_entry_dicts(entries, seen=None):
+    """Yield every entry dict in a list, descending into nested groups.
+
+    A group's "collection"/"distribution" value is a list of *entries* (not
+    group objects), and each of those entries can itself hold a nested
+    collection/distribution. Yield every such dict, at any depth.
+    """
     seen = set() if seen is None else seen
-    if id(obj) in seen or not isinstance(obj, dict):
-        return
-    seen.add(id(obj))
-    for entry in as_list(obj.get("entries")) + as_list(obj.get("items")):
-        if isinstance(entry, dict):
+    for entry in entries:
+        if isinstance(entry, str):
+            yield {"item": entry}
+        elif isinstance(entry, dict) and id(entry) not in seen:
+            seen.add(id(entry))
             yield entry
             for key in ("collection", "distribution", "entries", "items"):
-                for nested in as_list(entry.get(key)):
-                    if isinstance(nested, dict):
-                        yield from iter_group_entries(nested, seen)
-        elif isinstance(entry, str):
-            yield {"item": entry}
+                yield from iter_entry_dicts(as_list(entry.get(key)), seen)
+
+
+def iter_group_entries(obj, seen=None):
+    """Yield every entry dict of an item_group, at any nesting depth."""
+    if not isinstance(obj, dict):
+        return
+    yield from iter_entry_dicts(
+        as_list(obj.get("entries")) + as_list(obj.get("items")), seen)
 
 
 def group_item_ids(obj, seen=None):
@@ -447,17 +462,13 @@ def group_item_ids(obj, seen=None):
 
 
 def walk_profession_entries(profession):
-    """Yield (entry, relpath) for starting-item entries of a profession."""
+    """Yield every starting-item entry of a profession, nested ones included."""
     items = profession.get("items")
     if not isinstance(items, dict):
         return
     for slot in items.values():
-        if isinstance(slot, list):
-            continue
         if isinstance(slot, dict):
-            for entry in as_list(slot.get("entries")):
-                if isinstance(entry, dict):
-                    yield entry
+            yield from iter_entry_dicts(as_list(slot.get("entries")))
 
 
 def strip_variant(ident):
@@ -791,18 +802,14 @@ def check_a7(cdf, sink):
     for profession, rel in cdf.professions:
         pid = item_id(profession) or "profession"
         source = cdf.source(rel, pid)
-        items = profession.get("items")
-        if isinstance(items, dict):
-            for slot in items.values():
-                if isinstance(slot, dict):
-                    for entry in as_list(slot.get("entries")):
-                        if isinstance(entry, dict):
-                            check_entry(entry, source)
+        for entry in walk_profession_entries(profession):
+            check_entry(entry, source)
 
 
 # ---------------------------------------------------------------- driver
 
-def run_audit(cdf_dir, dda_dir=None, dirs=("data/json",)):
+def _audit(cdf_dir, dda_dir=None, dirs=("data/json",)):
+    """run_audit plus the CDF tree (the allowlist needs its item families)."""
     cdf = Tree(cdf_dir, "cdf", dirs)
     sink = RowSink()
     check_a2(cdf, sink)
@@ -814,7 +821,12 @@ def run_audit(cdf_dir, dda_dir=None, dirs=("data/json",)):
     if dda_dir and os.path.isdir(os.path.join(dda_dir, "data", "json")):
         dda = Tree(dda_dir, "dda", ("data/json",))
         check_a1(cdf, dda, sink)
-    return sink.sorted_rows(), cdf.parse_errors
+    return sink.sorted_rows(), cdf.parse_errors, cdf
+
+
+def run_audit(cdf_dir, dda_dir=None, dirs=("data/json",)):
+    rows, errors, _cdf = _audit(cdf_dir, dda_dir, dirs)
+    return rows, errors
 
 
 def format_tsv(rows, parse_errors=()):
@@ -833,19 +845,117 @@ def counts(rows):
     return result
 
 
-def section(cdf_dir, dda_dir=None):
-    """AT0 entry point: (result, count, rows)."""
-    rows, _errors = run_audit(cdf_dir, dda_dir)
+# ---------------------------------------------------------------- allowlist
+
+class AllowRule:
+    """One allow-draft row: check, detail, family and except-id regexes."""
+
+    __slots__ = ("check", "detail", "family", "except_id")
+
+    def __init__(self, check, detail, family, except_id):
+        self.check = check
+        self.detail = re.compile(detail)
+        self.family = re.compile(family)
+        self.except_id = re.compile(except_id)
+
+
+def item_family(relpath):
+    """data/json/items/armor/vest.json -> items/armor (the allow family)."""
+    rel = norm_path(relpath)
+    if rel.startswith("data/json/"):
+        rel = rel[len("data/json/"):]
+    if rel == "items.json":
+        return "items"
+    if rel.startswith("items/"):
+        rest = rel[len("items/"):]
+        if "/" in rest:
+            return "items/" + rest.split("/", 1)[0]
+        return "items"
+    for prefix in ("obsoletion/", "npcs/"):
+        if rel.startswith(prefix):
+            return prefix.rstrip("/")
+    return "?"
+
+
+def item_families(tree):
+    """id -> family for every CDF item, for the allowlist family column."""
+    return {ident: item_family(rel) for ident, (_obj, rel) in tree.items.items()}
+
+
+def load_allow(path):
+    """Read the allow-draft format, skipping comments and the header row.
+
+    Columns: check, detail_regex, family_regex, except_id_regex, verdict,
+    reason. Only the first four are used here.
+    """
+    rules = []
+    if not path or not os.path.isfile(path):
+        return rules
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for number, line in enumerate(f, 1):
+            line = line.rstrip("\r\n")
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            parts = line.split("\t")
+            if parts[0].strip().lower() == "check":
+                continue
+            if len(parts) < 4:
+                raise ValueError(
+                    "%s:%d: allow rows need check, detail_regex, family_regex, "
+                    "except_id_regex" % (path, number))
+            rules.append(AllowRule(parts[0].strip(), parts[1], parts[2],
+                                   parts[3]))
+    return rules
+
+
+def allow_matches(row, rules, families):
+    check, _severity, ident, detail, _source = row
+    family = families.get(ident, "")
+    for rule in rules:
+        if rule.check != check:
+            continue
+        if not rule.detail.search(detail):
+            continue
+        if not rule.family.search(family):
+            continue
+        if rule.except_id.search(ident):
+            continue
+        return True
+    return False
+
+
+def apply_allow(rows, rules, families):
+    """(rows not matched by the allowlist, number of allowed rows)."""
+    kept = []
+    allowed = 0
+    for row in rows:
+        if allow_matches(row, rules, families):
+            allowed += 1
+        else:
+            kept.append(row)
+    return kept, allowed
+
+
+def section(cdf_dir, dda_dir=None, allow=None):
+    """AT0 entry point: (result, count, rows, allowed).
+
+    allow defaults to tests/data/audit/allow.tsv; rows it matches are dropped
+    from the returned findings and counted in the fourth value. The TSV written
+    by run_audit/format_tsv is never filtered.
+    """
+    rows, _errors, tree = _audit(cdf_dir, dda_dir)
+    rules = load_allow(DEFAULT_ALLOW if allow is None else allow)
+    rows, allowed = apply_allow(rows, rules, item_families(tree))
     errors = sum(1 for row in rows if row[1] == "error")
-    return ("FAIL" if errors else "PASS"), len(rows), rows
+    return ("FAIL" if errors else "PASS"), len(rows), rows, allowed
 
 
 def selftest(fixture):
     problems = 0
     seeded = os.path.join(fixture, "seeded")
     expected_path = os.path.join(seeded, "expected.tsv")
-    rows, errors = run_audit(os.path.join(seeded, "cdf"),
-                             os.path.join(seeded, "dda"))
+    rows, errors, tree = _audit(os.path.join(seeded, "cdf"),
+                                os.path.join(seeded, "dda"))
     actual = [tuple(row) for row in rows]
     expected = []
     with open(expected_path, encoding="utf-8") as f:
@@ -859,6 +969,39 @@ def selftest(fixture):
             print("UNEXPECTED\t" + "\t".join(row))
         for row in sorted(set(expected) - set(actual)):
             print("MISSING\t" + "\t".join(row))
+        problems += 1
+    # The fixture allow file drops one A1 flag row and one A4 row, and its
+    # except_id_regex must keep the planted pocket row.
+    allow_path = os.path.join(seeded, "allow.tsv")
+    rules = load_allow(allow_path)
+    kept, allowed = apply_allow(rows, rules, item_families(tree))
+    if allowed != 2:
+        print("allow fixture dropped %d rows, expected 2" % allowed)
+        problems += 1
+    if not any(row[3] == "missing item id in item_group bad_group (item)"
+               for row in rows):
+        print("allow fixture: seeded bad_group row is missing")
+        problems += 1
+    if any(row[3] == "missing item id in item_group bad_group (item)"
+           for row in kept):
+        print("allow fixture did not drop the bad_group A4 row")
+        problems += 1
+    if any(row[3] == "flag DDA_ONLY_FLAG only in DDA" for row in kept):
+        print("allow fixture did not drop the DDA_ONLY_FLAG A1 row")
+        problems += 1
+    if not any(row[3] == "pocket[0] key moves only in DDA" for row in kept):
+        print("allow fixture ignored except_id_regex (pocket A1 row dropped)")
+        problems += 1
+    result, count, section_rows, section_allowed = section(
+        os.path.join(seeded, "cdf"), os.path.join(seeded, "dda"), allow_path)
+    if (len(section_rows), section_allowed, count) != (
+            len(rows) - allowed, allowed, len(rows) - allowed):
+        print("section allow counts are %d rows, %d allowed, %d count"
+              % (len(section_rows), section_allowed, count))
+        problems += 1
+    expected_result = "FAIL" if any(row[1] == "error" for row in kept) else "PASS"
+    if result != expected_result:
+        print("section allow result %s, expected %s" % (result, expected_result))
         problems += 1
     if errors:
         print("parse errors in seeded fixture: " + ", ".join(errors))
@@ -875,8 +1018,8 @@ def selftest(fixture):
     if problems:
         print("selftest FAILED: %d problem(s) against %s" % (problems, fixture))
         return 1
-    print("selftest ok: %d seeded rows matched, clean fixture empty"
-          % len(expected))
+    print("selftest ok: %d seeded rows matched (%d allowed), clean fixture empty"
+          % (len(expected), allowed))
     return 0
 
 
@@ -885,6 +1028,9 @@ def main(argv=None):
     parser.add_argument("--cdf", default=DEFAULT_CDF)
     parser.add_argument("--dda", default=DEFAULT_DDA)
     parser.add_argument("--out", help="write TSV to this file")
+    parser.add_argument("--allow", default=None,
+                        help="allowed-findings TSV (default "
+                             "tests/data/audit/allow.tsv when it exists)")
     parser.add_argument("--section", action="store_true",
                         help="print the AT0 section line and exit 0/1")
     parser.add_argument("--selftest", action="store_true")
@@ -895,11 +1041,19 @@ def main(argv=None):
     if not os.path.isdir(os.path.join(args.cdf, "data", "json")):
         print("error: no data/json under --cdf %s" % args.cdf, file=sys.stderr)
         return 2
-    rows, errors = run_audit(args.cdf, args.dda)
+    allow = args.allow if args.allow is not None else DEFAULT_ALLOW
+    if args.allow is not None and not os.path.isfile(allow):
+        print("error: no allow file %s" % allow, file=sys.stderr)
+        return 2
+    rows, errors, tree = _audit(args.cdf, args.dda)
     if args.section:
-        failed = any(row[1] == "error" for row in rows)
-        print("data-audit\t%s\t%d findings" % ("FAIL" if failed else "PASS",
-                                               len(rows)))
+        kept, allowed = apply_allow(rows, load_allow(allow), item_families(tree))
+        failed = any(row[1] == "error" for row in kept)
+        line = "data-audit\t%s\t%d findings" % (
+            "FAIL" if failed else "PASS", len(kept))
+        if allowed:
+            line += ", allowed %d" % allowed
+        print(line)
         return 1 if failed else 0
     text = format_tsv(rows, errors)
     if args.out:
