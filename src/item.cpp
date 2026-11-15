@@ -6419,37 +6419,45 @@ nc_color item::color() const
     return type->color;
 }
 
+// DDA item::price_no_contents (item.cpp:1945); the body is CDF's old per-item price loop, so
+// item::price() below returns exactly what it did before the split. DDA's filth, fault and
+// NO_SELL vitamin terms are not in CDF's price (pre-existing).
+auto item::price_no_contents( bool practical ) const -> float
+{
+    if( rotten() ) {
+        // TODO: Special case things that stay useful when rotten
+        return 0;
+    }
+
+    float child = units::to_cent( practical ? type->price_post : type->price );
+    if( damage() > 0 ) {
+        // maximal damage level is 4, maximal reduction is 40% of the value.
+        child -= child * static_cast<double>( damage_level( 4 ) ) / 10;
+    }
+
+    if( count_by_charges() || made_of( LIQUID ) ) {
+        // price from json data is for default-sized stack
+        child *= charges / static_cast<double>( type->stack_size );
+
+    } else if( magazine_integral() && ammo_remaining() && ammo_data() ) {
+        // items with integral magazines may contain ammunition which can affect the price
+        // CDF: DDA price() has no integral magazine term; the rounds are read as ammo
+        child += item( ammo_data(), calendar::turn, ammo_remaining() ).price( practical );
+
+    } else if( is_tool() && ammo_types().empty() && ammo_capacity() ) {
+        // if tool has no ammo (e.g. spray can) reduce price proportional to remaining charges
+        child *= ammo_remaining() / static_cast<double>( std::max( type->charges_default(), 1 ) );
+    }
+
+    return child;
+}
+
 auto item::price( bool practical ) const -> float
 {
     float res = 0;
 
     visit_items( [&res, practical]( const item * e ) {
-        if( e->rotten() ) {
-            // TODO: Special case things that stay useful when rotten
-            return VisitResponse::NEXT;
-        }
-
-        float child = units::to_cent( practical ? e->type->price_post : e->type->price );
-        if( e->damage() > 0 ) {
-            // maximal damage level is 4, maximal reduction is 40% of the value.
-            child -= child * static_cast<double>( e->damage_level( 4 ) ) / 10;
-        }
-
-        if( e->count_by_charges() || e->made_of( LIQUID ) ) {
-            // price from json data is for default-sized stack
-            child *= e->charges / static_cast<double>( e->type->stack_size );
-
-        } else if( e->magazine_integral() && e->ammo_remaining() && e->ammo_data() ) {
-            // items with integral magazines may contain ammunition which can affect the price
-            // CDF: DDA price() has no integral magazine term; the rounds are read as ammo
-            child += item( e->ammo_data(), calendar::turn, e->ammo_remaining() ).price( practical );
-
-        } else if( e->is_tool() && e->ammo_types().empty() && e->ammo_capacity() ) {
-            // if tool has no ammo (e.g. spray can) reduce price proportional to remaining charges
-            child *= e->ammo_remaining() / static_cast<double>( std::max( e->type->charges_default(), 1 ) );
-        }
-
-        res += child;
+        res += e->price_no_contents( practical );
         return VisitResponse::NEXT;
     } );
 

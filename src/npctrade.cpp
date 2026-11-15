@@ -35,6 +35,30 @@ static auto is_listed_pocket( const item_pocket &pocket ) -> bool
     return ( pocket.is_carry() || pocket.is_holster() ) && pocket.is_type( pocket_type::CONTAINER );
 }
 
+// DDA npctrade.cpp:184 (adjusted_price) and :213 (_trading_price) price a trade entry from
+// item::price_no_contents and walk its pockets for the contents. CDF's list gives the items in a
+// listed carry/holster pocket a trade row of their own (TR1), so those are left out here: adding
+// them would price the nested rows a second time when a container and its contents are sold
+// together. DDA's faction price rules are not ported, and the barter adjustment stays in
+// item_pricing::adjust_values().
+static auto trading_price( const item &it ) -> float
+{
+    float price = it.price_no_contents( true );
+    // DDA item.cpp:1900: item::price() does not descend into guns and magazines
+    if( it.is_gun() || ( it.is_magazine() && !it.is_tool() ) ) {
+        return price;
+    }
+    for( const item_pocket &pocket : it.contents.get_pockets() ) {
+        if( is_listed_pocket( pocket ) ) {
+            continue;
+        }
+        for( const item *child : pocket.items() ) {
+            price += trading_price( *child );
+        }
+    }
+    return price;
+}
+
 // CDF: G35, a nested row that is selected on its own must leave the container before the
 // container row moves, or it would detach from whatever the receiver now holds.
 static auto carry_depth( const item &it ) -> int
@@ -46,7 +70,7 @@ static auto carry_depth( const item &it ) -> int
     return depth;
 }
 
-void npc_trading::transfer_items( std::vector<item_pricing> &stuff, Character &,
+void npc_trading::transfer_items( std::vector<item_pricing> &stuff, Character &giver,
                                   Character &receiver, bool npc_gives )
 {
     auto selected = std::vector<item_pricing *> {};
@@ -58,6 +82,45 @@ void npc_trading::transfer_items( std::vector<item_pricing> &stuff, Character &,
     std::ranges::stable_sort( selected, []( const item_pricing * a, const item_pricing * b ) {
         return carry_depth( *a->locs.front() ) > carry_depth( *b->locs.front() );
     } );
+
+    // DDA npctrade.cpp:58-79 spills the contents of a container that the NPC would not buy (or,
+    // when the NPC is the giver, would not sell) back to the giver. CDF's row list also lets a
+    // container and its contents be marked separately (TR1), so a content that has a row of its
+    // own but was not selected stays with the giver too: DDA's selector keeps such contents with
+    // their container and cannot split them, while here the container row is priced without them.
+    npc *wants_npc = nullptr;
+    auto npc_is_giver = false;
+    if( giver.is_npc() ) {
+        wants_npc = giver.as_npc();
+        npc_is_giver = true;
+    } else if( receiver.is_npc() ) {
+        wants_npc = receiver.as_npc();
+    }
+    const auto has_row = [&stuff]( const item * it ) {
+        return std::ranges::any_of( stuff, [it]( const item_pricing & ip ) {
+            return std::ranges::find( ip.locs, it ) != ip.locs.end();
+        } );
+    };
+    const auto spill_contents = [&]( item &container ) {
+        if( wants_npc == nullptr || !container.is_container() ) {
+            return;
+        }
+        // copy: remove_top() invalidates item_contents::all_items_top()
+        const auto contents = container.contents.all_items_top();
+        for( item *it : contents ) {
+            auto spill = has_row( it );
+            if( !spill ) {
+                const auto market_price = static_cast<int>( trading_price( *it ) );
+                const auto val = wants_npc->value( *it, market_price );
+                spill = npc_is_giver
+                        ? !wants_npc->wants_to_sell( *it, val, market_price )
+                        : !wants_npc->wants_to_buy( *it, val, market_price );
+            }
+            if( spill ) {
+                giver.i_add( container.contents.remove_top( it ) );
+            }
+        }
+    };
 
     std::ranges::for_each( selected, [&]( item_pricing * ip_ptr ) {
         auto &ip = *ip_ptr;
@@ -73,6 +136,7 @@ void npc_trading::transfer_items( std::vector<item_pricing> &stuff, Character &,
             const auto count = npc_gives ? ip.u_has : ip.npc_has;
             gift.set_owner( receiver );
             std::ranges::for_each( std::views::take( ip.locs, count ), [&]( auto * it ) {
+                spill_contents( *it );
                 receiver.i_add( it->detach() );
             } );
         }
@@ -86,6 +150,8 @@ std::vector<item_pricing> npc_trading::init_selling( npc &np )
         std::ranges::for_each( slice, [&]( const auto & i ) {
             auto &it = *i->front();
 
+            // DDA init_selling: npc::value( it ) values the whole item; give_equipment()
+            // detaches it with its contents, so there are no separate rows to leave out.
             const auto price = it.price( true );
             auto val = np.value( it );
             if( np.wants_to_sell( it, val, price ) ) {
@@ -155,8 +221,8 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
     double adjust = net_price_adjustment( buyer, seller );
 
     const auto check_item = [fac, adjust, is_npc, &np, &result,
-                                  &seller]( const std::vector<item *> &locs,
-    int count = 1 ) {
+                                  &seller]( const std::vector<item *> &locs, int count = 1,
+    bool contents_are_rows = false ) {
         item *it_ptr = locs.front();
         if( it_ptr == nullptr || it_ptr->is_null() ) {
             return;
@@ -168,7 +234,11 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
             return;
         }
 
-        const int market_price = it.price( true );
+        // DDA npctrade.cpp:184: a row is priced from price_no_contents. Only the carried
+        // stacks get a row per nested item (TR1), so only there must the row leave its
+        // contents out; stock, map and vehicle rows move whole and keep item::price().
+        const auto base_price = contents_are_rows ? trading_price( it ) : it.price( true );
+        const auto market_price = static_cast<int>( base_price );
         int val = np.value( it, market_price );
         if( ( is_npc && np.wants_to_sell( it, val, market_price ) ) ||
             np.wants_to_buy( it, val, market_price ) ) {
@@ -198,7 +268,7 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
             }
         }
         for( const carried_stack &stack : stacks ) {
-            check_item( stack, stack.size() );
+            check_item( stack, stack.size(), true );
             for( item *child : stack ) {
                 self( *child, self );
             }
@@ -206,7 +276,7 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
     };
 
     for( const carried_stack &stack : carried_item_stacks( seller ) ) {
-        check_item( stack, stack.size() );
+        check_item( stack, stack.size(), true );
         for( item *child : stack ) {
             add_nested( *child, add_nested );
         }
