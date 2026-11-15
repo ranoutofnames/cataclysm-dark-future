@@ -173,3 +173,53 @@ The seeded-defect proof of AT5b step 5 (forcing `holds_contents()` to `is_contai
 `holds_contents()` is file-static in `inventory_ui.cpp`, and this packet does not edit source.
 The `collapse` and `hide-all` rows are the checks that would report that defect: a worn container
 whose contents stay listed.
+## Kit and group spawn audit
+
+`tests/audit_kits_test.cpp` (`[audit][kits]`) is the dynamic counterpart of A4,
+A6 and A7: it spawns the real starting kits, item groups and migrations in the
+game and checks where the items actually go. It needs a built test binary and
+never changes data. Run it through the shard runner with a positive tag:
+
+```
+python -I tools/cdf_test.py --src <tree> --tags "[audit][kits]"
+CDF_SWEEP_SHARD=1/8 python -I tools/cdf_test.py --src <tree> --tags "[audit][kits]"
+```
+
+`CDF_SWEEP_SHARD=i/n` (1-based) gives each process every n-th profession, item
+group and migration; the default is one process for everything. The report
+runner sets the shard count.
+
+The case writes one row per finding to `report\sweep-kits.tsv`, columns
+`check`, `id`, `severity`, `detail`. Findings whose `(check, id)` pair is in
+`tests/data/audit/allow.tsv` (check id, item id, reason, date) are counted but
+do not fail the run; a missing allowlist is an empty one. The allowlist is for
+deliberate CDF-vs-DDA differences, not for silencing a check.
+
+| Check | Severity | What it reports |
+|---|---|---|
+| K1 | error | A worn item's top-level contents do not fit the pocket they sit in (`can_contain` re-check with `ignore_contents`), or a child sits in the MIGRATION pocket. |
+| K2 | error | A starting item is on the map at the start position, or the kit's item count changes between the spawn and the character + overflow (DDA `starting_items` conservation check). |
+| K3 | error | An item the character could not store ("overflow", no pocket accepts it), or a non-stack item with a nonzero count and zero volume. |
+| K4 | error | A debugmsg while spawning or storing the kit. |
+| K5 | error | `item::contents` of a worn item does not survive a JSON save/load round trip, or the round trip itself reports a debugmsg. |
+| G1 | error | An item group spawned an item whose type id does not exist. |
+| G2 | error | A spawned item's contents tree violates its parent's pocket rules (same re-check as K1). |
+| G3 | info | A group with entries produced nothing from all three seeds (42, 7, 123). Not a failure; it may be a probability-0 group. |
+| G4 | error | A debugmsg while spawning an item group. |
+| M1 | error | A migration's replacement id does not exist. |
+| M2 | error | A migration chain is longer than three steps or contains a cycle (A6's dynamic form). |
+| M3 | error | Spawning the migrated id fails, returns a different type, or reports a debugmsg. |
+
+Professions are checked for both genders and five starting-trait sets. CDF has
+no hobby system, so the trait vectors DDA's `new_character_test` passes to
+`profession::items` stand in for hobbies; they are passed to the item
+substitutions only, because setting mutations on the character is what makes
+that test take hours and does not change what the K checks inspect. Kits use
+seed 42 (male) and 999 (female); item groups use 42, 7 and 123; all fixed, so a
+shard is reproducible.
+
+`TEST_CASE("kit and group spawn seeded defects", "[audit][kits][defect]")` is
+the self-test required by PLAN section 6: it force-inserts a 20 L television
+into a worn backpack's 15 L pocket and requires a K1 row, and points a
+migration at a missing id and requires an M1 row. If either stops reporting,
+the sweep is broken, not green.
