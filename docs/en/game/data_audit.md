@@ -50,3 +50,27 @@ py -3 tools/pocket_diff.py
 `C:\CDF\CDDA SRC`, revision `b4b62254ae2`), resolves `copy-from` chains, and writes
 `report/pocket-diff.tsv` with one row per differing field (`item_id`, `pocket_index`, `field`,
 `cdf`, `dda`, `note`). This is how synthesized BN pockets show up as real differences.
+
+## UI sweep (AT5b)
+
+`tests/audit_sweep_ui_test.cpp` (`[audit][sweep][ui]`) takes every armor and tool-armor type that
+has a container pocket, in id order, wears it, puts up to two accepted items inside and drives
+the inventory selector:
+
+| Flow | Check |
+|---|---|
+| `wear` | spawn and wear the type with no debugmsg |
+| `collapse` | collapse the worn row: its contents rows leave the list and the row stays; collapse again and they return |
+| `hide-all` | the show/hide-all cycle: show all, hide every container's contents, then back to the pocket settings |
+| `highlight` | the contents carry the child mark, the worn row the parent mark (DDA `inventory_ui.cpp:4335-4371`) |
+| `insert` | the insert selector over the worn container lists the candidate and its header volume line is non-empty |
+
+Rows go to `report/sweep-ui.tsv` (`item`, `flow`, `ok`, `reason`); a failing row fails the test
+unless `report/sweep-ui-allow.tsv` lists it by item and flow. `CDF_SWEEP_LIMIT=N` and
+`CDF_SWEEP_SHARD=i/n` work as for the flow sweep. A type with no accepted probe in the fixed
+candidate pool is recorded as a successful `skipped` row, so it stays visible in the table.
+
+The seeded-defect proof of AT5b step 5 (forcing `holds_contents()` to `is_container()`) is manual:
+`holds_contents()` is file-static in `inventory_ui.cpp`, and this packet does not edit source.
+The `collapse` and `hide-all` rows are the checks that would report that defect: a worn container
+whose contents stay listed.
