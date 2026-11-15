@@ -685,11 +685,25 @@ void game::reenter_fullscreen()
     }
 }
 
+// PL-64 G21. uistatedata::deserialize resets hide_entries_override, but only runs when the world
+// has a uistate.json; a new world (or a load with the file missing) never calls it, so a value left
+// from a previously loaded world survived. This is the unconditional reset the load paths call.
+// Declared here and in tests/apply_menu_test.cpp, not in game.h (a hook there would rebuild its
+// includers); keep the two signatures identical.
+void reset_uistate_hide_entries_override()
+{
+    uistate.hide_entries_override.reset();
+}
+
 /*
  * Initialize more stuff after mapbuffer is loaded.
  */
 void game::setup( bool load_world_modfiles )
 {
+    // PL-64 G21: the hide-all contents override is session state, like DDA's (DDA starts every
+    // load from nullopt). Reset it unconditionally, before the world is opened: a new world has no
+    // uistate.json, so the reset inside uistatedata::deserialize never runs there.
+    reset_uistate_hide_entries_override();
     lua_state_hooks_ready = false;
     last_avatar_omt_.reset();
     loading_ui ui( true );
@@ -4290,6 +4304,9 @@ bool game::load( const save_t &name )
     get_auto_notes_settings().load();   // Load character auto notes settings
     get_safemode().load_character(); // Load character safemode rules
     zone_manager::get_manager().load_zones(); // Load character world zones
+    // PL-64 G21: every load starts with no hide-all override, even when the world has no
+    // uistate.json (game::setup() already reset it; this covers callers that load a save directly).
+    reset_uistate_hide_entries_override();
     get_active_world()->read_from_file( "uistate.json", []( std::istream & stream ) {
         JsonIn jsin( stream );
         uistate.deserialize( jsin );

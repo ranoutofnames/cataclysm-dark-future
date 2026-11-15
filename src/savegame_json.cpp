@@ -5348,7 +5348,9 @@ void uistatedata::deserialize( const JsonObject &jo )
     jo.read( "adv_inv_container_type", adv_inv_container_type );
     jo.read( "adv_inv_container_content_type", adv_inv_container_content_type );
     jo.read( "unload_auto_contain", unload_auto_contain );
-    // a save without the key must give back the default (nullopt), not the value left in memory
+    // a save without the key must give back the default (nullopt), not the value left in memory.
+    // PL-64 G21: the unconditional per-load reset lives in reset_uistate_hide_entries_override()
+    // (game.cpp); this one keeps a direct deserialize of a file without the key honest too.
     hide_entries_override.reset();
     jo.read( "hide_entries_override", hide_entries_override );
     jo.read( "numpad_navigation", numpad_navigation );
