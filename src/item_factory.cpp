@@ -4226,6 +4226,9 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
         set_properties_from_json( jo, "properties", def );
     }
 
+    // DDA item_factory.cpp:4595: how many copies of this type can be worn at once.
+    optional( jo, def.was_loaded, "max_worn", def.max_worn, MAX_WORN_PER_TYPE );
+
     assign( jo, "techniques", def.techniques );
 
     set_use_methods_from_json( jo, "use_action", def.use_methods, def.ammo_scale );

@@ -24,6 +24,7 @@
 #include "item_category.h"
 #include "item_contents.h"
 #include "item_stack.h"
+#include "itype.h"
 #include "map/map.h"
 #include "map/map_selector.h"
 #include "messages.h"
@@ -2406,7 +2407,7 @@ bool advanced_inventory::query_charges( aim_location destarea, const advanced_in
     if( destarea == AIM_WORN ) {
         const auto &id = sitem.items.front()->typeId();
         // how many slots are available for the item?
-        const int slots_available = MAX_WORN_PER_TYPE - g->u.amount_worn( id );
+        const int slots_available = id->max_worn - g->u.amount_worn( id );
         // base the amount to equip on amount of slots available
         amount = std::min( slots_available, input_amount );
     }

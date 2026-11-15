@@ -763,6 +763,7 @@
       "OUTER",
       "RAINPROOF"
     ],
+    "max_worn": 1,
     "armor_portion_data": [
       {
         "covers": [
@@ -832,6 +833,7 @@
       "OUTER",
       "RAINPROOF"
     ],
+    "max_worn": 1,
     "armor_portion_data": [
       {
         "covers": [
