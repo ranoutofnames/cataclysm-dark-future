@@ -4270,6 +4270,7 @@ std::string give_item_to( npc &p, bool allow_use )
         else if( new_weapon_value > cur_weapon_value ) {
             p.wield( given );
             reason = _( "Thanks, I'll wield that now." );
+            taken = true;
         }// HACK: is_gun here is a hack to prevent NPCs wearing guns if they don't want to use them
         else if( !given.is_gun() && given.is_armor() ) {
             //if it is impossible to wear return why
@@ -4298,6 +4299,8 @@ std::string give_item_to( npc &p, bool allow_use )
         const ret_val<bool> stash = p.can_stash( given );
         if( stash.success() && p.can_pick_weight( given ) ) {
             reason = _( "Thanks, I'll carry that now." );
+            // set the item given to be favorited so it's not dropped automatically
+            given.set_favorite( true );
             taken = true;
             p.i_add( given.detach() );
         } else {
