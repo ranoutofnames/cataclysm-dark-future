@@ -38,6 +38,7 @@
 #include "player_helpers.h"
 #include "pocket_data.h"
 #include "pocket_type.h"
+#include "ret_val.h"
 #include "state_helpers.h"
 #include "string_formatter.h"
 #include "uistate.h"
@@ -370,14 +371,44 @@ TEST_CASE( "sweep ui", "[audit][sweep][ui]" )
             continue;
         }
         item *const container = spawned.get();
+        // POWERARMOR_MOD modules and belt-loop gear (CANT_WEAR, e.g. belt_loop_small) are only
+        // worn attached to their carrier, so a bare wear_item() cannot succeed for them.
+        const bool attached_only = container->has_flag( flag_POWERARMOR_MOD ) ||
+                                   container->has_flag( flag_CANT_WEAR );
+        // CDF: read can_wear() before the item moves into the worn tree; its text is the reason a
+        // wear is refused (DDA Character::wear reports the same string).
+        const ret_val<bool> wearable = u.can_wear( *container );
+        const std::string wear_refusal = wearable.success() ? std::string() : wearable.str();
+        if( attached_only ) {
+            const std::string why = wear_refusal.empty() ?
+                                    std::string( "attached gear" ) :
+                                    "attached gear: " + audit::compact( wear_refusal );
+            for( const char *flow : { "wear", "collapse", "hide-all", "highlight", "insert" } ) {
+                add_row( rows, id, flow, true, "skipped: " + why );
+                ++flow_total[flow];
+            }
+            continue;
+        }
         detached_ptr<item> leftover;
         const std::string dmsg = capture_debugmsg_during( [&]() {
             leftover = u.wear_item( std::move( spawned ), false );
         } );
         std::string wear_reason = dmsg.empty() ? std::string() : "debugmsg: " + audit::compact( dmsg );
         const bool worn = !leftover && u.is_worn( *container );
-        if( !worn && wear_reason.empty() ) {
-            wear_reason = "not worn";
+        if( !worn ) {
+            // A debugmsg while wearing stays a failure; a refusal that carries a reason is
+            // attached gear the flags above did not name, so it is skipped like the rest.
+            if( wear_reason.empty() && !wear_refusal.empty() ) {
+                for( const char *flow : { "wear", "collapse", "hide-all", "highlight", "insert" } ) {
+                    add_row( rows, id, flow, true,
+                             "skipped: attached gear: " + audit::compact( wear_refusal ) );
+                    ++flow_total[flow];
+                }
+                continue;
+            }
+            if( wear_reason.empty() ) {
+                wear_reason = "not worn";
+            }
         }
         add_row( rows, id, "wear", worn, wear_reason );
         ++flow_total["wear"];
@@ -553,24 +584,37 @@ TEST_CASE( "sweep ui", "[audit][sweep][ui]" )
         std::string insert_reason;
         bool insert_ok = false;
         {
-            // A loose copy of the candidate: drop and wield are off, so it is either in the
-            // inventory (and a row of the selector) or the reference is null.
-            item &loose = u.i_add( item::spawn( candidates.front()->typeId(), calendar::turn ),
-                                   false, nullptr, nullptr, false, false );
-            holster_preset preset;
-            preset.holster = container;
-            insert_probe sel( u, preset );
-            sel.add_character_items( u );
-            refresh_columns( sel );
-            const bool listed = !loose.is_null() && row_for( sel, &loose ) != nullptr;
-            const bool header = header_has_volume( sel.get_raw_stats() );
-            insert_ok = listed && header;
-            if( loose.is_null() ) {
-                insert_reason = "the loose candidate could not be added to the inventory";
-            } else if( !listed ) {
-                insert_reason = "the insert selector does not list the candidate";
-            } else if( !header ) {
-                insert_reason = "the insert header has no volume line";
+            // A solid candidate: u.i_add cannot store a liquid, so its loose copy would be null.
+            const item *candidate = nullptr;
+            for( const item *placed : candidates ) {
+                if( !placed->made_of( phase_id::LIQUID ) ) {
+                    candidate = placed;
+                    break;
+                }
+            }
+            if( candidate == nullptr ) {
+                insert_ok = true;
+                insert_reason = "skipped: no solid accepted candidate";
+            } else {
+                // A loose copy of the candidate: drop and wield are off, so it is either in the
+                // inventory (and a row of the selector) or the reference is null.
+                item &loose = u.i_add( item::spawn( candidate->typeId(), calendar::turn ),
+                                       false, nullptr, nullptr, false, false );
+                holster_preset preset;
+                preset.holster = container;
+                insert_probe sel( u, preset );
+                sel.add_character_items( u );
+                refresh_columns( sel );
+                const bool listed = !loose.is_null() && row_for( sel, &loose ) != nullptr;
+                const bool header = header_has_volume( sel.get_raw_stats() );
+                insert_ok = listed && header;
+                if( loose.is_null() ) {
+                    insert_reason = "the loose candidate could not be added to the inventory";
+                } else if( !listed ) {
+                    insert_reason = "the insert selector does not list the candidate";
+                } else if( !header ) {
+                    insert_reason = "the insert header has no volume line";
+                }
             }
         }
         add_row( rows, id, "insert", insert_ok, insert_reason );

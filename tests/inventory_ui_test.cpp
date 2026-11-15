@@ -861,7 +861,8 @@ TEST_CASE("skip unselectable", "[inventory][ui][p3]") {
     }
     inventory_selector_preset preset;
     inventory_column col(preset);
-    // enabled, disabled, enabled
+    // Added enabled, disabled, enabled; FM3's sort_compare puts the disabled row last, so the rows
+    // come out [items[0], items[2], items[1(disabled)]].
     col.add_entry(inventory_entry({items[0].get()}, nullptr, true));
     col.add_entry(inventory_entry({items[1].get()}, nullptr, false));
     col.add_entry(inventory_entry({items[2].get()}, nullptr, true));
@@ -876,16 +877,21 @@ TEST_CASE("skip unselectable", "[inventory][ui][p3]") {
     }
     REQUIRE(row_index.size() == 3);
     REQUIRE(col.entries[row_index[0]].any_item() == items[0].get());
-    REQUIRE(col.entries[row_index[1]].any_item() == items[1].get());
-    REQUIRE_FALSE(col.entries[row_index[1]].is_selectable());
+    REQUIRE(col.entries[row_index[1]].any_item() == items[2].get());
+    REQUIRE(col.entries[row_index[2]].any_item() == items[1].get());
+    REQUIRE_FALSE(col.entries[row_index[2]].is_selectable());
 
     col.toggle_skip_unselectable(true);
-    CHECK(col.next_highlightable_index(row_index[0], scroll_direction::FORWARD) == row_index[2]);
-    CHECK(col.next_highlightable_index(row_index[2], scroll_direction::BACKWARD) == row_index[0]);
+    // The disabled row at the end is skipped over, and a forward step off it wraps to row 0.
+    CHECK(col.next_highlightable_index(row_index[0], scroll_direction::FORWARD) == row_index[1]);
+    CHECK(col.next_highlightable_index(row_index[1], scroll_direction::FORWARD) == row_index[0]);
+    CHECK(col.next_highlightable_index(row_index[1], scroll_direction::BACKWARD) == row_index[0]);
 
     col.toggle_skip_unselectable(false);
+    // Skipping off: the cursor may land on the disabled row, and the last row wraps to the first.
     CHECK(col.next_highlightable_index(row_index[0], scroll_direction::FORWARD) == row_index[1]);
-    CHECK(col.next_highlightable_index(row_index[2], scroll_direction::BACKWARD) == row_index[1]);
+    CHECK(col.next_highlightable_index(row_index[1], scroll_direction::FORWARD) == row_index[2]);
+    CHECK(col.next_highlightable_index(row_index[2], scroll_direction::FORWARD) == row_index[0]);
 
     SECTION("the selector flag reaches its columns") {
         const bool before = inventory_selector::get_skip_unselectable();
@@ -2043,14 +2049,15 @@ TEST_CASE("first layout highlights the first selectable row", "[inventory][ui][f
     carried_pack_fixture f;
     fm3_selector sel(f.u);
     sel.add_character_items(f.u);
-    // Before the first layout nothing is highlighted.
-    CHECK(sel.get_active_column().get_selected_index() == static_cast<size_t>(-1));
-    CHECK_FALSE(sel.get_selected().is_item());
-
+    // CDF: add_character_items already pages its columns through move_entries_to -> prepare_paging
+    // (DDA the same), so the first row is highlighted before the first draw; only the column
+    // widths wait for the layout.
     sel.prepare_layout(120, 40);
 
     REQUIRE(sel.get_selected().is_item());
-    CHECK(sel.get_selected().any_item() == f.pack);
+    // DDA's categories view puts the worn contents in the inventory column, whose first
+    // selectable row is the rock, not the worn pack in the gear column.
+    CHECK(sel.get_selected().any_item() == f.rock);
 }
 
 // PL-63 FM4: header, footer, stats bars, count prompt and selection column

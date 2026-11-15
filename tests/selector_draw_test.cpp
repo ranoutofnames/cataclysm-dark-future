@@ -449,8 +449,11 @@ TEST_CASE( "fixture wears its items", "[audit][ui]" ) {
     CHECK( f.u.is_worn( *f.jacket ) );
     REQUIRE( f.box->parent_item() == f.jacket );
     REQUIRE( f.rock->parent_item() == f.box );
-    CHECK( f.box->where() == item_location_type::container );
-    CHECK( f.rock->where() == item_location_type::container );
+    // CDF: item_location of a nested item is its owning top-level location, so a box (and a rock)
+    // inside a worn jacket reports character, not container (src/item.cpp:12830-12840);
+    // parent_item() above is what proves the nesting.
+    CHECK( f.box->where() == item_location_type::character );
+    CHECK( f.rock->where() == item_location_type::character );
 }
 
 // T4 and T5: the owner case.  A worn jacket holding a box shows the open chevron; collapsing the
@@ -575,7 +578,14 @@ TEST_CASE( "hint line names the bound keys", "[audit][ui]" ) {
     for( const char *action : { "INVENTORY_FILTER", "VIEW_CATEGORY_MODE", "SHOW_HIDE_CONTENTS",
                                 "EXAMINE_CONTENTS", "NEXT_COLUMN", "PREV_COLUMN" } ) {
         CAPTURE( action );
-        CHECK_FALSE( probe.ctxt.keys_bound_to( action ).empty() );
+        if( std::string( action ) == "PREV_COLUMN" ) {
+            // DDA binds PREV_COLUMN to BACKTAB and shift+TAB, which are not printable, so
+            // keys_bound_to() has no key to report (src/input.cpp:838-855); get_desc lists them
+            // (DDA input_context.cpp:312-352).
+            CHECK_FALSE( probe.ctxt.get_desc( action ).empty() );
+        } else {
+            CHECK_FALSE( probe.ctxt.keys_bound_to( action ).empty() );
+        }
     }
 
     inventory_selector sel( f.u );

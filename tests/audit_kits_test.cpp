@@ -678,14 +678,22 @@ TEST_CASE( "kit and group spawn seeded defects", "[audit][kits][defect]" )
         ch.set_body();
         ch.recalc_hp();
 
-        detached_ptr<item> bag = item::spawn( "backpack" );
+        // CDF: the backpack's worn storage is its item_overlay layout (synthesize_pockets,
+        // src/item_factory.cpp:1252-1259), a 25 L main pocket that takes the 20 L television, so
+        // the seed wears a bag whose pocket it cannot fit: the purse's single pocket is 5 L.
+        detached_ptr<item> bag = item::spawn( "purse" );
         item *const bag_ptr = &*bag;
         REQUIRE( ch.wear_item( std::move( bag ), false ) == nullptr );
         REQUIRE( !bag_ptr->contents.get_pockets( pocket_type::CONTAINER ).empty() );
-        // 20 L television into the backpack's 15 L pocket: force_insert_item skips the checks,
+        // 20 L television into the purse's 5 L pocket: force_insert_item skips the checks,
         // exactly the kind of defect a migration or a spawn modifier can create.
         bag_ptr->force_insert_item( item::spawn( "television" ), pocket_type::CONTAINER );
 
+        // The rule itself, proved on the bag: K1 must refuse the television.
+        std::string reason;
+        CHECK_FALSE( contents_fit( *bag_ptr, reason ) );
+        CHECK_FALSE( reason.empty() );
+        // and the worn walk reports it as a second check.
         row_sink sink;
         check_worn_items( sink, ch );
         CHECK( sink.has( "K1" ) );
