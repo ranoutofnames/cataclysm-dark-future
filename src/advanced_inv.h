@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cctype>
+#include <cstddef>
 #include <functional>
 #include <string>
 #include <vector>
@@ -34,6 +35,71 @@ struct advanced_inv_inventory_head_data {
 };
 
 advanced_inv_inventory_head_data advanced_inv_inventory_head( const Character &who );
+
+// FM6 a1 (DDA advanced_inv.cpp:298-304): true when @p it is the other pane's container or an
+// ancestor of it.  Such a row is highlighted and the two panes are joined with a pointer.
+bool advanced_inv_is_other_pane_container( const item &it, const item *other_pane_container );
+/**
+ * FM6 a1: the page-relative line of the other pane's container in @p items, or -1.  @p page_start
+ * is the index of the first row of the page and @p lines the number of rows on it.
+ */
+int advanced_inv_other_cont_line( const std::vector<advanced_inv_listitem> &items, int page_start,
+                                  int lines, const item *other_pane_container );
+
+/**
+ * FM6 a2/a3 (DDA advanced_inv.cpp:317-373): which header line print_items draws on row 4.
+ * The container branch applies only when the container pane really has a container; otherwise the
+ * square branch prints the totals of the placeholder square, as DDA does.
+ */
+enum class advanced_inv_head_kind {
+    character,
+    container,
+    all,
+    square
+};
+advanced_inv_head_kind advanced_inv_head_kind_for( aim_location area, bool has_container );
+
+/** FM6 a2: the container header of DDA advanced_inv.cpp:317-348, split for the two colours. */
+struct advanced_inv_container_head_data {
+    std::string weight_contained;
+    std::string weight_capacity;
+    bool weight_over = false;
+    std::string volume_contained;
+    std::string volume_capacity;
+    bool volume_over = false;
+};
+advanced_inv_container_head_data advanced_inv_container_head( const item &container );
+/** FM6 a2: red when over capacity, light green otherwise (DDA advanced_inv.cpp:340-346). */
+nc_color advanced_inv_capacity_color( bool over_capacity );
+
+/**
+ * FM6 a7 (DDA advanced_inv.cpp:853-865): the page line is drawn on the active pane even for a
+ * single page, so an empty list still reads "page 1 of 1".
+ */
+int advanced_inv_page_count( size_t item_count, int items_per_page );
+
+/**
+ * FM6, G46 (DDA advanced_inv.cpp:1127-1156): how much of the source pane's load does not fit in
+ * the destination.  @ref over_volume and @ref over_weight are the source totals minus what the
+ * destination has free, so they are positive only when something is short.  @ref limitation is
+ * DDA's wording for the prompt, empty when everything fits.
+ */
+struct advanced_inv_move_all_limit {
+    units::volume over_volume = 0_ml;
+    units::mass over_weight = 0_gram;
+    std::string limitation;
+};
+
+/**
+ * FM6, G46: the move-all pre-check.  @p check_weight is true for the destinations that carry
+ * weight (the inventory and a container), as in DDA; a map square has no weight limit.
+ */
+advanced_inv_move_all_limit advanced_inv_move_all_limit_for(
+    units::volume src_volume, units::mass src_weight,
+    units::volume dest_volume_free, units::mass dest_weight_free, bool check_weight );
+
+/** FM6 b (DDA advanced_inv.cpp:211-244): the "Sort:" header and menu label of a sort mode. */
+std::string advanced_inv_sort_name( advanced_inv_sortby sortby );
 
 /**
  * P3-UI5: the items UNLOAD_CONTAINER takes out of @p container (the top items of its container
@@ -154,13 +220,19 @@ class advanced_inventory
         static std::string get_sortname( advanced_inv_sortby sortby );
         bool move_all_items( bool nested_call = false );
         /**
+         * FM6, G46 (DDA advanced_inv.cpp:1127-1189): does the destination have room and weight
+         * capacity for everything in the source pane?  If not, ask whether to move as much as
+         * fits, naming what is short.  Move-all may proceed only if the player agrees.
+         */
+        bool move_all_fits( advanced_inventory_pane &spane, advanced_inventory_pane &dpane );
+        /**
          * P3-UI5: move_all_items for a pane that shows a container (as the source or as the
          * destination).  The list is built from the rows of the source pane, not from a map tile.
          * @return true if an activity was queued
          */
         bool move_all_container_items( advanced_inventory_pane &spane, advanced_inventory_pane &dpane,
                                        bool nested_call );
-        void print_items( const advanced_inventory_pane &pane, bool active );
+        void print_items( advanced_inventory_pane &pane, bool active );
         void recalc_pane( side p );
         /**
          * P3-UI5: a container shown by a pane can be destroyed or moved while the advanced

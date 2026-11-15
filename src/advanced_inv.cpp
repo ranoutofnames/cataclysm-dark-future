@@ -51,6 +51,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <initializer_list>
 #include <list>
 #include <memory>
@@ -92,23 +93,25 @@ advanced_inventory::advanced_inventory()
     , squares( {
     {
         //               pos in window
-        { AIM_INVENTORY, point( 22, 2 ), tripoint_rel_ms::zero(),       _( "Inventory" ),          _( "IN" ),  "I", "ITEMS_INVENTORY", AIM_INVENTORY},
-        { AIM_SOUTHWEST, point( 27, 3 ), tripoint_rel_ms::south_west(), _( "South West" ),         _( "SW" ),  "1", "ITEMS_SW",        AIM_WEST},
-        { AIM_SOUTH,     point( 30, 3 ), tripoint_rel_ms::south(),      _( "South" ),              _( "S" ),   "2", "ITEMS_S",         AIM_SOUTHWEST},
-        { AIM_SOUTHEAST, point( 33, 3 ), tripoint_rel_ms::south_east(), _( "South East" ),         _( "SE" ),  "3", "ITEMS_SE",        AIM_SOUTH},
-        { AIM_WEST,      point( 27, 2 ), tripoint_rel_ms::west(),       _( "West" ),               _( "W" ),   "4", "ITEMS_W",         AIM_NORTHWEST},
-        { AIM_CENTER,    point( 30, 2 ), tripoint_rel_ms::zero(),       _( "Directly below you" ), _( "DN" ),  "5", "ITEMS_CE",        AIM_CENTER},
-        { AIM_EAST,      point( 33, 2 ), tripoint_rel_ms::east(),       _( "East" ),               _( "E" ),   "6", "ITEMS_E",         AIM_SOUTHEAST},
-        { AIM_NORTHWEST, point( 27, 1 ), tripoint_rel_ms::north_west(), _( "North West" ),         _( "NW" ),  "7", "ITEMS_NW",        AIM_NORTH},
-        { AIM_NORTH,     point( 30, 1 ), tripoint_rel_ms::north(),      _( "North" ),              _( "N" ),   "8", "ITEMS_N",         AIM_NORTHEAST},
-        { AIM_NORTHEAST, point( 33, 1 ), tripoint_rel_ms::north_east(), _( "North East" ),         _( "NE" ),  "9", "ITEMS_NE",        AIM_EAST},
-        { AIM_ABOVE,     point( 36, 1 ), tripoint_rel_ms::above(),      _( "Above"),               _( "UP"),   "<", "ITEMS_UP",        AIM_ABOVE },
-        { AIM_BELOW,     point( 36, 2 ), tripoint_rel_ms::below(),      _( "Below"),               _( "DN"),   ">", "ITEMS_DOWN",      AIM_BELOW },
-        { AIM_DRAGGED,   point( 22, 1 ), tripoint_rel_ms::zero(),       _( "Grabbed Vehicle" ),    _( "GR" ),  "D", "ITEMS_DRAGGED_CONTAINER", AIM_DRAGGED},
-        { AIM_ALL,       point( 19, 3 ), tripoint_rel_ms::zero(),       _( "Surrounding area" ),   _( "AL" ),  "A", "ITEMS_AROUND",    AIM_ALL},
-        { AIM_CONTAINER, point( 19, 1 ), tripoint_rel_ms::zero(),       _( "Container" ),          _( "CN" ),  "C", "ITEMS_CONTAINER", AIM_CONTAINER},
-        { AIM_WORN,      point( 22, 3 ), tripoint_rel_ms::zero(),       _( "Worn Items" ),         _( "WR" ),  "W", "ITEMS_WORN",      AIM_WORN},
-        { AIM_PARENT,    point( 19, 2 ), tripoint_rel_ms::zero(),       "",                        "",         "X", "ITEMS_PARENT",    AIM_PARENT}
+        // FM6 a3, DDA advanced_inv.cpp:150-164: the grid moved three cells right; CDF's Above
+        // and Below squares (KEEP) sit to the right of it.
+        { AIM_INVENTORY, point( 25, 2 ), tripoint_rel_ms::zero(),       _( "Inventory" ),          _( "IN" ),  "I", "ITEMS_INVENTORY", AIM_INVENTORY},
+        { AIM_SOUTHWEST, point( 30, 3 ), tripoint_rel_ms::south_west(), _( "South West" ),         _( "SW" ),  "1", "ITEMS_SW",        AIM_WEST},
+        { AIM_SOUTH,     point( 33, 3 ), tripoint_rel_ms::south(),      _( "South" ),              _( "S" ),   "2", "ITEMS_S",         AIM_SOUTHWEST},
+        { AIM_SOUTHEAST, point( 36, 3 ), tripoint_rel_ms::south_east(), _( "South East" ),         _( "SE" ),  "3", "ITEMS_SE",        AIM_SOUTH},
+        { AIM_WEST,      point( 30, 2 ), tripoint_rel_ms::west(),       _( "West" ),               _( "W" ),   "4", "ITEMS_W",         AIM_NORTHWEST},
+        { AIM_CENTER,    point( 33, 2 ), tripoint_rel_ms::zero(),       _( "Directly below you" ), _( "DN" ),  "5", "ITEMS_CE",        AIM_CENTER},
+        { AIM_EAST,      point( 36, 2 ), tripoint_rel_ms::east(),       _( "East" ),               _( "E" ),   "6", "ITEMS_E",         AIM_SOUTHEAST},
+        { AIM_NORTHWEST, point( 30, 1 ), tripoint_rel_ms::north_west(), _( "North West" ),         _( "NW" ),  "7", "ITEMS_NW",        AIM_NORTH},
+        { AIM_NORTH,     point( 33, 1 ), tripoint_rel_ms::north(),      _( "North" ),              _( "N" ),   "8", "ITEMS_N",         AIM_NORTHEAST},
+        { AIM_NORTHEAST, point( 36, 1 ), tripoint_rel_ms::north_east(), _( "North East" ),         _( "NE" ),  "9", "ITEMS_NE",        AIM_EAST},
+        { AIM_ABOVE,     point( 39, 1 ), tripoint_rel_ms::above(),      _( "Above"),               _( "UP"),   "<", "ITEMS_UP",        AIM_ABOVE },
+        { AIM_BELOW,     point( 39, 2 ), tripoint_rel_ms::below(),      _( "Below"),               _( "DN"),   ">", "ITEMS_DOWN",      AIM_BELOW },
+        { AIM_DRAGGED,   point( 22, 3 ), tripoint_rel_ms::zero(),       _( "Grabbed Vehicle" ),    _( "GR" ),  "D", "ITEMS_DRAGGED_CONTAINER", AIM_DRAGGED},
+        { AIM_ALL,       point( 25, 3 ), tripoint_rel_ms::zero(),       _( "Surrounding area" ),   _( "AL" ),  "A", "ITEMS_AROUND",    AIM_ALL},
+        { AIM_CONTAINER, point( 25, 1 ), tripoint_rel_ms::zero(),       _( "Container" ),          _( "CN" ),  "C", "ITEMS_CONTAINER", AIM_CONTAINER},
+        { AIM_WORN,      point( 22, 2 ), tripoint_rel_ms::zero(),       _( "Worn Items" ),         _( "WR" ),  "W", "ITEMS_WORN",      AIM_WORN},
+        { AIM_PARENT,    point( 22, 1 ), tripoint_rel_ms::zero(),       "",                        "",         "X", "ITEMS_PARENT",    AIM_PARENT}
     }
 } )
 {
@@ -146,7 +149,7 @@ void advanced_inventory::load_settings()
     save_state->exit_code = exit_none;
 }
 
-std::string advanced_inventory::get_sortname( advanced_inv_sortby sortby )
+std::string advanced_inv_sort_name( advanced_inv_sortby sortby )
 {
     switch( sortby ) {
         case SORTBY_NONE:
@@ -157,20 +160,137 @@ std::string advanced_inventory::get_sortname( advanced_inv_sortby sortby )
             return _( "weight" );
         case SORTBY_VOLUME:
             return _( "volume" );
+        case SORTBY_DENSITY:
+            return _( "density" );
         case SORTBY_CHARGES:
             return _( "charges" );
         case SORTBY_CATEGORY:
             return _( "category" );
         case SORTBY_DAMAGE:
-            return _( "damage" );
+            // FM6 b, DDA advanced_inv.cpp:228: DDA names the sort by the damage it deals
+            return _( "offensive power" );
         case SORTBY_AMMO:
             return _( "ammo/charge type" );
         case SORTBY_SPOILAGE:
             return _( "spoilage" );
         case SORTBY_PRICE:
             return _( "barter value" );
+        case SORTBY_PRICEPERVOLUME:
+            return _( "barter value / volume" );
+        case SORTBY_PRICEPERWEIGHT:
+            return _( "barter value / weight" );
+        case SORTBY_STACKS:
+            return _( "amount" );
     }
     return "!BUG!";
+}
+
+std::string advanced_inventory::get_sortname( advanced_inv_sortby sortby )
+{
+    return advanced_inv_sort_name( sortby );
+}
+
+// FM6 a1 (DDA advanced_inv.cpp:298-304): the set DDA builds there is the other pane's container
+// and its ancestors, so a row is highlighted when it is one of them.
+bool advanced_inv_is_other_pane_container( const item &it, const item *other_pane_container )
+{
+    const item *candidate = other_pane_container;
+    while( candidate != nullptr ) {
+        if( candidate == &it ) {
+            return true;
+        }
+        candidate = candidate->parent_item();
+    }
+    return false;
+}
+
+int advanced_inv_other_cont_line( const std::vector<advanced_inv_listitem> &items, int page_start,
+                                  int lines, const item *other_pane_container )
+{
+    if( other_pane_container == nullptr || lines <= 0 ) {
+        return -1;
+    }
+    // DDA assigns the line for every matching row, so the last one on the page wins
+    int found = -1;
+    const int end = std::min( page_start + lines, static_cast<int>( items.size() ) );
+    for( int i = std::max( page_start, 0 ); i < end; ++i ) {
+        const advanced_inv_listitem &row = items[i];
+        if( row.is_item_entry() &&
+            advanced_inv_is_other_pane_container( *row.items.front(), other_pane_container ) ) {
+            found = i - page_start;
+        }
+    }
+    return found;
+}
+
+advanced_inv_head_kind advanced_inv_head_kind_for( aim_location area, bool has_container )
+{
+    if( area == AIM_INVENTORY || area == AIM_WORN ) {
+        return advanced_inv_head_kind::character;
+    }
+    if( area == AIM_CONTAINER && has_container ) {
+        return advanced_inv_head_kind::container;
+    }
+    if( area == AIM_ALL ) {
+        return advanced_inv_head_kind::all;
+    }
+    return advanced_inv_head_kind::square;
+}
+
+advanced_inv_container_head_data advanced_inv_container_head( const item &container )
+{
+    advanced_inv_container_head_data head;
+    const double weight = convert_weight( container.get_total_contained_weight() );
+    const double weight_capacity = convert_weight( container.get_total_weight_capacity() );
+    // DDA advanced_inv.cpp:317-348: "%.1f/%.1f", the capacity half in light gray
+    head.weight_contained = string_format( "%.1f", weight );
+    head.weight_capacity = string_format( "/%.1f %s  ", weight_capacity, weight_units() );
+    head.weight_over = weight > weight_capacity;
+    const units::volume volume = container.get_contents_volume();
+    const units::volume volume_capacity = container.get_volume_capacity();
+    head.volume_contained = format_volume( volume );
+    head.volume_capacity = string_format( "/%s %s", format_volume( volume_capacity ),
+                                          volume_units_abbr() );
+    head.volume_over = volume.value() > volume_capacity.value();
+    return head;
+}
+
+nc_color advanced_inv_capacity_color( bool over_capacity )
+{
+    return over_capacity ? c_red : c_light_green;
+}
+
+int advanced_inv_page_count( size_t item_count, int items_per_page )
+{
+    if( items_per_page <= 0 ) {
+        return 1;
+    }
+    const int pages = static_cast<int>( ( item_count + items_per_page - 1 ) / items_per_page );
+    return std::max( pages, 1 );
+}
+
+// FM6, G46 (DDA advanced_inv.cpp:1127-1156): the same subtraction DDA does, with the weight half
+// only for the destinations whose weight matters.
+// CDF: DDA's sort_priority is not ported; CDF's move-all hands the source pane's rows to the
+// activity and does not build a prioritised list of pane items.
+advanced_inv_move_all_limit advanced_inv_move_all_limit_for(
+    const units::volume src_volume, const units::mass src_weight,
+    const units::volume dest_volume_free, const units::mass dest_weight_free,
+    const bool check_weight )
+{
+    advanced_inv_move_all_limit limit;
+    limit.over_volume = src_volume - dest_volume_free;
+    if( check_weight ) {
+        limit.over_weight = src_weight - dest_weight_free;
+    }
+    if( limit.over_volume > 0_ml && limit.over_weight > 0_gram ) {
+        limit.limitation = _( "room or weight capacity" );
+    } else if( limit.over_volume > 0_ml ) {
+        limit.limitation = pgettext( "As in \"not enough room in the backpack\"", "room" );
+    } else if( limit.over_weight > 0_gram ) {
+        limit.limitation = _( "weight capacity" );
+    }
+    return limit;
 }
 
 bool advanced_inventory::get_square( const std::string &action, aim_location &ret )
@@ -225,7 +345,7 @@ advanced_inv_inventory_head_data advanced_inv_inventory_head( const Character &w
     return head;
 }
 
-void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool active )
+void advanced_inventory::print_items( advanced_inventory_pane &pane, bool active )
 {
     const auto &items = pane.items;
     const catacurses::window &window = pane.window;
@@ -238,47 +358,61 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
 
     nc_color norm = active ? c_white : c_dark_gray;
 
+    // FM6 a1 (DDA advanced_inv.cpp:298-304): the row of the other pane's container, if it is here
+    pane.other_cont = advanced_inv_other_cont_line( items, page * itemsPerPage, itemsPerPage,
+                       pane.other_pane_container );
+
     //print inventory's current and total weight + volume
-    if( pane.get_area() == AIM_INVENTORY || pane.get_area() == AIM_WORN ) {
-        const advanced_inv_inventory_head_data head = advanced_inv_inventory_head( g->u );
-        const double weight_carried = head.weight_carried;
-        const double weight_capacity = head.weight_capacity;
-        const std::string &volume_carried = head.volume_carried;
-        const std::string &volume_capacity = head.volume_capacity;
-        // align right, so calculate formatted head length
-        const std::string formatted_head = string_format( "%.1f/%.1f %s  %s/%s %s",
-                                           weight_carried, weight_capacity, weight_units(),
-                                           volume_carried,
-                                           volume_capacity,
-                                           volume_units_abbr() );
-        const int hrightcol = columns - 1 - utf8_width( formatted_head );
-        nc_color color = weight_carried > weight_capacity ? c_red : c_light_green;
-        mvwprintz( window, point( hrightcol, 4 ), color, "%.1f", weight_carried );
-        wprintz( window, c_light_gray, "/%.1f %s  ", weight_capacity, weight_units() );
-        color = head.volume_over ? c_red : c_light_green;
-        wprintz( window, color, volume_carried );
-        wprintz( window, c_light_gray, "/%s %s", volume_capacity, volume_units_abbr() );
-    } else {
-        //print square's current and total weight + volume
-        std::string formatted_head;
-        if( pane.get_area() == AIM_CONTAINER ) {
-            // P3-UI5, DDA advanced_inv.cpp:318-328: what the container holds and what it can hold
-            if( const item *cont = pane.get_container() ) {
-                formatted_head = string_format( "%3.1f/%3.1f %s  %s/%s %s",
-                                                convert_weight( cont->get_total_contained_weight() ),
-                                                convert_weight( cont->get_total_weight_capacity() ),
+    switch( advanced_inv_head_kind_for( pane.get_area(), pane.get_container() != nullptr ) ) {
+        case advanced_inv_head_kind::character: {
+            const advanced_inv_inventory_head_data head = advanced_inv_inventory_head( g->u );
+            const double weight_carried = head.weight_carried;
+            const double weight_capacity = head.weight_capacity;
+            const std::string &volume_carried = head.volume_carried;
+            const std::string &volume_capacity = head.volume_capacity;
+            // align right, so calculate formatted head length
+            const std::string formatted_head = string_format( "%.1f/%.1f %s  %s/%s %s",
+                                               weight_carried, weight_capacity, weight_units(),
+                                               volume_carried,
+                                               volume_capacity,
+                                               volume_units_abbr() );
+            const int hrightcol = columns - 1 - utf8_width( formatted_head );
+            nc_color color = weight_carried > weight_capacity ? c_red : c_light_green;
+            mvwprintz( window, point( hrightcol, 4 ), color, "%.1f", weight_carried );
+            wprintz( window, c_light_gray, "/%.1f %s  ", weight_capacity, weight_units() );
+            color = head.volume_over ? c_red : c_light_green;
+            wprintz( window, color, volume_carried );
+            wprintz( window, c_light_gray, "/%s %s", volume_capacity, volume_units_abbr() );
+            break;
+        }
+        case advanced_inv_head_kind::container: {
+            // FM6 a2, DDA advanced_inv.cpp:317-348: same shape as the inventory head, the
+            // container's own numbers, red when over capacity else light green
+            const advanced_inv_container_head_data head = advanced_inv_container_head(
+                        *pane.get_container() );
+            const std::string formatted_head = head.weight_contained + head.weight_capacity +
+                                               head.volume_contained + head.volume_capacity;
+            const int hrightcol = columns - 1 - utf8_width( formatted_head );
+            mvwprintz( window, point( hrightcol, 4 ), advanced_inv_capacity_color( head.weight_over ),
+                       "%s", head.weight_contained );
+            wprintz( window, c_light_gray, "%s", head.weight_capacity );
+            wprintz( window, advanced_inv_capacity_color( head.volume_over ), "%s",
+                     head.volume_contained );
+            wprintz( window, c_light_gray, "%s", head.volume_capacity );
+            break;
+        }
+        case advanced_inv_head_kind::all: {
+            //print square's current and total weight + volume
+            const std::string formatted_head = string_format( "%3.1f %s  %s %s",
+                                                convert_weight( squares[pane.get_area()].weight ),
                                                 weight_units(),
-                                                format_volume( cont->get_contents_volume() ),
-                                                format_volume( cont->get_volume_capacity() ),
+                                                format_volume( squares[pane.get_area()].volume ),
                                                 volume_units_abbr() );
-            }
-        } else if( pane.get_area() == AIM_ALL ) {
-            formatted_head = string_format( "%3.1f %s  %s %s",
-                                            convert_weight( squares[pane.get_area()].weight ),
-                                            weight_units(),
-                                            format_volume( squares[pane.get_area()].volume ),
-                                            volume_units_abbr() );
-        } else {
+            mvwprintz( window, point( columns - 1 - utf8_width( formatted_head ), 4 ), norm, formatted_head );
+            break;
+        }
+        case advanced_inv_head_kind::square: {
+            // FM6 a3: a container pane without a container falls through to the square totals
             units::volume maxvolume = 0_ml;
             auto &s = squares[pane.get_area()];
             if( pane.in_vehicle() ) {
@@ -286,14 +420,15 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
             } else {
                 maxvolume = get_map().max_volume( s.pos );
             }
-            formatted_head = string_format( "%3.1f %s  %s/%s %s",
-                                            convert_weight( s.weight ),
-                                            weight_units(),
-                                            format_volume( s.volume ),
-                                            format_volume( maxvolume ),
-                                            volume_units_abbr() );
+            const std::string formatted_head = string_format( "%3.1f %s  %s/%s %s",
+                                                convert_weight( s.weight ),
+                                                weight_units(),
+                                                format_volume( s.volume ),
+                                                format_volume( maxvolume ),
+                                                volume_units_abbr() );
+            mvwprintz( window, point( columns - 1 - utf8_width( formatted_head ), 4 ), norm, formatted_head );
+            break;
         }
-        mvwprintz( window, point( columns - 1 - utf8_width( formatted_head ), 4 ), norm, formatted_head );
     }
 
     //print header row and determine max item name length
@@ -343,19 +478,38 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         }
         const auto &it = *sitem.items.front();
         const bool selected = active && index == i;
+        const bool other_cont_row = advanced_inv_is_other_pane_container( it,
+                                    pane.other_pane_container );
 
-        nc_color thiscolor = active ? it.color_in_inventory() : norm;
+        nc_color thiscolor;
+        if( !active ) {
+            thiscolor = norm;
+        } else if( it.is_food_container() && !it.is_craft() && it.num_item_stacks() == 1 ) {
+            // FM6 a6, DDA advanced_inv.cpp:439-443: a food container takes its content's colour
+            thiscolor = it.all_items_top().front()->color_in_inventory();
+        } else {
+            thiscolor = it.color_in_inventory();
+        }
         nc_color thiscolordark = c_dark_gray;
         nc_color print_color;
 
         if( selected ) {
-            thiscolor = inCategoryMode && pane.sortby == SORTBY_CATEGORY ? c_white_red : hilite( c_white );
+            if( other_cont_row ) {
+                // FM6 a1, DDA advanced_inv.cpp:448-450
+                thiscolor = c_white_yellow;
+            } else {
+                thiscolor = inCategoryMode && pane.sortby == SORTBY_CATEGORY ? c_white_red : hilite( c_white );
+            }
             thiscolordark = hilite( thiscolordark );
             if( compact ) {
                 mvwprintz( window, point( 1, 6 + x ), thiscolor, "  %s", spaces );
             } else {
                 mvwprintz( window, point( 1, 6 + x ), thiscolor, ">>%s", spaces );
             }
+        } else if( other_cont_row ) {
+            // FM6 a1, DDA advanced_inv.cpp:457-462: brown row for the other pane's container
+            thiscolor = i_brown;
+            mvwprintz( window, point( 1, 6 + x ), thiscolor, "%s", spaces );
         }
 
         std::string item_name;
@@ -389,7 +543,9 @@ void advanced_inventory::print_items( const advanced_inventory_pane &pane, bool 
         }
 
         //print item name
-        trim_and_print( window, point( compact ? 1 : 4, 6 + x ), max_name_length, thiscolor, item_name );
+        // FM6 a6, DDA advanced_inv.cpp:497-499: the selected row is drawn without its colour tags
+        trim_and_print( window, point( compact ? 1 : 4, 6 + x ), max_name_length, thiscolor,
+                        selected ? remove_color_tags( item_name ) : item_name );
 
         //print src column
         // TODO: specify this is coming from a vehicle!
@@ -475,6 +631,17 @@ struct advanced_inv_sorter {
                     return d1.volume > d2.volume;
                 }
                 break;
+            case SORTBY_DENSITY: {
+                // FM6 b, DDA advanced_inv.cpp:585-593
+                const double density1 = static_cast<double>( d1.weight.value() ) /
+                                        static_cast<double>( std::max<std::int64_t>( 1, d1.volume.value() ) );
+                const double density2 = static_cast<double>( d2.weight.value() ) /
+                                        static_cast<double>( std::max<std::int64_t>( 1, d2.volume.value() ) );
+                if( density1 != density2 ) {
+                    return density1 > density2;
+                }
+                break;
+            }
             case SORTBY_CHARGES:
                 if( d1.items.front()->charges != d2.items.front()->charges ) {
                     return d1.items.front()->charges > d2.items.front()->charges;
@@ -543,6 +710,34 @@ struct advanced_inv_sorter {
                     return d1.items.front()->price( true ) > d2.items.front()->price( true );
                 }
                 break;
+            case SORTBY_PRICEPERVOLUME: {
+                // FM6 b, DDA advanced_inv.cpp:654-661
+                const double price_density1 = static_cast<double>( d1.items.front()->price( true ) ) /
+                                              static_cast<double>( std::max<std::int64_t>( 1, d1.items.front()->volume().value() ) );
+                const double price_density2 = static_cast<double>( d2.items.front()->price( true ) ) /
+                                              static_cast<double>( std::max<std::int64_t>( 1, d2.items.front()->volume().value() ) );
+                if( price_density1 != price_density2 ) {
+                    return price_density1 > price_density2;
+                }
+                break;
+            }
+            case SORTBY_PRICEPERWEIGHT: {
+                // FM6 b, DDA advanced_inv.cpp:662-671
+                const double price_density1 = static_cast<double>( d1.items.front()->price( true ) ) /
+                                              static_cast<double>( std::max<std::int64_t>( 1, d1.items.front()->weight().value() ) );
+                const double price_density2 = static_cast<double>( d2.items.front()->price( true ) ) /
+                                              static_cast<double>( std::max<std::int64_t>( 1, d2.items.front()->weight().value() ) );
+                if( price_density1 != price_density2 ) {
+                    return price_density1 > price_density2;
+                }
+                break;
+            }
+            case SORTBY_STACKS:
+                // FM6 b, DDA advanced_inv.cpp:673-677
+                if( d1.stacks != d2.stacks ) {
+                    return d1.stacks > d2.stacks;
+                }
+                break;
         }
         // secondary sort by name
         const std::string *n1;
@@ -567,22 +762,33 @@ int advanced_inventory::print_header( advanced_inventory_pane &pane, aim_locatio
     int wwidth = getmaxx( window );
     int ofs = wwidth - 25 - 2 - 14;
     int min_x = wwidth;
+    const aim_location base = pane.get_container_base_loc();
     for( int i = 0; i < NUM_AIM_LOCATIONS; ++i ) {
         int data_location = screen_relative_location( static_cast<aim_location>( i ) );
-        const char *bracket = squares[data_location].can_store_in_vehicle() ? "<>" : "[]";
+        // FM6 a3, DDA advanced_inv.cpp:706-709: the container base square and the container
+        // itself take "><", the parent row and vehicle-capable squares "<>"
+        const char *bracket = base == data_location || data_location == AIM_CONTAINER ? "><" :
+                              squares[data_location].can_store_in_vehicle() ||
+                              data_location == AIM_PARENT ? "<>" : "[]";
         bool in_vehicle = pane.in_vehicle() && squares[data_location].id == area && sel == area &&
                           area != AIM_ALL;
         bool all_brackets = area == AIM_ALL && ( data_location >= AIM_SOUTHWEST &&
                             data_location <= AIM_NORTHEAST );
         nc_color bcolor = c_red;
         nc_color kcolor = c_red;
-        // P3-UI5: the parent row is available while the pane shows a container
-        const bool can_put = data_location == AIM_PARENT ? pane.get_container() != nullptr :
-                             squares[data_location].canputitems( pane.get_cur_item_ptr() );
+        const bool can_put = squares[data_location].canputitems( pane.get_cur_item_ptr() );
         if( can_put ) {
             bcolor = in_vehicle ? c_light_blue :
+                     base == data_location ? c_brown :
+                     data_location == AIM_CONTAINER ? c_dark_gray :
                      area == data_location || all_brackets ? c_light_gray : c_dark_gray;
-            kcolor = area == data_location ? c_white : sel == data_location ? c_light_gray : c_dark_gray;
+            kcolor = data_location == AIM_CONTAINER ? c_dark_gray :
+                     area == data_location ? c_white :
+                     sel == data_location || base == data_location ? c_light_gray : c_dark_gray;
+        } else if( data_location == AIM_PARENT && pane.get_container() != nullptr ) {
+            // FM6 a3, DDA advanced_inv.cpp:721-724: the way back is lit while a container is shown
+            bcolor = c_light_gray;
+            kcolor = c_white;
         }
 
         const std::string key = get_location_key( static_cast<aim_location>( i ) );
@@ -732,9 +938,11 @@ void advanced_inventory::redraw_pane( side p )
     trim_and_print( w, point( 2, 2 ), width, active ? c_light_blue : c_dark_gray, sq.desc[car] );
     trim_and_print( w, point( 2, 3 ), width, active ? c_cyan : c_dark_gray, square.flags );
 
-    const int max_page = ( pane.items.size() + itemsPerPage - 1 ) / itemsPerPage;
-    if( active && max_page > 1 ) {
+    // FM6 a7, DDA advanced_inv.cpp:853-865: the page line shows on the active pane even with one
+    // page, so a list always says which page it is on
+    if( active && itemsPerPage > 0 ) {
         const int page = pane.index / itemsPerPage;
+        const int max_page = advanced_inv_page_count( pane.items.size(), itemsPerPage );
         mvwprintz( w, point( 2, 4 ), c_light_blue, _( "[<] page %1$d of %2$d [>]" ), page + 1, max_page );
     }
 
@@ -750,7 +958,9 @@ void advanced_inventory::redraw_pane( side p )
         int itemcount = square.get_item_count();
         int fmtw = 7 + ( itemcount > 99 ? 3 : itemcount > 9 ? 2 : 1 ) +
                    ( max > 99 ? 3 : max > 9 ? 2 : 1 );
-        mvwprintw( w, point( w_width / 2 - fmtw, 0 ), "< %d/%d >", itemcount, max );
+        // FM6 a7, DDA advanced_inv.cpp:874-880: the count is white on the active pane, grey otherwise
+        mvwprintz( w, point( w_width / 2 - fmtw, 0 ), active ? c_white : c_dark_gray, "< %d/%d >",
+                   itemcount, max );
     }
 
     std::string fprefix = string_format( _( "[%s] Filter" ), ctxt.get_desc( "FILTER" ) );
@@ -798,6 +1008,28 @@ enum aim_entry {
     ENTRY_MAP       = 2,
     ENTRY_RESET     = 3
 };
+
+bool advanced_inventory::move_all_fits( advanced_inventory_pane &spane,
+                                        advanced_inventory_pane &dpane )
+{
+    if( is_processing() ) {
+        return true;
+    }
+    const aim_location dest_area = dpane.get_area();
+    // DDA advanced_inv.cpp:1138-1142: only the inventory and a container have a weight limit
+    const bool check_weight = dest_area == AIM_INVENTORY || dest_area == AIM_CONTAINER;
+    // CDF: a square keeps one volume/weight pair, filled from whatever the pane shows
+    // (advanced_inv_pane::add_items_from_area), so DDA's *_veh variants do not exist here.
+    advanced_inv_area &sarea = squares[spane.get_area()];
+    advanced_inv_area &darea = squares[dest_area];
+    const advanced_inv_move_all_limit limit = advanced_inv_move_all_limit_for(
+                sarea.volume, sarea.weight, dpane.free_volume( darea ),
+                check_weight ? dpane.free_weight_capacity() : units::mass_max, check_weight );
+    // DDA advanced_inv.cpp:1185-1189: one prompt naming whatever is short
+    return limit.limitation.empty() ||
+           query_yn( _( "There isn't enough %s.  Attempt to move as much as you can?" ),
+                     limit.limitation );
+}
 
 bool advanced_inventory::move_all_items( bool nested_call )
 {
@@ -1020,9 +1252,7 @@ bool advanced_inventory::move_all_items( bool nested_call )
             debugmsg( "Wearing clothes using move all is not yet implemented" );
         } else {
             // Vehicle and map destinations are handled the same.
-            // Check first if the destination area still have enough room for moving all.
-            if( !is_processing() && sarea.volume > darea.free_volume( dpane.in_vehicle() ) &&
-                !query_yn( _( "There isn't enough room, do you really want to move all?" ) ) ) {
+            if( !move_all_fits( spane, dpane ) ) {
                 return false;
             }
 
@@ -1176,11 +1406,9 @@ bool advanced_inventory::move_all_container_items( advanced_inventory_pane &span
         targets = favorites;
     }
 
-    // Check first if the destination still has enough room for moving all.
-    advanced_inv_area &sarea = squares[spane.get_area()];
+    // Check first if the destination still has enough room and weight capacity for moving all.
     advanced_inv_area &darea = squares[dpane.get_area()];
-    if( !is_processing() && sarea.volume > dpane.free_volume( darea ) &&
-        !query_yn( _( "There isn't enough room, do you really want to move all?" ) ) ) {
+    if( !move_all_fits( spane, dpane ) ) {
         return false;
     }
 
@@ -1230,18 +1458,28 @@ bool advanced_inventory::show_sort_menu( advanced_inventory_pane &pane )
 {
     uilist sm;
     sm.text = _( "Sort by…" );
-    sm.addentry( SORTBY_NONE,     true, 'u', _( "Unsorted (recently added first)" ) );
-    sm.addentry( SORTBY_NAME,     true, 'n', get_sortname( SORTBY_NAME ) );
-    sm.addentry( SORTBY_WEIGHT,   true, 'w', get_sortname( SORTBY_WEIGHT ) );
-    sm.addentry( SORTBY_VOLUME,   true, 'v', get_sortname( SORTBY_VOLUME ) );
-    sm.addentry( SORTBY_CHARGES,  true, 'x', get_sortname( SORTBY_CHARGES ) );
-    sm.addentry( SORTBY_CATEGORY, true, 'c', get_sortname( SORTBY_CATEGORY ) );
-    sm.addentry( SORTBY_DAMAGE,   true, 'd', get_sortname( SORTBY_DAMAGE ) );
-    sm.addentry( SORTBY_AMMO,     true, 'a', get_sortname( SORTBY_AMMO ) );
-    sm.addentry( SORTBY_SPOILAGE,   true, 's', get_sortname( SORTBY_SPOILAGE ) );
-    sm.addentry( SORTBY_PRICE, true, 'b', get_sortname( SORTBY_PRICE ) );
-    // Pre-select current sort.
-    sm.selected = pane.sortby - SORTBY_NONE;
+    sm.addentry( SORTBY_NONE,           true, 'u', _( "Unsorted (recently added first)" ) );
+    sm.addentry( SORTBY_NAME,           true, 'n', get_sortname( SORTBY_NAME ) );
+    sm.addentry( SORTBY_WEIGHT,         true, 'w', get_sortname( SORTBY_WEIGHT ) );
+    sm.addentry( SORTBY_VOLUME,         true, 'v', get_sortname( SORTBY_VOLUME ) );
+    sm.addentry( SORTBY_DENSITY,        true, 'd', get_sortname( SORTBY_DENSITY ) );
+    sm.addentry( SORTBY_CHARGES,        true, 'x', get_sortname( SORTBY_CHARGES ) );
+    sm.addentry( SORTBY_CATEGORY,       true, 'c', get_sortname( SORTBY_CATEGORY ) );
+    sm.addentry( SORTBY_DAMAGE,         true, 'o', get_sortname( SORTBY_DAMAGE ) );
+    sm.addentry( SORTBY_AMMO,           true, 'a', get_sortname( SORTBY_AMMO ) );
+    sm.addentry( SORTBY_SPOILAGE,       true, 's', get_sortname( SORTBY_SPOILAGE ) );
+    sm.addentry( SORTBY_PRICE,          true, 'b', get_sortname( SORTBY_PRICE ) );
+    sm.addentry( SORTBY_PRICEPERVOLUME, true, 'r', get_sortname( SORTBY_PRICEPERVOLUME ) );
+    sm.addentry( SORTBY_PRICEPERWEIGHT, true, 'g', get_sortname( SORTBY_PRICEPERWEIGHT ) );
+    sm.addentry( SORTBY_STACKS,         true, 't', get_sortname( SORTBY_STACKS ) );
+    // Pre-select current sort.  CDF: the enum is not in menu order, so look the row up.
+    static const std::array<advanced_inv_sortby, 14> menu_order = {
+        SORTBY_NONE, SORTBY_NAME, SORTBY_WEIGHT, SORTBY_VOLUME, SORTBY_DENSITY,
+        SORTBY_CHARGES, SORTBY_CATEGORY, SORTBY_DAMAGE, SORTBY_AMMO, SORTBY_SPOILAGE,
+        SORTBY_PRICE, SORTBY_PRICEPERVOLUME, SORTBY_PRICEPERWEIGHT, SORTBY_STACKS
+    };
+    sm.selected = static_cast<int>( std::find( menu_order.begin(), menu_order.end(),
+                                  pane.sortby ) - menu_order.begin() );
     // Calculate key and window variables, generate window,
     // and loop until we get a valid answer.
     sm.query();
@@ -1421,15 +1659,19 @@ void advanced_inventory::change_square( const aim_location changeSquare,
             dpane.recalc = true;
         }
     } else {
+        // FM6 b, DDA advanced_inv.cpp:1452-1466: every refusal is a key-waiting popup with a full stop
         switch( changeSquare ) {
+            case AIM_DRAGGED:
+                popup_getkey( _( "You aren't dragging a vehicle." ) );
+                break;
             case AIM_CONTAINER:
-                popup( _( "That isn't a container." ) );
+                popup_getkey( _( "That isn't a container." ) );
                 break;
             case AIM_PARENT:
-                popup( _( "You aren't in a container." ) );
+                popup_getkey( _( "You aren't in a container." ) );
                 break;
             default:
-                popup( _( "You can't put items there!" ) );
+                popup_getkey( _( "You can't put items there." ) );
                 break;
         }
     }
@@ -1771,6 +2013,19 @@ void advanced_inventory::display()
         ui->on_redraw( [&]( const ui_adaptor & ) {
             redraw_pane( advanced_inventory::side::left );
             redraw_pane( advanced_inventory::side::right );
+            // FM6 a1, DDA advanced_inv.cpp:2065-2074: join the highlighted container row in one
+            // pane with the pane that lists its contents
+            if( panes[left].other_cont > -1 && panes[left].other_cont < itemsPerPage ) {
+                mvwprintz( panes[left].window, point( w_width / 2 - 1, panes[left].other_cont + 6 ),
+                           i_brown, " " );
+                mvwprintz( panes[right].window, point( 0, panes[left].other_cont + 6 ), c_brown, "▶" );
+            } else if( panes[right].other_cont > -1 && panes[right].other_cont < itemsPerPage ) {
+                mvwprintz( panes[left].window, point( w_width / 2 - 1, panes[right].other_cont + 6 ),
+                           c_brown, "◀" );
+                mvwprintz( panes[right].window, point( 0, panes[right].other_cont + 6 ), i_brown, " " );
+            }
+            wnoutrefresh( panes[left].window );
+            wnoutrefresh( panes[right].window );
             redraw_sidebar();
 
             if( filter_edit && spopup ) {
@@ -1997,8 +2252,9 @@ void query_destination_callback::draw_squares( const uilist *menu )
         const char *bracket = in_vehicle ? "<>" : "[]";
         // always show storage option for vehicle storage, if applicable
         bool canputitems = menu->entries[i - 1].enabled && square.canputitems();
-        nc_color bcolor = canputitems ? sel == loc ? h_white : c_light_gray : c_dark_gray;
-        nc_color kcolor = canputitems ? sel == loc ? h_white : c_light_gray : c_dark_gray;
+        // FM6 b, DDA advanced_inv.cpp:2152-2153: unavailable squares are red, the key is dark gray
+        nc_color bcolor = canputitems ? ( sel == loc ? h_white : c_light_gray ) : c_red;
+        nc_color kcolor = canputitems ? ( sel == loc ? h_white : c_dark_gray ) : c_red;
         const point p( square.hscreen + point( ofs, 5 ) );
         mvwprintz( menu->window, p, bcolor, "%c", bracket[0] );
         wprintz( menu->window, kcolor, "%s", key );
@@ -2014,7 +2270,7 @@ bool advanced_inventory::query_destination( aim_location &def )
             squares[def].canputitems() ) {
             return true;
         }
-        popup( _( "You can't put items there!" ) );
+        popup_getkey( _( "You can't put items there." ) );
         return false;
     }
 
@@ -2039,10 +2295,15 @@ bool advanced_inventory::query_destination( aim_location &def )
             if( size >= MAX_ITEM_IN_SQUARE ) {
                 prefix += _( " (FULL)" );
             }
-            menu.addentry( ordered_loc,
-                           s.canputitems() && s.id != panes[src].get_area(),
-                           get_location_key( ordered_loc )[0],
-                           prefix + " " + s.name + " " + ( s.veh != nullptr ? s.veh->name : "" ) );
+            const bool enabled = s.canputitems() && s.id != panes[src].get_area();
+            if( s.veh != nullptr ) {
+                // FM6 b, DDA advanced_inv.cpp:2194-2211: the vehicle name has its own column
+                menu.addentry_col( ordered_loc, enabled, get_location_key( ordered_loc )[0],
+                                   prefix + " " + s.name, s.veh->name );
+            } else {
+                menu.addentry( ordered_loc, enabled, get_location_key( ordered_loc )[0],
+                               prefix + " " + s.name );
+            }
         }
     }
     // Selected keyed to uilist.entries, which starts at 0.
