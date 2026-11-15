@@ -1,12 +1,12 @@
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                                                                  │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Spare parts                    Items worn                ITEMS TO DROP                           │
-│   +▼small cardboard box          -▼|| windbreaker          2 of 3 TEST rocks (3)                 │
-│   - TEST 1kg cube                                          small cardboard box                   │
+│ Items worn                                                                                       │
+│   -▼|| windbreaker with 2 items (poor fit) (remains 1.15L, 5.88kg) max length 21cm               │
+│ Spare parts                                                                                      │
+│   +▼small cardboard box > TEST 1kg cube                                                          │
+│   - TEST 1kg cube                                                                                │
 │   # TEST rock (3)                                                                                │
-│                                                                                                  │
-│                                                                                                  │
 │                                                                                                  │
 │                                                                                                  │
 │                                                                                                  │

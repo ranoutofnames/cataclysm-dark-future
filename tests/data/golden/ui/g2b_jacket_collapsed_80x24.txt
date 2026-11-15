@@ -2,7 +2,7 @@
 │                                                                              │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │ Items worn                                                                   │
-│  ▶|| windbreaker                                                             │
+│  ▶|| windbreaker > 1 item (poor fit) (remains 1.9L, 7.85kg) max length 21cm  │
 │                                                                              │
 │                                                                              │
 │                                                                              │
