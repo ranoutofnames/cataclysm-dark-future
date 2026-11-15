@@ -772,6 +772,8 @@ const std::string ANY_INPUT = "ANY_INPUT";
 const std::string HELP_KEYBINDINGS = "HELP_KEYBINDINGS";
 const std::string COORDINATE = "COORDINATE";
 const std::string TIMEOUT = "TIMEOUT";
+// PL-64 IN1: what a spent scripted key queue reports to the screen it drives (see handle_input).
+const std::string QUIT_ACTION = "QUIT";
 
 const std::string &input_context::input_to_action( const input_event &inp ) const
 {
@@ -1033,7 +1035,12 @@ const std::string &input_context::handle_input( const int timeout )
             next_action = inp_mngr.get_input_event();
         }
         if( next_action.type == input_event_t::timeout ) {
-            result = &TIMEOUT;
+            // PL-64 IN1: a scripted run (input_manager::test_push_event) that runs out of keys
+            // answers with a timeout event. Screens that own a nested input loop (the item info
+            // window, src/output.cpp:1112-1129) only leave on QUIT, so the spent script is reported
+            // as the player's QUIT (ESC) and every screen closes through its own QUIT path. The
+            // real interface never sets test_input_exhausted(), so gameplay keeps TIMEOUT.
+            result = inp_mngr.test_input_exhausted() ? &QUIT_ACTION : &TIMEOUT;
             break;
         }
 
@@ -1590,9 +1597,9 @@ input_event input_manager::test_next_input_event()
     if( test_input_queue.empty() ) {
         // The screen wants a key the script does not have. Answer with a timeout event (the same
         // shape the real interface produces on a timeout) and remember the run out: handle_input()
-        // turns it into "TIMEOUT", the screen closes through its normal QUIT path, and the
-        // key-script harness reads test_input_exhausted(). A screen that never closes still fails
-        // its test instead of blocking forever on the real keyboard.
+        // reports it as QUIT for the driven screen (also a nested input loop such as the item info
+        // window), and the key-script harness reads test_input_exhausted(). A screen that never
+        // closes still fails its test instead of blocking forever on the real keyboard.
         test_input_queue_exhausted = true;
         input_event rval;
         rval.type = input_event_t::timeout;

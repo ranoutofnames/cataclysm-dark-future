@@ -333,9 +333,10 @@ TEST_CASE("key script: the inventory registers DDA's numpad navigation toggle",
 }
 
 TEST_CASE("key script: examine does not crash", "[inventory][ui][keys]") {
-    // R-001 / R-002. DDA guards EXAMINE with if(selected) (3662-3667). CDF's column handler calls
-    // get_selected().any_item() unguarded; with a valid item row that is a no-op, so this is the
-    // regression baseline for the guarded path (the empty-column path needs IN2's guard).
+    // R-001 / R-002. DDA guards EXAMINE with if(selected) (3662-3667), as CDF's column handler
+    // does now (src/inventory_ui.cpp:970-985). The item info window it opens has its own input
+    // loop, so the run out of keys is reported as QUIT there as well (src/input.cpp handle_input)
+    // and the screen closes instead of waiting for a key forever.
     SECTION("pick screen") {
         clear_all_state();
         avatar &you = get_avatar();
