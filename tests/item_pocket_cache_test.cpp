@@ -155,6 +155,9 @@ TEST_CASE("stacks_with gives up on absurdly nested containers", "[item][pocket][
 }
 
 TEST_CASE("insert_copies matches repeated insert_item", "[item][pocket][item_contents]") {
+    // CDF: put_in is the load/migration path and keeps an item no pocket takes (the MIGRATION
+    // pocket); insert_copies is the spawn path (DDA item_group.cpp:746) and refuses it. The
+    // one-by-one reference for insert_copies is therefore the checked insert_item, not put_in.
     const auto fill = [](const char* container, const char* what, int n, bool bulk) {
         detached_ptr<item> box = item::spawn(itype_id(container));
         if (bulk) {
@@ -162,7 +165,9 @@ TEST_CASE("insert_copies matches repeated insert_item", "[item][pocket][item_con
             box->put_in_copies(*proto, n);
         } else {
             for (int i = 0; i < n; i++) {
-                box->put_in(item::spawn(itype_id(what)));
+                // same contract as insert_copies: a copy no pocket takes is not stored
+                (void)box->contents.insert_item(item::spawn(itype_id(what)),
+                                                pocket_type::CONTAINER);
             }
         }
         return box;
@@ -180,20 +185,37 @@ TEST_CASE("insert_copies matches repeated insert_item", "[item][pocket][item_con
     SECTION("all fit") {
         compare("test_backpack", "test_1kg_cube", 20);
     }
-    SECTION("the pocket fills up, the rest goes to migration") {
+    SECTION("the pocket fills up, the rest is refused") {
         compare("test_box", "test_1kg_cube", 150);
     }
     SECTION("nothing fits") {
         compare("test_box_small", "test_rock", 4);
     }
+    SECTION("a refused spawn stays out, a put_in load keeps the item") {
+        detached_ptr<item> box = item::spawn(itype_id("test_box_small"));
+        const detached_ptr<item> proto = item::spawn(itype_id("test_pipe"));
+        box->put_in_copies(*proto, 1);
+        CHECK(box->contents.num_item_stacks() == 0);
+        CHECK(box->contents.migration_pocket() == nullptr);
+        // the documented CDF difference: put_in is the load/migration path, so it keeps it
+        detached_ptr<item> load = item::spawn(itype_id("test_box_small"));
+        load->put_in(item::spawn(itype_id("test_pipe")));
+        CHECK(load->contents.num_item_stacks() == 1);
+        REQUIRE(load->contents.migration_pocket() != nullptr);
+        CHECK(load->contents.migration_pocket()->size() == 1);
+    }
     SECTION("count by charges items merge") {
-        detached_ptr<item> bag = item::spawn(itype_id("test_backpack"));
+        // CDF: a watertight jug, because the spawn path refuses liquid in a bag that is not
+        // watertight while put_in's load path would park it in MIGRATION (the section above)
+        detached_ptr<item> bag = item::spawn(itype_id("test_jug_plastic"));
         const detached_ptr<item> proto = item::spawn(itype_id("water_clean"), calendar::turn, 2);
         bag->put_in_copies(*proto, 3);
-        detached_ptr<item> ref = item::spawn(itype_id("test_backpack"));
+        detached_ptr<item> ref = item::spawn(itype_id("test_jug_plastic"));
         for (int i = 0; i < 3; i++) {
-            ref->put_in(item::spawn(itype_id("water_clean"), calendar::turn, 2));
+            (void)ref->contents.insert_item(item::spawn(itype_id("water_clean"), calendar::turn, 2),
+                                            pocket_type::CONTAINER);
         }
+        REQUIRE(bag->contents.num_item_stacks() == 1);
         CHECK(bag->contents.num_item_stacks() == ref->contents.num_item_stacks());
         CHECK(bag->weight() == ref->weight());
     }

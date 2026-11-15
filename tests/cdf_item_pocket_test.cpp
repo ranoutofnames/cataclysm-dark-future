@@ -242,7 +242,7 @@ TEST_CASE("contents are routed to the right pocket", "[item][pocket]") {
         CHECK(pocket->is_holster());
     }
 
-    SECTION("two-slot holster fills both slots, a third item is refused") {
+    SECTION("two-slot holster fills both slots, then nothing is lost") {
         detached_ptr<item> holster = item::spawn(itype_id("test_holster_two"));
         detached_ptr<item> p1 = item::spawn(itype_id("glock_19"));
         detached_ptr<item> p2 = item::spawn(itype_id("glock_19"));
@@ -256,20 +256,19 @@ TEST_CASE("contents are routed to the right pocket", "[item][pocket]") {
         CHECK(holster->contents.pocket_of(p1_ptr) != holster->contents.pocket_of(p2_ptr));
         CHECK(holster->contents.pocket_of(p1_ptr)->is_holster());
         CHECK(holster->contents.pocket_of(p2_ptr)->is_holster());
-        // CDF: DDA item_contents::insert_item refuses an item no pocket accepts; put_in no longer
-        // parks it in the MIGRATION pocket, so the third pistol is not stored.
-        CHECK(holster->contents.pocket_of(p3_ptr) == nullptr);
-        CHECK(holster->contents.num_item_stacks() == 2);
+        CHECK(pocket_type_of(*holster, p3_ptr) == pocket_type::MIGRATION);
+        CHECK(holster->contents.num_item_stacks() == 3);
     }
 
-    SECTION("item without pockets refuses the insert (DDA find_pocket_for)") {
+    SECTION("item without pockets: contents go to MIGRATION and stay visible") {
         detached_ptr<item> rock = item::spawn(itype_id("rock"));
         detached_ptr<item> other = item::spawn(itype_id("rock"));
+        item* other_ptr = &*other;
         rock->put_in(std::move(other));
-        // the type has no pocket at all, so the router finds no home for it and the live insert
-        // is refused instead of filling the MIGRATION pocket
-        CHECK(rock->contents.num_item_stacks() == 0);
-        CHECK(rock->contents.empty());
+        CHECK(pocket_type_of(*rock, other_ptr) == pocket_type::MIGRATION);
+        CHECK(rock->contents.num_item_stacks() == 1);
+        CHECK(&rock->contents.front() == other_ptr);
+        CHECK_FALSE(rock->contents.empty());
     }
 
     SECTION("count-by-charges items merge into one stack") {
@@ -518,9 +517,7 @@ TEST_CASE("player inserts are refused when the item doesn't fit", "[item][pocket
     CHECK_FALSE(box->can_contain(*item::spawn_temporary(itype_id("test_pipe"))).success());
 
     SECTION("force insert never fails: overfull goes to MIGRATION") {
-        // CDF: a live put_in is refused when no pocket takes the item (DDA find_pocket_for); the
-        // MIGRATION pocket is filled by a load, a migration or a force insert.
-        box->force_insert_item(item::spawn(itype_id("test_pipe")), pocket_type::MIGRATION);
+        box->put_in(std::move(pipe));
         CHECK(box->contents.num_item_stacks() == 2);
         REQUIRE(box->contents.migration_pocket() != nullptr);
         CHECK(box->contents.migration_pocket()->size() == 1);
@@ -544,9 +541,8 @@ auto overfull_small_box() -> detached_ptr<item> {
     detached_ptr<item> small = item::spawn(itype_id("test_box_small"));
     small->put_in(item::spawn(itype_id("test_screwdriver")));
     small->put_in(item::spawn(itype_id("test_screwdriver")));
-    // CDF: no room left; a load or a migration forces the third one in, so it waits in MIGRATION
-    // (a live put_in refuses it, DDA find_pocket_for)
-    small->force_insert_item(item::spawn(itype_id("test_screwdriver")), pocket_type::MIGRATION);
+    // force insert: no room left, so it waits in MIGRATION
+    small->put_in(item::spawn(itype_id("test_screwdriver")));
     return small;
 }
 
