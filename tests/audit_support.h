@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+class avatar;
+class item;
+
 /**
  * PL-62 AT5: small helpers shared by the audit sweeps.
  *
@@ -50,6 +53,23 @@ bool allows( const row &r, const std::vector<std::string> &allowlist );
 
 /** Joins @p values with @p separator. */
 std::string join( const std::vector<std::string> &values, const std::string &separator );
+
+/**
+ * PL-63 FM8 scene fixtures.  Each builder leaves the avatar with the items the FM8 scene names
+ * and reports the item pointers the test needs to drive the selector (select, collapse, mark).
+ * A false return means one item could not be placed where the scene wants it.
+ */
+/** S1/S3/S4/S5/S6: a worn windbreaker, cargo pants and hiking backpack; the pack holds a small
+ *  cardboard box, the box a rock. */
+bool build_pack_scene( avatar &u, item *&jacket, item *&pants, item *&pack, item *&box,
+                       item *&rock );
+/** S10: the AT4 fixture, a worn windbreaker holding a small cardboard box with a 1 kg cube. */
+bool build_jacket_box_scene( avatar &u, item *&jacket, item *&box, item *&cube );
+/** S7: a carried empty small cardboard box and a carried stack of three rocks. */
+bool build_drop_scene( avatar &u, item *&box, item *&rock );
+/** S9: a worn US ballistic vest with two ESAPI plates in its large pockets; a loose ESBI plate
+ *  (fits a medium pocket) and a loose ESAPI plate (no large pocket left) are carried. */
+bool build_vest_scene( avatar &u, item *&vest, item *&medium_plate, item *&large_plate );
 
 } // namespace audit
 
