@@ -94,7 +94,7 @@ TEST_CASE("item description and physical attributes", "[item][iteminfo][primary]
             "test_jug_plastic", q,
             "Material: <color_c_light_blue>Plastic</color>\n"
             "Volume: <color_c_yellow>3.938</color> L  Weight: <color_c_yellow>0.42</color> lbs\n"
-            "Category: <color_c_magenta>CONTAINERS</color>\n"
+            "Category: <color_c_magenta>Containers</color>\n"
             "--\n"
             "A standard plastic jug used for milk and household cleaning chemicals.\n");
     }
