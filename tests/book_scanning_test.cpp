@@ -24,6 +24,17 @@
 #include <sstream>
 
 namespace {
+// CDF: P3 keeps a tool's battery as an item in its integral MAGAZINE pocket, so a reader's
+// contents hold the battery next to the digital files. Find the files by their DIGITAL flag
+// instead of by position, and count only them.
+auto digital_files_on(item& media) -> std::vector<item*> {
+    auto files = std::vector<item*>{};
+    for (auto* it : media.contents.all_items_top()) {
+        if (is_digital_file(*it)) { files.push_back(it); }
+    }
+    return files;
+}
+
 auto finish_scan(avatar& who) -> void {
     for (auto turn = 0; turn < 300 && !who.activity->is_null(); ++turn) {
         calendar::turn += 1_turns;
@@ -47,6 +58,7 @@ TEST_CASE("scanning_preserves_distinct_snippets", "[digital_media][book_scanning
     REQUIRE(text.is_armor());
     REQUIRE(is_scannable_text(text));
     auto identities = std::vector<std::string>{};
+    auto scanned = std::vector<item*>{};
     for (const auto& id :
          {snippet_id("test_scannable_snippet_first"),
           snippet_id("test_scannable_snippet_second")}) {
@@ -55,25 +67,34 @@ TEST_CASE("scanning_preserves_distinct_snippets", "[digital_media][book_scanning
         finish_scan(who);
         CHECK_FALSE(is_digital_file(text));
         CHECK(text.snip_id == id);
-        auto& file = reader.contents.back();
-        CHECK(file.snip_id == id);
-        CHECK(file.info_string().find(SNIPPET.get_snippet_ref_by_id(id).translated())
+        const auto files = digital_files_on(reader);
+        REQUIRE(files.size() == scanned.size() + 1);
+        // CDF: the file's pocket is not the last one (the battery sits in the MAGAZINE pocket),
+        // so pick the new file by its snippet instead of by position
+        auto* file = static_cast<item*>(nullptr);
+        for (auto* candidate : files) {
+            if (candidate->snip_id == id) { file = candidate; }
+        }
+        REQUIRE(file != nullptr);
+        scanned.push_back(file);
+        CHECK(file->snip_id == id);
+        CHECK(file->info_string().find(SNIPPET.get_snippet_ref_by_id(id).translated())
               != std::string::npos);
-        CHECK(file.typeId() == itype_id("digital_scanned_text"));
-        CHECK(file.type_name() == "digital copy of " + text.type_name());
-        CHECK_FALSE(file.is_armor());
-        CHECK_FALSE(file.is_tool());
-        CHECK(file.type->use_methods.empty());
-        CHECK(file.volume() == 1_ml);
-        CHECK(file.weight() == 0_gram);
-        CHECK(digital_reader_for(who, file));
-        CHECK_FALSE(is_scannable_text(file));
+        CHECK(file->typeId() == itype_id("digital_scanned_text"));
+        CHECK(file->type_name() == "digital copy of " + text.type_name());
+        CHECK_FALSE(file->is_armor());
+        CHECK_FALSE(file->is_tool());
+        CHECK(file->type->use_methods.empty());
+        CHECK(file->volume() == 1_ml);
+        CHECK(file->weight() == 0_gram);
+        CHECK(digital_reader_for(who, *file));
+        CHECK_FALSE(is_scannable_text(*file));
         CHECK_FALSE(start_book_scan(who, reader, text));
-        identities.push_back(file.get_var("DIGITAL_FILE_ID"));
+        identities.push_back(file->get_var("DIGITAL_FILE_ID"));
     }
     REQUIRE(identities.size() == 2);
     CHECK(identities.front() != identities.back());
-    CHECK(reader.contents.num_item_stacks() == 2);
+    CHECK(digital_files_on(reader).size() == 2);
 
     auto& card = who.i_add(item::spawn("sd_memory_card"));
     REQUIRE(upload_digital_files(who, {.source = reader, .destination = card}) == 2);
@@ -86,10 +107,19 @@ TEST_CASE("scanning_preserves_distinct_snippets", "[digital_media][book_scanning
     auto& other_reader = who.i_add(item::spawn("wrist_comp_budget"));
     other_reader.ammo_set(itype_id("battery"), 10);
     REQUIRE(download_digital_files(other_reader, *loaded, who) == 2);
-    CHECK(other_reader.contents.front().snip_id == reader.contents.front().snip_id);
-    CHECK(other_reader.contents.back().snip_id == reader.contents.back().snip_id);
-    CHECK(other_reader.contents.front().type_name() == "digital copy of " + text.type_name());
-    CHECK(other_reader.contents.front().typeId() == itype_id("digital_scanned_text"));
+    const auto downloaded = digital_files_on(other_reader);
+    REQUIRE(downloaded.size() == 2);
+    // both scans arrived, whatever order the pocket keeps them in
+    const auto has_snippet = [](const std::vector<item*>& files, const snippet_id& id) {
+        for (const auto* entry : files) {
+            if (entry->snip_id == id) { return true; }
+        }
+        return false;
+    };
+    CHECK(has_snippet(downloaded, snippet_id("test_scannable_snippet_first")));
+    CHECK(has_snippet(downloaded, snippet_id("test_scannable_snippet_second")));
+    CHECK(downloaded.front()->type_name() == "digital copy of " + text.type_name());
+    CHECK(downloaded.front()->typeId() == itype_id("digital_scanned_text"));
     CHECK(download_digital_files(other_reader, *loaded, who) == 0);
 
     auto& rag = who.i_add(item::spawn("rag"));
@@ -108,8 +138,9 @@ TEST_CASE("scanned_books_can_be_read_in_darkness", "[digital_media][book_scannin
     auto& book = who.i_add(item::spawn("test_scannable_book"));
     REQUIRE(start_book_scan(who, reader, book));
     finish_scan(who);
-    REQUIRE_FALSE(reader.contents.empty());
-    auto& file = reader.contents.front();
+    const auto files = digital_files_on(reader);
+    REQUIRE(files.size() == 1);
+    auto& file = *files.front();
     REQUIRE(is_digital_file(file));
     who.do_read(&file);
     REQUIRE(who.has_identified(file.typeId()));
@@ -178,10 +209,12 @@ TEST_CASE(
     auto& book = who.i_add(item::spawn("test_scannable_book"));
     REQUIRE_FALSE(is_digital_file(book));
     REQUIRE(start_book_scan(who, reader, book));
-    CHECK(reader.contents.empty());
+    // CDF: the reader's battery is a content item, so "nothing scanned yet" means no digital file
+    CHECK(digital_files_on(reader).empty());
     finish_scan(who);
-    REQUIRE(reader.contents.num_item_stacks() == 1);
-    auto& file = reader.contents.front();
+    auto files = digital_files_on(reader);
+    REQUIRE(files.size() == 1);
+    auto& file = *files.front();
     CHECK(is_digital_file(file));
     CHECK(file.typeId() == book.typeId());
     CHECK(file.type_name() != book.type_name());
@@ -222,12 +255,14 @@ TEST_CASE(
     const auto loaded = item::spawn(parser);
     auto& other_reader = who.i_add(item::spawn("test_digital_music_reader"));
     REQUIRE(download_digital_files(other_reader, *loaded, who) == 1);
-    const auto& imported = other_reader.contents.front();
-    CHECK(imported.typeId() == book.typeId());
-    CHECK(imported.weight() == 0_gram);
-    CHECK(imported.volume() == 1_ml);
-    CHECK(imported.get_var("DIGITAL_FILE_ID") == file.get_var("DIGITAL_FILE_ID"));
-    CHECK(digital_reader_for(who, imported));
+    const auto imported = digital_files_on(other_reader);
+    REQUIRE(imported.size() == 1);
+    const auto& imported_file = *imported.front();
+    CHECK(imported_file.typeId() == book.typeId());
+    CHECK(imported_file.weight() == 0_gram);
+    CHECK(imported_file.volume() == 1_ml);
+    CHECK(imported_file.get_var("DIGITAL_FILE_ID") == file.get_var("DIGITAL_FILE_ID"));
+    CHECK(digital_reader_for(who, imported_file));
 }
 
 TEST_CASE("book_scanning_stops_when_its_requirements_are_lost", "[digital_media][book_scanning]") {
@@ -255,6 +290,7 @@ TEST_CASE("book_scanning_stops_when_its_requirements_are_lost", "[digital_media]
         finish_scan(who);
     }
     SECTION("the player cancels") { who.cancel_activity(); }
-    CHECK(reader.contents.empty());
+    // CDF: no digital file was added; the reader's battery is still a content item
+    CHECK(digital_files_on(reader).empty());
     CHECK_FALSE(is_digital_file(book));
 }

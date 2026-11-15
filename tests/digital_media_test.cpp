@@ -46,6 +46,17 @@ auto reload_item(const item& original) -> detached_ptr<item> {
     auto parser = JsonIn(input);
     return item::spawn(parser);
 }
+
+// CDF: P3 keeps a tool's battery as an item in its integral MAGAZINE pocket, so a reader's
+// contents hold the battery next to the digital files. Find the files by their DIGITAL flag
+// instead of by position, and count only them.
+auto digital_files_on(item& media) -> std::vector<item*> {
+    auto files = std::vector<item*>{};
+    for (auto* it : media.contents.all_items_top()) {
+        if (is_digital_file(*it)) { files.push_back(it); }
+    }
+    return files;
+}
 } // namespace
 
 TEST_CASE("digital_media_settings_are_editable_from_lua", "[digital_media][lua]") {
@@ -200,10 +211,13 @@ TEST_CASE("saved_text_files_survive_copying_and_loading", "[digital_media][saveg
     auto reader = item::spawn("wrist_comp_budget");
     reader->ammo_set(itype_id("battery"), 10);
     REQUIRE(download_digital_files(*reader, *media, dummy) == 1);
-    CHECK(reader->contents.front().info_string(description) == article);
+    const auto files = digital_files_on(*reader);
+    REQUIRE(files.size() == 1);
+    CHECK(files.front()->info_string(description) == article);
     const auto loaded = reload_item(*reader);
-    REQUIRE(loaded->contents.num_item_stacks() == 1);
-    CHECK(loaded->contents.front().info_string(description) == article);
+    const auto loaded_files = digital_files_on(*loaded);
+    REQUIRE(loaded_files.size() == 1);
+    CHECK(loaded_files.front()->info_string(description) == article);
 }
 
 TEST_CASE(
@@ -299,6 +313,9 @@ TEST_CASE(
     "hard_drive_files_can_be_downloaded_copied_and_saved",
     "[digital_media][hard_drive][savegame]") {
     auto dummy = avatar{};
+    // CDF: P3 carrying needs pockets; a bare avatar has none and would drop the second item,
+    // so give it the unlimited debug body storage (the same fixture clear_character uses)
+    dummy.set_mutation(trait_id("DEBUG_STORAGE"));
     auto drive = item::spawn("test_digital_hard_drive");
     auto& storage = *drive;
     initialize_digital_media(storage);
@@ -357,12 +374,13 @@ TEST_CASE("digital_files_are_copied_and_encryption_is_respected", "[digital_medi
 
     media->set_flag(flag_MC_ENCRYPTED);
     CHECK(download_digital_files(*reader, *media, dummy) == 0);
-    CHECK(reader->contents.empty());
+    CHECK(digital_files_on(*reader).empty());
     media->unset_flag(flag_MC_ENCRYPTED);
 
     CHECK(download_digital_files(*reader, *media, dummy) == 1);
-    REQUIRE(reader->contents.num_item_stacks() == 1);
-    CHECK(reader->contents.front().get_var("test_content") == "preserved");
+    const auto files = digital_files_on(*reader);
+    REQUIRE(files.size() == 1);
+    CHECK(files.front()->get_var("test_content") == "preserved");
     CHECK(media->contents.num_item_stacks() == 1);
     CHECK(download_digital_files(*reader, *media, dummy) == 0);
     CHECK(download_digital_files(*reader, *reader, dummy) == 0);
@@ -400,7 +418,9 @@ TEST_CASE("digital_urbex_maps_preserve_map_behavior_and_location", "[digital_med
     auto& reader = *device;
     reader.ammo_set(itype_id("battery"), 10);
     REQUIRE(download_digital_files(reader, *media, dummy) == 1);
-    auto& file = reader.contents.front();
+    const auto files = digital_files_on(reader);
+    REQUIRE(files.size() == 1);
+    auto& file = *files.front();
     CHECK(file.get_var("reveal_map_center_omt", tripoint_abs_omt()) == center);
     dummy.i_add(std::move(device));
     REQUIRE(digital_reader_for(dummy, file));
@@ -459,7 +479,8 @@ TEST_CASE("exporting_a_selected_file_preserves_identity_and_metadata", "[digital
     REQUIRE(
         upload_digital_files(dummy, {.source = reader, .destination = *card, .file = &file}) == 1);
     REQUIRE(card->contents.num_item_stacks() == 1);
-    CHECK(reader.contents.num_item_stacks() == 1);
+    // CDF: the reader keeps its battery as a content item; only the installed file is counted
+    CHECK(digital_files_on(reader).size() == 1);
     const auto& exported = card->contents.front();
     CHECK(exported.typeId() == file.typeId());
     CHECK(exported.get_var("DIGITAL_FILE_ID") == file.get_var("DIGITAL_FILE_ID"));
@@ -468,7 +489,9 @@ TEST_CASE("exporting_a_selected_file_preserves_identity_and_metadata", "[digital
     auto other_reader = item::spawn("wrist_comp_budget");
     other_reader->ammo_set(itype_id("battery"), 10);
     REQUIRE(download_digital_files(*other_reader, *card, dummy) == 1);
-    CHECK(other_reader->contents.front().get_var("DIGITAL_FILE_ID")
+    const auto imported = digital_files_on(*other_reader);
+    REQUIRE(imported.size() == 1);
+    CHECK(imported.front()->get_var("DIGITAL_FILE_ID")
           == file.get_var("DIGITAL_FILE_ID"));
     CHECK(card->contents.num_item_stacks() == 1);
 }
@@ -482,7 +505,9 @@ TEST_CASE(
     auto& source = *device;
     source.ammo_set(itype_id("battery"), 10);
     source.put_in(item::spawn("test_digital_instruction"));
-    source.contents.front().set_var("test_content", "preserved");
+    const auto source_files = digital_files_on(source);
+    REQUIRE(source_files.size() == 1);
+    source_files.front()->set_var("test_content", "preserved");
     dummy.i_add(std::move(device));
     auto media = item::spawn(media_id);
     REQUIRE(upload_digital_files(dummy, {.source = source, .destination = *media}) == 1);
@@ -506,12 +531,14 @@ TEST_CASE(
     auto destination = item::spawn("wrist_comp_budget");
     destination->ammo_set(itype_id("battery"), 10);
     CHECK(download_digital_files(*destination, *loaded, dummy) == 0);
-    CHECK(destination->contents.empty());
+    CHECK(digital_files_on(*destination).empty());
     REQUIRE(set_digital_media_encryption(*loaded, false));
     CHECK(is_writable_digital_media(*loaded));
     CHECK(loaded->tname() == unlocked_name);
     REQUIRE(download_digital_files(*destination, *loaded, dummy) == 1);
-    CHECK(destination->contents.front().get_var("DIGITAL_FILE_ID") == file_id);
+    const auto received = digital_files_on(*destination);
+    REQUIRE(received.size() == 1);
+    CHECK(received.front()->get_var("DIGITAL_FILE_ID") == file_id);
     CHECK(loaded->contents.num_item_stacks() == 1);
 }
 
@@ -679,7 +706,9 @@ TEST_CASE("digital_item_actions_require_installation", "[digital_media][iuse]") 
     auto device = item::spawn("wrist_comp_budget");
     device->ammo_set(itype_id("battery"), 10);
     REQUIRE(download_digital_files(*device, *source, dummy) == 1);
-    auto& installed_file = device->contents.front();
+    const auto installed = digital_files_on(*device);
+    REQUIRE(installed.size() == 1);
+    auto& installed_file = *installed.front();
     dummy.i_add(std::move(device));
     dummy.invoke_item(&installed_file, "transform");
     CHECK(installed_file.typeId() == itype_id("test_digital_instruction"));
@@ -709,7 +738,8 @@ TEST_CASE("hello_world_runs_repeatedly_using_a_powered_reader", "[digital_media]
     CHECK(dummy.moves == original_moves - 200);
     CHECK(file.charges == 0);
     CHECK(file.typeId() == itype_id("digital_hello_world"));
-    CHECK(reader.contents.num_item_stacks() == 1);
+    // CDF: the reader's battery is a content item; count only the installed file
+    CHECK(digital_files_on(reader).size() == 1);
 
     reader.ammo_unset();
     dummy.invoke_item(&file, "manualnoise");
@@ -722,7 +752,9 @@ TEST_CASE("digital_tool_actions_keep_explicit_charge_requirements", "[digital_me
     const auto* action = tool->get_use("manualnoise");
     REQUIRE(action != nullptr);
     CHECK(action->can_call(dummy, *tool, false, dummy.bub_pos()).success());
-    tool->ammo_unset();
+    // CDF: a pocketless tool keeps its charge in `charges` (P3); ammo_unset() has no magazine
+    // to clear, so empty it the way the model does
+    tool->charges = 0;
     CHECK_FALSE(action->can_call(dummy, *tool, false, dummy.bub_pos()).success());
 }
 
@@ -736,7 +768,9 @@ TEST_CASE("digital_study_uses_the_reader", "[digital_media][reading]") {
     auto& reader = *device;
     reader.ammo_set(itype_id("battery"), 10);
     reader.put_in(item::spawn("test_digital_instruction"));
-    auto& file = reader.contents.front();
+    const auto files = digital_files_on(reader);
+    REQUIRE(files.size() == 1);
+    auto& file = *files.front();
     dummy.i_add(std::move(device));
     REQUIRE(digital_reader_for(dummy, file));
 
@@ -793,7 +827,9 @@ TEST_CASE("crafted_satellite_maps_can_be_installed_on_readers", "[digital_media]
     auto reader = item::spawn("wrist_comp_budget");
     reader->ammo_set(itype_id("battery"), 10);
     REQUIRE(download_digital_files(*reader, *media, dummy) == 1);
-    CHECK(reader->contents.front().get_use("reveal_map") != nullptr);
+    const auto installed = digital_files_on(*reader);
+    REQUIRE(installed.size() == 1);
+    CHECK(installed.front()->get_use("reveal_map") != nullptr);
 }
 
 TEST_CASE("camera_photo_and_music_files_use_json_quantities", "[digital_media]") {
@@ -861,8 +897,9 @@ TEST_CASE("different_music_files_have_independent_cooldowns", "[digital_media][i
     auto device = item::spawn("test_digital_music_reader");
     auto& reader = *device;
     initialize_digital_media(reader);
-    REQUIRE(reader.contents.num_item_stacks() == 1);
-    auto& first = reader.contents.front();
+    const auto installed = digital_files_on(reader);
+    REQUIRE(installed.size() == 1);
+    auto& first = *installed.front();
     auto extra = item::spawn("test_digital_music_collection");
     extra->charges = 4;
     auto& second = *extra;
@@ -982,7 +1019,8 @@ TEST_CASE("legacy_photo_counters_are_removed_and_music_counts_migrate", "[digita
     initialize_digital_media(*reader);
     CHECK(digital_music_on(*reader).songs == 13);
     CHECK_FALSE(reader->has_var("EIPC_PHOTOS"));
-    CHECK(reader->contents.num_item_stacks() == 1);
+    // CDF: the reader's battery is a content item; count only the migrated music file
+    CHECK(digital_files_on(*reader).size() == 1);
 }
 
 TEST_CASE(
@@ -1049,7 +1087,8 @@ TEST_CASE("downloading_initializes_unopened_media_once", "[digital_media]") {
     auto encrypted = item::spawn("test_digital_media_encrypting");
     CHECK(download_digital_files(*reader, *encrypted, dummy) == 0);
     CHECK(encrypted->has_flag(flag_MC_ENCRYPTED));
-    CHECK(reader->contents.num_item_stacks() == 1);
+    // CDF: the reader's battery is a content item; count only the installed file
+    CHECK(digital_files_on(*reader).size() == 1);
 }
 
 TEST_CASE(
@@ -1075,7 +1114,8 @@ TEST_CASE(
     CHECK(digital_monster_photos(*device).at(mtype_id("mon_zombie")) == 5);
     const auto identity = album->get().get_var("DIGITAL_FILE_ID");
     migrate_legacy_digital_media(*device);
-    CHECK(device->contents.num_item_stacks() == 1);
+    // CDF: the camera's battery is a content item; the album is the only digital file
+    CHECK(digital_files_on(*device).size() == 1);
     CHECK(find_camera_photo_collection(*device)->get().get_var("DIGITAL_FILE_ID") == identity);
 
     auto loaded = reload_item(*device);
@@ -1108,7 +1148,9 @@ TEST_CASE(
     auto reader = item::spawn("wrist_comp_budget");
     reader->ammo_set(itype_id("battery"), 100);
     REQUIRE(download_digital_files(*reader, *card, dummy) == 1);
-    CHECK(reader->contents.front().get_var("CAMERA_EXTENDED_PHOTOS") == first);
+    const auto first_import = digital_files_on(*reader);
+    REQUIRE(first_import.size() == 1);
+    CHECK(first_import.front()->get_var("CAMERA_EXTENDED_PHOTOS") == first);
     CHECK(digital_monster_photos(*reader).at(mtype_id("mon_zombie")) == 3);
     CHECK(album.charges == 1);
     CHECK(album.get_var("CAMERA_EXTENDED_PHOTOS") == first);
@@ -1120,14 +1162,20 @@ TEST_CASE(
     album.set_var("CAMERA_MONSTER_PHOTOS", ",mon_zombie,5,");
     update_camera_photo_collection(camera, 2);
     CHECK(album.get_var("DIGITAL_FILE_ID") != original);
-    CHECK(camera.contents.num_item_stacks() == 1);
+    // CDF: the camera's battery is a content item; the album is the only digital file
+    CHECK(digital_files_on(camera).size() == 1);
     auto next_card = item::spawn("sd_memory_card");
     REQUIRE(
         upload_digital_files(dummy, {.source = camera, .destination = *next_card, .file = &album})
         == 1);
     REQUIRE(download_digital_files(*reader, *next_card, dummy) == 1);
     CHECK(digital_monster_photos(*reader).at(mtype_id("mon_zombie")) == 5);
-    CHECK(reader->contents.back().get_var("CAMERA_EXTENDED_PHOTOS") == second);
+    const auto imports = digital_files_on(*reader);
+    REQUIRE(imports.size() == 2);
+    // the newer album arrived, whatever order the pocket keeps the two copies in
+    CHECK(std::ranges::any_of(imports, [&second](const item * file) {
+        return file->get_var("CAMERA_EXTENDED_PHOTOS") == second;
+    }));
     CHECK(album.charges == 2);
     CHECK(card->contents.front().get_var("CAMERA_EXTENDED_PHOTOS") == first);
 }
@@ -1177,7 +1225,9 @@ TEST_CASE(
     CHECK(drive->contents.front().get_var("DIGITAL_FILE_ID") == identity);
     CHECK(download_digital_files(reader, *drive, dummy) == 0);
 
-    auto& imported = reader.contents.front();
+    const auto imported_files = digital_files_on(reader);
+    REQUIRE(imported_files.size() == 1);
+    auto& imported = *imported_files.front();
     CHECK(imported.get_var("specimen_sample") == specimen);
     CHECK(imported.get_var("specimen_sample_progress") == progress);
     CHECK(imported.get_var("specimen_name") == name);
@@ -1194,6 +1244,9 @@ TEST_CASE(
 
 TEST_CASE("genome_workstation_finds_samples_inside_storage", "[digital_media][genome]") {
     auto dummy = avatar{};
+    // CDF: P3 carrying needs pockets; a bare avatar has none and would drop the second drive,
+    // so give it the unlimited debug body storage (the same fixture clear_character uses)
+    dummy.set_mutation(trait_id("DEBUG_STORAGE"));
     const auto storage_id =
         GENERATE("genome_drive", "usb_drive", "sd_memory_card", "eink_tablet_pc");
     auto storage = item::spawn(storage_id);
@@ -1216,20 +1269,34 @@ TEST_CASE(
     "genome_storage_accepts_usb_and_sd_cards_without_erasing_files", "[digital_media][genome]") {
     const auto media_id = GENERATE("usb_drive", "sd_memory_card");
     auto dummy = avatar{};
+    // CDF: P3 carrying needs pockets; a bare avatar has none, so give it the unlimited debug
+    // body storage (the same fixture clear_character uses)
+    dummy.set_mutation(trait_id("DEBUG_STORAGE"));
     auto media = item::spawn(media_id);
     auto& storage = *media;
     storage.put_in(item::spawn("test_digital_instruction"));
-    dummy.i_add(std::move(media));
     auto encrypted_card = item::spawn("sd_memory_card");
     encrypted_card->set_flag(flag_MC_ENCRYPTED);
-    dummy.i_add(std::move(encrypted_card));
-    dummy.i_add(item::spawn("wrist_comp_budget"));
+    auto reader = item::spawn("wrist_comp_budget");
+    // CDF: P3 carrying needs pockets; a bare avatar has none, and adding the card to a carried
+    // storage would stow the 1 ml card inside that storage. Carry all three in one box instead.
+    auto carried_ptr = item::spawn("box_small");
+    carried_ptr->put_in(std::move(media));
+    carried_ptr->put_in(std::move(encrypted_card));
+    carried_ptr->put_in(std::move(reader));
+    dummy.i_add(std::move(carried_ptr));
     const auto destinations = digital_genome_storage(dummy);
     REQUIRE(destinations.size() == 1);
     CHECK(destinations.front() == &storage);
     storage.put_in(item::spawn("digital_genome_sample"));
     CHECK(storage.contents.num_item_stacks() == 2);
-    CHECK(storage.contents.front().typeId() == itype_id("test_digital_instruction"));
+    // CDF: the sample is not guaranteed to sort after the old file in the pocket; find the
+    // kept file by its type instead of by position
+    const auto files = digital_files_on(storage);
+    REQUIRE(files.size() == 2);
+    CHECK(std::ranges::any_of(files, [](const item * file) {
+        return file->typeId() == itype_id("test_digital_instruction");
+    }));
     CHECK(digital_genome_samples(dummy).size() == 1);
 }
 
