@@ -29,6 +29,7 @@ class JsonObject;
 class JsonOut;
 class item;
 class item_pocket;
+class map;
 struct iteminfo;
 struct itype;
 
@@ -357,6 +358,12 @@ class item_pocket
         // @p parent_item is the item owning the pocket, @p carrier whoever holds it (T5, T7)
         void overflow( const tripoint_bub_ms &pos, item *parent_item, Character *carrier );
         bool spill_contents( const tripoint_bub_ms &pos );
+        /**
+         * DDA item_pocket.cpp:2014: leaks the pocket's liquids. @p pocke is the pocket the
+         * owner sits in, so liquid leaking out of a nested container can move into it.
+         */
+        void leak( map &here, Character *carrier, const tripoint_bub_ms &pos,
+                   item_pocket *pocke = nullptr );
         void on_pickup( Character &guy, item *avoid = nullptr );
         void on_contents_changed();
         void handle_liquid_or_spill( Character &guy, const item *avoid = nullptr );

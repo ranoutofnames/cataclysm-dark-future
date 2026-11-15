@@ -174,6 +174,8 @@ class item_contents
         size_t num_item_stacks() const;
 
         bool spill_contents( const tripoint_bub_ms &pos );
+        void leak( map &here, Character *carrier, const tripoint_bub_ms &pos,
+                   item_pocket *pocke = nullptr );
         std::vector<detached_ptr<item>> clear_items();
 
         /**

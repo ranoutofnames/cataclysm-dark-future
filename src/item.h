@@ -990,6 +990,8 @@ class item : public location_visitable<item>, public game_object<item>
             temperature_flag temperature = temperature_flag::TEMP_NORMAL;
             const weather_manager *weather = nullptr;
             int local_temperature = 0;
+            /** DDA item_degrade.cpp:1384: scales the rot this item gains (pocket chain). */
+            float spoil_multiplier = 1.0f;
         };
 
         static auto actualize_rot( detached_ptr<item> &&self, const tripoint_bub_ms &pnt,
@@ -1005,7 +1007,8 @@ class item : public location_visitable<item>, public game_object<item>
          * @param time Time point to which rot is calculated
          * @param temp Temperature at which the rot is calculated
          */
-        auto calc_rot( time_point time, const units::temperature temp ) const -> time_duration;
+        auto calc_rot( time_point time, const units::temperature temp,
+                       float spoil_multiplier = 1.0f ) const -> time_duration;
 
         /**
          * Time that this item is guaranteed to stay fresh.
@@ -1038,7 +1041,8 @@ class item : public location_visitable<item>, public game_object<item>
         static auto process_rot( detached_ptr<item> &&self, bool seals,
                                  const tripoint_bub_ms &pos,
                                  player *carrier, temperature_flag flag,
-                                 const weather_manager &weather_generator ) -> detached_ptr<item>;
+                                 const weather_manager &weather_generator,
+                                 float spoil_multiplier = 1.0f ) -> detached_ptr<item>;
         /*@}*/
 
         int get_comestible_fun() const;
@@ -1057,7 +1061,8 @@ class item : public location_visitable<item>, public game_object<item>
 
         /** Update @ref rot at the specified location without removing rotten-away items. */
         auto update_rot( const tripoint_bub_ms &pos, temperature_flag temperature,
-                         const weather_manager &weather_generator ) -> void;
+                         const weather_manager &weather_generator,
+                         float spoil_multiplier = 1.0f ) -> void;
         auto update_rot( const rot_context &context ) -> void;
 
         /** Get @ref rot value relative to shelf life (or 0 if item does not spoil) */
@@ -1096,6 +1101,12 @@ class item : public location_visitable<item>, public game_object<item>
 
         /** true if a parent container keeps this item from rotting */
         auto is_in_preserving_container() const -> bool;
+        /**
+         * Spoil rate of this item from the pockets it is in: the lowest spoil_multiplier of
+         * any pocket on the way up, as DDA item_pocket::process picks it (item_pocket.cpp:1997).
+         * CDF: the chain is walked here because the BN process keeps no parameter for it.
+         */
+        auto pocket_spoil_multiplier() const -> float;
         /// Storage flag of the vehicle part holding this item, or nullopt outside vehicle cargo.
         auto vehicle_storage_temperature() const -> std::optional<temperature_flag>;
 
@@ -1896,6 +1907,9 @@ class item : public location_visitable<item>, public game_object<item>
         void handle_liquid_or_spill( Character &guy, const item *avoid = nullptr );
         bool will_spill() const;
         bool will_spill_if_unsealed() const;
+        /** DDA item_container.cpp:894: leaks liquid out of non-watertight pockets. */
+        bool leak( map &here, Character *carrier, const tripoint_bub_ms &pos,
+                   item_pocket *pocke = nullptr );
 
         /** DDA names; the CDF spellings are get_container_capacity() and get_total_capacity(). */
         units::volume get_volume_capacity( const std::function<bool( const item_pocket & )> &include_pocket
@@ -3102,7 +3116,8 @@ class item : public location_visitable<item>, public game_object<item>
         const use_function *get_use_internal( const std::string &use_name ) const;
         static detached_ptr<item> process_internal( detached_ptr<item> &&self, player *carrier,
                 const tripoint_bub_ms &pos, bool activate,
-                bool seals, temperature_flag flag, const weather_manager &weather_generator, const int ticks );
+                bool seals, temperature_flag flag, const weather_manager &weather_generator,
+                const int ticks, float spoil_multiplier );
         static auto actualize_rot( detached_ptr<item> &&self, const tripoint_bub_ms &pnt,
                                    temperature_flag temperature,
                                    const weather_manager &weather, bool seals ) -> detached_ptr<item>;
