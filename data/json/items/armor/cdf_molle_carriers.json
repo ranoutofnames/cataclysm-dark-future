@@ -2,7 +2,6 @@
   {
     "id": "light_load_bearing_vest",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:721 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
     "name": {
       "str": "light load bearing vest"
@@ -50,7 +49,6 @@
   {
     "id": "load_bearing_vest",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:748 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
     "name": {
       "str": "load bearing vest"
@@ -98,7 +96,6 @@
   {
     "id": "heavy_load_bearing_vest",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:808 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
     "name": {
       "str": "heavy load bearing vest"
@@ -209,13 +206,11 @@
         ],
         "volume_encumber_modifier": 0.2
       }
-    ],
-    "category": "armor"
+    ]
   },
   {
     "id": "molle_medium_rucksack",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA storage.json:2105 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
     "name": {
       "str": "MOLLE medium rucksack"
@@ -334,7 +329,6 @@
   {
     "id": "molle_large_rucksack",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA storage.json:2197 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
     "name": {
       "str": "MOLLE large rucksack"
@@ -453,7 +447,6 @@
   {
     "id": "deployment_bag",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA storage.json:1005 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, volume_encumber_modifier, flags and use_action are DDA's.",
     "name": {
       "str": "deployment bag"

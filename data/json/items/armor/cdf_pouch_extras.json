@@ -2,7 +2,6 @@
   {
     "id": "xl_chestrig",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:206 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "copy-from": "chestrig",
     "name": {
@@ -24,7 +23,6 @@
   {
     "id": "xs_chestrig",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:217 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "copy-from": "chestrig",
     "name": {
@@ -46,7 +44,6 @@
   {
     "id": "nylon_quiver",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:413 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "nylon quiver"
@@ -98,7 +95,6 @@
   {
     "id": "pipe_quiver",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:469 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "pipe quiver"
@@ -149,7 +145,6 @@
   {
     "id": "pipe_quiver_large",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:537 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "large pipe quiver"
@@ -198,7 +193,6 @@
   {
     "id": "quiver_simple_cloth",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:558 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "simple cloth quiver"
@@ -248,7 +242,6 @@
   {
     "id": "xl_tacvest",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:703 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "copy-from": "tacvest",
     "name": {
@@ -270,7 +263,6 @@
   {
     "id": "xs_tacvest",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:712 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "copy-from": "tacvest",
     "name": {
@@ -292,7 +284,6 @@
   {
     "id": "load_bearing_vest_sling",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:775 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "copy-from": "load_bearing_vest",
     "name": {
@@ -345,7 +336,6 @@
   {
     "id": "heavy_load_bearing_vest_sling",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:835 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "copy-from": "heavy_load_bearing_vest",
     "name": {
@@ -400,7 +390,6 @@
   {
     "id": "ammo_satchel_leather",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1404 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "leather ammo satchel"
@@ -458,7 +447,6 @@
   {
     "id": "chestpouch_leather",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1434 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "leather chest ammo pouch",
@@ -515,7 +503,6 @@
   {
     "id": "belt_loop_small",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1464 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "small belt loop"
@@ -564,7 +551,6 @@
   {
     "id": "belt_loop_medium",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1494 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "medium belt loop"
@@ -613,7 +599,6 @@
   {
     "id": "belt_loop_large",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:1524 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.",
     "name": {
       "str": "large belt loop"

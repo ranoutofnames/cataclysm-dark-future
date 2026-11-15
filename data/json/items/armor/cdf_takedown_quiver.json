@@ -2,7 +2,6 @@
   {
     "id": "quiver_takedown_bow",
     "type": "ARMOR",
-    "category": "armor",
     "//": "CDF: DDA ammo_pouch.json:585 in BN ARMOR format (DDA 'type ITEM'/'subtypes'/'armor' become type ARMOR/armor_portion_data); weight, volume, price, coverage, encumbrance, flags and pockets are DDA's.  Based on: https://www.amazon.com/XTACER-Multi-Function-4-Tubes-Training-Takedown/dp/B072K4537K",
     "name": { "str": "multi-function quiver" },
     "description": "A large cotton quiver capable of easily storing 16 arrows.  It includes a bag and straps to store a takedown bow, as well as a small pouch for archery accessories.  Use insert to store arrows or bolts and activate to holster/draw your bow.",

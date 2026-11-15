@@ -32,6 +32,7 @@
     "id": "toolset",
     "copy-from": "fake_item",
     "type": "TOOL",
+    "category": "armor",
     "name": { "str": "integrated toolset" },
     "flags": [ "TRADER_AVOID", "BIONIC_TOOLS", "USES_BIONIC_POWER" ],
     "max_charges": 10000,
