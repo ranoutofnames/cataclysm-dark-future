@@ -6,6 +6,8 @@
 #include "game.h"
 #include "item.h"
 #include "item_category.h"
+#include "item_contents.h"
+#include "item_pocket.h"
 #include "map/map_selector.h"
 #include "npc.h"
 #include "player.h"
@@ -25,14 +27,40 @@
 static const skill_id skill_barter( "barter" );
 static const flag_id json_flag_NO_UNWIELD( "NO_UNWIELD" );
 
+// CDF: character_inventory.cpp and visitable.cpp keep their own static copy. The pockets whose
+// items are carried: nested rows must use the same pockets as carried_item_stacks(), so a loaded
+// tool's own ammo never becomes a trade row (DDA items_with walks every pocket).
+static auto is_listed_pocket( const item_pocket &pocket ) -> bool
+{
+    return ( pocket.is_carry() || pocket.is_holster() ) && pocket.is_type( pocket_type::CONTAINER );
+}
+
+// CDF: G35, a nested row that is selected on its own must leave the container before the
+// container row moves, or it would detach from whatever the receiver now holds.
+static auto carry_depth( const item &it ) -> int
+{
+    auto depth = 0;
+    for( const item *parent = it.parent_item(); parent != nullptr; parent = parent->parent_item() ) {
+        depth++;
+    }
+    return depth;
+}
+
 void npc_trading::transfer_items( std::vector<item_pricing> &stuff, Character &,
                                   Character &receiver, bool npc_gives )
 {
-    std::ranges::for_each( stuff, [&]( auto & ip ) {
-        if( !ip.selected ) {
-            return;
+    auto selected = std::vector<item_pricing *> {};
+    for( item_pricing &ip : stuff ) {
+        if( ip.selected ) {
+            selected.push_back( &ip );
         }
+    }
+    std::ranges::stable_sort( selected, []( const item_pricing * a, const item_pricing * b ) {
+        return carry_depth( *a->locs.front() ) > carry_depth( *b->locs.front() );
+    } );
 
+    std::ranges::for_each( selected, [&]( item_pricing * ip_ptr ) {
+        auto &ip = *ip_ptr;
         auto &gift = *ip.locs.front();
         const auto charges = npc_gives ? ip.u_charges : ip.npc_charges;
 
@@ -149,8 +177,39 @@ std::vector<item_pricing> npc_trading::init_buying( Character &buyer, Character 
         }
     };
 
+    // DDA: npctrade.cpp:127 items_with() lists every carried item, nested ones too, so one item
+    // can be sold out of a container while the container and the rest stay (G35). The outer
+    // stacks keep carried_item_stacks() grouping; nested siblings group the same way.
+    const auto add_nested = [&]( item &parent, auto &&self ) -> void {
+        auto stacks = std::vector<carried_stack> {};
+        for( item_pocket &pocket : parent.contents.get_pockets() ) {
+            if( !is_listed_pocket( pocket ) ) {
+                continue;
+            }
+            for( item *child : pocket.items() ) {
+                const auto found = std::ranges::find_if( stacks, [child]( const carried_stack & st ) {
+                    return st.front()->stacks_with( *child );
+                } );
+                if( found != stacks.end() ) {
+                    found->push_back( child );
+                } else {
+                    stacks.push_back( { child } );
+                }
+            }
+        }
+        for( const carried_stack &stack : stacks ) {
+            check_item( stack, stack.size() );
+            for( item *child : stack ) {
+                self( *child, self );
+            }
+        }
+    };
+
     for( const carried_stack &stack : carried_item_stacks( seller ) ) {
         check_item( stack, stack.size() );
+        for( item *child : stack ) {
+            add_nested( *child, add_nested );
+        }
     }
 
     if( is_npc ) {
