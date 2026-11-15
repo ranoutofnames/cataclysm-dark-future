@@ -1030,9 +1030,47 @@ class activatable_inventory_preset : public pickup_inventory_preset
                    !item_funcs::is_invisible_installed_gunmod( *loc );
         }
 
+        bool collate_entries() const override {
+            // Per DDA game_inventory.cpp:1122: _collate_entries = true.
+            return true;
+        }
+
         std::string get_denial( const item *loc ) const override {
             const item &it = *loc;
             const auto &uses = it.type->use_methods;
+
+            // CDF: DDA game_inventory.cpp:1141-1143 (has_relic_activation && !can_use_relic) is
+            // skipped. CDF's relic has no activation requirements (relic.h: recharge scheme only),
+            // so there is no can_use_relic() equivalent to test.
+
+            // DDA game_inventory.cpp:1145-1153.
+            const auto &comest = it.get_comestible();
+            if( comest && !comest->tool.is_null() ) {
+                const bool has = item::count_by_charges( comest->tool )
+                                 ? p.has_charges( comest->tool, 1 )
+                                 : p.has_amount( comest->tool, 1 );
+                if( !has ) {
+                    return string_format( _( "You need a %s to consume that!" ), item::nname( comest->tool ) );
+                }
+            }
+            // DDA game_inventory.cpp:1154-1166.
+            const use_function *consume_drug = it.type->get_use( "consume_drug" );
+            if( consume_drug != nullptr ) { //its a drug)
+                const consume_drug_iuse *consume_drug_use = dynamic_cast<const consume_drug_iuse *>
+                        ( consume_drug->get_actor_ptr() );
+                for( const auto &tool : consume_drug_use->tools_needed ) {
+                    const bool has = item::count_by_charges( tool.first )
+                                     ? p.has_charges( tool.first, ( tool.second == -1 ) ? 1 : tool.second )
+                                     : p.has_amount( tool.first, 1 );
+                    if( !has ) {
+                        return string_format( _( "You need a %s to consume that!" ), item::nname( tool.first ) );
+                    }
+                }
+            }
+
+            // CDF: DDA game_inventory.cpp:1168-1174 (the SMOKING use and iuse::can_smoke) is
+            // skipped. CDF has no SMOKING use function: smoking is part of consume_drug_iuse
+            // (lit_item/smoking_duration), whose tools_needed check is the block above.
 
             if( uses.size() == 1 ) {
                 const auto ret = uses.begin()->second.can_call( p, it, false, p.bub_pos() );
@@ -1045,11 +1083,26 @@ class activatable_inventory_preset : public pickup_inventory_preset
                 return _( "Your biology is not compatible with that item." );
             }
 
-            if( !p.has_enough_charges( it, false ) && !uses.contains( iuse_TOGGLE_UPS_CHARGING ) ) {
+            // CDF: DDA game_inventory.cpp:1187-1189 (is_broken) is skipped: BN has no broken item
+            // state (src/visitable.cpp:1221, src/item.cpp:1302).
+
+            // Per DDA game_inventory.cpp:1191-1202. CDF keeps the BN toggle exemption: invoke_item
+            // handles TOGGLE_UPS_CHARGING before its own ammo check (character.cpp:9028-9031).
+            if( uses.size() == 1 && !uses.contains( iuse_TOGGLE_UPS_CHARGING ) &&
+                !it.ammo_sufficient( &p, uses.begin()->first ) ) {
+                if( it.uses_firing_requirements() ) {
+                    return string_format( _( "Needs at least: %s." ),
+                                          it.format_consumption_requirements( uses.begin()->first ) );
+                }
                 return string_format(
-                           vgettext( "Needs at least %d charge",
-                                     "Needs at least %d charges", loc->ammo_required() ),
+                           vgettext( "Needs at least %d charge.",
+                                     "Needs at least %d charges.", loc->ammo_required() ),
                            loc->ammo_required() );
+            }
+
+            // DDA game_inventory.cpp:1203-1205.
+            if( it.is_frozen_liquid() && it.is_comestible() ) {
+                return _( "You can't consume frozen liquids!" );
             }
 
             if( !it.has_flag( flag_ALLOWS_REMOTE_USE ) && !it.has_flag( flag_TEMPORARY_ITEM ) ) {
@@ -1086,13 +1139,15 @@ item *game_menus::inv::use( avatar &you )
 
 // CDF: FM1 amendment (G40), test hooks (precedent: consume_preset_shows). Declared here and in
 // tests/apply_menu_test.cpp, not in game_inventory.h (a hook there would rebuild its includers);
-// keep the two signatures identical. The apply preset is file-local.
+// keep the four signatures identical. The apply preset is file-local.
 namespace game_menus
 {
 namespace inv
 {
 bool use_preset_shows( const player &p, const item &it );
 std::vector<pocket_type> use_preset_pocket_types();
+std::string use_preset_denial( const player &p, const item &it );
+bool use_preset_collates();
 } // namespace inv
 } // namespace game_menus
 
@@ -1104,6 +1159,17 @@ bool game_menus::inv::use_preset_shows( const player &p, const item &it )
 std::vector<pocket_type> game_menus::inv::use_preset_pocket_types()
 {
     return activatable_inventory_preset( get_avatar() ).get_pocket_type();
+}
+
+std::string game_menus::inv::use_preset_denial( const player &p, const item &it )
+{
+    return activatable_inventory_preset( p ).get_denial( &it );
+}
+
+// Per DDA game_inventory.cpp:1122 (_collate_entries = true).
+bool game_menus::inv::use_preset_collates()
+{
+    return activatable_inventory_preset( get_avatar() ).collate_entries();
 }
 
 class gunmod_inventory_preset : public inventory_selector_preset

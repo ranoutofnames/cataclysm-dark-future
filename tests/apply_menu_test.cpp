@@ -25,6 +25,9 @@
 // the world has no uistate.json. Expected item data comes from the JSON (lighter has a firestarter
 // use, bandages is a comestible MED with a heal use, dogfood is a comestible with PETFOOD, jerky has
 // no use, glock_19 takes glockmag, ar15 takes u_shotgun), not from the code under test.
+// PL-64 IN5: the rest of DDA's get_denial (1137-1212) and _collate_entries (1122): comestible
+// tool, consume_drug tools_needed, the single-use can_call, the charge check, frozen liquids, and
+// collation. DDA's relic, SMOKING and is_broken checks have no CDF equivalent and are skipped.
 // ---------------------------------------------------------------------------
 
 namespace game_menus::inv
@@ -33,6 +36,8 @@ namespace game_menus::inv
 // game_inventory.h (a hook there would rebuild its includers). Keep the signatures identical.
 bool use_preset_shows( const player &p, const item &it );
 std::vector<pocket_type> use_preset_pocket_types();
+std::string use_preset_denial( const player &p, const item &it );
+bool use_preset_collates();
 } // namespace game_menus::inv
 
 // CDF: PL-64 G21. Defined in src/game.cpp; the reset game::setup() and game::load() run.
@@ -220,6 +225,72 @@ TEST_CASE( "apply_menu_lists_an_in_progress_craft", "[inventory][apply]" )
     item craft( &rec, 1, {}, {} );
     REQUIRE( craft.is_craft() );
     CHECK( game_menus::inv::use_preset_shows( you, craft ) );
+}
+
+// DDA game_inventory.cpp:1122: the apply preset collates its entries (_collate_entries = true).
+// CDF spells that as the collate_entries() override.
+TEST_CASE( "apply_menu_collates_entries", "[inventory][apply]" )
+{
+    CHECK( game_menus::inv::use_preset_collates() );
+}
+
+// DDA game_inventory.cpp:1145-1153: a comestible whose comestible tool is missing is denied.
+// iv_mutagen carries "tool": "syringe" (data/json/items/comestibles/mutagen.json). It is also a
+// comestible with a use, so is_shown keeps it out of the list (1131-1135); the denial is checked
+// on its own because that is how DDA writes the check.
+TEST_CASE( "apply_menu_denies_a_comestible_without_its_tool", "[inventory][apply]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+
+    detached_ptr<item> iv = item::spawn( "iv_mutagen", bday );
+    REQUIRE( iv->is_comestible() );
+    REQUIRE( iv->get_comestible()->tool == itype_id( "syringe" ) );
+    REQUIRE_FALSE( you.has_amount( itype_id( "syringe" ), 1 ) );
+    CHECK_FALSE( game_menus::inv::use_preset_shows( you, *iv ) );
+    CHECK( game_menus::inv::use_preset_denial( you, *iv ) ==
+           "You need a " + item::nname( itype_id( "syringe" ) ) + " to consume that!" );
+}
+
+// DDA game_inventory.cpp:1154-1166: consume_drug's tools_needed are checked before anything else.
+// dab_pen is a TOOL with one use and "tools_needed": { "thc_liquid": 1 }
+// (data/json/items/tool/smoking.json), so it is listed and denied until the tool is carried.
+TEST_CASE( "apply_menu_denies_a_drug_without_its_tool", "[inventory][apply]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+
+    detached_ptr<item> pen = item::spawn( "dab_pen", bday );
+    REQUIRE( pen->type->get_use( "consume_drug" ) != nullptr );
+    REQUIRE( pen->type->use_methods.size() == 1 );
+    CHECK( game_menus::inv::use_preset_shows( you, *pen ) );
+    CHECK( game_menus::inv::use_preset_denial( you, *pen ) ==
+           "You need a " + item::nname( itype_id( "thc_liquid" ) ) + " to consume that!" );
+
+    // With the tool carried the drug check passes and DDA's charge check (1191-1202) is next: the
+    // pen has no battery and its single use costs 1 charge.
+    you.i_add( item::spawn( "thc_liquid", bday, 5 ) );
+    REQUIRE( you.has_charges( itype_id( "thc_liquid" ), 1 ) );
+    REQUIRE_FALSE( pen->ammo_sufficient( &you, "consume_drug" ) );
+    REQUIRE( pen->ammo_required() == 1 );
+    CHECK( game_menus::inv::use_preset_denial( you, *pen ) == "Needs at least 1 charge." );
+}
+
+// DDA game_inventory.cpp:1137-1212 returns an empty string for a usable item that passes every
+// check: a charged drug with no tools_needed has no denial.
+TEST_CASE( "apply_menu_allows_a_charged_drug", "[inventory][apply]" )
+{
+    clear_all_state();
+    avatar &you = get_avatar();
+    const time_point bday = calendar::start_of_cataclysm;
+
+    detached_ptr<item> pen = item::spawn( "dab_pen_disposable", bday );
+    REQUIRE( pen->type->use_methods.size() == 1 );
+    REQUIRE( pen->ammo_sufficient( &you, "consume_drug" ) );
+    CHECK( game_menus::inv::use_preset_shows( you, *pen ) );
+    CHECK( game_menus::inv::use_preset_denial( you, *pen ).empty() );
 }
 
 // PL-64 G21. The reset must not depend on a uistate.json existing: game::setup() and game::load()
