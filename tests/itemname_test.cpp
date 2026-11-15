@@ -121,8 +121,8 @@ TEST_CASE("item sizing display", "[item][iteminfo][display_name][sizing]") {
 }
 
 // DDA source: tests/itemname_test.cpp:136-166 (DDA commit b4b62254ae2), P1f K7.
-// CDF: items are spawned detached, and the name format is BN's: a container with a single content
-// stack shows the content name, the container in brackets and "(held/capacity)".
+// CDF: items are spawned detached. The name is DDA's "container > contents" form; the amount
+// suffix keeps BN's percentage bands, so it is "(10/20)" rather than DDA's "(10)".
 TEST_CASE("display_name_includes_item_contents", "[item][display_name][contents]") {
     clear_all_state();
 
@@ -147,7 +147,12 @@ TEST_CASE("display_name_includes_item_contents", "[item][display_name][contents]
     quiver.put_in(std::move(arrow_ptr), pocket_type::CONTAINER);
     // Expect 10 arrows remaining and displayed
     CHECK(quiver.ammo_remaining() == 10);
+    // DDA: "test quiver > <arrow colour>test wooden broadhead arrows</color>"; a quiver is
+    // ammo-exclusive, so the contents name carries no item count of its own.  CDF has no plural
+    // form for this test item, so the type name stays singular.
     CHECK(
         quiver.display_name()
-        == "<color_c_light_green>||\u00A0</color>test wooden broadhead arrow (test quiver) (10/20)");
+        == "<color_c_light_green>||\u00A0</color>test quiver > "
+           "<color_c_light_gray>test wooden broadhead arrow</color>"
+           "<color_c_yellow> (10/20)</color>");
 }
