@@ -578,17 +578,30 @@ void avatar::randomize_cosmetics()
 void newcharacter::add_profession_items( avatar &u, std::vector<detached_ptr<item>> &&prof_items,
         std::vector<detached_ptr<item>> &overflow )
 {
-    // Two passes (CDF P1c): the clothes go on first, because the carried kit lives in their pockets.
+    // DDA newcharacter.cpp:632-720 (Character::add_profession_items): the clothes go on, everything
+    // else is stored; the items that fit nowhere get a second attempt (a storage item may come
+    // later in the kit) and the single item that is still left is wielded.
+    // CDF: the same list is walked twice (P1c) so every armor item is worn before anything is
+    // carried, because the carried kit lives in the pockets of the clothes; what is still left at
+    // the end goes to `overflow`, which game::start_game drops at the starting position.
     std::vector<detached_ptr<item>> carried_kit;
     for( detached_ptr<item> &it : prof_items ) {
+        if( !it ) {
+            continue;
+        }
         // TODO: debugmsg if food that isn't a seed is inedible
         if( it->has_flag( json_flag_no_auto_equip ) ) {
             it->unset_flag( json_flag_no_auto_equip );
             carried_kit.push_back( std::move( it ) );
         } else if( it->has_flag( json_flag_auto_wield ) ) {
             it->unset_flag( json_flag_auto_wield );
-            if( !u.is_armed() ) {
-                u.wield( std::move( it ) );
+            if( !u.has_wield_conflicts( *it ) ) {
+                // DDA: an item that cannot be wielded is carried instead of being lost
+                // (wield hands the item back)
+                detached_ptr<item> not_wielded = u.wield( std::move( it ) );
+                if( not_wielded ) {
+                    carried_kit.push_back( std::move( not_wielded ) );
+                }
             } else {
                 carried_kit.push_back( std::move( it ) );
             }
@@ -603,16 +616,47 @@ void newcharacter::add_profession_items( avatar &u, std::vector<detached_ptr<ite
             carried_kit.push_back( std::move( it ) );
         }
     }
-    for( detached_ptr<item> &it : carried_kit ) {
-        if( !it ) {
-            continue;
+    // DDA passes allow_wield = false: the wielding fallback of try_add unwields (and in a
+    // non-interactive game disposes of) the item already in the hands, so a kit item that fits no
+    // pocket must not take that path. The single leftover is wielded below instead.
+    const auto attempt_add_items = [&u]( std::vector<detached_ptr<item>> &items,
+    std::vector<detached_ptr<item>> &failed ) {
+        for( detached_ptr<item> &it : items ) {
+            if( !it ) {
+                continue;
+            }
+            ret_val<item *> added = u.try_add( std::move( it ), nullptr, nullptr, false );
+            if( !added.success() ) {
+                failed.push_back( std::move( it ) );
+            }
         }
-        ret_val<item *> added = u.try_add( std::move( it ) );
-        if( !added.success() ) {
-            // nothing fits it: it waits at the starting position (see game::start_game)
-            overflow.push_back( std::move( it ) );
+    };
+    std::vector<detached_ptr<item>> failed_to_add;
+    attempt_add_items( carried_kit, failed_to_add );
+    if( !failed_to_add.empty() ) {
+        // DDA: storage items may not have been added first, so a second attempt is needed
+        std::vector<detached_ptr<item>> still_failed;
+        attempt_add_items( failed_to_add, still_failed );
+        // DDA: if there is one item left that still can't be added, wield it
+        if( still_failed.size() == 1 && still_failed.front() &&
+            !u.has_wield_conflicts( *still_failed.front() ) ) {
+            detached_ptr<item> not_wielded = u.wield( std::move( still_failed.front() ) );
+            if( !not_wielded ) {
+                still_failed.clear();
+            } else {
+                still_failed.front() = std::move( not_wielded );
+            }
+        }
+        for( detached_ptr<item> &it : still_failed ) {
+            if( it ) {
+                // nothing fits it: it waits at the starting position (see game::start_game)
+                overflow.push_back( std::move( it ) );
+            }
         }
     }
+    u.recalc_sight_limits();
+    // CDF: DDA's calc_encumbrance() updates the cache; CDF's calc_encumbrance() is const
+    u.reset_encumbrance();
 }
 
 bool avatar::create( character_type type, const std::string &tempname )

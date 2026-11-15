@@ -47,8 +47,9 @@ struct migration_content {
 /**
  * The contents of an item, held in pockets (CDF P1a, DDA #39406).
  *
- * The pockets come from the owner's type (`itype::pockets`). Items that have no
- * proper home in them go to a MIGRATION pocket, so nothing is ever lost.
+ * The pockets come from the owner's type (`itype::pockets`). A live insert of an item no
+ * pocket accepts is refused (DDA); a load or a migration keeps such an item in the
+ * MIGRATION pocket, so nothing a save or a migration has to place is ever lost.
  * The pre-pocket API is kept as shims over all pockets, so code written for the
  * flat BN contents list keeps working.
  */
@@ -127,15 +128,18 @@ class item_contents
         int best_quality( const quality_id &id ) const;
 
         /**
-         * Puts an item into the pocket it belongs in. Never fails: an item with no
-         * proper pocket goes to the MIGRATION pocket (DDA migrate_content_item rules).
-         */
-        /**
          * Copies the contents of @p source, keeping each item in the pocket (and each
          * pocket's sealed state) it was in when the layouts match.
          */
         void copy_from( const item_contents &source );
 
+        /**
+         * CDF: the load/migration insert (item_contents::deserialize,
+         * contents_item_location::attach). Like DDA's combine() and apply_migration()
+         * (item_contents.cpp:813, item_factory.cpp:4766-4768), an item that no pocket accepts
+         * is kept in the MIGRATION pocket so a load never loses it. Live inserts must be
+         * refused instead: use insert_copies (spawns) or insert_item( it, pk_type ).
+         */
         ret_val<bool> insert_item( detached_ptr<item> &&it );
         /**
          * Attempts to insert an item into these item contents, stipulating that it must go into a
@@ -160,9 +164,10 @@ class item_contents
         void force_insert_item( detached_ptr<item> &&it, pocket_type pk_type );
         void force_insert_item( const item &it, pocket_type pk_type );
         /**
-         * Puts @p n copies of @p proto into the contents, exactly as @p n calls of
-         * @ref insert_item with copies would (DDA #67349), but the pocket is only chosen
-         * again when it stops being the only candidate or fills up.
+         * Puts @p n copies of @p proto into the contents, like @p n checked inserts would
+         * (DDA #67349), but the pocket is only chosen again when it stops being the only
+         * candidate or fills up. A copy that no pocket accepts is refused, never stored in the
+         * MIGRATION pocket (DDA item_group.cpp:746 inserts spawned items with the checked put_in).
          */
         void insert_copies( const item &proto, int n );
 
@@ -236,12 +241,16 @@ class item_contents
         void rebuild_pockets();
         /** Puts @p it into @p pocket (one of ours) without checks. */
         void insert_into( item_pocket &pocket, detached_ptr<item> &&it );
-        /** The pocket @ref insert_item would choose for @p it. */
+        /**
+         * The pocket a live insert chooses for @p it: the best real pocket, or nullptr when no
+         * pocket accepts it (DDA's find_pocket_for refusal). The MIGRATION pocket is never a
+         * routing result; only a load or a migration asks for it explicitly.
+         */
         item_pocket *route( const item &it );
         /**
-         * Like @ref route, but nullptr instead of the MIGRATION pocket. Plate slots (ablative
-         * pockets) are only considered with @p allow_ablative: spawns and migrations place
-         * plates in them, ordinary overflow does not.
+         * Like @ref route, and exactly it: plate slots (ablative pockets) are only considered
+         * with @p allow_ablative: spawns and migrations place plates in them, ordinary overflow
+         * does not.
          */
         item_pocket *fitting_pocket( const item &it, bool allow_ablative = true );
         /**
