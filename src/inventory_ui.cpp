@@ -93,6 +93,14 @@ bool is_worn_id( const item_category_id &id )
     return id == item_category_id( "ITEMS_WORN" );
 }
 
+// UI1: DDA's item::is_container() is "has a container pocket". CDF's is_container() leaves out worn
+// storage (`carry` pockets), so a garment holding items would never take the hide-all override or
+// the DETAILED_CONTAINERS suffix. Used by get_cell_text and hidden_by_collapse.
+static auto holds_contents( const item &it ) -> bool
+{
+    return it.has_pocket_type( pocket_type::CONTAINER );
+}
+
 // CDF: DDA's unit_to_string/vol_to_string (DDA units_utility.cpp:367-446) is not ported, so
 // these build the same compact strings ("1.5L", "0.2kg", "30cm") from the CDF unit helpers.
 std::string format_volume_compact( const units::volume &volume )
@@ -474,8 +482,9 @@ std::string inventory_selector_preset::get_cell_text( const inventory_entry &ent
             if( info_display == "ALL" || ( info_display == "WORN" &&
                                            is_worn_id( entry.get_category_ptr()->get_id() ) &&
                                            get_avatar().is_worn( actual_item ) ) ) {
+                // CDF: holds_contents() for DDA's is_container() (CDF's skips carry pockets).
                 if( cell_index == 0 && !text.empty() &&
-                    actual_item.is_container() && actual_item.has_unrestricted_pockets() ) {
+                    holds_contents( actual_item ) && actual_item.has_unrestricted_pockets() ) {
                     auto ok_unrestricted_container = []( const item_pocket & pocket ) {
                         return item_pocket::ok_default_containers( pocket ) && !pocket.is_restricted();
                     };
@@ -1037,13 +1046,6 @@ static auto parent_pocket_of( const item &it ) -> const item_pocket *
 {
     const item *parent = it.parent_item();
     return parent == nullptr ? nullptr : parent->contents.pocket_of( &it );
-}
-
-// UI1: DDA's item::is_container() is "has a container pocket". CDF's is_container() leaves out worn
-// storage (`carry` pockets), so a garment holding items would never take the hide-all override.
-static auto holds_contents( const item &it ) -> bool
-{
-    return it.has_pocket_type( pocket_type::CONTAINER );
 }
 
 // UI1: hide_entries_override is the column's "hide all contents" state (DDA is_hidden 590-592).
@@ -3481,6 +3483,13 @@ drop_location inventory_selector::get_only_choice() const
 inventory_input inventory_selector::get_input()
 {
     const std::string &action = ctxt.handle_input();
+    // PL-64 IN1: the scripted key queue ran out (input_context::handle_input reports the timeout
+    // event of input_manager::test_next_input_event as TIMEOUT), so the screen closes through its
+    // normal QUIT path. A screen that never closes still ends, and the key-script harness reads
+    // test_input_exhausted() for its still_open result.
+    if( inp_mngr.test_input_exhausted() ) {
+        return inventory_input{ "QUIT", 0, nullptr, false };
+    }
     const int ch = ctxt.get_raw_input().get_first_input();
     return process_input( action, ch );
 }

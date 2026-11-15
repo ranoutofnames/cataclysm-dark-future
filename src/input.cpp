@@ -1588,10 +1588,15 @@ bool input_manager::test_input_exhausted() const
 input_event input_manager::test_next_input_event()
 {
     if( test_input_queue.empty() ) {
-        // The screen wants a key the script does not have: it would block (or spin on a timeout
-        // sentinel) forever. Fail the test that drove it instead.
+        // The screen wants a key the script does not have. Answer with a timeout event (the same
+        // shape the real interface produces on a timeout) and remember the run out: handle_input()
+        // turns it into "TIMEOUT", the screen closes through its normal QUIT path, and the
+        // key-script harness reads test_input_exhausted(). A screen that never closes still fails
+        // its test instead of blocking forever on the real keyboard.
         test_input_queue_exhausted = true;
-        throw test_input_exhausted();
+        input_event rval;
+        rval.type = input_event_t::timeout;
+        return rval;
     }
     const input_event event = test_input_queue.front();
     test_input_queue.pop_front();
