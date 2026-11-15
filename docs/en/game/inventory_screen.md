@@ -11,7 +11,7 @@ Screens that use the selector: inventory, drop (multidrop), item use, wield, wea
 | Action | Default key | What it does |
 |---|---|---|
 | `NEXT_COLUMN` | `h`, Left, `4`, Numpad 4 | Move to the next column. |
-| `PREV_COLUMN` | Shift+Tab, Tab | Move to the previous column. |
+| `PREV_COLUMN` | Shift+Tab | Move to the previous column. |
 | `TOGGLE_ENTRY` | `l`, Right, `6`, Numpad 6 | Select or unselect the highlighted item (multi-select screens). |
 | `MARK_WITH_COUNT` | `!`, `1` | Select a specific amount of the highlighted item. |
 | `INCREASE_COUNT` | `=`, `+` | Increase the selected amount for the highlighted item. |
@@ -32,13 +32,15 @@ Screens that use the selector: inventory, drop (multidrop), item use, wield, wea
 | `ORGANIZE_MENU` | `i` | Open the organize-contents menu. |
 | `CONTAIN_MODE` | `U` | Toggle contain mode for unloaded items. |
 
+`4` and `6` are bound to `NEXT_COLUMN` and `TOGGLE_ENTRY`, so they keep those actions in the multi-select screens too. Only a number key that has no binding opens the count prompt.
+
 ### Changed keys
 
 The selector keys follow DDA, so some defaults differ from earlier CDF builds. Existing custom bindings of the removed or renamed actions are not carried over.
 
 | Action | Default key now | Before |
 |---|---|---|
-| `PREV_COLUMN` | Tab, Shift+Tab | Tab was category selection |
+| `PREV_COLUMN` | Shift+Tab | Tab was category selection |
 | `NEXT_COLUMN` | `h`, Left, `4`, Numpad 4 | Left and Right moved between columns (`LEFT`, `RIGHT` actions) |
 | `CATEGORY_SELECTION` | `t` | Tab |
 | `TOGGLE_NON_FAVORITE` | `,` | Not available in the selector |
@@ -93,7 +95,8 @@ Mouse input in the selector is defined here in `keybindings.json`; the screens t
 These behaviours belong to the item selector (the `INVENTORY` context). They follow Cataclysm: Dark Days Ahead (DDA).
 
 - **Show or hide contents** (`SHOW_HIDE_CONTENTS`, default `>`) collapses or expands the pockets of the highlighted row itself. The row stays in the list; only what is inside it hides. In the carried list, a worn garment or bag that carries other items is a "holder" row: press the key on the holder row to hide all the carried rows under it, and press it again to bring them back. Pressing it on a carried container only collapses that container.
-- **Show or hide all contents** (`SHOW_HIDE_CONTENTS_ALL`, no default key) cycles through three states for every column: contents shown, contents hidden, then back to each container's own setting. The state is saved with the game's UI settings, so it is the same the next time the screen opens. A chevron coloured green or red shows that the override is active.
+- **Show or hide all contents** (`SHOW_HIDE_CONTENTS_ALL`, no default key) cycles through three states for every column: contents shown, contents hidden, then back to each container's own setting. The state is saved with the game's UI settings, so it is the same the next time the screen opens. A chevron (`▼` shown, `▶` hidden) sits just left of the name of a row that has contents; it is dark gray normally, light blue on a collated stack group, and green (contents forced shown) or red (contents forced hidden) while the all-contents override is active.
+- **Saved view mode**: the view you choose (categories or hierarchy) is remembered for the next opening and saved with the UI settings, like the all-contents state. The main inventory and the pickup menu each keep their own view; the other selectors share a separate saved view.
 - **Reset filter** (`RESET_FILTER`) clears the filter text and shows the whole list again.
 - **Toggle skipping of unselectable items** (`TOGGLE_SKIP_UNSELECTABLE`, no default key) controls whether the cursor skips rows that cannot be chosen (greyed out). In CDF the cursor skips them by default. Turn the skip off to stop on a greyed row and see why it is unavailable.
 - **Next and previous column** (`NEXT_COLUMN`, `PREV_COLUMN`) move between the columns of the selector. The older `LEFT` and `RIGHT` actions are no longer used by the plain selector; the multi-select screens (drop, item use, pickup) still use `RIGHT` to mark an item until their keys are updated.
@@ -108,7 +111,7 @@ These behaviours belong to the item selector (the `INVENTORY` context). They fol
 These behaviours belong to the screens where you mark several items: drop, pickup and item use. They follow Cataclysm: Dark Days Ahead (DDA).
 
 - **Mark or unmark** (`TOGGLE_ENTRY`, default `l`, Right arrow) marks the highlighted item, or all of it if you pressed it on a stack. Pressing it again unmarks. If every unmarked item in the selection is a favorite, favorites are marked only when nothing else is left to mark.
-- **Mark a specific amount** (`MARK_WITH_COUNT`, default `!`) asks for a number and marks that many of the highlighted stack. The prompt starts empty; a number key does the same with the typed digit already filled in. Entering 0 toggles the mark as `TOGGLE_ENTRY` does. Text that is not an integer is refused with "That is not an integer." and marks nothing. In item use the number keys now open the same prompt (they used to build up a count that the mark key then used).
+- **Mark a specific amount** (`MARK_WITH_COUNT`, default `!`) asks for a number and marks that many of the highlighted stack. The prompt starts empty; an unbound number key does the same with the typed digit already filled in. Entering 0 toggles the mark as `TOGGLE_ENTRY` does. Text that is not an integer is refused with "That is not an integer." and marks nothing. In item use an unbound number key now opens the same prompt (the keys used to build up a count that the mark key then used).
 - **Mark or unmark all non-favorite items** (`TOGGLE_NON_FAVORITE`, default `,`) marks every non-favorite item in the active column that you are not wearing. Pressing it again clears them.
 - **Increase or decrease the amount** (`INCREASE_COUNT`, `DECREASE_COUNT`) changes the marked amount of the highlighted stack by one. It never goes below 0 or above the size of the stack.
 - **Containers**: marking a container covers what is inside it, at any depth. When you mark a container, any marked item inside it is unmarked, and marking an item inside an already marked container has no effect. Unmarking the container does not bring the contents back. Other items next to the container stay marked.
@@ -120,7 +123,7 @@ These behaviours belong to the screens where you mark several items: drop, picku
 
 These behaviours belong to the item selector and follow Cataclysm: Dark Days Ahead (DDA).
 
-- **Footer view mode**: every selector draws the `< [key] categories >` line (or `< [key] hierarchy >` in the container view) at the bottom right, whether or not that screen registered the switch key. The words come from DDA's "inventory ui mode" translation context.
+- **Footer view mode**: every selector draws the `< [key] categories >` line (or `< [key] hierarchy >` in the container view) at the bottom right. The selector base registers the switch key, so `;` toggles the view in every selector, not only in the main inventory. The words come from DDA's "inventory ui mode" translation context.
 - **Numpad marker**: while number-row navigation is on, the header's bottom separator shows "Numpad ON", and the number keys move the cursor instead of opening the count prompt or selecting a numeric invlet.
 - **Drop header**: the drop screen shows the carried pocket summary (Bulk Volume, Total Weight, Largest Space, Longest Space, Other), then CDF's predicted-drop Weight and Volume lines, then a "Selected" line with the volume and weight of what is marked. The predicted lines are CDF-only and stay because they show the result of the drop.
 - **Compare header**: the compare screen has no stats bar at all, like DDA's compare menu. The same holds for any multi-select screen built without a stats callback.
@@ -132,7 +135,7 @@ These behaviours belong to the item selector and follow Cataclysm: Dark Days Ahe
 These behaviours belong to the item selector and to the insert menu. They follow Cataclysm: Dark Days Ahead (DDA).
 
 - **Examine contents** (`EXAMINE_CONTENTS`, default `o`) opens a two-pane window for the highlighted container: its contents are listed on the left and the item info of the highlighted item is shown on the right. Move with the usual list keys; Page Up and Page Down scroll the item info; `>` shows or hides the contents of a nested container; Escape or Enter closes the window and returns to the list, which is rebuilt if you collapsed or expanded something. If the highlighted item has no contents, the normal item info opens instead.
-- **Insert menu header**: when you choose items to put into a container (the insert action), the header shows the container's used and total volume and weight, its largest free space, and a line with the volume and weight of the items you have marked. Items that cannot go in are greyed out with the reason, for example a plate when every large plate slot of a vest is full.
+- **Insert menu header**: when you choose items to put into a container (the insert action), the header shows the container's used and total volume and weight, its largest free space, and a line with the volume and weight of the items you have marked. A carried item that cannot go in is greyed out with the reason, for example a plate when every large plate slot of a vest is full. Items already inside the container are not listed.
 - **Container pick header**: a menu that picks one item from inside a container shows the same used and total space of that container.
 
 ## Mouse and drag and drop in the item picker
@@ -148,7 +151,7 @@ The drag start uses the new key name `MOUSE_LEFT_PRESSED` (action `CLICK_AND_DRA
 
 ## The pickup menu
 
-The multipickup menu (pick up from your tile or from the tiles around you) now behaves like the item menus of Cataclysm: DDA. It still hands the same pickup list to the game, so what is picked up, the carry checks and the messages are unchanged.
+The multipickup menu (pick up from your tile or from the tiles around you) now behaves like the item menus of Cataclysm: DDA. It is the default pickup menu; the old pickup list is used only when the `NEW_PICKUP_MENU` interface option is turned off. It still hands the same pickup list to the game, so what is picked up, the carry checks and the messages are unchanged.
 
 - **Hint line**: the top of the menu always lists the five actions wield, wear, expand, expand all and examine, then the keys for mark with a count, raise or lower the count and "type a number then mark". The keys shown are your own bindings; an action with no bound key prints the context's unbound text (for example "Unbound locally!" for expand all).
 - **Contents**: a container lying on the ground can be expanded, and its contents are marked like other items. Marking a container covers what is inside it.
@@ -158,12 +161,18 @@ The multipickup menu (pick up from your tile or from the tiles around you) now b
 
 ## Insert picker and pocket denial text
 
-The "Put item into ..." picker (`game_menus::inv::insert_items`, DDA `game_menus::inv::holster`) is built on
+You open the "Put item into ..." picker with `v` (the `insert` action) from the map screen,
+with the Insert entry (`i`) in an item's action menu in the inventory, or with `a` on a holster to
+holster an item. There is no `H` holster key; `H` is `shift_w`.
+
+The picker (`game_menus::inv::insert_items`, DDA `game_menus::inv::holster`) is built on
 `inventory_insert_selector`, the drop selector with the DDA stats header and the title "ITEMS TO INSERT".
 A row for an item that cannot go in is greyed out and shows the reason given by the pocket code, for
-example "ablative pocket already contains a plate" when both large plate slots of a US ballistic vest are full,
-or "holster does not accept this item type or form factor" when no pocket takes the item. The generic
-"item can't be stored there" appears only when the pocket gave no text. There is no swap action.
+example "ablative pocket already contains a plate" for a carried plate when both large plate slots of a
+US ballistic vest are full, or "holster does not accept this item type or form factor" when no pocket
+takes the item. An item that is already inside the container is not listed at all, so a plate already
+in a vest slot cannot be chosen again. The generic "item can't be stored there" appears only when the
+pocket gave no text. There is no swap action.
 
 ## Advanced inventory: containers (UI5)
 
