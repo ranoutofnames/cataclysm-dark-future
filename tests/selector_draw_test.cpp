@@ -495,7 +495,21 @@ TEST_CASE( "container rows show a chevron", "[audit][ui]" ) {
 
         const std::vector<std::string> rows =
             window_text( inventory_selector_test_access::window_of( sel ) );
-        CHECK_FALSE( any_row_contains( rows, item::nname( itype_id( "box_small" ) ) ) );
+        // DDA's collapsed container row is a summary that names its content
+        // ("windbreaker > small cardboard box > 1 item", item.cpp display_name()): the box name
+        // is expected on the jacket's row. What must be gone is a row of its own, so the name
+        // may appear on exactly one row and that row is the collapsed jacket's.
+        const std::string box_name = item::nname( itype_id( "box_small" ) );
+        const std::string jacket_name = item::nname( itype_id( "jacket_windbreaker" ) );
+        int box_rows = 0;
+        for( const std::string &row : rows ) {
+            if( row.find( box_name ) == std::string::npos ) {
+                continue;
+            }
+            box_rows++;
+            CHECK( row.find( jacket_name ) != std::string::npos );
+        }
+        CHECK( box_rows == 1 );
         CHECK_FALSE( any_row_contains( rows, item::nname( itype_id( "test_rock" ) ) ) );
     }
 

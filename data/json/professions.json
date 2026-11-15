@@ -498,7 +498,10 @@
     "type": "item_group",
     "subtype": "collection",
     "id": "pest_control_mags",
-    "entries": [ { "item": "gas_fungicidal" }, { "item": "gas_insecticidal" } ]
+    "entries": [
+      { "item": "pressurized_tank_chem", "ammo-item": "gas_fungicidal", "charges": 800 },
+      { "item": "pressurized_tank_chem", "ammo-item": "gas_insecticidal", "charges": 800 }
+    ]
   },
   {
     "type": "item_group",
@@ -1458,9 +1461,10 @@
           "technician_pants_gray",
           "bindle",
           "jacket_flannel",
+          "backpack_leather",
           "straw_hat"
         ],
-        "entries": [ { "item": "backpack_leather", "contents-item": "pickaxe" } ]
+        "entries": [ { "item": "axe_ring", "contents-item": "pickaxe" } ]
       }
     },
     "skills": [ { "level": 3, "name": "survival" }, { "level": 2, "name": "swimming" }, { "level": 1, "name": "cooking" } ],
@@ -1694,7 +1698,7 @@
           "mag_porn"
         ],
         "entries": [
-          { "item": "mbag", "contents-item": [ "pipe", "pipe", "pipe", "pipe", "cu_pipe", "cu_pipe" ] },
+          { "item": "daypack", "contents-item": [ "pipe", "pipe", "pipe", "pipe", "cu_pipe", "cu_pipe" ] },
           { "item": "hose", "count": 3 },
           { "item": "duct_tape" },
           { "item": "tool_belt", "contents-item": "plumber_toolkit" }

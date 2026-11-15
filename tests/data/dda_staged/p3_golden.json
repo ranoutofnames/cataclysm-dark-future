@@ -12715,7 +12715,14 @@
       "rule": "R4",
       "action": "COPY-TWIN",
       "twin": true,
+      "//": "CDF: kd1 B12a adds a rigid 1 ml CONTAINER pocket for the preloaded digital files (a BN-only feature that stays); DDA b4b62254ae2 has only the MAGAZINE pocket",
       "pockets": [
+        {
+          "pocket_type": "CONTAINER",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "moves": 100
+        },
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
@@ -12733,7 +12740,14 @@
       "rule": "R4",
       "action": "COPY-TWIN",
       "twin": true,
+      "//": "CDF: kd1 B12a adds a rigid 1 ml CONTAINER pocket for the preloaded digital files (a BN-only feature that stays); DDA b4b62254ae2 has only the MAGAZINE pocket",
       "pockets": [
+        {
+          "pocket_type": "CONTAINER",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "moves": 100
+        },
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
