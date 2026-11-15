@@ -440,6 +440,14 @@ void check_kit( row_sink &sink, const profession &prof, bool male,
 // G1-G3: one item group, three seeds.
 // ------------------------------------------------------------------------------------------------
 
+// TEST_DATA probes for the max_item_length rule: both groups deliberately put the 40 cm
+// test_long_rod into a pouch whose pocket allows 20 cm, so item_group logs the very refusal the
+// fixture exists to exercise.  They are not data defects.
+bool expected_group_debugmsg( const std::string &group_id )
+{
+    return group_id == "test_long_rod_in_pouch" || group_id == "test_pouch_with_long_rod";
+}
+
 void check_group( row_sink &sink, const item_group_id &group_id )
 {
     const std::string id = group_id.str();
@@ -453,7 +461,7 @@ void check_group( row_sink &sink, const item_group_id &group_id )
         const std::string dmsg = capture_debugmsg_during( [&]() {
             items = item_group::items_from( group_id, calendar::turn_zero );
         } );
-        if( !dmsg.empty() ) {
+        if( !dmsg.empty() && !expected_group_debugmsg( id ) ) {
             sink.add( "G4", id, "error", dmsg );
         }
         produced += static_cast<int>( items.size() );

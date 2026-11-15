@@ -186,6 +186,14 @@ struct pocket_plan {
     std::optional<itype_id> refused;
 };
 
+// A probe of a charge stack is one charge: a direct pocket insert never splits a stack, so a
+// default-charge stack (20 rounds into a 7-round magazine) is refused by the pocket rules and
+// says nothing about whether the pocket accepts that ammo type.
+auto spawn_probe( const itype_id &id ) -> detached_ptr<item>
+{
+    return item::spawn( id, calendar::turn, id->count_by_charges() ? 1 : -1 );
+}
+
 auto find_liquid_probe( item_pocket &pocket ) -> std::optional<itype_id>
 {
     const pocket_data &p = pocket.get_data();
@@ -196,7 +204,7 @@ auto find_liquid_probe( item_pocket &pocket ) -> std::optional<itype_id>
         if( t->phase != phase_id::LIQUID || !type_may_match( p, *t ) ) {
             continue;
         }
-        detached_ptr<item> probe = item::spawn( t->get_id() );
+        detached_ptr<item> probe = spawn_probe( t->get_id() );
         if( probe && pocket.can_contain( *probe ).success() ) {
             return t->get_id();
         }
@@ -204,15 +212,20 @@ auto find_liquid_probe( item_pocket &pocket ) -> std::optional<itype_id>
     return std::nullopt;
 }
 
-auto find_ammo_probe( const pocket_data &p, const std::vector<itype_id> &already ) -> std::optional<itype_id>
+auto find_ammo_probe( item_pocket &pocket, const std::vector<itype_id> &already ) -> std::optional<itype_id>
 {
+    const pocket_data &p = pocket.get_data();
     if( p.ammo_restriction.empty() ) {
         return std::nullopt;
     }
     for( const itype *t : all_types_sorted() ) {
         if( t->ammo != nullptr && p.ammo_restriction.count( t->ammo->type ) > 0 &&
             std::find( already.begin(), already.end(), t->get_id() ) == already.end() ) {
-            return t->get_id();
+            detached_ptr<item> probe = spawn_probe( t->get_id() );
+            // Only an ammo probe the pocket really accepts belongs in the accepted-insert plan.
+            if( probe && pocket.can_contain( *probe ).success() ) {
+                return t->get_id();
+            }
         }
     }
     return std::nullopt;
@@ -241,7 +254,7 @@ auto build_plans( item &container ) -> std::vector<pocket_plan>
             if( t->get_id() == container.typeId() || !type_may_match( p, *t ) ) {
                 continue;
             }
-            detached_ptr<item> probe = item::spawn( t->get_id() );
+            detached_ptr<item> probe = spawn_probe( t->get_id() );
             if( !probe ) {
                 continue;
             }
@@ -261,7 +274,7 @@ auto build_plans( item &container ) -> std::vector<pocket_plan>
                 plan.accepted.push_back( *liquid );
             }
         }
-        if( const std::optional<itype_id> ammo = find_ammo_probe( p, plan.accepted ) ) {
+        if( const std::optional<itype_id> ammo = find_ammo_probe( pocket, plan.accepted ) ) {
             if( plan.accepted.size() < 4 ) {
                 plan.accepted.push_back( *ammo );
             }
@@ -299,7 +312,7 @@ struct insert_result {
 auto insert_and_unload( item_pocket &pocket, const itype_id &id ) -> insert_result
 {
     insert_result result;
-    detached_ptr<item> probe = item::spawn( id );
+    detached_ptr<item> probe = spawn_probe( id );
     if( !probe ) {
         result.reason = "cannot spawn " + id.str();
         result.restore_reason = result.reason;
