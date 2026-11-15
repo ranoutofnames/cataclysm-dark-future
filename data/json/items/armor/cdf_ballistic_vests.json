@@ -112,7 +112,7 @@
     "id": "ballistic_vest_heavy",
     "type": "ARMOR",
     "category": "armor",
-    "//": "CDF-only (P1e step 30): DDA's US heavy ballistic vest, 'known as the IOTV' (DDA data/json/items/armor/ballistic_armor.json:655). It replaces BN's Old Guard IOTV suits. Same material mapping as ballistic_vest_esapi; the three protector pockets take only the IOTV protectors (DDA item_restriction). DDA's PADDED flag and variants are dropped (BN has no such flag or item variants). The Old Guard suit's arm and leg coverage now comes from the protectors, as in DDA.",
+    "//": "CDF-only (P1e step 30): DDA's US heavy ballistic vest, 'known as the IOTV' (DDA data/json/items/armor/ballistic_armor.json:655). It replaces BN's Old Guard IOTV suits. Same material mapping as ballistic_vest_esapi; the three protector pockets take only the IOTV protectors (DDA item_restriction). DDA's PADDED flag is kept (CDF defines PADDED, data/json/flags.json:2202, and item::is_comfortable reads it); DDA's item variants are dropped (BN has no such feature). The Old Guard suit's arm and leg coverage now comes from the protectors, as in DDA.",
     "name": {
       "str": "US heavy ballistic vest"
     },
@@ -134,6 +134,7 @@
       "STURDY",
       "OUTER",
       "WATER_FRIENDLY",
+      "PADDED",
       "ALLOWS_WINGS"
     ],
     "armor_portion_data": [
