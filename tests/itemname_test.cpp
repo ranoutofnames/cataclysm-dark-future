@@ -147,12 +147,13 @@ TEST_CASE("display_name_includes_item_contents", "[item][display_name][contents]
     quiver.put_in(std::move(arrow_ptr), pocket_type::CONTAINER);
     // Expect 10 arrows remaining and displayed
     CHECK(quiver.ammo_remaining() == 10);
-    // DDA: "test quiver > <arrow colour>test wooden broadhead arrows</color>"; a quiver is
-    // ammo-exclusive, so the contents name carries no item count of its own.  CDF has no plural
-    // form for this test item, so the type name stays singular.
+    // DDA: "test quiver > <arrow colour>test wooden broadhead arrows</color>" (DDA
+    // tests/itemname_test.cpp:162 at b4b62254ae2); a quiver is ammo-exclusive, so the contents
+    // name carries no item count of its own.  The ten arrows make the type name plural, exactly
+    // as DDA's translation of the TEST_DATA item does.
     CHECK(
         quiver.display_name()
         == "<color_c_light_green>||\u00A0</color>test quiver > "
-           "<color_c_light_gray>test wooden broadhead arrow</color>"
+           "<color_c_light_gray>test wooden broadhead arrows</color>"
            "<color_c_yellow> (10/20)</color>");
 }

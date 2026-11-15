@@ -3,7 +3,7 @@
 │ RETURN Confirm  ESC, q, Q or SPACE Cancel  U Select destination (Manual)                         │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Items worn                                                                                       │
-│  ▼|| windbreaker (poor fit) > small cardboard box > 1 item (remains 1.9L, 7.85kg) max length 21c │
+│  ▼|| windbreaker (poor fit) > small cardboard box > 1 item (remains 1.9L, 7.85kg) max length 21… │
 │ Spare parts                                                                                      │
 │  ▼small cardboard box > TEST 1kg cube                                                            │
 │   TEST 1kg cube                                                                                  │
