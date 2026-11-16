@@ -6,6 +6,7 @@
 #include "character_functions.h"
 #include "digital_media.h"
 #include "game.h"
+#include "key_script_helper.h"
 #include "temp_crafting_inventory.h"
 #include "item.h"
 #include "item_contents.h"
@@ -22,6 +23,10 @@
 #include "text_snippets.h"
 
 #include <sstream>
+
+// CDF: defined in src/item/book_scanning.cpp and also declared in src/iuse.cpp; keep this
+// signature identical. Not in book_scanning.h, where a declaration would rebuild every includer.
+auto select_scannable_text( avatar &you ) -> item *;
 
 namespace {
 // CDF: P3 keeps a tool's battery as an item in its integral MAGAZINE pocket, so a reader's
@@ -293,4 +298,69 @@ TEST_CASE("book_scanning_stops_when_its_requirements_are_lost", "[digital_media]
     // CDF: no digital file was added; the reader's battery is still a content item
     CHECK(digital_files_on(reader).empty());
     CHECK_FALSE(is_digital_file(book));
+}
+
+// CDF: the scan menu used to offer carried books only (titled_filter_menu's radius default -1).
+// DDA's eBook save scans a book the player can reach (game_inventory.cpp:1666-1692), so the menu
+// now passes radius 1 and start_book_scan accepts a book on the player's tile or a neighbour.
+TEST_CASE("book_scanning_offers_books_within_reach", "[digital_media][book_scanning]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() { clear_all_state(); });
+    set_time(calendar::turn_zero + 12_hours);
+    auto& who = get_avatar();
+    clear_character(who);
+    auto& reader = who.i_add(item::spawn("wrist_comp_budget"));
+    reader.ammo_set(itype_id("battery"), 10);
+
+    constexpr auto pos = tripoint_bub_ms(60, 60, 0);
+    g->place_player(pos);
+    auto& here = get_map();
+    const auto ground = [&](const tripoint_bub_ms& at) {
+        here.ter_set(at, ter_id("t_floor"));
+        here.furn_set(at, furn_id("f_null"));
+    };
+    ground(pos);
+    ground(pos + tripoint_east);
+    ground(pos + tripoint_east + tripoint_east);
+    here.invalidate_map_cache(pos.z());
+    here.build_map_cache(pos.z());
+    here.update_visibility_cache(pos.z());
+
+    SECTION("a book on the player's tile is offered and scanned in place") {
+        here.add_item(pos, item::spawn("test_scannable_book"));
+        item& book = here.i_at(pos).only_item();
+        item* picked = nullptr;
+        run_screen([&] { picked = select_scannable_text(who); }, key_script_keys{"RETURN"});
+        REQUIRE(picked == &book);
+        REQUIRE(start_book_scan(who, reader, book));
+        finish_scan(who);
+        const auto files = digital_files_on(reader);
+        REQUIRE(files.size() == 1);
+        CHECK(files.front()->typeId() == book.typeId());
+        CHECK_FALSE(is_digital_file(book));
+    }
+
+    SECTION("a book on an adjacent tile is offered and scanned in place") {
+        const auto adjacent = pos + tripoint_east;
+        here.add_item(adjacent, item::spawn("test_scannable_book"));
+        item& book = here.i_at(adjacent).only_item();
+        item* picked = nullptr;
+        run_screen([&] { picked = select_scannable_text(who); }, key_script_keys{"RETURN"});
+        REQUIRE(picked == &book);
+        REQUIRE(start_book_scan(who, reader, book));
+        finish_scan(who);
+        CHECK(digital_files_on(reader).size() == 1);
+        CHECK_FALSE(is_digital_file(book));
+    }
+
+    SECTION("a book two tiles away is neither offered nor a valid target") {
+        const auto far = pos + tripoint_east + tripoint_east;
+        here.add_item(far, item::spawn("test_scannable_book"));
+        item& book = here.i_at(far).only_item();
+        item* picked = nullptr;
+        run_screen([&] { picked = select_scannable_text(who); }, key_script_keys{"RETURN"});
+        CHECK(picked == nullptr);
+        CHECK_FALSE(start_book_scan(who, reader, book));
+        CHECK(digital_files_on(reader).empty());
+    }
 }

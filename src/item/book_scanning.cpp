@@ -1,30 +1,77 @@
 #include "book_scanning.h"
 
 #include "action_time_scale.h"
+#include "avatar.h"
 #include "calendar.h"
 #include "character.h"
 #include "character_functions.h"
 #include "digital_media.h"
 #include "flag.h"
+#include "game_inventory.h"
 #include "item.h"
 #include "item_contents.h"
 #include "itype.h"
+#include "line.h"
+#include "map/map.h"
 #include "player.h"
 #include "player_activity.h"
 #include "string_formatter.h"
 #include "translations.h"
+#include "vehicle/vehicle.h"
+#include "vehicle/vpart_position.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <expected>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace {
+// CDF: the player's tile and its neighbours; DDA's eBook save uses PICKUP_RANGE instead.
+constexpr int scan_reach = 1;
+
 auto scanned_file_identity(const item& source) -> std::string {
     const auto snippet_suffix =
         source.snip_id.is_null() ? std::string{} : ":" + source.snip_id.str();
     return "scanned_book:" + source.typeId().str() + snippet_suffix;
+}
+
+auto book_within_reach(const Character& who, const item* book) -> bool {
+    // Compare pointers: a ground book that was destroyed must not be dereferenced to notice it.
+    if (who.visit_items([book](const item* node) {
+            return node == book ? VisitResponse::ABORT : VisitResponse::NEXT;
+        }) == VisitResponse::ABORT) {
+        return true;
+    }
+    // CDF: the scan menu offers the player's tile and its neighbours, so a book there is a valid
+    // target even though it is not carried. This is the reachable set of
+    // inventory_selector::add_nearby_items(scan_reach); DDA's eBook save scans around the player
+    // the same way (game_inventory.cpp:1666 ebooksave: add_nearby_items(PICKUP_RANGE)).
+    map& here = get_map();
+    for (const tripoint_bub_ms& pos : closest_points_first(who.bub_pos(), scan_reach)) {
+        if (pos != who.bub_pos()
+            && !here.clear_path(who.bub_pos(), pos, rl_dist(who.bub_pos(), pos), 1, 100)) {
+            continue;
+        }
+        if (here.accessible_items(pos)) {
+            for (item* stack_item : here.i_at(pos)) {
+                if (stack_item == book) {
+                    return true;
+                }
+            }
+        }
+        const std::optional<vpart_reference> vp =
+            here.veh_at(pos).part_with_feature("CARGO", true);
+        if (vp) {
+            for (item* stack_item : vp->vehicle().get_items(vp->part_index())) {
+                if (stack_item == book) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 auto validate_book_scan(const Character& who, const item& reader, const item& book)
@@ -33,7 +80,7 @@ auto validate_book_scan(const Character& who, const item& reader, const item& bo
     if (!who.has_item(reader) || !digital_reader_ready(reader, who)) {
         return std::unexpected(_("You need a powered reader to scan."));
     }
-    if (!who.has_item(book) || !is_scannable_text(book)) {
+    if (!book_within_reach(who, &book) || !is_scannable_text(book)) {
         return std::unexpected(_("You need physical reading material to scan."));
     }
     if (!character_funcs::can_see_fine_details(who)) {
@@ -57,6 +104,14 @@ auto check_scan_targets(player_activity& act, Character& who) -> bool {
         act.set_to_null();
         return false;
     }
+    // CDF: a book scanned on the ground can be destroyed or carried away; test its pointer before
+    // dereferencing the activity target.
+    if (!book_within_reach(who, act.targets[1].get())) {
+        who.add_msg_if_player(
+            m_info, _("You no longer have the reading material or reader.  You stop scanning."));
+        act.set_to_null();
+        return false;
+    }
     if (const auto available = validate_book_scan(who, *act.targets[0], *act.targets[1]);
         !available) {
         who.add_msg_if_player(m_info, "%s", available.error());
@@ -69,6 +124,15 @@ auto check_scan_targets(player_activity& act, Character& who) -> bool {
 
 auto is_scannable_text(const item& text) -> bool {
     return !is_digital_file(text) && (text.is_book() || !text.snip_id.is_null());
+}
+
+// CDF: BN only offered carried books (iuse.cpp's titled_filter_menu default radius -1). The scan
+// menu now lists what the player can reach, like DDA's eBook save (game_inventory.cpp:1666-1692).
+// Declared in iuse.cpp and tests/book_scanning_test.cpp, not in book_scanning.h: a declaration
+// there would rebuild every includer.
+auto select_scannable_text(avatar& you) -> item* {
+    return game_menus::inv::titled_filter_menu(is_scannable_text, you,
+                                               _("Scan which book or text?"), "", scan_reach);
 }
 
 auto start_book_scan(Character& who, item& reader, item& book) -> bool {
