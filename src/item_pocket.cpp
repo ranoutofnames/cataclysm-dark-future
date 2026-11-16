@@ -1655,6 +1655,44 @@ void item_pocket::overflow( const tripoint_bub_ms &pos, item *parent_item, Chara
         it->contents.overflow( pos, carrier );
     }
 
+    // CDF: the MIGRATION pocket is a permanent home, not a staging area. DDA has nothing
+    // permanent in MIGRATION (its e-files live in E_FILE_STORAGE, which this pass skips, DDA
+    // item_pocket.cpp:1813-1817); CDF's BN digital media parks a device's files there instead
+    // (there is no E_FILE_STORAGE pocket), and so do parked magazines and spent casings. The
+    // validity pass below marks every MIGRATION item invalid, so the first turn after pickup
+    // emptied each carried reader into the container that held it (the player's inventory).
+    // Do what the CDF event path does (item_contents::overflow, item_contents.cpp:816-912): an
+    // item a real pocket of this owner now accepts is re-homed; everything else stays.
+    if( is_type( pocket_type::MIGRATION ) ) {
+        if( parent_item != nullptr ) {
+            std::vector<item_pocket *> homes;
+            std::vector<detached_ptr<item>> rehomed;
+            for( auto iter = contents.begin(); iter != contents.end(); ) {
+                // a spent casing belongs to no pocket (item_contents.cpp:768-770); a real pocket
+                // that takes the item must also have room for it
+                item_pocket *home = ( *iter )->has_flag( flag_CASING ) ? nullptr :
+                                    parent_item->contents.fitting_pocket( **iter );
+                if( home != nullptr && home != this ) {
+                    detached_ptr<item> det;
+                    iter = contents.erase( iter, &det );
+                    homes.push_back( home );
+                    rehomed.push_back( std::move( det ) );
+                } else {
+                    ++iter;
+                }
+            }
+            // the layout cannot change here (fitting_pocket only picks from the existing
+            // pockets), so the collected destinations are still valid
+            for( size_t i = 0; i < rehomed.size(); ++i ) {
+                homes[i]->insert( std::move( rehomed[i] ) );
+            }
+        }
+        // the caller (item_contents::overflow) calls contents_changed(); only this pocket's
+        // cache is stale here
+        invalidate_cache();
+        return;
+    }
+
     // first remove items that shouldn't be in there anyway
     std::unordered_map<itype_id, bool> contained_type_validity;
     for( auto iter = contents.begin(); iter != contents.end(); ) {

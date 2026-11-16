@@ -3,6 +3,8 @@
 // Translated for CDF (TT1-TT8 of orchestration/plans/P1-transplant/COMMON.md): item_location handles are
 // plain item references, overflow( map &, pos, loc ) is overflow( pos ), clear_map_without_vision() is
 // clear_map(), and map::add_item takes a detached item.
+// CDF: the three overflow cases expect CDF's permanent MIGRATION pocket, not DDA's transient one
+// (BN digital media keeps a device's files there; item_contents.cpp belongs_in_a_pocket).
 #include <functional>
 #include <list>
 #include <string>
@@ -143,7 +145,14 @@ TEST_CASE( "overflow_on_combine", "[item]" )
     map &here = get_map();
     here.i_clear( origin );
     purse.overflow( origin );
-    CHECK( here.i_at( origin ).size() == 1 );
+    // CDF: MIGRATION is the permanent home of an item no real pocket takes (a 50 L log in a
+    // 5 L purse). DDA's overflow pass sheds every MIGRATION item to the ground (DDA
+    // item_pocket.cpp:1843, 1855); CDF keeps it parked (item_pocket.cpp overflow MIGRATION
+    // branch), so nothing falls out and the log stays in the pocket.
+    CHECK( here.i_at( origin ).empty() );
+    REQUIRE( purse.contents.migration_pocket() != nullptr );
+    CHECK( purse.contents.migration_pocket()->size() == 1 );
+    CHECK( purse.contents.migration_pocket()->front().typeId() == itype_log );
 }
 
 TEST_CASE( "overflow_test", "[item]" )
@@ -155,7 +164,11 @@ TEST_CASE( "overflow_test", "[item]" )
     purse.force_insert_item( log, pocket_type::MIGRATION );
     map &here = get_map();
     purse.overflow( origin );
-    CHECK( here.i_at( origin ).size() == 1 );
+    // CDF: the parked log is not shed (see overflow_on_combine);
+    CHECK( here.i_at( origin ).empty() );
+    REQUIRE( purse.contents.migration_pocket() != nullptr );
+    CHECK( purse.contents.migration_pocket()->size() == 1 );
+    CHECK( purse.contents.migration_pocket()->front().typeId() == itype_log );
 }
 
 TEST_CASE( "overflow_test_into_parent_item", "[item]" )
@@ -175,11 +188,16 @@ TEST_CASE( "overflow_test_into_parent_item", "[item]" )
     REQUIRE( contents_pre == 1 );
 
     jar.overflow( origin );
+    // CDF: the parked copy is an item no real pocket takes, so it stays in the pickle's
+    // MIGRATION pocket. DDA's overflow sheds it into the jar (DDA item_pocket.cpp:1843, 1855);
+    // CDF keeps the jar with its one pickle and the copy parked inside it.
     CHECK( here.i_at( origin ).empty() );
 
     int contents_count = 0;
     for( item *it : jar.all_items_top() ) {
         contents_count += it->count();
     }
-    CHECK( contents_count == 2 );
+    CHECK( contents_count == 1 );
+    REQUIRE( jar.contents.front().contents.migration_pocket() != nullptr );
+    CHECK( jar.contents.front().contents.migration_pocket()->size() == 1 );
 }

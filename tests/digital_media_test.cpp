@@ -1383,3 +1383,39 @@ TEST_CASE("digital_storage_ports_match_complete_tokens", "[digital_media][ports]
     reader->erase_var("digital_reader_ports");
     CHECK(digital_reader_can_access_storage(*reader, *storage));
 }
+
+TEST_CASE("installed_files_stay_on_the_device_when_the_inventory_overflows",
+          "[digital_media][pocket]") {
+    clear_all_state();
+    const auto cleanup = on_out_of_scope([]() { clear_all_state(); });
+    auto& dummy = get_avatar();
+    clear_character(dummy);
+    // CDF: put_in is the load path and parks a file that no pocket takes in the device's
+    // MIGRATION pocket (a reader has no E_FILE_STORAGE or CONTAINER pocket). Give the avatar a
+    // carried body storage so the phone is really carried instead of being wielded.
+    dummy.set_mutation(trait_id("DEBUG_STORAGE"));
+
+    auto device = item::spawn("smart_phone");
+    auto& reader = *device;
+    reader.ammo_set(itype_id("battery"), 10);
+    reader.put_in(item::spawn("test_digital_instruction"));
+    reader.put_in(item::spawn("test_digital_reference"));
+    REQUIRE(digital_files_on(reader).size() == 2);
+
+    item& held = dummy.i_add(std::move(device));
+    REQUIRE(digital_files_on(held).size() == 2);
+    item* storage = dummy.get_body_storage();
+    REQUIRE(storage != nullptr);
+
+    // The first turn after a pickup (any pickup or wield invalidates the inventory cache) runs
+    // the DDA overflow pass over every carried item. It used to shed every MIGRATION item into
+    // the container that held the phone, so the files showed up as loose inventory items and the
+    // file browser was empty.
+    dummy.drop_invalid_inventory();
+
+    CHECK(digital_files_on(held).size() == 2);
+    CHECK(held.parent_item() == storage);
+    const std::vector<item*> loose = storage->all_items_top();
+    REQUIRE(loose.size() == 1);
+    CHECK(loose.front() == &held);
+}
