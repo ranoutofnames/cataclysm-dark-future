@@ -6,6 +6,7 @@
 #include "character_functions.h"
 #include "digital_media.h"
 #include "game.h"
+#include "inventory_ui.h"
 #include "key_script_helper.h"
 #include "temp_crafting_inventory.h"
 #include "item.h"
@@ -26,6 +27,8 @@
 
 // CDF: defined in src/item/book_scanning.cpp and also declared in src/iuse.cpp; keep this
 // signature identical. Not in book_scanning.h, where a declaration would rebuild every includer.
+// The key-script harness cannot drive the selector this function creates (see the helper below),
+// so the scan menu test builds the same menu itself.
 auto select_scannable_text( avatar &you ) -> item *;
 
 namespace {
@@ -47,6 +50,29 @@ auto finish_scan(avatar& who) -> void {
         who.activity->do_turn(who);
     }
     REQUIRE(who.activity->is_null());
+}
+
+// CDF: the key-script harness can lay out only a selector it is handed. select_scannable_text()
+// builds its selector inside titled_filter_menu() (src/game_inventory.cpp:389-394), and in test
+// mode ui_manager::redraw() is a no-op, so that selector never runs prepare_layout(): its cursor
+// stays unset and CONFIRM returns nullptr whatever the menu holds. Build the same menu the action
+// builds - titled_filter_menu() is a filter preset plus add_character_items() and
+// add_nearby_items(radius) - and drive that selector. The scan reach itself is asserted through
+// start_book_scan(), which validates the same tile set (src/item/book_scanning.cpp:40-75).
+class scannable_text_preset : public inventory_selector_preset {
+    public:
+        auto is_shown( const item* loc ) const -> bool override {
+            return is_scannable_text( *loc );
+        }
+};
+
+auto pick_scannable_text( avatar& who ) -> item* {
+    scannable_text_preset preset;
+    inventory_pick_selector sel( who, preset );
+    sel.set_display_stats( false );
+    sel.add_character_items( who );
+    sel.add_nearby_items( 1 ); // CDF: scan_reach in src/item/book_scanning.cpp
+    return const_cast<item*>( run_screen( sel, key_script_keys{"RETURN"} ).returned );
 }
 } // namespace
 
@@ -329,8 +355,7 @@ TEST_CASE("book_scanning_offers_books_within_reach", "[digital_media][book_scann
     SECTION("a book on the player's tile is offered and scanned in place") {
         here.add_item(pos, item::spawn("test_scannable_book"));
         item& book = here.i_at(pos).only_item();
-        item* picked = nullptr;
-        run_screen([&] { picked = select_scannable_text(who); }, key_script_keys{"RETURN"});
+        item* picked = pick_scannable_text(who);
         REQUIRE(picked == &book);
         REQUIRE(start_book_scan(who, reader, book));
         finish_scan(who);
@@ -344,8 +369,7 @@ TEST_CASE("book_scanning_offers_books_within_reach", "[digital_media][book_scann
         const auto adjacent = pos + tripoint_east;
         here.add_item(adjacent, item::spawn("test_scannable_book"));
         item& book = here.i_at(adjacent).only_item();
-        item* picked = nullptr;
-        run_screen([&] { picked = select_scannable_text(who); }, key_script_keys{"RETURN"});
+        item* picked = pick_scannable_text(who);
         REQUIRE(picked == &book);
         REQUIRE(start_book_scan(who, reader, book));
         finish_scan(who);
@@ -357,8 +381,7 @@ TEST_CASE("book_scanning_offers_books_within_reach", "[digital_media][book_scann
         const auto far = pos + tripoint_east + tripoint_east;
         here.add_item(far, item::spawn("test_scannable_book"));
         item& book = here.i_at(far).only_item();
-        item* picked = nullptr;
-        run_screen([&] { picked = select_scannable_text(who); }, key_script_keys{"RETURN"});
+        item* picked = pick_scannable_text(who);
         CHECK(picked == nullptr);
         CHECK_FALSE(start_book_scan(who, reader, book));
         CHECK(digital_files_on(reader).empty());

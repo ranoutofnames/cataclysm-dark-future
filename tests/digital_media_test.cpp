@@ -6,6 +6,7 @@
 #include "catalua_impl.h"
 #include "catalua_sol.h"
 #include "catch/catch.hpp"
+#include "character_id.h"
 #include "digital_media.h"
 #include "digital_recipes.h"
 #include "flag.h"
@@ -775,6 +776,16 @@ TEST_CASE("digital_study_uses_the_reader", "[digital_media][reading]") {
     set_time(calendar::turn_zero + 12_hours);
     auto& dummy = get_avatar();
     clear_character(dummy);
+    // CDF: the test harness's avatar has no character id (character_id is invalid, -1), and
+    // clear_character only clears the activity's type: the scan activity an earlier test in the
+    // same run leaves behind keeps activity->index at its constructor default -1. avatar::read()
+    // reads "study until you gain a level" from `activity->index == getID()` (src/avatar.cpp:570,
+    // 1014), so with both at -1 the lesson below never stopped inside the 300-turn loop. Give the
+    // avatar a real id, as tests/iuse_test.cpp:30 does, and restore it afterwards.
+    const character_id previous_id = dummy.getID();
+    dummy.setID(character_id(1), true);
+    const auto restore_id = on_out_of_scope(
+    [&dummy, previous_id]() { dummy.setID(previous_id, true); });
     auto device = item::spawn("wrist_comp_budget");
     auto& reader = *device;
     reader.ammo_set(itype_id("battery"), 10);

@@ -22,11 +22,19 @@ namespace
 
 // CDF: the JSON round trip helpers other save tests use
 // (tests/item_contents_migration_test.cpp:23-34).
+// CDF: item::serialize writes "contents" only when the pockets differ from a fresh item
+// (src/savegame_json.cpp:3264-3268), so an empty CABLE pocket writes nothing and the saved text
+// could not show its pocket type at all. item_contents::serialize writes every pocket
+// (src/savegame_json.cpp:241-259), so write the item with its contents explicitly; the round trip
+// then really deserializes the saved CABLE pocket instead of rebuilding it from the item type.
 auto save_item( const item &it ) -> std::string
 {
     std::ostringstream buffer;
     JsonOut jsout( buffer );
-    it.serialize( jsout );
+    jsout.start_object();
+    jsout.member( "typeid", it.typeId() );
+    jsout.member( "contents", it.get_contents() );
+    jsout.end_object();
     return buffer.str();
 }
 
