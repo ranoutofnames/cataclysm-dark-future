@@ -9,12 +9,9 @@
 #include "enums.h"
 #include "flat_set.h"
 #include "game_object.h"
-#include "gun_mode.h"
 #include "io_tags.h"
 #include "item_contents.h"
-#include "kill_tracker.h"
 #include "location_vector.h"
-#include "overmap/overmapbuffer.h"
 #include "pimpl.h"
 #include "string_id.h"
 #include "type_id.h"
@@ -42,6 +39,7 @@ class faction;
 class gunmod_location;
 class item;
 class iteminfo_query;
+class kill_tracker;
 class material_type;
 class monster;
 class nc_color;

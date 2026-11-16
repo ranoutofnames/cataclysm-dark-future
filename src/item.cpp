@@ -56,6 +56,7 @@
 #include "itype.h"
 #include "iuse.h"
 #include "iuse_actor.h"
+#include "kill_tracker.h"
 #include "line.h"
 #include "locations.h"
 #include "magic/magic.h"
