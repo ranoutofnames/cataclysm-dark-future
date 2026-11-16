@@ -2275,11 +2275,73 @@ drop_locations game_menus::inv::multidrop( player &p )
     }
 }
 
+// Per DDA game_inventory.cpp:558-633 (pickup_inventory_preset) and 2544 (the pickup menu's
+// construction). CDF's pickup_inventory_preset is declared in inventory_ui.h, which this packet may
+// not edit, so the two arguments the pickup menu passes and the other presets do not
+// (skip_wield_check = true, ignore_liquidcont = true) are applied here, in the menu that uses them:
+// get_denial adds DDA's fit denial without the wield-conflict condition, is_shown hides ammo-belt
+// links and non-solid items on LIQUIDCONT tiles.
+namespace
+{
+class pickup_menu_preset : public pickup_inventory_preset
+{
+    public:
+        explicit pickup_menu_preset( const player &p ) : pickup_inventory_preset( p ), you( p ) {}
+
+        std::string get_denial( const item *loc ) const override {
+            // DDA game_inventory.cpp:604-608 with skip_wield_check = true.
+            if( !you.has_item( *loc ) &&
+                !you.can_pickVolume_partial( *loc, false, nullptr, false, true ) ) {
+                return _( "Does not fit in any pocket!" );
+            }
+            return pickup_inventory_preset::get_denial( loc );
+        }
+
+        bool is_shown( const item *loc ) const override {
+            // Per DDA game_inventory.cpp:615-627. CDF: an item that was never placed has no
+            // location, so has_position() guards where().
+            if( loc->has_position() && loc->where() == item_location_type::map &&
+                !loc->made_of( phase_id::SOLID ) ) {
+                if( g->m.has_flag( flag_LIQUIDCONT, loc->bub_pos() ) ) {
+                    return false;
+                }
+            }
+            const item *parent = loc->parent_item();
+            return !( parent != nullptr && parent->is_ammo_belt() );
+        }
+
+    private:
+        const player &you;
+};
+} // namespace
+
+// CDF: P3-UI8, test hooks (precedent: unload_selector_shows). The pickup menu's preset is file-local,
+// so tests/ reach its is_shown and get_denial through these. Declared here and in
+// tests/inventory_ui_test.cpp, not in game_inventory.h; keep the two signatures identical.
+namespace game_menus
+{
+namespace inv
+{
+bool pickup_preset_shows( const player &p, const item &it );
+std::string pickup_preset_denial( const player &p, const item &it );
+} // namespace inv
+} // namespace game_menus
+
+bool game_menus::inv::pickup_preset_shows( const player &p, const item &it )
+{
+    return pickup_menu_preset( p ).is_shown( &it );
+}
+
+std::string game_menus::inv::pickup_preset_denial( const player &p, const item &it )
+{
+    return pickup_menu_preset( p ).get_denial( &it );
+}
+
 std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( player &p,
         const tripoint_bub_ms &target )
 {
 
-    pickup_inventory_preset preset( p );
+    pickup_menu_preset preset( p );
     // Per DDA game_inventory.cpp:2545: the pickup screen remembers its own view mode.
     preset.save_state = &pickup_ui_default_state;
     inventory_pickup_selector inv_s( p, preset );
@@ -2305,7 +2367,7 @@ std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_from_tile( play
 std::vector<pickup::pick_drop_selection> game_menus::inv::pickup_nearby( player &p )
 {
 
-    pickup_inventory_preset preset( p );
+    pickup_menu_preset preset( p );
     // Per DDA game_inventory.cpp:2545: the pickup screen remembers its own view mode.
     preset.save_state = &pickup_ui_default_state;
     inventory_pickup_selector inv_s( p, preset );

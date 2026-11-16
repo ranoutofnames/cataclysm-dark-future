@@ -3602,6 +3602,46 @@ void item::gunmod_info( std::vector<iteminfo> &info, const iteminfo_query *parts
     }
 }
 
+namespace
+{
+// CDF: DDA item_info.cpp:2196-2230 collects the rigid sub body parts of an armor and of the ablative
+// plates in it and prints their consolidated names. CDF fills `sub_data` only for items with
+// `specifically_covers` (item_armor.cpp:1-6), so the locations come from the per-body-part portions
+// in `data` and are named by body part. `flag` is the portion field the block asks about
+// (armor_portion_data::rigid or ::comfortable).
+auto armor_portion_parts( const item &armor_item,
+                          bool armor_portion_data::*flag ) -> std::set<bodypart_str_id>
+{
+    std::set<bodypart_str_id> result;
+    const islot_armor *armor = armor_item.find_armor_data();
+    if( armor == nullptr ) {
+        return result;
+    }
+    for( const armor_portion_data &portion : armor->data ) {
+        if( portion.*flag ) {
+            result.insert( portion.covers.begin(), portion.covers.end() );
+        }
+    }
+    return result;
+}
+
+// " The <info>torso</info>." for every named part, with the two halves of a pair merged into the
+// plural name ("arms"), as the Covers line does.
+auto armor_locations_line( const std::string &heading,
+                           const std::set<bodypart_str_id> &covered ) -> std::string
+{
+    std::string res = heading;
+    for( const bodypart_str_id &bp : covered ) {
+        if( !covered.contains( bp->opposite_part ) || bp->opposite_part == bp ) {
+            res += string_format( _( " The <info>%s</info>." ), bp->name.translated() );
+        } else if( bp.str() < bp->opposite_part.str() ) {
+            res += string_format( _( " The <info>%s</info>." ), bp->name_multiple.translated() );
+        }
+    }
+    return res;
+}
+} // namespace
+
 void item::armor_protection_info( std::vector<iteminfo> &info, const iteminfo_query *parts,
                                   int /*batch*/,
                                   bool /*debug*/ ) const
@@ -3643,6 +3683,55 @@ void item::armor_protection_info( std::vector<iteminfo> &info, const iteminfo_qu
                                _( "Protection values are <bad>reduced by damage</bad> and "
                                   "you may be able to <info>improve them by repairing this "
                                   "item</info>." ) );
+        }
+    }
+
+    // Per DDA item_info.cpp:2056-2066 (the rigid_layer_only note of armor_attribute_info) and
+    // 2178-2262 (the rigidity and comfort blocks of armor_info). CDF: those two blocks belong to
+    // item::armor_info, which lives in src/item/iteminfo_armor.cpp, and iteminfo_parts has neither
+    // ARMOR_RIGIDITY nor ARMOR_ADDITIONAL_INFO; both files are outside this packet's file lock, so
+    // the blocks run here, in item.cpp's armor section, under ARMOR_PROTECTION. CDF's is_rigid() is
+    // true when any portion is rigid (DDA's armor->rigid is true only when all are), which gives
+    // partial armor the "Rigid Locations" line instead of nothing.
+    if( parts->test( iteminfo_parts::ARMOR_PROTECTION ) ) {
+        const islot_armor *armor = find_armor_data();
+        if( armor != nullptr && ( is_rigid() || is_ablative() ) ) {
+            if( armor->rigid ) {
+                info.emplace_back( "ARMOR", _( "<bold>This armor is rigid</bold>." ) );
+            } else {
+                std::set<bodypart_str_id> covered =
+                    armor_portion_parts( *this, &armor_portion_data::rigid );
+                if( is_ablative() ) {
+                    for( const item *plate : all_ablative_armor() ) {
+                        const std::set<bodypart_str_id> from_plate =
+                            armor_portion_parts( *plate, &armor_portion_data::rigid );
+                        covered.insert( from_plate.begin(), from_plate.end() );
+                    }
+                }
+                if( !covered.empty() ) {
+                    info.emplace_back( "ARMOR", armor_locations_line(
+                                           _( "<bold>Rigid Locations</bold>:" ), covered ) );
+                }
+            }
+        }
+        if( armor != nullptr && is_comfortable() ) {
+            if( armor->comfortable ) {
+                info.emplace_back( "ARMOR", _( "<bold>This armor is comfortable</bold>." ) );
+            } else {
+                const std::set<bodypart_str_id> covered =
+                    armor_portion_parts( *this, &armor_portion_data::comfortable );
+                if( !covered.empty() ) {
+                    info.emplace_back( "ARMOR", armor_locations_line(
+                                           _( "<bold>Comfortable Locations</bold>:" ), covered ) );
+                }
+            }
+        }
+        if( armor != nullptr &&
+            std::ranges::any_of( armor->data, []( const armor_portion_data &portion ) {
+            return portion.rigid_layer_only;
+            } ) ) {
+            info.emplace_back( "ARMOR", _( "<info>Rigid items only conflict on shared layers</info>" ),
+                               "", iteminfo::no_flags );
         }
     }
 }

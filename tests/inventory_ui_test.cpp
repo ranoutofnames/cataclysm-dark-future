@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include <functional>
 #include <iterator>
 #include <locale>
 #include <optional>
@@ -25,6 +26,19 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+// CDF: P3-UI8 test hooks. Defined in src/game_inventory.cpp, which declares them itself; they are
+// not in game_inventory.h (a hook there would rebuild its includers). Keep the signatures identical.
+namespace game_menus::inv
+{
+bool pickup_preset_shows( const player &p, const item &it );
+std::string pickup_preset_denial( const player &p, const item &it );
+} // namespace game_menus::inv
+
+// CDF: P3-UI9 test hook. Defined in src/inventory_ui.cpp, which declares it itself; not in
+// inventory_ui.h for the same reason. Keep the signature identical.
+drop_locations filter_liquid_drops( const drop_locations &drops, bool warn_liquid,
+                                    const std::function<bool( const std::string & )> &ask );
 
 // FM7: a selector remembers its view mode in process-wide state. A test that switches the mode puts
 // the four saved states back, so that the next test still starts from the defaults.
@@ -2860,6 +2874,121 @@ TEST_CASE("multiselector hover highlights a row and a click toggles it",
     // a key invlet is still a mark, as in DDA's ANY_INPUT branch
     sel.handle_entry_action(inventory_input{"ANY_INPUT", rock.invlet, row, false});
     CHECK(row->chosen_count > 0);
+}
+
+// P3-UI8 (U44/U45), DDA game_inventory.cpp:574-633: the pickup menu refuses what the character
+// cannot carry and hides ammo-belt links and liquids on LIQUIDCONT tiles. The pickup menu's preset
+// is file-local in src/game_inventory.cpp, so these go through the test hooks.
+TEST_CASE("pickup menu refuses what cannot be carried", "[inventory][ui][p3][pickup]") {
+    clear_all_state();
+    avatar& u = get_avatar();
+    clear_character(u, true);
+    // DDA game_inventory.cpp:604-608 denies by volume first and by weight (four times the carrying
+    // capacity, the unsafe test) second. A low strength makes the weight test reachable; the golf
+    // bag (40 L, 200 kg pocket) is the container that makes the volume test pass.
+    u.str_max = 1;
+    REQUIRE(u.weight_capacity() < 20_kilogram);
+    u.wear_item(item::spawn(itype_id("golf_bag"), calendar::turn), false);
+    REQUIRE_FALSE(u.worn.empty());
+    REQUIRE(u.worn.front()->typeId() == itype_id("golf_bag"));
+
+    SECTION("an item that fits nowhere is refused") {
+        detached_ptr<item> fridge = item::spawn(itype_id("minifridge"), calendar::turn);
+        REQUIRE_FALSE(u.can_pickVolume_partial(*fridge, false, nullptr, false, true));
+        CHECK(game_menus::inv::pickup_preset_denial(u, *fridge) == "Does not fit in any pocket!");
+    }
+
+    SECTION("an item that fits but is too heavy is refused") {
+        // 190 kg in 5 L: the golf bag's pocket holds it, but four times the 17 kg capacity does not.
+        detached_ptr<item> engine = item::spawn(itype_id("engine_block_large"), calendar::turn);
+        REQUIRE(u.can_pickVolume_partial(*engine, false, nullptr, false, true));
+        REQUIRE_FALSE(u.can_pickWeight_partial(*engine, false));
+        CHECK(game_menus::inv::pickup_preset_denial(u, *engine) == "Too heavy to pick up!");
+    }
+
+    SECTION("an item that fits and is light enough is not refused") {
+        detached_ptr<item> rock = item::spawn(itype_id("test_rock"), calendar::turn);
+        CHECK(game_menus::inv::pickup_preset_denial(u, *rock).empty());
+    }
+}
+
+TEST_CASE("pickup menu hides ammo-belt links and liquids on liquid container tiles",
+          "[inventory][ui][p3][pickup]") {
+    clear_all_state();
+    avatar& u = get_avatar();
+    clear_character(u, true);
+
+    SECTION("a round in an ammo belt is not a row of its own") {
+        detached_ptr<item> belt = item::spawn(itype_id("belt40mm"), calendar::turn);
+        REQUIRE(belt->is_ammo_belt());
+        detached_ptr<item> round = item::spawn(itype_id("40x53mm_m1001"), calendar::turn);
+        item* const round_ptr = round.get();
+        REQUIRE(belt->put_in(std::move(round), pocket_type::MAGAZINE).success());
+        REQUIRE(round_ptr->parent_item() == belt.get());
+        CHECK_FALSE(game_menus::inv::pickup_preset_shows(u, *round_ptr));
+        CHECK(game_menus::inv::pickup_preset_shows(u, *belt));
+    }
+
+    SECTION("liquid on a LIQUIDCONT tile is hidden, on a plain tile it is listed") {
+        const tripoint_bub_ms tub(60, 60, 0);
+        get_map().furn_set(tub, furn_str_id("f_bathtub"));
+        get_map().add_item(tub, item::spawn(itype_id("water_clean"), calendar::turn));
+        REQUIRE_FALSE(get_map().i_at(tub).empty());
+        item& tub_water = get_map().i_at(tub).only_item();
+        REQUIRE(tub_water.made_of(phase_id::LIQUID));
+        CHECK_FALSE(game_menus::inv::pickup_preset_shows(u, tub_water));
+
+        const tripoint_bub_ms floor(61, 60, 0);
+        get_map().add_item(floor, item::spawn(itype_id("water_clean"), calendar::turn));
+        REQUIRE_FALSE(get_map().i_at(floor).empty());
+        item& floor_water = get_map().i_at(floor).only_item();
+        CHECK(game_menus::inv::pickup_preset_shows(u, floor_water));
+    }
+}
+
+// P3-UI9 (U15/F52), DDA inventory_ui.cpp:4894-4912: liquid is only dropped after one confirmation.
+TEST_CASE("dropping liquid asks for confirmation first", "[inventory][ui][p3][pickup]") {
+    clear_all_state();
+    detached_ptr<item> rock = item::spawn(itype_id("test_rock"), calendar::turn);
+    detached_ptr<item> water = item::spawn(itype_id("water_clean"), calendar::turn);
+    detached_ptr<item> water_again = item::spawn(itype_id("water_clean"), calendar::turn);
+    REQUIRE(water->made_of(phase_id::LIQUID));
+    REQUIRE_FALSE(water->is_frozen_liquid());
+    const drop_locations drops{ drop_location(*rock, 1), drop_location(*water, 1),
+                                drop_location(*water_again, 1) };
+
+    int asks = 0;
+    std::string asked;
+    const auto decline = [&]( const std::string& question ) {
+        ++asks;
+        asked = question;
+        return false;
+    };
+    const auto accept = [&]( const std::string& question ) {
+        ++asks;
+        asked = question;
+        return true;
+    };
+
+    SECTION("declining the warning keeps only the non-liquid drops") {
+        const drop_locations kept = filter_liquid_drops(drops, true, decline);
+        CHECK(asks == 1);
+        CHECK(asked.find("dropping liquid from its container") != std::string::npos);
+        REQUIRE(kept.size() == 1);
+        CHECK(kept.front().loc.get() == rock.get());
+    }
+
+    SECTION("confirming the warning keeps every drop") {
+        const drop_locations kept = filter_liquid_drops(drops, true, accept);
+        CHECK(asks == 1);
+        CHECK(kept.size() == 3);
+    }
+
+    SECTION("the insert menu's warn_liquid = false never asks") {
+        const drop_locations kept = filter_liquid_drops(drops, false, decline);
+        CHECK(asks == 0);
+        CHECK(kept.size() == 3);
+    }
 }
 
 // NEST1: the drop, pickup and unload selectors list and act on the nested armor rows (they share

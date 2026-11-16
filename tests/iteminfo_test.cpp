@@ -170,6 +170,36 @@ TEST_CASE("item rigidity", "[item][iteminfo][rigidity]") {
     }
 }
 
+TEST_CASE("armor rigidity and comfort are explained", "[item][iteminfo][armor][rigidity]") {
+    clear_all_state();
+    // Per DDA item_info.cpp:2056-2066, 2178-2262. CDF: the blocks run in item::armor_protection_info
+    // (src/item.cpp), so ARMOR_PROTECTION is the part that shows them.
+    const iteminfo_query q = q_vec({iteminfo_parts::ARMOR_PROTECTION});
+
+    SECTION("rigid armor says it is rigid") {
+        item& rigid = *item::spawn_temporary("test_resizable_rigid_leg_armor");
+        REQUIRE(rigid.is_armor());
+        REQUIRE(rigid.is_rigid());
+        REQUIRE_FALSE(rigid.is_comfortable());
+        test_info_contains(rigid, q, "<color_c_white>This armor is rigid</color>.");
+        test_info_contains(rigid, q, "<color_c_white>Protection</color>: Bash:");
+    }
+
+    SECTION("comfortable armor says it is comfortable") {
+        item& soft = *item::spawn_temporary("test_longshirt");
+        REQUIRE_FALSE(soft.is_rigid());
+        REQUIRE(soft.is_comfortable());
+        test_info_contains(soft, q, "<color_c_white>This armor is comfortable</color>.");
+    }
+
+    SECTION("rigid_layer_only armor explains that rigid items only conflict on shared layers") {
+        item& mask = *item::spawn_temporary("mask_filter");
+        REQUIRE(mask.is_armor());
+        REQUIRE(mask.is_rigid());
+        test_info_contains(mask, q, "Rigid items only conflict on shared layers");
+    }
+}
+
 TEST_CASE("throwing ratings and costs", "[item][iteminfo][throwing]") {
     clear_all_state();
     const auto q = q_vec({iteminfo_parts::BASE_THROW});
@@ -689,6 +719,7 @@ Warmth: <color_c_yellow>5</color>
 <color_c_white>Encumbrance</color>: <color_c_yellow>3</color> <color_c_cyan>(for all parts)</color>
 <color_c_white>Protection</color>: Bash: <color_c_yellow>1</color>  Cut: <color_c_yellow>1</color>  Ballistic: <color_c_yellow>1</color>
   Acid: <color_c_yellow>0</color>  Fire: <color_c_yellow>0</color>  Environmental: <color_c_yellow>0</color>
+<color_c_white>This armor is comfortable</color>.
 )");
     }
 

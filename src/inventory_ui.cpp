@@ -270,17 +270,31 @@ pickup_inventory_preset::pickup_inventory_preset( const player &p ) : p( p )
     _pk_type = { pocket_type::LAST };
 }
 
+// Per DDA game_inventory.cpp:574-610 (pickup_inventory_preset::get_denial). CDF: an item pointer in
+// place of the item_location, so has_parent() is item::parent_item(); the frozen-liquid branch and
+// its crush_tool check are skipped, because CDF has no crush tool engine (U16/U50). DDA's
+// skip_wield_check is a constructor argument of its preset (DDA 562); CDF's preset is declared in
+// inventory_ui.h, which is outside this packet's file lock, so the base applies DDA's default (false)
+// and the pickup menu, which passes true (DDA game_inventory.cpp:2544), adds its own volume denial
+// in game_inventory.cpp.
 std::string pickup_inventory_preset::get_denial( const item *loc ) const
 {
     if( !p.has_item( *loc ) ) {
-        if( loc->made_of( LIQUID ) ) {
-            return _( "Can't pick up spilt liquids" );
+        if( loc->made_of( phase_id::GAS ) ) {
+            return _( "Can't pick up gasses." );
         }
-        // else if( !p.can_pick_volume( *loc ) && p.is_armed() ) {
-        //     return _( "Too big to pick up" );
-        // } else if( !p.can_pick_weight( *loc, !get_option<bool>( "DANGEROUS_PICKUPS" ) ) ) {
-        //     return _( "Too heavy to pick up" );
-        // }
+        if( loc->made_of( phase_id::LIQUID ) && !loc->is_frozen_liquid() ) {
+            if( loc->parent_item() != nullptr ) {
+                return _( "Can't pick up liquids." );
+            } else {
+                return _( "Can't pick up spilt liquids" );
+            }
+        } else if( !p.can_pickVolume_partial( *loc, false, nullptr, false, true ) &&
+                   p.has_wield_conflicts( *loc ) ) {
+            return _( "Does not fit in any pocket!" );
+        } else if( !p.can_pickWeight_partial( *loc, false ) ) {
+            return _( "Too heavy to pick up!" );
+        }
     }
 
     return std::string();
@@ -4680,12 +4694,51 @@ inventory_drop_selector::inventory_drop_selector( player &p,
 }
 
 // Per DDA inventory_ui.cpp:4690-4700. warn_liquid is DDA's liquid-spill warning of the drop
-// selector; CDF's drop selector has none, and the preset hides spilt liquid, so it is unused.
+// selector; the menu asks it once (DDA 4894-4912, filter_liquid_drops below) and the insert menu
+// passes false.
 inventory_insert_selector::inventory_insert_selector( player &p,
         const inventory_selector_preset &preset, const std::string &selection_column_title,
         bool /* warn_liquid */ ) :
     inventory_drop_selector( p, preset, selection_column_title )
 {
+}
+
+// CDF: P3-UI9, DDA inventory_ui.cpp:4894-4912 (the liquid loop of
+// inventory_drop_selector::execute) as a function, so that a test can answer the prompt: query_yn
+// cannot be answered from a test. Declared here and in tests/inventory_ui_test.cpp, not in
+// inventory_ui.h (a hook there would rebuild its includers); keep the two signatures identical.
+drop_locations filter_liquid_drops( const drop_locations &drops, bool warn_liquid,
+                                    const std::function<bool( const std::string & )> &ask )
+{
+    drop_locations dropped_pos_and_qty;
+
+    enum class drop_liquid {
+        ask, no, yes
+    } should_drop_liquid = drop_liquid::ask;
+
+    for( const drop_location &drop_pair : drops ) {
+        bool should_drop = true;
+        // CDF: DDA tests made_of_from_type( phase_id::LIQUID ); CDF's item::made_of( phase_id )
+        // is the equivalent test here.
+        if( drop_pair.loc->made_of( phase_id::LIQUID ) && !drop_pair.loc->is_frozen_liquid() ) {
+            if( should_drop_liquid == drop_liquid::ask ) {
+                if( !warn_liquid || ask(
+                        _( "You are dropping liquid from its container.  You might not be able to pick it back up.  Really do so?" ) ) ) {
+                    should_drop_liquid = drop_liquid::yes;
+                } else {
+                    should_drop_liquid = drop_liquid::no;
+                }
+            }
+            if( should_drop_liquid == drop_liquid::no ) {
+                should_drop = false;
+            }
+        }
+        if( should_drop ) {
+            dropped_pos_and_qty.push_back( drop_pair );
+        }
+    }
+
+    return dropped_pos_and_qty;
 }
 
 bool eventually_contains( const item &container, const item &it )
@@ -4867,7 +4920,17 @@ drop_locations inventory_drop_selector::execute()
         }
     }
 
-    return predicted_drops;
+    // Per DDA inventory_ui.cpp:4894-4912: a liquid is only dropped after the player is warned once
+    // that it may not be possible to pick it up again. CDF: the insert menu takes DDA's
+    // warn_liquid = false (game_inventory.cpp:2076), but the drop selector has nowhere to keep that
+    // flag (inventory_ui.h is outside this packet's file lock), so the insert menu is recognised by
+    // type. The unload-container menu lists containers only, so its DDA warn_liquid = false
+    // (game_inventory.cpp:2124) never matters here.
+    const bool warn_liquid = dynamic_cast<const inventory_insert_selector *>( this ) == nullptr;
+    return filter_liquid_drops( predicted_drops, warn_liquid,
+    []( const std::string &question ) {
+        return query_yn( question );
+    } );
 }
 
 auto inventory_drop_selector::update_drop_preview() -> void
