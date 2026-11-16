@@ -4,7 +4,7 @@
 │                                                       Selected 0.00 L 0.0 kg │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │ ARMOR                                                                        │
-│   || ESAPI ballistic plate  ablative pocket already contains a plate         │
+│   || ESAPI ballistic plate          ablative pocket already contains a plate │
 │                                                                              │
 │                                                                              │
 │                                                                              │
