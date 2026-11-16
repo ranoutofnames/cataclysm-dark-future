@@ -8776,8 +8776,16 @@ void link_up_actor::info( const item &it, std::vector<iteminfo> &dump ) const
     }
 }
 
-auto link_up_actor::use( player &p, item &it, bool, const tripoint_bub_ms &pos ) const -> int
+auto link_up_actor::use( player &p, item &it, bool t, const tripoint_bub_ms &pos ) const -> int
 {
+    if( t ) {
+        // CDF: BN's itype::tick (itype.cpp:186-194) calls every use method with t = true for an
+        // active item, while DDA's actor has no tick flag (DDA iuse_actor.cpp:4928) and DDA's
+        // itype::tick only walks tick_action (DDA itype.cpp:259-266). The link menu is a player
+        // action; without this guard an active smartphone (flashlight app) asked to plug its
+        // cable in on every turn.
+        return 0;
+    }
     if( targets.empty() ) {
         debugmsg( "Link up action for %s doesn't have any targets!", it.tname() );
         return 0;
