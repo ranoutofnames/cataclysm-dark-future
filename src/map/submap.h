@@ -175,10 +175,7 @@ public:
         lum[p.x()][p.y()] = luminance;
     }
 
-    void update_lum_add(const point_sm_ms& p, const item& i) {
-        is_uniform = false;
-        if (i.is_emissive() && lum[p.x()][p.y()] < 255) { lum[p.x()][p.y()]++; }
-    }
+    void update_lum_add(const point_sm_ms& p, const item& i);
 
     void update_lum_rem(const point_sm_ms& p, const item& i);
 

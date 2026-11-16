@@ -127,6 +127,11 @@ auto submap::set_position(const tripoint_abs_sm& position) -> void {
     pos_ = position;
 }
 
+void submap::update_lum_add(const point_sm_ms& p, const item& i) {
+    is_uniform = false;
+    if (i.is_emissive() && lum[p.x()][p.y()] < 255) { lum[p.x()][p.y()]++; }
+}
+
 void submap::update_lum_rem(const point_sm_ms& p, const item& i) {
     is_uniform = false;
     if (!i.is_emissive()) {

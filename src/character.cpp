@@ -3275,6 +3275,14 @@ void Character::remove_mission_items( int mission_id )
     remove_items_with( has_mission_item_filter { mission_id } );
 }
 
+VisitResponse Character::has_mission_item_filter::operator()( detached_ptr<item> &&it )
+{
+    if( it->mission_id == mission_id ) {
+        detached_ptr<item> destroyed = std::move( it );
+    }
+    return VisitResponse::NEXT;
+}
+
 units::mass Character::weight_carried() const
 {
     return weight_carried_reduced_by( {} );

@@ -31,8 +31,8 @@
 #include "flat_set.h"
 #include "game_constants.h"
 #include "inventory.h"
-#include "item.h"
 #include "item_handling_util.h"
+#include "item_pocket.h"
 #include "location_ptr.h"
 #include "memory_fast.h"
 #include "mtype.h"
@@ -59,6 +59,7 @@ class SkillLevelMap;
 class bionic_collection;
 class character_martial_arts;
 class faction;
+class item;
 class item_reload_option;
 class ma_technique;
 class known_magic;
@@ -1262,12 +1263,7 @@ class Character : public Creature, public location_visitable<Character>
 
         struct has_mission_item_filter {
             int mission_id;
-            VisitResponse operator()( detached_ptr<item> &&it ) {
-                if( it->mission_id == mission_id ) {
-                    detached_ptr<item> destroyed = std::move( it );
-                }
-                return VisitResponse::NEXT;
-            }
+            VisitResponse operator()( detached_ptr<item> &&it );
         };
 
         // -2 position is 0 worn index, -3 position is 1 worn index, etc
