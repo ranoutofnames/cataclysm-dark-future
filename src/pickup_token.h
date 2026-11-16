@@ -7,8 +7,10 @@
 #include "item_stack.h"
 #include "safe_reference.h"
 
+class Character;
 class JsonIn;
 class JsonOut;
+class player;
 
 namespace pickup
 {

@@ -17,6 +17,7 @@
 #include "item.h"
 #include "itype.h"
 #include "json.h"
+#include "map/map.h"
 #include "map/mapdata.h"
 #include "messages.h"
 #include "output.h"

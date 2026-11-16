@@ -12,6 +12,7 @@
 #include "character.h"
 #include "enums.h"
 #include "flag.h"
+#include "gun_mode.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"

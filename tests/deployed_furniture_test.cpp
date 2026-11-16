@@ -2,6 +2,7 @@
 #include "catch/catch.hpp"
 #include "debug.h"
 #include "game.h"
+#include "item.h"
 #include "item_stack.h"
 #include "map/utils/map_utils.h"
 #include "state_helpers.h"

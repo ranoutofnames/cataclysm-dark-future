@@ -4,6 +4,7 @@
 #include "color.h"
 #include "cursesdef.h"
 #include "debug.h"
+#include "item.h"
 #include "itype.h"
 #include "options.h"
 #include "output.h"

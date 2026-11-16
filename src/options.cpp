@@ -27,6 +27,7 @@
 #include "json.h"
 #include "language.h"
 #include "line.h"
+#include "map/map.h"
 #include "mapsharing.h"
 #include "mod_manager.h"
 #include "output.h"

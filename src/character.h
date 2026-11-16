@@ -81,6 +81,9 @@ struct pathfinding_settings;
 struct points_left;
 struct trap;
 template <typename E> struct enum_traits;
+struct attack_statblock;
+template<typename CompType>
+struct comp_selection;
 
 
 enum action_id : int;

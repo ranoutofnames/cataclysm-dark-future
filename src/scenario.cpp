@@ -1,9 +1,11 @@
 #include "scenario.h"
 
+#include "bionics.h"
 #include "debug.h"
 #include "generic_factory.h"
 #include "generic_readers.h"
 #include "json.h"
+#include "magic/magic.h"
 #include "mapgen/map_extras.h"
 #include "mission.h"
 #include "mutation.h"
