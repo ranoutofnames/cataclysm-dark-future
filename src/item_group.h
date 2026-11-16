@@ -7,9 +7,10 @@
 #include <utility>
 #include <set>
 
-#include "item.h"
+#include "detached_ptr.h"
 #include "type_id.h"
 
+class item;
 struct itype;
 
 class JsonObject;

@@ -9,7 +9,6 @@
 #include "filter_utils.h"
 #include "game_constants.h"
 #include "hash_utils.h"
-#include "item.h"
 #include "item_stack.h"
 #include "lightmap.h"
 #include "line.h"
@@ -63,6 +62,7 @@ class character_id;
 class computer;
 class field;
 class field_entry;
+class item;
 class map_cursor;
 class mapbuffer;
 class mapgendata;

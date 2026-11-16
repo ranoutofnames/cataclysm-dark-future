@@ -22,13 +22,13 @@
 #include "coordinates.h"
 #include "creature.h"
 #include "cursesdef.h"
+#include "detached_ptr.h"
 #include "enums.h"
 #include "enum_traits.h"
 #include "faction.h"
 #include "game_constants.h"
 #include "int_id.h"
 #include "inventory.h"
-#include "item.h"
 #include "line.h"
 #include "lru_cache.h"
 #include "pimpl.h"
@@ -44,6 +44,7 @@
 class JsonIn;
 class JsonObject;
 class JsonOut;
+class item;
 class mission;
 class monfaction;
 class monster;

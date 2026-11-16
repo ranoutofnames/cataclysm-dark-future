@@ -22,7 +22,6 @@
 #include "cursesdef.h"
 #include "damage.h"
 #include "enums.h"
-#include "item.h"
 #include "location_ptr.h"
 #include "location_vector.h"
 #include "pldata.h"

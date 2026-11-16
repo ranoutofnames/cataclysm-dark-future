@@ -6,7 +6,6 @@
 #include "coordinates.h"
 #include "damage.h"
 #include "game_constants.h"
-#include "item.h"
 #include "item_stack.h"
 #include "point.h"
 #include "tileray.h"
@@ -27,6 +26,7 @@ class Character;
 class Creature;
 class JsonIn;
 class JsonOut;
+class item;
 class map;
 class mapgen_constructor;
 class monster;

@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "coordinates.h"
-#include "item.h"
 #include "type_id.h"
 #include "visitable.h"
 
 class Character;
+class item;
 class map;
 class map_cursor;
 class vehicle_cursor;

@@ -9,9 +9,9 @@
 
 #include "calendar.h"
 #include "character.h"
+#include "detached_ptr.h"
 #include "enums.h"
 #include "inventory.h"
-#include "item.h"
 #include "player.h"
 #include "pldata.h"
 #include "point.h"
@@ -21,6 +21,7 @@ class JsonObject;
 class JsonOut;
 class diary;
 class faction;
+class item;
 class mission;
 class monster;
 class npc;
