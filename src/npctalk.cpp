@@ -18,6 +18,7 @@
 #include "creature.h"
 #include "debug.h"
 #include "dialogue.h" // IWYU pragma: associated
+#include "effect.h"
 #include "enums.h"
 #include "faction.h"
 #include "flag.h"

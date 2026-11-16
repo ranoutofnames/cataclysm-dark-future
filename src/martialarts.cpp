@@ -8,6 +8,7 @@
 #include "damage.h"
 #include "debug.h"
 #include "effect.h"
+#include "enchantments/enchantment.h"
 #include "enums.h"
 #include "generic_factory.h"
 #include "generic_readers.h"

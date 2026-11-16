@@ -11,6 +11,7 @@
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "character_functions.h"
+#include "gun_mode.h"
 #include "item.h"
 #include "itype.h"
 #include "output.h"

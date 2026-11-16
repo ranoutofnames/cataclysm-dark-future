@@ -19,6 +19,7 @@
 #include "item_contents.h"
 #include "itype.h"
 #include "make_static.h"
+#include "magic/magic.h"
 #include "map/field_type.h"
 #include "map/map.h"
 #include "map/mapdata.h"

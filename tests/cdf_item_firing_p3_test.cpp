@@ -9,6 +9,7 @@
 #include "debug_log_capture.h"
 #include "examine_item_menu.h"
 #include "flag.h"
+#include "gun_mode.h"
 #include "item.h"
 #include "item_contents.h"
 #include "item_factory.h"

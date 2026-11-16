@@ -4,6 +4,7 @@
 #include "catalua_bindings_utils.h"
 #include "catalua_luna_doc.h"
 #include "damage.h"
+#include "effect.h"
 #include "faction.h"
 #include "itype.h"
 #include "magic/magic.h"

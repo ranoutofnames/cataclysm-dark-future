@@ -4,6 +4,7 @@
 #include "catch/catch.hpp"
 #include "fstream_utils.h"
 #include "game.h"
+#include "item.h"
 #include "magic/magic.h"
 #include "magic/spell_targeting.h"
 #include "map_helpers.h"

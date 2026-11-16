@@ -33,6 +33,7 @@
 #include "flag.h"
 #include "game.h"
 #include "generic_factory.h"
+#include "gun_mode.h"
 #include "handle_liquid.h"
 #include "input.h"
 #include "int_id.h"

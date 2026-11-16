@@ -9,6 +9,7 @@
 #include "catalua_icallback_actor.h"
 #include "character.h"
 #include "debug.h"
+#include "effect.h"
 #include "enums.h"
 #include "game.h"
 #include "game_inventory.h"

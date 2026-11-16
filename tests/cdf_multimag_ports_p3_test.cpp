@@ -19,6 +19,7 @@
 #include "catch/catch.hpp"
 #include "coordinates.h"
 #include "debug.h"
+#include "gun_mode.h"
 #include "item_group.h"
 #include "item.h"
 #include "item_pocket.h"

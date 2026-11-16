@@ -18,6 +18,7 @@
 #include "creature_throw.h"
 #include "damage.h"
 #include "debug.h"
+#include "effect.h"
 #include "enchantments/enchantment.h"
 #include "enums.h"
 #include "flag.h"

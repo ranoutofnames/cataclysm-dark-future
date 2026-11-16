@@ -5,6 +5,7 @@
 #include "calendar.h"
 #include "character.h"
 #include "inventory.h"
+#include "item.h"
 #include "make_static.h"
 #include "map/map.h"
 #include "map/map_selector.h"

@@ -13,6 +13,7 @@
 #include "effect.h"
 #include "game.h"
 #include "input.h"
+#include "item.h"
 #include "melee.h"
 #include "messages.h"
 #include "mutation.h"

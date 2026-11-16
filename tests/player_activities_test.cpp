@@ -11,6 +11,7 @@
 #include "game.h"
 #include "itype.h"
 #include "iuse_actor.h"
+#include "item.h"
 #include "map_helpers.h"
 #include "player_activity.h"
 #include "player_helpers.h"

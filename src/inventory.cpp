@@ -14,6 +14,7 @@
 #include "game.h"
 #include "iexamine.h"
 #include "inventory_ui.h" // auto inventory blocking
+#include "item.h"
 #include "locations.h"
 #include "map/map.h"
 #include "map/mapdata.h"

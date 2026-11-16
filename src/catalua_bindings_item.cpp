@@ -3,6 +3,7 @@
 #include "ammo_effect.h"
 #include "artifact.h"
 #include "avatar.h"
+#include "bionics.h"
 #include "catalua_bindings.h"
 #include "catalua_bool_reason.h"
 #include "catalua_bindings_utils.h"

@@ -15,6 +15,7 @@
 #include "game.h"
 #include "input.h"
 #include "inventory.h"
+#include "item.h"
 #include "make_static.h"
 #include "options.h"
 #include "output.h"

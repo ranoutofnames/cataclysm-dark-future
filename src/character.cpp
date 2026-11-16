@@ -1,6 +1,7 @@
 #include "character.h"
 #include "carried_stacks.h"
 
+#include "ablative_coverage.h"
 #include "action.h"
 #include "action_time_scale.h"
 #include "activity_actor_definitions.h"

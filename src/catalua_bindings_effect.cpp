@@ -7,6 +7,7 @@
 
 #include "effect.h"
 #include "map/field_type.h"
+#include "mutation.h"
 
 void cata::detail::reg_effect( sol::state &lua )
 {

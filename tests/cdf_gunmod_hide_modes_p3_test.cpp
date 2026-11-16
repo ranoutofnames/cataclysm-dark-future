@@ -10,6 +10,7 @@
 #include "calendar.h"
 #include "catch/catch.hpp"
 #include "coordinates.h"
+#include "gun_mode.h"
 #include "item.h"
 #include "itype.h"
 #include "map/map.h"

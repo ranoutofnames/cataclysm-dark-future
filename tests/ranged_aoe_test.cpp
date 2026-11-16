@@ -5,6 +5,7 @@
 #include "dispersion.h"
 #include "game.h"
 #include "itype.h"
+#include "item.h"
 #include "map/field_type.h"
 #include "map_helpers.h"
 #include "npc.h"

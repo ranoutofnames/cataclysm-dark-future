@@ -76,6 +76,8 @@
 #include "overmap/overmap.h"
 #include "overmap/overmap_special.h"
 #include "overmap/overmap_ui.h"
+#include "overmap/overmapbuffer.h"
+#include "overmap/overmapbuffer_registry.h"
 #include "player.h"
 #include "player_activity.h"
 #include "pldata.h"

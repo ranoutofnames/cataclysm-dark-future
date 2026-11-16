@@ -7,6 +7,7 @@
 #include "catch/catch.hpp"
 #include "character_effects.h"
 #include "character_functions.h"
+#include "item.h"
 #include "map_helpers.h"
 #include "npc.h"
 #include "options_helpers.h"

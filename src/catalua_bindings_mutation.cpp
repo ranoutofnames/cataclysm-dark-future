@@ -8,6 +8,7 @@
 #include "catalua_luna.h"
 #include "catalua_luna_doc.h"
 
+#include "enchantments/enchantment.h"
 #include "mutation.h"
 
 void cata::detail::mod_mutation_branch( sol::state &lua )

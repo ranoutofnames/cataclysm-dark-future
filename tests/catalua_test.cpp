@@ -43,6 +43,7 @@
 #include "mapgen/mapgen_constructor.h"
 #include "mission.h"
 #include "monster.h"
+#include "mutation.h"
 #include "npc.h"
 #include "options.h"
 #include "options_helpers.h"

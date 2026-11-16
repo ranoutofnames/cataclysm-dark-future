@@ -1,10 +1,13 @@
 #if defined(TILES)
+#    include "bionics.h"
 #    include "cata_tiles.h"
 #    include "character.h"
 #    include "color.h"
+#    include "item.h"
 #    include "map/field.h"
 #    include "map/map.h"
 #    include "monster.h"
+#    include "mutation.h"
 #    include "overmap/omdata.h"
 #    include "vehicle/veh_type.h"
 #    include "vehicle/vehicle.h"

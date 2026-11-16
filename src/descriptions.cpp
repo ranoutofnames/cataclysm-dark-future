@@ -4,6 +4,7 @@
 #include "game.h" // IWYU pragma: associated
 #include "harvest.h"
 #include "input.h"
+#include "item.h"
 #include "item_group.h"
 #include "itype.h"
 #include "map/map.h"

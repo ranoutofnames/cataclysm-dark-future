@@ -11,6 +11,7 @@
 #include "event_bus.h"
 #include "game.h"
 #include "int_id.h"
+#include "item.h"
 #include "map/field_type.h"
 #include "map/map.h"
 #include "map/mapdata.h"

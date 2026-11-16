@@ -1,5 +1,6 @@
 #include "creature.h"
 
+#include "ablative_coverage.h"
 #include "action_time_scale.h"
 #include "anatomy.h"
 #include "avatar.h"

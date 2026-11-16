@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 
+#include "action.h"
 #include "activity_actor_definitions.h"
 #include "activity_handlers.h"
 #include "avatar.h"
@@ -14,6 +15,7 @@
 #include "game.h"
 #include "game_inventory.h"
 #include "handle_liquid.h"
+#include "item.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "locations.h"

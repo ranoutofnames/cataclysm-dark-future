@@ -1,6 +1,7 @@
 #include "inventory_ui.h"
 
 #include "avatar.h"
+#include "bionics.h"
 #include "cata_utility.h"
 #include "catacharset.h"
 #include "carried_stacks.h"

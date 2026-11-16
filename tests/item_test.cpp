@@ -4,6 +4,7 @@
 #include "catch/catch.hpp"
 #include "enums.h"
 #include "flag.h"
+#include "gun_mode.h"
 #include "item.h"
 #include "itype.h"
 #include "map/field_type.h"

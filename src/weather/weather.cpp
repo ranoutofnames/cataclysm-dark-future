@@ -24,6 +24,7 @@
 #include "map/submap.h"
 #include "math_defines.h"
 #include "messages.h"
+#include "mutation.h"
 #include "options.h"
 #include "point.h"
 #include "point_float.h"

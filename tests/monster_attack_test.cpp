@@ -10,6 +10,7 @@
 #include "map_helpers.h"
 #include "monattack.h"
 #include "monster.h"
+#include "monster_action.h"
 #include "state_helpers.h"
 #include "type_id.h"
 

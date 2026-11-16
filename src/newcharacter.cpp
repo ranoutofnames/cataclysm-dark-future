@@ -41,6 +41,7 @@
 #include "input.h"
 #include "int_id.h"
 #include "inventory.h"
+#include "item.h"
 #include "json.h"
 #include "magic/magic.h"
 #include "make_static.h"

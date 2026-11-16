@@ -14,6 +14,7 @@
 #include "game_constants.h"
 #include "hash_utils.h"
 #include "int_id.h"
+#include "item.h"
 #include "json.h"
 #include "kill_tracker.h"
 #include "map/map.h"

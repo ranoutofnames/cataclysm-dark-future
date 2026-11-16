@@ -7,6 +7,7 @@
 #include "enums.h"
 #include "flag.h"
 #include "game_constants.h"
+#include "gun_mode.h"
 #include "handle_liquid.h"
 #include "item.h"
 #include "item_factory.h"

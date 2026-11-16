@@ -19,6 +19,7 @@
 #include "flag.h"
 #include "flat_set.h"
 #include "game.h"
+#include "item.h"
 #include "item_contents.h"
 #include "itype.h"
 #include "map/map.h"

@@ -1,5 +1,6 @@
 #include "activity_actor.h"
 
+#include "action.h"
 #include "action_time_scale.h"
 #include "activity_actor_definitions.h"
 #include "activity_handlers.h" // put_into_vehicle_or_drop and drop_on_map
@@ -26,6 +27,7 @@
 #include "game_constants.h"
 #include "game_inventory.h"
 #include "gates.h"
+#include "gun_mode.h"
 #include "handle_liquid.h"
 #include "iexamine.h"
 #include "int_id.h"

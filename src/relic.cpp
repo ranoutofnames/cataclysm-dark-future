@@ -7,6 +7,7 @@
 #include "creature.h"
 #include "enchantments/enchantment.h"
 #include "game.h"
+#include "item.h"
 #include "json.h"
 #include "magic/magic.h"
 #include "map/field.h"

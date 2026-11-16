@@ -10,6 +10,7 @@
 #include "item.h"
 #include "itype.h"
 #include "monster.h"
+#include "mutation.h"
 #include "player.h"
 #include "recipe.h"
 #include "trap.h"

@@ -14,6 +14,7 @@
 #include "melee.h"
 #include "monattack.h"
 #include "monster.h"
+#include "mutation.h"
 #include "npc.h"
 #include "player.h"
 #include "point.h"

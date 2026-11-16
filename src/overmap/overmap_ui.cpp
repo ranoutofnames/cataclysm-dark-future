@@ -24,6 +24,7 @@
 #include "hash_utils.h"
 #include "input.h"
 #include "int_id.h"
+#include "item.h"
 #include "line.h"
 #include "map/map.h"
 #include "map/mapbuffer.h"

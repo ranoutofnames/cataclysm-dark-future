@@ -44,6 +44,7 @@
 #include "mission.h"
 #include "monster.h"
 #include "mtype.h"
+#include "mutation.h"
 #include "npc.h" // IWYU pragma: associated
 #include "npc_class.h"
 #include "npctalk.h"

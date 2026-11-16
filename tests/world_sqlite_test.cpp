@@ -7,6 +7,7 @@
 #include "filesystem.h"
 #include "game.h"
 #include "init.h"
+#include "map/map.h"
 #include "map/mapbuffer.h"
 #include "map/mapbuffer_registry.h"
 #include "map/submap.h"
