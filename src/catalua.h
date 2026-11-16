@@ -2,7 +2,7 @@
 
 #include "calendar.h"
 #include "catalua_sol_fwd.h"
-#include "character.h"
+#include "coordinates.h"
 #include "point.h"
 #include "type_id.h"
 #include <memory>

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "coordinates.h"
-#include "map/map.h"
 
 #include <functional>
 #include <map>
@@ -12,6 +11,7 @@
 
 struct tripoint;
 struct point;
+class map;
 
 /**
  * Enumerates all discrete actions that can be performed by player

@@ -12,6 +12,7 @@
 #include "mattack_common.h"
 #include "pathfinding.h"
 #include "translations.h"
+#include "trait_set.h"
 #include "type_id.h"
 #include "units.h"
 
@@ -37,7 +38,6 @@ using mon_action_death  = void ( * )( monster & );
 using mon_action_attack = bool ( * )( monster * );
 using mon_action_defend = void ( * )( monster &, Creature *, dealt_projectile_attack const * );
 using bodytype_id = std::string;
-using TraitSet = std::set<trait_id>;
 class JsonArray;
 class JsonObject;
 

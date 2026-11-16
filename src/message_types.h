@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-#include "creature.h"
+enum game_message_type : int;
 
 // Returns pairs of message log type id and untranslated name
 const std::vector<std::pair<game_message_type, const char *>> &msg_type_and_names();

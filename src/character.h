@@ -18,7 +18,6 @@
 #include <utility>
 #include <vector>
 
-#include "action.h"
 #include "bodypart.h"
 #include "calendar.h"
 #include "character_id.h"
@@ -30,8 +29,6 @@
 #include "enum_int_operators.h"
 #include "enums.h"
 #include "flat_set.h"
-#include "mutation.h"
-#include "bionics.h"
 #include "game_constants.h"
 #include "inventory.h"
 #include "item.h"
@@ -48,6 +45,7 @@
 #include "stomach.h"
 #include "string_formatter.h"
 #include "temp_crafting_inventory.h"
+#include "trait_set.h"
 #include "type_id.h"
 #include "units.h"
 #include "visitable.h"
@@ -84,6 +82,7 @@ struct trap;
 template <typename E> struct enum_traits;
 
 
+enum action_id : int;
 enum class recipe_filter_flags : int;
 class craft_command;
 class recipe;

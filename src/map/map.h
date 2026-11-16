@@ -11,10 +11,8 @@
 #include "hash_utils.h"
 #include "item.h"
 #include "item_stack.h"
-#include "legacy_pathfinding.h"
 #include "lightmap.h"
 #include "line.h"
-#include "lru_cache.h"
 #include "mapbuffer.h"
 #include "mapbuffer_registry.h"
 #include "mapdata.h"
@@ -95,6 +93,7 @@ struct wrapped_vehicle {
 };
 
 using VehicleList = std::vector<wrapped_vehicle>;
+enum pf_special : int;
 class map;
 
 enum ter_bitflags : int;

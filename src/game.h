@@ -1,6 +1,5 @@
 #pragma once
 
-#include "action.h"
 #include "calendar.h"
 #include "character_id.h"
 #include "coordinates.h"
@@ -39,6 +38,7 @@
 #include <vector>
 
 class Character;
+class Creature;
 class Creature_tracker;
 class distribution_grid_tracker;
 class item;

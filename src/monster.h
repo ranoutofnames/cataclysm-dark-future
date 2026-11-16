@@ -21,7 +21,6 @@
 #include "creature.h"
 #include "cursesdef.h"
 #include "damage.h"
-#include "effect.h"
 #include "enums.h"
 #include "item.h"
 #include "location_ptr.h"
@@ -32,8 +31,6 @@
 #include "type_id.h"
 #include "units.h"
 #include "value_ptr.h"
-#include "monster_action.h"
-#include "monster_plan.h"
 #include "mtype.h"
 #include "visitable.h"
 #include "sounds.h"
@@ -47,6 +44,8 @@ class item;
 class npc;
 class player;
 struct dealt_projectile_attack;
+struct monster_action_t;
+struct monster_plan_t;
 struct pathfinding_settings;
 struct trap;
 

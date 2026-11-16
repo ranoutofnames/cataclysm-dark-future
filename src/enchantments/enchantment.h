@@ -2,7 +2,7 @@
 
 #include "calendar.h"
 #include "enchantment_condition.h"
-#include "magic/magic.h"
+#include "magic/fake_spell.h"
 #include "type_id.h"
 
 #include <iomanip>

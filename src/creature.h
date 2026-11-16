@@ -10,8 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ablative_coverage.h"
-#include "anatomy.h"
 #include "bodypart.h"
 #include "coordinates.h"
 #include "pimpl.h"
@@ -28,6 +26,10 @@ enum game_message_type : int;
 class nc_color;
 class effect;
 class effects_map;
+
+class anatomy;
+
+using anatomy_id = string_id<anatomy>;
 
 namespace catacurses
 {
@@ -47,6 +49,7 @@ class player;
 
 enum damage_type : int;
 enum m_flag : int;
+struct attack_context;
 struct damage_instance;
 struct damage_unit;
 struct dealt_damage_instance;
