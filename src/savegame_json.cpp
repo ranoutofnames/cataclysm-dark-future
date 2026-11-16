@@ -265,7 +265,9 @@ void item_contents::deserialize( const JsonObject &data )
     // item::io". item::io applies the item migration before this runs, and the migration adds
     // contents (an adaptor kit, plates, an attached pouch). Keep them and add the saved contents
     // on top, as DDA's combine() does: clearing them lost the adaptor and left the saved
-    // magazine in the MIGRATION pocket with no well to load into.
+    // magazine in the MIGRATION pocket with no well to load into. Nothing else can be in the
+    // pockets at this point: item::spawn( JsonIn ) starts from item(), which has no default
+    // contents, and a saved item is deserialized once, so no saved content is doubled.
     ensure_pockets();
 
     // the attached pouches come first: their pockets follow the type's own in the saved order

@@ -136,6 +136,19 @@ auto to_g( units::mass mass ) -> std::string
     return std::to_string( static_cast<long long>( units::to_gram( mass ) ) );
 }
 
+// The mass of everything a container carries, counted item by item. item::weight() counts the
+// pockets differently for different carriers (a gun weighs its gunmods at their integral weight
+// and does not count contents parked in the MIGRATION pocket at all), so after a type migration
+// the whole-item weight cannot be compared; the carried items' own weights can.
+auto carried_mass( const item &container ) -> units::mass
+{
+    units::mass ret = container.contents.get_additional_weight();
+    for( const item *child : container.contents.all_items_top() ) {
+        ret += child->weight();
+    }
+    return ret;
+}
+
 // A cheap pre-filter before an item probe is spawned: the type has to match the pocket's
 // flag/item/material/ammo restriction at all.
 auto type_may_match( const pocket_data &p, const itype &t ) -> bool
@@ -510,12 +523,12 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
         add_row( rows, container_id, "F6", false, "cannot spawn" );
         return;
     }
-    const units::mass base_weight = container->weight();
     if( candidate ) {
         container->put_in( item::spawn( *candidate ) );
     }
     const std::size_t before_count = container->contents.all_items_ptr().size();
     const units::mass before_weight = container->weight();
+    const units::mass before_carried = carried_mass( *container );
 
     std::ostringstream buffer;
     {
@@ -534,15 +547,30 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
     // migration, with the carried contents added on top.
     detached_ptr<item> origin = item::spawn( container_id );
     const std::size_t origin_count = origin->contents.all_items_ptr().size();
+    const units::mass origin_carried = carried_mass( *origin );
+    // the digital-media migration may add files (a genome drive keeps its specimen), so apply it
+    // to the fresh spawn the way item::deserialize does and take what it added
+    migrate_legacy_digital_media( *origin );
+    const units::mass digital_carried = carried_mass( *origin ) - origin_carried;
     detached_ptr<item> expected = item_controller->spawn_migrated( container_id, calendar::turn );
     migrate_legacy_digital_media( *expected );
     const itype_id expected_id = expected->typeId();
     // CDF: only the contents the migration adds are new; the spawn-time contents `origin` has are
-    // already counted in @p before_count. A migrated replacement weighs its own base weight plus
-    // the same delta (the contents carried into the round trip).
+    // already counted in @p before_count.
     const std::size_t expected_count = before_count + expected->contents.all_items_ptr().size() -
                                        origin_count;
-    const units::mass expected_weight = expected->weight() + ( before_weight - base_weight );
+    // CDF: the MIGRATION's own `contents` are spawned exactly as item::migrate_item() does it, so
+    // their mass is exact where item::weight() would count them differently inside the item.
+    units::mass migrated_carried = 0_gram;
+    if( const migration *m = item_controller->find_migration( container_id ) ) {
+        for( const migration_content &c : m->contents ) {
+            for( int i = 0; i < c.count; ++i ) {
+                migrated_carried += item::spawn( c.id, calendar::turn )->weight();
+            }
+        }
+    }
+    const units::mass loaded_carried = loaded ? carried_mass( *loaded ) : 0_gram;
+    const units::mass expected_carried = before_carried + migrated_carried + digital_carried;
     if( !loaded ) {
         reason = "load returned nothing";
     } else if( loaded->typeId() != expected_id ) {
@@ -551,8 +579,18 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
         reason = string_format( "count %d (want %d)",
                                 static_cast<int>( loaded->contents.all_items_ptr().size() ),
                                 static_cast<int>( expected_count ) );
-    } else if( loaded->weight() != expected_weight ) {
-        reason = "weight " + to_g( loaded->weight() ) + " g (want " + to_g( expected_weight ) + ")";
+    } else if( loaded_carried != expected_carried ) {
+        // CDF: the carried contents are weighed item by item. The whole-item weight cannot be
+        // compared after a type migration: the loaded contents may sit in a pocket the
+        // replacement counts differently (a gun ignores the MIGRATION pocket), so the same
+        // contents weigh less inside it than inside the obsoleted type.
+        reason = "contents weigh " + to_g( loaded_carried ) + " g (want " +
+                 to_g( expected_carried ) + " g)";
+    } else if( expected_id == container_id && digital_carried == 0_gram &&
+               loaded->weight() != before_weight ) {
+        // the type did not change and nothing was added on load, so the whole item has to weigh
+        // what it did before the save
+        reason = "weight " + to_g( loaded->weight() ) + " g (want " + to_g( before_weight ) + ")";
     }
     add_row( rows, container_id, "F6", reason.empty(), reason );
 }

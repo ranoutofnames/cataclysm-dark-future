@@ -694,10 +694,13 @@ TEST_CASE("both_legacy_recipe_tokens_migrate_to_reference_files", "[digital_medi
 
 TEST_CASE("digital_item_actions_require_installation", "[digital_media][iuse]") {
     auto dummy = avatar{};
+    // CDF: P3 carrying needs pockets; a bare avatar has none and would drop the second item,
+    // so give it the unlimited debug body storage (the same fixture clear_character uses)
+    dummy.set_mutation(trait_id("DEBUG_STORAGE"));
     auto media = item::spawn("usb_drive");
     media->put_in(item::spawn("test_digital_action"));
-    // CDF: i_add stores a copy of the item (item_pocket::add), so the file is looked up in what
-    // the avatar really holds; a pointer taken before i_add would go stale.
+    // CDF: i_add decides where the item goes, so the file is looked up in what the avatar now
+    // holds rather than in the detached item.
     item& stored_media = dummy.i_add(std::move(media));
     const auto source_files = digital_files_on(stored_media);
     REQUIRE(source_files.size() == 1);
@@ -716,6 +719,8 @@ TEST_CASE("digital_item_actions_require_installation", "[digital_media][iuse]") 
     const auto stored = digital_files_on(stored_device);
     REQUIRE(stored.size() == 1);
     item& installed_file = *stored.front();
+    // the reader has to be carried for the installed file to be usable
+    REQUIRE(digital_reader_for(dummy, installed_file));
     dummy.invoke_item(&installed_file, "transform");
     CHECK(installed_file.typeId() == itype_id("test_digital_instruction"));
 }
