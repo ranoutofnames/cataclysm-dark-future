@@ -1,6 +1,7 @@
 #include "recipe_dictionary.h"
 
 #include "cata_utility.h"
+#include "catalua_icallback_actor.h"
 #include "debug.h"
 #include "fmtlib_core.h"
 #include "init.h"

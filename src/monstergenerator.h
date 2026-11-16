@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "catalua.h"
-#include "catalua_icallback_actor.h"
 #include "catalua_type_operators.h"
 #include "enum_bitset.h"
 #include "enums.h"
@@ -18,6 +17,7 @@
 
 class Creature;
 class JsonObject;
+class lua_monster_callback_actor;
 class monster;
 struct dealt_projectile_attack;
 template <typename T> class string_id;

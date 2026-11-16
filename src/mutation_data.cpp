@@ -11,6 +11,7 @@
 
 #include "assign.h"
 #include "bodypart.h"
+#include "catalua_icallback_actor.h"
 #include "color.h"
 #include "debug.h"
 #include "enchantments/enchantment.h"

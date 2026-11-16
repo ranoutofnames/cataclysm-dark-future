@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 #include <string_view>
 
 #include "catalua_sol_fwd.h"

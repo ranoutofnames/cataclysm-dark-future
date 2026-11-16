@@ -1,6 +1,7 @@
 #pragma once
 
 #include "calendar.h"
+#include "catalua_sol.h"
 #include "character.h"
 #include "item.h"
 #include "json.h"

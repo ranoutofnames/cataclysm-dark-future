@@ -4,18 +4,19 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-#include "catalua_icallback_actor.h"
 #include "recipe.h"
 #include "type_id.h"
 
 class JsonIn;
 class JsonOut;
 class JsonObject;
+class lua_recipe_actor;
 
 class recipe_dictionary
 {
