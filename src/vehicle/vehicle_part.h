@@ -6,9 +6,9 @@
 #include "character_id.h"
 #include "coordinates.h"
 #include "hsv_color.h"
-#include "item.h"
 #include "item_group.h"
 #include "location_ptr.h"
+#include "location_vector.h"
 #include "point.h"
 #include "type_id.h"
 #include "visitable.h"
@@ -21,6 +21,8 @@ class item_location;
 class vehicle_cursor;
 class npc;
 class Character;
+class item;
+class map;
 
 /**
  * Structure, describing vehicle part (i.e., wheel, seat)

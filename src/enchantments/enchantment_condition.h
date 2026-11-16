@@ -3,9 +3,10 @@
 #include "calendar.h"
 #include "catalua_sol.h"
 class Character;
-#include "item.h"
+class item;
 #include "json.h"
 #include "string_id.h"
+#include "translations.h"
 #include "type_id.h"
 
 

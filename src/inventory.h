@@ -14,13 +14,16 @@
 #include <vector>
 
 #include "coordinates.h"
-#include "item.h"
+#include "detached_ptr.h"
+#include "location_vector.h"
 #include "units.h"
 #include "visitable.h"
 
 class Character;
 class JsonIn;
 class JsonOut;
+class item;
+class item_location;
 class item_stack;
 class map;
 class npc;
