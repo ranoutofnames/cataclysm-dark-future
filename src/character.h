@@ -35,7 +35,6 @@
 #include "item_pocket.h"
 #include "location_ptr.h"
 #include "memory_fast.h"
-#include "mtype.h"
 #include "pimpl.h"
 #include "player_activity_ptr.h"
 #include "pldata.h"

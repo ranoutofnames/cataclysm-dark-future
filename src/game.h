@@ -3,7 +3,6 @@
 #include "calendar.h"
 #include "character_id.h"
 #include "coordinates.h"
-#include "creature.h"
 #include "cursesdef.h"
 #include "dimension_info.h"
 #include "enums.h"
