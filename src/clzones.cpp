@@ -181,6 +181,51 @@ void zone_type::load( const JsonObject &jo, const std::string & )
     optional( jo, was_loaded, "hidden", hidden );
 }
 
+namespace
+{
+// CDF: DDA clzones.h ignorable_options / clzones.cpp ignorable_zone_types. This job may not
+// edit clzones.h, so the class is file-local: zone_options::create/is_valid and the zone
+// serializer all live here, and the UI only goes through the zone_options virtuals.
+const std::vector<zone_type_id> ignorable_zone_types = {
+    zone_type_id( "AUTO_EAT" ),
+    zone_type_id( "AUTO_DRINK" ),
+    zone_type_id( "DISASSEMBLE" ),
+    zone_type_id( "SOURCE_FIREWOOD" ),
+};
+
+class ignorable_options : public zone_options
+{
+    private:
+        // CDF: DDA leaves this uninitialised, a new zone starts with the option off
+        bool ignore_contents = false;
+
+        enum query_ignorable_result {
+            canceled,
+            successful,
+            changed,
+        };
+
+        query_ignorable_result query_ignorable();
+
+    public:
+        bool get_ignore_contents() const {
+            return ignore_contents;
+        }
+
+        bool has_options() const override {
+            return true;
+        }
+
+        bool query_at_creation() override;
+        bool query() override;
+
+        std::vector<std::pair<std::string, std::string>> get_descriptions() const override;
+
+        void serialize( JsonOut &json ) const override;
+        void deserialize( const JsonObject &jo_zone ) override;
+};
+} // namespace
+
 shared_ptr_fast<zone_options> zone_options::create( const zone_type_id &type )
 {
     if( type == zone_FARM_PLOT ) {
@@ -191,6 +236,9 @@ shared_ptr_fast<zone_options> zone_options::create( const zone_type_id &type )
         return make_shared_fast<loot_options>();
     } else if( type == zone_UNLOAD_ALL ) {
         return make_shared_fast<unload_options>();
+    } else if( std::find( ignorable_zone_types.begin(), ignorable_zone_types.end(),
+                          type ) != ignorable_zone_types.end() ) {
+        return make_shared_fast<ignorable_options>();
     }
 
     return make_shared_fast<zone_options>();
@@ -206,6 +254,9 @@ bool zone_options::is_valid( const zone_type_id &type, const zone_options &optio
         return dynamic_cast<const loot_options *>( &options ) != nullptr;
     } else if( type == zone_UNLOAD_ALL ) {
         return dynamic_cast<const unload_options *>( &options ) != nullptr;
+    } else if( std::find( ignorable_zone_types.begin(), ignorable_zone_types.end(),
+                          type ) != ignorable_zone_types.end() ) {
+        return dynamic_cast<const ignorable_options *>( &options ) != nullptr;
     }
 
     // ensure options is not derived class for the rest of zone types
@@ -681,6 +732,59 @@ void unload_options::deserialize( const JsonObject &jo_zone )
     jo_zone.read( "sparse_only", sparse_only );
     jo_zone.read( "sparse_threshold", sparse_threshold );
     jo_zone.read( "always_unload", always_unload );
+}
+
+// CDF: DDA clzones.cpp:290-296, 406-433, 505-511, 564-572 (ignorable_options)
+ignorable_options::query_ignorable_result ignorable_options::query_ignorable()
+{
+    ignore_contents = query_yn( _( "Ignore items in this area when sorting?" ) );
+    return changed;
+}
+
+bool ignorable_options::query_at_creation()
+{
+    return query_ignorable() != canceled;
+}
+
+bool ignorable_options::query()
+{
+    return query_ignorable() == changed;
+}
+
+std::vector<std::pair<std::string, std::string>> ignorable_options::get_descriptions() const
+{
+    std::vector<std::pair<std::string, std::string>> options;
+    options.emplace_back( _( "Ignore contents: " ),
+                          string_format( "%s", ignore_contents ? _( "True" ) : _( "False" ) ) );
+    return options;
+}
+
+void ignorable_options::serialize( JsonOut &json ) const
+{
+    json.member( "ignore_contents", ignore_contents );
+}
+
+void ignorable_options::deserialize( const JsonObject &jo_zone )
+{
+    jo_zone.read( "ignore_contents", ignore_contents );
+}
+
+// CDF: DDA activity_item_handling.cpp:1067-1081 ignore_contents(). CDF's zone manager returns
+// the zones at a tile by value (no get_zones_at), and the class above is file-local, so the
+// question is asked here and activity_item_handling.cpp calls this.
+bool zone_ignore_contents( const Character &/*you*/, const tripoint_abs_ms &src )
+{
+    const zone_manager &mgr = zone_manager::get_manager();
+    for( const zone_type_id &zone_type : ignorable_zone_types ) {
+        for( const zone_data &zone : mgr.get_zones( zone_type, src ) ) {
+            const ignorable_options &options =
+                dynamic_cast<const ignorable_options &>( zone.get_options() );
+            if( options.get_ignore_contents() ) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool blueprint_options::query_at_creation()

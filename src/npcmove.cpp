@@ -3903,21 +3903,17 @@ bool npc::wield_better_weapon()
     // to have NPCs wield weapons with shorter ranges than dist in preparation
     // if they don't have a weapon with appropriate range/ammo.
     visit_items( [&compare_weapon, this ]( item * node ) {
-        // For worn items, only compare if they have a weapon category defined.
-        if( is_worn( *node ) && node->type->weapon_category.empty() ) {
+        // Only weapons get scored. CDF: worn gear is only scored when it is a weapon, armor has
+        // melee damage too and has no weapon category.
+        if( node->is_melee() || node->is_gun() ) {
+            if( !is_worn( *node ) || !node->type->weapon_category.empty() ) {
+                compare_weapon( *node );
+            }
             return VisitResponse::SKIP;
         }
-        // Otherwise, compare any melee usable item, guns or holstered items
-        if( node->is_melee() || node->is_gun() ) {
-            compare_weapon( *node );
-        } else if( node->get_use( "holster" ) && !node->contents.empty() && node != &primary_weapon() ) {
-            // TODO: special case for "wield from wielded holster"
-            const item &holstered = node->get_contained();
-            if( holstered.is_melee() || holstered.is_gun() ) {
-                compare_weapon( holstered );
-            }
-        }
-        return VisitResponse::SKIP;
+        // CDF: DDA npcmove.cpp:4916-4934 descends into containers (holster and plain container
+        // pockets) instead of looking only one level into items with a holster use action.
+        return VisitResponse::NEXT;
     } );
 
     std::map<item *, bionic_id> toggled_list = check_toggle_cbm();

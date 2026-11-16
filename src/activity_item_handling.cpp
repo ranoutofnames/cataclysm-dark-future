@@ -159,6 +159,10 @@ static const std::string flag_PLANT( "PLANT" );
 static const std::string flag_PLOWABLE( "PLOWABLE" );
 static const std::string flag_TREE( "TREE" );
 
+// CDF: DDA activity_item_handling.h ignore_contents(). The ignorable zone options class is
+// file-local in clzones.cpp (this job may not edit clzones.h), so only the query is declared.
+bool zone_ignore_contents( const Character &you, const tripoint_abs_ms &src );
+
 void cancel_aim_processing();
 //Generic activity: maximum search distance for zones, constructions, etc.
 const int ACTIVITY_SEARCH_DISTANCE = 60;
@@ -1283,6 +1287,7 @@ static bool are_requirements_nearby( const std::vector<tripoint_bub_ms> &loot_sp
             // (to prevent taking out wood off the lit brazier)
             // and inaccessible furniture, like filled charcoal kiln
             if( mgr.has( zone_type_LOOT_IGNORE, bub_to_abs( elem ) ) ||
+                zone_ignore_contents( p, bub_to_abs( elem ) ) ||
                 here.dangerous_field_at( elem ) ||
                 !here.can_put_items_ter_furn( elem ) ) {
                 continue;
@@ -2490,6 +2495,7 @@ void activity_on_turn_move_loot( player_activity &act, player &p )
             // (to prevent taking out wood off the lit brazier)
             // and inaccessible furniture, like filled charcoal kiln
             if( mgr.has( zone_type_LOOT_IGNORE, src ) ||
+                zone_ignore_contents( p, src ) ||
                 here.get_field( src_loc, fd_fire ) != nullptr ||
                 !here.can_put_items_ter_furn( src_loc ) ) {
                 continue;

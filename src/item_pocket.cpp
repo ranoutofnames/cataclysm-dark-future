@@ -1012,10 +1012,7 @@ void item_pocket::general_info( std::vector<iteminfo> &info, int pocket_number,
                                           data->extra_encumbrance ) ) ;
     }
 
-    if( data->ripoff > 0 ) {
-        info.emplace_back( "DESCRIPTION",
-                           _( "Items may <bad>fall out</bad> if grabbed." ) );
-    }
+    // CDF: F9, DDA has no ripoff roll so the info line is not shown (nothing would ever fall out)
 
     if( data->activity_noise.chance > 0 ) {
         info.emplace_back( "DESCRIPTION",

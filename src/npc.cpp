@@ -1390,6 +1390,41 @@ void npc::stow_weapon( )
 
 bool npc::wield( item &it )
 {
+    if( is_wielding( it ) ) {
+        return true;
+    }
+
+    // CDF: DDA npc.cpp:1665-1710. An item held in the wielded container is taken out first:
+    // once the container is stowed the reference into it would dangle, and reinsertion is not
+    // guaranteed (the container may go into a different pocket). CDF's item_location is an
+    // owning slot, so the item is detached into a detached_ptr and handed to npc::wield().
+    if( primary_weapon().has_item( it ) ) {
+        clear_npc_ai_info_cache( npc_ai_info::ideal_weapon_value );
+        if( !can_wield( it ).success() ) {
+            return false;
+        }
+        // Retrieval cost uses the same skill-scaled formula as drawing from a holster
+        const int retrieve_mv = item_retrieve_cost( it, primary_weapon() );
+        detached_ptr<item> extracted = it.detach();
+        stow_weapon( );
+        moves -= retrieve_mv;
+        detached_ptr<item> failed = wield( std::move( extracted ) );
+        if( failed ) {
+            map &here = get_map();
+            if( can_stash( *failed ).success() ) {
+                i_add( std::move( failed ), true, nullptr, nullptr, true, false );
+            } else {
+                here.add_item_or_charges( bub_pos( ), std::move( failed ) );
+            }
+            return false;
+        }
+        if( g->u.sees( bub_pos() ) ) {
+            add_msg_if_npc( m_info, _( "<npcname> wields a %s." ),  primary_weapon().tname() );
+        }
+        invalidate_range_cache();
+        return true;
+    }
+
     clear_npc_ai_info_cache( npc_ai_info::ideal_weapon_value );
     if( is_armed() ) {
         stow_weapon( );
