@@ -3001,6 +3001,7 @@ void options_manager::add_options_world_default()
 
     static constexpr item_category_option item_category_options[] = {
         { "ammo", translate_marker( "AMMO" ), translate_marker( "Spawn rate for items from AMMO category." ) },
+        { "armor", translate_marker( "ARMOR" ), translate_marker( "Spawn rate for items from ARMOR category." ) },
         { "artifacts", translate_marker( "ARTIFACTS" ), translate_marker( "Spawn rate for items from ARTIFACTS category." ) },
         { "battery", translate_marker( "BATTERIES" ), translate_marker( "Spawn rate for items from BATTERIES category." ) },
         { "bionics", translate_marker( "BIONICS" ), translate_marker( "Spawn rate for items from BIONICS category." ) },
