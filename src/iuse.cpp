@@ -133,6 +133,10 @@
 #include <utility>
 #include <vector>
 
+// CDF: defined in src/item/book_scanning.cpp and also declared in tests/book_scanning_test.cpp;
+// not in book_scanning.h, where a declaration would rebuild every includer.
+auto select_scannable_text( avatar &you ) -> item *;
+
 static const activity_id ACT_BURROW( "ACT_BURROW" );
 static const activity_id ACT_CHOP_LOGS( "ACT_CHOP_LOGS" );
 static const activity_id ACT_CHOP_PLANKS( "ACT_CHOP_PLANKS" );
@@ -6371,8 +6375,7 @@ int iuse::einktabletpc( player *p, item *it, bool t, const tripoint_bub_ms &pos 
 
         if( choice == ei_scan_book ) {
             if( auto *you = p->as_avatar() ) {
-                if( auto *book = game_menus::inv::titled_filter_menu( is_scannable_text, *you,
-                                 _( "Scan which book or text?" ) ) ) {
+                if( auto *book = select_scannable_text( *you ) ) {
                     start_book_scan( *p, *it, *book );
                 }
             }
