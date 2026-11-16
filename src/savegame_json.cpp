@@ -199,6 +199,10 @@ auto pocket_type_to_dda( pocket_type type ) -> int
             return 4;
         case pocket_type::SOFTWARE:
             return 5;
+        // CDF: E24. DDA's int for CABLE is 7 (DDA pocket_type.h:8-18). Without this case CABLE
+        // fell through to 8 and was saved as MIGRATION (DDA savegame_json.cpp:280-291).
+        case pocket_type::CABLE:
+            return 7;
         case pocket_type::MIGRATION:
         case pocket_type::LAST:
             return 8;
@@ -221,8 +225,12 @@ auto pocket_type_from_dda( int value ) -> pocket_type
             return pocket_type::CORPSE;
         case 5:
             return pocket_type::SOFTWARE;
+        // CDF: E24. DDA's int 7 is CABLE. As the default it became MIGRATION, so the load
+        // re-routed the extension cables in the pocket through insert_item (item_contents.cpp).
+        case 7:
+            return pocket_type::CABLE;
         default:
-            // MIGRATION, and the pocket types CDF doesn't have (e-files, cables, e-books)
+            // MIGRATION (8), and the pocket types CDF doesn't have (E_FILE_STORAGE 6, EBOOK 9)
             return pocket_type::MIGRATION;
     }
 }
