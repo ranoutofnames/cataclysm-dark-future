@@ -43,10 +43,10 @@ class item;
 class npc;
 class player;
 struct dealt_projectile_attack;
-struct monster_action_t;
-struct monster_plan_t;
 struct pathfinding_settings;
 struct trap;
+struct monster_action_t;
+struct monster_plan_t;
 
 template<typename T>
 class detached_ptr;

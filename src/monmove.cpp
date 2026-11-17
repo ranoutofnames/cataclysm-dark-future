@@ -17,7 +17,6 @@
 #include "game_constants.h"
 #include "init.h"
 #include "int_id.h"
-#include "item.h"
 #include "line.h"
 #include "make_static.h"
 #include "map/field.h"
@@ -31,10 +30,8 @@
 #include "messages.h"
 #include "monfaction.h"
 #include "monster.h" // IWYU pragma: associated
-#include "monster_action.h"
 #include "monster_hallucination.h"
 #include "monster_oracle.h"
-#include "monster_plan.h"
 #include "mtype.h"
 #include "npc.h"
 #include "options.h"
@@ -55,6 +52,9 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
+#include "item.h"
+#include "monster_action.h"
+#include "monster_plan.h"
 
 #include <algorithm>
 #include <utility>

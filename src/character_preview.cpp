@@ -3,10 +3,8 @@
 #include "bionics.h"
 #include "color.h"
 #include "hsv_color.h"
-#include "item.h"
 #include "magic/magic.h"
 #include "messages.h"
-#include "mutation.h"
 #include "type_id.h"
 #include "character.h"
 #include "profession.h"
@@ -18,6 +16,8 @@
 #include "avatar.h"
 #include "overlay_ordering.h"
 #include "effect.h"
+#include "item.h"
+#include "mutation.h"
 
 auto termx_to_pixel_value() -> int
 {

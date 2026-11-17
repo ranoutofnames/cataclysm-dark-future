@@ -26,7 +26,6 @@ class Character;
 class Creature;
 class JsonIn;
 class JsonOut;
-class item;
 class map;
 class mapgen_constructor;
 class monster;
@@ -43,6 +42,7 @@ struct itype;
 struct uilist_entry;
 template <typename T> class visitable;
 struct rl_vec2d;
+class item;
 
 enum vpart_bitflags : int;
 enum ter_bitflags : int;

@@ -14,21 +14,21 @@
 #include <vector>
 
 #include "coordinates.h"
-#include "detached_ptr.h"
-#include "location_vector.h"
 #include "units.h"
 #include "visitable.h"
+#include "detached_ptr.h"
+#include "location_vector.h"
 
 class Character;
 class JsonIn;
 class JsonOut;
-class item;
-class item_location;
 class item_stack;
 class map;
 class npc;
 class player;
 struct tripoint;
+class item;
+class item_location;
 
 using invstack = std::list<std::vector<item *> >;
 using const_invslice = std::vector<const std::vector<item *> *>;

@@ -17,11 +17,11 @@
 
 class Creature;
 class JsonObject;
-class lua_monster_callback_actor;
 class monster;
 struct dealt_projectile_attack;
 template <typename T> class string_id;
 template<typename T> class generic_factory;
+class lua_monster_callback_actor;
 
 using mon_action_death  = void ( * )( monster & );
 using mon_action_attack = bool ( * )( monster * );

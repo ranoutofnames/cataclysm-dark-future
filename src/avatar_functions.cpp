@@ -4,7 +4,6 @@
 #include <map>
 #include <vector>
 
-#include "action.h"
 #include "activity_actor_definitions.h"
 #include "activity_handlers.h"
 #include "avatar.h"
@@ -15,7 +14,6 @@
 #include "game.h"
 #include "game_inventory.h"
 #include "handle_liquid.h"
-#include "item.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "locations.h"
@@ -34,6 +32,8 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
+#include "action.h"
+#include "item.h"
 
 static const trait_id trait_CHLOROMORPH( "CHLOROMORPH" );
 static const trait_id trait_DEBUG_HS( "DEBUG_HS" );

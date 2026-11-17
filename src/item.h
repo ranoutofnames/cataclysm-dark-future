@@ -39,7 +39,6 @@ class faction;
 class gunmod_location;
 class item;
 class iteminfo_query;
-class kill_tracker;
 class material_type;
 class monster;
 class nc_color;
@@ -66,6 +65,7 @@ template<typename T>
 class ret_val;
 class item_location;
 struct attack_statblock;
+class kill_tracker;
 
 using bodytype_id = std::string;
 using faction_id = string_id<faction>;

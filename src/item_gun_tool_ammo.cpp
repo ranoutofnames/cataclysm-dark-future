@@ -12,7 +12,6 @@
 #include "character.h"
 #include "enums.h"
 #include "flag.h"
-#include "gun_mode.h"
 #include "item_contents.h"
 #include "item_pocket.h"
 #include "itype.h"
@@ -31,6 +30,7 @@
 #include "vehicle/vpart_range.h"
 // CDF: LINKUP1a; optional_vpart_position::mount() in item::link_to().
 #include "vehicle/vpart_position.h"
+#include "gun_mode.h"
 
 // CDF: LINKUP1b; the battery ammo item used when a linked battery is charged or discharged.
 static const itype_id itype_battery( "battery" );

@@ -1,7 +1,7 @@
 #include "message_types.h"
 
-#include "enums.h"
 #include "string_formatter.h"
+#include "enums.h"
 #include "translations.h"
 
 auto msg_type_and_names() -> const std::vector<std::pair<game_message_type, const char*>>& {

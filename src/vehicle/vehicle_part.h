@@ -8,10 +8,10 @@
 #include "hsv_color.h"
 #include "item_group.h"
 #include "location_ptr.h"
-#include "location_vector.h"
 #include "point.h"
 #include "type_id.h"
 #include "visitable.h"
+#include "location_vector.h"
 
 #include <set>
 #include <stack>
