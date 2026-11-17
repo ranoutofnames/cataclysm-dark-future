@@ -3276,14 +3276,6 @@ void Character::remove_mission_items( int mission_id )
     remove_items_with( has_mission_item_filter { mission_id } );
 }
 
-VisitResponse Character::has_mission_item_filter::operator()( detached_ptr<item> &&it )
-{
-    if( it->mission_id == mission_id ) {
-        detached_ptr<item> destroyed = std::move( it );
-    }
-    return VisitResponse::NEXT;
-}
-
 units::mass Character::weight_carried() const
 {
     return weight_carried_reduced_by( {} );
@@ -14222,4 +14214,12 @@ units::volume Character::free_carry_volume() const
         best = std::max( best, p.volume_capacity() - p.contains_volume() );
     }, wielded_for_carry( *this ) );
     return best;
+}
+
+VisitResponse Character::has_mission_item_filter::operator()( detached_ptr<item> &&it )
+{
+    if( it->mission_id == mission_id ) {
+        detached_ptr<item> destroyed = std::move( it );
+    }
+    return VisitResponse::NEXT;
 }
