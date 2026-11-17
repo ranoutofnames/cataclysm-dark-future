@@ -11,6 +11,7 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
+#include "creature.h"
 
 #include <queue>
 
