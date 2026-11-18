@@ -9,7 +9,6 @@
 #include "game_constants.h"
 #include "location_vector.h"
 #include "map/mapbuffer.h"
-#include "map/mapdata.h"
 #include "map/submap_load_manager.h"
 #include "memory_fast.h"
 #include "pimpl.h"

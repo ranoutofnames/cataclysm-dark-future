@@ -8,7 +8,6 @@
 #include "item_handling_util.h"
 #include "location_ptr.h"
 #include "locations.h"
-#include "map/mapdata.h"
 #include "memory_fast.h"
 #include "pickup_token.h"
 #include "point.h"
