@@ -11,7 +11,6 @@
 #include "debug.h"
 #include "enum_conversions.h"
 #include "hash_utils.h"
-#include "pldata.h"
 #include "to_string_id.h"
 #include "type_id.h"
 
@@ -20,6 +19,7 @@ class JsonOut;
 template <typename E> struct enum_traits;
 
 enum body_part : int;
+enum class add_type : int;
 enum class mutagen_technique : int;
 enum character_movemode : int;
 

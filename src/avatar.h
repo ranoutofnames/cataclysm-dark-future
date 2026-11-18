@@ -13,12 +13,12 @@
 #include "enums.h"
 #include "inventory.h"
 #include "player.h"
-#include "pldata.h"
 #include "point.h"
 
 class JsonIn;
 class JsonObject;
 class JsonOut;
+enum class character_type : int;
 class diary;
 class faction;
 class item;

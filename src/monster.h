@@ -24,7 +24,6 @@
 #include "enums.h"
 #include "location_ptr.h"
 #include "location_vector.h"
-#include "pldata.h"
 #include "coordinates.h"
 #include "point.h"
 #include "type_id.h"

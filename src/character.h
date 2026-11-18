@@ -37,7 +37,6 @@
 #include "memory_fast.h"
 #include "pimpl.h"
 #include "player_activity_ptr.h"
-#include "pldata.h"
 #include "point.h"
 #include "ret_val.h"
 #include "safe_reference.h"
@@ -55,6 +54,7 @@ class JsonObject;
 class JsonOut;
 class SkillLevel;
 class SkillLevelMap;
+class addiction;
 class bionic_collection;
 class character_martial_arts;
 class faction;
@@ -78,6 +78,7 @@ struct itype;
 struct mutation_branch;
 struct pathfinding_settings;
 struct points_left;
+struct social_modifiers;
 struct trap;
 template <typename E> struct enum_traits;
 struct attack_statblock;
@@ -94,6 +95,7 @@ struct requirement_data;
 struct item_comp;
 struct tool_comp;
 
+enum class add_type : int;
 enum class character_stat : char;
 
 constexpr int MAX_CLAIRVOYANCE = 40;
