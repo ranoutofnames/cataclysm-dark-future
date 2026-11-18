@@ -2,6 +2,7 @@
 #include "catalua_sol.h"
 
 #include "game.h"
+#include "line.h"
 #include "monster.h"
 #include "profile.h"
 #include "type_id.h"
