@@ -1,6 +1,5 @@
 #include "catalua/catalua_creature_filters.h"
 #include "catalua_sol.h"
-
 #include "game.h"
 #include "line.h"
 #include "monster.h"
