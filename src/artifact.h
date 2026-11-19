@@ -4,6 +4,7 @@
 
 #include "enums.h"
 #include "itype.h"
+#include "itype_slots/all_slots.h"
 #include "relic.h"
 #include "world.h"
 

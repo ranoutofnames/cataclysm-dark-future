@@ -22,6 +22,7 @@
 #include "string_formatter.h"
 #include "translations.h"
 #include "units_utility.h"
+#include "itype_slots/islot_ammo.h"
 
 void sealable_data::load( const JsonObject &jo )
 {

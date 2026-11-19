@@ -8,6 +8,7 @@
 #include "player_helpers.h"
 #include "state_helpers.h"
 #include "subbodypart.h"
+#include "itype_slots/islot_armor.h"
 
 #include <algorithm>
 #include <map>

@@ -28,6 +28,9 @@
 #include "state_helpers.h"
 #include "units.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_magazine.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <climits>

@@ -34,6 +34,7 @@
 #include "type_id_implement.h"
 #include "ui_manager.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_book.h"
 
 #include <algorithm>
 #include <cstdlib>

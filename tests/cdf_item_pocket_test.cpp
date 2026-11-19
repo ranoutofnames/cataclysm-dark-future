@@ -15,6 +15,7 @@
 #include "ret_val.h"
 #include "test_data.h"
 #include "units.h"
+#include "itype_slots/islot_mod.h"
 
 #include <sstream>
 #include <string>

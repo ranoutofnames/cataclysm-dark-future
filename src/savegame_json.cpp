@@ -100,6 +100,8 @@
 #include "vehicle/vpart_range.h"
 #include "vitamin.h"
 #include "world_type.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_container.h"
 
 #include <algorithm>
 #include <array>

@@ -35,6 +35,9 @@
 #include "vehicle_palette.h"
 #include "vehicle_part.h"
 #include "weighted_list.h"
+#include "itype_slots/islot_container.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <cassert>

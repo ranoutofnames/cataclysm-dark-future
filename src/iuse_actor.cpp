@@ -111,6 +111,11 @@
 #include "weather/weather.h"
 #include "world.h"
 #include "world_type.h"
+#include "itype_slots/islot_armor.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_gunmod.h"
+#include "itype_slots/islot_bionic.h"
+#include "itype_slots/islot_seed.h"
 
 #include <algorithm>
 #include <array>

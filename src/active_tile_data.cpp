@@ -19,6 +19,7 @@
 
 // TODO: Shouldn't use
 #include "map/submap.h"
+#include "itype_slots/islot_battery.h"
 
 static const itype_id itype_battery( "battery" );
 

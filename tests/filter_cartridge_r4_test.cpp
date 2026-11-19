@@ -26,6 +26,7 @@
 #include "pocket_type.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "itype_slots/islot_tool.h"
 
 namespace
 {

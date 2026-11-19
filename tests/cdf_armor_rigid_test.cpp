@@ -2,6 +2,7 @@
 #include "catch/catch.hpp"
 #include "item.h"
 #include "itype.h"
+#include "itype_slots/islot_armor.h"
 
 // CDF: per-portion rigidity (DDA item_factory.cpp:1138-1148); materials covering 40% or less
 // of a portion do not count, covered_by_mat defaults to 100.

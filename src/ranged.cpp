@@ -74,6 +74,10 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_gunmod.h"
+#include "itype_slots/islot_magazine.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <cmath>

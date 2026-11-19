@@ -14,6 +14,7 @@
 #include "player.h"
 #include "recipe.h"
 #include "trap.h"
+#include "itype_slots/islot_comestible.h"
 
 // --- lua_iuse_actor ---
 

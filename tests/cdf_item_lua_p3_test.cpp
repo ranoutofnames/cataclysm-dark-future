@@ -19,6 +19,7 @@
 #include "map_helpers.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <fstream>
 #include <sstream>

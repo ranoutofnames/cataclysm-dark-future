@@ -51,6 +51,8 @@
 #include "vpart_position.h"
 #include "vpart_range.h"
 #include "wheel_dimensions.h"
+#include "itype_slots/islot_wheel.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <algorithm>
 #include <array>

@@ -6,6 +6,7 @@
 #include "itype.h"
 #include "map/map.h"
 #include "units.h"
+#include "itype_slots/islot_gunmod.h"
 
 static flag_id flag_NO_UNLOAD( "NO_UNLOAD" );
 

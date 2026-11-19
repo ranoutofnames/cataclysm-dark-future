@@ -14,6 +14,9 @@
 #include "type_id.h"
 #include "ammo.h"
 #include "units.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_magazine.h"
+#include "itype_slots/islot_ammo.h"
 
 namespace
 {

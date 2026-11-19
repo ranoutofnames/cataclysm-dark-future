@@ -18,6 +18,8 @@
 #include "ret_val.h"
 #include "type_id.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_magazine.h"
+#include "itype_slots/islot_ammo.h"
 
 static const itype_id itype_box_small( "box_small" );
 static const itype_id itype_cz75( "cz75_ammo_set_test" );

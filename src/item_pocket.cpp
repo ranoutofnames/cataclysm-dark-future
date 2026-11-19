@@ -43,6 +43,7 @@
 #include "translations.h"
 #include "units.h"
 #include "units_utility.h"
+#include "itype_slots/islot_comestible.h"
 
 static const itype_id itype_water( "water" );
 

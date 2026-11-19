@@ -105,6 +105,7 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
+#include "itype_slots/islot_seed.h"
 
 enum creature_size : int;
 

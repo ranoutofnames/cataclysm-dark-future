@@ -8,6 +8,7 @@
 #include "player_helpers.h"
 #include "type_id.h"
 #include "units.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <cstdlib>
 #include <utility>

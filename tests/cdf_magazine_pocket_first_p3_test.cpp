@@ -19,6 +19,9 @@
 #include "ret_val.h"
 #include "type_id.h"
 #include "units.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_mod.h"
+#include "itype_slots/islot_gun.h"
 
 namespace
 {

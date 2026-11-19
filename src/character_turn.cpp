@@ -42,6 +42,7 @@
 #include "vehicle/vpart_position.h"
 #include "weather/weather.h"
 #include "weather/weather_gen.h"
+#include "itype_slots/islot_tool.h"
 
 #include <algorithm>
 

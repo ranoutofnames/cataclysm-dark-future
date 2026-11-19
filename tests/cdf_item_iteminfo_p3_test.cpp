@@ -21,6 +21,8 @@
 #include "pocket_type.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "itype_slots/islot_gunmod.h"
+#include "itype_slots/islot_ammo.h"
 
 namespace
 {

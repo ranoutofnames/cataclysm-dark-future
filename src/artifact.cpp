@@ -28,6 +28,7 @@
 #include "units.h"
 #include "value_ptr.h"
 #include "world.h"
+#include "itype_slots/all_slots.h"
 
 template<typename V, typename B>
 inline units::quantity<V, B> rng( const units::quantity<V, B> &min,

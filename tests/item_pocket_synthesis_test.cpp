@@ -7,6 +7,9 @@
 #include "itype.h"
 #include "iuse_actor.h"
 #include "units.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_container.h"
+#include "itype_slots/islot_armor.h"
 
 #include <algorithm>
 #include <map>

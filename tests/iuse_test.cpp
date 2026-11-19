@@ -15,6 +15,7 @@
 #include "player_helpers.h"
 #include "type_id.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <array>
 #include <cstddef>

@@ -69,6 +69,7 @@
 #include "ui.h"
 #include "vehicle/vehicle.h"
 #include "vehicle/vpart_position.h"
+#include "itype_slots/islot_book.h"
 
 #include <algorithm>
 #include <array>

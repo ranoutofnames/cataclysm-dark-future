@@ -7,6 +7,8 @@
 #include "itype.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <utility>
 

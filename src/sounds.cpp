@@ -46,6 +46,7 @@
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_gunmod.h"
 
 #include <algorithm>
 #include <array>

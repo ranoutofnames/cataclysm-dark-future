@@ -68,6 +68,8 @@
 #include "vehicle/vehicle_selector.h"
 #include "vehicle/vpart_position.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_comestible.h"
+#include "itype_slots/islot_seed.h"
 
 #include <algorithm>
 #include <cassert>

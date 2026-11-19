@@ -20,6 +20,7 @@
 #include "rng.h"
 #include "subbodypart.h"
 #include "type_id.h"
+#include "itype_slots/islot_armor.h"
 
 bool item::is_ablative() const
 {

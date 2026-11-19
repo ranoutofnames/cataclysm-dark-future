@@ -3,6 +3,7 @@
 #include "iexamine.h"
 #include "item.h"
 #include "itype.h"
+#include "itype_slots/islot_seed.h"
 
 auto get_cultivated_harvest(const item& seed, const cultivated_harvest_options& options)
     -> std::vector<detached_ptr<item>> {

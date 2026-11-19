@@ -43,6 +43,7 @@
 #include "json.h"
 #include "sounds.h"
 #include "type_id.h"
+#include "itype_slots/all_slots.h"
 
 class player;
 #include "material.h"

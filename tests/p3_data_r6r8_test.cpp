@@ -10,6 +10,7 @@
 #include "pocket_type.h"
 #include "type_id.h"
 #include "units.h"
+#include "itype_slots/islot_mod.h"
 
 #include <fstream>
 #include <optional>

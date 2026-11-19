@@ -72,6 +72,9 @@
 #include "type_id.h"
 #include "units_utility.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_pet_armor.h"
+#include "itype_slots/islot_magazine.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <cctype>

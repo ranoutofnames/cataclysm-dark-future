@@ -118,6 +118,11 @@
 #include "vitamin.h"
 #include "weather/weather.h"
 #include "weather/weather_gen.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_armor.h"
+#include "itype_slots/islot_book.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <algorithm>
 #include <cctype>

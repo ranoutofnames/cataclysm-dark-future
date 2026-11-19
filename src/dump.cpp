@@ -23,6 +23,9 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vitamin.h"
+#include "itype_slots/islot_comestible.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <cmath>

@@ -27,6 +27,9 @@
 #include "state_helpers.h"
 #include "type_id.h"
 #include "units.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_armor.h"
+#include "itype_slots/islot_magazine.h"
 
 namespace
 {

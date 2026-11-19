@@ -33,6 +33,7 @@
 #include "ui.h"
 #include "units.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <climits>
 #include <map>

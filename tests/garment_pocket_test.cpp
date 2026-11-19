@@ -7,6 +7,7 @@
 #include "itype.h"
 #include "pocket_data.h"
 #include "units.h"
+#include "itype_slots/islot_armor.h"
 
 #include <algorithm>
 #include <vector>

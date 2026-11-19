@@ -124,6 +124,7 @@
 #include "vehicle/vpart_position.h"
 #include "weather/weather.h"
 #include "world_type.h"
+#include "itype_slots/all_slots.h"
 
 static const activity_id ACT_ATM( "ACT_ATM" );
 static const activity_id ACT_CLEAR_RUBBLE( "ACT_CLEAR_RUBBLE" );

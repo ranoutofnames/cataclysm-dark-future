@@ -27,6 +27,10 @@
 #include "options.h"
 #include "pocket_type.h"
 #include "ret_val.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_container.h"
+#include "itype_slots/islot_mod.h"
+#include "itype_slots/islot_ammo.h"
 
 namespace
 {

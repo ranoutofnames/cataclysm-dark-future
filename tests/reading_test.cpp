@@ -25,6 +25,7 @@
 #include "value_ptr.h"
 #include "vehicle/vehicle.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_book.h"
 
 #include <algorithm>
 #include <memory>

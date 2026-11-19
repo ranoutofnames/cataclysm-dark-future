@@ -11,6 +11,7 @@
 #include "state_helpers.h"
 #include "type_id.h"
 #include "uistate.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <algorithm>
 #include <sstream>

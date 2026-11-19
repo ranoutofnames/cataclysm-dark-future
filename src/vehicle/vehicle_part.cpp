@@ -23,6 +23,7 @@
 #include "vpart_range.h"
 #include "weather/weather.h"
 #include "wheel_dimensions.h"
+#include "itype_slots/islot_wheel.h"
 
 #include <algorithm>
 #include <cassert>

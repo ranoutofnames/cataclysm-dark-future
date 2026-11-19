@@ -10,6 +10,7 @@
 #include "translations.h"
 #include "string_formatter.h"
 #include "vehicle/vehicle.h"
+#include "itype_slots/islot_ammo.h"
 
 namespace ranged_text
 {

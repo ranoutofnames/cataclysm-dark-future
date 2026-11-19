@@ -13,6 +13,7 @@
 #include "units_temperature.h"
 #include "value_ptr.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <memory>
 #include <string>

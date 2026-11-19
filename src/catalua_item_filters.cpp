@@ -15,6 +15,7 @@
 #include "itype.h"
 #include "profile.h"
 #include "type_id.h"
+#include "itype_slots/islot_tool.h"
 
 using LuaValue = sol::basic_object<sol::basic_reference<>>;
 

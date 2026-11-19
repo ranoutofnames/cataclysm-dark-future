@@ -47,6 +47,9 @@
 #include "type_id.h"
 #include "units.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_container.h"
+#include "itype_slots/islot_mod.h"
+#include "itype_slots/islot_gunmod.h"
 
 static const item_category_id item_category_container( "container" );
 

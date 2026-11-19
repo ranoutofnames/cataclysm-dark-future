@@ -10,6 +10,7 @@
 #include "state_helpers.h"
 #include "type_id.h"
 #include "units.h"
+#include "itype_slots/islot_bionic.h"
 
 #include <climits>
 #include <list>

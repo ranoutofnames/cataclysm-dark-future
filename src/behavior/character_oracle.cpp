@@ -9,6 +9,7 @@
 #include "make_static.h"
 #include "player.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <array>
 #include <list>

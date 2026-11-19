@@ -19,6 +19,7 @@
 #include "state_helpers.h"
 #include "type_id.h"
 #include "units.h"
+#include "itype_slots/islot_gun.h"
 
 #include <optional>
 #include <string>

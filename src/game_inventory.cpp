@@ -60,6 +60,11 @@
 #include "units_utility.h"
 #include "uistate.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_comestible.h"
+#include "itype_slots/islot_container.h"
+#include "itype_slots/islot_book.h"
+#include "itype_slots/islot_ammo.h"
+#include "itype_slots/islot_bionic.h"
 
 #include <algorithm>
 #include <bitset>

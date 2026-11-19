@@ -18,6 +18,7 @@
 #include "ret_val.h"
 #include "state_helpers.h"
 #include "units.h"
+#include "itype_slots/islot_gun.h"
 
 #include <sstream>
 #include <string>

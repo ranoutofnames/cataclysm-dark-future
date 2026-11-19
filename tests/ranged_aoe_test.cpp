@@ -16,6 +16,7 @@
 #include "shape_impl.h"
 #include "skill.h"
 #include "state_helpers.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <array>

@@ -20,6 +20,7 @@
 #include "pocket_type.h"
 #include "ret_val.h"
 #include "type_id.h"
+#include "itype_slots/islot_mod.h"
 
 
 // In JSON, "battery" is both an "ammunition_type" (ammo_types.json) and an "AMMO" (ammo.json)

@@ -53,6 +53,7 @@
 #include "vehicle/vpart_range.h"
 #include "weather/weather.h"
 #include "world.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <algorithm>
 #include <array>

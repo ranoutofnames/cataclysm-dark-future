@@ -14,6 +14,7 @@
 #include "ranged_text.h"
 #include "type_id.h"
 #include "vehicle/vehicle.h"
+#include "itype_slots/islot_gun.h"
 
 namespace {
 

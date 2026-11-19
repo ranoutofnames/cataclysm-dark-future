@@ -41,6 +41,7 @@
 #include "units.h"
 #include "value_ptr.h"
 #include "weighted_list.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <algorithm>
 #include <array>

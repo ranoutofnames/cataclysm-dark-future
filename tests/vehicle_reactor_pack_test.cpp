@@ -29,6 +29,8 @@
 #include "units.h"
 #include "vehicle/veh_type.h"
 #include "vehicle/vehicle.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <algorithm>
 #include <map>

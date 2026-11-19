@@ -17,6 +17,7 @@
 #include "units_temperature.h"
 #include "vehicle/vehicle.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_container.h"
 
 #include <memory>
 #include <ranges>

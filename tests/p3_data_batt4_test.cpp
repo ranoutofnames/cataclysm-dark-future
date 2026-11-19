@@ -14,6 +14,8 @@
 #include "pocket_data.h"
 #include "player_helpers.h"
 #include "type_id.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <filesystem>
 #include <fstream>

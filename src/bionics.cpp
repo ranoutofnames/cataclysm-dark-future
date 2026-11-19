@@ -82,6 +82,8 @@
 #include "vehicle/vpart_position.h"
 #include "weather/weather.h"
 #include "weather/weather_gen.h"
+#include "itype_slots/islot_fuel.h"
+#include "itype_slots/islot_bionic.h"
 
 #include <algorithm> //std::min
 #include <array>

@@ -3,6 +3,7 @@
 #include "json.h"
 #include "pocket_data.h"
 #include "type_id.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <fstream>
 #include <iostream>

@@ -17,6 +17,7 @@
 #include "state_helpers.h"
 #include "type_id.h"
 #include "vehicle/vehicle.h"
+#include "itype_slots/islot_gunmod.h"
 
 #include <algorithm>
 #include <functional>

@@ -21,6 +21,7 @@
 #include "player_helpers.h"
 #include "state_helpers.h"
 #include "subbodypart.h"
+#include "itype_slots/islot_armor.h"
 
 // TORSO2: the CDF items that DDA places on torso_hanging_back, torso_hanging_front, torso_waist or
 // torso_neck name those locations with DDA's shape (owner ruling: location set, coverage, encumbrance

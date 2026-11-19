@@ -55,6 +55,7 @@
 #include "vpart_position.h"
 #include "vpart_range.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <array>

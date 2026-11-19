@@ -28,6 +28,7 @@
 #include "vehicle_selector.h"
 #include "vpart_position.h"
 #include "vpart_range.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <memory>

@@ -22,6 +22,10 @@
 #include "string_formatter.h"
 #include "string_utils.h"
 #include "translations.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_mod.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_gunmod.h"
 
 #include <algorithm>
 #include <cmath>

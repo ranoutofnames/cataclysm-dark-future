@@ -46,6 +46,8 @@
 #include "units.h"
 #include "vitamin.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <algorithm>
 #include <array>

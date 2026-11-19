@@ -25,6 +25,7 @@
 #include "type_id.h"
 #include "vehicle/veh_type.h"
 #include "vehicle/vehicle.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <memory>
 #include <optional>

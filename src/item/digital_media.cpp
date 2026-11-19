@@ -22,6 +22,8 @@
 #include "text_snippets.h"
 #include "translations.h"
 #include "type_id.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_book.h"
 
 #include <algorithm>
 #include <array>

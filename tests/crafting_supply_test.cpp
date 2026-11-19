@@ -14,6 +14,7 @@
 #include "state_helpers.h"
 #include "temp_crafting_inventory.h"
 #include "type_id.h"
+#include "itype_slots/islot_tool.h"
 
 #include <string>
 #include <vector>

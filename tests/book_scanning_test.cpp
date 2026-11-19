@@ -22,6 +22,7 @@
 #include "skill.h"
 #include "state_helpers.h"
 #include "text_snippets.h"
+#include "itype_slots/islot_book.h"
 
 #include <sstream>
 

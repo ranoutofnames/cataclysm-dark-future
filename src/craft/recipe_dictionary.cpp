@@ -22,6 +22,8 @@
 #include "units.h"
 #include "utils/algo.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_armor.h"
+#include "itype_slots/islot_book.h"
 
 #include <algorithm>
 #include <iterator>

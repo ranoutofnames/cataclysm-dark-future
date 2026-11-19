@@ -17,6 +17,10 @@
 #include "itype.h"
 #include "json.h"
 #include "type_id.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_comestible.h"
+#include "itype_slots/islot_book.h"
+#include "itype_slots/islot_gun.h"
 
 namespace {
 

@@ -14,7 +14,7 @@
 #include "test_statistics.h"
 #include "type_id.h"
 #include "value_ptr.h"
-
+#include "itype_slots/islot_comestible.h"
 #include <algorithm>
 #include <cstdio>
 #include <utility>

@@ -4,6 +4,7 @@
 #include "itype.h"
 #include "json.h"
 #include "relic.h"
+#include "itype_slots/all_slots.h"
 
 #include <set>
 #include <sstream>

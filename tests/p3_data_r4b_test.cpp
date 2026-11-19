@@ -4,6 +4,8 @@
 #include "itype.h"
 #include "json.h"
 #include "pocket_data.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <filesystem>
 #include <fstream>

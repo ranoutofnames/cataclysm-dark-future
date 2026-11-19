@@ -35,6 +35,7 @@
 #include "string_id.h"
 #include "translations.h"
 #include "type_id.h"
+#include "itype_slots/islot_book.h"
 
 #include <algorithm>
 #include <array>

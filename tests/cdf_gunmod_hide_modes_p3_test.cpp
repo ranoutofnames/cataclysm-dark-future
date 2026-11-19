@@ -17,6 +17,7 @@
 #include "map_helpers.h"
 #include "pocket_type.h"
 #include "type_id.h"
+#include "itype_slots/islot_gunmod.h"
 
 static const gun_mode_id gun_mode_BURST( "BURST" );
 static const gun_mode_id gun_mode_DEFAULT( "DEFAULT" );

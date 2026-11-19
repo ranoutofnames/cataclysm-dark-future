@@ -13,6 +13,7 @@
 #include "relic.h"
 #include "skill.h"
 #include "options.h"
+#include "itype_slots/all_slots.h"
 
 struct tripoint;
 

@@ -31,6 +31,12 @@
 // CDF: LINKUP1a; optional_vpart_position::mount() in item::link_to().
 #include "vehicle/vpart_position.h"
 #include "gun_mode.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_mod.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_gunmod.h"
+#include "itype_slots/islot_magazine.h"
+#include "itype_slots/islot_ammo.h"
 
 // CDF: LINKUP1b; the battery ammo item used when a linked battery is charged or discharged.
 static const itype_id itype_battery( "battery" );

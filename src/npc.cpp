@@ -76,6 +76,9 @@
 #include "vehicle/vpart_position.h"
 #include "vehicle/vpart_range.h"
 #include "visitable.h"
+#include "itype_slots/islot_comestible.h"
+#include "itype_slots/islot_book.h"
+#include "itype_slots/islot_gun.h"
 
 #include <algorithm>
 #include <cassert>

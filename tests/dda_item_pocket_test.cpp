@@ -43,6 +43,7 @@
 #include "units.h"
 #include "value_ptr.h"
 #include "weather/weather.h"
+#include "itype_slots/islot_comestible.h"
 
 static const ammotype ammo_45( "45" );
 

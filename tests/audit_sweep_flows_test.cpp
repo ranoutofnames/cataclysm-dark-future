@@ -36,6 +36,7 @@
 #include "units_volume.h"
 
 #include "audit_support.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <cstdlib>

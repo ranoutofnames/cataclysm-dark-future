@@ -17,6 +17,7 @@
 #include "player_helpers.h"
 #include "state_helpers.h"
 #include "subbodypart.h"
+#include "itype_slots/islot_armor.h"
 
 // TORSO2b: the 22 CDF coats, cloaks and aprons (plus 3 copy-from children) cover the legs through
 // leg_draped_l and leg_draped_r (DDA's portions: location sets, coverage and encumbrance; CDF

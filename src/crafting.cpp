@@ -66,6 +66,7 @@
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vehicle_selector.h"
 #include "vehicle/vpart_position.h"
+#include "itype_slots/islot_comestible.h"
 
 #include <algorithm>
 #include <cassert>

@@ -34,6 +34,9 @@
 #include "vehicle/vpart_position.h"
 #include "action.h"
 #include "item.h"
+#include "itype_slots/islot_mod.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_gunmod.h"
 
 static const trait_id trait_CHLOROMORPH( "CHLOROMORPH" );
 static const trait_id trait_DEBUG_HS( "DEBUG_HS" );

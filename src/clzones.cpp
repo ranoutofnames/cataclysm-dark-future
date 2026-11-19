@@ -35,6 +35,9 @@
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
 #include "world.h"
+#include "itype_slots/islot_comestible.h"
+#include "itype_slots/islot_container.h"
+#include "itype_slots/islot_seed.h"
 
 #include <algorithm>
 #include <array>

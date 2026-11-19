@@ -26,6 +26,7 @@
 #include "vehicle/vehicle.h"
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vehicle_selector.h"
+#include "itype_slots/islot_tool.h"
 
 #include <algorithm>
 #include <climits>

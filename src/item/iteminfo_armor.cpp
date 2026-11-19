@@ -14,6 +14,7 @@
 #include "subbodypart.h"
 #include "units_utility.h"
 #include "utils/algo.h"
+#include "itype_slots/islot_armor.h"
 
 #include <algorithm>
 #include <numeric>

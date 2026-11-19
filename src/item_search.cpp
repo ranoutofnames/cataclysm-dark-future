@@ -13,6 +13,7 @@
 #include "string_id.h"
 #include "type_id.h"
 #include "string_utils.h"
+#include "itype_slots/islot_book.h"
 
 std::pair<std::string, std::string> get_both( const std::string &a );
 

@@ -35,6 +35,7 @@
 #include "translations.h"
 #include "type_id.h"
 #include "vitamin.h"
+#include "itype_slots/all_slots.h"
 
 #include <ranges>
 #include <vector>

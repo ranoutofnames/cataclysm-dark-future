@@ -10,6 +10,7 @@
 #include "item_pocket.h"
 #include "itype.h"
 #include "player.h"
+#include "itype_slots/islot_magazine.h"
 
 #include <algorithm>
 

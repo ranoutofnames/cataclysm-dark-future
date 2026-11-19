@@ -27,6 +27,7 @@
 #include "vehicle/vehicle_part.h"
 #include "vehicle/vpart_position.h"
 #include "vehicle/vpart_range.h"
+#include "itype_slots/islot_tool.h"
 
 #include <fstream>
 #include <optional>

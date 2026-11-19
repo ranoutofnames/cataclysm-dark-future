@@ -7,6 +7,7 @@
 #include "pocket_data.h"
 #include "state_helpers.h"
 #include "type_id.h"
+#include "itype_slots/islot_gun.h"
 
 #include <algorithm>
 #include <fstream>

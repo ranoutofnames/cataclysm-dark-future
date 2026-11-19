@@ -32,6 +32,7 @@
 #include "uistate.h"
 #include "units.h"
 #include "units_energy.h"
+#include "itype_slots/islot_bionic.h"
 
 #include <algorithm>
 #include <cstddef>

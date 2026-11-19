@@ -42,6 +42,10 @@
 #include "type_id.h"
 #include "units.h"
 #include "value_ptr.h"
+#include "itype_slots/islot_tool.h"
+#include "itype_slots/islot_mod.h"
+#include "itype_slots/islot_gun.h"
+#include "itype_slots/islot_gunmod.h"
 
 // Cartesian product of 1-3 pockets over the ammotype palette, installed
 // as runtime itypes. Same-ammo tuples are intentional: they exercise

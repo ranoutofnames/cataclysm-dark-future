@@ -21,6 +21,7 @@
 #include "type_id.h"
 #include "uistate.h"
 #include "units.h"
+#include "itype_slots/islot_ammo.h"
 
 #include <algorithm>
 #include <cmath>

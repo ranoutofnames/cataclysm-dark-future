@@ -6,6 +6,7 @@
 #include "itype.h"
 #include "state_helpers.h"
 #include "units.h"
+#include "itype_slots/islot_armor.h"
 
 #include <map>
 #include <set>
