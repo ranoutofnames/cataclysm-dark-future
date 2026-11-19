@@ -9,6 +9,8 @@ of [CleverRaven/Cataclysm-DDA.](https://github.com/CleverRaven/Cataclysm-DDA)
 
 ## Not yet released (Cataclysm: Dark Future)
 
+A fuller list, with commit hashes, is in [the Dark Future P3 changelog](cdf_p3.md).
+
 - MBR vests and Old Guard IOTVs are replaced by DDA's plate carriers. Plates are separate items that go
   into the carrier's plate slots, and old vests convert automatically.
 - Plate carriers and other MOLLE webbing take attachable pouches (`PALS` items) that add their own pockets.

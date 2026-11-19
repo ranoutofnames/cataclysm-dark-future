@@ -1,0 +1,98 @@
+# Dark Future changelog: the P3 pocket and ammo work
+
+A fuller list of what changed in Cataclysm: Dark Future since the Bright Nights base, compiled from the commit
+history. Short commit hashes at the end of each entry point to the change in the git log. For the short
+summary see the [changelog](index.md).
+
+## For players
+
+- Reloading is now a timed reload activity, and ammo that does not fit when you reload is moved to a parent pocket or to the ground instead of being lost. Integral-magazine guns and tools also reload with the right quantity. (714632e3, 24dab9f0, b5a024fd)
+- Reload entry points were reworked: favourite ammo selection, reload messages and reloading your wielded item. Reloading from a container you do not own asks the steal confirmation each time; the one-time answer is not remembered. (0ed7d722)
+- Gun reload cost now uses reload time multiplied by the number of rounds, in DDA's shape with CDF's move numbers. (b6f86498)
+- Battery tools no longer keep direct charges. Tools spawn with their cell loaded and reload through their battery pocket, like a gun. Tool, gas mask and price charge reads, and the vehicle kitchen and autoclave pseudo-tools, now read charge through the pocket and ammo API. `cash_card` keeps direct charges. (f704e808, ed6d1c89, 7f04666e, 75fcec20)
+- EMP blasts drain battery tools through the normal ammo consumption path. (4eed65c1)
+- Energy weapons drain magazine-type battery cells as their energy source. (c7a89110)
+- Tools with firing requirements use up their magazine or pocket when activated, and each magazine or well is tracked separately when a multi-well gun or tool fires. A firing mode whose magazine is empty is blocked. (983ae599, dd10f5c6)
+- Multi-well guns and tools spawn with their wells filled. (4c89057f)
+- Item info lists the compatible guns and magazine types for a gun or tool. (43901d89)
+- Legacy tools count magazines parked in their pockets. (8b14d59d)
+- Crafting that uses a tool's charge can draw from the bionic power pool and from charged tools in containers you can reach. (dbb2e832, 4b804a60)
+- Gunmod removal is refused while a pocket the mod adds still holds items, and it is refused as a whole when other mods depend on the mod being removed. Items in a pocket that a mod takes away are moved to a parent pocket, never destroyed. (7333299c, 7678f62e, 32b98087)
+- Tool item info lists the 14 new DDA tool ammotypes. They are defined but no item uses them yet. (020b8856)
+- Guns with several magazines or integral ammo: firing uses ammo from the selected well and tracks each pocket separately, and fire-mode checks follow the gun's mode. Energy guns use their energy per shot, clamp to what the cell holds, and bill the cell per shot. (960e51b8, 4a492107, 0c479ace, 019ac3b2)
+- Item names of multi-well and integral-magazine guns show per-well and per-pocket ammo counts, with DDA's colour bands for multi-well guns. Single-well names keep the CDF colours. (2a36487b, 96ec267f)
+- Gun jams use DDA's damage-based model, with a per-gun jam multiplier. (35e43c98)
+- Reloading: the reload is a timed activity, and a reload picks a DDA-style item picker when nothing is wielded. Speedloaders load into an integral magazine pocket. The default-ammo key opens the new ammo screen (keyboard only, count keys, multi-select, per-well headers); the normal reload still uses the old menu until legacy guns are converted. (c7bf62a5, d6f4216a, 6f7b20cb, dcab09ec, 31c507db, f8210b59, 5008d132, 5333f6b1, cc23c20f, 9f0bb0a1)
+- Reload targets and reload cost follow DDA: reload target lists use the DDA can-reload rules, and the reload quantity follows DDA's count. (92c22cbe, 6c2edfc3, 74ec9764, 789d02a7)
+- NPCs reloading from an empty top-level source follow DDA's rule. (f535e513)
+- Unloading: `U` opens the unload selector. Magazines, belts and containers unload through a timed activity. Gun and tool unloads take every magazine and the integral ammo, with the Auto/Manual destination key and the unload screen colouring each well. (b66fd2d0, ba422cd4, 0db4623c, 8eb4b55c, c7de7b62)
+- Tools that take charges: a tool's charge comes from its magazine or pocket. Crafting and tool use bill the magazine or pocket instead of direct charges, and the tool use menu sorts by expected cost per use and remaining uses. (ad2c2842, 00f6ed2e, a5db8251, b8b332da, 9935c0a8, be273125, 4e4ab68a, 108fb540)
+- Item groups fill tools with ammo types through the magazine or pocket. Battery and other charged items spawn with their charge in the pocket, so EOD helmets and similar tools no longer spawn empty. (8d75c73f)
+- Battery cells, vehicle batteries, fuel storage, tank ammo, oxygen tanks, the char purifier and integral tools now have a DDA-style magazine or tool pocket, so they reload like other items. Scuba tanks read their air from the nitrox pocket, and vehicle hacking and fire-weapon actors read and spend pocket fuel or battery. (df8f161c, d1c83c8e, 3c9cd86c, 69185d6a, 2f11b144)
+- Sign writing needs a writing tool with ammo left, and manual noise checks the rounds loaded in a tool. (5dd93406)
+- Item info: plural "Magazines:", per-well capacity, ammunition per pocket, ammo consumed per shot and the tool's compatible magazines are listed. (a538e7bb, 019ac3b2)
+- Gunmods can hide fire modes. If a mode-hiding mod is removed, the gun picks a valid mode. Gunmods marked as not visible when installed are not offered as reload targets. (485415aa, 28d3746a, b66fd2d0)
+- Carried storage: holster pockets count for carried-item lookups, and tool ammo stays hidden from plain lookups in carry, strap and holster pockets. The trade pane, NPC trade gate, side panel, pickup and advanced inventory headers use the carried bar. (422dd863, e6323a88, c92a1ceb)
+- Torso and leg armor: armor gets DDA's torso and leg sub-locations (neck, hanging, waist and draped legs). A second absorb pass applies only where the body part has its own sub-portion, so flat torso armor is not absorbed twice. 22 coats, cloaks and aprons cover the draped legs. (e3f1c102, 8309d605, f86be43b)
+- Eyes and mouth are separate sub-locations, and helmets and masks use DDA's eye and mouth portions. Head portions also follow DDA on converted helmets. (615fba7c, 876cb6e6)
+- New gear: a takedown recurve bow (assembled and folded) and a multi-function quiver, which cannot be mounted on a turret. A PAPR blower pair, strap and half and military masks. An EOD kit of helmet, trousers, spawn groups and a profession host. (1d827e8a, 4eab401c, 1fde57d7)
+- Plutonium packs power the dimensional anchor, the holo cloak and the RM13 armour. The pack unloads as a whole cell. (04622048)
+- Reloading now goes through DDA's ammo selector everywhere: turret reloads, the aim screen, ammo belts, the favourite-ammo key and the default-ammo key. The old BN reload menu is removed, and the failure messages (missing magazine, nothing to reload, never mind) are kept. The owner's list still says the old menu stays until 7-R2. (e6a8a249, 35bce7cb)
+- The aim screen shows DDA-style ammo lines for the gun you hold, and a manual multi-magazine turret gets its own rows. The vehicle interact screen shows multi-magazine display rows too. (fab9e7c9, 0465c743, 20a4c288)
+- Leaving the aim screen with a bow or other RAS weapon still loaded now unloads it by default, as in DDA. A key toggles this, and you can keep the weapon loaded instead. (04e7b043)
+- The ammo selector lists ammo and liquids nested in carried containers, in containers on the map and in vehicle cargo. (43ff3f1f, af885827)
+- Putting a magazine into a gun that has no pocket for it no longer loses the magazine; insert follows DDA's logic. (41c06f3b)
+- Guns with integral magazines, gunmods, ranged weapons and obsolete guns take their ammo through a DDA magazine pocket, so their reload uses the normal flow. Stripper clips now fit the legacy magazine wells of six clip rifles, so a loose-magazine lift no longer needs a magazine well. (e47c7556, 94f52fa6)
+- A loaded integral-magazine gun's round can explode in fire; the check now reads the integral magazine pocket. (42e2e03e)
+- Guns and tools with explicit pocket data get a MOD pocket, so mods install as in DDA. (c0aa2825)
+- Flamethrowers (simple and crude) take gasoline, their CDF ammo, instead of DDA's flammable liquid. (909a10e0)
+- Cash cards hold money in a magazine pocket and stack the way DDA does. (8d172a40)
+- Batteries: 72 battery tools now use DDA battery wells, and 12 battery mod tools get explicit wells. Eleven tools (camera, cell phones, vibrator, lighters, lanterns, reading lights, smart lamp) keep their integral battery at the DDA capacity with CDF cell sizes, and the phone spawn group's cell_phone charge count drops from 150 to 17. (9a5534c9, d185c2bc, 5746faa5)
+- Several tools and filter/cartridge items moved onto DDA magazine wells, and 5 obsolete guns left legacy magazines for pocket wells. (c689b5e0, 02f7d1a9)
+- The mess kit, CRT mess kit and voltmeter lose their battery wells. The mess kit heats food for free, as in DDA. (4d15b378)
+- The hotplate, soldering iron and welder convert to DDA link-up and lose their battery wells. A spawned one has no usable charge until it is powered. (01e7256b, 62ee2fb3)
+- The BN cable system is removed. Vehicles and tools now connect through DDA link-up cables with a CABLE pocket. Two vehicles can link and share battery level, with cable length, extension, tow and a disconnect menu. Bionic remote fuel uses the link state. (7f8f182d, 840e1e91, 981a0be2)
+- 45 DDA link-up tools can take a cable as a second power source. A vehicle or appliance can again be cabled to an electric grid connector. (9e9746b9, 3c563af0)
+- The autoclave and hydraulic press use the appliance link-up and no longer have a legacy well. (b15f9ab1)
+- The vehicle reactor takes a removable plutonium pack, and refill, removal and the UI all go through the pack. (cc4d9bae)
+- rm13_armor gets a plutonium pack well and an rm13 battery well, and relic recharging can move charge between items by a new transfer type. The nomad helmet and the Hub 01 robofac anchor and head rig get pocket wells. (c302e9e7, 807be483)
+- The PAPR kit: the strap weight limit follows the loaded blower (4 kg), and the kit's blower spawns loaded with a battery cell and a filter. (4bfb27c7)
+- Hands get wrist, palm, back and finger sub-locations (gloves, watches, rings, bracelets). Feet get arch, ankle, toe, heel and sole sub-locations, and there is a riot foot part and DDA-only foot items. Aggregate coverage stays CDF for now, and the coverage numbers may be re-derived later. (0f3ccd15, bbc9aa0e, 95501b58)
+- The wolfsuit (2 x 500 ml) and the sparkledogsuit get explicit DDA storage layouts, and the STOR2 garments and STOR7 exosuit storage use explicit pockets. (74451f99, 43bfd81b)
+- Starting kits wear their items with DDA armor layers. An item that fails to wear is now carried, not destroyed. The BN footwear block is removed. (17f84009)
+- The box_large container holds 7 L (was 5 L), so the student profession's books fit. Every item group now spawns for every seed. The owner can veto the capacity change. (08ed04b1)
+- The 12 retired obsoletion items are deleted. The lard, peanut butter, mask, rifle, 40x46mm and surveillance pistol obsoletion ids move to DDA targets, and their alias recipes are removed. (a467d630, 1fd54dc3)
+- The wielded weapon line shows (cur/max) and (empty). (0f4d3c3b)
+- New player help pages cover reload and unload storage (with the carried bar, pockets and plutonium packs) and the zone manager. (1cbadbc8, d25a3263, a620c05f)
+
+## For modders
+
+- Item JSON gains `firing_requirements`, `consumption_per_use`, a `tool_ammo` key and `pocket_mods`, with loaders for each. Definition checks now validate firing requirements. (70903934, 5de179d8, d79df9de, 262100ac)
+- Multimag data structs and loaders are in place (DDA port). (e8f905c1)
+- Battery magazines carry `BATTERY_*` size flags, and the new flags (`BATTERY_*`, `GASFILTER_*`, `REBREATHER_CART`, `SPEEDLOADER_CLIP`) are defined. Each new flag has a required context field. (cdd0dee4, 61464fa5, 473fd6cd)
+- Item definitions gain `ammo_scale`, which `ammo_sufficient` applies. (e4a0ba2d, f1229d54)
+- Gunmods gain energy drain fields, and `get_gun_energy_drain` reads them. (6c3dfb6a)
+- A `NEED_FULL_MAGAZINE` component filter is split out from the `FULL_MAGAZINE` output fill, so recipes that need a full magazine check the component only. (6aac439d)
+- `consume_charges` refuses multimag tools with a hard guard. (ddf2ad17)
+- Lua gains an `ammo_remaining(idx)` overload and a `magazines()` binding on items. (18c9b3f1)
+- Pocket belt minimum length is set for belt pockets. (8b14d59d)
+- Integral-magazine synthesis for tools exists but is behind an off flag, so it has no effect by default. (779649ff)
+- New itype field `legacy_charges_per_use_factor`; it must be at least 1, and the loader checks this. (19c0113f, 2948f899)
+- Magazine and tool pockets are derived from explicit pockets when the legacy keys are absent. Base data gets DDA magazine pockets on 206 magazine ids and tool pockets on 63 integral tools, and battery, fuel and tank items get magazine pockets too. (12235543, df8f161c, d1c83c8e, 3c9cd86c, 69185d6a)
+- New gunmod field `hide_modes`, which hides firing modes. (485415aa)
+- Gun jam data: a `gun_jam_mult` field on every gun, and `mag_jam_mult` on the magazine. (35e43c98)
+- Lua: `item:uses_firing_requirements` and `islot_magazine.mag_jam_mult` are read-only bindings. `item pocket_by_id` returns a `lua_item_pocket` handle. The bundled ebook mod reads and writes battery charge through `ammo_remaining`. (2e356496, 26807710, aa0515cc)
+- Item creation docs cover the multimag, jam, energy and firing-requirement fields and `legacy_charges_per_use_factor`. (2948f899)
+- `modify_gunmods` actor and default gun use are ported. Entries are in `item_actions.json` and the item factory. (aa7e0824)
+- Armor JSON: `NO_TURRET` flag on the quiver and bow; `PAPR_BLOWER` flag, `papr_blower` and `papr_mask` iuse actions on the PAPR items. (1d827e8a, 4eab401c)
+- Armor sub-location portions are in the JSON. A part with its own sub-portion gets the second absorb pass. (e3f1c102, 8309d605, f86be43b, 615fba7c, 876cb6e6)
+- C++ API: `charges_of` takes an `in_tools` parameter and the multimag per-tool helper is shared. (00f6ed2e, a5db8251, b8b332da)
+- Pocket data: eight CDF tools and weld items use DDA wells, and 22 filter/cartridge wells, game_watch and the 5 obsolete guns use pocket wells instead of legacy magazines. The takedown bow's reload noise is written as "79 dB", the same effective value. (c689b5e0, 02f7d1a9, 0b0384cf)
+- Mods ported to DDA pocket shape: MagicalNights and exotic_ammo (d8174c38); Aftershock, Arcana_BN, Civilians, CrazyCataclysm, DinoMod and flowerpots_plus (e1d3f1e2); CRT_EXPANSION guns, armor and tool armor, with molle children moved to armor portions (ac4e9363).
+- Armor portions: sub-location keys and `specifically_covers` ids follow DDA. The docs list 54 sub-location ids and 19 new cdf/p3 flags. (bbc9aa0e, 0f3ccd15, 95501b58, 4d0bb8fc, 11ce7153)
+- A new relic `recharge_scheme` type, `transfer`, moves charge from one ammo to another with a cost (c302e9e7).
+- Loader: an ITEM loader shim with subtypes lets DDA item JSON load through the existing slot loaders (576e5f0e). A mod dependency on `dda` is aliased to `bn` at load time (4cb1cfb8). DDA-only types and flags are registered as inert and logged once, unknown keys get hints, and the copy-from report names the parent, child and mod (617e1bd3, 2e6f09e7, 4d3e291a). A missing migration target from a non-core source is now skipped softly (59eb66a5).
+- `magazine_integral` takes the DDA body, `cdf_legacy_direct_charges` is removed, and a "needs pocket definitions" message is shown (95f9dcd0).
+- Retired and migrated obsoletion ids are listed in the item-migration notes (a467d630, 1fd54dc3).
+- New report-only tool `tools/cdf_dda_probe.py` checks a DDA mod for unknown types, ITEM counts, unread keys, undefined flags and missing dependencies (ba592f01).
+- Docs: new Lua guide `pockets_and_ammo.md` and a cookbook link, a new contributor page on pockets and ammo, `porting_bn_dda_mods.md`, a gas filter example in `item_migration.md`, and updates to `json_flags.md`, `sub_body_parts.md` and `item_creation.md` (21778cab, 09b27ed5, cf872677, 4d0bb8fc, 11ce7153, a7aa7cd8).
