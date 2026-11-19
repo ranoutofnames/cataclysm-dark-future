@@ -87,7 +87,9 @@ TEST_CASE( "npc_weapon_choice_looks_inside_containers", "[npc][p7]" )
     REQUIRE( outer.has_item( bat ) );
 
     REQUIRE( wear_it( who, std::move( outer_holder ) ) );
-    who.clear_npc_ai_info_cache( npc_ai_info::range );
+    // clear_npc_ai_info_cache stores -1, which is also the distance of a target-less NPC, so the
+    // scan would be skipped as "distance unchanged"; start from a stale distance instead
+    who.set_npc_ai_info_cache( npc_ai_info::range, -2 );
     REQUIRE_FALSE( who.is_armed() );
 
     REQUIRE( who.wield_better_weapon() );

@@ -1,6 +1,7 @@
 #include "avatar.h"
 #include "calendar.h"
 #include "catch/catch.hpp"
+#include "fluid_grid.h"
 #include "inventory_ui.h"
 #include "item.h"
 #include "item_category.h"
@@ -2886,6 +2887,8 @@ TEST_CASE("pickup menu refuses what cannot be carried", "[inventory][ui][p3][pic
     // DDA game_inventory.cpp:604-608 denies by volume first and by weight (four times the carrying
     // capacity, the unsafe test) second. A low strength makes the weight test reachable; the golf
     // bag (40 L, 200 kg pocket) is the container that makes the volume test pass.
+    // CDF: clear_character(u, true) gives the avatar DEBUG_STORAGE, whose capacity is unlimited
+    u.unset_mutation(trait_id("DEBUG_STORAGE"));
     u.str_max = 1;
     REQUIRE(u.weight_capacity() < 20_kilogram);
     u.wear_item(item::spawn(itype_id("golf_bag"), calendar::turn), false);
@@ -2931,6 +2934,8 @@ TEST_CASE("pickup menu hides ammo-belt links and liquids on liquid container til
 
     SECTION("liquid on a LIQUIDCONT tile is hidden, on a plain tile it is listed") {
         const tripoint_bub_ms tub(60, 60, 0);
+        // CDF: furn_set on a fluid grid furniture (f_bathtub) needs the fluid grid bound to the map
+        fluid_grid::load(get_map());
         get_map().furn_set(tub, furn_str_id("f_bathtub"));
         get_map().add_item(tub, item::spawn(itype_id("water_clean"), calendar::turn));
         REQUIRE_FALSE(get_map().i_at(tub).empty());
@@ -2949,13 +2954,21 @@ TEST_CASE("pickup menu hides ammo-belt links and liquids on liquid container til
 // P3-UI9 (U15/F52), DDA inventory_ui.cpp:4894-4912: liquid is only dropped after one confirmation.
 TEST_CASE("dropping liquid asks for confirmation first", "[inventory][ui][p3][pickup]") {
     clear_all_state();
-    detached_ptr<item> rock = item::spawn(itype_id("test_rock"), calendar::turn);
-    detached_ptr<item> water = item::spawn(itype_id("water_clean"), calendar::turn);
-    detached_ptr<item> water_again = item::spawn(itype_id("water_clean"), calendar::turn);
-    REQUIRE(water->made_of(phase_id::LIQUID));
-    REQUIRE_FALSE(water->is_frozen_liquid());
-    const drop_locations drops{ drop_location(*rock, 1), drop_location(*water, 1),
-                                drop_location(*water_again, 1) };
+    // CDF: a drop_location holds a safe_reference, which only resolves for an item that is in a
+    // location, so the items go on three map tiles (a detached item resolves to null)
+    const tripoint_bub_ms rock_pos(60, 60, 0);
+    const tripoint_bub_ms water_pos(61, 60, 0);
+    const tripoint_bub_ms water_again_pos(62, 60, 0);
+    get_map().add_item(rock_pos, item::spawn(itype_id("test_rock"), calendar::turn));
+    get_map().add_item(water_pos, item::spawn(itype_id("water_clean"), calendar::turn));
+    get_map().add_item(water_again_pos, item::spawn(itype_id("water_clean"), calendar::turn));
+    item& rock = get_map().i_at(rock_pos).only_item();
+    item& water = get_map().i_at(water_pos).only_item();
+    item& water_again = get_map().i_at(water_again_pos).only_item();
+    REQUIRE(water.made_of(phase_id::LIQUID));
+    REQUIRE_FALSE(water.is_frozen_liquid());
+    const drop_locations drops{ drop_location(rock, 1), drop_location(water, 1),
+                                drop_location(water_again, 1) };
 
     int asks = 0;
     std::string asked;
@@ -2975,7 +2988,7 @@ TEST_CASE("dropping liquid asks for confirmation first", "[inventory][ui][p3][pi
         CHECK(asks == 1);
         CHECK(asked.find("dropping liquid from its container") != std::string::npos);
         REQUIRE(kept.size() == 1);
-        CHECK(kept.front().loc.get() == rock.get());
+        CHECK(kept.front().loc.get() == &rock);
     }
 
     SECTION("confirming the warning keeps every drop") {
