@@ -7,7 +7,9 @@
 #include "itype.h"
 #include "options_helpers.h"
 #include "player_helpers.h"
+#include "pocket_type.h"
 #include "recipe.h"
+#include "ret_val.h"
 #include "state_helpers.h"
 #include "type_id.h"
 #include "units_temperature.h"
@@ -1167,5 +1169,52 @@ TEST_CASE("show available recipes with item as an ingredient", "[item][iteminfo]
                 }
             }
         }
+    }
+}
+
+TEST_CASE("e-file memory and e-device information", "[item][iteminfo][efile]") {
+    clear_all_state();
+
+    SECTION("a file shows its size, an item without memory shows nothing") {
+        iteminfo_query q = q_vec({iteminfo_parts::BASE_EMEMORY});
+        item* medium = item::spawn_temporary("test_efile_medium");
+        test_info_contains(*medium, q, "Memory: 24.0 GB");
+        item* rock = item::spawn_temporary("test_rock");
+        CHECK(rock->info_string(q, 1).find("Memory:") == std::string::npos);
+        // a book takes 20 KB per page (1587 g / 5 g)
+        item* book = item::spawn_temporary("test_book");
+        test_info_contains(*book, q, "Memory: 6.3 MB");
+    }
+
+    SECTION("an e-device lists its electronic port type") {
+        iteminfo_query q = q_vec({iteminfo_parts::DESCRIPTION_BOOK_RECIPES});
+        item* laptop = item::spawn_temporary("test_laptop");
+        test_info_contains(*laptop, q, "* This device has electronic port type: ");
+        test_info_contains(*laptop, q, "laptop");
+        item* reader = item::spawn_temporary("test_ebook_reader");
+        test_info_contains(*reader, q, "* This device does not support transfer to e-port types: ");
+        test_info_contains(*reader, q, "USB-A");
+        item* rock = item::spawn_temporary("test_rock");
+        CHECK(rock->info_string(q, 1).find("electronic port type") == std::string::npos);
+    }
+
+    SECTION("a browsed e-device lists the recipes of its stored e-books") {
+        iteminfo_query q = q_vec({iteminfo_parts::DESCRIPTION_BOOK_RECIPES});
+        detached_ptr<item> laptop = item::spawn("test_laptop");
+        detached_ptr<item> book = item::spawn("textbook_tailor");
+        REQUIRE(laptop->put_in(*book, pocket_type::E_FILE_STORAGE).success());
+        laptop->set_browsed(false);
+        CHECK(laptop->info_string(q, 1).find("stored e-book") == std::string::npos);
+        laptop->set_browsed(true);
+        test_info_contains(*laptop, q, "unique crafting recipe");
+        test_info_contains(*laptop, q, "from 1 stored e-book:");
+    }
+
+    SECTION("a device with copied recipes lists them") {
+        // DDA item_info.cpp:2921-2990 is part of the tool info
+        iteminfo_query q = q_vec({iteminfo_parts::DESCRIPTION_BOOK_RECIPES});
+        detached_ptr<item> laptop = item::spawn("test_laptop");
+        laptop->set_saved_recipes({recipe_id("balclava")});
+        test_info_contains(*laptop, q, "Contains 1 copied crafting recipe:");
     }
 }

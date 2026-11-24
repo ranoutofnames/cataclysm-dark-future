@@ -37,7 +37,7 @@
       [ "eink_tablet_pc", 8 ],
       [ "laptop", 20 ],
       [ "smart_lamp", 5 ],
-      { "group": "digital_storage_media", "prob": 25 },
+      { "group": "efile_storage_media", "prob": 25 },
       [ "camera", 5 ],
       [ "camera_pro", 2 ],
       [ "cable", 30 ],
@@ -45,10 +45,10 @@
       [ "solder_wire", 70 ],
       [ "hotplate", 10 ],
       [ "UPS_off", 5 ],
-      [ "software_useless", 10 ],
+      { "item": "usb_drive", "prob": 10, "contents-item": "software_useless" },
       [ "software_utility", 10 ],
-      [ "software_math", 5 ],
-      [ "software_medical", 5 ],
+      { "item": "usb_drive", "prob": 5, "contents-item": "software_math" },
+      { "item": "usb_drive", "prob": 5, "contents-item": "software_medical" },
       [ "vac_sealer", 10 ],
       [ "radio_car_box", 3 ],
       [ "radiocontrol", 25 ],
@@ -97,7 +97,7 @@
       [ "scouter", 5 ],
       [ "transponder", 5 ],
       [ "tazer", 3 ],
-      { "group": "digital_storage_media", "prob": 45 },
+      { "group": "efile_storage_media", "prob": 45 },
       [ "manual_electronics", 20 ],
       [ "recipe_augs", 4 ],
       [ "cable", 60 ],
@@ -128,10 +128,34 @@
     "items": [
       { "item": "cell_phone", "prob": 3, "charges-min": 0, "charges-max": 15 },
       { "item": "cell_phone", "prob": 1, "charges-min": 17, "charges-max": 17 },
-      { "item": "smart_phone", "prob": 40, "charges-min": 0, "charges-max": 15 },
-      { "item": "smart_phone", "prob": 15, "charges-min": 130, "charges-max": 250 },
-      { "item": "wrist_comp_budget", "prob": 10, "charges-min": 0, "charges-max": 15 },
-      { "item": "wrist_comp_budget", "prob": 5, "charges-min": 130, "charges-max": 250 }
+      {
+        "item": "smart_phone",
+        "prob": 40,
+        "charges-min": 0,
+        "charges-max": 15,
+        "contents-group": "civilian_smartphone_efiles"
+      },
+      {
+        "item": "smart_phone",
+        "prob": 15,
+        "charges-min": 130,
+        "charges-max": 250,
+        "contents-group": "civilian_smartphone_efiles"
+      },
+      {
+        "item": "wrist_comp_budget",
+        "prob": 10,
+        "charges-min": 0,
+        "charges-max": 15,
+        "contents-group": "civilian_smartphone_efiles"
+      },
+      {
+        "item": "wrist_comp_budget",
+        "prob": 5,
+        "charges-min": 130,
+        "charges-max": 250,
+        "contents-group": "civilian_smartphone_efiles"
+      }
     ]
   },
   {

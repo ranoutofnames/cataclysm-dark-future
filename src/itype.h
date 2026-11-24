@@ -364,6 +364,7 @@ struct conditional_name {
 };
 
 class islot_milling;
+struct memory_card_info;
 
 struct attack_statblock {
     int to_hit = 0;
@@ -405,6 +406,8 @@ struct itype {
         cata::value_ptr<islot_artifact> artifact;
         cata::value_ptr<relic> relic_data;
         cata::value_ptr<islot_milling> milling_data;
+        // CDF: E1-1, DDA itype.h:1564: memory card (and recipe catalog) generation data, key `memory_card`
+        cata::value_ptr<memory_card_info> memory_card_data;
         /*@}*/
 
         /**
@@ -540,6 +543,8 @@ struct itype {
         units::mass weight = 0_gram;
         /** Weight difference with the part it replaces for mods */
         units::mass integral_weight = -1_gram;
+        /** CDF: E1-1, DDA itype.h:1417: electronic memory size of this item as a file (`ememory_size`). */
+        units::ememory ememory_size = 0_KB;
 
         /**
          * Space occupied by items of this type

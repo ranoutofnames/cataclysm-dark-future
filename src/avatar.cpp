@@ -17,7 +17,6 @@
 #include "character_stat.h"
 #include "color.h"
 #include "debug.h"
-#include "digital_media.h"
 #include "diary.h"
 #include "effect.h"
 #include "enums.h"
@@ -96,6 +95,8 @@ static const efftype_id effect_slept_through_alarm( "slept_through_alarm" );
 static const efftype_id effect_cold( "cold" );
 static const efftype_id effect_hot( "hot" );
 static const efftype_id effect_hot_speed( "hot_speed" );
+
+static const flag_id flag_CAN_USE_IN_DARK( "CAN_USE_IN_DARK" );
 
 static const itype_id itype_guidebook( "guidebook" );
 
@@ -409,11 +410,6 @@ const Character *avatar::get_book_reader( const item &book,
         return nullptr;
     }
 
-    if( is_digital_file( book ) && !digital_reader_for( *this, book ) ) {
-        reasons.emplace_back( _( "You need to install this file on a powered reader first." ) );
-        return nullptr;
-    }
-
     // Check for conditions that immediately disqualify the player from reading:
     const optional_vpart_position vp = get_map().veh_at( bub_pos() );
     if( vp && vp->vehicle().player_in_control( *this ) ) {
@@ -441,8 +437,11 @@ const Character *avatar::get_book_reader( const item &book,
                !worn_with_flag( flag_FIX_FARSIGHT ) &&
                !has_effect( effect_contacts ) && !has_bionic( bio_eye_optic ) ) {
         reasons.emplace_back( _( "Your eyes won't focus without reading glasses." ) );
-    } else if( ( !is_digital_file( book ) || is_blind() ) &&
+    } else if( ( !book.has_flag( flag_CAN_USE_IN_DARK ) || is_blind() ) &&
                !character_funcs::can_see_fine_details( *this ) ) {
+        // CDF: E1-8, DDA character_knowledge.cpp:456: a file of an e-device that can be used in the
+        // dark inherits CAN_USE_IN_DARK (item.cpp update_inherited_flags). DDA has no blind case here,
+        // CDF keeps it.
         // Too dark to read only applies if the player can read to himself
         reasons.emplace_back( _( "It's too dark to read!" ) );
         return nullptr;
@@ -513,10 +512,8 @@ int avatar::time_to_read( const item &book, const Character &reader,
     }
 
     int retval = type->time * reading_speed;
-    if( !is_digital_file( book ) ) {
-        retval *= std::min( character_funcs::fine_detail_vision_mod( *this ),
-                            character_funcs::fine_detail_vision_mod( reader ) );
-    }
+    retval *= std::min( character_funcs::fine_detail_vision_mod( *this ),
+                        character_funcs::fine_detail_vision_mod( reader ) );
 
     const int effective_int = std::min( { get_int(), reader.get_int(), learner ? learner->get_int() : INT_MAX } );
     if( type->intel > effective_int &&
@@ -546,6 +543,16 @@ diary *avatar::get_avatar_diary()
  */
 bool avatar::read( item *loc, const bool continuous )
 {
+    return read( loc, nullptr, continuous );
+}
+
+// CDF: E1-8, DDA avatar::read( book, ereader ) (avatar.cpp:496-535, 761). ACT_READ is an old-style
+// activity here, so the e-reader is the second target of the activity (DDA keeps it in
+// read_activity_actor). Starting the activity costs one use of the e-reader (player_activity.cpp
+// start_or_resume), the handler charges one more every five minutes and stops when it is empty or
+// gone (activity_handlers::read_do_turn).
+bool avatar::read( item *loc, item *ereader, const bool continuous )
+{
     if( !loc ) {
         add_msg( m_info, _( "Never mind." ) );
         return false;
@@ -571,6 +578,9 @@ bool avatar::read( item *loc, const bool continuous )
     player_activity act( ACT_READ, time_taken, continuous ? activity->index : 0,
                          reader->getID().get_value() );
     act.targets.emplace_back( loc );
+    if( ereader != nullptr ) {
+        act.targets.emplace_back( ereader );
+    }
 
     if( it.typeId() == itype_guidebook ) {
         // special guidebook effect: print a misc. hint when read
@@ -773,7 +783,7 @@ bool avatar::read( item *loc, const bool continuous )
                                  character_funcs::fine_detail_vision_mod( *this ),
                                  character_funcs::fine_detail_vision_mod( *reader )
                              );
-    if( !is_digital_file( it ) && vision_mod > character_funcs::FINE_VISION_PERFECT ) {
+    if( vision_mod > character_funcs::FINE_VISION_PERFECT ) {
         add_msg( m_warning,
                  _( "It's difficult for %s to see fine details right now.  Reading will take longer than usual." ),
                  reader->disp_name() );
@@ -913,6 +923,9 @@ void avatar::do_read( item *loc )
         return;
     }
     const skill_id &skill = reading->skill;
+    // CDF: E1-8, the e-reader of this reading (second target) goes on with the next chapter
+    item *ereader = activity->targets.size() > 1 && activity->targets[1] ? &*activity->targets[1] :
+                    nullptr;
 
     if( !has_identified( book.typeId() ) ) {
         // Note that we've read the book.
@@ -1101,7 +1114,7 @@ void avatar::do_read( item *loc )
 
     if( continuous ) {
         activity->set_to_null();
-        read( loc, true );
+        read( loc, ereader, true );
         if( activity ) {
             return;
         }
@@ -1113,6 +1126,20 @@ void avatar::do_read( item *loc )
 bool avatar::has_identified( const itype_id &item_id ) const
 {
     return items_identified.contains( item_id );
+}
+
+// CDF: E1-5b, DDA avatar.cpp:810-850. CDF has no is_identifiable; only books are identified.
+void avatar::identify( const item &item )
+{
+    if( has_identified( item.typeId() ) ) {
+        return;
+    }
+    if( !item.is_book() ) {
+        debugmsg( "tried to identify non-book item" );
+        return;
+    }
+    items_identified.insert( item.typeId() );
+    skim_book_msg( item, *this );
 }
 
 void avatar::wake_up()
@@ -1557,6 +1584,14 @@ detached_ptr<item> avatar::wield( detached_ptr<item> &&target )
 
 bool avatar::invoke_item( item *used, const tripoint_bub_ms &pt )
 {
+    // CDF: E1-8, DDA Character::use (character.cpp:8157): a book that is a file of an e-device is read
+    // with that device (the "Read files" action of the Manage files menu uses it)
+    if( used->is_book() ) {
+        item *const device = used->parent_item();
+        if( device != nullptr && device->is_estorage() ) {
+            return read( used, device, false );
+        }
+    }
     std::map<std::string, use_function> use_methods;
     use_methods.insert( used->type->use_methods.begin(), used->type->use_methods.end() );
     // Make sure the flag is that of the mod, not of the item being used :P

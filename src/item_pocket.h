@@ -226,6 +226,11 @@ class item_pocket
         const item &front() const;
         /** Number of items in this pocket. */
         size_t size() const;
+        /**
+         * CDF: E1-1, DDA item_pocket.h:174-176. Sum of ememory_size() across the top-level contents.
+         * Only meaningful for E_FILE_STORAGE pockets; used by item::occupied_ememory().
+         */
+        units::ememory occupied_ememory() const;
         void pop_back();
 
         /**

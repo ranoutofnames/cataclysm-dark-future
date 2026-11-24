@@ -700,14 +700,14 @@
   },
   {
     "type": "recipe",
-    "result": "sd_memory_card",
+    "result": "memory_card",
     "category": "CC_OTHER",
     "subcategory": "CSC_OTHER_OTHER",
     "skill_used": "computer",
     "difficulty": 2,
     "time": "20 m",
     "using": [ [ "coding_standard", 120 ], [ "utility_software_standard", -1 ] ],
-    "components": [ [ [ "sd_memory_card", 1 ] ] ]
+    "components": [ [ [ "memory_card", 1 ] ] ]
   },
   {
     "result": "software_medical",
@@ -717,13 +717,13 @@
     "skill_used": "computer",
     "skills_required": [ "firstaid", 8 ],
     "reversible": true,
-    "contained": true,
+    "container": "usb_drive",
     "difficulty": 6,
     "autolearn": true,
     "time": "6 h",
     "book_learn": [ [ "reference_firstaid1", 8 ] ],
     "using": [ [ "coding_standard", 120 ], [ "math_software_standard", -1 ] ],
-    "components": [ [ [ "usb_drive", 1 ], [ "sd_memory_card", 1 ] ] ]
+    "components": [ [ [ "usb_drive", 1 ], [ "memory_card", 1 ] ] ]
   },
   {
     "result": "software_math",
@@ -732,7 +732,7 @@
     "subcategory": "CSC_OTHER_OTHER",
     "skill_used": "computer",
     "reversible": true,
-    "contained": true,
+    "container": "usb_drive",
     "difficulty": 8,
     "autolearn": true,
     "//": "weird to use cooking here, but it represents science skill",
@@ -740,7 +740,7 @@
     "time": "6 h",
     "book_learn": [ [ "reference_cooking", 8 ] ],
     "using": [ [ "coding_standard", 120 ] ],
-    "components": [ [ [ "usb_drive", 1 ], [ "sd_memory_card", 1 ] ] ]
+    "components": [ [ [ "usb_drive", 1 ], [ "memory_card", 1 ] ] ]
   },
   {
     "result": "software_useless",
@@ -750,12 +750,12 @@
     "subcategory": "CSC_OTHER_OTHER",
     "skill_used": "computer",
     "reversible": true,
-    "contained": true,
+    "container": "usb_drive",
     "difficulty": 3,
     "autolearn": true,
     "time": "1 h",
     "using": [ [ "coding_standard", 120 ] ],
-    "components": [ [ [ "usb_drive", 1 ], [ "sd_memory_card", 1 ] ] ]
+    "components": [ [ [ "usb_drive", 1 ], [ "memory_card", 1 ] ] ]
   },
   {
     "type": "recipe",
@@ -996,5 +996,20 @@
     ],
     "tools": [ [ [ "surface_heat", 30, "LIST" ] ] ],
     "components": [ [ [ "meat_red", 1, "LIST" ] ], [ [ "veggy_any", 1, "LIST" ] ], [ [ "saline", 7 ] ], [ [ "chem_peptone_broth", 1 ] ] ]
+  },
+  {
+    "type": "recipe",
+    "result": "book_binder",
+    "category": "CC_OTHER",
+    "subcategory": "CSC_OTHER_OTHER",
+    "skill_used": "fabrication",
+    "difficulty": 2,
+    "time": "45 m",
+    "autolearn": true,
+    "components": [
+      [ [ "duct_tape", 20 ] ],
+      [ [ "plastic_chunk", 2 ] ],
+      [ [ "cordage_short", 2, "LIST" ] ]
+    ]
   }
 ]

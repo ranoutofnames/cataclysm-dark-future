@@ -1520,19 +1520,21 @@ NPC 대화 조건에서 사용하려면 JSON에서 정의해야 합니다.
 - `DIG_TOOL` 휘두르면 플레이어가 들어갈 때 바위나 벽과 같은 지형을 철저하게 파냅니다. 만약에
   아이템에도 `POWERED` 플래그가 있으면 더 빨리 파헤치지만 활성화하는 것처럼 아이템의 탄약을 소모합니다.
   그것.
+- `E_COPIABLE` This item can be scanned onto an electronic device and can be electronically copied.
+- `E_FILE_COLLECTION` This item represents a combinable collection of files. Does not imply `E_COPIABLE`.
+- `E_FILE_DEVICE` The item can handle electronic files like a computer would.
+- `E_STORABLE` This item can be stored on an in-game electronic device.
+- `E_STORABLE_EXCLUSIVE` This item can ONLY be stored on an in-game electronic device; it may only be handled electronically.
 - `FIRESTARTER` 아이템은 약간의 난이도로 발사를 시작합니다.
 - `FIRE` 아이템이 즉시 불을 붙입니다.
 - `FISH_GOOD` 낚시에 사용할 경우 좋은 도구입니다(일치하는 use_action이 필요함).
   설정되었습니다.)
 - `FISH_POOR` 낚시에 사용될 때는 좋지 않은 도구입니다(일치하는 use_action이 필요함).
   설정되었습니다.)
-- `HAS_RECIPE` E-Ink 태블릿에서 현재 레시피를 표시하고 있음을 나타내는 데 사용됩니다.
 - `IS_UPS` 항목은 통합 전원 공급 장치입니다. 활성 아이템 처리에 사용됩니다.
 - `LIGHT_[X]` 빛의 강도 `[X]`로 영역을 조명합니다. 여기서 `[X]`는 강도 값입니다.
   (예: `LIGHT_4` 또는 `LIGHT_100`). 참고: 이 플래그는 `itype::light_emission` 필드를 설정한 다음
   제거됨(`has_flag`을 사용하여 찾을 수 없음);
-- `MC_MOBILE`, `MC_RANDOM_STUFF`, `MC_SCIENCE_STUFF`, `MC_USED`, `MC_HAS_DATA` 메모리 카드 관련
-  플래그, `iuse.cpp` 참조
 - `NO_DROP` 항목은 지도 타일에 개별 항목으로 존재해서는 안 됩니다(다른 항목에 포함되어야 함).
   항목)
 - `NO_UNLOAD`을 언로드할 수 없습니다.
@@ -1552,6 +1554,8 @@ NPC 대화 조건에서 사용하려면 JSON에서 정의해야 합니다.
 - `USES_BIONIC_POWER` 아이템 자체에는 충전량이 없으며 플레이어의 생체 공학적 힘으로 흘러갑니다.
 - `USE_UPS` 아이템은 UPS에서 충전됩니다. / 자체 대신 UPS의 충전을 사용합니다.
 - `NAT_UPS` USE_UPS에서 (UPS) 접미사를 침묵시킵니다.
+- `VIEW_PHOTOS` This item can display held photos.
+- `VIEW_RECIPES` This item can display held recipes.
 - `WATER_EXTINGUISH` 물 속에서나 강수 속에서도 소화될 수 있습니다. 아이템을 변환합니다(필수
   "reverts_to" 또는 use_action "transform"을 설정해야 함).
 - `WATER_DISABLE` 아이템이 물에 잠기면 되돌리고 비활성화됩니다.

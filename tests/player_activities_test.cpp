@@ -11,7 +11,10 @@
 #include "game.h"
 #include "itype.h"
 #include "iuse_actor.h"
+#include "detached_ptr.h"
 #include "item.h"
+#include "item_group.h"
+#include "pocket_type.h"
 #include "map_helpers.h"
 #include "player_activity.h"
 #include "player_helpers.h"
@@ -24,6 +27,10 @@
 #include "vehicle/vehicle_part.h"
 
 #include <algorithm>
+#include <functional>
+#include <memory>
+#include <set>
+#include <vector>
 
 static const activity_id ACT_NULL = activity_id::NULL_ID();
 static const activity_id ACT_BOLTCUTTING("ACT_BOLTCUTTING");
@@ -40,12 +47,23 @@ static const furn_str_id furn_t_test_f_oxytorch1("test_f_oxytorch1");
 static const furn_str_id furn_t_test_f_oxytorch2("test_f_oxytorch2");
 static const furn_str_id furn_t_test_f_oxytorch3("test_f_oxytorch3");
 
+static const item_group_id Item_spawn_data_test_edevices_compat("test_edevices_compat");
+static const item_group_id Item_spawn_data_test_edevices_incompat("test_edevices_incompat");
+static const item_group_id Item_spawn_data_test_edevices_power("test_edevices_power");
+static const item_group_id Item_spawn_data_test_edevices_recipes("test_edevices_recipes");
+static const item_group_id Item_spawn_data_test_edevices_standard("test_edevices_standard");
+
 static const itype_id itype_oxyacetylene("oxyacetylene");
+static const itype_id itype_test_backpack("test_backpack");
+static const itype_id itype_test_efile_copiable("test_efile_copiable");
+static const itype_id itype_test_efile_etd("test_efile_etd");
 static const itype_id itype_test_boltcutter("test_boltcutter");
 static const itype_id itype_test_boltcutter_elec("test_boltcutter_elec");
 static const itype_id itype_test_hacksaw("test_hacksaw");
 static const itype_id itype_test_hacksaw_elec("test_hacksaw_elec");
 static const itype_id itype_test_oxytorch("test_oxytorch");
+
+static const skill_id skill_computer("computer");
 
 static const quality_id qual_SAW_M("SAW_M");
 static const quality_id qual_WELD("WELD");
@@ -918,4 +936,303 @@ TEST_CASE("oxytorch", "[activity][oxytorch]") {
             }
         }
     }
+}
+
+// CDF: E1-5b. DDA tests/player_activities_test.cpp:1736-1940 (b4b62254ae2), the `edevice` test
+// case, transplanted. Differences, all forced by CDF:
+//  - item_location becomes item* (CDF has no item_location, the actor keeps safe_references).
+//  - Catch2 tags a whole test case ([!shouldfail]), not a section: E1-5b split the sections that
+//    need E1-5c features (port compatibility with the slow and the external-transfer rate, the
+//    recipe catalog merge) into test cases of their own with [!shouldfail]; E1-5c removed the
+//    marks, the cases stay separate.
+//  - The DDA memory_card (external transfer device) is the TEST_DATA item test_efile_etd.
+//  - process_activity( dummy, true ) of the DDA test is a copy with a turn limit, so a broken
+//    state machine fails the test instead of hanging the run.
+namespace
+{
+struct edevice_scene {
+    avatar& dummy;
+    std::vector<item*> edevice_locs;
+    std::vector<item*> efile_locs;
+    std::vector<item*> copiable_efile_locs;
+    item* laptop_with_files = nullptr;
+    item* edevice_without_files = nullptr;
+    std::vector<item*> vector_laptop_with_files;
+    std::vector<item*> vector_edevice_without_files;
+
+    static auto prepared_avatar() -> avatar& {
+        clear_all_state();
+        // a ten-minute boundary: the battery rule is one charge per 4 minutes
+        set_time(calendar::turn_zero + 12_hours);
+        avatar& you = get_avatar();
+        clear_avatar();
+        you.set_skill_level(skill_computer, 1);
+        return you;
+    }
+
+    edevice_scene() : dummy(prepared_avatar()) {}
+
+    // DDA process_activity( dummy, pass_time ) with a turn limit
+    void run(const bool pass_time = true, const int max_turns = 40000) {
+        int turns = 0;
+        while (!dummy.activity->is_null() && turns < max_turns) {
+            dummy.moves += dummy.get_speed();
+            while (dummy.moves > 0 && !dummy.activity->is_null() && turns < max_turns) {
+                dummy.activity->do_turn(dummy);
+                if (pass_time) {
+                    calendar::turn += 1_seconds;
+                }
+                ++turns;
+            }
+        }
+        REQUIRE(dummy.activity->is_null());
+    }
+
+    void update_efiles() {
+        efile_locs.clear();
+        copiable_efile_locs.clear();
+        for (item* edevice : edevice_locs) {
+            for (item* efile : edevice->efiles()) {
+                efile_locs.push_back(efile);
+            }
+        }
+        for (item* loc : efile_locs) {
+            if (loc->is_ecopiable()) {
+                copiable_efile_locs.push_back(loc);
+            }
+        }
+    }
+
+    void assign(item* used_edevice, const std::vector<item*>& target_edevices,
+                const std::vector<item*>& selected_efiles, const efile_action action,
+                const efile_combo combo = efile_combo::COMBO_NONE) {
+        dummy.assign_activity(std::make_unique<player_activity>(
+            std::make_unique<efile_activity_actor>(used_edevice, target_edevices, selected_efiles,
+                                                   action, combo)));
+    }
+
+    void do_activity(item* used_edevice, const std::vector<item*>& target_edevices,
+                     const std::vector<item*>& selected_efiles, const efile_action action,
+                     const bool pass_time = true) {
+        assign(used_edevice, target_edevices, selected_efiles, action);
+        run(pass_time);
+    }
+
+    void add_edevices(const item_group_id& igroup, const bool add_etd = true) {
+        clear_avatar();
+        dummy.set_skill_level(skill_computer, 1);
+        detached_ptr<item> rejected = dummy.wear_item(item::spawn(itype_test_backpack));
+        REQUIRE(!rejected);
+        edevice_locs.clear();
+        for (detached_ptr<item>& i : item_group::items_from(igroup)) {
+            REQUIRE(!i->is_browsed());
+            edevice_locs.push_back(&dummy.i_add(std::move(i)));
+        }
+        // every test item group is only two devices; the first one with files is the laptop
+        REQUIRE(edevice_locs.size() == 2);
+        laptop_with_files = edevice_locs.front();
+        for (item* edevice : edevice_locs) {
+            if (!edevice->efiles().empty()) {
+                laptop_with_files = edevice;
+                break;
+            }
+        }
+        edevice_without_files = laptop_with_files == edevice_locs.front() ? edevice_locs.back()
+                                                                         : edevice_locs.front();
+        vector_laptop_with_files = {laptop_with_files};
+        vector_edevice_without_files = {edevice_without_files};
+        for (item* edevice : edevice_locs) {
+            // the group's charges reach the battery well
+            REQUIRE(edevice->ammo_remaining() > 0);
+        }
+        if (add_etd) {
+            item& etd = dummy.i_add(item::spawn(itype_test_efile_etd));
+            etd.set_browsed(true);
+        }
+
+        update_efiles();
+        // browse required before any further efile operations
+        do_activity(laptop_with_files, edevice_locs, efile_locs, EF_BROWSE);
+        for (item* i : edevice_locs) {
+            REQUIRE(i->is_browsed());
+        }
+    }
+};
+} // namespace
+
+TEST_CASE("edevice", "[activity][edevice]") {
+    edevice_scene scene;
+    avatar& dummy = scene.dummy;
+
+    // CDF: item::get_item_with skips the E_FILE pocket, the files are listed by efiles()
+    const auto find_copied_efile = [](item& edevice) -> item* {
+        for (item* efile : edevice.efiles()) {
+            if (efile->typeId() == itype_test_efile_copiable) {
+                return efile;
+            }
+        }
+        return nullptr;
+    };
+
+    SECTION("move to / move from") {
+        scene.add_edevices(Item_spawn_data_test_edevices_standard);
+        REQUIRE(scene.laptop_with_files->efiles().size() == 3);
+        REQUIRE(scene.edevice_without_files->efiles().empty());
+        scene.do_activity(scene.edevice_without_files, scene.vector_laptop_with_files,
+                          scene.efile_locs, EF_MOVE_ONTO_THIS);
+        REQUIRE(scene.edevice_without_files->efiles().size() == 3);
+        REQUIRE(scene.laptop_with_files->efiles().empty());
+        scene.update_efiles();
+        REQUIRE(scene.efile_locs.size() == 3);
+        REQUIRE(scene.efile_locs.front() != nullptr);
+        scene.do_activity(scene.edevice_without_files, scene.vector_laptop_with_files,
+                          scene.efile_locs, EF_MOVE_FROM_THIS);
+        REQUIRE(scene.laptop_with_files->efiles().size() == 3);
+        REQUIRE(scene.edevice_without_files->efiles().empty());
+    }
+    SECTION("copy onto") {
+        scene.add_edevices(Item_spawn_data_test_edevices_standard);
+        scene.do_activity(scene.edevice_without_files, scene.vector_laptop_with_files,
+                          scene.copiable_efile_locs, EF_COPY_ONTO_THIS);
+        REQUIRE(scene.laptop_with_files->efiles().size() == 3);
+        REQUIRE(scene.edevice_without_files->efiles().size() == 1);
+        REQUIRE(scene.edevice_without_files->efiles().front()->typeId() ==
+                itype_test_efile_copiable);
+        item* copied_efile = find_copied_efile(*scene.laptop_with_files);
+        REQUIRE(copied_efile != nullptr);
+        REQUIRE(copied_efile->typeId() == itype_test_efile_copiable);
+    }
+    SECTION("copy from") {
+        scene.add_edevices(Item_spawn_data_test_edevices_standard);
+        scene.do_activity(scene.laptop_with_files, scene.vector_edevice_without_files,
+                          scene.copiable_efile_locs, EF_COPY_FROM_THIS);
+        REQUIRE(scene.laptop_with_files->efiles().size() == 3);
+        REQUIRE(scene.edevice_without_files->efiles().size() == 1);
+        REQUIRE(scene.edevice_without_files->efiles().front()->typeId() ==
+                itype_test_efile_copiable);
+        item* copied_efile = find_copied_efile(*scene.laptop_with_files);
+        REQUIRE(copied_efile != nullptr);
+        REQUIRE(copied_efile->typeId() == itype_test_efile_copiable);
+    }
+    SECTION("wipe") {
+        scene.add_edevices(Item_spawn_data_test_edevices_standard);
+        scene.do_activity(scene.edevice_without_files, scene.vector_laptop_with_files,
+                          scene.efile_locs, EF_WIPE);
+        REQUIRE(scene.edevice_without_files->efiles().empty());
+        REQUIRE(scene.laptop_with_files->efiles().empty());
+    }
+    SECTION("empty parameters test") {
+        scene.efile_locs.clear();
+        const std::vector<item*> vector_empty_loc;
+        scene.assign(nullptr, vector_empty_loc, scene.efile_locs, EF_MOVE_ONTO_THIS);
+        dummy.activity->do_turn(dummy);
+        REQUIRE(dummy.activity->is_null());
+    }
+    // power tests
+    SECTION("move to used edevice runs out of power") {
+        scene.add_edevices(Item_spawn_data_test_edevices_power);
+        REQUIRE(scene.edevice_without_files->ammo_remaining() == 10);
+        scene.do_activity(scene.edevice_without_files, scene.vector_laptop_with_files,
+                          scene.efile_locs, EF_MOVE_ONTO_THIS);
+        // the operation failed and the file has not been moved
+        REQUIRE(scene.edevice_without_files->efiles().empty());
+        REQUIRE(scene.laptop_with_files->efiles().size() == 1);
+    }
+    SECTION("move from target edevice runs out of power") {
+        scene.add_edevices(Item_spawn_data_test_edevices_power);
+        REQUIRE(scene.edevice_without_files != nullptr);
+        REQUIRE(scene.edevice_without_files->ammo_remaining() == 10);
+        scene.do_activity(scene.laptop_with_files, scene.vector_edevice_without_files,
+                          scene.efile_locs, EF_MOVE_FROM_THIS);
+        // the operation fails and the file has not been moved
+        REQUIRE(scene.edevice_without_files->efiles().empty());
+        REQUIRE(scene.laptop_with_files->efiles().size() == 1);
+    }
+    SECTION("move to used edevice disappears") {
+        scene.add_edevices(Item_spawn_data_test_edevices_power);
+        REQUIRE(scene.edevice_without_files != nullptr);
+        scene.assign(scene.edevice_without_files, scene.vector_laptop_with_files, scene.efile_locs,
+                     EF_MOVE_ONTO_THIS);
+        for (int i = 0; i < 20; i++) {
+            calendar::turn += 1_seconds;
+            dummy.activity->do_turn(dummy);
+        }
+        {
+            detached_ptr<item> gone = scene.edevice_without_files->detach();
+        }
+        dummy.activity->do_turn(dummy);
+        // the operation immediately fails
+        REQUIRE(dummy.activity->is_null());
+        // the operation failed and the file has not been moved
+        REQUIRE(scene.laptop_with_files->efiles().size() == 1);
+    }
+    SECTION("move from target edevice disappears") {
+        scene.add_edevices(Item_spawn_data_test_edevices_power);
+        scene.assign(scene.laptop_with_files, scene.vector_edevice_without_files, scene.efile_locs,
+                     EF_MOVE_FROM_THIS);
+        for (int i = 0; i < 20; i++) {
+            calendar::turn += 1_seconds;
+            dummy.activity->do_turn(dummy);
+        }
+        {
+            detached_ptr<item> gone = scene.edevice_without_files->detach();
+        }
+        scene.run(false);
+        // the operation fails and the file has not been moved
+        REQUIRE(scene.laptop_with_files->efiles().size() == 1);
+    }
+    SECTION("fast move between compatible devices") {
+        scene.add_edevices(Item_spawn_data_test_edevices_compat);
+        time_point before = calendar::turn;
+        scene.do_activity(scene.laptop_with_files, scene.vector_edevice_without_files,
+                          scene.efile_locs, EF_MOVE_FROM_THIS);
+        REQUIRE(calendar::turn - (before + 1_seconds) ==
+                810_seconds); // 24GB / 30MB per sec + 10 second boot
+    }
+}
+
+// CDF: E1-5c (port compatibility: DDA activity_actor.cpp:4187-4216, the slow 1 MB/s rate of the
+// same-port case).
+TEST_CASE("edevice_slow_move_between_incompatible_devices", "[activity][edevice]") {
+    edevice_scene scene;
+    scene.add_edevices(Item_spawn_data_test_edevices_incompat, false);
+    time_point before = calendar::turn;
+    int battery_start = scene.laptop_with_files->ammo_remaining();
+    scene.do_activity(scene.laptop_with_files, scene.vector_edevice_without_files,
+                      scene.efile_locs, EF_MOVE_FROM_THIS);
+    REQUIRE(battery_start - scene.laptop_with_files->ammo_remaining() ==
+            100); // 400 minutes / 1 charge per 4 min
+    REQUIRE(calendar::turn - (before + 1_seconds) == 24010_seconds); // 24GB / 1MB per sec
+}
+
+// CDF: E1-5c (external transfer storage, DDA activity_actor.cpp:4156-4180).
+TEST_CASE("edevice_fast_move_between_incompatible_devices_with_etd", "[activity][edevice]") {
+    edevice_scene scene;
+    scene.add_edevices(Item_spawn_data_test_edevices_incompat);
+    time_point before = calendar::turn;
+    scene.do_activity(scene.laptop_with_files, scene.vector_edevice_without_files,
+                      scene.efile_locs, EF_MOVE_FROM_THIS);
+    REQUIRE(calendar::turn - (before + 1_seconds) == 4010_seconds); // 24GB / (12 / 2)MB per sec
+}
+
+// CDF: E1-5c (merging the recipe catalog into the target's catalog on a move, DDA
+// activity_actor.cpp:4036-4045). The first check (one catalog file on the target, not two) is
+// added by CDF; DDA only compares the recipe counts.
+TEST_CASE("edevice_recipe_combination", "[activity][edevice]") {
+    edevice_scene scene;
+    scene.add_edevices(Item_spawn_data_test_edevices_recipes);
+    std::set<recipe_id> recipes1 = scene.laptop_with_files->get_saved_recipes();
+    std::set<recipe_id> recipes2 = scene.edevice_without_files->get_saved_recipes();
+    std::set<recipe_id> combined = recipes1;
+    for (const recipe_id& recipe : recipes2) {
+        combined.insert(recipe);
+    }
+    REQUIRE(!recipes1.empty());
+    REQUIRE(!recipes2.empty());
+    const std::vector<item*> lwf_locs = scene.laptop_with_files->efiles();
+    scene.do_activity(scene.laptop_with_files, scene.vector_edevice_without_files, lwf_locs,
+                      EF_MOVE_FROM_THIS);
+    REQUIRE(scene.edevice_without_files->efiles().size() == 1);
+    REQUIRE(scene.laptop_with_files->get_saved_recipes().empty());
+    REQUIRE(combined.size() == scene.edevice_without_files->get_saved_recipes().size());
 }

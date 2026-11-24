@@ -1,31 +1,31 @@
 [
   {
     "id": "digital_genome_sample",
-    "copy-from": "software",
-    "type": "GENERIC",
+    "copy-from": "abstract_efile_exclusive_copiable",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "genome sample" },
     "description": "Genetic sample data for a genome workstation.  Additional scans can complete a partial sample, allowing the workstation to produce DNA for cloning.",
-    "container": "null",
-    "weight": "0 g",
-    "volume": "1 ml",
-    "extend": { "flags": [ "GENOME_DRIVE" ] }
+    "ememory_size": "4 TB",
+    "//": "CDF: E1-10a, owner ruling O4: a genome sample ready for cloning is a huge e-file; 4 TB is bigger than the biggest ordinary device (portable_hard_drive, hard_drive: 2 TB) and fits the genome drives (8 TB, generic.json) only"
   },
   {
     "abstract": "digital_instruction",
-    "copy-from": "software",
-    "type": "BOOK",
+    "copy-from": "abstract_efile_exclusive_copiable",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "digital instruction" },
     "description": "An instructional digital file.",
-    "container": "null",
-    "weight": "0 g",
-    "volume": "1 ml",
     "time": "20 m",
-    "intelligence": 6
+    "intelligence": 6,
+    "ememory_size": "1 GB",
+    "//": "CDF: E1-10a, O7: the digital-only twin items stay as loot-only e-files on the DDA abstracts (the BN digital_collection base is gone); BOOK files are read from a device like ebooks"
   },
   {
     "id": "digital_cooking_show",
     "copy-from": "digital_instruction",
-    "type": "BOOK",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "cooking show: pantry basics" },
     "description": "A saved episode of a cooking show.  The host explains basic kitchen techniques and demonstrates making seasoned rice for sushi.",
     "skill": "cooking",
@@ -36,7 +36,8 @@
   {
     "id": "digital_survivor_show",
     "copy-from": "digital_cooking_show",
-    "type": "BOOK",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "survival skills show" },
     "description": "A saved episode of a practical survival program, demonstrating useful wilderness skills.",
     "skill": "survival",
@@ -47,7 +48,8 @@
   {
     "id": "digital_mechanics_show",
     "copy-from": "digital_cooking_show",
-    "type": "BOOK",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "automotive repair show" },
     "description": "A saved episode of a vehicle repair program, demonstrating basic maintenance and repairs.",
     "skill": "mechanics",
@@ -58,10 +60,12 @@
   {
     "id": "digital_adult_video",
     "copy-from": "digital_instruction",
-    "type": "BOOK",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "adult video" },
     "description": "A saved adult video.  Its amateur production and dated style give it a curious, nostalgic charm.",
-    "fun": 3
+    "fun": 3,
+    "ememory_size": "2 GB"
   },
   {
     "id": "digital_urbex_map",
@@ -71,10 +75,13 @@
     "description": "A saved post from an urban exploration forum, with directions to abandoned buildings and advice on getting there.",
     "symbol": "#",
     "material": [  ],
+    "flags": [ "E_STORABLE_EXCLUSIVE", "E_COPIABLE", "ZERO_WEIGHT", "NO_DROP", "IRREMOVABLE" ],
+    "ememory_size": "256 MB",
+    "category": "e_files",
+    "item_vars": { "browsed": "false" },
     "weight": "0 g",
     "volume": "1 ml",
-    "container": "null",
-    "flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ]
+    "container": "null"
   },
   {
     "id": "digital_evacuation_map",
@@ -94,131 +101,137 @@
         { "om_terrain": "shelter", "om_terrain_match_type": "PREFIX" }
       ],
       "message": "You add refugee centers, evac shelters, and connecting roads to your map."
-    }
+    },
+    "ememory_size": "128 MB"
   },
   {
     "id": "digital_3d_printing_guide",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "3D printing infographic archive" },
     "description": "An illustrated reference archive containing plans for assembling a basic 3D printer from salvaged components.",
-    "item_vars": { "digital_recipes": "[{\"id\":\"3d_printer_basic\",\"skill_level\":7}]" }
-  },
-  {
-    "abstract": "digital_collection",
-    "copy-from": "software",
-    "type": "GENERIC",
-    "name": { "str": "digital collection" },
-    "description": "A collection of digital media.",
-    "extend": { "flags": [ "CAN_HAVE_CHARGES" ] },
-    "container": "null",
-    "weight": "0 g",
-    "volume": "1 ml"
+    "ememory_size": "512 MB"
   },
   {
     "abstract": "digital_text",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "abstract_efile_exclusive_copiable",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "digital text" },
     "extend": { "flags": [ "SNIPPET_NEEDS_LITERACY" ] }
   },
   {
-    "id": "digital_scanned_text",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
-    "name": { "str": "scanned text file" },
-    "description": "A digital scan of text or images from an object."
-  },
-  {
     "id": "digital_nft_artwork",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "NFT artwork" },
     "description": "A cached image and a certificate claiming exclusive ownership of a non-fungible token.  Someone paid a fortune for this before the Cataclysm, and has likely struggled to sell it ever since.",
     "price": "250000 USD",
     "price_postapoc": "0 cent",
-    "snippet_category": "digital_nft_artwork"
+    "snippet_category": "digital_nft_artwork",
+    "ememory_size": "50 MB"
   },
   {
     "id": "digital_nft_real_estate",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "virtual real-estate NFT" },
     "description": "A deed to an expensive parcel of virtual land.  Even if the the servers hosting it hadn't been sold off ages ago, a virtual roof over your head won't keep out the rain.",
     "price": "950000 USD",
     "price_postapoc": "0 cent",
-    "snippet_category": "digital_nft_real_estate"
+    "snippet_category": "digital_nft_real_estate",
+    "ememory_size": "1 MB"
   },
   {
     "id": "digital_nft_collectible",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "NFT collectible" },
     "description": "A limited-edition digital collectible with an long transaction history.  Its original owner considered it a retirement fund, its last owner paid a few bucks for it.  It has not become any more edible since then.",
     "price": "75000 USD",
     "price_postapoc": "0 cent",
-    "snippet_category": "digital_nft_collectible"
+    "snippet_category": "digital_nft_collectible",
+    "ememory_size": "20 MB"
   },
   {
     "id": "digital_home_video",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "abstract_efile_exclusive_copiable",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "home video" },
     "description": "A saved personal video recording.  A small piece of someone's life, preserved on a screen.",
-    "snippet_category": "digital_home_video"
+    "snippet_category": "digital_home_video",
+    "ememory_size": "1 GB"
   },
   {
     "id": "digital_voice_memo",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "abstract_efile_exclusive_copiable",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "personal voice memo" },
     "description": "A saved audio recording made by the device's former owner.",
-    "snippet_category": "digital_voice_memo"
+    "snippet_category": "digital_voice_memo",
+    "ememory_size": "20 MB"
   },
   {
     "id": "digital_saved_news",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "saved news snippet" },
     "description": "A saved news article from shortly before the Cataclysm.",
-    "snippet_category": "newest_news"
+    "snippet_category": "newest_news",
+    "ememory_size": "1 MB"
   },
   {
     "id": "digital_saved_flier",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "saved flier" },
     "description": "A saved advertisement for a product or service.",
-    "snippet_category": "flier"
+    "snippet_category": "flier",
+    "ememory_size": "2 MB"
   },
   {
     "id": "digital_character_sheet",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "digital character sheet" },
     "description": "A saved character sheet for a tabletop role-playing game.",
-    "snippet_category": "charsheet"
+    "snippet_category": "charsheet",
+    "ememory_size": "1 MB"
   },
   {
     "id": "digital_radio_archive",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "radio archive transcript" },
     "description": "A saved transcript of an archived radio broadcast.",
-    "snippet_category": "radio_archive"
+    "snippet_category": "radio_archive",
+    "ememory_size": "200 MB"
   },
   {
     "id": "digital_saved_email",
     "copy-from": "digital_text",
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "saved email" },
     "description": "A saved internal email from a research facility.",
-    "snippet_category": "lab_notes"
+    "snippet_category": "lab_notes",
+    "ememory_size": "1 MB"
   },
   {
     "id": "digital_hello_world",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "abstract_efile_exclusive_copiable",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
     "name": { "str": "hello_world.exe", "str_pl": "copies of hello_world.exe" },
     "description": "A tiny executable that prints \"Hello, world!\" when run.",
     "use_action": {
@@ -228,7 +241,8 @@
       "no_charges_message": "The reader has no power.",
       "noise": 0,
       "moves": 100
-    }
+    },
+    "ememory_size": "64 KB"
   },
   {
     "type": "item_action",
@@ -237,94 +251,77 @@
   },
   {
     "id": "digital_corrupted_file",
-    "copy-from": "digital_collection",
-    "type": "TOOL",
+    "copy-from": "abstract_efile_exclusive",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "corrupted file" },
     "description": "An executable with a garbled filename and no recognizable file header.  Its preview shows a pale silhouette in an empty room.  The figure flickers between frames, appearing closer to the camera each time.  Opening this file seems like a very bad idea.",
     "charges_per_use": 0,
     "extend": { "flags": [ "DESTROY_ON_DECHARGE" ] },
-    "use_action": "CORRUPTED_FILE"
-  },
-  {
-    "id": "digital_music_collection",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
-    "name": { "str": "music collection" },
-    "description": "A saved collection of music tracks.",
-    "extend": { "flags": [ "DIGITAL_MUSIC" ] },
-    "item_vars": { "digital_music_morale_cap": "25", "digital_music_cooldown_seconds": "300" }
-  },
-  {
-    "id": "digital_camera_photo_collection",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
-    "name": { "str": "camera photo collection" },
-    "description": "A collection of photographs taken with a camera, including notes on photographed creatures."
+    "use_action": "CORRUPTED_FILE",
+    "ememory_size": "128 KB"
   },
   {
     "id": "digital_cooking_recipe_archive",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "saved cooking recipe" },
     "description": "A saved recipe from a cooking website.",
-    "item_vars": {
-      "digital_random_recipes": "{\"count\":1,\"category\":\"CC_FOOD\",\"min_difficulty\":0,\"max_difficulty\":3,\"difficulty_chance_offset\":0}"
-    }
+    "ememory_size": "1 MB"
   },
   {
     "id": "digital_science_recipe_archive",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "scientific recipe archive" },
     "description": "A saved technical recipe from a research archive.",
-    "item_vars": { "digital_random_recipes": "{\"count\":1,\"min_difficulty\":3,\"difficulty_chance_offset\":1}" }
+    "ememory_size": "20 MB"
   },
   {
     "id": "digital_tailoring_recipe_archive",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "tailoring recipe archive" },
     "description": "A saved collection of tailoring recipes.",
-    "item_vars": {
-      "digital_random_recipes": "{\"count\":3,\"category\":\"CC_ARMOR\",\"min_difficulty\":0,\"max_difficulty\":3,\"difficulty_chance_offset\":0}"
-    }
+    "ememory_size": "4 MB"
   },
   {
     "id": "digital_bartender_drinks_list",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "bartender drinks list" },
     "description": "A saved list of drink recipes from a bartender's reference site.",
-    "item_vars": {
-      "digital_random_recipes": "{\"count\":3,\"subcategory\":\"CSC_FOOD_DRINKS\",\"min_difficulty\":0,\"max_difficulty\":3,\"difficulty_chance_offset\":0}"
-    }
+    "ememory_size": "1 MB"
   },
   {
     "id": "digital_electronic_blueprints",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "electronic blueprints", "str_pl": "sets of electronic blueprints" },
     "description": "Saved circuit diagrams and assembly instructions for a pair of electronic devices.",
-    "item_vars": { "digital_random_recipes": "{\"count\":2,\"category\":\"CC_ELECTRONIC\",\"min_difficulty\":2,\"max_difficulty\":6}" }
+    "ememory_size": "50 MB"
   },
   {
     "id": "digital_chemical_synthesis_sheet",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "chemical synthesis sheet" },
     "description": "A saved laboratory procedure detailing the reagents, equipment, and steps needed to synthesize a chemical.",
-    "item_vars": {
-      "digital_random_recipes": "{\"count\":1,\"subcategory\":\"CSC_CHEM_CHEMICALS\",\"min_difficulty\":2,\"max_difficulty\":6}"
-    }
+    "ememory_size": "10 MB"
   },
   {
     "id": "digital_workshop_tool_plans",
-    "copy-from": "digital_collection",
-    "type": "GENERIC",
+    "copy-from": "digital_instruction",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
     "name": { "str": "workshop tool plans", "str_pl": "sets of workshop tool plans" },
     "description": "Saved construction drawings and assembly notes for a pair of workshop tools.",
-    "item_vars": {
-      "digital_random_recipes": "{\"count\":2,\"subcategory\":\"CSC_OTHER_TOOLS\",\"min_difficulty\":2,\"max_difficulty\":5}"
-    }
+    "ememory_size": "50 MB"
   }
 ]

@@ -61,8 +61,10 @@ std::string enum_to_string<pocket_type>( pocket_type data )
         case pocket_type::MOD: return "MOD";
         case pocket_type::CORPSE: return "CORPSE";
         case pocket_type::SOFTWARE: return "SOFTWARE";
+        case pocket_type::E_FILE_STORAGE: return "E_FILE_STORAGE";
         case pocket_type::CABLE: return "CABLE";
         case pocket_type::MIGRATION: return "MIGRATION";
+        case pocket_type::EBOOK: return "EBOOK";
         // *INDENT-ON*
         case pocket_type::LAST:
             break;
@@ -398,6 +400,15 @@ size_t item_pocket::size() const
     return contents.size();
 }
 
+units::ememory item_pocket::occupied_ememory() const
+{
+    units::ememory total = 0_KB;
+    for( const item *it : all_items_top() ) {
+        total += it->ememory_size();
+    }
+    return total;
+}
+
 units::volume item_pocket::magazine_well() const
 {
     return data->magazine_well;
@@ -477,6 +488,10 @@ units::mass item_pocket::item_weight_modifier() const
 
 units::length item_pocket::item_length_modifier() const
 {
+    // CDF: E1-2, DDA item_pocket.cpp:663
+    if( is_type( pocket_type::E_FILE_STORAGE ) ) {
+        return 0_mm;
+    }
     units::length total_length = 0_mm;
     for( const item *it : contents ) {
         total_length = std::max( static_cast<units::length>( it->length() * std::cbrt(
@@ -1282,6 +1297,16 @@ ret_val<item_pocket::contain_code> item_pocket::is_compatible( const item &it ) 
         return ret_val<item_pocket::contain_code>::make_success();
     }
 
+    // CDF: E1-2, DDA item_pocket.cpp:1367-1372
+    if( data->type == pocket_type::E_FILE_STORAGE ) {
+        if( it.is_estorable() ) {
+            return ret_val<item_pocket::contain_code>::make_success();
+        } else {
+            return ret_val<item_pocket::contain_code>::make_failure(
+                       contain_code::ERR_MOD, _( "only books, e-scannable items can go into e-file pocket" ) );
+        }
+    }
+
     // CDF: LINKUP1a, DDA item_pocket.cpp:1376-1384
     if( data->type == pocket_type::CABLE ) {
         if( it.has_flag( flag_CABLE_SPOOL ) ) {
@@ -1631,7 +1656,8 @@ detached_ptr<item> move_to_parent_pocket_recursive( const tripoint_bub_ms &pos,
 void item_pocket::overflow( const tripoint_bub_ms &pos, item *parent_item, Character *carrier )
 {
     if( is_type( pocket_type::MOD ) || is_type( pocket_type::CORPSE ) ||
-        is_type( pocket_type::CABLE ) ) {
+        is_type( pocket_type::CABLE ) ||
+        is_type( pocket_type::E_FILE_STORAGE ) ) {
         return;
     }
     if( empty() ) {
@@ -1810,7 +1836,8 @@ void item_pocket::on_contents_changed()
 
 bool item_pocket::spill_contents( const tripoint_bub_ms &pos )
 {
-    if( is_type( pocket_type::CORPSE ) || is_type( pocket_type::CABLE ) ) {
+    if( is_type( pocket_type::E_FILE_STORAGE ) ||
+        is_type( pocket_type::CORPSE ) || is_type( pocket_type::CABLE ) ) {
         return false;
     }
 
@@ -1982,8 +2009,8 @@ bool item_pocket::is_standard_type() const
 
 bool item_pocket::is_container_like_type() const
 {
-    // CDF: no E_FILE_STORAGE pockets (E1)
-    return is_standard_type();
+    // CDF: E1-2, DDA item_pocket.cpp:2124
+    return is_standard_type() || data->type == pocket_type::E_FILE_STORAGE;
 }
 
 bool item_pocket::is_forbidden() const

@@ -1624,19 +1624,21 @@ Melee flags are fully compatible with tool flags, and vice versa.
 - `DIG_TOOL` If wielded, digs thorough terrain like rock and walls, as player walks into them. If
   item also has `POWERED` flag, then it digs faster, but uses up the item's ammo as if activating
   it.
+- `E_COPIABLE` This item can be scanned onto an electronic device and can be electronically copied.
+- `E_FILE_COLLECTION` This item represents a combinable collection of files. Does not imply `E_COPIABLE`.
+- `E_FILE_DEVICE` The item can handle electronic files like a computer would.
+- `E_STORABLE` This item can be stored on an in-game electronic device.
+- `E_STORABLE_EXCLUSIVE` This item can ONLY be stored on an in-game electronic device; it may only be handled electronically.
 - `FIRESTARTER` Item will start fire with some difficulty.
 - `FIRE` Item will start a fire immediately.
 - `FISH_GOOD` When used for fishing, it's a good tool (requires that the matching use_action has
   been set).
 - `FISH_POOR` When used for fishing, it's a poor tool (requires that the matching use_action has
   been set).
-- `HAS_RECIPE` Used by the E-Ink tablet to indicates it's currently showing a recipe.
 - `IS_UPS` Item is Unified Power Supply. Used in active item processing
 - `LIGHT_[X]` Illuminates the area with light intensity `[X]` where `[X]` is an intensity value.
   (e.x. `LIGHT_4` or `LIGHT_100`). Note: this flags sets `itype::light_emission` field and then is
   removed (can't be found using `has_flag`);
-- `MC_MOBILE`, `MC_RANDOM_STUFF`, `MC_SCIENCE_STUFF`, `MC_USED`, `MC_HAS_DATA` Memory card related
-  flags, see `iuse.cpp`
 - `NO_DROP` Item should never exist on map tile as a discrete item (must be contained by another
   item)
 - `NO_UNLOAD` Cannot be unloaded.
@@ -1656,6 +1658,8 @@ Melee flags are fully compatible with tool flags, and vice versa.
 - `USES_BIONIC_POWER` The item has no charges of its own, and runs off of the player's bionic power.
 - `USE_UPS` Item is charges from an UPS / it uses the charges of an UPS instead of its own.
 - `NAT_UPS` Silences the (UPS) suffix from USE_UPS.
+- `VIEW_PHOTOS` This item can display held photos.
+- `VIEW_RECIPES` This item can display held recipes.
 - `WATER_EXTINGUISH` Is extinguishable in water or under precipitation. Converts items (requires
   "reverts_to" or use_action "transform" to be set).
 - `WATER_DISABLE` Will revert and deactivate item if it is submerged in water.

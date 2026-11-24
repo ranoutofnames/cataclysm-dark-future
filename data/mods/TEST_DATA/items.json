@@ -2452,10 +2452,11 @@
     ]
   },
   {
-    "//": "CDF: P3-7-MODS-T; keeps the fixture's own 200-charge capacity (the inherited smart_phone_music pocket holds 56 since BATT2).",
+    "//": "CDF: P3-7-MODS-T; keeps the fixture's own 200-charge capacity (the inherited smart_phone_music pocket holds 56 since BATT2).  E1-10c: revert_to is the e-file-less mp3: the fixtures have no E_FILE pocket, so they must not turn into the phone, which has one.",
     "id": "test_ammo_scale_tool",
     "copy-from": "smart_phone_music",
     "type": "TOOL",
+    "revert_to": "mp3",
     "name": { "str": "test ammo scale tool" },
     "pocket_data": [
       { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 200 } }
@@ -2468,10 +2469,11 @@
     ]
   },
   {
-    "//": "CDF: P3-7-MODS-T; keeps the fixture's own 200-charge capacity (the inherited smart_phone_music pocket holds 56 since BATT2).",
+    "//": "CDF: P3-7-MODS-T; keeps the fixture's own 200-charge capacity (the inherited smart_phone_music pocket holds 56 since BATT2).  E1-10c: revert_to is the e-file-less mp3: the fixtures have no E_FILE pocket, so they must not turn into the phone, which has one.",
     "id": "test_ammo_scale_plain_tool",
     "copy-from": "smart_phone_music",
     "type": "TOOL",
+    "revert_to": "mp3",
     "name": { "str": "test ammo scale plain tool" },
     "pocket_data": [
       { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 200 } }

@@ -59,9 +59,12 @@ bool string_id<Item_group>::is_valid() const
 
 namespace
 {
-// Per DDA item_group.cpp:101 (guess_pocket_for); the E_FILE_STORAGE case is cut (E1).
+// Per DDA item_group.cpp:101 (guess_pocket_for).
 auto guess_pocket_for( const item &container, const item &payload ) -> pocket_type
 {
+    if( container.is_estorage() && payload.is_estorable() ) {
+        return pocket_type::E_FILE_STORAGE;
+    }
     if( ( container.is_gun() && payload.is_gunmod() ) || ( container.is_tool() &&
             payload.is_toolmod() ) ) {
         return pocket_type::MOD;
@@ -427,6 +430,12 @@ void Single_item_creator::check_consistency( const std::string &context ) const
                     } else if( !item->get_container_pockets().empty() ) {
                         if( !item->can_contain( *contents ).success() ) {
                             debugmsg( "Incorrect bandoliered object object: ( %s %s ) in %s", contents->type->get_id().str(),
+                                      context, item->type->get_id().str() );
+                        }
+                    } else if( item->is_estorage() ) {
+                        // CDF: E1-2: files go into the E_FILE pocket of the device
+                        if( !contents->is_estorable() ) {
+                            debugmsg( "Incorrect stored file: ( %s %s ) in %s", contents->type->get_id().str(),
                                       context, item->type->get_id().str() );
                         }
                     } else if( item->is_gun() ) {
@@ -828,6 +837,10 @@ detached_ptr<item> Item_modifier::modify( detached_ptr<item> &&new_item ) const
                     }
                     run++;
                 }
+            }
+            // CDF: E1-2: put_in_copies routes through the router, which has no E_FILE case: files go in one by one
+            if( guess_pocket_for( *new_item, first ) == pocket_type::E_FILE_STORAGE ) {
+                run = 1;
             }
             if( run > 1 ) {
                 new_item->put_in_copies( first, static_cast<int>( run ) );

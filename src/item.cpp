@@ -1,6 +1,7 @@
 #include "item.h"
 
 #include "action_time_scale.h"
+#include "activity_actor_definitions.h"
 #include "active_tile_data_def.h"
 #include "ammo.h"
 #include "ascii_art.h"
@@ -29,8 +30,6 @@
 #include "craft_command.h"
 #include "damage.h"
 #include "debug.h"
-#include "digital_media.h"
-#include "digital_recipes.h"
 #include "dispersion.h"
 #include "drop_token.h"
 #include "effect.h" // for weed_msg
@@ -54,8 +53,10 @@
 #include "iteminfo_format_utils.h"
 #include "iteminfo_query.h"
 #include "itype.h"
+#include "itype_slots/memory_card_info.h" // CDF: E1-3, complete type for memory_card_info members
 #include "iuse.h"
 #include "iuse_actor.h"
+#include "json.h"
 #include "kill_tracker.h"
 #include "line.h"
 #include "locations.h"
@@ -169,6 +170,7 @@ static const ammotype ammo_plutonium( "plutonium" );
 static const item_category_id itemcat_drugs( "drugs" );
 static const item_category_id itemcat_food( "food" );
 static const item_category_id itemcat_maps( "maps" );
+static const item_category_id itemcat_software( "software" );
 
 static const efftype_id effect_cig( "cig" );
 static const efftype_id effect_shakes( "shakes" );
@@ -188,6 +190,8 @@ static const itype_id itype_cig_butt( "cig_butt" );
 static const itype_id itype_cig_lit( "cig_lit" );
 static const itype_id itype_cigar_butt( "cigar_butt" );
 static const itype_id itype_cigar_lit( "cigar_lit" );
+static const itype_id itype_efile_photos( "efile_photos" );
+static const itype_id itype_efile_recipes( "efile_recipes" );
 static const itype_id itype_joint_roach( "joint_roach" );
 static const itype_id itype_plut_cell( "plut_cell" );
 static const itype_id itype_plut_cell_charge( "plut_cell_charge" );
@@ -195,7 +199,7 @@ static const itype_id itype_rad_badge( "rad_badge" );
 static const itype_id itype_tuned_mechanism( "tuned_mechanism" );
 static const itype_id itype_stock_small( "stock_small" );
 static const itype_id itype_UPS( "UPS" );
-static const flag_id flag_genome_drive( "GENOME_DRIVE" );
+static const itype_id itype_digital_genome_sample( "digital_genome_sample" );
 static const itype_id itype_bio_armor( "bio_armor" );
 static const itype_id itype_waterproof_gunmod( "waterproof_gunmod" );
 static const itype_id itype_water( "water" );
@@ -442,10 +446,6 @@ item::item( const itype *type, time_point turn, int qty ) : type( type ),
         if( actor != nullptr ) {
             actor->on_spawned( *this );
         }
-    }
-
-    if( get_var( "digital_content" ) == "digital_builtin_music" ) {
-        initialize_digital_media( *this );
     }
 }
 
@@ -1386,6 +1386,36 @@ static bool stacks_whiteblacklist( const item &lhs, const item &rhs )
     return true;
 }
 
+// DDA item.cpp:927-935: the photo and recipe counts are derived caches, not part of the identity.
+// CDF: only these three keys are ignored (DDA also ignores dirt, shot_counter and others, which CDF
+// keeps comparing).
+static bool item_vars_equal_ignoring_caches( const data_vars::data_set &lhs,
+        const data_vars::data_set &rhs )
+{
+    const auto ignored = []( const std::string & key ) {
+        return key == "CAMERA_EXTENDED_PHOTOS_count" || key == "CAMERA_MONSTER_PHOTOS_count" ||
+               key == "EIPC_RECIPES_count";
+    };
+    auto l = lhs.begin();
+    auto r = rhs.begin();
+    while( true ) {
+        while( l != lhs.end() && ignored( l->first ) ) {
+            ++l;
+        }
+        while( r != rhs.end() && ignored( r->first ) ) {
+            ++r;
+        }
+        if( l == lhs.end() || r == rhs.end() ) {
+            return l == lhs.end() && r == rhs.end();
+        }
+        if( *l != *r ) {
+            return false;
+        }
+        ++l;
+        ++r;
+    }
+}
+
 bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_check,
                         int depth ) const
 {
@@ -1440,7 +1470,7 @@ bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_c
     if( techniques != rhs.techniques ) {
         return false;
     }
-    if( item_vars_ != rhs.item_vars_ ) {
+    if( !item_vars_equal_ignoring_caches( item_vars_, rhs.item_vars_ ) ) {
         return false;
     }
 
@@ -1498,6 +1528,17 @@ bool item::stacks_with( const item &rhs, bool check_components, bool skip_type_c
             // just to be safe that rotten and unrotten food is *never* stacked.
             return false;
         }
+    }
+
+    // DDA item.cpp:970-979 (EMEMORY): e-storage devices stack only with equal occupied and total
+    // memory; an e-storage device never stacks with an item that has none
+    const bool lhs_estorage = is_estorage();
+    if( lhs_estorage != rhs.is_estorage() ) {
+        return false;
+    }
+    if( lhs_estorage && ( occupied_ememory() != rhs.occupied_ememory() ||
+                          total_ememory() != rhs.total_ememory() ) ) {
+        return false;
     }
 
     // CDF: the depth limit is max_stack_depth (checked on entry), not DDA's 2
@@ -1561,7 +1602,6 @@ void item::put_in( detached_ptr<item> &&payload )
         debugmsg( "Tried to put %s inside itself", debug_name().c_str() );
         return;
     }
-    initialize_digital_recipe_file( *payload );
     // CDF: put_in is the load/migration path and always keeps the item. item_contents::insert_item
     // routes it to a real pocket, or to the MIGRATION pocket when no pocket accepts it (as DDA's
     // combine() and apply_migration keep what they have to place). A live insert that must refuse
@@ -1584,8 +1624,6 @@ ret_val<void> item::put_in( detached_ptr<item> &&payload, pocket_type pk_type,
     if( !payload || payload->is_null() ) {
         return ret_val<void>::make_failure( _( "There is nothing to put in." ) );
     }
-    // BN: digital recipe files are initialised on every insert (the 1-arg put_in does the same)
-    initialize_digital_recipe_file( *payload );
     // keep what the messages need: the payload is gone after a successful insert
     const std::string payload_type = payload->typeId().str();
     const int payload_count = payload->count();
@@ -2139,6 +2177,11 @@ void item::basic_info( std::vector<iteminfo> &info, const iteminfo_query *parts,
     }
     if( parts->test( iteminfo_parts::BASE_LENGTH ) && length() > 0_mm ) {
         info.emplace_back( "BASE", string_format( _( "Length: %s" ), string_format_length( length() ) ) );
+    }
+    // DDA item_info.cpp:285-288
+    if( parts->test( iteminfo_parts::BASE_EMEMORY ) && ememory_size() > 0_KB ) {
+        info.emplace_back( "BASE", string_format( "%s %s", _( "Memory:" ),
+                           units::display( ememory_size() ) ) );
     }
     if( !owner.is_null() ) {
         info.emplace_back( "BASE", string_format( _( "Owner: %s" ),
@@ -4101,6 +4144,199 @@ void item::battery_info( std::vector<iteminfo> &info, const iteminfo_query * /*p
     info.emplace_back( "BATTERY", info_string );
 }
 
+// DDA item_info.cpp:134-151: sorts with localized_compare, and enumerates entries, if more than
+// \p max entries the rest are abbreviated into " and %d more"
+static std::string enumerate_lcsorted_with_limit( const std::vector<std::string> &v,
+        const int max = 5 )
+{
+    if( max < 1 ) {
+        debugmsg( "Expected max to be 1 or more" );
+        return std::string();
+    }
+    std::vector<std::string> c( std::min<size_t>( max, v.size() ) );
+    std::partial_sort_copy( v.begin(), v.end(), c.begin(), c.end(), localized_compare );
+    const int more = static_cast<int>( v.size() - c.size() );
+    if( more == 0 ) {
+        return enumerate_as_string( c );
+    }
+    const std::string res = enumerate_as_string( c, enumeration_conjunction::none );
+    return string_format( max == 1 ? _( "%s and %d more" ) : _( "%s, and %d more" ), res, more );
+}
+
+// DDA item_info.cpp:2909-3126 (the tail of tool_info): electronic port type, copied recipes and the
+// recipes of stored e-books
+static void efile_tool_info( const item &it, std::vector<iteminfo> &info, const iteminfo_query *parts )
+{
+    const std::string &eport = it.type->tool->e_port;
+    if( !eport.empty() ) {
+        std::string compat;
+        compat += _( "* This device has electronic port type: " ) + colorize( _( eport ), c_light_green );
+        const std::vector<std::string> &eport_banned = it.type->tool->e_ports_banned;
+        if( !eport_banned.empty() ) {
+            compat += _( "\n* This device does not support transfer to e-port types: " );
+            for( const std::string &s : eport_banned ) {
+                compat += colorize( _( s ), c_yellow );
+            }
+        }
+        info.emplace_back( "DESCRIPTION", compat );
+    }
+
+    avatar &player_character = get_avatar();
+    // Display e-ink tablet copied recipes from SD cards
+    const std::set<recipe_id> saved_recipes = it.get_saved_recipes();
+    if( !saved_recipes.empty() ) {
+        std::vector<std::string> known_recipe_list;
+        std::vector<std::string> learnable_recipe_list;
+        std::vector<std::string> unlearnable_recipe_list;
+
+        for( const recipe_id &rid : saved_recipes ) {
+            const recipe *r = &rid.obj();
+
+            const bool knows_it = player_character.knows_recipe( r );
+            const bool can_learn = player_character.get_skill_level( r->skill_used ) >= r->difficulty;
+
+            // In case the recipe is known, but has a different name in the item, use the
+            // real name to avoid confusing the player.
+            const std::string name = r->result_name();
+
+            if( knows_it ) {
+                known_recipe_list.emplace_back( "<bold>" + name + "</bold>" );
+            } else if( !can_learn ) {
+                unlearnable_recipe_list.emplace_back( "<color_brown>" + name + "</color>" );
+            } else {
+                learnable_recipe_list.emplace_back( "<dark>" + name + "</dark>" );
+            }
+        }
+
+        const int total_recipes = known_recipe_list.size() + learnable_recipe_list.size() +
+                                  unlearnable_recipe_list.size();
+
+        if( total_recipes > 0 && parts->test( iteminfo_parts::DESCRIPTION_BOOK_RECIPES ) ) {
+            const std::string recipe_line =
+                string_format( vgettext( "Contains %1$d copied crafting recipe:",
+                                         "Contains %1$d copied crafting recipes:",
+                                         total_recipes ), total_recipes );
+
+            insert_separation_line( info );
+            info.emplace_back( "DESCRIPTION", recipe_line );
+
+            if( !known_recipe_list.empty() ) {
+                const std::string recipe_line =
+                    string_format( vgettext( "\nYou already know %1$d recipe:\n%2$s",
+                                             "\nYou already know %1$d recipes:\n%2$s",
+                                             known_recipe_list.size() ),
+                                   known_recipe_list.size(), enumerate_lcsorted_with_limit( known_recipe_list ) );
+                info.emplace_back( "DESCRIPTION", recipe_line );
+            }
+            if( !learnable_recipe_list.empty() ) {
+                const std::string recipe_line =
+                    string_format( vgettext( "\nYou have the skills to craft %1$d recipe:\n%2$s",
+                                             "\nYou have the skills to craft %1$d recipes:\n%2$s",
+                                             learnable_recipe_list.size() ),
+                                   learnable_recipe_list.size(), enumerate_lcsorted_with_limit( learnable_recipe_list ) );
+                info.emplace_back( "DESCRIPTION", recipe_line );
+            }
+            if( !unlearnable_recipe_list.empty() ) {
+                const std::string recipe_line =
+                    string_format( vgettext( "\nYou lack the skills to craft %1$d recipe:\n%2$s",
+                                             "\nYou lack the skills to craft %1$d recipes:\n%2$s",
+                                             unlearnable_recipe_list.size() ),
+                                   unlearnable_recipe_list.size(), enumerate_lcsorted_with_limit( unlearnable_recipe_list ) );
+                info.emplace_back( "DESCRIPTION", recipe_line );
+            }
+        }
+    }
+
+    // Display e-ink tablet ebook recipes
+    // CDF: no is_broken_on_active() in CDF
+    if( it.is_estorage() && it.is_browsed() ) {
+        std::vector<std::string> known_recipe_list;
+        std::vector<std::string> learnable_recipe_list;
+        std::vector<std::string> unlearnable_recipe_list;
+        const std::vector<const item *> book_list = it.ebooks();
+        const int total_ebooks = book_list.size();
+
+        for( const item *ebook : book_list ) {
+            const islot_book &book = *ebook->type->book;
+            for( const book_recipe &elem : book.recipes ) {
+                const bool knows_it = player_character.knows_recipe( elem.recipe );
+                const bool can_learn = player_character.get_skill_level( elem.recipe->skill_used ) >=
+                                       elem.skill_level;
+                // If the player knows it, they recognize it even if it's not clearly stated.
+                if( elem.is_hidden() && !knows_it ) {
+                    continue;
+                }
+
+                // In case the recipe is known, but has a different name in the book, use the
+                // real name to avoid confusing the player.
+                const std::string name = elem.recipe->result_name( /*decorated=*/true );
+
+                if( knows_it ) {
+                    if( known_recipe_list.end() == std::find( known_recipe_list.begin(),
+                            known_recipe_list.end(), name ) ) {
+                        known_recipe_list.emplace_back( "<bold>" + name + "</bold>" );
+                    }
+                } else if( !can_learn ) {
+                    const std::string recipe_formated = "<color_brown>" + elem.name.translated() + "</color>";
+                    if( unlearnable_recipe_list.end() == std::find( unlearnable_recipe_list.begin(),
+                            unlearnable_recipe_list.end(), recipe_formated ) ) {
+                        unlearnable_recipe_list.emplace_back( recipe_formated );
+                    }
+                } else {
+                    const std::string recipe_formated = "<dark>" + elem.name.translated() + "</dark>";
+                    if( learnable_recipe_list.end() == std::find( learnable_recipe_list.begin(),
+                            learnable_recipe_list.end(), recipe_formated ) ) {
+                        learnable_recipe_list.emplace_back( recipe_formated );
+                    }
+                }
+            }
+        }
+
+        const int total_recipes = known_recipe_list.size() + learnable_recipe_list.size() +
+                                  unlearnable_recipe_list.size();
+
+        if( total_recipes > 0 && parts->test( iteminfo_parts::DESCRIPTION_BOOK_RECIPES ) ) {
+            const std::string recipe_line =
+                string_format( vgettext( "Contains %1$d unique crafting recipe,",
+                                         "Contains %1$d unique crafting recipes,",
+                                         total_recipes ), total_recipes );
+            const std::string source_line =
+                string_format( vgettext( "from %1$d stored e-book:",
+                                         "from %1$d stored e-books:",
+                                         total_ebooks ), total_ebooks );
+
+            insert_separation_line( info );
+            info.emplace_back( "DESCRIPTION", recipe_line );
+            info.emplace_back( "DESCRIPTION", source_line );
+
+            if( !known_recipe_list.empty() ) {
+                const std::string recipe_line =
+                    string_format( vgettext( "\nYou already know %1$d recipe:\n%2$s",
+                                             "\nYou already know %1$d recipes:\n%2$s",
+                                             known_recipe_list.size() ),
+                                   known_recipe_list.size(), enumerate_lcsorted_with_limit( known_recipe_list ) );
+                info.emplace_back( "DESCRIPTION", recipe_line );
+            }
+            if( !learnable_recipe_list.empty() ) {
+                const std::string recipe_line =
+                    string_format( vgettext( "\nYou have the skills to craft %1$d recipe:\n%2$s",
+                                             "\nYou have the skills to craft %1$d recipes:\n%2$s",
+                                             learnable_recipe_list.size() ),
+                                   learnable_recipe_list.size(), enumerate_lcsorted_with_limit( learnable_recipe_list ) );
+                info.emplace_back( "DESCRIPTION", recipe_line );
+            }
+            if( !unlearnable_recipe_list.empty() ) {
+                const std::string recipe_line =
+                    string_format( vgettext( "\nYou lack the skills to craft %1$d recipe:\n%2$s",
+                                             "\nYou lack the skills to craft %1$d recipes:\n%2$s",
+                                             unlearnable_recipe_list.size() ),
+                                   unlearnable_recipe_list.size(), enumerate_lcsorted_with_limit( unlearnable_recipe_list ) );
+                info.emplace_back( "DESCRIPTION", recipe_line );
+            }
+        }
+    }
+}
+
 void item::tool_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int /*batch*/,
                       bool /*debug*/ ) const
 {
@@ -4164,6 +4400,7 @@ void item::tool_info( std::vector<iteminfo> &info, const iteminfo_query *parts, 
                            string_format( "<stat>%s</stat>", type->tool->ups_eff_mult ) );
 
     }
+    efile_tool_info( *this, info, parts );
 }
 
 void item::component_info( std::vector<iteminfo> &info, const iteminfo_query *parts, int /*batch*/,
@@ -4829,7 +5066,6 @@ void item::contents_info( std::vector<iteminfo> &info, const iteminfo_query *par
                           bool debug ) const
 {
     if( ( toolmods().empty() && gunmods().empty() && contents.empty() ) ||
-        has_flag( flag_MC_ENCRYPTED ) ||
         !parts->test( iteminfo_parts::DESCRIPTION_CONTENTS ) ) {
         return;
     }
@@ -5299,10 +5535,7 @@ std::vector<iteminfo> item::info( const iteminfo_query &parts_ref, int batch,
     }
 
     // per DDA item_info.cpp:4479: the pocket text first, then the contents of the item
-    // BN: digital storage media are not described as containers
-    if( !has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
-        contents.info( info, parts );
-    }
+    contents.info( info, parts );
     contents_info( info, parts, batch, debug );
     combat_info( info, parts, batch, debug );
     throw_info( info, parts, batch, debug );
@@ -5894,6 +6127,10 @@ void item::on_contents_changed()
     invalidate_pocket_caches_upwards();
     // DDA item_container.cpp:299 update_inherited_flags()
     invalidate_inherited_flags();
+    if( is_estorage() ) {
+        // DDA item.cpp:1517-1521: the files of the device take its dark reading flag at once
+        update_inherited_flags();
+    }
     if( empty_container() ) {
         clear_automatic_whitelist();
     }
@@ -6001,10 +6238,15 @@ contents_aggregate aggregated_contents( const item &it )
     contents_aggregate *running_max = nullptr;
     contents_aggregate *max_type = nullptr;
     auto const cont_and_soft = []( const item_pocket & pkt ) {
-        return pkt.is_type( pocket_type::CONTAINER );
+        return pkt.is_type( pocket_type::CONTAINER ) || pkt.is_type( pocket_type::E_FILE_STORAGE );
     };
 
     for( const item_pocket *pk : it.get_contents().get_pockets( cont_and_soft ) ) {
+        // CDF: E1-3, as the copy in item_container.cpp (DDA item_container.cpp:1031): the files of a
+        // device count only when it is browsed; no is_broken() in CDF
+        if( pk->is_type( pocket_type::E_FILE_STORAGE ) && !it.is_browsed() ) {
+            continue;
+        }
         for( const item *pkit : pk->all_items_top() ) {
             total++;
             item_category_id const cat = pkit->get_category_of_contents().get_id();
@@ -6052,6 +6294,34 @@ bool is_ammo_exclusive( const item &it )
         }
     }
     return false;
+}
+
+// DDA item_tname.cpp:695-713 (segment EMEMORY): the free memory of an e-device.
+// CDF: no is_broken() in CDF, so only the browsed state matters.
+std::string ememory_segment( const item &it )
+{
+    if( !it.is_estorage() ) {
+        return {};
+    }
+    if( !it.is_browsed() ) {
+        return colorize( _( " (unbrowsed)" ), c_dark_gray );
+    }
+    const units::ememory remain_mem = it.remaining_ememory();
+    const units::ememory total_mem = it.total_ememory();
+    const double ratio = static_cast<double>( remain_mem.value() ) /
+                         static_cast<double>( total_mem.value() );
+    nc_color ememory_color;
+    if( ratio > 0.66f ) {
+        ememory_color = c_light_green;
+    } else if( ratio > 0.33f ) {
+        ememory_color = c_yellow;
+    } else {
+        ememory_color = c_light_red;
+    }
+    const std::string out_of = remain_mem == total_mem ? units::display( remain_mem ) :
+                               string_format( "%s/%s", units::display( remain_mem ),
+                                              units::display( total_mem ) );
+    return string_format( _( " (%s free)" ), colorize( out_of, ememory_color ) );
 }
 
 // DDA item_tname.cpp:285-340 (segment CONTENTS): the " > contents" part of a name.
@@ -6241,7 +6511,7 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
             }
         }
 
-        if( is_gun() || is_tool() || is_magazine() || has_flag( flag_MC_ENCRYPTED ) ) {
+        if( is_gun() || is_tool() || is_magazine() ) {
             maintext = labeltext;
         } else {
             // DDA item_tname.cpp:285-340 (segment CONTENTS): "container > contents", printed
@@ -6327,7 +6597,8 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
         const auto specimen_id = mtype_id( get_var( "specimen_sample" ) );
         const auto specimen_name = cloning_utils::specimen_name( specimen_id, get_var( "specimen_name" ) );
         const auto size = cloning_utils::specimen_required_sample_size( specimen_id );
-        if( has_flag( flag_genome_drive ) && size > 0 && progress < size ) {
+        // CDF: E1-11b, progress is shown for the genome sample file (the BN genome drive flag is gone)
+        if( typeId() == itype_digital_genome_sample && size > 0 && progress < size ) {
             tagtext += string_format( " (%s [%d/%d])", specimen_name, progress, size );
         } else {
             tagtext += string_format( " (%s)", specimen_name );
@@ -6410,6 +6681,8 @@ std::string item::tname( unsigned int quantity, bool with_prefix, unsigned int t
     // DDA item_tname.cpp:859 makes CONTENTS the fixed last segment, after CLOTHING_SIZE and
     // every tag, so the contents suffix is appended here instead of inside maintext.
     ret += contents_text;
+    // DDA item_tname.h:62 prints EMEMORY right after CONTENTS
+    ret += ememory_segment( *this );
 
     // Per DDA item_tname.cpp:120 (FAVORITE_PRE): the prefix mark is part of the prefixed name
     // only, as DDA item_tname.h:129 leaves it out of unprefixed_tname.
@@ -7030,11 +7303,6 @@ units::volume item::volume( bool integral ) const
         return 0_ml;
     }
 
-    // Digital copies retain their physical type but need a nonzero file volume.
-    if( is_digital_file( *this ) ) {
-        return 1_ml;
-    }
-
     if( is_corpse() ) {
         return corpse_volume( corpse );
     }
@@ -7471,6 +7739,17 @@ void item::update_inherited_flags() const
                 inherit_flags( e->type->get_flags() );
             }
         }
+    }
+
+    // DDA item.cpp:1517-1521: the files of an e-device that can be used in the dark can be read in
+    // the dark. CDF: the flag is set on the file itself, as in DDA; set_flag() marks our cache dirty
+    // again, but nothing in it changes, so it is cleared right after.
+    static const flag_id flag_can_use_in_dark( "CAN_USE_IN_DARK" );
+    if( is_estorage() && has_flag( flag_can_use_in_dark ) ) {
+        for( item *file : const_cast<item *>( this )->efiles() ) {
+            file->set_flag( flag_can_use_in_dark );
+        }
+        inherited_tags_dirty = false;
     }
 }
 
@@ -9158,6 +9437,343 @@ bool item::is_map() const
     return get_category().get_id() == itemcat_maps;
 }
 
+// CDF: E1-1, the DDA e-file engine (DDA item.cpp:2709-2890, 3450, 3499-3560; b4b62254ae2).
+// The trivial predicates are real. E1-3 filled every item-level body of this block.
+bool item::is_estorage() const
+{
+    return contents.has_pocket_type( pocket_type::E_FILE_STORAGE );
+}
+
+bool item::is_estorage_usable( const Character &who ) const
+{
+    return is_estorage() && is_browsed() && efile_activity_actor::edevice_has_use( this ) &&
+           ammo_sufficient( &who );
+}
+
+bool item::is_estorable() const
+{
+    return has_flag( flag_E_STORABLE ) || has_flag( flag_E_STORABLE_EXCLUSIVE ) || is_book();
+}
+
+bool item::is_estorable_exclusive() const
+{
+    return has_flag( flag_E_STORABLE_EXCLUSIVE );
+}
+
+bool item::is_browsed() const
+{
+    return get_var( "browsed", std::string( "false" ) ) == "true";
+}
+
+void item::set_browsed( bool browsed )
+{
+    set_var( "browsed", std::string( browsed ? "true" : "false" ) );
+}
+
+bool item::is_ecopiable() const
+{
+    return has_flag( flag_E_COPIABLE ) || ( is_book() && !type->book->generic );
+}
+
+bool item::efiles_all_browsed() const
+{
+    if( is_browsed() ) {
+        return true;
+    }
+    for( const item *file : efiles() ) {
+        if( !file->is_browsed() ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static int count_valid_recipes( const std::string &csv )
+{
+    // Match get_saved_recipes() semantics: deduplicate via set so a malformed
+    // CSV like ",balclava,balclava," returns 1, not 2.
+    std::set<recipe_id> seen;
+    for( const std::string &rid_str : string_split( csv, ',' ) ) {
+        const recipe_id rid( rid_str );
+        if( !rid.is_empty() && rid.is_valid() ) {
+            seen.emplace( rid );
+        }
+    }
+    return static_cast<int>( seen.size() );
+}
+
+units::ememory item::ememory_size() const
+{
+    units::ememory ememory_return = type->ememory_size;
+    if( typeId() == itype_efile_recipes ) {
+        // CDF: E1-3, no is_broken_on_active() in CDF (no ITEM_BROKEN fault)
+        // Reading a cached count avoids parsing EIPC_RECIPES and validating
+        // every recipe_id in stacks_with.
+        int n;
+        if( has_var( "EIPC_RECIPES_count" ) ) {
+            n = static_cast<int>( get_var( "EIPC_RECIPES_count", 0.0 ) );
+        } else {
+            n = count_valid_recipes( get_var( "EIPC_RECIPES" ) );
+            const_cast<item *>( this )->set_var( "EIPC_RECIPES_count", n );
+        }
+        ememory_return *= n;
+    } else if( typeId() == itype_efile_photos ) {
+        ememory_return *= total_photos();
+    }
+    return ememory_return;
+}
+
+units::ememory item::occupied_ememory() const
+{
+    return contents.occupied_ememory();
+}
+
+units::ememory item::total_ememory() const
+{
+    const std::vector<const item_pocket *> pockets = contents.get_pockets( pocket_type::E_FILE_STORAGE );
+    if( pockets.size() > 1 ) {
+        debugmsg( "no more than one E_FILE_STORAGE pocket is allowed" );
+    }
+    if( pockets.empty() ) {
+        return 0_KB;
+    }
+    return pockets.back()->get_pocket_data()->ememory_max;
+}
+
+units::ememory item::remaining_ememory() const
+{
+    return total_ememory() - occupied_ememory();
+}
+
+item *item::get_recipe_catalog()
+{
+    // CDF: E1-3, get_item_with skips E_FILE pockets (E1-2), so walk the files directly
+    if( type->memory_card_data ) {
+        return this;
+    }
+    for( item *file : efiles() ) {
+        if( file->type->memory_card_data ) {
+            return file;
+        }
+    }
+    return nullptr;
+}
+
+const item *item::get_recipe_catalog() const
+{
+    // CDF: E1-3, get_item_with skips E_FILE pockets (E1-2), so walk the files directly
+    if( type->memory_card_data ) {
+        return this;
+    }
+    for( const item *file : efiles() ) {
+        if( file->type->memory_card_data ) {
+            return file;
+        }
+    }
+    return nullptr;
+}
+
+item *item::get_photo_gallery()
+{
+    // CDF: E1-3, get_item_with skips E_FILE pockets (E1-2), so walk the files directly
+    for( item *file : efiles() ) {
+        if( file->typeId() == itype_efile_photos ) {
+            return file;
+        }
+    }
+    return nullptr;
+}
+
+const item *item::get_photo_gallery() const
+{
+    // CDF: E1-3, get_item_with skips E_FILE pockets (E1-2), so walk the files directly
+    for( const item *file : efiles() ) {
+        if( file->typeId() == itype_efile_photos ) {
+            return file;
+        }
+    }
+    return nullptr;
+}
+
+int item::total_photos() const
+{
+    // Reading a cached count avoids reparsing the JSON blob in stacks_with.
+    const auto count_for = [this]( const std::string & var_name ) -> int {
+        const std::string count_var = var_name + "_count";
+        if( has_var( count_var ) ) {
+            return static_cast<int>( get_var( count_var, 0.0 ) );
+        }
+        std::vector<item::extended_photo_def> v;
+        // CDF: E1-3, a missing variable reads as "no photos" and leaves the vector empty
+        read_extended_photos( v, var_name, true );
+        const int n = static_cast<int>( v.size() );
+        const_cast<item *>( this )->set_var( count_var, n );
+        return n;
+    };
+    return count_for( "CAMERA_EXTENDED_PHOTOS" ) + count_for( "CAMERA_MONSTER_PHOTOS" );
+}
+
+bool item::is_software() const
+{
+    return type->category_force == itemcat_software;
+}
+
+// CDF: E1-5b. The recipes in the EIPC_RECIPES variable of @p it itself (the loop of DDA
+// item::get_saved_recipes, item.cpp:3499-3523, below its e-device branch).
+static std::set<recipe_id> saved_recipes_from_var( const item &it )
+{
+    std::set<recipe_id> result;
+    for( const std::string &rid_str : string_split( it.get_var( "EIPC_RECIPES" ), ',' ) ) {
+        const recipe_id rid( rid_str );
+        if( rid.is_empty() ) {
+            continue;
+        }
+        if( !rid.is_valid() ) {
+            DebugLog( DL::Warn, DC::Game ) << it.type->get_id().str() <<
+                                          " contained invalid recipe id '" << rid.str() << "'";
+            continue;
+        }
+        result.emplace( rid );
+    }
+    return result;
+}
+
+std::set<recipe_id> item::get_saved_recipes() const
+{
+    // CDF: E1-3, no is_broken_on_active() in CDF (no ITEM_BROKEN fault)
+    if( is_estorage() && efile_activity_actor::edevice_has_use( this ) ) {
+        const item *recipe_catalog = get_recipe_catalog();
+        // CDF: E1-5b, DDA calls recipe_catalog->get_saved_recipes() here, which loops for a device
+        // that is its own catalog (an e-device with memory_card data: get_recipe_catalog() returns
+        // the item itself). The catalog's own list is read directly instead, and a device that is
+        // its own catalog uses its own list.
+        if( recipe_catalog != nullptr && recipe_catalog != this ) {
+            return saved_recipes_from_var( *recipe_catalog );
+        }
+    }
+    return saved_recipes_from_var( *this );
+}
+
+void item::set_saved_recipes( const std::set<recipe_id> &recipes )
+{
+    // CDF: E1-3, no string_join for id sets; build the CSV from the ids
+    std::vector<std::string> recipe_ids;
+    recipe_ids.reserve( recipes.size() );
+    for( const recipe_id &rid : recipes ) {
+        recipe_ids.emplace_back( rid.str() );
+    }
+    const std::string csv = join( recipe_ids, "," );
+    set_var( "EIPC_RECIPES", csv );
+    // Compute from the persisted CSV so the cache reflects steady-state validity.
+    set_var( "EIPC_RECIPES_count", count_valid_recipes( csv ) );
+}
+
+void item::generate_recipes()
+{
+    const memory_card_info *mmd = type->memory_card_data ? &*type->memory_card_data : nullptr;
+    std::set<recipe_id> saved_recipes = get_saved_recipes();
+    if( mmd != nullptr ) {
+        std::set<recipe_id> candidates;
+        for( const auto& [rid, r] : recipe_dict ) {
+            if( r.never_learn || r.obsolete || mmd->recipes_categories.count( r.category ) == 0 ||
+                saved_recipes.count( rid ) ||
+                r.difficulty > mmd->recipes_level_max || r.difficulty < mmd->recipes_level_min ||
+                ( r.has_flag( "SECRET" ) && !mmd->secret_recipes ) ) {
+                continue;
+            }
+            candidates.emplace( rid );
+        }
+        const int recipe_num = rng( 1, mmd->recipes_amount );
+        for( int i = 0; i < recipe_num && !candidates.empty(); i++ ) {
+            const recipe_id rid = random_entry_removed( candidates );
+            saved_recipes.emplace( rid );
+        }
+        set_saved_recipes( saved_recipes );
+    }
+}
+
+int item::pages_in_book( const itype &type )
+{
+    if( !type.book ) {
+        return 0;
+    }
+    // an A4 sheet weighs roughly 5 grams (DDA item.cpp:3450-3457)
+    return std::max( 1, static_cast<int>( units::to_gram( type.weight ) / 5 ) );
+}
+
+void item::extended_photo_def::deserialize( JsonIn &jsin )
+{
+    JsonObject obj = jsin.get_object();
+    quality = obj.get_int( "quality" );
+    name = obj.get_string( "name" );
+    description = obj.get_string( "description" );
+}
+
+void item::extended_photo_def::serialize( JsonOut &jsout ) const
+{
+    jsout.start_object();
+    jsout.member( "quality", quality );
+    jsout.member( "name", name );
+    jsout.member( "description", description );
+    jsout.end_object();
+}
+
+bool item::read_extended_photos( std::vector<extended_photo_def> &extended_photos,
+                                 const std::string &var_name,
+                                 bool insert_at_begin ) const
+{
+    // CDF: E1-3, a missing or unreadable variable reads as "no photos" (DDA's from_string_opt does the same)
+    const std::string data = get_var( var_name );
+    if( data.empty() ) {
+        return false;
+    }
+    try {
+        std::istringstream stream( data );
+        JsonIn json( stream );
+        bool result = false;
+        if( insert_at_begin ) {
+            std::vector<extended_photo_def> temp_vec;
+            result = json.read( temp_vec );
+            extended_photos.insert( extended_photos.begin(), temp_vec.begin(), temp_vec.end() );
+        } else {
+            result = json.read( extended_photos );
+        }
+        return result;
+    } catch( const std::exception & ) {
+        return false;
+    }
+}
+
+void item::write_extended_photos( const std::vector<extended_photo_def> &extended_photos,
+                                  const std::string &var_name )
+{
+    std::ostringstream extended_photos_data;
+    JsonOut json( extended_photos_data );
+    json.write( extended_photos );
+    set_var( var_name, extended_photos_data.str() );
+    set_var( var_name + "_count", static_cast<int>( extended_photos.size() ) );
+}
+
+std::vector<const item *> item::softwares() const
+{
+    return contents.softwares();
+}
+
+std::vector<const item *> item::ebooks() const
+{
+    return contents.ebooks();
+}
+
+std::vector<item *> item::efiles()
+{
+    return contents.efiles();
+}
+
+std::vector<const item *> item::efiles() const
+{
+    return contents.efiles();
+}
+
 bool item::is_watertight_container() const
 {
     return type->container && type->container->watertight && type->container->seals;
@@ -9607,17 +10223,7 @@ void item::mark_chapter_as_read( const Character &ch )
 
 std::vector<std::pair<const recipe *, int>> item::get_available_recipes( const Character &u ) const
 {
-    if( is_digital_file( *this ) && !digital_reader_for( u, *this ) ) {
-        return {};
-    }
     std::vector<std::pair<const recipe *, int>> recipe_entries;
-    if( is_digital_file( *this ) ) {
-        for( const auto &entry : digital_file_recipes( *this ) ) {
-            if( u.get_skill_level( entry.recipe->skill_used ) >= entry.skill_level ) {
-                recipe_entries.emplace_back( &*entry.recipe, entry.skill_level );
-            }
-        }
-    }
     if( is_book() ) {
         for( const book_recipe &elem : type->book->recipes ) {
             if( u.get_skill_level( elem.recipe->skill_used ) >= elem.skill_level ) {
@@ -12813,9 +13419,6 @@ std::string item::type_name( unsigned int quantity ) const
         }
     }
 
-    if( is_digital_file( *this ) && !type->has_flag( flag_id( "DIGITAL" ) ) ) {
-        ret_name = string_format( _( "digital copy of %s" ), ret_name );
-    }
     return ret_name;
 }
 

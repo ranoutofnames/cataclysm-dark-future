@@ -29,7 +29,6 @@
 #include "character.h"
 #include "coordinates.h"
 #include "debug.h"
-#include "digital_media.h"
 #include "enums.h"
 #include "flag.h"
 #include "flat_set.h"
@@ -73,8 +72,8 @@ detached_ptr<item> item::in_container( const itype_id &cont, detached_ptr<item> 
     }
     detached_ptr<item> container = item::spawn( cont, self->birthday() );
     // CDF: BN items have no variants, so the container variant is not applied
-    // CDF: any container pocket, carry or not (DDA is_container())
-    if( container->has_pocket_type( pocket_type::CONTAINER ) ) {
+    // CDF: any container pocket, carry or not (DDA is_container()), or e-storage (DDA item_container.cpp:73)
+    if( container->has_pocket_type( pocket_type::CONTAINER ) || container->is_estorage() ) {
         // CDF: BN containers that are sealed by their type (unseals_into) are sealed from the start,
         // so spawning has to be allowed to fill them (DDA seals after filling)
         container->fill_with( *self, qty, false, /*allow_sealed=*/true );
@@ -87,7 +86,19 @@ detached_ptr<item> item::in_container( const itype_id &cont, detached_ptr<item> 
         if( sealed ) {
             container->seal();
         }
-        if( !container->has_item_with_id( self->typeId() ) ) {
+        // CDF: E1-3, has_item_with_id() uses the default walk, which skips installed e-files (E1-2)
+        const auto holds_payload = [&]() {
+            if( container->has_item_with_id( self->typeId() ) ) {
+                return true;
+            }
+            for( const item *file : container->efiles() ) {
+                if( file->typeId() == self->typeId() ) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        if( !holds_payload() ) {
             debugmsg( "ERROR: failed to put %s in its container %s", self->typeId().c_str(), cont.c_str() );
             return std::move( self );
         }
@@ -415,15 +426,6 @@ ret_val<void> item::can_contain( const item &it, int &copies_remaining, const bo
         // or does this already contain it?
         return ret_val<void>::make_failure( "can't put a container into itself" );
     }
-    // BN: digital files only go into digital storage media, and digital storage takes no other cargo.
-    // CDF: magazines and ammo still reach the battery pocket or well of a digital reader
-    // (laptops, cameras, e-readers carry DIGITAL_STORAGE and a P3 magazine pocket).
-    const bool digital_storage = has_flag( flag_id( "DIGITAL_STORAGE" ) );
-    if( is_digital_file( it ) || ( digital_storage && !it.is_magazine() && !it.is_ammo() ) ) {
-        return digital_storage && is_digital_file( it ) ?
-               ret_val<void>::make_success() :
-               ret_val<void>::make_failure( "digital files need digital storage media" );
-    }
     // CDF: any container pocket, carry or not (DDA is_container())
     if( nested && !has_pocket_type( pocket_type::CONTAINER ) ) {
         return ret_val<void>::make_failure();
@@ -517,10 +519,6 @@ pocket_choice item::best_pocket( const item &it, const item *avoid, const bool a
 
 bool item::spill_contents( Character &c )
 {
-    // BN: digital storage media hold files, nothing to spill
-    if( has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
-        return true;
-    }
     // CDF: any container pocket, carry or not (DDA is_container())
     if( ( !has_pocket_type( pocket_type::CONTAINER ) && !is_magazine() &&
           !has_pocket_type( pocket_type::MAGAZINE_WELL ) ) ||
@@ -540,10 +538,6 @@ bool item::spill_contents( Character &c )
 
 bool item::spill_contents( const tripoint_bub_ms &pos )
 {
-    // BN: digital storage media hold files, nothing to spill
-    if( has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
-        return true;
-    }
     // CDF: any container pocket, carry or not (DDA is_container())
     if( ( !has_pocket_type( pocket_type::CONTAINER ) && !is_magazine() &&
           !has_pocket_type( pocket_type::MAGAZINE_WELL ) ) ||
@@ -814,10 +808,15 @@ aggregate_t aggregated_contents( const item &it, int depth, int maxdepth )
     aggregate_t *running_max{};
     aggregate_t *max_type{};
     auto const cont_and_soft = []( item_pocket const & pkt ) {
-        return pkt.is_type( pocket_type::CONTAINER );
+        return pkt.is_type( pocket_type::CONTAINER ) || pkt.is_type( pocket_type::E_FILE_STORAGE );
     };
 
     for( item_pocket const *pk : it.get_contents().get_pockets( cont_and_soft ) ) {
+        // CDF: E1-2, DDA item_container.cpp:1031; DEVIATION: CDF has no item::is_broken() (DDA ITEM_BROKEN
+        // fault flag, item_degrade.cpp:1077), so only the browsed check applies
+        if( pk->is_type( pocket_type::E_FILE_STORAGE ) && !it.is_browsed() ) {
+            continue;
+        }
         for( item const *pkit : pk->all_items_top() ) {
             total++;
             item_category_id const cat = pkit->get_category_of_contents( depth, maxdepth ).get_id();

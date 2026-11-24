@@ -924,7 +924,7 @@
     "skill_used": "fabrication",
     "difficulty": 5,
     "time": "1 h 15 m",
-    "book_learn": [ [ "textbook_weapwest", 3 ] ],
+    "book_learn": [ [ "textbook_weapwest", 3 ], [ "digital_piercing_weapon_blueprints", 5 ] ],
     "autolearn": true,
     "using": [ [ "forging_standard", 4 ], [ "bronzesmithing_tools", 1 ] ],
     "components": [ [ [ "wood_structural_small", 1, "LIST" ] ], [ [ "fabric_hides_any", 2, "LIST" ] ], [ [ "scrap_bronze", 2 ] ] ]
@@ -1137,7 +1137,7 @@
     "time": "30 m",
     "reversible": true,
     "autolearn": true,
-    "book_learn": [ [ "recipe_melee", 1 ], [ "textbook_weapeast", 7 ] ],
+    "book_learn": [ [ "recipe_melee", 1 ], [ "textbook_weapeast", 7 ], [ "digital_piercing_weapon_blueprints", 4 ] ],
     "qualities": [ { "id": "CUT", "level": 1 } ],
     "components": [ [ [ "leather", 4 ] ], [ [ "bone_heavy", 1 ] ], [ [ "teeth_serrated", 4 ] ] ]
   }

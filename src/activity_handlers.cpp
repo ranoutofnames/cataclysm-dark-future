@@ -1,5 +1,4 @@
 #include "activity_handlers.h"
-#include "book_scanning.h"
 
 #include <algorithm>
 #include <climits>
@@ -37,7 +36,6 @@
 #include "crafting_quality.h"
 #include "creature.h"
 #include "damage.h"
-#include "digital_media.h"
 #include "debug.h"
 // TODO (https://github.com/cataclysmbn/Cataclysm-BN/issues/1612):
 // Remove that include after implementing repair_activity_actor.
@@ -61,6 +59,7 @@
 #include "temp_crafting_inventory.h"
 #include "item.h"
 #include "item_contents.h"
+#include "pocket_type.h"
 #include "item_group.h"
 #include "itype.h"
 #include "iuse.h"
@@ -268,7 +267,6 @@ using namespace activity_handlers;
 
 const std::map< activity_id, std::function<void( player_activity *, player * )> >
 activity_handlers::do_turn_functions = {
-    { activity_id( "ACT_SCAN_BOOK" ), scan_book_do_turn },
     { ACT_BURROW, burrow_do_turn },
     { ACT_CRAFT, craft_do_turn },
     { ACT_FILL_LIQUID, fill_liquid_do_turn },
@@ -333,7 +331,6 @@ activity_handlers::do_turn_functions = {
 
 const std::map< activity_id, std::function<void( player_activity *, player * )> >
 activity_handlers::finish_functions = {
-    { activity_id( "ACT_SCAN_BOOK" ), scan_book_finish },
     { ACT_BURROW, burrow_finish },
     { ACT_BUTCHER, butcher_finish },
     { ACT_BUTCHER_FULL, butcher_finish },
@@ -3390,17 +3387,29 @@ void activity_handlers::butcher_do_turn( player_activity *act, player *p )
 
 void activity_handlers::read_do_turn( player_activity *act, player *p )
 {
-    if( !act->targets.empty() && act->targets.front() &&
-        is_digital_file( *act->targets.front() ) ) {
-        const auto reader = digital_reader_for( *p, *act->targets.front() );
-        if( !reader ) {
-            p->add_msg_if_player( m_bad, _( "Your reader is no longer available.  You stop studying." ) );
+    // CDF: E1-8, DDA read_activity_actor::do_turn (activity_actor.cpp:2178-2205). The e-reader of the
+    // reading is the second target (see player_activity.cpp read_boot_ereader for the first charge):
+    // one use more every five minutes, and the reading stops when the device is gone or empty. The
+    // activity is nulled here: cancel_activity would replace the activity this call runs in.
+    if( act->targets.size() > 1 ) {
+        const safe_reference<item> &ereader_ref = act->targets[1];
+        if( !ereader_ref ) {
+            p->add_msg_player_or_npc( m_bad, _( "You no longer have the e-book!" ),
+                                      _( "<npcname> no longer has the e-book!" ) );
             act->set_to_null();
             return;
         }
-        if( action_time_scale::once_every_this_tick( 1_minutes ) ) {
-            auto &device = reader->get();
-            p->consume_charges( device, device.type->charges_to_use() );
+        item &ereader = *ereader_ref;
+        if( !ereader.ammo_sufficient( p ) ) {
+            // CDF: no add_msg_if_player_sees
+            p->add_msg_player_or_npc( m_bad, _( "Your %s ran out of batteries." ),
+                                      _( "<npcname>'s %s ran out of batteries." ),
+                                      item::nname( ereader.typeId() ) );
+            act->set_to_null();
+            return;
+        }
+        if( action_time_scale::once_every_this_tick( 5_minutes ) ) {
+            ereader.consume_tool_uses( 1, get_map(), p->bub_pos(), p );
         }
     }
     if( p->is_player() ) {
@@ -5007,5 +5016,10 @@ void activity_handlers::mind_splicer_finish( player_activity *act, player *p )
     p->add_msg_if_player( m_info, _( "…you finally find the memory banks." ) );
     p->add_msg_if_player( m_info, _( "The kit makes a copy of the data inside the bionic." ) );
     data_card.contents.clear_items();
-    data_card.put_in( item::spawn( itype_mind_scan_robofac ) );
+    // CDF: E1-11a: the data card is an e-storage device and the scan an e-file; the plain put_in would
+    // route a file to the MIGRATION pocket, where no e-device menu or mission finds it
+    if( !data_card.put_in( item::spawn( itype_mind_scan_robofac ), pocket_type::E_FILE_STORAGE, false,
+                           nullptr, true ).success() ) {
+        debugmsg( "The data card cannot store the mind scan" );
+    }
 }

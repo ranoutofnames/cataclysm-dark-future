@@ -376,12 +376,16 @@
     "weight": "0 g",
     "volume": "1 ml",
     "container": "null",
-    "flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ],
+    "flags": [ "E_STORABLE_EXCLUSIVE", "E_COPIABLE", "ZERO_WEIGHT", "NO_DROP", "IRREMOVABLE" ],
     "use_action": {
       "type": "reveal_map",
       "radius": 90,
       "terrain": [ "hiway", "road", "bridge", "dam", "field", "swamp", "forest", "lake", "river" ],
       "message": "You add terrain and roads to your map."
-    }
+    },
+    "category": "e_files",
+    "item_vars": { "browsed": "false" },
+    "ememory_size": "512 MB",
+    "//": "CDF: E1-10a, O7: the offline satellite map stays a loot-only e-file (it is crafted, recipes/other/other.json)"
   }
 ]

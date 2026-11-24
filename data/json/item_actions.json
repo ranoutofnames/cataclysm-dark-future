@@ -376,11 +376,6 @@
   },
   {
     "type": "item_action",
-    "id": "EINKTABLETPC",
-    "name": { "str": "Access file system" }
-  },
-  {
-    "type": "item_action",
     "id": "EXTINGUISHER",
     "name": { "str": "Spray" }
   },
@@ -1093,5 +1088,35 @@
     "type": "item_action",
     "id": "paint_stuff_cfg",
     "name": { "str": "Configure Painter" }
+  },
+  {
+    "type": "item_action",
+    "id": "EBOOKSAVE",
+    "name": { "str": "Store books" }
+  },
+  {
+    "type": "item_action",
+    "id": "E_FILE_DEVICE",
+    "name": { "str": "Manage files" }
+  },
+  {
+    "type": "item_action",
+    "id": "VIEW_RECIPES",
+    "name": { "str": "View recipes" }
+  },
+  {
+    "type": "item_action",
+    "id": "VIEW_PHOTOS",
+    "name": { "str": "View photos" }
+  },
+  {
+    "type": "item_action",
+    "id": "BINDER_ADD_RECIPE",
+    "name": { "str": "Copy a recipe" }
+  },
+  {
+    "type": "item_action",
+    "id": "BINDER_MANAGE_RECIPE",
+    "name": { "str": "Remove a recipe" }
   }
 ]

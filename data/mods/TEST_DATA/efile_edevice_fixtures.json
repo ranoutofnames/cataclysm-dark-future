@@ -1,0 +1,141 @@
+[
+  {
+    "//": "CDF: E1-5b fixtures for the efile actor (tests/player_activities_test.cpp edevice cases, tests/efile_actor_test.cpp, tests/efile_item_test.cpp). test_efile_etd stands for DDA memory_card (data/json/items/tool/electronics.json:79-91, 381-400: 12 MB, port 'memory card', the external transfer device of the DDA edevice test; the real one arrives in E1-10a). Merge note: E1-10a may replace it by memory_card.",
+    "id": "test_efile_etd",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test external transfer card" },
+    "description": "A test memory card: an e-device with e-file storage but no use action.",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "symbol": ",",
+    "color": "white",
+    "material": [ "plastic" ],
+    "etransfer_rate": "12 MB",
+    "e_port": "memory card",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "64 GB"
+      }
+    ]
+  },
+  {
+    "//": "CDF: E1-5b. An e-device that is also its own recipe catalog (E_FILE_DEVICE use action, E_FILE_STORAGE pocket and memory_card data): get_saved_recipes -> get_recipe_catalog -> get_saved_recipes looped on it (the recursion E1-3 flagged).",
+    "id": "test_efile_selfcatalog",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test self-cataloguing device" },
+    "description": "A test e-device that carries its own recipe catalog.",
+    "weight": "250 g",
+    "volume": "250 ml",
+    "symbol": ";",
+    "color": "blue",
+    "material": [ "plastic" ],
+    "tool_ammo": [ "battery" ],
+    "charges_per_use": 1,
+    "etransfer_rate": "30 MB",
+    "e_port": "tablet",
+    "use_action": [ "E_FILE_DEVICE" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD" ],
+    "memory_card": {
+      "data_chance": 0.5,
+      "recipes_chance": 0.25,
+      "recipes_amount": 3,
+      "recipes_level_min": 1,
+      "recipes_level_max": 4,
+      "recipes_categories": [ "CC_FOOD", "CC_ELECTRONIC" ],
+      "secret_recipes": true
+    },
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 85 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "32 GB"
+      }
+    ]
+  },
+  {
+    "//": "CDF: E1-5c. A device with the USB-A port that the tablets ban (test_eink_tablet_pc, test_smart_phone, test_ebook_reader ban USB-A): the 'none' row of the port class table.",
+    "id": "test_efile_usb_a",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test USB-A drive" },
+    "description": "A test drive with the USB-A port.",
+    "weight": "10 g",
+    "volume": "5 ml",
+    "symbol": ",",
+    "color": "white",
+    "material": [ "plastic" ],
+    "etransfer_rate": "5 MB",
+    "e_port": "USB-A",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "8 GB"
+      }
+    ]
+  },
+  {
+    "//": "CDF: E1-5c. Like test_efile_etd but with too little memory for the large test files (an ETD must hold the file).",
+    "id": "test_efile_etd_tiny",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test tiny transfer card" },
+    "description": "A test memory card with almost no memory.",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "symbol": ",",
+    "color": "white",
+    "material": [ "plastic" ],
+    "etransfer_rate": "12 MB",
+    "e_port": "memory card",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "1 MB"
+      }
+    ]
+  },
+  {
+    "//": "CDF: E1-5c. A slow external transfer device: half of 1 MB/s is below the 1 MB/s Bluetooth rate, so the Bluetooth rate stays.",
+    "id": "test_efile_etd_slow",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test slow transfer card" },
+    "description": "A test memory card with a slow interface.",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "symbol": ",",
+    "color": "white",
+    "material": [ "plastic" ],
+    "etransfer_rate": "1 MB",
+    "e_port": "memory card",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "64 GB"
+      }
+    ]
+  }
+]

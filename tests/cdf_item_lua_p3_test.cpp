@@ -21,8 +21,6 @@
 #include "type_id.h"
 #include "itype_slots/islot_magazine.h"
 
-#include <fstream>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -291,50 +289,6 @@ TEST_CASE( "lua_item_pocket_by_id_handle_goes_stale", "[p3][lua]" ) {
     const auto after = lua.safe_script( "return h:is_valid()", sol::script_pass_on_error );
     REQUIRE( after.valid() );
     CHECK( after.get<bool>() == false );
-}
-
-// ebook_lua reads the tablet battery through ammo_remaining(), not item.charges.
-TEST_CASE( "ebook_lua_battery_arithmetic_uses_ammo_remaining", "[p3][lua]" ) {
-    clear_all_state();
-    // CDF: literals from electronics.json eink_tablet_pc: initial_charges 68, pocket 85 (DDA twin number; 7-R4a2)
-    detached_ptr<item> tablet = item::spawn( itype_id( "eink_tablet_pc" ) );
-
-    auto lua = make_lua_state();
-    lua.globals()["device"] = &*tablet;
-    const auto res = lua.safe_script( R"(
-        local out = {}
-        out.remaining = device:ammo_remaining()
-        out.capacity = device:ammo_capacity(false)
-        out.pct = math.floor(device:ammo_remaining() / device:ammo_capacity(false) * 100 + 0.5)
-        out.limit = math.floor(device:ammo_remaining() / 10)
-        device:ammo_set(device:ammo_current(), device:ammo_remaining() + 20)
-        out.after = device:ammo_remaining()
-        return out
-    )", sol::script_pass_on_error );
-    REQUIRE( res.valid() );
-    const auto out = res.get<sol::table>();
-    CHECK( out.get<int>( "remaining" ) == 68 );
-    CHECK( out.get<int>( "capacity" ) == 85 );
-    CHECK( out.get<int>( "pct" ) == 80 );
-    CHECK( out.get<int>( "limit" ) == 6 );
-    CHECK( out.get<int>( "after" ) == 85 );
-}
-
-// main.lua must not read the battery from charges; book charges stay.
-TEST_CASE( "ebook_lua_main_lua_has_no_battery_charges", "[p3][lua]" ) {
-    std::ifstream f( "data/mods/ebook_lua/main.lua" );
-    REQUIRE( f.is_open() );
-    std::stringstream ss;
-    ss << f.rdbuf();
-    const std::string text = ss.str();
-    CHECK( text.find( "device.charges" ) == std::string::npos );
-    CHECK( text.find( "item.charges" ) == std::string::npos );
-    CHECK( text.find( "device:ammo_remaining()" ) != std::string::npos );
-    CHECK( text.find( "book_in_real.charges" ) != std::string::npos );
-
-    auto lua = make_lua_state();
-    sol::load_result lr = lua.load( text );
-    REQUIRE( lr.valid() );
 }
 
 // CDF: P3-9-2; islot_magazine.mag_jam_mult is a read-only binding of the C++ member

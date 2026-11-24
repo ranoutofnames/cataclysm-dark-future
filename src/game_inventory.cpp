@@ -1248,7 +1248,7 @@ item *game_menus::inv::gun_to_modify( player &p, const item &gunmod )
                          _( "You don't have any guns to modify." ) );
 }
 
-class read_inventory_preset final: public inventory_selector_preset
+class read_inventory_preset: public inventory_selector_preset
 {
     public:
         read_inventory_preset( const player &p ) : p( p ) {
@@ -1498,6 +1498,32 @@ item *game_menus::inv::read( player &pl )
                                  string_format( _( "%s has nothing to read." ), pl.disp_name() );
     return inv_internal( pl, read_inventory_preset( pl ), _( "Read" ), 1, none_msg );
 }
+
+// Per DDA game_inventory.cpp:1612-1630. Unlike the read preset, DDA does not test has_identified.
+class ebookread_inventory_preset : public read_inventory_preset
+{
+    public:
+        explicit ebookread_inventory_preset( const player &you ) : read_inventory_preset( you ),
+            you( you ) {
+        }
+
+        std::string get_denial( const item *loc ) const override {
+            const avatar *u = you.as_avatar();
+            if( u == nullptr ) {
+                return std::string();
+            }
+
+            std::vector<std::string> denials;
+            if( u->get_book_reader( *loc, denials ) == nullptr && !denials.empty() &&
+                !loc->type->can_use( "learn_spell" ) ) {
+                return denials.front();
+            }
+            return std::string();
+        }
+
+    private:
+        const player &you;
+};
 
 class steal_inventory_preset : public pickup_inventory_preset
 {
@@ -3325,3 +3351,725 @@ void consume_menu_uistate::deserialize( const JsonObject &jo )
 {
     jo.read( "consume_menu_filter", consume_menu_filter );
 }
+
+// CDF: E1-6, the rows a selector holds, for the test hooks (precedent:
+// probe_common_selector_action). Declared here and in tests/efile_menu_test.cpp, not in
+// game_inventory.h; keep the two struct definitions identical.
+namespace game_menus
+{
+namespace inv
+{
+struct efile_menu_row {
+    item *it = nullptr;
+    size_t locations = 0;
+    bool enabled = true;
+    std::string denial;
+    int column = 0;
+};
+using efile_menu_rows = std::vector<efile_menu_row>;
+inventory_selector::header_stats ebooksave_stats( item *ereader, const drop_locations &chosen );
+inventory_selector::header_stats efile_select_stats( player &who, item *used_edevice,
+        const std::vector<item *> &target_edevices, efile_action action, bool from_used_edevice,
+        const drop_locations &chosen );
+inventory_selector::header_stats smoke_food_stats( units::volume total_capacity,
+        units::volume used_capacity, const drop_locations &chosen );
+} // namespace inv
+} // namespace game_menus
+
+static auto efile_menu_rows_of( const inventory_selector &sel,
+        const inventory_selector_preset &preset ) -> game_menus::inv::efile_menu_rows
+{
+    game_menus::inv::efile_menu_rows rows;
+    const std::vector<const inventory_column *> columns = { &sel.own_gear_column,
+                                                            &sel.own_inv_column, &sel.map_column
+                                                          };
+    for( size_t i = 0; i < columns.size(); ++i ) {
+        for( const inventory_entry &entry : columns[i]->entries ) {
+            if( !entry.is_item() ) {
+                continue;
+            }
+            game_menus::inv::efile_menu_row row;
+            row.it = entry.any_item();
+            row.locations = entry.locations.size();
+            row.enabled = entry.is_selectable();
+            row.denial = preset.get_denial( entry.any_item() );
+            row.column = static_cast<int>( i );
+            rows.push_back( row );
+        }
+    }
+    return rows;
+}
+
+namespace
+{
+class ereader_inventory_preset : public pickup_inventory_preset
+{
+    public:
+        explicit ereader_inventory_preset( const player &you ) : pickup_inventory_preset( you ),
+            you( you ) {
+            if( get_option<bool>( "INV_USE_ACTION_NAMES" ) ) {
+                append_cell( [ this ]( const item * loc ) {
+                    return string_format( "<color_light_green>%s</color>",
+                                          get_action_name( *loc ) );
+                }, _( "ACTION" ) );
+            }
+        }
+
+        bool is_shown( const item *loc ) const override {
+            return loc->is_estorage();
+        }
+
+        bool collate_entries() const override {
+            // Per DDA game_inventory.cpp:1400: _collate_entries = true.
+            return true;
+        }
+
+        std::string get_denial( const item *loc ) const override {
+            const item &it = *loc;
+
+            // CDF: DDA :1411-1413 (is_broken: "E-reader is broken and won't turn on.") is
+            // skipped, CDF has no item::is_broken (E1-2).
+
+            if( !it.ammo_sufficient( &you, "EBOOKREAD" ) ) {
+                if( it.uses_firing_requirements() ) {
+                    return string_format( _( "Needs at least: %s." ),
+                                          it.format_consumption_requirements( "EBOOKREAD" ) );
+                }
+                return string_format(
+                           vgettext( "Needs at least %d charge.",
+                                     "Needs at least %d charges.", loc->ammo_required() ),
+                           loc->ammo_required() );
+            }
+
+            if( !it.has_flag( flag_ALLOWS_REMOTE_USE ) ) {
+                return pickup_inventory_preset::get_denial( loc );
+            }
+
+            return std::string();
+        }
+
+    protected:
+        std::string get_action_name( const item &it ) const {
+            return string_format( "Read on %s.", it.tname() );
+        }
+
+    private:
+        const player &you;
+};
+
+class efile_multiselector : public inventory_multiselector
+{
+    public:
+        efile_multiselector( player &p, const inventory_selector_preset &preset,
+                             const std::string &selection_column_title, const GetStats &stats = {},
+                             bool allow_select_contained = false ) :
+            inventory_multiselector( p, preset, selection_column_title, stats,
+                                     allow_select_contained ) {}
+
+        auto marked() const -> drop_locations {
+            drop_locations chosen;
+            for( const inventory_entry *entry : get_selection_column_items() ) {
+                if( entry->chosen_count == 0 || entry->locations.empty() ) {
+                    continue;
+                }
+                if( entry->locations.size() == 1 ) {
+                    chosen.emplace_back( *entry->locations[0],
+                                         static_cast<int>( entry->chosen_count ) );
+                } else {
+                    for( size_t i = 0; i < entry->chosen_count && i < entry->locations.size();
+                         ++i ) {
+                        chosen.emplace_back( *entry->locations[i], 1 );
+                    }
+                }
+            }
+            return chosen;
+        }
+
+        auto execute( bool allow_empty = false ) -> drop_locations {
+            shared_ptr_fast<ui_adaptor> ui = create_or_get_ui_adaptor();
+
+            while( true ) {
+                ui_manager::redraw();
+
+                const inventory_input input = get_input();
+
+                if( ( input.action.empty() || input.action == "ANY_INPUT" ) &&
+                    !uistate.numpad_navigation && is_count_digit( input.ch ) ) {
+                    handle_mark_action( input.action, input.ch );
+                } else if( input.entry != nullptr ) {
+                    handle_entry_action( input );
+                } else if( handle_mark_action( input.action, input.ch ) ) {
+                    // TOGGLE_ENTRY, MARK_WITH_COUNT and the count keys are handled by the base.
+                } else if( input.action == "CONFIRM" ) {
+                    if( marked().empty() && !allow_empty ) {
+                        popup_getkey( _( "No items were selected.  Use %s to select them." ),
+                                      ctxt.get_desc( "TOGGLE_ENTRY" ) );
+                        continue;
+                    }
+                    break;
+                } else if( input.action == "QUIT" ) {
+                    return drop_locations();
+                } else {
+                    on_input( input );
+                }
+            }
+
+            return marked();
+        }
+};
+
+// Per DDA game_inventory.cpp:1632-1663, the menu the e-book picker and its hook build.
+struct ebookread_menu {
+    ebookread_inventory_preset preset;
+    inventory_pick_selector sel;
+    ebookread_menu( player &you, item *ereader ) : preset( you ), sel( you, preset ) {
+        sel.set_title( _( "Read" ) );
+        sel.set_display_stats( false );
+        sel.clear_items();
+        sel.add_contained_ebooks( ereader );
+    }
+};
+
+// Per DDA game_inventory.cpp:1668-1676, the types already stored on the reader.
+auto saved_types( const item *ereader ) -> std::set<itype_id>
+{
+    std::set<itype_id> already_saved;
+    for( const item *efile : ereader->efiles() ) {
+        if(
+            efile->is_estorable() &&
+            efile->is_ecopiable()
+            //already_saved.find(ebook->typeId()) == already_saved.end()
+        ) {
+            already_saved.insert( efile->typeId() );
+        }
+    }
+    return already_saved;
+}
+
+// Per DDA game_inventory.cpp:1666-1716, the menu the scan picker and its hook build.
+struct ebooksave_menu {
+    std::set<itype_id> already_saved;
+    inventory_filter_preset preset;
+    efile_multiselector sel;
+    ebooksave_menu( player &who, item *ereader ) :
+        already_saved( saved_types( ereader ) ),
+        preset( [ &who, this ]( const item & loc ) {
+            return loc.is_owned_by( who, true ) &&
+                   loc.is_estorable() &&
+                   loc.is_ecopiable() &&
+                   !already_saved.count( loc.typeId() );
+        } ),
+        sel( who, preset, _( "SELECT BOOKS TO SCAN" ),
+    [ ereader ]( const drop_locations & chosen ) {
+        return game_menus::inv::ebooksave_stats( ereader, chosen );
+    }, true ) {
+        sel.add_character_items( who );
+        sel.add_nearby_items( PICKUP_RANGE );
+        sel.remove_duplicate_itypes( true );
+        sel.set_title( _( "Scan which books?" ) );
+    }
+};
+
+// Per DDA game_inventory.cpp:1732-1773, the device filter the picker and its hook build.
+auto edevice_select_preset( player &who, item *used_edevice, bool browse_equals,
+                            bool auto_include_used_edevice, bool unusable_only,
+                            efile_action action ) -> inventory_filter_preset
+{
+    const item_filter filter = [ &who, used_edevice, browse_equals, auto_include_used_edevice,
+                                 unusable_only, action ]( const item & loc ) {
+        //make sure this is an edevice before we make edevice calls
+        if( loc.is_estorage() && loc.is_owned_by( who, true ) && who.sees( loc.bub_pos() ) ) {
+            efile_activity_actor::edevice_compatible compat =
+                efile_activity_actor::edevices_compatible( *used_edevice, loc );
+            bool is_tool_has_charge = !loc.is_tool() || loc.ammo_sufficient( &who );
+            bool used_edevice_check = auto_include_used_edevice || &loc != used_edevice;
+            bool has_use_check = !unusable_only || !efile_activity_actor::edevice_has_use( &loc );
+            bool browsed_equal_check = browse_equals == loc.is_browsed();
+            bool fast_transfer = compat == efile_activity_actor::ECOMPAT_FAST;
+            bool no_files_check = !( action == EF_MOVE_ONTO_THIS || action == EF_COPY_ONTO_THIS )
+                                  || ( loc.is_browsed() && !loc.efiles().empty() );
+            bool compatible_check = ( action == EF_BROWSE && browse_equals ) ||
+                                    //if browsing, no compatibility check
+                                    //if reading, only fast-compatible edevices
+                                    ( action == EF_READ && fast_transfer ) ||
+                                    // DDA quirk, reproduced: this clause also lets a slow device
+                                    // through when reading, so the fast-only clause above never
+                                    // decides anything
+                                    //otherwise, any compatible edevice
+                                    compat != efile_activity_actor::ECOMPAT_NONE;
+            bool is_not_forbidden = true;
+            for( const pocket_data &pocket : loc.type->pockets ) {
+                if( pocket.type == pocket_type::E_FILE_STORAGE && pocket.forbidden ) {
+                    is_not_forbidden = false;
+                }
+            }
+
+            // CDF: DDA's DF_ACT_EBOOK debug line is not ported, CDF has no debug filter for it
+            // (E1-1)
+            return is_tool_has_charge &&
+                   used_edevice_check &&
+                   has_use_check &&
+                   browsed_equal_check &&
+                   compatible_check &&
+                   no_files_check &&
+                   is_not_forbidden;
+        }
+        return false;
+    };
+    return inventory_filter_preset( filter );
+}
+
+// Per DDA game_inventory.cpp:1799-1805, the receiving device and the devices the files come from.
+struct efile_endpoints {
+    item *to = nullptr;
+    std::vector<item *> from;
+};
+
+auto efile_endpoints_of( item *used_edevice, const std::vector<item *> &target_edevices,
+                         bool from_used_edevice ) -> efile_endpoints
+{
+    efile_endpoints endpoints;
+    endpoints.to = used_edevice;
+    endpoints.from = target_edevices;
+    if( from_used_edevice ) {
+        //swap targets if this is a "from" action
+        endpoints.to = target_edevices.front();
+        endpoints.from = { used_edevice };
+    }
+    return endpoints;
+}
+
+// Per DDA game_inventory.cpp:1820-1822, the e-file filter the picker builds.
+auto efile_select_preset( bool copying ) -> inventory_filter_preset
+{
+    return inventory_filter_preset( [ copying ]( const item & loc ) {
+        // CDF: DDA's loc.is_efile(); item_location is item * here.
+        const item *parent = loc.parent_item();
+        return parent != nullptr && parent->is_estorage() && ( !copying || loc.is_ecopiable() );
+    } );
+}
+} // namespace
+
+namespace
+{
+class smokable_selector_preset : public inventory_selector_preset
+{
+    public:
+        bool is_shown( const item *location ) const override {
+            // CDF: no item::is_smokable (header locked); the rack code (smoker_finalize,
+            // smoker_activate) keys on flag_SMOKABLE.
+            return !location->rotten() && location->has_flag( flag_SMOKABLE );
+        }
+};
+} // namespace
+
+// CDF: E1-1, stubs of the DDA e-file menus (DDA game_inventory.cpp:1395-1900, 2601-2635). Each offers
+// nothing until E1-6 fills it.
+item *game_menus::inv::ereader_to_use( Character &you )
+{
+    // DDA game_inventory.cpp:1441-1445.
+    player *pl = you.as_player();
+    if( pl == nullptr ) {
+        return nullptr;
+    }
+    const std::string msg = _( "You don't have any e-readers you can use." );
+    return inv_internal( *pl, ereader_inventory_preset( *pl ), _( "Select e-reader." ), 1, msg );
+}
+
+item *game_menus::inv::ebookread( Character &you, item *ereader )
+{
+    // DDA game_inventory.cpp:1632-1663.
+    player *pl = you.as_player();
+    if( pl == nullptr ) {
+        return nullptr;
+    }
+    const std::string none_message = pl->is_player() ? _( "You have nothing to read." ) :
+                                     string_format( _( "%s has nothing to read." ),
+                                             pl->disp_name() );
+    ebookread_menu menu( *pl, ereader );
+    if( menu.sel.empty() ) {
+        popup( none_message, PF_GET_KEY );
+        return nullptr;
+    }
+    return menu.sel.execute();
+}
+
+drop_locations game_menus::inv::ebooksave( Character &who, item *ereader )
+{
+    // DDA game_inventory.cpp:1666-1716.
+    player *pl = who.as_player();
+    if( pl == nullptr || ereader == nullptr ) {
+        return drop_locations();
+    }
+    ebooksave_menu menu( *pl, ereader );
+    if( menu.sel.empty() ) {
+        popup( std::string( _( "You have no books to scan." ) ), PF_GET_KEY );
+        return drop_locations();
+    }
+    return menu.sel.execute();
+}
+
+drop_locations game_menus::inv::edevice_select( Character &who, item *used_edevice,
+        bool browse_equals, bool auto_include_used_edevice, bool unusable_only,
+        efile_action action )
+{
+    // DDA game_inventory.cpp:1726-1795.
+    player *pl = who.as_player();
+    if( pl == nullptr || used_edevice == nullptr ) {
+        return drop_locations();
+    }
+
+    const inventory_filter_preset preset = edevice_select_preset( *pl, used_edevice, browse_equals,
+            auto_include_used_edevice, unusable_only, action );
+
+    const std::string action_name = efile_activity_actor::efile_action_name( action, false, true );
+    const std::string used_device_name = efile_activity_actor::efile_action_exclude_used( action ) ?
+                                         string_format( _( " (using %s)?" ),
+                                                 used_edevice->display_name() ) :
+                                         "?";
+    const std::string inv_title = action_name + _( " which device" ) + used_device_name;
+
+    if( action == EF_READ || efile_activity_actor::efile_action_is_from( action ) ) {
+        inventory_pick_selector select_one_edevice( *pl, preset );
+        select_one_edevice.add_character_items( *pl );
+        select_one_edevice.add_nearby_items( PICKUP_RANGE );
+        select_one_edevice.set_title( inv_title );
+        if( select_one_edevice.empty() ) {
+            popup( string_format( _( "You have no eligible devices to %s." ), action_name ),
+                   PF_GET_KEY );
+            return drop_locations();
+        }
+        drop_locations returned_device;
+        item *selected_device = select_one_edevice.execute();
+        if( selected_device != nullptr ) {
+            returned_device.emplace_back( *selected_device, 1 );
+        }
+        return returned_device;
+    } else {
+        efile_multiselector inv_s( *pl, preset,
+                                   string_format( _( "Select devices to %s" ), action_name ) );
+        inv_s.add_character_items( *pl );
+        inv_s.add_nearby_items( PICKUP_RANGE );
+        inv_s.set_title( inv_title );
+        if( inv_s.empty() ) {
+            popup( string_format( _( "You have no eligible devices to %s." ), action_name ),
+                   PF_GET_KEY );
+            return drop_locations();
+        }
+        return inv_s.execute();
+    }
+}
+
+drop_locations game_menus::inv::efile_select( Character &who, item *used_edevice,
+        const std::vector<item *> &target_edevices, efile_action action, bool from_used_edevice )
+{
+    // DDA game_inventory.cpp:1804-1920.
+    player *pl = who.as_player();
+    if( pl == nullptr || used_edevice == nullptr ) {
+        return drop_locations();
+    }
+    if( from_used_edevice && target_edevices.empty() ) {
+        return drop_locations();
+    }
+
+    const efile_endpoints endpoints = efile_endpoints_of( used_edevice, target_edevices,
+            from_used_edevice );
+    item *to_edevice = endpoints.to;
+    const std::vector<item *> from_edevices = endpoints.from;
+
+    const bool copying = action == EF_COPY_FROM_THIS || action == EF_COPY_ONTO_THIS;
+    const bool wiping = action == EF_WIPE;
+
+    const inventory_filter_preset preset = efile_select_preset( copying );
+
+    const std::string action_name = efile_activity_actor::efile_action_name( action );
+
+    if( action == EF_READ ) {
+        inventory_pick_selector select_one_file( *pl, preset );
+        select_one_file.add_contained_efiles( used_edevice );
+        select_one_file.set_title( action_name + _( " which files?" ) );
+        if( select_one_file.empty() ) {
+            return drop_locations();
+        }
+        item *picked = select_one_file.execute();
+        if( picked != nullptr ) {
+            return { { *picked, 1 } };
+        }
+        return drop_locations();
+    }
+    efile_multiselector select_multiple_efiles( *pl, preset, _( "Files selected:" ),
+            [ & ]( const drop_locations & chosen ) {
+        return game_menus::inv::efile_select_stats( *pl, used_edevice, target_edevices, action,
+                from_used_edevice, chosen );
+    }, /*allow_select_contained=*/true );
+    if( !wiping ) {
+        select_multiple_efiles.set_hint(
+            _( "Using two devices without high-speed compatibility will result in longer transfer times.\nHaving an external storage device compatible with both devices can avoid this." ) );
+    }
+    for( item *loc : from_edevices ) {
+        select_multiple_efiles.add_contained_efiles( loc );
+    }
+    if( select_multiple_efiles.empty() ) {
+        popup( string_format( _( "You have no files to %s." ), action_name ), PF_GET_KEY );
+        return drop_locations();
+    }
+    select_multiple_efiles.set_title( string_format( _( "Select files to %s" ), action_name ) );
+    bool done = false;
+    drop_locations selected_efiles;
+    while( !done ) {
+        selected_efiles = select_multiple_efiles.execute();
+        units::ememory total_ememory = 0_KB;
+        for( iuse_location &d : selected_efiles ) {
+            total_ememory += d.loc->ememory_size();
+        }
+        if( wiping || ( total_ememory < to_edevice->remaining_ememory() ||
+                        selected_efiles.empty() ) ) {
+            done = true;
+        } else {
+            popup( std::string( _( "Selected file size exceeds available storage size." ) ),
+                   PF_GET_KEY );
+        }
+    }
+    return selected_efiles;
+}
+
+drop_locations game_menus::inv::smoke_food( Character &you, units::volume total_capacity,
+        units::volume used_capacity )
+{
+    // DDA game_inventory.cpp:2601-2639.
+    player *pl = you.as_player();
+    if( pl == nullptr ) {
+        return drop_locations();
+    }
+
+    const smokable_selector_preset preset;
+
+    efile_multiselector smoke_s( *pl, preset, _( "FOOD TO SMOKE" ),
+            [ total_capacity, used_capacity ]( const drop_locations & chosen ) {
+        return game_menus::inv::smoke_food_stats( total_capacity, used_capacity, chosen );
+    } );
+
+    smoke_s.add_nearby_items( PICKUP_RANGE );
+    smoke_s.add_character_items( *pl );
+
+    smoke_s.set_title( _( "Insert food into smoking rack" ) );
+    smoke_s.set_hint( _( "To select items, type a number before selecting." ) );
+    // CDF: DDA's set_invlet_type( SELECTOR_INVLET_ALPHA ) has no CDF counterpart.
+
+    if( smoke_s.empty() ) {
+        popup( std::string( _( "You don't have any food that can be smoked." ) ), PF_GET_KEY );
+        return drop_locations();
+    }
+
+    return smoke_s.execute();
+}
+
+// CDF: E1-6, test hooks, see above. Stubs until the menus are filled in.
+namespace game_menus
+{
+namespace inv
+{
+bool ereader_preset_shows( player &you, const item &it )
+{
+    return ereader_inventory_preset( you ).is_shown( &it );
+}
+
+std::string ereader_preset_denial( player &you, const item &it )
+{
+    return ereader_inventory_preset( you ).get_denial( &it );
+}
+
+std::string ebookread_preset_denial( player &you, const item &book )
+{
+    return ebookread_inventory_preset( you ).get_denial( &book );
+}
+
+efile_menu_rows ebookread_rows( player &you, item *ereader )
+{
+    ebookread_menu menu( you, ereader );
+    return efile_menu_rows_of( menu.sel, menu.preset );
+}
+
+efile_menu_rows ebooksave_rows( player &who, item *ereader )
+{
+    ebooksave_menu menu( who, ereader );
+    return efile_menu_rows_of( menu.sel, menu.preset );
+}
+
+inventory_selector::header_stats ebooksave_stats( item *ereader, const drop_locations &chosen )
+{
+    // DDA game_inventory.cpp:1685-1706 (make_raw_stats), as a function for the hook.
+    const int available_charges = ereader->ammo_remaining();
+    std::vector<item *> books;
+    books.reserve( chosen.size() );
+    for( const iuse_location &d : chosen ) {
+        if( d.loc ) {
+            books.push_back( d.loc.get() );
+        }
+    }
+    const int required_charges = ebooksave_activity_actor::required_charges( books, ereader );
+    const time_duration required_time = ebooksave_activity_actor::required_time( books );
+    auto int_to_str = []( int val ) -> std::string {
+        return string_format( "%d", val );
+    };
+    const inventory_selector::stat charge_stat = display_stat( "", required_charges,
+            available_charges, int_to_str );
+    const std::string charges = join( std::vector<std::string>( charge_stat.begin(),
+                                     charge_stat.end() ), "" );
+    // CDF: to_string( time_duration ) has no compact argument.
+    const std::string time = colorize( to_string( required_time ), c_light_gray );
+    const inventory_selector::stat charges_stat = { { _( "Charges" ), charges } };
+    const inventory_selector::stat time_stat = { { _( "Estimated time" ), time } };
+    return inventory_selector::convert_stats_to_header_stats(
+               inventory_selector::stats{ { charges_stat, time_stat } } );
+}
+
+efile_menu_rows edevice_select_rows( player &who, item *used_edevice, bool browse_equals,
+                                     bool auto_include_used_edevice, bool unusable_only,
+                                     efile_action action )
+{
+    const inventory_filter_preset preset = edevice_select_preset( who, used_edevice, browse_equals,
+            auto_include_used_edevice, unusable_only, action );
+    inventory_pick_selector sel( who, preset );
+    sel.add_character_items( who );
+    sel.add_nearby_items( PICKUP_RANGE );
+    return efile_menu_rows_of( sel, preset );
+}
+
+efile_menu_rows efile_select_rows( player &who, item *used_edevice,
+                                   const std::vector<item *> &target_edevices, efile_action action,
+                                   bool from_used_edevice )
+{
+    // DDA game_inventory.cpp:1804-1920, the rows the menu above offers.
+    if( used_edevice == nullptr || ( from_used_edevice && target_edevices.empty() ) ) {
+        return efile_menu_rows();
+    }
+    const efile_endpoints endpoints = efile_endpoints_of( used_edevice, target_edevices,
+            from_used_edevice );
+    const std::vector<item *> from_edevices = endpoints.from;
+    const bool copying = action == EF_COPY_FROM_THIS || action == EF_COPY_ONTO_THIS;
+    const inventory_filter_preset preset = efile_select_preset( copying );
+    inventory_pick_selector sel( who, preset );
+    if( action == EF_READ ) {
+        sel.add_contained_efiles( used_edevice );
+    } else {
+        for( item *loc : from_edevices ) {
+            sel.add_contained_efiles( loc );
+        }
+    }
+    return efile_menu_rows_of( sel, preset );
+}
+
+inventory_selector::header_stats efile_select_stats( player &who, item *used_edevice,
+        const std::vector<item *> &target_edevices, efile_action action, bool from_used_edevice,
+        const drop_locations &chosen )
+{
+    // DDA game_inventory.cpp:1824-1873 (make_raw_stats), as a function for the hook.
+    // CDF: the same empty cases the menus reject, so the header never dereferences nullptr.
+    if( used_edevice == nullptr || ( from_used_edevice && target_edevices.empty() ) ) {
+        return inventory_selector::header_stats();
+    }
+    const efile_endpoints endpoints = efile_endpoints_of( used_edevice, target_edevices,
+            from_used_edevice );
+    item *to_edevice = endpoints.to;
+    const bool wiping = action == EF_WIPE;
+    const int available_charges = to_edevice->ammo_remaining();
+    std::vector<item *> efiles;
+    efiles.reserve( chosen.size() );
+    for( const iuse_location &d : chosen ) {
+        // CDF: a drop location holds a safe reference; skip one that went invalid.
+        if( !d.loc ) {
+            continue;
+        }
+        for( int i = 0; i < d.count; i++ ) {
+            efiles.push_back( d.loc.get() );
+        }
+    }
+    time_duration required_time = efile_activity_actor::total_processing_time( used_edevice,
+                                  target_edevices, efiles, action, who,
+                                  who.get_skill_level( skill_computer ) < 1 );
+    units::ememory total_memory;
+    bool edevice_slow_transfer = false;
+    for( item *efile : efiles ) {
+        item *efile_parent_device = efile->parent_item();
+        if( !wiping ) {
+            if( efile_activity_actor::edevices_compatible( to_edevice, efile_parent_device ) !=
+                efile_activity_actor::ECOMPAT_FAST ) {
+                if( !efile_activity_actor::find_external_transfer_estorage( who, efile,
+                        to_edevice, efile_parent_device ) ) {
+                    edevice_slow_transfer = true;
+                }
+            }
+        }
+        efile_transfer transfer( to_edevice, efile_parent_device );
+        required_time += efile_activity_actor::efile_processing_time( efile, transfer, action,
+                         who, who.get_skill_level( skill_computer ) < 1 );
+        total_memory += efile->ememory_size();
+    }
+    // CDF: the division of two durations is a double here.
+    const int required_charges =
+        static_cast<int>( required_time / efile_activity_actor::charge_per_transfer_time );
+
+    auto int_to_str = []( int val ) -> std::string {
+        return string_format( "%d", val );
+    };
+    const units::ememory memory_max = wiping ? to_edevice->total_ememory() :
+                                      to_edevice->remaining_ememory();
+    const bool over_memory_limit = total_memory > memory_max;
+    std::string total_memory_str = units::display( total_memory );
+    const std::string ememory = string_format( "%s / %s", over_memory_limit ?
+                                colorize( total_memory_str, c_red ) : total_memory_str,
+                                units::display( memory_max ) );
+    const inventory_selector::stat charge_stat = display_stat( "", required_charges,
+            available_charges, int_to_str );
+    const std::string charges = join( std::vector<std::string>( charge_stat.begin(),
+                                 charge_stat.end() ), "" );
+    const std::string time_label = !edevice_slow_transfer ?
+                                   _( "Estimated time:" ) :
+                                   colorize( _( "Estimated time (slow!):" ), c_yellow );
+    // CDF: to_string( time_duration ) has no compact argument.
+    const std::string time = colorize( to_string( required_time ), c_light_gray );
+    const inventory_selector::stat memory_stat = {
+        { _( "Processed / Available Memory: " ), ememory }
+    };
+    const inventory_selector::stat charges_stat = { { _( "Charges" ), charges } };
+    const inventory_selector::stat time_stat = { { time_label, time } };
+    // CDF: DDA's legacy stats array has three lines, CDF's two (inventory_ui.h): the third
+    // line goes through the same conversion on its own.
+    inventory_selector::header_stats stats = inventory_selector::convert_stats_to_header_stats(
+                inventory_selector::stats{ { memory_stat, charges_stat } } );
+    stats.push_back( inventory_selector::convert_stats_to_header_stats(
+                         inventory_selector::stats{ { time_stat, time_stat } } ).front() );
+    return stats;
+}
+
+bool smoke_food_preset_shows( const item &it )
+{
+    return smokable_selector_preset().is_shown( &it );
+}
+
+inventory_selector::header_stats smoke_food_stats( units::volume total_capacity,
+        units::volume used_capacity, const drop_locations &chosen )
+{
+    // DDA game_inventory.cpp:2606-2623 (make_raw_stats), as a function for the hook.
+    units::volume added_volume = 0_ml;
+    for( const drop_location &d : chosen ) {
+        if( d.loc ) {
+            added_volume += d.loc->volume() * d.count / d.loc->count();
+        }
+    }
+    const std::string volume_caption = string_format( _( "Volume (%s):" ), volume_units_abbr() );
+    const inventory_selector::stat line = display_stat( volume_caption,
+            units::to_milliliter( used_capacity + added_volume ),
+            units::to_milliliter( total_capacity ), []( int v ) {
+        return format_volume( units::from_milliliter( v ) );
+    } );
+    // CDF: the legacy stats array has two lines (inventory_ui.h): one line goes through the same
+    // conversion alone.
+    const inventory_selector::header_stats converted =
+        inventory_selector::convert_stats_to_header_stats(
+            inventory_selector::stats{ { line, line } } );
+    return inventory_selector::header_stats{ converted.front() };
+}
+} // namespace inv
+} // namespace game_menus

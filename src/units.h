@@ -14,6 +14,7 @@
 #include "units_mass.h"
 #include "units_energy.h"
 #include "units/units_money.h"
+#include "units/units_ememory.h"
 #include "units_temperature.h"
 #include "units_probability.h"
 #include "units/sound.h"
@@ -49,6 +50,11 @@ inline std::ostream &operator<<( std::ostream &o, money_in_cent_tag )
     return o << "cent";
 }
 
+inline std::ostream &operator<<( std::ostream &o, ememory_in_kilobytes_tag )
+{
+    return o << "KB";
+}
+
 inline std::ostream &operator<<( std::ostream &o, angle_in_radians_tag )
 {
     return o << "rad";
@@ -81,6 +87,7 @@ inline std::ostream &operator<<( std::ostream &o, const quantity<value_type, tag
 }
 
 std::string display( units::energy v );
+std::string display( const units::ememory &v );
 
 } // namespace units
 
@@ -90,6 +97,13 @@ static const std::vector<std::pair<std::string, energy>> energy_units = { {
         { "mJ", 1_J }, // Millijoules are depreciated, this is only defined to migrate old saves.
         { "J", 1_J },
         { "kJ", 1_kJ },
+    }
+};
+static const std::vector<std::pair<std::string, ememory>> ememory_units = { {
+        { "KB", 1_KB },
+        { "MB", 1_MB },
+        { "GB", 1_GB },
+        { "TB", 1_TB },
     }
 };
 static const std::vector<std::pair<std::string, mass>> mass_units = { {

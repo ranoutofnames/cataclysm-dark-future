@@ -27,8 +27,6 @@
 #include "creature.h"
 #include "creature_tracker.h"
 #include "debug.h"
-#include "digital_media.h"
-#include "digital_recipes.h"
 #include "drop_token.h"
 #include "effect.h"
 #include "enum_conversions.h"
@@ -184,8 +182,9 @@ static void deserialize( weak_ptr_fast<monster> &obj, JsonIn &jsin )
 namespace
 {
 
-// DDA saves pocket types as integers (DDA pocket_type.h: ... SOFTWARE 5, E_FILE_STORAGE 6, CABLE 7,
-// MIGRATION 8, EBOOK 9). CDF's enum has a different order and no e-file types, so map by name.
+// DDA saves pocket types as integers (DDA pocket_type.h:8-18): CONTAINER 0, MAGAZINE 1,
+// MAGAZINE_WELL 2, MOD 3, CORPSE 4, SOFTWARE 5, E_FILE_STORAGE 6, CABLE 7, MIGRATION 8,
+// EBOOK 9. Map by name: CDF's enum order differs.
 auto pocket_type_to_dda( pocket_type type ) -> int
 {
     switch( type ) {
@@ -201,10 +200,14 @@ auto pocket_type_to_dda( pocket_type type ) -> int
             return 4;
         case pocket_type::SOFTWARE:
             return 5;
+        case pocket_type::E_FILE_STORAGE:
+            return 6;
         // CDF: E24. DDA's int for CABLE is 7 (DDA pocket_type.h:8-18). Without this case CABLE
         // fell through to 8 and was saved as MIGRATION (DDA savegame_json.cpp:280-291).
         case pocket_type::CABLE:
             return 7;
+        case pocket_type::EBOOK:
+            return 9;
         case pocket_type::MIGRATION:
         case pocket_type::LAST:
             return 8;
@@ -227,12 +230,16 @@ auto pocket_type_from_dda( int value ) -> pocket_type
             return pocket_type::CORPSE;
         case 5:
             return pocket_type::SOFTWARE;
+        case 6:
+            return pocket_type::E_FILE_STORAGE;
         // CDF: E24. DDA's int 7 is CABLE. As the default it became MIGRATION, so the load
         // re-routed the extension cables in the pocket through insert_item (item_contents.cpp).
         case 7:
             return pocket_type::CABLE;
+        case 9:
+            return pocket_type::EBOOK;
         default:
-            // MIGRATION (8), and the pocket types CDF doesn't have (E_FILE_STORAGE 6, EBOOK 9)
+            // MIGRATION (8) and anything unknown
             return pocket_type::MIGRATION;
     }
 }
@@ -3225,16 +3232,6 @@ void item::deserialize( JsonIn &jsin )
         kills = std::make_unique<kill_tracker>( false );
         data.read( "item_kill_tracker", kills );
     }
-
-    if( has_flag( flag_id( "GENOME_DRIVE" ) ) && !is_digital_file( *this ) ) {
-        migrate_legacy_digital_media( *this );
-    }
-    for( const auto &[key, value] : type->item_vars ) {
-        if( key.starts_with( "digital_" ) && !has_var( key ) ) {
-            set_var( key, value );
-        }
-    }
-    initialize_digital_recipe_file( *this );
 
     if( data.has_member( "id" ) ) {
         safe_reference<item>::id_type id;

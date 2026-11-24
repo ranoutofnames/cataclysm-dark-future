@@ -6,6 +6,7 @@
     "subcategory": "CSC_ARMOR_ARMS",
     "skill_used": "fabrication",
     "difficulty": 1,
+    "book_learn": [ [ "digital_tailoring_recipe_archive", 1 ] ],
     "time": "5 m",
     "autolearn": true,
     "using": [ [ "cordage_short", 2 ] ],

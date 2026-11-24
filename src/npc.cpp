@@ -107,6 +107,8 @@ static const efftype_id effect_pkill3( "pkill3" );
 static const efftype_id effect_ridden( "ridden" );
 static const efftype_id effect_riding( "riding" );
 
+static const flag_id flag_CAN_USE_IN_DARK( "CAN_USE_IN_DARK" );
+
 static const itype_id itype_UPS( "UPS" );
 
 static const skill_id skill_archery( "archery" );
@@ -1016,8 +1018,10 @@ bool npc::can_read( const item &book, std::vector<std::string> &fail_reasons )
     } else if( has_trait( trait_HYPEROPIC ) && !worn_with_flag( flag_FIX_FARSIGHT ) &&
                !has_effect( effect_contacts ) && !has_bionic( bio_eye_optic ) ) {
         fail_reasons.emplace_back( _( "I can't read without my glasses." ) );
-    } else if( !character_funcs::can_see_fine_details( *this ) ) {
+    } else if( !book.has_flag( flag_CAN_USE_IN_DARK ) &&
+               !character_funcs::can_see_fine_details( *this ) ) {
         // Too dark to read only applies if the player can read to himself
+        // CDF: E1-8, DDA character_knowledge.cpp:456: a file of an e-device can be read in the dark
         fail_reasons.emplace_back( _( "It's too dark to read!" ) );
         return false;
     }
@@ -1046,6 +1050,8 @@ int npc::time_to_read( const item &book, const Character &reader ) const
     return retval;
 }
 
+static void start_read_with( npc &guy, item &it, Character *pl, item *ereader );
+
 void npc::finish_read( item *it )
 {
     if( !it ) {
@@ -1059,6 +1065,9 @@ void npc::finish_read( item *it )
         revert_after_activity();
         return;
     }
+    // CDF: E1-8, the e-reader of this reading (second target) goes on with the next chapter
+    item *const ereader = activity->targets.size() > 1 && activity->targets[1] ?
+                          &*activity->targets[1] : nullptr;
     const skill_id &skill = reading->skill;
     // NPCs don't need to identify the book or learn recipes yet.
     // NPCs don't read to other NPCs yet.
@@ -1144,7 +1153,7 @@ void npc::finish_read( item *it )
         activity->set_to_null();
         player *pl = dynamic_cast<player *>( this );
         if( pl ) {
-            start_read( book, pl );
+            start_read_with( *this, book, pl, ereader );
         }
         if( activity ) {
             return;
@@ -1156,46 +1165,75 @@ void npc::finish_read( item *it )
 
 void npc::start_read( item &it, Character *pl )
 {
+    start_read_with( *this, it, pl, nullptr );
+}
+
+// CDF: E1-8, DDA npc::do_npc_read( ebook ) (npc.cpp:1486-1550): the e-reader is the second target of
+// ACT_READ (see avatar::read( book, ereader )); assigning the activity costs it one use.
+static void start_read_with( npc &guy, item &it, Character *pl, item *ereader )
+{
     item &chosen = it;
-    const int time_taken = time_to_read( chosen, *pl );
-    const double penalty = static_cast<double>( time_taken ) / time_to_read( chosen, *pl );
+    const int time_taken = guy.time_to_read( chosen, *pl );
+    const double penalty = static_cast<double>( time_taken ) / guy.time_to_read( chosen, *pl );
     std::unique_ptr<player_activity> act = std::make_unique<player_activity>( ACT_READ, time_taken, 0,
                                            pl->getID().get_value() );
     act->targets.emplace_back( it );
+    if( ereader != nullptr ) {
+        act->targets.emplace_back( *ereader );
+    }
     act->str_values.push_back( std::to_string( penalty ) );
     // push an identifier of martial art book to the action handling
     if( chosen.type->use_methods.contains( "MA_MANUAL" ) ) {
         act->str_values.clear();
         act->str_values.emplace_back( "martial_art" );
     }
-    assign_activity( std::move( act ) );
+    guy.assign_activity( std::move( act ) );
 }
 
-void npc::do_npc_read()
+// CDF: E1-8 test seam (declared in tests/efile_read_test.cpp, no header): what do_npc_read does after
+// the menus picked the book and the e-reader (DDA npc.cpp:1520-1550). True when the NPC started reading.
+namespace efile_read_hooks
+{
+bool npc_start_reading( npc &guy, item &book, item *ereader )
+{
+    std::vector<std::string> fail_reasons;
+    if( guy.can_read( book, fail_reasons ) ) {
+        if( g->u.sees( guy.bub_pos() ) ) {
+            add_msg( m_info, _( "%s starts reading." ), guy.disp_name() );
+        }
+        start_read_with( guy, book, &guy, ereader );
+        return true;
+    }
+    for( const std::string &elem : fail_reasons ) {
+        guy.say( elem );
+    }
+    return false;
+}
+} // namespace efile_read_hooks
+
+void npc::do_npc_read( bool ebook )
 {
     // Can read items from inventory or within one tile (including in vehicles)
     player *pl = dynamic_cast<player *>( this );
     if( !pl ) {
         return;
     }
-    auto loc = game_menus::inv::read( *pl );
-
-    if( loc ) {
-        std::vector<std::string> fail_reasons;
-        Character *ch = dynamic_cast<Character *>( pl );
-        if( !ch ) {
+    item *book = nullptr;
+    item *ereader = nullptr;
+    if( !ebook ) {
+        book = game_menus::inv::read( *pl );
+    } else {
+        // DDA npc.cpp:1498-1507: the device first, then the e-books of that device
+        ereader = game_menus::inv::ereader_to_use( *pl );
+        if( ereader == nullptr ) {
+            add_msg( _( "Never mind." ) );
             return;
         }
-        if( can_read( *loc, fail_reasons ) ) {
-            if( g->u.sees( bub_pos() ) ) {
-                add_msg( m_info, _( "%s starts reading." ), disp_name() );
-            }
-            start_read( *loc, pl );
-        } else {
-            for( const auto &elem : fail_reasons ) {
-                say( elem );
-            }
-        }
+        book = game_menus::inv::ebookread( *pl, ereader );
+    }
+
+    if( book != nullptr ) {
+        efile_read_hooks::npc_start_reading( *this, *book, ereader );
     } else {
         add_msg( _( "Never mind." ) );
     }

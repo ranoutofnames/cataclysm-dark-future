@@ -30,7 +30,6 @@
 #include "craft_command.h"
 #include "creature.h"
 #include "damage.h"
-#include "digital_media.h"
 #include "debug.h"
 #include "detached_ptr.h"
 #include "disease.h"
@@ -9078,11 +9077,6 @@ bool Character::invoke_item( item *used, const std::string &method, const tripoi
         return false;
     }
 
-    if( is_digital_file( *actually_used ) && !digital_reader_for( *this, *actually_used ) ) {
-        add_msg_if_player( m_info, _( "You need to install this file on a powered reader first." ) );
-        return false;
-    }
-
     // CDF: itype::invoke returns int here (addendum OD-E3), so DDA's nullopt branch (set_moves) cannot be expressed
     int charges_used = actually_used->type->invoke( *this->as_player(), *actually_used, pt, method );
     if( charges_used == 0 ) {
@@ -13735,24 +13729,47 @@ recipe_subset Character::get_recipes_from_books( const temp_crafting_inventory &
 {
     auto res = recipe_subset{};
 
-    // CDF: crafting_inv is a temp_crafting_inventory (visitable via BN's visit_items), BN's digital-file walk kept
+    // CDF: crafting_inv is a temp_crafting_inventory (visitable via BN's visit_items); the files stored on
+    // e-devices are read by get_recipes_from_ebooks
     crafting_inv.visit_items( [&]( const item * candidate ) {
-        const auto digital_recipes = digital_recipe_references( *candidate, *this );
-        if( filter ) {
-            res.include_if( digital_recipes, filter );
-        } else {
-            res.include( digital_recipes );
-        }
-
         for( const auto &recipe_entry : candidate->get_available_recipes( *this ) ) {
             if( filter && !filter( *recipe_entry.first ) ) {
                 continue;
             }
             res.include( recipe_entry.first, recipe_entry.second );
         }
-        // Installed files are handled through the reader's power and encryption checks.
-        return candidate->has_flag( flag_id( "DIGITAL_STORAGE" ) ) ?
-               VisitResponse::SKIP : VisitResponse::NEXT;
+        return VisitResponse::NEXT;
+    } );
+
+    return res;
+}
+
+// CDF: E1-8, DDA Character::get_recipes_from_ebooks (character_crafting.cpp:144-174). DDA finds the
+// recipe catalog of a device through item::get_available_recipes of the device in its book walk; the
+// default walks of CDF skip installed files (E1-2), so the catalog list of a powered device is read
+// here too, with the skill test of that function (a recipe counts at its own difficulty). A device
+// that is not powered gives nothing, as DDA does for the stored books.
+recipe_subset Character::get_recipes_from_ebooks( const temp_crafting_inventory &crafting_inv ) const
+{
+    recipe_subset res;
+
+    crafting_inv.visit_items( [&]( const item * ereader ) {
+        if( !ereader->is_estorage() || !ereader->ammo_sufficient( this ) ) {
+            return VisitResponse::NEXT;
+        }
+
+        for( const recipe_id &rid : ereader->get_saved_recipes() ) {
+            const recipe *r = &rid.obj();
+            if( get_skill_level( r->skill_used ) >= r->difficulty ) {
+                res.include( r, r->difficulty );
+            }
+        }
+        for( const item *it : ereader->ebooks() ) {
+            for( const auto &recipe_entry : it->get_available_recipes( *this ) ) {
+                res.include( recipe_entry.first, recipe_entry.second );
+            }
+        }
+        return VisitResponse::SKIP;
     } );
 
     return res;
@@ -13770,6 +13787,12 @@ recipe_subset Character::get_available_recipes( const temp_crafting_inventory &c
     }
 
     res.include( get_recipes_from_books( crafting_inv, filter ) );
+    // CDF: E1-8, DDA character_crafting.cpp:175 (the stored books and catalogs of powered devices)
+    if( filter ) {
+        res.include_if( get_recipes_from_ebooks( crafting_inv ), filter );
+    } else {
+        res.include( get_recipes_from_ebooks( crafting_inv ) );
+    }
 
     if( helpers != nullptr ) {
         for( npc *np : *helpers ) {

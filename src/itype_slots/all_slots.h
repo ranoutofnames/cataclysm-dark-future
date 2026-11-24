@@ -27,3 +27,4 @@
 #include "itype_slots/islot_seed.h"
 #include "itype_slots/islot_artifact.h"
 #include "itype_slots/islot_milling.h"
+#include "itype_slots/memory_card_info.h"

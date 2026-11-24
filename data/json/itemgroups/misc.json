@@ -196,10 +196,10 @@
       { "item": "magic_8_ball", "prob": 5 },
       { "item": "family_photo", "prob": 5 },
       { "item": "coin_quarter", "prob": 5 },
-      { "group": "digital_storage_media", "count": [ 1, 4 ], "prob": 15 },
+      { "group": "efile_storage_media", "count": [ 1, 4 ], "prob": 15 },
       { "item": "RPG_die", "prob": 5 },
       { "item": "metal_RPG_die", "prob": 1 },
-      { "group": "digital_storage_media_encrypted", "count": [ 1, 2 ], "prob": 15 }
+      { "group": "efile_storage_media_encrypted", "count": [ 1, 2 ], "prob": 15 }
     ]
   },
   {
@@ -370,7 +370,8 @@
       { "item": "paper", "prob": 60, "charges": [ 10, 125 ] },
       { "item": "candle", "prob": 3, "charges": 100 },
       { "item": "holybook_bible1", "prob": 3 },
-      { "item": "candlestick", "prob": 2 }
+      { "item": "candlestick", "prob": 2 },
+      { "item": "book_binder", "prob": 90, "count": [ 1, 5 ] }
     ]
   },
   {

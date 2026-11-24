@@ -1322,6 +1322,11 @@ class Character : public Creature, public location_visitable<Character>
          *  @param qty number of charges to consume which must be non-zero
          *  @return true if item was destroyed */
         bool consume_charges( item &used, int qty );
+        /**
+         * CDF: E1-1, DDA character.h:3879 (crafting.cpp:4493-4505). Removes one software item with this
+         * type from the e-devices (and their containers) the character carries. A stub until E1-9.
+         */
+        bool consume_software_container( const itype_id &software_id );
 
         /**
          * Calculate (but do not deduct) the number of moves required when handling (e.g. storing, drawing etc.) an item
@@ -2125,6 +2130,13 @@ class Character : public Creature, public location_visitable<Character>
         bool has_charges( const itype_id &it, int quantity,
                           const std::function<bool( const item & )> &filter = return_true<item> ) const;
 
+        // CDF: E1-1, DDA character.h:2132-2137 (character_inventory.cpp:222-262). Stubs until E1-9.
+        /** Returns the amount of software `type' that are in the inventory */
+        int count_softwares( const itype_id &id ) const;
+        /** Returns whether the character has software on a device with a desired number of charges */
+        bool has_software( const itype_id &software_id, int min_charges = 0,
+                           const itype_id &device_id = itype_id::NULL_ID() ) const;
+
         // has_amount works ONLY for quantity.
         // has_charges works ONLY for charges.
         std::vector<detached_ptr<item>> use_amount( itype_id it, int quantity,
@@ -2834,6 +2846,11 @@ class Character : public Creature, public location_visitable<Character>
         /** Returns all recipes that are known from the books (either in inventory or nearby). */
         recipe_subset get_recipes_from_books( const temp_crafting_inventory &crafting_inv,
                                               const recipe_filter &filter = nullptr ) const;
+        /**
+         * CDF: E1-1, DDA character.h:3711 (character_crafting.cpp:144-174). Returns the recipes of the
+         * powered e-devices (their recipe catalogs and stored books). A stub until E1-8.
+         */
+        recipe_subset get_recipes_from_ebooks( const temp_crafting_inventory &crafting_inv ) const;
         /**
           * Returns all available recipes (from books and npc companions)
           * @param crafting_inv Current available items to craft

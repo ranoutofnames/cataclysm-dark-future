@@ -80,7 +80,8 @@ auto predicted_pockets(const itype& t) -> std::map<pocket_type, int> {
         ret[pocket_type::MOD] = 1;
     }
     if (t.has_flag(flag_CORPSE)) { ret[pocket_type::CORPSE] = 1; }
-    if (t.get_id() == itype_id("usb_drive")) { ret[pocket_type::SOFTWARE] = 1; }
+    // CDF: E1-10a, the synthetic SOFTWARE pocket of usb_drive (item_factory.cpp) is gone: the DDA
+    // usb_drive has explicit pocket_data (one E_FILE_STORAGE pocket), and no item gets a SOFTWARE pocket.
     // CDF: LINKUP1b, DDA item_factory.cpp:4144-4148: a link_up item gets a CABLE pocket.
     if (t.get_use("link_up") != nullptr) { ret[pocket_type::CABLE] = 1; }
     return ret;
@@ -177,13 +178,27 @@ TEST_CASE("synthesised pockets spot checks", "[item][pocket][synthesis]") {
         const itype& t = *itype_id("corpse");
         CHECK(count_type(t, pocket_type::CORPSE) == 1);
     }
-    SECTION("usb drive: software pocket") {
+    SECTION("usb drive: explicit e-file pocket, no software pocket") {
         const itype& t = *itype_id("usb_drive");
-        // CDF: BN's digital-media data gives the drive container_data (1 ml for its files) next to
-        // the software pocket, so it carries a CONTAINER pocket as well
+        // CDF: E1-10a, DDA usb_drive (data/json/items/tool/electronics.json): one explicit
+        // E_FILE_STORAGE pocket of 128 GB; the synthetic SOFTWARE pocket is removed
+        // (DDA-parity: CDF's BN drive had a CONTAINER pocket for its files and a SOFTWARE pocket).
+        // A tool that declares pocket_data without a toolmod pocket gets one (CDF MOD1, DDA
+        // item_factory.cpp:4136-4140), so the drive has the e-file pocket and the mod pocket.
+        CHECK(t.explicit_pockets);
         REQUIRE(t.pockets.size() == 2);
-        CHECK(count_type(t, pocket_type::SOFTWARE) == 1);
-        CHECK(count_type(t, pocket_type::CONTAINER) == 1);
+        CHECK(count_type(t, pocket_type::E_FILE_STORAGE) == 1);
+        CHECK(count_type(t, pocket_type::MOD) == 1);
+        CHECK(count_type(t, pocket_type::SOFTWARE) == 0);
+        CHECK(count_type(t, pocket_type::CONTAINER) == 0);
+        CHECK(t.pockets[0].ememory_max == 128_GB);
+    }
+    SECTION("no item type gets a software pocket") {
+        // CDF: E1-10a, DDA keeps the enum value SOFTWARE but no data uses it
+        for (const itype* t : item_controller->all()) {
+            INFO(t->get_id().str());
+            CHECK(count_type(*t, pocket_type::SOFTWARE) == 0);
+        }
     }
     SECTION("rock: no pockets") { CHECK(itype_id("rock")->pockets.empty()); }
 }

@@ -1,5 +1,21 @@
 [
   {
+    "id": "e_files",
+    "type": "ITEM_CATEGORY",
+    "//": "CDF: E1-1, DDA item_category.json:3 (b4b62254ae2); DDA name_header/name_noun are not read by CDF.",
+    "name": { "str": "FILES" },
+    "zone": "LOOT_OTHER",
+    "sort_rank": -25
+  },
+  {
+    "id": "software",
+    "type": "ITEM_CATEGORY",
+    "//": "CDF: E1-1, DDA item_category.json:11 (b4b62254ae2); DDA name_header/name_noun are not read by CDF.",
+    "name": { "str": "SOFTWARE" },
+    "zone": "LOOT_OTHER",
+    "sort_rank": -24
+  },
+  {
     "id": "guns",
     "type": "ITEM_CATEGORY",
     "name": { "str": "GUNS" },

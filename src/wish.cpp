@@ -5,7 +5,6 @@
 #include "cursesdef.h"
 #include "debug.h"
 #include "debug_menu.h" // IWYU pragma: associated
-#include "digital_media.h"
 #include "flag.h"
 #include "flat_set.h"
 #include "game.h"
@@ -20,6 +19,8 @@
 #include "mutation.h"
 #include "output.h"
 #include "player.h"
+#include "pocket_data.h"
+#include "pocket_type.h"
 #include "point.h"
 #include "skill.h"
 #include "string_formatter.h"
@@ -670,12 +671,15 @@ class wish_item_callback: public uilist_callback
             const auto selected_item = item::spawn_temporary( selected_type, calendar::turn );
             auto containers = item_controller->all()
             | filter( []( const auto * type ) {
-                return type->container != nullptr || type->has_flag( flag_id( "DIGITAL_STORAGE" ) );
+                return type->container != nullptr ||
+                       std::ranges::any_of( type->pockets, []( const pocket_data & pocket ) {
+                    return pocket.type == pocket_type::E_FILE_STORAGE;
+                } );
             } )
             | filter( [&]( const auto * type ) {
                 const auto candidate = item::spawn_temporary( type, calendar::turn );
                 return candidate->can_contain( *selected_item ).success() &&
-                       ( is_digital_file( *selected_item ) ||
+                       ( selected_item->is_estorable() ||
                          ( selected_item->volume() > 0_ml &&
                            selected_item->charges_per_volume( candidate->get_container_capacity() ) > 0 ) );
             } )
@@ -848,8 +852,13 @@ void debug_menu::wishitem( Character *who, const tripoint_bub_ms &pos )
             if( cb.incontainer ) {
                 if( cb.container && !granted->made_of( LIQUID ) ) {
                     auto container = item::spawn( *cb.container, calendar::turn );
-                    if( is_digital_file( *granted ) ) {
-                        container->put_in( std::move( granted ) );
+                    if( granted->is_estorable() && container->is_estorage() ) {
+                        // CDF: E1-11a: a file goes into the E_FILE pocket of its device; the plain
+                        // put_in would route it to the MIGRATION pocket
+                        if( !container->put_in( std::move( granted ), pocket_type::E_FILE_STORAGE, false,
+                                                nullptr, true ).success() ) {
+                            popup( _( "The %s cannot store that file." ), container->tname() );
+                        }
                     } else {
                         const auto count = granted->volume() > 0_ml ?
                                            granted->charges_per_volume( container->get_container_capacity() ) : 0;

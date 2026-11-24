@@ -671,7 +671,7 @@
     "skills_required": [ [ "launcher", 4 ], [ "electronics", 1 ] ],
     "difficulty": 8,
     "time": "30 m",
-    "book_learn": [ [ "textbook_launcher", 8 ], [ "textbook_anarch", 10 ] ],
+    "book_learn": [ [ "textbook_launcher", 8 ], [ "textbook_anarch", 10 ], [ "digital_science_recipe_archive", 8 ] ],
     "reversible": true,
     "using": [ [ "welding_standard", 10 ], [ "steel_standard", 1 ] ],
     "qualities": [ { "id": "CASING_PRESSING", "level": 2 } ],

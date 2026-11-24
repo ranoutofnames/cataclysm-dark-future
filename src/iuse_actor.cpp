@@ -1,5 +1,4 @@
 #include "iuse_actor.h"
-#include "digital_media.h"
 
 #include "action.h"
 #include "action_time_scale.h"
@@ -81,6 +80,7 @@
 #include "player.h"
 #include "player_activity.h"
 #include "pldata.h"
+#include "pocket_type.h"
 #include "popup.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
@@ -98,6 +98,7 @@
 #include "type_id.h"
 #include "ui.h"
 #include "uistate.h"
+#include "units.h"
 #include "units_utility.h"
 #include "value_ptr.h"
 #include "vehicle/veh_type.h"
@@ -282,11 +283,6 @@ int iuse_transform::use( player &p, item &it, bool t, const tripoint_bub_ms &pos
 {
     if( t ) {
         return 0; // invoked from active item processing, do nothing.
-    }
-
-    if( it.has_flag( flag_id( "DIGITAL_READER" ) ) && target->can_use( "MP3_ON" ) &&
-        !digital_music_ready( p, it ) ) {
-        return 0;
     }
 
     const bool possess = p.has_item( it ) ||
@@ -2485,7 +2481,8 @@ int manualnoise_actor::use( player &p, item &it, bool t, const tripoint_bub_ms &
     if( t ) {
         return 0;
     }
-    const auto charges_required = is_digital_file( it ) && !it.is_tool() ? 0 :
+    // CDF: E1-11a: a stored file (hello_world.exe) is no tool and costs no charges; the device pays
+    const auto charges_required = it.is_estorable() && !it.is_tool() ? 0 :
                                   it.type->charges_to_use();
     if( charges_required != 0 && it.ammo_remaining() < charges_required ) {
         p.add_msg_if_player( _( no_charges_message ) );
@@ -2515,7 +2512,8 @@ int manualnoise_actor::use( player &p, item &it, bool t, const tripoint_bub_ms &
 ret_val<bool> manualnoise_actor::can_use( const Character &, const item &it, bool,
         const tripoint_bub_ms & ) const
 {
-    const auto charges_required = is_digital_file( it ) && !it.is_tool() ? 0 :
+    // CDF: E1-11a: a stored file (hello_world.exe) is no tool and costs no charges; the device pays
+    const auto charges_required = it.is_estorable() && !it.is_tool() ? 0 :
                                   it.type->charges_to_use();
     if( charges_required != 0 && it.ammo_remaining() < charges_required ) {
         return ret_val<bool>::make_failure( _( "This tool doesn't have enough charges." ) );
@@ -5583,6 +5581,133 @@ auto select_genome_storage( const std::vector<item *> &storage ) -> item * // *N
 }
 } // namespace
 
+// CDF: E1-11a, owner ruling O4 (E1-PLAN.md section 8): a genome sample is a file of the type
+// digital_genome_sample (4 TB, one itype for partial and complete samples; the item vars
+// specimen_sample, specimen_sample_progress and specimen_name sit on the file) in the E_FILE pocket of any carried
+// e-storage device.  4 TB is more than every ordinary device holds, so a new sample needs a genome
+// drive (8 TB), which takes any other estorable file as well.  A partial sample keeps the full size on
+// purpose: the room is checked when the file is made, so progress never grows a file past its device.
+// The BN specimen vars on the drive itself (the two prefilled genome_drive_* items) become a sample
+// file the first time the sample is looked for.  Replaces digital_genome_samples() and
+// digital_genome_storage() of src/item/digital_media.cpp.  namespace efile_genome_hooks is the test
+// seam (declared in tests/efile_genome_test.cpp, no header): the menus themselves cannot be answered
+// headless.
+namespace efile_genome_hooks
+{
+static const itype_id itype_digital_genome_sample( "digital_genome_sample" );
+
+static const std::array<const char *, 3> specimen_vars = {
+    "specimen_sample", "specimen_sample_progress", "specimen_name"
+};
+
+auto sample_size() -> units::ememory
+{
+    return itype_digital_genome_sample->ememory_size;
+}
+
+static auto carried_estorage( Character &who ) -> std::vector<item *>
+{
+    auto devices = std::vector<item *> {};
+    who.visit_items( [&devices]( item * node, item * ) {
+        if( node->is_estorage() ) {
+            devices.push_back( node );
+        }
+        return VisitResponse::NEXT;
+    } );
+    return devices;
+}
+
+static auto is_same_sample( const item &lhs, const item &rhs ) -> bool
+{
+    return lhs.typeId() == rhs.typeId() &&
+           lhs.get_var( "specimen_sample" ) == rhs.get_var( "specimen_sample" ) &&
+           lhs.get_var( "specimen_sample_progress" ) == rhs.get_var( "specimen_sample_progress" );
+}
+
+// the BN legacy form (specimen vars on the drive) becomes a sample file inside the drive
+auto convert_legacy_drive( item &drive ) -> bool
+{
+    if( !drive.is_estorage() || !drive.has_var( "specimen_sample" ) ) {
+        return false;
+    }
+    auto file = item::spawn( itype_digital_genome_sample, drive.birthday() );
+    for( const char *key : specimen_vars ) {
+        if( drive.has_var( key ) ) {
+            file->set_var( key, drive.get_var( key ) );
+        }
+    }
+    file->set_browsed( true );
+    if( !drive.put_in( std::move( file ), pocket_type::E_FILE_STORAGE, false, nullptr,
+                       true ).success() ) {
+        return false;
+    }
+    for( const char *key : specimen_vars ) {
+        drive.erase_var( key );
+    }
+    return true;
+}
+
+// the genome sample files of every e-device the character carries
+auto samples( Character &who ) -> std::vector<item *>
+{
+    const auto devices = carried_estorage( who );
+    for( item *device : devices ) {
+        convert_legacy_drive( *device );
+    }
+    auto found = std::vector<item *> {};
+    for( item *device : devices ) {
+        for( item *file : device->efiles() ) {
+            if( file->typeId() == itype_digital_genome_sample ) {
+                found.push_back( file );
+            }
+        }
+    }
+    return found;
+}
+
+// the carried e-devices with room for one more sample file
+auto storage_for_new_sample( Character &who ) -> std::vector<item *>
+{
+    auto devices = carried_estorage( who );
+    std::erase_if( devices, []( const item * device ) {
+        return device->remaining_ememory() < sample_size();
+    } );
+    return devices;
+}
+
+// the carried e-devices a copy of @p sample can go to: room for the file and no equal copy yet
+auto copy_targets( Character &who, const item &sample ) -> std::vector<item *>
+{
+    auto devices = storage_for_new_sample( who );
+    std::erase_if( devices, [&sample]( const item * device ) {
+        const auto files = device->efiles();
+        return std::ranges::any_of( files, [&sample]( const item * file ) {
+            return is_same_sample( *file, sample );
+        } );
+    } );
+    return devices;
+}
+
+// a first sample (progress 1) of @p specimen_id into the E_FILE pocket of @p device
+auto store_new_sample( item &device, const std::string &specimen_id,
+                       const std::string &specimen_name ) -> bool
+{
+    auto sample = item::spawn( itype_digital_genome_sample, calendar::turn );
+    sample->set_var( "specimen_sample", specimen_id );
+    sample->set_var( "specimen_sample_progress", "1" );
+    sample->set_var( "specimen_name", specimen_name );
+    sample->set_browsed( true );
+    return device.put_in( std::move( sample ), pocket_type::E_FILE_STORAGE, false, nullptr,
+                          true ).success();
+}
+
+// a copy of @p sample into the E_FILE pocket of @p device
+auto copy_sample_to( const item &sample, item &device ) -> bool
+{
+    return device.put_in( sample, pocket_type::E_FILE_STORAGE, false, nullptr, true ).success();
+}
+} // namespace efile_genome_hooks
+
 auto cloning_syringe_iuse::use( player &p, item &it, bool /*t*/,
                                 const tripoint_bub_ms &pos ) const -> int
 {
@@ -5613,15 +5738,17 @@ auto cloning_syringe_iuse::use( player &p, item &it, bool /*t*/,
         return 0;
     }
 
-    const auto drives = digital_genome_samples( p );
+    const auto drives = efile_genome_hooks::samples( p );
     const auto has_sample = std::ranges::any_of( drives, [&m]( const auto * sample ) {
         return sample->get_var( "specimen_sample" ) == m->type->id.str();
     } );
     auto *destination = static_cast<item *>( nullptr );
     if( !has_sample ) {
-        const auto storage = digital_genome_storage( p );
+        const auto storage = efile_genome_hooks::storage_for_new_sample( p );
         if( storage.empty() ) {
-            add_msg( m_bad, _( "You need a USB drive or unencrypted SD card to store genetic data." ) );
+            add_msg( m_bad,
+                     _( "You need an electronic storage device with %s free to store genetic data." ),
+                     units::display( efile_genome_hooks::sample_size() ) );
             return 0;
         }
         destination = select_genome_storage( storage );
@@ -5692,7 +5819,6 @@ auto cloning_syringe_iuse::use( player &p, item &it, bool /*t*/,
             if( progress < size ) {
                 progress++;
                 sample->set_var( "specimen_sample_progress", std::to_string( progress ) );
-                sample->erase_var( "DIGITAL_FILE_ID" );
                 add_msg( m_info, _( "Progress: %d/%d for genome sample." ), progress, size );
                 if( progress == size ) {
                     add_msg( m_good, _( "Sample is complete." ) );
@@ -5706,13 +5832,12 @@ auto cloning_syringe_iuse::use( player &p, item &it, bool /*t*/,
     }
 
     // Store the new sample alongside any existing files.
-    auto sample = item::spawn( "digital_genome_sample", calendar::turn );
     const auto size = std::max( 1, cloning_utils::specimen_required_sample_size( m->type->id ) );
 
-    sample->set_var( "specimen_sample", id_str );
-    sample->set_var( "specimen_sample_progress", "1" );
-    sample->set_var( "specimen_name", m->name() );
-    destination->put_in( std::move( sample ) );
+    if( !efile_genome_hooks::store_new_sample( *destination, id_str, m->name() ) ) {
+        add_msg( m_bad, _( "The %s cannot store the genome sample." ), destination->display_name() );
+        return charges_to_use;
+    }
 
     if( size > 1 ) {
         add_msg( m_info, _( "Progress: 1/%d for genome sample." ), size );
@@ -5741,7 +5866,7 @@ auto dna_editor_iuse::use( player &p, item &it, bool /*t*/,
         add_msg( m_info, _( "There's not enough charge left in the %s." ), it.display_name() );
         return 0;
     }
-    auto samples = digital_genome_samples( p );
+    auto samples = efile_genome_hooks::samples( p );
     if( samples.size() == 0 ) {
         popup( _( "You have no complete genome sample files." ) );
         return 0;
@@ -5777,13 +5902,7 @@ auto dna_editor_iuse::use( player &p, item &it, bool /*t*/,
     menu.addentry( 0, true, 'e', _( "Examine sample" ) );
     menu.addentry( 1, p.has_charges( itype_mutagen, 1 ) &&
                    p.has_charges( itype_biomaterial, 1 ), 'i', _( "Research upgrade" ) );
-    auto storage = digital_genome_storage( p );
-    std::erase_if( storage, [&selected_sample]( const auto * media ) {
-        return std::ranges::any_of( media->contents.all_items_top(), [&selected_sample](
-        const auto * file ) {
-            return file->get_var( "DIGITAL_FILE_ID" ) == selected_sample->get_var( "DIGITAL_FILE_ID" );
-        } );
-    } );
+    const auto storage = efile_genome_hooks::copy_targets( p, *selected_sample );
     menu.addentry( 2, !storage.empty(), 'c', _( "Copy sample file" ) );
     menu.addentry( 3, p.has_charges( itype_biomaterial, 1 ), 'p', _( "Produce DNA" ) );
     menu.query();
@@ -5862,13 +5981,15 @@ auto dna_editor_iuse::use( player &p, item &it, bool /*t*/,
         selected_sample->set_var( "specimen_sample", specimen_id.str() );
         selected_sample->set_var( "specimen_sample_progress", std::to_string( size ) );
         selected_sample->set_var( "specimen_name", newmon.name() );
-        selected_sample->erase_var( "DIGITAL_FILE_ID" );
     } else if( menu.ret == 2 ) {
         auto *destination = select_genome_storage( storage );
         if( destination == nullptr ) {
             return 0;
         }
-        destination->put_in( item::spawn( *selected_sample ) );
+        if( !efile_genome_hooks::copy_sample_to( *selected_sample, *destination ) ) {
+            add_msg( m_bad, _( "The %s cannot store the genome sample." ), destination->display_name() );
+            return 0;
+        }
         add_msg( _( "You copy the genome sample file to the %s." ), destination->display_name() );
     } else if( menu.ret == 3 ) {
         p.use_charges( itype_biomaterial, 1 );
@@ -6497,10 +6618,6 @@ int iuse_music_player::use( player &p, item &it, bool t, const tripoint_bub_ms &
 {
     if( t ) {
         return 0; // invoked from active item processing, do nothing.
-    }
-
-    if( it.has_flag( flag_id( "DIGITAL_READER" ) ) && !digital_music_ready( p, it ) ) {
-        return 0;
     }
 
     const bool possess = p.has_item( it ) ||

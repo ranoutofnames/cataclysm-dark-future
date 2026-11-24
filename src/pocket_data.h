@@ -166,6 +166,8 @@ class pocket_data
         bool _no_reload = false;
         /** Volume that contents may fill before the owning item grows. */
         units::volume magazine_well = 0_ml;
+        /** DDA `ememory_max`: capacity of an E_FILE_STORAGE pocket (E1-1, DDA item_pocket.cpp:203). */
+        units::ememory ememory_max = 0_KB;
 
         /** If set, the pocket can be sealed and this data applies while it is. */
         std::optional<sealable_data> sealed_data;

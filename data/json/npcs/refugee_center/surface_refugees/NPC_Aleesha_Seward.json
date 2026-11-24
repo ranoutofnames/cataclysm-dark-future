@@ -46,7 +46,15 @@
     "type": "item_group",
     "id": "REFUGEE_Aleesha_carried",
     "subtype": "collection",
-    "entries": [ { "item": "novel_coa" }, { "item": "smart_phone", "ammo-item": "battery", "charges": 56 } ]
+    "entries": [
+      { "item": "novel_coa" },
+      {
+        "item": "smart_phone",
+        "ammo-item": "battery",
+        "charges": 56,
+        "contents-group": "civilian_smartphone_efiles"
+      }
+    ]
   },
   {
     "type": "item_group",

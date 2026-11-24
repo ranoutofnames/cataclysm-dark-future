@@ -42,6 +42,6 @@
     "id": "NC_PROF_FRAT_carry",
     "type": "item_group",
     "subtype": "distribution",
-    "entries": [ { "item": "smart_phone" } ]
+    "entries": [ { "item": "smart_phone", "contents-group": "civilian_smartphone_efiles" } ]
   }
 ]

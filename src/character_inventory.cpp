@@ -1290,3 +1290,62 @@ std::vector<pocket_with_constraint> Character::get_all_pockets_with_constraints(
     }
     return ret;
 }
+
+// CDF: E1-9, DDA character_inventory.cpp:222-275. D-A: the visit gives item pointers. The default walk
+// of CDF skips the files of an e-device (E1-2), so the files are read through softwares().
+int Character::count_softwares( const itype_id &id ) const
+{
+    int count = 0;
+    visit_items( [&id, &count]( const item * node, const item * ) {
+        if( node->is_estorage() ) {
+            for( const item *soft : node->softwares() ) {
+                if( soft->typeId() == id ) {
+                    count++;
+                }
+            }
+        }
+        return VisitResponse::NEXT;
+    } );
+    return count;
+}
+
+bool Character::has_software( const itype_id &software_id, int min_charges,
+                              const itype_id &device_id ) const
+{
+    const map &here = get_map();
+    bool found = false;
+
+    visit_items( [&]( const item * device, const item * ) {
+        if( !device->is_estorage() ) {
+            return VisitResponse::NEXT;
+        }
+
+        if( !device_id.is_null() && device->typeId() != device_id ) {
+            return VisitResponse::NEXT;
+        }
+
+        const std::vector<const item *> softwares = device->softwares();
+        const bool has_software = std::ranges::any_of( softwares, [&]( const item * software ) {
+            return software->typeId() == software_id;
+        } );
+        if( !has_software ) {
+            return VisitResponse::NEXT;
+        }
+
+        if( min_charges <= 0 ) {
+            found = true;
+            return VisitResponse::ABORT;
+        }
+
+        if( device->is_tool() ) {
+            const int device_charges = device->ammo_remaining_linked( here, this );
+            if( device_charges >= min_charges ) {
+                found = true;
+                return VisitResponse::ABORT;
+            }
+        }
+        return VisitResponse::NEXT;
+    } );
+
+    return found;
+}

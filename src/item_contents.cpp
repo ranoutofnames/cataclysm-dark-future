@@ -64,6 +64,10 @@ void item_contents::refresh_top_cache() const
 {
     top_cache.clear();
     for( const item_pocket &pocket : pockets ) {
+        // CDF: E1-2: installed files are not part of the default walk (DDA is_standard_type)
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            continue;
+        }
         const std::vector<item *> &v = pocket.items().as_vector();
         top_cache.insert( top_cache.end(), v.begin(), v.end() );
     }
@@ -101,6 +105,12 @@ void item_contents::copy_from( const item_contents &source )
     if( !same_layout ) {
         for( item * const &it : source.all_items_top() ) {
             insert_item( item::spawn( *it ) );
+        }
+        // CDF: E1-2: all_items_top() no longer lists installed files; copy them into this item's E_FILE pocket
+        if( !get_pockets( pocket_type::E_FILE_STORAGE ).empty() ) {
+            for( const item *file : source.efiles() ) {
+                insert_item( item::spawn( *file ), pocket_type::E_FILE_STORAGE, true );
+            }
         }
         return;
     }
@@ -1261,6 +1271,9 @@ const std::vector<item *> &item_contents::all_items_top() const
     bool valid = true;
     size_t index = 0;
     for( const item_pocket &pocket : pockets ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            continue;
+        }
         for( item * const &it : pocket.items().as_vector() ) {
             if( index >= top_cache.size() || top_cache[index] != it ) {
                 valid = false;
@@ -1369,9 +1382,116 @@ std::vector<const item *> item_contents::cables() const
     return cables;
 }
 
+// CDF: E1-1, DDA item_contents.cpp:2065-2145
+std::vector<const item *> item_contents::softwares() const
+{
+    std::vector<const item *> softwares;
+    for( const item_pocket &pocket : get_pockets() ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            for( const item *it : pocket.all_items_top() ) {
+                if( it->is_software() ) {
+                    softwares.push_back( it );
+                }
+            }
+        }
+    }
+    return softwares;
+}
+
+std::vector<item *> item_contents::ebooks()
+{
+    std::vector<item *> ebooks;
+    for( item_pocket &pocket : get_pockets() ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            for( item *it : pocket.all_items_top() ) {
+                if( it->is_book() ) {
+                    ebooks.push_back( it );
+                }
+            }
+        }
+    }
+    return ebooks;
+}
+
+std::vector<const item *> item_contents::ebooks() const
+{
+    std::vector<const item *> ebooks;
+    for( const item_pocket &pocket : get_pockets() ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            for( const item *it : pocket.all_items_top() ) {
+                if( it->is_book() ) {
+                    ebooks.push_back( it );
+                }
+            }
+        }
+    }
+    return ebooks;
+}
+
+std::vector<item *> item_contents::efiles()
+{
+    std::vector<item *> efiles;
+    for( item_pocket &pocket : get_pockets() ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            for( item *it : pocket.all_items_top() ) {
+                efiles.push_back( it );
+            }
+        }
+    }
+    return efiles;
+}
+
+std::vector<const item *> item_contents::efiles() const
+{
+    std::vector<const item *> efiles;
+    for( const item_pocket &pocket : get_pockets() ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            for( const item *it : pocket.all_items_top() ) {
+                efiles.push_back( it );
+            }
+        }
+    }
+    return efiles;
+}
+
+units::ememory item_contents::occupied_ememory() const
+{
+    units::ememory total = 0_KB;
+    for( const item_pocket &pocket : get_pockets() ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            total += pocket.occupied_ememory();
+        }
+    }
+    return total;
+}
+
+namespace
+{
+
+// CDF: E1-2: true when the only things in the pockets are installed files (E_FILE_STORAGE)
+auto pockets_hold_only_files( const std::list<item_pocket> &pockets ) -> bool
+{
+    bool any_file = false;
+    for( const item_pocket &pocket : pockets ) {
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            any_file = any_file || !pocket.empty();
+        } else if( !pocket.empty() ) {
+            return false;
+        }
+    }
+    return any_file;
+}
+
+} // namespace
+
 item &item_contents::front()
 {
     const std::vector<item *> &items = all_items_top();
+    if( items.empty() && pockets_hold_only_files( pockets ) ) {
+        // CDF: E1-2: the default walk skips installed files, so a device that holds only files has
+        // no top item: that is the null item, not an error
+        return null_item_reference();
+    }
     if( items.empty() ) {
         debugmsg( "Attempted to call front on empty item contents" );
         return null_item_reference();
@@ -1387,6 +1507,9 @@ const item &item_contents::front() const
 item &item_contents::back()
 {
     const std::vector<item *> &items = all_items_top();
+    if( items.empty() && pockets_hold_only_files( pockets ) ) {
+        return null_item_reference();
+    }
     if( items.empty() ) {
         debugmsg( "Attempted to call back on empty item contents" );
         return null_item_reference();
@@ -1558,7 +1681,8 @@ void item_contents::combine( const item_contents &read_input, const bool convert
                 if( pocket.is_type( pocket_type::MIGRATION ) ||
                     pocket.is_type( pocket_type::CORPSE ) ||
                     pocket.is_type( pocket_type::MAGAZINE ) ||
-                    pocket.is_type( pocket_type::MAGAZINE_WELL ) ) {
+                    pocket.is_type( pocket_type::MAGAZINE_WELL ) ||
+                    pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
                     ++pocket_index;
                     for( const item *it : pocket.all_items_top() ) {
                         insert_item( *it, pocket.get_pocket_data()->type, ignore_contents );
@@ -1815,9 +1939,12 @@ pocket_choice item_contents::best_pocket( const item &it, const item *avoid,
         if( pocket.is_forbidden() ) {
             continue;
         }
-        if( !pocket.is_type( pocket_type::CONTAINER ) ) {
+        if( !pocket.is_type( pocket_type::CONTAINER ) &&
+            !( pocket.is_type( pocket_type::E_FILE_STORAGE ) && it.is_estorable_exclusive() ) ) {
             // best pocket is for picking stuff up.
             // containers are the only pockets that are available for such...
+            // unless it's an e-device spawning with contents; we can do this here because
+            // software items should never spawn outside a container
             continue;
         }
         if( !allow_sealed && pocket.sealed() ) {
@@ -2723,6 +2850,10 @@ item &item_contents::legacy_front()
 {
     if( empty() ) {
         debugmsg( "naively asked for first content item and will get a nullptr" );
+        return null_item_reference();
+    }
+    if( all_items_top().empty() ) {
+        // CDF: E1-2: only installed files, which the default walk skips
         return null_item_reference();
     }
     return *all_items_top().front();

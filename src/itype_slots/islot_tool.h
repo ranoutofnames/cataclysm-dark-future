@@ -22,4 +22,12 @@ struct islot_tool {
     int ups_recharge_rate = 5;
 
     std::vector<int> rand_charges;
+
+    // CDF: E1-1, DDA itype.h:172-177
+    /** Electronic memory transferred per second. */
+    units::ememory etransfer_rate = 0_KB;
+    /** Type of e-device connection. */
+    std::string e_port;
+    /** E-device ports NOT supported for high speed file transfer. */
+    std::vector<std::string> e_ports_banned;
 };

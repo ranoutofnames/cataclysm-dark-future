@@ -3268,6 +3268,13 @@
           "ammo_restriction": {
             "battery": 50
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "32 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -3286,6 +3293,13 @@
           "ammo_restriction": {
             "battery": 100
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "64 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -4382,6 +4396,13 @@
             "BATTERY_MEDIUM"
           ],
           "default_magazine": "medium_battery_cell"
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "1 TB"
         }
       ],
       "cdf_kept_ids": [],
@@ -4404,6 +4425,13 @@
             "medium_disposable_cell"
           ],
           "default_magazine": "medium_battery_cell"
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "1 TB"
         }
       ],
       "cdf_kept_ids": [],
@@ -4423,6 +4451,13 @@
             "BATTERY_MEDIUM"
           ],
           "default_magazine": "medium_battery_cell"
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "1 TB"
         }
       ],
       "cdf_kept_ids": [],
@@ -5554,6 +5589,13 @@
           "ammo_restriction": {
             "battery": 85
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "32 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -5572,6 +5614,13 @@
           "ammo_restriction": {
             "battery": 85
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "32 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -9740,6 +9789,13 @@
           "ammo_restriction": {
             "battery": 200
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "1 TB"
         }
       ],
       "cdf_kept_ids": [],
@@ -9758,6 +9814,13 @@
           "ammo_restriction": {
             "battery": 200
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "1 TB"
         }
       ],
       "cdf_kept_ids": [],
@@ -9776,6 +9839,13 @@
           "ammo_restriction": {
             "battery": 200
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "1 TB"
         }
       ],
       "cdf_kept_ids": [],
@@ -9794,6 +9864,13 @@
           "ammo_restriction": {
             "battery": 200
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "1 TB"
         }
       ],
       "cdf_kept_ids": [],
@@ -12718,12 +12795,6 @@
       "//": "CDF: kd1 B12a adds a rigid 1 ml CONTAINER pocket for the preloaded digital files (a BN-only feature that stays); DDA b4b62254ae2 has only the MAGAZINE pocket",
       "pockets": [
         {
-          "pocket_type": "CONTAINER",
-          "rigid": true,
-          "max_contains_volume": "1 ml",
-          "moves": 100
-        },
-        {
           "pocket_type": "MAGAZINE",
           "rigid": true,
           "ammo_restriction": {
@@ -12742,12 +12813,6 @@
       "twin": true,
       "//": "CDF: kd1 B12a adds a rigid 1 ml CONTAINER pocket for the preloaded digital files (a BN-only feature that stays); DDA b4b62254ae2 has only the MAGAZINE pocket",
       "pockets": [
-        {
-          "pocket_type": "CONTAINER",
-          "rigid": true,
-          "max_contains_volume": "1 ml",
-          "moves": 100
-        },
         {
           "pocket_type": "MAGAZINE",
           "rigid": true,
@@ -18080,6 +18145,13 @@
           "ammo_restriction": {
             "battery": 56
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -18098,6 +18170,13 @@
           "ammo_restriction": {
             "battery": 56
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -18116,6 +18195,13 @@
           "ammo_restriction": {
             "battery": 56
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -22366,6 +22452,13 @@
           "ammo_restriction": {
             "battery": 600
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -22384,6 +22477,13 @@
           "ammo_restriction": {
             "battery": 600
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -22402,6 +22502,13 @@
           "ammo_restriction": {
             "battery": 600
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -22420,6 +22527,13 @@
           "ammo_restriction": {
             "battery": 600
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -22438,6 +22552,13 @@
           "ammo_restriction": {
             "battery": 600
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],
@@ -22456,6 +22577,13 @@
           "ammo_restriction": {
             "battery": 600
           }
+        },
+        {
+          "pocket_type": "E_FILE_STORAGE",
+          "rigid": true,
+          "max_contains_volume": "1 ml",
+          "max_contains_weight": "1 g",
+          "ememory_max": "256 GB"
         }
       ],
       "cdf_kept_ids": [],

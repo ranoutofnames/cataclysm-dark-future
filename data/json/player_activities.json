@@ -1,15 +1,5 @@
 [
   {
-    "id": "ACT_SCAN_BOOK",
-    "type": "activity_type",
-    "verb": "scanning reading material",
-    "rooted": true,
-    "suspendable": false,
-    "verbose_tooltip": false,
-    "bubble_size_effect": "idle",
-    "rest_amount": 0.1
-  },
-  {
     "id": "ACT_RELOAD",
     "type": "activity_type",
     "verb": "reloading",
@@ -1029,6 +1019,31 @@
     "no_resume": true,
     "bubble_size_effect": "idle",
     "complex_moves": { "speed": true }
+  },
+  {
+    "//": "CDF: E1-5a. DDA player_activities.json:976-982 (activity_level NO_EXERCISE dropped: no such CDF key; based_on speed is complex_moves.speed).",
+    "id": "ACT_BINDER_COPY_RECIPE",
+    "type": "activity_type",
+    "verb": "writing",
+    "rooted": true,
+    "complex_moves": { "speed": true }
+  },
+  {
+    "//": "CDF: E1-5a. DDA player_activities.json:38-45 (activity_level NO_EXERCISE dropped: no such CDF key; based_on speed is complex_moves.speed).",
+    "id": "ACT_EBOOKSAVE",
+    "type": "activity_type",
+    "verb": "taking pictures of books",
+    "rooted": true,
+    "auto_needs": true,
+    "complex_moves": { "speed": true }
+  },
+  {
+    "//": "CDF: E1-5b. DDA player_activities.json:28-36 (activity_level NO_EXERCISE dropped: no such CDF key; based_on time is the default, no complex_moves: the activity is not sped up by the user's speed).",
+    "id": "ACT_E_FILE",
+    "type": "activity_type",
+    "verb": "managing files",
+    "rooted": true,
+    "auto_needs": true
   },
   {
     "id": "ACT_NULL",

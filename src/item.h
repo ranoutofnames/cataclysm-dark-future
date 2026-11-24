@@ -1539,6 +1539,12 @@ class item : public location_visitable<item>, public game_object<item>
         // CDF: LINKUP1a, DDA item.h:2951: the cables in this item's CABLE pockets
         std::vector<const item *> cables() const;
 
+        // CDF: E1-1, DDA item.h:2944-2949: the files in this item's E_FILE_STORAGE pockets
+        std::vector<const item *> softwares() const;
+        std::vector<const item *> ebooks() const;
+        std::vector<item *> efiles();
+        std::vector<const item *> efiles() const;
+
         /**
          * Whether the item should be processed (by calling @ref process).
          */
@@ -1591,6 +1597,68 @@ class item : public location_visitable<item>, public game_object<item>
         bool is_armor() const;
         bool is_book() const;
         bool is_map() const;
+
+        // CDF: E1-1, the DDA e-file engine (DDA item.h:381-409, b4b62254ae2). The bodies marked
+        // "E1-n:" in item.cpp are stubs that the named step fills.
+        /** @return does this item have an E_FILE_STORAGE pocket? */
+        bool is_estorage() const;
+        /** Above, along with checks for power, browsed, use action (E1-3 fills the body). */
+        bool is_estorage_usable( const Character &who ) const;
+        /** @return can this item be stored as an e-file (flag E_STORABLE, E_STORABLE_EXCLUSIVE or a book)? */
+        bool is_estorable() const;
+        bool is_estorable_exclusive() const;
+        /** The "browsed" item variable: a device (or file) the character has looked through. */
+        bool is_browsed() const;
+        void set_browsed( bool browsed );
+        /** @return if item can be copied as an e-file */
+        bool is_ecopiable() const;
+        /** @return if all contained e-files are browsed, or if this item is browsed */
+        bool efiles_all_browsed() const;
+        /** @return current total electronic memory size of current item */
+        units::ememory ememory_size() const;
+        /** @return total electronic memory size of the first E_FILE_STORAGE pocket */
+        units::ememory total_ememory() const;
+        /** @return total electronic memory size of all contained e-files on this e-device */
+        units::ememory occupied_ememory() const;
+        /** @return remaining electronic memory on this e-device */
+        units::ememory remaining_ememory() const;
+        /** Returns the recipe catalog for this item if it exists, otherwise returns nullptr */
+        item *get_recipe_catalog();
+        const item *get_recipe_catalog() const;
+        /** Returns the photo gallery for this item if it exists, otherwise returns nullptr */
+        item *get_photo_gallery();
+        const item *get_photo_gallery() const;
+        /** @return total number of photos this item holds */
+        int total_photos() const;
+        /** @return does this item have category `software`? */
+        bool is_software() const;
+        /**
+         * Recipes stored on the item (laptops, smartphones, sd cards etc). Filters out !is_valid().
+         */
+        std::set<recipe_id> get_saved_recipes() const;
+        /** Set recipes stored on the item (laptops, smartphones, sd cards etc). */
+        void set_saved_recipes( const std::set<recipe_id> &recipes );
+        /** Generate and save recipes based on memory_card_data. */
+        void generate_recipes();
+        /**
+         * An approximation based on weight for how many pages the book has in total.
+         * Will be 0 if the item is not a book.
+         */
+        static int pages_in_book( const itype &type );
+
+        /** DDA item.h:2096-2106: one stored camera photo (the "CAMERA_EXTENDED_PHOTOS" variable). */
+        struct extended_photo_def : public JsonDeserializer, public JsonSerializer {
+            int quality = 0;
+            std::string name;
+            std::string description;
+
+            void deserialize( JsonIn &jsin ) override;
+            void serialize( JsonOut &jsout ) const override;
+        };
+        bool read_extended_photos( std::vector<extended_photo_def> &extended_photos,
+                                   const std::string &var_name, bool insert_at_begin ) const;
+        void write_extended_photos( const std::vector<extended_photo_def> &extended_photos,
+                                    const std::string &var_name );
         bool is_salvageable( bool strict = false ) const;
         bool is_craft() const;
 

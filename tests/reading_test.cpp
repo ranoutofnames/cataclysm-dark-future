@@ -1,6 +1,7 @@
 #include "../src/map/map.h"
 #include "../src/vehicle/vehicle_part.h"
 #include "../src/vehicle/vehicle_selector.h"
+#include "activity_handlers.h"
 #include "avatar.h"
 #include "bodypart.h"
 #include "calendar.h"
@@ -15,6 +16,7 @@
 #include "morale_types.h"
 #include "options.h"
 #include "player_activity.h"
+#include "pocket_type.h"
 #include "player_helpers.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
@@ -35,6 +37,14 @@
 #include <vector>
 
 class player;
+
+static const activity_id ACT_READ("ACT_READ");
+
+static const flag_id flag_CAN_USE_IN_DARK("CAN_USE_IN_DARK");
+
+static const itype_id itype_battery("battery");
+static const itype_id itype_test_book("test_book");
+static const itype_id itype_test_ebook_reader("test_ebook_reader");
 
 static const trait_id trait_HYPEROPIC("HYPEROPIC");
 static const trait_id trait_ILLITERATE("ILLITERATE");
@@ -506,5 +516,82 @@ TEST_CASE("Losing book during reading", "[reading][book]") {
         item& western = *det;
         veh->add_item(part, std::move(det));
         destroyed_book_test_helper(u, &western);
+    }
+}
+
+// CDF: E1-8, DDA tests/reading_test.cpp:505-594 (b4b62254ae2) transplanted. DDA builds a
+// read_activity_actor; ACT_READ is an old-style activity here, so avatar::read( book, ereader ) starts
+// it and activity_handlers::read_do_turn plays the actor's do_turn. test_textbook_fabrication,
+// test_lamp and test_battery_disposable do not exist in CDF: the book is test_book, the light is the
+// plain day, the battery is the reader's own battery well. The e-book sits in the E_FILE pocket (put_in
+// with a detached item, no item_location). The clock is on a five-minute boundary because the handler
+// charges once per five minutes (action_time_scale::once_every_this_tick).
+static item& test_ebook_store_book(item& ereader) {
+    const ret_val<void> stored = ereader.put_in(item::spawn(itype_test_book),
+                                                pocket_type::E_FILE_STORAGE, false, nullptr, true);
+    REQUIRE(stored.success());
+    REQUIRE(ereader.efiles().size() == 1);
+    return *ereader.efiles().front();
+}
+
+static void test_ebook_is_reading(avatar& dummy, item& ereader, item& booklc) {
+    THEN("player can read the book") {
+        REQUIRE(ereader.ammo_remaining() == 100);
+        REQUIRE(dummy.read(&booklc, &ereader, true));
+        REQUIRE(dummy.activity->id() == ACT_READ);
+
+        CHECK(ereader.ammo_remaining() == 99);
+
+        activity_handlers::read_do_turn(&*dummy.activity, &dummy);
+
+        CHECK(dummy.activity->id() == ACT_READ);
+
+        AND_THEN("ereader has spent a charge while reading") {
+            CHECK(ereader.ammo_remaining() == 98);
+
+            AND_THEN("ereader runs out of battery") {
+                ereader.ammo_consume(ereader.ammo_remaining(), dummy.bub_pos(), &dummy);
+                activity_handlers::read_do_turn(&*dummy.activity, &dummy);
+
+                THEN("reading stops") { CHECK(dummy.activity->id() != ACT_READ); }
+            }
+        }
+    }
+}
+
+TEST_CASE("reading_a_book_with_an_ebook_reader", "[reading][book][ereader][efile][read]") {
+    clear_all_state();
+    set_time(calendar::turn_zero + 12_hours + 5_minutes);
+    avatar& dummy = get_avatar();
+    clear_avatar();
+
+    WHEN("having a book in the inventory") {
+        dummy.wear_item(item::spawn("backpack"), false);
+        item& ereader = dummy.i_add(item::spawn(itype_test_ebook_reader));
+        item& ebook = test_ebook_store_book(ereader);
+        // CAN_USE_IN_DARK should get inherited from the ereader.
+        REQUIRE(ereader.has_flag(flag_CAN_USE_IN_DARK));
+        REQUIRE(ebook.has_flag(flag_CAN_USE_IN_DARK));
+        ereader.ammo_set(itype_battery, 100);
+
+        WHEN("it is bright outside") {
+            REQUIRE(character_funcs::can_see_fine_details(dummy));
+            test_ebook_is_reading(dummy, ereader, ebook);
+        }
+
+        WHEN("it is dark outside") {
+            dummy.add_env_effect(efftype_id("darkness"), body_part_eyes, 3, 1_hours);
+            REQUIRE_FALSE(character_funcs::can_see_fine_details(dummy));
+            test_ebook_is_reading(dummy, ereader, ebook);
+        }
+    }
+
+    GIVEN("a book nearby") {
+        detached_ptr<item> det = item::spawn(itype_test_ebook_reader);
+        item& ereader = *det;
+        item& ebook = test_ebook_store_book(ereader);
+        ereader.ammo_set(itype_battery, 100);
+        get_map().add_item(dummy.bub_pos(), std::move(det));
+        test_ebook_is_reading(dummy, ereader, ebook);
     }
 }

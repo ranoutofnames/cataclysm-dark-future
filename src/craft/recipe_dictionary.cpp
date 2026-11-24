@@ -627,7 +627,8 @@ void recipe_dictionary::finalize() {
         const recipe_id rid = recipe_id(id.str());
 
         // books that don't already have an uncrafting recipe
-        if (e->book && !recipe_dict.uncraft.contains(rid) && e->volume > 0_ml) {
+        // DDA gates on weight: zero-weight files get no uncraft_book recipe
+        if (e->book && !recipe_dict.uncraft.contains(rid) && e->volume > 0_ml && e->weight > 0_gram) {
             int pages = std::max(1, static_cast<int>(e->volume / 12.5_ml));
             auto& bk = recipe_dict.uncraft[rid];
             bk.ident_ = rid;

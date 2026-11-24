@@ -132,6 +132,7 @@
     "subcategory": "CSC_ARMOR_OTHER",
     "skill_used": "tailor",
     "difficulty": 1,
+    "book_learn": [ [ "digital_tailoring_recipe_archive", 1 ] ],
     "time": "50 m",
     "autolearn": true,
     "using": [ [ "sewing_standard", 20 ] ],

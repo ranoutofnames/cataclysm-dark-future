@@ -1,0 +1,262 @@
+[
+  {
+    "//": "CDF: E1-1 fixtures for the DDA e-file engine. DDA data/mods/TEST_DATA/items.json:980-1000, 5389-5430 and itemgroups.json:80-135 (b4b62254ae2), translated: CDF devices are standalone TOOLs (the BN digital readers are replaced in E1-10a), the abstract file is local because core abstract_efile arrives in E1-4, and the phone is test_smart_phone.",
+    "id": "test_book",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
+    "name": { "str": "Unit Testing Principles", "str_pl": "copies of Unit Testing Principles" },
+    "description": "Book about testing to test plural form.",
+    "weight": "1587 g",
+    "volume": "1500 ml",
+    "symbol": "?",
+    "color": "blue",
+    "required_level": 0,
+    "max_level": 5,
+    "skill": "computer",
+    "fun": -1
+  },
+  {
+    "id": "test_generic_book_fixture",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
+    "copy-from": "test_book",
+    "name": { "str": "generic test book" },
+    "description": "A generic test book: its chapters are counted per copy.",
+    "generic": true
+  },
+  {
+    "id": "test_memory_card_fixture",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "name": { "str": "test memory card" },
+    "description": "A test item with memory_card generation data.",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "symbol": ",",
+    "color": "blue",
+    "memory_card": {
+      "data_chance": 0.5,
+      "recipes_chance": 0.25,
+      "recipes_amount": 3,
+      "recipes_level_min": 1,
+      "recipes_level_max": 4,
+      "recipes_categories": [ "CC_FOOD", "CC_ELECTRONIC" ],
+      "secret_recipes": true
+    }
+  },
+  {
+    "abstract": "test_abstract_efile",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "category": "e_files",
+    "symbol": "o",
+    "name": { "str": "abstract test electronic file", "//~": "NO_I18N" },
+    "description": "abstract test electronic file, copy-from for any test item that is solely on an electronic storage medium",
+    "ememory_size": "1 KB",
+    "flags": [ "E_STORABLE", "ZERO_WEIGHT", "NO_DROP", "IRREMOVABLE" ],
+    "item_vars": { "browsed": "false" }
+  },
+  {
+    "id": "test_efile_large",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "copy-from": "test_abstract_efile",
+    "name": { "str": "large test file" },
+    "ememory_size": "500 GB"
+  },
+  {
+    "id": "test_efile_medium",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "copy-from": "test_abstract_efile",
+    "name": { "str": "medium test file" },
+    "ememory_size": "24 GB"
+  },
+  {
+    "id": "test_efile_small",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "copy-from": "test_abstract_efile",
+    "name": { "str": "small test file" },
+    "ememory_size": "1 KB"
+  },
+  {
+    "id": "test_efile_copiable",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
+    "copy-from": "test_book",
+    "name": { "str": "copiable test file" },
+    "ememory_size": "1 MB"
+  },
+  {
+    "id": "test_ebook_reader",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "eBook reader" },
+    "description": "Test book reader.",
+    "weight": "250 g",
+    "volume": "250 ml",
+    "symbol": ";",
+    "color": "blue",
+    "material": [ "plastic" ],
+    "tool_ammo": [ "battery" ],
+    "charges_per_use": 1,
+    "etransfer_rate": "30 MB",
+    "e_port": "tablet",
+    "e_ports_banned": [ "USB-A" ],
+    "use_action": [ "E_FILE_DEVICE", "EBOOKSAVE" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD", "CAN_USE_IN_DARK", "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 100 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "32 GB"
+      }
+    ]
+  },
+  {
+    "id": "test_laptop",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test laptop" },
+    "description": "Test laptop, DDA laptop shape.",
+    "weight": "2721 g",
+    "volume": "2500 ml",
+    "symbol": ",",
+    "color": "dark_gray",
+    "material": [ "plastic", "aluminum" ],
+    "tool_ammo": [ "battery" ],
+    "charges_per_use": 1,
+    "etransfer_rate": "30 MB",
+    "e_port": "laptop",
+    "use_action": [ "E_FILE_DEVICE", "EBOOKSAVE" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD", "CAN_USE_IN_DARK", "ALLOWS_REMOTE_USE" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 200 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "1 TB"
+      }
+    ]
+  },
+  {
+    "id": "test_eink_tablet_pc",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test e-ink tablet" },
+    "description": "Test e-ink tablet, DDA e-ink tablet shape.",
+    "weight": "250 g",
+    "volume": "250 ml",
+    "symbol": ";",
+    "color": "blue",
+    "material": [ "plastic" ],
+    "tool_ammo": [ "battery" ],
+    "charges_per_use": 1,
+    "etransfer_rate": "30 MB",
+    "e_port": "tablet",
+    "e_ports_banned": [ "USB-A" ],
+    "use_action": [ "E_FILE_DEVICE", "EBOOKSAVE" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 85 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "32 GB"
+      }
+    ]
+  },
+  {
+    "id": "test_smart_phone",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test smartphone" },
+    "description": "Test smartphone, DDA smartphone shape (the DDA group uses smart_phone, which is converted in E1-10a).",
+    "weight": "230 g",
+    "volume": "100 ml",
+    "symbol": ";",
+    "color": "light_gray",
+    "material": [ "plastic", "aluminum" ],
+    "tool_ammo": [ "battery" ],
+    "charges_per_use": 1,
+    "etransfer_rate": "30 MB",
+    "e_port": "phone",
+    "e_ports_banned": [ "USB-A" ],
+    "use_action": [ "E_FILE_DEVICE", "EBOOKSAVE" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD", "CAN_USE_IN_DARK" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 56 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "256 GB"
+      }
+    ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_edevices_efiles",
+    "subtype": "collection",
+    "items": [ "test_efile_copiable", "test_efile_small", "test_efile_medium" ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_edevices_standard",
+    "subtype": "collection",
+    "entries": [
+      { "item": "test_laptop", "prob": 100, "charges": 200, "contents-group": "test_edevices_efiles" },
+      { "item": "test_eink_tablet_pc", "prob": 100, "charges": 200 }
+    ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_edevices_power",
+    "subtype": "collection",
+    "entries": [
+      { "item": "test_laptop", "prob": 100, "charges": 200, "contents-item": "test_efile_large" },
+      { "item": "test_eink_tablet_pc", "prob": 100, "charges": 10 }
+    ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_edevices_compat",
+    "subtype": "collection",
+    "entries": [
+      { "item": "test_laptop", "prob": 100, "charges": 200, "contents-item": "test_efile_medium" },
+      { "item": "test_smart_phone", "prob": 100, "charges": 200 }
+    ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_edevices_incompat",
+    "subtype": "collection",
+    "entries": [
+      { "item": "test_laptop", "prob": 100, "charges": 200, "contents-item": "test_efile_medium" },
+      { "item": "test_laptop", "prob": 100, "charges": 200 }
+    ]
+  },
+  {
+    "//": "CDF: E1-5b. DDA data/mods/TEST_DATA/itemgroups.json:124-131 (the recipe combination case; efile_recipes is a core item since E1-4).",
+    "type": "item_group",
+    "id": "test_edevices_recipes",
+    "subtype": "collection",
+    "entries": [
+      { "item": "test_laptop", "prob": 100, "charges": 200, "contents-item": "efile_recipes" },
+      { "item": "test_laptop", "prob": 100, "charges": 200, "contents-item": "efile_recipes" }
+    ]
+  }
+]

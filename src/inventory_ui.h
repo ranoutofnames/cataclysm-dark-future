@@ -411,6 +411,8 @@ class inventory_column
 
         void add_entry( const inventory_entry &entry );
         void move_entries_to( inventory_column &dest );
+        // CDF: E1-1, DDA inventory_ui.cpp:3599. Keeps one entry per itype (a stub until E1-6).
+        void remove_duplicate_itypes( bool include_variants );
         // Per DDA inventory_ui.h:510-518.
         void collate();
         void uncollate();
@@ -638,10 +640,22 @@ class inventory_selector
         inventory_selector( player &u, const inventory_selector_preset &preset = default_preset );
         virtual ~inventory_selector();
         /** These functions add items from map / vehicles. */
-        void add_character_items( Character &character );
-        void add_map_items( const tripoint_bub_ms &target );
-        void add_vehicle_items( const tripoint_bub_ms &target );
-        void add_nearby_items( int radius = 1 );
+        // CDF: E1-1, DDA inventory_ui.h:655-665: add_efiles lists the files inside e-devices too. The
+        // parameter is threaded through the walk and ignored until E1-6.
+        void add_character_items( Character &character, bool add_efiles = false );
+        void add_map_items( const tripoint_bub_ms &target, bool add_efiles = false );
+        void add_vehicle_items( const tripoint_bub_ms &target, bool add_efiles = false );
+        void add_nearby_items( int radius = 1, bool add_efiles = false );
+        // CDF: E1-1, DDA inventory_ui.cpp:2165-2220. Stubs that add nothing until E1-6.
+        /** Adds the e-books stored on @p container. */
+        bool add_contained_ebooks( item *container );
+        /** Adds the e-files stored on @p container. */
+        bool add_contained_efiles( item *container );
+        /** Adds the e-books of every e-device the character carries. */
+        void add_character_ebooks( Character &character );
+        // CDF: E1-1, DDA inventory_ui.cpp:3599, inventory_ui.h:524, 718. Keeps one entry per itype
+        // (per variant when include_variants). A stub until E1-6.
+        void remove_duplicate_itypes( bool include_variants );
         void add_fake_items( Character &character );
         /** Per DDA inventory_ui.cpp:3821: switch between category columns and the container tree. */
         virtual void toggle_categorize_contained();
@@ -763,11 +777,12 @@ class inventory_selector
         bool add_entry_rec( inventory_column &entry_column, inventory_column &children_column,
                             item *loc, const item_category *entry_category,
                             const item_category *children_category, const item *topmost_parent,
-                            int indent );
+                            int indent, bool add_efiles = false );
         /** Per DDA inventory_ui.cpp:2105. Adds the items inside container to column. */
         bool add_contained_items( item *container, inventory_column &column,
                                   const item_category *custom_category = nullptr,
-                                  const item *topmost_parent = nullptr, int indent = 0 );
+                                  const item *topmost_parent = nullptr, int indent = 0,
+                                  bool add_efiles = false );
     public:
         /** Per DDA inventory_ui.cpp:2485. The row drawn under a window-relative text cell, or nullptr. */
         inventory_entry *find_entry_by_coordinate( const point &coordinate ) const;
@@ -804,7 +819,8 @@ class inventory_selector
          */
         virtual void add_nested_map_items( inventory_column &target_column,
                                            const std::vector<item *> &roots,
-                                           const item_category *custom_category );
+                                           const item_category *custom_category,
+                                           bool add_efiles = false );
 
         uimode _uimode = uimode::categories;
 
@@ -812,7 +828,7 @@ class inventory_selector
         void add_items( inventory_column &target_column,
                         const std::function<item*( item * )> &locator,
                         const std::vector<std::list<item *>> &stacks,
-                        const item_category *custom_category = nullptr );
+                        const item_category *custom_category = nullptr, bool add_efiles = false );
 
         inventory_input get_input();
 
@@ -1025,6 +1041,17 @@ class inventory_selector
         // the same rows. DDA re-categorizes in place; CDF clears and re-adds.
         bool character_items_added = false;
         std::vector<tripoint_bub_ms> added_squares;
+        // CDF: E1-12, the rows of the e-file menus: the devices whose books / files were added
+        // by add_contained_ebooks / add_contained_efiles, whether any adder listed the files of
+        // devices (add_efiles), and the remove_duplicate_itypes call, so the view-mode key
+        // rebuilds them.
+        std::vector<item *> ebook_sources;
+        std::vector<item *> efile_sources;
+        bool efiles_in_rows = false;
+        bool duplicates_removed = false;
+        bool duplicates_include_variants = false;
+        /** add_contained_efiles without remembering the container (the add_efiles walk redoes it). */
+        bool add_contained_efile_rows( item *container );
         // Per DDA inventory_ui.h:1007. Shared by all selectors; CDF default is on (old behaviour).
         static bool skip_unselectable;
 
@@ -1129,8 +1156,13 @@ class inventory_multiselector : public inventory_selector
             NON_FAVORITE_NON_WORN
         };
 
+        // CDF: E1-1, DDA inventory_ui.h:1112-1117. The chosen entries and counts go to the callback
+        // that builds the stats bar (D: DDA's std::pair list is the named drop_locations). The
+        // callback and allow_select_contained are stored; E1-6 makes get_raw_stats use them.
+        using GetStats = std::function<header_stats( const drop_locations & )>;
         inventory_multiselector( player &p, const inventory_selector_preset &preset = default_preset,
-                                 const std::string &selection_column_title = "" );
+                                 const std::string &selection_column_title = "",
+                                 const GetStats &stats = {}, bool allow_select_contained = false );
 
         /// Per DDA inventory_ui.cpp:4702-4758: an entry whose item sits inside another chosen
         /// entry's item (at any depth) is unmarked; marking the container covers its contents.
@@ -1171,6 +1203,8 @@ class inventory_multiselector : public inventory_selector
         int query_count( char init = 0, bool end_with_toggle = false );
         /// Per DDA inventory_ui.cpp:4669-4675: no callback, no stats bar.
         header_stats get_raw_stats() const override;
+        /** CDF: E1-1: the stats callback (see GetStats), set by the constructor. */
+        GetStats stats_callback;
         virtual void set_chosen_count( inventory_entry &entry, size_t count );
         /// Runs after every batch of marks, once the contained items are unmarked.
         virtual void on_toggle() {}
@@ -1384,7 +1418,7 @@ class ammo_inventory_selector : public inventory_selector
         void mod_chosen_count( inventory_entry &entry, int val );
         /** CDF: P3-NESTAMMO2, DDA inventory_ui.cpp:2337-2358 (_add_map_items) for ground and vehicle stacks. */
         void add_nested_map_items( inventory_column &target_column, const std::vector<item *> &roots,
-                                   const item_category *custom_category ) override;
+                                   const item_category *custom_category, bool add_efiles = false ) override;
     private:
         /** The map walk: a row for everything below container that the preset shows. */
         void add_rows_below( inventory_column &column, item &container,

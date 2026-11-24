@@ -7433,8 +7433,6 @@ static void smoker_finalize( player &, const tripoint_bub_ms &examp, const time_
 static void smoker_load_food( player &p, const tripoint_bub_ms &examp,
                               const units::volume &remaining_capacity )
 {
-    std::vector<item_comp> comps;
-
     map &here = get_map();
     if( here.furn( examp ) == furn_str_id( "f_smoking_rack_active" ) ||
         here.furn( examp ) == furn_str_id( "f_metal_smoking_rack_active" ) ) {
@@ -7442,6 +7440,7 @@ static void smoker_load_food( player &p, const tripoint_bub_ms &examp,
         return;
     }
 
+    // CDF: kept; DDA's smoker_load_food has no such check (removing it is not this packet's job)
     // Already finished items have to be removed before adding more items for smoker to operate properly
     map_stack items = here.i_at( examp );
     for( item * const &it : items ) {
@@ -7454,101 +7453,49 @@ static void smoker_load_food( player &p, const tripoint_bub_ms &examp,
         }
     }
 
-    // filter SMOKABLE food
-    temp_crafting_inventory inv = p.crafting_inventory();
-    inv.remove_items_with( []( const item & it ) {
-        return it.rotten();
-    } );
-    std::vector<item *> filtered = p.crafting_inventory().items_with( []( const item & it ) {
-        return it.has_flag( flag_SMOKABLE );
-    } );
+    // DDA iexamine.cpp:6707-6751. CDF: DDA's original.overflow( here ) (moves an item out of an
+    // overfull container first) has no counterpart here, items move by detach below.
+    const bool portable = here.furn( examp ) == furn_str_id( "f_metal_smoking_rack" );
+    const units::volume total_capacity = portable ? sm_rack::MAX_FOOD_VOLUME_PORTABLE :
+                                        sm_rack::MAX_FOOD_VOLUME;
+    const units::volume used_capacity = total_capacity - remaining_capacity;
+    const drop_locations locs = game_menus::inv::smoke_food( p, total_capacity, used_capacity );
 
-    uilist smenu;
-    smenu.text = _( "Load smoking rack with what kind of item?" );
-    // count and ask for item to be placed ...
-    std::list<std::string> names;
-    std::vector<const item *> entries;
-    for( const item *smokable_item : filtered ) {
-        int count;
-        if( smokable_item->count_by_charges() ) {
-            count = inv.charges_of( smokable_item->typeId() );
+    units::volume vol = remaining_capacity;
+    for( const drop_location &dloc : locs ) {
+        if( !dloc.loc ) {
+            continue;
+        }
+        item &original = *dloc.loc;
+        detached_ptr<item> copy = item::spawn( original );
+        const bool by_charges = copy->count_by_charges();
+        if( by_charges ) {
+            copy->charges = std::clamp( copy->charges_per_volume( vol ), 1, dloc.count );
+        }
+
+        if( vol < copy->volume() ) {
+            add_msg( m_info, _( "The %s doesn't fit in the rack." ), copy->tname( copy->count() ) );
+            continue;
+        }
+
+        // CDF: D-B, items move by detach; read the placed values before the copy goes to the map.
+        const int placed_charges = copy->charges;
+        const int placed_count = copy->count();
+        const std::string placed_name = copy->tname( placed_count );
+        const units::volume placed_volume = copy->volume();
+
+        p.mod_moves( -p.item_handling_cost( *copy ) );
+        here.add_item( examp, std::move( copy ) );
+        add_msg( m_info, _( "You carefully place %1$d %2$s in the rack." ), placed_count,
+                 placed_name );
+
+        vol -= placed_volume;
+        if( !by_charges || original.charges == placed_charges ) {
+            // CDF: D-B, items move by detach (DDA's original.remove_item()).
+            detached_ptr<item> removed = original.detach();
         } else {
-            count = inv.amount_of( smokable_item->typeId() );
+            original.charges -= placed_charges;
         }
-        if( count != 0 ) {
-            auto on_list = std::ranges::find( names, item::nname( smokable_item->typeId(), 1 ) );
-            if( on_list == names.end() ) {
-                smenu.addentry( item::nname( smokable_item->typeId(), 1 ) );
-                entries.push_back( smokable_item );
-            }
-            names.push_back( item::nname( smokable_item->typeId(), 1 ) );
-            comps.emplace_back( smokable_item->typeId(), count );
-        }
-    }
-
-    if( comps.empty() ) {
-        p.add_msg_if_player( _( "You don't have any food that can be smoked." ) );
-        return;
-    }
-
-    smenu.query();
-
-    if( smenu.ret < 0 || static_cast<size_t>( smenu.ret ) >= entries.size() ) {
-        add_msg( m_info, _( "Never mind." ) );
-        return;
-    }
-    int count = 0;
-    auto what = entries[smenu.ret];
-    for( const auto &c : comps ) {
-        if( c.type == what->typeId() ) {
-            count = c.count;
-        }
-    }
-
-    const int max_count_for_capacity = remaining_capacity / what->base_volume();
-    const int max_count = std::min( count, max_count_for_capacity );
-
-    // ... then ask how many to put it
-    const std::string popupmsg = string_format( _( "Insert how many %s into the rack?" ),
-                                 item::nname( what->typeId(), count ) );
-    int amount = string_input_popup()
-                 .title( popupmsg )
-                 .width( 20 )
-                 .text( std::to_string( max_count ) )
-                 .only_digits( true )
-                 .query_int();
-
-    if( amount == 0 ) {
-        add_msg( m_info, _( "Never mind." ) );
-        return;
-    } else if( amount > count ) {
-        add_msg( m_info, _( "You don't have that many." ) );
-        return;
-    } else if( amount > max_count_for_capacity ) {
-        add_msg( m_info, _( "You can't place that many." ) );
-        return;
-    }
-
-    // reload comps with chosen items and quantity
-    comps.clear();
-    comps.emplace_back( what->typeId(), amount );
-
-    // select from where to get the items from and place them
-    inv.form_from_map( g->u.bub_pos(), PICKUP_RANGE, &g->u );
-    inv.remove_items_with( []( const item & it ) {
-        return it.rotten();
-    } );
-
-    comp_selection<item_comp> selected = p.select_item_component( comps, 1, inv, true,
-                                         is_non_rotten_crafting_component );
-    std::vector<detached_ptr<item>> moved = p.consume_items( selected, 1,
-                                            is_non_rotten_crafting_component );
-
-    for( detached_ptr<item> &m : moved ) {
-        p.mod_moves( -p.item_handling_cost( *m ) );
-        add_msg( m_info, _( "You carefully place %s %s in the rack." ), amount,
-                 item::nname( m->typeId(), amount ) );
-        here.add_item( examp, std::move( m ) );
     }
     p.invalidate_crafting_inventory();
 }

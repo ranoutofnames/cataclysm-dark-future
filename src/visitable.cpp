@@ -533,6 +533,10 @@ VisitResponse item_contents::visit_contents( const std::function<VisitResponse( 
         &func, item *parent, bool skip_carry )
 {
     for( item_pocket &pocket : pockets ) {
+        // CDF: E1-2: installed files are not carried items: no walk (usable, countable, craftable) reaches them
+        if( pocket.is_type( pocket_type::E_FILE_STORAGE ) ) {
+            continue;
+        }
         // CDF: holster pockets are listed with the carried items (see is_listed_pocket)
         if( skip_carry && is_listed_pocket( pocket ) ) {
             continue;

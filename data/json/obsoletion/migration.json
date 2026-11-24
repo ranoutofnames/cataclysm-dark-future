@@ -1,27 +1,26 @@
 [
   {
-    "id": [ "mobile_memory_card_used", "mobile_memory_card_data" ],
+    "id": [
+      "sd_memory_card",
+      "mobile_memory_card",
+      "mobile_memory_card_used",
+      "mobile_memory_card_data",
+      "mobile_memory_card_encrypted"
+    ],
     "type": "MIGRATION",
-    "replace": "sd_memory_card",
-    "flags": [ "MC_USED" ]
-  },
-  {
-    "id": "mobile_memory_card",
-    "type": "MIGRATION",
-    "replace": "sd_memory_card",
-    "flags": [ "MC_RANDOM_STUFF", "MC_MAY_BE_ENCRYPTED" ]
-  },
-  {
-    "id": "mobile_memory_card_encrypted",
-    "type": "MIGRATION",
-    "replace": "sd_memory_card",
-    "flags": [ "MC_ENCRYPTED", "MC_RANDOM_STUFF" ]
+    "replace": "memory_card",
+    "//": "CDF: E1-10b, owner ruling O8; the MC_* flags of the BN card are gone with the BN digital media."
   },
   {
     "id": "mobile_memory_card_science",
     "type": "MIGRATION",
-    "replace": "sd_memory_card",
-    "flags": [ "MC_ENCRYPTED", "MC_SCIENCE_STUFF" ]
+    "replace": "memory_card_science"
+  },
+  {
+    "id": "software_train_data",
+    "type": "MIGRATION",
+    "replace": "train_data",
+    "//": "CDF: E1-10b, DDA train_data (software.json) replaces the BN software_train_data."
   },
   {
     "id": "dragonskinempty",

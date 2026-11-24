@@ -20,29 +20,6 @@
     "info": "This item <bad>can't be worn</bad> on its own.  It has to be inserted into a carrier."
   },
   {
-    "id": "DIGITAL_MUSIC",
-    "type": "json_flag",
-    "context": [ "GENERIC" ]
-  },
-  {
-    "id": "DIGITAL",
-    "type": "json_flag",
-    "context": [ "GENERIC", "BOOK", "TOOL" ],
-    "info": "This is a <info>digital file</info>.  Install it on a powered reader to use it."
-  },
-  {
-    "id": "DIGITAL_STORAGE",
-    "type": "json_flag",
-    "context": [ "GENERIC", "TOOL" ],
-    "info": "This device can store <info>digital files</info>."
-  },
-  {
-    "id": "DIGITAL_READER",
-    "type": "json_flag",
-    "context": [ "TOOL" ],
-    "info": "This device can read installed <info>digital files</info> while powered."
-  },
-  {
     "id": "GRAB",
     "type": "json_flag",
     "context": [  ]
@@ -186,12 +163,6 @@
     "type": "json_flag",
     "context": [ "GENERIC" ],
     "info": "This item <info>provides</info> instructions and other required data for several bionics, allowing installation of them with <good>minimal failure chance</good>."
-  },
-  {
-    "id": "GENOME_DRIVE",
-    "type": "json_flag",
-    "context": [ "GENERIC" ],
-    "info": "This item stores <info>genetic data</info> for a genome workstation."
   },
   {
     "id": "BIONIC_NPC_USABLE",
@@ -835,48 +806,6 @@
   },
   {
     "id": "DISCOUNT_VALUE_3",
-    "type": "json_flag",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_MOBILE",
-    "type": "json_flag",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_RANDOM_STUFF",
-    "type": "json_flag",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_SCIENCE_STUFF",
-    "type": "json_flag",
-    "tag": "(XEDRA)",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_USED",
-    "type": "json_flag",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_HAS_DATA",
-    "type": "json_flag",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_MAY_BE_ENCRYPTED",
-    "type": "json_flag",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_ENCRYPTED",
-    "type": "json_flag",
-    "tag": "(encrypted)",
-    "context": [ "TOOL", "TOOL_ARMOR" ]
-  },
-  {
-    "id": "MC_TURN_USED",
     "type": "json_flag",
     "context": [ "TOOL", "TOOL_ARMOR" ]
   },
@@ -2956,5 +2885,53 @@
     "//": "CDF: FOOT2. DDA flags.json:483 (b4b62254ae2); DDA ships it, only custom fins use it. DDA has no context, CDF requires one.",
     "info": "This item is attachable to custom diving boots as fins.",
     "restriction": "Item must be some kind of custom fins"
+  },
+  {
+    "id": "E_FILE_DEVICE",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that can handle electronic files"
+  },
+  {
+    "id": "E_STORABLE",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that can be an electronic file"
+  },
+  {
+    "id": "E_STORABLE_EXCLUSIVE",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that can ONLY be an electronic file"
+  },
+  {
+    "id": "E_COPIABLE",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that can be electronically copied and scanned"
+  },
+  {
+    "id": "E_FILE_COLLECTION",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that represents a collection of electronic files; this is to avoid making a file system for electronic devices"
+  },
+  {
+    "id": "E_FILE_DEVICE_UNREAD",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that can handle electronic files but hasn't been read yet"
+  },
+  {
+    "id": "VIEW_RECIPES",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that can display a list of contained recipes"
+  },
+  {
+    "id": "VIEW_PHOTOS",
+    "type": "json_flag",
+    "context": [ "GENERIC" ],
+    "//": "CDF: E1-1, DDA flags.json:2586-2625 (b4b62254ae2). Any item that can display a list of contained photos"
   }
 ]

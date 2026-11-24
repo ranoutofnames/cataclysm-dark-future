@@ -38,4 +38,13 @@ struct islot_book {
     int chapters = 0;
 
     std::set<book_recipe> recipes;
+
+    // CDF: E1-1, DDA itype.h:655-657
+    /**
+     * This book counts chapters by item instance instead of by type
+     * (i.e. this book represents a generic variety of books, like "book of essays").
+     */
+    bool generic = false;
+    // CDF: E1-1, DDA itype.h:694 (loaded, no DDA code reads it either)
+    bool is_scannable = true;
 };

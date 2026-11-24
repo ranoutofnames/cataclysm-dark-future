@@ -16,7 +16,6 @@
 #include "catch/catch.hpp"
 #include "debug.h"
 #include "detached_ptr.h"
-#include "digital_media.h"
 #include "game.h"
 #include "item.h"
 #include "item_contents.h"
@@ -543,18 +542,11 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
     std::string reason;
     // CDF: item::spawn( JsonIn ) applies item migrations, so a migrated container loads under its
     // replacement id (all 40 F6 failures are MIGRATION ids in data/json/obsoletion). It also adds
-    // the migration's contents (a conversion kit) and applies BN's digital-media legacy migration
-    // on load, so the expected item is built the same way: spawn_migrated() plus the digital
-    // migration, with the carried contents added on top.
+    // the migration's contents (a conversion kit), so the expected item is built the same way:
+    // spawn_migrated(), with the carried contents added on top.
     detached_ptr<item> origin = item::spawn( container_id );
     const std::size_t origin_count = origin->contents.all_items_ptr().size();
-    const units::mass origin_carried = carried_mass( *origin );
-    // the digital-media migration may add files (a genome drive keeps its specimen), so apply it
-    // to the fresh spawn the way item::deserialize does and take what it added
-    migrate_legacy_digital_media( *origin );
-    const units::mass digital_carried = carried_mass( *origin ) - origin_carried;
     detached_ptr<item> expected = item_controller->spawn_migrated( container_id, calendar::turn );
-    migrate_legacy_digital_media( *expected );
     const itype_id expected_id = expected->typeId();
     // CDF: only the contents the migration adds are new; the spawn-time contents `origin` has are
     // already counted in @p before_count.
@@ -571,7 +563,7 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
         }
     }
     const units::mass loaded_carried = loaded ? carried_mass( *loaded ) : 0_gram;
-    const units::mass expected_carried = before_carried + migrated_carried + digital_carried;
+    const units::mass expected_carried = before_carried + migrated_carried;
     if( !loaded ) {
         reason = "load returned nothing";
     } else if( loaded->typeId() != expected_id ) {
@@ -587,10 +579,8 @@ auto flow_roundtrip( const itype_id &container_id, const std::optional<itype_id>
         // contents weigh less inside it than inside the obsoleted type.
         reason = "contents weigh " + to_g( loaded_carried ) + " g (want " +
                  to_g( expected_carried ) + " g)";
-    } else if( expected_id == container_id && digital_carried == 0_gram &&
-               loaded->weight() != before_weight ) {
-        // the type did not change and nothing was added on load, so the whole item has to weigh
-        // what it did before the save
+    } else if( expected_id == container_id && loaded->weight() != before_weight ) {
+        // the type did not change, so the whole item has to weigh what it did before the save
         reason = "weight " + to_g( loaded->weight() ) + " g (want " + to_g( before_weight ) + ")";
     }
     add_row( rows, container_id, "F6", reason.empty(), reason );

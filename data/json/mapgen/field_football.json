@@ -23,8 +23,8 @@
       [ "backpack", 40 ],
       [ "energy_drink", 30 ],
       [ "cell_phone", 1 ],
-      [ "smart_phone", 20 ],
-      [ "wrist_comp_budget", 10 ],
+      { "item": "smart_phone", "prob": 20, "contents-group": "civilian_smartphone_efiles" },
+      { "item": "wrist_comp_budget", "prob": 10, "contents-group": "civilian_smartphone_efiles" },
       [ "mp3", 50 ],
       [ "inhaler", 10 ]
     ]

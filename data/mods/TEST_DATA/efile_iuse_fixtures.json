@@ -1,0 +1,66 @@
+[
+  {
+    "//": "CDF: E1-7 fixtures for the e-file iuse functions (tests/efile_iuse_test.cpp). test_efile_camera stands for DDA camera (data/json/items/tool/electronics.json, b4b62254ae2): a battery tool with the use action CAMERA and an E_FILE_STORAGE pocket; core cameras get theirs in E1-10a. The tiny one cannot hold a photo gallery (4 MB, the ememory_size of efile_photos).",
+    "id": "test_efile_camera",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test camera" },
+    "description": "A test camera with room for a few photos.",
+    "weight": "300 g",
+    "volume": "250 ml",
+    "symbol": ";",
+    "color": "dark_gray",
+    "material": [ "plastic" ],
+    "tool_ammo": [ "battery" ],
+    "charges_per_use": 1,
+    "etransfer_rate": "30 MB",
+    "e_port": "tablet",
+    "use_action": [ "CAMERA" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD", "CAN_USE_IN_DARK" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 100 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "32 MB"
+      }
+    ]
+  },
+  {
+    "id": "test_efile_camera_tiny",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "copy-from": "test_efile_camera",
+    "name": { "str": "test tiny camera" },
+    "description": "A test camera whose memory is too small for a photo gallery.",
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 100 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "2 MB"
+      }
+    ]
+  },
+  {
+    "//": "CDF defines trait flags as mutation_flag objects (data/json/flags_mutation.json); DDA data/json/flags.json:1344 defines CANNOT_USE_COMPUTERS as a json_flag.",
+    "id": "CANNOT_USE_COMPUTERS",
+    "type": "mutation_flag"
+  },
+  {
+    "//": "DDA data/json/mutations/mutations.json:1722-1731 COMPUTER_ILLITERATE carries the flag CANNOT_USE_COMPUTERS; CDF has no core trait with it, so the fixture trait stands for it.",
+    "type": "mutation",
+    "id": "test_efile_no_computers",
+    "name": { "str": "test computer illiterate" },
+    "description": "A test trait with the flag CANNOT_USE_COMPUTERS.",
+    "points": 0,
+    "valid": false,
+    "flags": [ "CANNOT_USE_COMPUTERS" ]
+  }
+]

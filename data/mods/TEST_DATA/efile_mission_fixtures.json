@@ -1,0 +1,32 @@
+[
+  {
+    "//": "CDF: E1-9 fixtures for tests/efile_mission_test.cpp. DDA mission.cpp:522, 623-642 (software goals): a find-item mission for a piece of software. The software is the E1-3 fixture test_software_fixture (CDF software_* ids are still BN GENERIC items until E1-10a).",
+    "id": "TEST_EFILE_FIND_SOFTWARE",
+    "type": "mission_definition",
+    "name": { "str": "Test software search" },
+    "description": "Find the test software.",
+    "goal": "MGOAL_FIND_ITEM",
+    "difficulty": 1,
+    "value": 0,
+    "item": "test_software_fixture",
+    "count": 1,
+    "origins": [ "ORIGIN_SECONDARY" ],
+    "dialogue": {
+      "describe": "I need a piece of software.",
+      "offer": "Find the test software for me.",
+      "accepted": "Thanks.",
+      "rejected": "Never mind.",
+      "advice": "Look on a computer.",
+      "inquire": "Found it?",
+      "success": "Good.",
+      "success_lie": "Sure.",
+      "failure": "Too bad."
+    }
+  },
+  {
+    "//": "CDF: E1-9. The recipe TOOL case of the plan's risk R4: a software as a tool of a requirement, the shape of the core toolsets (data/json/requirements/toolsets.json:177, 183, 189: count 1). Every recipe takes it through using with the factor -1, which makes the tool count -1 (present, no charges); the test applies the same factor.",
+    "id": "test_efile_software_tool",
+    "type": "requirement",
+    "tools": [ [ [ "test_software_fixture", 1 ] ] ]
+  }
+]

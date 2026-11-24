@@ -409,13 +409,6 @@
     "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
     "type": "json_flag",
     "context": ["GENERIC"],
-    "id": "E_STORABLE",
-    "info": ""
-  },
-  {
-    "//": "CDF compat-inert: DDA flag with no engine effect in CDF (AUTO-240)",
-    "type": "json_flag",
-    "context": ["GENERIC"],
     "id": "FIFTH_SUN_TECHNOLOGY",
     "info": ""
   },

@@ -23,6 +23,7 @@
 #include "options_helpers.h"
 #include "player_activity.h"
 #include "player_helpers.h"
+#include "pocket_type.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
 #include "requirements.h"
@@ -213,31 +214,50 @@ TEST_CASE("available_recipes", "[recipes]") {
         }
     }
 
-    GIVEN("an eink pc with a sushi recipe") {
+    // CDF: E1-8. The tablet's recipes are an efile_recipes file in its E_FILE pocket now (DDA
+    // item::get_saved_recipes, item.cpp:3499-3523): the EIPC_RECIPES variable of the tablet itself is
+    // not a recipe source any more, and the device has to be powered (get_recipes_from_ebooks).
+    GIVEN("an e-tablet with a recipe catalog file with a sushi recipe") {
         const recipe* r2 = &recipe_id("sushi_rice").obj();
-        detached_ptr<item> det = item::spawn("eink_tablet_pc");
+        detached_ptr<item> det = item::spawn("test_eink_tablet_pc");
         item& eink = *det;
         dummy.i_add(std::move(det));
-        eink.set_var("EIPC_RECIPES", ",sushi_rice,");
+        eink.ammo_set(itype_id("battery"), 50);
+        const ret_val<void> stored = eink.put_in(item::spawn("efile_recipes"),
+                                                 pocket_type::E_FILE_STORAGE, false, nullptr, true);
+        REQUIRE(stored.success());
+        REQUIRE(eink.efiles().size() == 1);
+        eink.efiles().front()->set_saved_recipes({recipe_id("sushi_rice")});
         REQUIRE_FALSE(dummy.knows_recipe(r2));
 
         WHEN("the player holds it and has an appropriate skill") {
             dummy.set_skill_level(r2->skill_used, 2);
 
             AND_WHEN("he searches for the recipe in the tablet") {
+                dummy.invalidate_crafting_inventory();
                 THEN("he finds it!") {
-                    CHECK(dummy.get_recipes_from_books(dummy.crafting_inventory()).contains(*r2));
+                    CHECK(dummy.get_available_recipes(dummy.crafting_inventory()).contains(*r2));
                 }
                 THEN("he still hasn't the recipe memorized") {
                     CHECK_FALSE(dummy.knows_recipe(r2));
                 }
             }
-            AND_WHEN("he gets rid of the tablet") {
-                eink.detach();
+            AND_WHEN("the tablet runs out of battery") {
+                eink.ammo_consume(eink.ammo_remaining(), dummy.bub_pos(), &dummy);
+                dummy.invalidate_crafting_inventory();
 
                 THEN("he can't make the recipe anymore") {
                     CHECK_FALSE(
-                        dummy.get_recipes_from_books(dummy.crafting_inventory()).contains(*r2));
+                        dummy.get_available_recipes(dummy.crafting_inventory()).contains(*r2));
+                }
+            }
+            AND_WHEN("he gets rid of the tablet") {
+                eink.detach();
+                dummy.invalidate_crafting_inventory();
+
+                THEN("he can't make the recipe anymore") {
+                    CHECK_FALSE(
+                        dummy.get_available_recipes(dummy.crafting_inventory()).contains(*r2));
                 }
             }
         }

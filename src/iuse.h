@@ -152,8 +152,16 @@ int radglove( player *, item *, bool, const tripoint_bub_ms & );
 int robotcontrol( player *, item *, bool, const tripoint_bub_ms & );
 // Helper for validating a potential taget of robot control
 bool robotcontrol_can_target( player *, const monster & );
-int einktabletpc( player *, item *, bool, const tripoint_bub_ms & );
 int camera( player *, item *, bool, const tripoint_bub_ms & );
+// CDF: E1-1, DDA iuse.h:79, 132, 181-182. D-C: int return (0 = nothing used) instead of std::optional<int>.
+// The bodies are stubs in iuse.cpp until E1-7.
+int efiledevice( player *, item *, bool, const tripoint_bub_ms & );
+int ebooksave( player *, item *, bool, const tripoint_bub_ms & );
+int view_photos( player *, item *, bool, const tripoint_bub_ms & );
+int view_recipes( player *, item *, bool, const tripoint_bub_ms & );
+// CDF: E1-1, DDA iuse.h (book_binder, E1-7)
+int binder_add_recipe( player *, item *, bool, const tripoint_bub_ms & );
+int binder_manage_recipe( player *, item *, bool, const tripoint_bub_ms & );
 int ehandcuffs( player *, item *, bool, const tripoint_bub_ms & );
 int foodperson( player *, item *, bool, const tripoint_bub_ms & );
 int shavekit( player *, item *, bool, const tripoint_bub_ms & );

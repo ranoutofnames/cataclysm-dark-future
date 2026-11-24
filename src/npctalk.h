@@ -44,6 +44,8 @@ void sort_loot( npc & );
 void do_construction( npc & );
 void do_mining( npc & );
 void do_read( npc & );
+// CDF: E1-1, DDA npctalk.h:69; a stub until E1-8 (not yet registered as a talk function)
+void do_eread( npc & );
 void do_chop_plank( npc & );
 void do_vehicle_deconstruct( npc & );
 void do_vehicle_repair( npc & );

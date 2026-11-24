@@ -1520,19 +1520,21 @@ NPC ダイアログ条件で使用する場合は、JSON で定義する必要�
 - `DIG_TOOL` これを使用すると、プレイヤーが岩や壁などの地形に足を踏み入れたときに、その地形を徹底的に掘ります。もし
   アイテムには `POWERED` フラグもあるので、より速く掘ることができますが、アクティブ化しているかのようにアイテムの弾薬を消費します。
   それ。
+- `E_COPIABLE` This item can be scanned onto an electronic device and can be electronically copied.
+- `E_FILE_COLLECTION` This item represents a combinable collection of files. Does not imply `E_COPIABLE`.
+- `E_FILE_DEVICE` The item can handle electronic files like a computer would.
+- `E_STORABLE` This item can be stored on an in-game electronic device.
+- `E_STORABLE_EXCLUSIVE` This item can ONLY be stored on an in-game electronic device; it may only be handled electronically.
 - `FIRESTARTER` アイテムは多少の困難を伴いながら発火します。
 - `FIRE` アイテムはすぐに火を起こします。
 - `FISH_GOOD` 釣りに使用すると、優れたツールになります (一致する use_action が必要です)
   設定されています）。
 - `FISH_POOR` 釣りに使用すると、不十分なツールになります (一致する use_action が必要です)
   設定されています）。
-- `HAS_RECIPE` 現在レシピを表示していることを示すために E-Ink タブレットによって使用されます。
 - `IS_UPS` アイテムは統合電源です。アクティブなアイテムの処理で使用されます
 - `LIGHT_[X]` 光の強度 `[X]` でエリアを照らします。`[X]` は強度の値です。
   (例: `LIGHT_4` または `LIGHT_100`)。注: このフラグは `itype::light_emission` フィールドを設定し、
   削除されました (`has_flag` を使用しても見つかりません)。
-- `MC_MOBILE`、`MC_RANDOM_STUFF`、`MC_SCIENCE_STUFF`、`MC_USED`、`MC_HAS_DATA` メモリカード関連
-  フラグ、`iuse.cpp` を参照
 - `NO_DROP` アイテムはマップ タイル上に個別のアイテムとして存在してはなりません (別のアイテムに含まれている必要があります)
   アイテム)
 - `NO_UNLOAD` アンロードできません。
@@ -1552,6 +1554,8 @@ NPC ダイアログ条件で使用する場合は、JSON で定義する必要�
 - `USES_BIONIC_POWER` アイテムにはそれ自体の料金はなく、プレイヤーの生体パワーによって消費されます。
 - `USE_UPS` アイテムは UPS からのチャージです / 独自のアイテムではなく UPS のチャージを使用します。
 - `NAT_UPS` USE_UPS から (UPS) サフィックスを沈黙させます。
+- `VIEW_PHOTOS` This item can display held photos.
+- `VIEW_RECIPES` This item can display held recipes.
 - `WATER_EXTINGUISH` 水中または降水下では消火可能です。アイテムを変換します (必須
   "reverts_to" または use_action "transform" を設定します)。
 - `WATER_DISABLE` アイテムが水に沈んだ場合、アイテムは元に戻り、無効化されます。

@@ -29,6 +29,7 @@
 #include "sol/forward.hpp"
 #include "sol/sol.hpp"
 #include "temp_crafting_inventory.h"
+#include "text_snippets.h"
 #include "units_temperature.h"
 #include "weather/weather.h"
 
@@ -506,6 +507,24 @@ void cata::detail::reg_game_api( sol::state &lua )
     luna::set_fx( lib, "get_map", &get_map );
     DOC( "Returns the scenario the current game started with, or nil if no game is active." );
     luna::set_fx( lib, "get_scenario", []() -> const scenario * { return get_scenario(); } );
+    DOC( "Returns the id of a random snippet of the given category, or nil if the category does not exist or none of its snippets has an id." );
+    DOC_PARAMS( "category: string" );
+    luna::set_fx( lib, "random_snippet_id", []( const std::string & category ) -> std::optional<std::string> {
+        const snippet_id id = SNIPPET.random_id_from_category( category );
+        if( id.is_null() ) {
+            return std::nullopt;
+        }
+        return id.str();
+    } );
+    DOC( "Returns the translated text of the snippet with the given id, or nil if there is no such snippet.  Tags in the text are not expanded." );
+    DOC_PARAMS( "id: string" );
+    luna::set_fx( lib, "get_snippet", []( const std::string & id ) -> std::optional<std::string> {
+        const std::optional<translation> text = SNIPPET.get_snippet_by_id( snippet_id( id ) );
+        if( !text.has_value() ) {
+            return std::nullopt;
+        }
+        return text->translated();
+    } );
     luna::set_fx( lib, "bub_to_abs",
                   sol::overload(
                       []( const tripoint_bub_ms & p ) -> tripoint_abs_ms { return bub_to_abs( p ); },

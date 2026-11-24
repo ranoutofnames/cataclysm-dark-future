@@ -1,0 +1,23 @@
+[
+  {
+    "//": "CDF: E1-2 fixtures for the e-file pocket rules (tests/efile_pocket_test.cpp). A file with a use action, to prove that walks do not return installed files, and item groups that spawn runs of identical files into a device.",
+    "id": "test_efile_usable",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "copy-from": "test_efile_small",
+    "name": { "str": "usable test file" },
+    "use_action": { "type": "transform", "target": "test_efile_small", "msg": "You use the file." }
+  },
+  {
+    "type": "item_group",
+    "id": "test_efile_pocket_run_files",
+    "subtype": "collection",
+    "entries": [ { "item": "test_efile_small", "count": 3 } ]
+  },
+  {
+    "type": "item_group",
+    "id": "test_efile_pocket_run",
+    "subtype": "collection",
+    "entries": [ { "item": "test_laptop", "prob": 100, "contents-group": "test_efile_pocket_run_files" } ]
+  }
+]

@@ -9,6 +9,7 @@
 #include "coordinates.h"
 #include "item_handling_util.h"
 #include "pickup_token.h"
+#include "units_volume.h"
 
 struct tripoint;
 
@@ -19,6 +20,7 @@ class player;
 class repair_item_actor;
 class Character;
 struct unload_selection;
+enum efile_action : int;
 
 using item_filter = std::function<bool( const item & )>;
 
@@ -79,6 +81,27 @@ item *disassemble( player &p );
 item *gun_to_modify( player &p, const item &gunmod );
 /** Book reading menu. */
 item *read( player &pl );
+// CDF: E1-1, DDA game_inventory.h:25, 150-166 (b4b62254ae2). D-A: item_location is item *, an empty
+// location is nullptr. The bodies are stubs that offer nothing until E1-6 ("E1-6:" in game_inventory.cpp).
+/** E-Book reading menu. */
+item *ereader_to_use( Character &you );
+/** eBook reading menu. */
+item *ebookread( Character &you, item *ereader );
+/** Select books to save to E-Book reader menu. */
+drop_locations ebooksave( Character &who, item *ereader );
+/** Select e-devices to use for e-file storage
+* @param browse_equals - e-device is_browsed() = `browse_equals`
+* @param auto_include_used_edevice - if true, includes used_edevice in selection
+* @param unusable_only - if true, only includes e-devices that can't manage files
+*/
+drop_locations edevice_select( Character &who, item *used_edevice, bool browse_equals,
+                               bool auto_include_used_edevice, bool unusable_only, efile_action action );
+/** Select e-files for read, write, etc. */
+drop_locations efile_select( Character &who, item *used_edevice,
+                             const std::vector<item *> &target_edevices, efile_action action,
+                             bool from_used_edevice );
+/** Select food to put on the smoking rack (DDA game_inventory.h:128-129; RECONCILE smoke/U64, E1-6). */
+drop_locations smoke_food( Character &you, units::volume total_capacity, units::volume used_capacity );
 /** Menu for stealing stuff. */
 item *steal( avatar &you, player &victim );
 /** Item activation menu. */

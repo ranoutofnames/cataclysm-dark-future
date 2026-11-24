@@ -37,7 +37,6 @@
 #include "input.h"
 #include "item.h"
 #include "item_contents.h"
-#include "digital_recipes.h"
 #include "item_group.h"
 #include "iuse_actor.h"
 #include "json.h"
@@ -895,6 +894,14 @@ void Item_factory::finalize_pre( itype &obj )
         obj.layer = REGULAR_LAYER;
     }
 
+    if( obj.book ) {
+        // CDF: E1-1, DDA item_factory.cpp:839-841
+        if( obj.ememory_size == 0_KB ) {
+            // PDF size varies wildly depending on page:image ratio
+            obj.ememory_size = 20_KB * item::pages_in_book( obj );
+        }
+    }
+
     if( obj.can_use( "MA_MANUAL" ) && obj.book && obj.book->martial_art.is_null() &&
         obj.get_id().str().starts_with( "manual_" ) ) {
         // HACK: Legacy martial arts books rely on a hack whereby the name of the
@@ -1240,14 +1247,6 @@ void Item_factory::synthesize_pockets( itype &obj ) const
 
     if( obj.has_flag( flag_CORPSE ) ) {
         obj.pockets.emplace_back( pocket_type::CORPSE );
-    }
-
-    // Storage devices for software (src/computer_session.cpp).
-    if( obj.id == itype_id( "usb_drive" ) ) {
-        pocket_data software_pocket( pocket_type::SOFTWARE );
-        // CDF: BN items always have a volume, and so a length; DDA's software has none
-        software_pocket.max_item_length = 2_km;
-        obj.pockets.push_back( software_pocket );
     }
 
     // Worn storage: the DDA layout from the garment overlay, else one derived from `storage`.
@@ -1733,6 +1732,11 @@ void Item_factory::init()
     add_iuse( "C4", &iuse::c4 );
     add_iuse( "C4_BREACHING", &iuse::c4_breaching );
     add_iuse( "CAMERA", &iuse::camera );
+    add_iuse( "VIEW_PHOTOS", &iuse::view_photos );
+    add_iuse( "VIEW_RECIPES", &iuse::view_recipes );
+    // CDF: E1-1, DDA item_factory.cpp (book_binder, E1-7): stub bodies
+    add_iuse( "BINDER_ADD_RECIPE", &iuse::binder_add_recipe );
+    add_iuse( "BINDER_MANAGE_RECIPE", &iuse::binder_manage_recipe );
     add_iuse( "CAN_GOO", &iuse::can_goo );
     add_iuse( "COIN_FLIP", &iuse::coin_flip );
     add_iuse( "DIRECTIONAL_HOLOGRAM", &iuse::directional_hologram );
@@ -1754,7 +1758,9 @@ void Item_factory::init()
     add_iuse( "DOG_WHISTLE", &iuse::dog_whistle );
     add_iuse( "DOLLCHAT", &iuse::talking_doll );
     add_iuse( "EHANDCUFFS", &iuse::ehandcuffs );
-    add_iuse( "EINKTABLETPC", &iuse::einktabletpc );
+    // CDF: E1-1, DDA item_factory.cpp:2074-2078, 2185-2186. The bodies are stubs until E1-7.
+    add_iuse( "EBOOKSAVE", &iuse::ebooksave );
+    add_iuse( "E_FILE_DEVICE", &iuse::efiledevice );
     add_iuse( "EXTINGUISHER", &iuse::extinguisher );
     add_iuse( "EYEDROPS", &iuse::eyedrops );
     add_iuse( "FILL_PIT", &iuse::fill_pit );
@@ -2294,16 +2300,6 @@ void Item_factory::check_definitions() const
             if( !e.is_valid() ) {
                 msg += string_format( "item %s has unknown emit source %s\n", type->id.c_str(), e.c_str() );
             }
-        }
-
-        if( const auto content = type->item_vars.find( "digital_content" );
-            content != type->item_vars.end() && !content->second.empty() &&
-            !item_group::group_is_defined( item_group_id( content->second ) ) ) {
-            msg += string_format( "invalid digital_content item group %s\n", content->second );
-        }
-
-        if( const auto recipes = validate_digital_recipe_data( type->item_vars ); !recipes ) {
-            msg += string_format( "invalid digital recipe data: %s\n", recipes.error() );
         }
 
         for( const auto &f : type->faults ) {
@@ -2848,6 +2844,28 @@ void Item_factory::load( islot_artifact &slot, const JsonObject &jo, const std::
     load_optional_enum_array( slot.effects_worn, jo, "effects_worn" );
 }
 
+// CDF: E1-1, DDA item_factory.cpp:3197-3207. Absent keys keep their value, so copy-from works.
+void memory_card_info::load( const JsonObject &jo )
+{
+    jo.read( "data_chance", data_chance );
+    jo.read( "recipes_chance", recipes_chance );
+    jo.read( "recipes_amount", recipes_amount );
+    jo.read( "recipes_level_min", recipes_level_min );
+    jo.read( "recipes_level_max", recipes_level_max );
+    if( jo.has_member( "recipes_categories" ) ) {
+        recipes_categories.clear();
+        if( jo.has_array( "recipes_categories" ) ) {
+            for( const std::string category : jo.get_array( "recipes_categories" ) ) {
+                recipes_categories.insert( category );
+            }
+        } else {
+            recipes_categories.insert( jo.get_string( "recipes_categories" ) );
+        }
+    }
+    jo.read( "secret_recipes", secret_recipes );
+    was_loaded = true;
+}
+
 void Item_factory::load( islot_milling &slot, const JsonObject &jo, const std::string & )
 {
     assign( jo, "into", slot.into_ );
@@ -3305,6 +3323,19 @@ void Item_factory::load( islot_tool &slot, const JsonObject &jo, const std::stri
     assign( jo, "sub", slot.subtype, strict );
     assign( jo, "ups_eff_mult", slot.ups_eff_mult, strict );
     assign( jo, "ups_recharge_rate", slot.ups_recharge_rate, strict );
+    // CDF: E1-1, DDA item_factory.cpp:3662-3664. assign() has no ememory overload, so read it here.
+    if( jo.has_member( "etransfer_rate" ) ) {
+        jo.read( "etransfer_rate", slot.etransfer_rate );
+    }
+    assign( jo, "e_port", slot.e_port, strict );
+    if( jo.has_array( "e_ports_banned" ) ) {
+        slot.e_ports_banned.clear();
+        for( const std::string port : jo.get_array( "e_ports_banned" ) ) {
+            slot.e_ports_banned.push_back( port );
+        }
+    } else if( jo.has_string( "e_ports_banned" ) ) {
+        slot.e_ports_banned = { jo.get_string( "e_ports_banned" ) };
+    }
 
     if( jo.has_array( "rand_charges" ) ) {
         if( jo.has_member( "initial_charges" ) ) {
@@ -3593,6 +3624,9 @@ void Item_factory::load( islot_book &slot, const JsonObject &jo, const std::stri
     assign( jo, "skill", slot.skill, strict );
     assign( jo, "martial_art", slot.martial_art, strict );
     assign( jo, "chapters", slot.chapters, strict, 0 );
+    // CDF: E1-1, DDA item_factory.cpp:3709-3711
+    assign( jo, "generic", slot.generic, strict );
+    assign( jo, "scannable", slot.is_scannable, strict );
 }
 
 void Item_factory::load_book( const JsonObject &jo, const std::string &src )
@@ -4053,6 +4087,17 @@ void Item_factory::load_basic_info( const JsonObject &jo, itype &def, const std:
     assign( jo, "repair_difficulty", def.repair_difficulty );
     assign( jo, "ascii_picture", def.picture_id );
     assign( jo, "item_vars", def.item_vars );
+    // CDF: E1-1, DDA item_factory.cpp:4506. assign() has no ememory overload, so read it here.
+    if( jo.has_member( "ememory_size" ) ) {
+        jo.read( "ememory_size", def.ememory_size );
+    }
+    // CDF: E1-1, DDA item_factory.cpp:4567
+    if( jo.has_object( "memory_card" ) ) {
+        if( !def.memory_card_data ) {
+            def.memory_card_data = cata::make_value<memory_card_info>();
+        }
+        def.memory_card_data->load( jo.get_object( "memory_card" ) );
+    }
 
     if( jo.has_member( "thrown_damage" ) ) {
         def.thrown_damage = load_damage_instance( jo.get_array( "thrown_damage" ) );

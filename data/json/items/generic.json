@@ -589,68 +589,138 @@
     "qualities": [ [ "HAMMER", 1 ] ]
   },
   {
-    "type": "GENERIC",
-    "id": "usb_drive",
-    "symbol": ",",
-    "color": "white",
-    "name": { "str": "USB drive" },
-    "description": "A USB thumb drive.  Useful for holding software.",
-    "container_data": { "contains": "1 ml" },
-    "item_vars": { "digital_storage_ports": "USB" },
-    "flags": [ "DIGITAL_STORAGE" ],
-    "price": "100 USD",
-    "price_postapoc": "10 cent",
-    "material": "plastic",
-    "weight": "18 g",
-    "volume": "5 ml",
-    "to_hit": -3,
-    "category": "valuables"
-  },
-  {
-    "type": "GENERIC",
     "id": "hard_drive",
-    "copy-from": "usb_drive",
+    "copy-from": "abstract_usb_drive",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "hard drive" },
-    "description": "A hard disk drive salvaged from a computer.  It may still contain usable files.  Connect it to a powered reader to inspect or copy its contents.",
-    "looks_like": "usb_drive",
+    "description": "A hard disk drive salvaged from a computer.  It may still contain usable files.  Connect it to a powered e-device to inspect or copy its contents.",
+    "looks_like": "portable_hard_drive",
     "symbol": ";",
+    "color": "white",
     "material": [ "steel", "plastic" ],
     "weight": "600 g",
     "volume": "400 ml",
-    "item_vars": { "digital_content": "digital_content_terminal", "digital_storage_ports": "HARD_DRIVE" }
+    "price": "100 USD",
+    "price_postapoc": "10 cent",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "2 TB"
+      }
+    ],
+    "//": "CDF: E1-10a, owner ruling O8: CDF-only storage item (terminal salvage) with an E_FILE pocket in the class of portable_hard_drive (2 TB); its salvage content comes from the item groups (E1-10b)"
   },
   {
-    "type": "GENERIC",
+    "id": "usb_drive_nano",
+    "copy-from": "usb_drive",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "secured USB drive" },
+    "description": "A USB thumb drive.  Useful for holding software.  This one seems like it could get run over by a truck and be fine.",
+    "//": "CDF: E1-10a, DDA usb_drive_nano (generic.json)"
+  },
+  {
+    "id": "nano_fabricator_encryption_code",
+    "copy-from": "usb_drive_nano",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str_sp": "nano-fabricator licensing USB" },
+    "description": "Some type of advanced data storage device, filled with credentials and licenses to operate the nano-fabricator.",
+    "price": "100 USD",
+    "price_postapoc": "0 cent"
+  },
+  {
+    "id": "lixa_data",
+    "copy-from": "usb_drive_nano",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str_sp": "LIXA research archive backup" },
+    "description": "A secured USB thumb drive, containing a copy of the LIXA facility's research archives.",
+    "price": "100 USD",
+    "price_postapoc": "0 cent"
+  },
+  {
+    "id": "book_binder",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "category": "books",
+    "use_action": [ "BINDER_ADD_RECIPE", "BINDER_MANAGE_RECIPE" ],
+    "symbol": "/",
+    "looks_like": "story_book",
+    "color": "light_gray",
+    "name": { "str": "book binder" },
+    "description": "A book binder.  With a pen and some paper you could copy some recipes from books into it.",
+    "weight": "200 g",
+    "volume": "640 ml",
+    "material": [ "plastic" ],
+    "price": "5 USD",
+    "price_postapoc": "50 cent",
+    "flags": [ "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": false,
+        "max_contains_volume": "450 ml",
+        "max_contains_weight": "270 g",
+        "item_restriction": [ "paper" ]
+      }
+    ],
+    "//": "CDF: E1-10a, DDA book_binder (generic.json): DDA restricts the ammo type paper to 90 sheets; CDF paper stays a generic item (AUTO-371), so the pocket restricts the item id like the TEST_DATA fixture test_efile_binder: 90 sheets of paper are 450 ml and 270 g"
+  },
+  {
     "id": "genome_drive",
+    "copy-from": "abstract_usb_drive",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "looks_like": "usb_drive",
     "symbol": ",",
     "color": "white",
     "name": { "str": "genome drive" },
-    "description": "A USB thumb drive labeled with tape.  Stores genetic information that can be used in a genome workstation, to create DNA samples for cloning.",
+    "description": "A USB thumb drive labeled with tape.  Stores genetic information that can be used in a genome workstation, to create DNA samples for cloning.  Its very large memory holds any other electronic files as well.",
     "price": "100 USD",
     "price_postapoc": "10 cent",
-    "material": "plastic",
     "weight": "18 g",
     "volume": "5 ml",
-    "to_hit": -3,
-    "container_data": { "contains": "1 ml" },
-    "item_vars": { "digital_storage_ports": "USB" },
-    "flags": [ "GENOME_DRIVE", "DIGITAL_STORAGE" ],
-    "category": "valuables"
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "8 TB"
+      }
+    ],
+    "//": "CDF: E1-10a, owner ruling O4: a genome sample ready for cloning is a 4 TB e-file (digital_genome_sample), bigger than the biggest ordinary device (portable_hard_drive, 2 TB), so it fits only these drives; the 8 TB pocket is an ordinary E_FILE pocket and takes any estorable file"
   },
   {
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "id": "genome_drive_black_rat",
     "copy-from": "genome_drive",
     "name": { "str": "genome drive" },
-    "item_vars": { "specimen_sample": "mon_black_rat", "specimen_sample_progress": "2", "specimen_name": "black rat" }
+    "item_vars": {
+      "specimen_sample": "mon_black_rat",
+      "specimen_sample_progress": "2",
+      "specimen_name": "black rat"
+    }
   },
   {
-    "type": "GENERIC",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "id": "genome_drive_wolf_mutant_huge",
     "copy-from": "genome_drive",
     "name": { "str": "genome drive" },
-    "item_vars": { "specimen_sample": "mon_wolf_mutant_huge", "specimen_sample_progress": "5", "specimen_name": "dire wolf" }
+    "item_vars": {
+      "specimen_sample": "mon_wolf_mutant_huge",
+      "specimen_sample_progress": "5",
+      "specimen_name": "dire wolf"
+    }
   },
   {
     "type": "GENERIC",
@@ -668,8 +738,9 @@
     "category": "valuables"
   },
   {
-    "type": "GENERIC",
     "id": "data_card",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "symbol": ",",
     "color": "white",
     "name": { "str": "data card" },
@@ -680,7 +751,20 @@
     "weight": "18 g",
     "volume": "1 ml",
     "to_hit": -3,
-    "category": "valuables"
+    "category": "valuables",
+    "e_port": "data card",
+    "etransfer_rate": "30 MB",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "1 TB"
+      }
+    ],
+    "//": "CDF: E1-10a, CDF-only (DDA has no data_card): an e-file storage device of 1 TB so that the Robofac mind scan (mind_scan_robofac, 512 GB) has a home; e_port and rate are new CDF numbers"
   },
   {
     "type": "GENERIC",
@@ -1958,23 +2042,6 @@
     "material": "steel",
     "weight": "50 g",
     "volume": "250 ml"
-  },
-  {
-    "type": "GENERIC",
-    "id": "sd_memory_card",
-    "symbol": ",",
-    "color": "white",
-    "name": { "str": "SD-Memory card" },
-    "description": "A reusable memory card for storing digital files.  Copying its files to another device does not erase them from the card.",
-    "price": "5 USD",
-    "price_postapoc": "10 cent",
-    "material": "plastic",
-    "container_data": { "contains": "1 ml" },
-    "item_vars": { "digital_storage_ports": "SD" },
-    "flags": [ "DIGITAL_STORAGE", "MC_MOBILE" ],
-    "weight": "5 g",
-    "volume": "1 ml",
-    "category": "valuables"
   },
   {
     "type": "GENERIC",

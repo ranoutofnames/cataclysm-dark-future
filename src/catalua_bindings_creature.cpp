@@ -1809,6 +1809,17 @@ void cata::detail::reg_avatar( sol::state &lua )
         SET_FX_T( get_completed_missions, std::vector<mission *>() const );
         SET_FX_T( get_failed_missions, std::vector<mission *>() const );
 
+        DOC( "Adds the snippet with the given id to the lore (the \"Lore\" tab of the player info screen)." );
+        DOC_PARAMS( "id: string" );
+        luna::set_fx( ut, "add_snippet", []( UT_CLASS & av, const std::string & id ) {
+            av.add_snippet( snippet_id( id ) );
+        } );
+        DOC( "Returns true if the snippet with the given id is already in the lore." );
+        DOC_PARAMS( "id: string" );
+        luna::set_fx( ut, "has_seen_snippet", []( const UT_CLASS & av, const std::string & id ) -> bool {
+            return av.has_seen_snippet( snippet_id( id ) );
+        } );
+
     }
 #undef UT_CLASS // #define UT_CLASS npc_opinion
 }

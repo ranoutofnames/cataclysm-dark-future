@@ -232,17 +232,55 @@ bool computer_session::hack_attempt( Character &who, int Security )
     return successful_attempt;
 }
 
-static item *pick_usb()
+// CDF: E1-9, DDA computer_session.cpp:294-306, 1000-1020. namespace efile_computer_hooks is the test
+// seam (declared in tests/efile_mission_test.cpp, no header): the parts of the e-storage download that
+// need no menu.
+namespace efile_computer_hooks
 {
-    auto filter = []( const item & it ) {
-        return it.typeId() == itype_usb_drive;
+// the filter of pick_estorage( can_hold_ememory ) (DDA :294-298)
+auto estorage_with_room( const item &it, units::ememory size ) -> bool
+{
+    return it.is_estorage() && it.remaining_ememory() >= size;
+}
+
+static auto software_ememory( const itype_id &software_id ) -> units::ememory
+{
+    const detached_ptr<item> software = item::spawn( software_id, calendar::turn_zero );
+    return software->ememory_size();
+}
+
+// the success part of action_download_software (DDA :1010-1014): the software goes into the E_FILE
+// pocket of the device for 0.3 seconds of moves; the message line it prints
+auto download_to( Character &who, item &device, const itype_id &software_id,
+                  int mission_id ) -> std::string
+{
+    detached_ptr<item> software = item::spawn( software_id, calendar::turn_zero );
+    const std::string name = software->tname();
+    who.mod_moves( -to_moves<int>( 1_seconds ) * 3 / 10 );
+    software->mission_id = mission_id;
+    const ret_val<void> stored = device.put_in( std::move( software ), pocket_type::E_FILE_STORAGE,
+                                 false, nullptr, true );
+    if( !stored.success() ) {
+        return stored.str();
+    }
+    return string_format( _( "%s downloaded." ), name );
+}
+
+// the error line when no device could hold the software (DDA :1016-1017)
+auto no_device_message( const itype_id &software_id ) -> std::string
+{
+    return string_format( _( "Electronic storage device with %s free required!" ),
+                          units::display( software_ememory( software_id ) ) );
+}
+} // namespace efile_computer_hooks
+
+static item *pick_estorage( units::ememory can_hold_ememory )
+{
+    auto filter = [&can_hold_ememory]( const item & it ) {
+        return efile_computer_hooks::estorage_with_room( it, can_hold_ememory );
     };
 
-    item *loc = game_menus::inv::titled_filter_menu( filter, g->u, _( "Choose drive:" ) );
-    if( loc ) {
-        return loc;
-    }
-    return nullptr;
+    return game_menus::inv::titled_filter_menu( filter, g->u, _( "Choose device:" ) );
 }
 
 static void remove_submap_turrets()
@@ -771,20 +809,19 @@ void computer_session::action_repeater_mod()
 
 void computer_session::action_download_software()
 {
-    if( item *const usb = pick_usb() ) {
-        mission *miss = mission::find( comp.mission_id );
-        if( miss == nullptr ) {
-            debugmsg( _( "Computer couldn't find its mission!" ) );
-            return;
-        }
-        g->u.moves -= 30;
-        detached_ptr<item> software = item::spawn( miss->get_item_id(), calendar::start_of_cataclysm );
-        software->mission_id = comp.mission_id;
-        usb->contents.clear_items();
-        usb->put_in( std::move( software ) );
-        print_line( _( "Software downloaded." ) );
+    mission *miss = mission::find( comp.mission_id );
+    if( miss == nullptr ) {
+        debugmsg( _( "Computer couldn't find its mission!" ) );
+        return;
+    }
+    const itype_id software_id = miss->get_item_id();
+
+    const units::ememory size = efile_computer_hooks::software_ememory( software_id );
+    if( item *const estorage = pick_estorage( size ) ) {
+        print_line( efile_computer_hooks::download_to( g->u, *estorage, software_id,
+                    comp.mission_id ) );
     } else {
-        print_error( _( "USB drive required!" ) );
+        print_error( efile_computer_hooks::no_device_message( software_id ) );
     }
     query_any();
 }
@@ -811,13 +848,17 @@ void computer_session::action_blood_anal()
                     print_line(
                         _( "Result: Unknown pathogen found.  Pathogen bonded to erythrocytes and leukocytes." ) );
                     if( query_bool( _( "Download data?" ) ) ) {
-                        if( item *const usb = pick_usb() ) {
-                            detached_ptr<item> software = item::spawn( "software_blood_data", calendar::start_of_cataclysm );
-                            usb->contents.clear_items();
-                            usb->put_in( std::move( software ) );
-                            print_line( _( "Software downloaded." ) );
+                        // CDF: DDA reworked this quest (#84105) and has no blood analysis action; the
+                        // download here uses the same e-storage rule as the mission software
+                        static const itype_id itype_software_blood_data( "software_blood_data" );
+                        const units::ememory size = efile_computer_hooks::software_ememory(
+                                                        itype_software_blood_data );
+                        if( item *const estorage = pick_estorage( size ) ) {
+                            print_line( efile_computer_hooks::download_to( g->u, *estorage,
+                                        itype_software_blood_data, -1 ) );
                         } else {
-                            print_error( _( "USB drive required!" ) );
+                            print_error( efile_computer_hooks::no_device_message(
+                                             itype_software_blood_data ) );
                         }
                     }
                 } else if( blood.has_vitamin( vitamin_human_flesh_vitamin ) ) {  // Normal human blood

@@ -253,8 +253,8 @@
       [ "barrette", 5 ],
       [ "pearl_collar", 1 ],
       [ "cell_phone", 1 ],
-      [ "smart_phone", 15 ],
-      [ "wrist_comp_budget", 5 ],
+      { "item": "smart_phone", "prob": 15, "contents-group": "civilian_smartphone_efiles" },
+      { "item": "wrist_comp_budget", "prob": 5, "contents-group": "civilian_smartphone_efiles" },
       [ "tophat", 10 ],
       [ "bullwhip", 3 ],
       [ "bowhat", 10 ],
@@ -263,7 +263,7 @@
       [ "10gal_hat", 5 ],
       [ "hat_chef", 5 ],
       [ "jacket_chef", 5 ],
-      [ "eink_tablet_pc", 12 ],
+      { "item": "eink_tablet_pc", "prob": 12, "contents-group": "civilian_einktablet_efiles" },
       [ "smart_lamp", 5 ],
       [ "mask_guy_fawkes", 5 ],
       [ "camera", 10 ],
@@ -415,7 +415,7 @@
       [ "silver_locket", 1 ],
       [ "gold_locket", 1 ],
       [ "platinum_locket", 1 ],
-      { "group": "digital_storage_media", "prob": 5 },
+      { "group": "efile_storage_media", "prob": 5 },
       [ "cot", 40 ],
       [ "rollmat", 40 ],
       [ "tent_kit", 17 ],
@@ -719,7 +719,7 @@
       [ "radio", 20 ],
       [ "geiger_off", 8 ],
       [ "rad_monitor", 2 ],
-      { "group": "digital_storage_media", "prob": 5 },
+      { "group": "efile_storage_media", "prob": 5 },
       [ "canteen", 15 ],
       [ "2lcanteen", 10 ],
       [ "camelbak", 5 ],
@@ -1194,8 +1194,8 @@
       [ "pie_maple", 70 ],
       [ "pork_beans", 15 ],
       [ "glazed_tenderloin", 5 ],
-      [ "smart_phone", 3 ],
-      [ "wrist_comp_budget", 1 ],
+      { "item": "smart_phone", "prob": 3, "contents-group": "civilian_smartphone_efiles" },
+      { "item": "wrist_comp_budget", "prob": 1, "contents-group": "civilian_smartphone_efiles" },
       [ "glass", 40 ],
       [ "knife_steak", 15 ]
     ]
@@ -1703,12 +1703,12 @@
     "type": "item_group",
     "//": "For s_electronics shops",
     "items": [
-      { "group": "digital_storage_media", "prob": 160 },
-      [ "software_math", 15 ],
-      [ "software_useless", 25 ],
+      { "group": "efile_storage_media", "prob": 160 },
+      { "item": "usb_drive", "prob": 15, "contents-item": "software_math" },
+      { "item": "usb_drive", "prob": 25, "contents-item": "software_useless" },
       [ "software_utility", 10 ],
-      [ "software_medical", 5 ],
-      [ "software_hacking", 1 ]
+      { "item": "usb_drive", "prob": 5, "contents-item": "software_medical" },
+      { "item": "usb_drive", "prob": 1, "contents-item": "software_hacking" }
     ]
   },
   {
@@ -1790,7 +1790,7 @@
       [ "eyedrops", 20 ],
       [ "mag_electronics", 20 ],
       [ "ecig", 20 ],
-      { "group": "digital_storage_media", "prob": 20 }
+      { "group": "efile_storage_media", "prob": 20 }
     ]
   },
   {

@@ -1,0 +1,85 @@
+[
+  {
+    "//": "CDF: E1-5a fixtures for the bookbinder_copy and ebooksave activity actors (tests/efile_actor_test.cpp).  test_efile_binder stands for DDA book_binder (data/json/items/generic.json:1442): DDA's pocket restricts the ammo type paper, but CDF paper is a GENERIC item (data/json/items/tool/stationary.json:56), so the fixture restricts the item id instead.  Merge note: E1-10a/E1-7 add the real book_binder and decide what paper is.",
+    "id": "test_efile_binder",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "category": "books",
+    "symbol": "/",
+    "color": "light_gray",
+    "name": { "str": "test book binder" },
+    "description": "A test book binder with a paper pocket.",
+    "weight": "200 g",
+    "volume": "640 ml",
+    "material": [ "plastic" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      {
+        "pocket_type": "MAGAZINE",
+        "rigid": false,
+        "max_contains_volume": "1 L",
+        "max_contains_weight": "1 kg",
+        "item_restriction": [ "paper" ]
+      }
+    ]
+  },
+  {
+    "id": "test_efile_scan_book_120",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
+    "copy-from": "test_book",
+    "name": { "str": "test scan book of 120 pages", "str_pl": "test scan books of 120 pages" },
+    "description": "A test book of 120 pages (600 g at 5 g a page): scanning it takes 10 minutes and one battery use.",
+    "weight": "600 g",
+    "volume": "100 ml"
+  },
+  {
+    "id": "test_efile_scan_book_240",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
+    "copy-from": "test_book",
+    "name": { "str": "test scan book of 240 pages", "str_pl": "test scan books of 240 pages" },
+    "description": "A test book of 240 pages (1200 g at 5 g a page): scanning it takes 20 minutes and two battery uses.",
+    "weight": "1200 g",
+    "volume": "100 ml"
+  },
+  {
+    "id": "test_efile_identify_book",
+    "type": "ITEM",
+    "subtypes": [ "BOOK" ],
+    "copy-from": "test_book",
+    "name": { "str": "test book to identify", "str_pl": "test books to identify" },
+    "description": "A test book that only the identify case scans: the avatar remembers every identified type for the whole test run.",
+    "weight": "100 g",
+    "volume": "100 ml"
+  },
+  {
+    "id": "test_ereader_tiny",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test tiny e-reader" },
+    "description": "A test e-reader whose e-file storage is too small for any book.",
+    "weight": "250 g",
+    "volume": "250 ml",
+    "symbol": ";",
+    "color": "blue",
+    "material": [ "plastic" ],
+    "tool_ammo": [ "battery" ],
+    "charges_per_use": 1,
+    "etransfer_rate": "30 MB",
+    "e_port": "tablet",
+    "use_action": [ "E_FILE_DEVICE", "EBOOKSAVE" ],
+    "flags": [ "NO_UNLOAD", "NO_RELOAD" ],
+    "pocket_data": [
+      { "pocket_type": "MAGAZINE", "rigid": true, "ammo_restriction": { "battery": 85 } },
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "1 KB"
+      }
+    ]
+  }
+]

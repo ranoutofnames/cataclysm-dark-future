@@ -4,8 +4,9 @@
 // holster_can_contain_one_fitting_item, pockets_containing_liquids, pockets_containing_gases,
 // rigid_and_non-rigid_or_flexible_pockets, corpse_can_contain_anything, sealed_containers,
 // when_one_pocket_is_better_than_another, pocket_favorites_allow_or_restrict_items,
-// pocket_favorites_allow_or_restrict_containers, pocket_leak CUT usb_drives_and_software: CUT,
-// needs E_FILE_STORAGE (plan D16/E1); not copied The accepts_item/whitelist_item/blacklist_* pocket
+// pocket_favorites_allow_or_restrict_containers, pocket_leak CUT; usb_drives_and_software was CUT
+// until E1-10a (it needs E_FILE_STORAGE and the DDA usb_drive and software data) and is copied at
+// the end of the file. The accepts_item/whitelist_item/blacklist_* pocket
 // settings API this file uses exists in CDF src (item_pocket.h favorite_settings). Only
 // is_better_favorite is absent, and in DDA it is a TODO comment too.
 #include "activity_actor_definitions.h"
@@ -1528,6 +1529,18 @@ TEST_CASE( "pocket_favorites_allow_or_restrict_containers", "[pocket][favorite][
             }
         }
     }
+}
+
+// E1-10a (PC-E1): DDA tests/item_pocket_test.cpp:1890, copied as is. The case was CUT while
+// usb_drive was a BN GENERIC item (digital storage) and software_math a BN GENERIC item; both are
+// the DDA e-file items now (data/json/items/tool/electronics.json, items/software.json).
+TEST_CASE( "usb_drives_and_software", "[pocket][software]" )
+{
+    item usb( itype_usb_drive );
+    item software( itype_software_math );
+    // USB drives aren't containers, and cannot "contain" software, but software can be inserted
+    CHECK_FALSE( usb.can_contain( software ).success() );
+    CHECK( usb.put_in( software, pocket_type::E_FILE_STORAGE ).success() );
 }
 
 // CUT pocket_leak: needs DDA's item temperature model (item::set_item_temperature,

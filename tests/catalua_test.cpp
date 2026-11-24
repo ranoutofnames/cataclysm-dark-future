@@ -4960,3 +4960,24 @@ TEST_CASE("lua_mission_unknown_phase_callback", "[lua][mission]") {
     CHECK_THAT(dmsg, Catch::Contains("test_mission_missing_cb"));
     CHECK(miss->in_progress());
 }
+
+// E1-12: the e-file pocket types are reachable from Lua. The enum is registered by reg_enum
+// (src/catalua_bindings.cpp:555), which loops every value below pocket_type::LAST through
+// io::enum_to_string. The case is tagged [lua] only (the e-file runs must not select it).
+TEST_CASE("lua_pocket_type_has_the_efile_values", "[lua]") {
+    clear_all_state();
+    auto lua = make_lua_state();
+    detached_ptr<item> device = item::spawn(itype_id("test_laptop"));
+    lua["test_device"] = &*device;
+    const auto res = lua.safe_script(
+        R"(
+        assert(PocketType.E_FILE_STORAGE ~= nil)
+        assert(PocketType.EBOOK ~= nil)
+        assert(PocketType.E_FILE_STORAGE ~= PocketType.CONTAINER)
+        assert(PocketType.E_FILE_STORAGE ~= PocketType.EBOOK)
+        assert(#test_device:get_pockets(PocketType.E_FILE_STORAGE) == 1)
+        assert(#test_device:get_pockets(PocketType.EBOOK) == 0)
+    )",
+        sol::script_pass_on_error);
+    CHECK(res.valid());
+}

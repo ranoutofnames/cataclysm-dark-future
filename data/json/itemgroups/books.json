@@ -819,5 +819,21 @@
       { "item": "years_old_newspaper", "prob": 10 },
       { "item": "one_year_old_newspaper", "prob": 20 }
     ]
+  },
+  {
+    "id": "book_manual_combat",
+    "type": "item_group",
+    "subtype": "distribution",
+    "//": "CDF: DDA data/json/itemgroups/books.json:1020 (b4b62254ae2) without manual_swords and book_nonf_hard_dodge_tlwd, which CDF does not have.",
+    "entries": [
+      { "item": "manual_brawl", "prob": 10 },
+      { "item": "manual_melee", "prob": 10 },
+      { "item": "manual_bashing", "prob": 10 },
+      { "item": "manual_stabbing", "prob": 5 },
+      { "item": "manual_knives", "prob": 5 },
+      { "item": "manual_cutting", "prob": 5 },
+      { "item": "manual_dodge", "prob": 4 },
+      { "item": "manual_dodge_kid", "prob": 4 }
+    ]
   }
 ]

@@ -9,6 +9,9 @@ game.iuse_functions["VOLTMETER"] = function(...) return mod.voltmeter.menu(...) 
 game.iuse_functions["sonar_scan"] = function(...) return mod.sonar_scan(...) end
 ---@param params ItemUseParams
 game.iuse_functions["CORRUPTED_FILE"] = function(params) return mod.corrupted_file.open(params) end
+---@param params ItemUseParams
+game.iuse_functions["EFILE_MAP"] = function(params) return mod.efile.map(params) end
+game.iuse_functions["EFILE_LORE"] = function(params) return mod.efile.lore(params) end
 game.iuse_functions["ARTIFACT_ANALYZER"] = function(...) return mod.artifact_analyzer.menu(...) end
 game.iuse_functions["OBJ_VAR_VIEWER"] = function(...) return mod.item_var_viewer.menu(...) end
 game.examine_functions["PLUMBING_SHOWER_EXAMINE"] = function(...) return mod.plumbing.examine_shower(...) end

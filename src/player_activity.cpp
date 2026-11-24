@@ -487,10 +487,24 @@ std::optional<std::string> player_activity::get_progress_message( const avatar &
            : string_format( _( "%s: %s" ), get_verb().translated(), extra_info );
 }
 
+// CDF: E1-8, DDA read_activity_actor::start (activity_actor.cpp:2122-2146). ACT_READ is an old-style
+// activity: the e-reader of the reading is its second target. Starting costs one charge to boot up
+// the ebook app; the five-minute charges and the stop on an empty or lost e-reader are in
+// activity_handlers::read_do_turn.
+static void read_boot_ereader( player_activity &act, Character &who )
+{
+    if( act.targets.size() < 2 || !act.targets[1] ) {
+        return;
+    }
+    act.targets[1]->consume_tool_uses( 1, get_map(), who.bub_pos(), &who );
+}
+
 void player_activity::start_or_resume( Character &who, bool resuming )
 {
     if( actor && !resuming ) {
         actor->start( *this, who );
+    } else if( !actor && !resuming && id() == ACT_READ ) {
+        read_boot_ereader( *this, who );
     }
     init_all_moves( who );
     if( rooted() ) {

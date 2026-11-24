@@ -1,5 +1,4 @@
 #include "iuse.h"
-#include "book_scanning.h"
 
 #include "action.h"
 #include "action_time_scale.h"
@@ -24,8 +23,6 @@
 #include "creature.h"
 #include "damage.h"
 #include "debug.h"
-#include "digital_media.h"
-#include "digital_recipes.h"
 #include "photo_morale.h"
 #include "distribution_grid.h"
 #include "effect.h" // for weed_msg
@@ -80,6 +77,7 @@
 #include "player.h"
 #include "player_activity.h"
 #include "pldata.h"
+#include "pocket_type.h"
 #include "point.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
@@ -132,10 +130,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-// CDF: defined in src/item/book_scanning.cpp and also declared in tests/book_scanning_test.cpp;
-// not in book_scanning.h, where a declaration would rebuild every includer.
-auto select_scannable_text( avatar &you ) -> item *;
 
 static const activity_id ACT_BURROW( "ACT_BURROW" );
 static const activity_id ACT_CHOP_LOGS( "ACT_CHOP_LOGS" );
@@ -254,6 +248,8 @@ static const itype_id itype_cow_bell( "cow_bell" );
 static const itype_id itype_data_card( "data_card" );
 static const itype_id itype_e_handcuffs( "e_handcuffs" );
 static const itype_id itype_ecig( "ecig" );
+static const itype_id itype_efile_map( "efile_map" );
+static const itype_id itype_efile_photos( "efile_photos" );
 static const itype_id itype_fire( "fire" );
 static const itype_id itype_firecracker_act( "firecracker_act" );
 static const itype_id itype_firecracker_pack_act( "firecracker_pack_act" );
@@ -273,6 +269,7 @@ static const itype_id itype_multi_cooker_filled( "multi_cooker_filled" );
 static const itype_id itype_nicotine_liquid( "nicotine_liquid" );
 static const itype_id itype_noise_emitter( "noise_emitter" );
 static const itype_id itype_noise_emitter_on( "noise_emitter_on" );
+static const itype_id itype_paper( "paper" );
 static const itype_id itype_radio( "radio" );
 static const itype_id itype_radio_car( "radio_car" );
 static const itype_id itype_radio_car_on( "radio_car_on" );
@@ -334,6 +331,9 @@ static const trait_id trait_URSINE_EYE( "URSINE_EYE" );
 static const trait_id trait_WAYFARER( "WAYFARER" );
 static const trait_id trait_WAYFARER_SELF( "WAYFARER_SELF" );
 
+// mutation/trait flags
+static const trait_flag_str_id trait_flag_CANNOT_USE_COMPUTERS( "CANNOT_USE_COMPUTERS" );
+
 static const quality_id qual_AXE( "AXE" );
 static const quality_id qual_DIG( "DIG" );
 static const quality_id qual_LOCKPICK( "LOCKPICK" );
@@ -378,38 +378,9 @@ static constexpr int RADIO_PER_TURN = 25;
 
 struct object_names_collection;
 
-struct extended_photo_def : public JsonDeserializer, public JsonSerializer {
-    int quality;
-    std::string name;
-    std::string description;
-
-    extended_photo_def() = default;
-    void deserialize( JsonIn &jsin ) override {
-        JsonObject obj = jsin.get_object();
-        quality = obj.get_int( "quality" );
-        name = obj.get_string( "name" );
-        description = obj.get_string( "description" );
-    }
-
-    void serialize( JsonOut &jsout ) const override {
-        jsout.start_object();
-        jsout.member( "quality", quality );
-        jsout.member( "name", name );
-        jsout.member( "description", description );
-        jsout.end_object();
-    }
-};
-
 static std::vector<std::string> describe_character( Character *guy );
 static void item_save_monsters( player &p, item &it, const std::vector<monster *> &monster_vec,
                                 int photo_quality );
-static bool show_photo_selection( player &p, item &it, const std::string &var_name );
-
-static bool item_read_extended_photos( item &, std::vector<extended_photo_def> &,
-                                       const std::string &,
-                                       bool = false );
-static void item_write_extended_photos( item &, const std::vector<extended_photo_def> &,
-                                        const std::string & );
 
 static std::string format_object_pair( const std::pair<std::string, int> &pair,
                                        const std::string &article );
@@ -437,7 +408,7 @@ static object_names_collection enumerate_objects_around_point( const tripoint_bu
         const tripoint_bub_ms &camera_pos, const units::volume &min_visible_volume, bool create_figure_desc,
         std::unordered_set<tripoint_bub_ms> &ignored_points,
         std::unordered_set<const vehicle *> &vehicles_recorded );
-static extended_photo_def photo_def_for_camera_point( const tripoint_bub_ms &aim_point,
+static item::extended_photo_def photo_def_for_camera_point( const tripoint_bub_ms &aim_point,
         const tripoint_bub_ms &camera_pos,
         std::vector<monster *> &monster_vec, std::vector<Character *> &character_vec );
 
@@ -3927,22 +3898,9 @@ int iuse::mp3_on( player *p, item *it, bool t, const tripoint_bub_ms &pos )
     if( t ) { // Normal use
         if( p->has_item( *it ) ) {
             // mp3 player in inventory, we can listen
-            if( it->has_flag( flag_id( "DIGITAL_READER" ) ) ) {
-                initialize_digital_media( *it );
-                if( digital_music_playing( *it ).songs == 0 && !digital_music_ready( *p, *it ) ) {
-                    return 0;
-                }
-                play_music( *p, pos, 40, std::max( digital_music_playing( *it ).morale_cap,
-                                                   p->get_morale( MORALE_MUSIC ) ) );
-            } else {
-                play_music( *p, pos, 40, 20 );
-            }
+            play_music( *p, pos, 40, 20 );
         }
     } else { // Turning it off
-        if( it->has_flag( flag_id( "DIGITAL_READER" ) ) ) {
-            finish_digital_music( *p, *it );
-            it->erase_var( "EIPC_MUSIC_ON" );
-        }
         // Creatively make it so that the reversion isn't hard-coded
         // There's *probably* a better way to do this, but this works
         std::string active_item = it->typeId().str();
@@ -5953,87 +5911,6 @@ int iuse::robotcontrol( player *p, item *it, bool, const tripoint_bub_ms & )
     return 0;
 }
 
-static bool einkpc_download_memory_card( player &p, item &eink, item &mc )
-{
-    if( !digital_reader_can_access_storage( eink, mc ) ) {
-        p.add_msg_if_player( m_info, _( "This reader is not compatible with that storage device." ) );
-        return false;
-    }
-    const auto copied_files = download_digital_files( eink, mc, p );
-    auto something_downloaded = copied_files > 0;
-    if( copied_files > 0 ) {
-        p.add_msg_if_player( m_good, vgettext( "You copy %d digital file onto the tablet.",
-                                               "You copy %d digital files onto the tablet.", copied_files ), copied_files );
-    }
-    if( mc.has_var( "MC_EXTENDED_PHOTOS" ) ) {
-        std::vector<extended_photo_def> extended_photos;
-        try {
-            item_read_extended_photos( mc, extended_photos, "MC_EXTENDED_PHOTOS" );
-            item_read_extended_photos( eink, extended_photos, "EIPC_EXTENDED_PHOTOS", true );
-            item_write_extended_photos( eink, extended_photos, "EIPC_EXTENDED_PHOTOS" );
-            something_downloaded = true;
-            p.add_msg_if_player( m_good, _( "You have downloaded your photos." ) );
-        } catch( const JsonError &e ) {
-            debugmsg( "Error card reading photos (loaded photos = %i) : %s", extended_photos.size(),
-                      e.c_str() );
-        }
-    }
-
-    const auto monster_photos = mc.get_var( "MC_MONSTER_PHOTOS" );
-    if( !monster_photos.empty() ) {
-        something_downloaded = true;
-        p.add_msg_if_player( m_good, _( "You have updated your monster collection." ) );
-
-        auto photos = eink.get_var( "EINK_MONSTER_PHOTOS" );
-        if( photos.empty() ) {
-            eink.set_var( "EINK_MONSTER_PHOTOS", monster_photos );
-        } else {
-            std::istringstream f( monster_photos );
-            std::string s;
-            while( getline( f, s, ',' ) ) {
-
-                if( s.empty() ) {
-                    continue;
-                }
-
-                const std::string mtype = s;
-                getline( f, s, ',' );
-                char *chq = s.data();
-                const int quality = atoi( chq );
-
-                const size_t eink_strpos = photos.find( "," + mtype + "," );
-
-                if( eink_strpos == std::string::npos ) {
-                    photos += mtype + "," + string_format( "%d", quality ) + ",";
-                } else {
-
-                    const size_t strqpos = eink_strpos + mtype.size() + 2;
-                    char *chq = &photos[strqpos];
-                    const int old_quality = atoi( chq );
-
-                    if( quality > old_quality ) {
-                        photos[strqpos] = string_format( "%d", quality )[0];
-                    }
-                }
-
-            }
-            eink.set_var( "EINK_MONSTER_PHOTOS", photos );
-        }
-    }
-
-    if( !mc.has_flag( flag_MC_ENCRYPTED ) ) {
-        mc.set_var( "DIGITAL_INITIALIZED", 1 );
-    }
-
-    if( !something_downloaded ) {
-        p.add_msg_if_player( m_info, _( "This storage device does not contain any new data." ) );
-        return false;
-    }
-
-    return true;
-
-}
-
 static std::string photo_quality_name( const int index )
 {
     static const std::array<std::string, 6> names {
@@ -6043,514 +5920,6 @@ static std::string photo_quality_name( const int index )
         }
     };
     return _( names[index] );
-}
-
-namespace
-{
-auto digital_recipes_on_device( const item &reader ) -> std::set<recipe_id>
-{
-    auto result = std::set<recipe_id> {};
-    for( const auto *file : reader.contents.all_items_top() ) {
-        if( is_digital_file( *file ) ) {
-            for( const auto &entry : digital_file_recipes( *file ) ) {
-                result.insert( entry.recipe );
-            }
-        }
-    }
-    return result;
-}
-
-auto export_files_to_storage( player &who, item &reader, item *file = nullptr ) -> bool
-{
-    auto *you = who.as_avatar();
-    if( you == nullptr ) {
-        return false;
-    }
-    auto *card = game_menus::inv::titled_filter_menu( is_writable_digital_media, *you,
-                 _( "Choose storage media" ) );
-    if( card == nullptr ) {
-        return false;
-    }
-    const auto copied = upload_digital_files( who, {
-        .source = reader,
-        .destination = *card,
-        .file = file
-    } );
-    if( copied == 0 ) {
-        who.add_msg_if_player( m_info, _( "You couldn't copy any files to that storage device." ) );
-        return false;
-    }
-    who.mod_moves( -to_moves<int>( 2_seconds ) );
-    who.add_msg_if_player( m_good, vgettext( "You copy %d file onto the storage device.",
-                           "You copy %d files onto the storage device.", copied ), copied );
-    return true;
-}
-
-auto show_monster_collection( player &who, const item &reader ) -> void
-{
-    const auto photos = digital_monster_photos( reader );
-    auto menu = uilist{};
-    auto descriptions = std::vector<std::string> {};
-    menu.text = _( "Your collection of monsters:" );
-    for( const auto &[id, quality] : photos ) {
-        const auto specimen = monster( id );
-        menu.addentry( static_cast<int>( descriptions.size() ), true, MENU_AUTOASSIGN,
-                       string_format( "%s [%s]", specimen.name(), photo_quality_name( quality ) ) );
-        descriptions.push_back( specimen.type->get_description() );
-    }
-    while( true ) {
-        menu.query();
-        if( menu.ret < 0 || menu.ret >= static_cast<int>( descriptions.size() ) ) {
-            return;
-        }
-        popup( "%s", descriptions[menu.ret] );
-        apply_photo_viewing_morale( who );
-    }
-}
-
-auto delete_files_from_storage( player &who, item &reader ) -> void
-{
-    auto *you = who.as_avatar();
-    if( you == nullptr ) {
-        return;
-    }
-    const auto filter = [&reader]( const auto & media ) {
-        return &media != &reader && is_digital_storage_media( media );
-    };
-    auto *storage = game_menus::inv::titled_filter_menu( filter, *you, _( "Select storage media" ) );
-    if( storage == nullptr ) {
-        return;
-    }
-    if( !digital_reader_can_access_storage( reader, *storage ) ) {
-        who.add_msg_if_player( m_info, _( "This reader is not compatible with that storage device." ) );
-        return;
-    }
-    initialize_digital_media( *storage );
-    if( storage->has_flag( flag_MC_ENCRYPTED ) ) {
-        who.add_msg_if_player( m_info, _( "This storage device is encrypted." ) );
-        return;
-    }
-    auto files = std::vector<item *> {};
-    auto menu = uilist{};
-    menu.text = _( "Files on storage media:" );
-    for( auto *file : storage->contents.all_items_top() ) {
-        if( is_digital_file( *file ) ) {
-            menu.addentry( static_cast<int>( files.size() ), true, MENU_AUTOASSIGN, file->display_name() );
-            files.push_back( file );
-        }
-    }
-    if( files.empty() ) {
-        who.add_msg_if_player( m_info, _( "There are no digital files on this device." ) );
-        return;
-    }
-    menu.query();
-    if( menu.ret < 0 || menu.ret >= static_cast<int>( files.size() ) ) {
-        return;
-    }
-    auto *file = files[menu.ret];
-    const auto name = file->display_name();
-    if( who.query_yn( _( "Delete %s from this storage device?" ), name ) ) {
-        storage->contents.remove_top( file );
-        who.add_msg_if_player( m_info, _( "You delete %s from the storage device." ), name );
-    }
-}
-
-auto browse_digital_files( player &who, item &reader ) -> void
-{
-    auto files = std::vector<item *> {};
-    auto menu = uilist{};
-    menu.text = _( "Files on device:" );
-    for( auto *file : reader.contents.all_items_top() ) {
-        if( is_digital_file( *file ) ) {
-            menu.addentry( static_cast<int>( files.size() ), true, MENU_AUTOASSIGN, file->type_name() );
-            files.push_back( file );
-        }
-    }
-    if( files.empty() ) {
-        who.add_msg_if_player( m_info, _( "There are no digital files on this device." ) );
-        return;
-    }
-    menu.query();
-    if( menu.ret < 0 || menu.ret >= static_cast<int>( files.size() ) ) {
-        return;
-    }
-    auto *file = files[menu.ret];
-    enum file_action {
-        delete_file, study_file, listen_file, copy_file, show_recipes,
-        show_captured_photos, show_monsters, read_text, use_action_start
-    };
-    namespace ranges = std::ranges;
-    using namespace std::views;
-    const auto use_methods = file->type->use_methods | keys | ranges::to<std::vector<std::string>>();
-    auto actions = uilist{};
-    actions.text = file->type->description.translated();
-    actions.hilight_disabled = true;
-    actions.title = file->display_name();
-    if( !file->snip_id.is_null() || !file->type->snippet_category.empty() ||
-        file->has_var( "description" ) ) {
-        actions.addentry( read_text, true, 't', _( "Read saved text" ) );
-    }
-    if( file->is_book() ) {
-        actions.addentry( study_file, true, 'r', _( "Study" ) );
-    }
-    for( auto index = 0; index < static_cast<int>( use_methods.size() ); ++index ) {
-        const auto &action = file->type->use_methods.at( use_methods[index] );
-        const auto available = action.can_call( who, *file, false, who.bub_pos() );
-        actions.addentry_desc( use_action_start + index, available.success(), MENU_AUTOASSIGN,
-                               action.get_name(), available.str() );
-    }
-    if( file->has_flag( flag_id( "DIGITAL_MUSIC" ) ) ) {
-        const auto music_wait = digital_music_cooldown_remaining( who, *file );
-        const auto description = file->charges <= 0 ? _( "This collection contains no music." ) :
-                                 music_wait > 0_turns ? string_format( _( "Available in %s." ),
-                                         to_string( music_wait ) ) : std::string{};
-        actions.addentry_desc( listen_file, file->charges > 0 && music_wait <= 0_turns, 'm',
-                               _( "Listen" ), description );
-    }
-    const auto recipe_entries = digital_file_recipes( *file );
-    if( !recipe_entries.empty() ) {
-        actions.addentry( show_recipes, true, 'v', _( "View recipes" ) );
-    }
-    if( !file->get_var( "CAMERA_EXTENDED_PHOTOS" ).empty() ||
-        !file->get_var( "CAMERA_NPC_PHOTOS" ).empty() ) {
-        actions.addentry( show_captured_photos, true, 'p', _( "Browse captured photos" ) );
-    }
-    if( !file->get_var( "CAMERA_MONSTER_PHOTOS" ).empty() ) {
-        actions.addentry( show_monsters, true, 'z', _( "Your collection of monsters" ) );
-    }
-    actions.addentry( delete_file, true, 'd', _( "Delete file" ) );
-    actions.addentry( copy_file, true, 'c', _( "Copy to storage media" ) );
-    actions.desc_enabled = ranges::any_of( actions.entries,
-    []( const auto & entry ) { return !entry.desc.empty(); } );
-    actions.query();
-    if( actions.ret >= use_action_start &&
-        actions.ret < use_action_start + static_cast<int>( use_methods.size() ) ) {
-        who.invoke_item( file, use_methods[actions.ret - use_action_start] );
-    } else if( actions.ret == read_text ) {
-        const auto description = iteminfo_query( std::vector{ iteminfo_parts::DESCRIPTION } );
-        const auto text = file->info( description, 1, temperature_flag::TEMP_NORMAL );
-        auto data = item_info_data( file->display_name(), {}, text, {} );
-        data.handle_scrolling = true;
-        draw_item_info( [&data]() -> catacurses::window {
-            const auto width = std::min( TERMX, FULL_SCREEN_WIDTH );
-            const auto buffer = data.get_item_name() + "\n" + std::string( data.padding, '\n' ) +
-            format_item_info( data.get_item_display(), data.get_item_compare() );
-            const auto lines = static_cast<int>( foldstring( buffer, std::max( 1, width - 5 ) ).size() );
-            const auto height = std::min( { TERMY, FULL_SCREEN_HEIGHT, lines + 2 } );
-            return catacurses::newwin( height, width,
-                                       point( ( TERMX - width ) / 2, ( TERMY - height ) / 2 ) );
-        }, data );
-    } else if( actions.ret == delete_file ) {
-        if( who.query_yn( _( "Delete %s from this device?" ), file->display_name() ) ) {
-            const auto file_name = file->display_name();
-            reader.contents.remove_top( file );
-            who.add_msg_if_player( m_info, _( "You delete %s from the device." ),
-                                   file_name );
-        }
-    } else if( actions.ret == study_file ) {
-        if( auto *you = who.as_avatar() ) {
-            you->read( file );
-        }
-    } else if( actions.ret == listen_file ) {
-        listen_to_digital_music( who, reader, *file );
-    } else if( actions.ret == copy_file ) {
-        export_files_to_storage( who, reader, file );
-    } else if( actions.ret == show_captured_photos ) {
-        show_photo_selection( who, *file, "CAMERA_EXTENDED_PHOTOS" );
-    } else if( actions.ret == show_monsters ) {
-        show_monster_collection( who, *file );
-    } else if( actions.ret == show_recipes ) {
-        auto recipe_menu = uilist{};
-        recipe_menu.text = _( "Recipes in file:" );
-        for( const auto &entry : recipe_entries ) {
-            recipe_menu.addentry( MENU_AUTOASSIGN, true, -1, entry.recipe->result_name() );
-        }
-        recipe_menu.query();
-    }
-}
-} // namespace
-
-int iuse::einktabletpc( player *p, item *it, bool t, const tripoint_bub_ms &pos )
-{
-    initialize_digital_media( *it );
-    if( t ) {
-        if( it->type->can_use( "MP3_ON" ) || it->get_var( "EIPC_MUSIC_ON" ).empty() ) {
-            return 0;
-        }
-        if( !it->get_var( "EIPC_MUSIC_ON" ).empty() && ( it->ammo_remaining() > 0 ) ) {
-            if( action_time_scale::once_every_this_tick( 5_minutes ) ) {
-                it->ammo_consume( 1, p->bub_pos(), p );
-            }
-
-            //the more varied music, the better max mood.
-            if( digital_music_playing( *it ).songs == 0 && !digital_music_ready( *p, *it ) ) {
-                return 0;
-            }
-            const auto music = digital_music_playing( *it );
-            play_music( *p, pos, 60, std::max( music.morale_cap, p->get_morale( MORALE_MUSIC ) ) );
-        } else {
-            it->deactivate();
-            it->erase_var( "EIPC_MUSIC_ON" );
-            p->add_msg_if_player( m_info, _( "Tablet's batteries are dead." ) );
-        }
-
-        return 0;
-    } else if( p->is_mounted() ) {
-        p->add_msg_if_player( m_info, _( "You cannot do that while mounted." ) );
-        return 0;
-    } else if( !p->is_npc() ) {
-
-        enum {
-            ei_invalid, ei_recipe, ei_books, ei_uploaded_photos, ei_monsters, ei_download, ei_decrypt,
-            ei_files, ei_export, ei_encrypt, ei_delete_storage, ei_scan_book
-        };
-
-        if( p->is_underwater() ) {
-            p->add_msg_if_player( m_info, _( "You can't do that while underwater." ) );
-            return 0;
-        }
-        if( p->has_trait( trait_ILLITERATE ) ) {
-            p->add_msg_if_player( m_info, _( "You cannot read a computer screen." ) );
-            return 0;
-        }
-        if( p->has_trait( trait_HYPEROPIC ) && !p->worn_with_flag( flag_FIX_FARSIGHT ) &&
-            !p->has_effect( effect_contacts ) && !p->has_bionic( bio_eye_optic ) ) {
-            p->add_msg_if_player( m_info,
-                                  _( "You'll need to put on reading glasses before you can see the screen." ) );
-            return 0;
-        }
-
-        uilist amenu;
-
-        amenu.text = _( "Choose menu option:" );
-
-        const auto stored_files = it->contents.all_items_top();
-        const auto has_captured_photos = std::ranges::any_of( stored_files, []( const auto * file ) {
-            return file->has_var( "CAMERA_EXTENDED_PHOTOS" ) || file->has_var( "CAMERA_NPC_PHOTOS" );
-        } );
-        const auto has_camera_photos = !it->get_var( "EIPC_EXTENDED_PHOTOS" ).empty() ||
-                                       has_captured_photos;
-
-        const auto digital_recipes = digital_recipes_on_device( *it );
-        if( !it->get_var( "EIPC_RECIPES" ).empty() || !digital_recipes.empty() ) {
-            amenu.addentry( ei_recipe, true, 'r', _( "View recipes" ) );
-        }
-
-        const auto books = stored_files | std::views::filter( []( const auto * file ) {
-            return file->is_book() && is_digital_file( *file );
-        } ) | std::ranges::to<std::vector>();
-        amenu.addentry( ei_books, !books.empty(), 'b',
-                        books.empty() ? _( "No books on device" ) : _( "Read books" ) );
-
-        if( has_camera_photos ) {
-            amenu.addentry( ei_uploaded_photos, true, 'l', _( "Camera photos" ) );
-        }
-
-        if( !digital_monster_photos( *it ).empty() ) {
-            amenu.addentry( ei_monsters, true, 'y', _( "Your collection of monsters" ) );
-        } else {
-            amenu.addentry( ei_monsters, false, 'y', _( "Collection of monsters is empty" ) );
-        }
-
-        amenu.addentry( ei_files, true, 'f', _( "Browse digital files" ) );
-        amenu.addentry( ei_scan_book, true, 'a', _( "Scan book or text" ) );
-        amenu.addentry( ei_download, true, 'w', _( "Download data from storage media" ) );
-        const auto has_files = std::ranges::any_of( it->contents.all_items_top(),
-        []( const auto * file ) { return is_digital_file( *file ); } );
-        amenu.addentry( ei_export, has_files, 'e', _( "Copy files to storage media" ) );
-        amenu.addentry( ei_delete_storage, true, 'x', _( "Delete files from storage media" ) );
-
-        amenu.addentry( ei_encrypt, true, 's', _( "Encrypt storage media" ) );
-
-        /** @EFFECT_COMPUTER >2 allows decrypting memory cards more easily */
-        if( p->get_skill_level( skill_computer ) > 2 ) {
-            amenu.addentry( ei_decrypt, true, 'd', _( "Decrypt storage media" ) );
-        } else {
-            amenu.addentry( ei_decrypt, false, 'd', _( "Decrypt storage media (low skill)" ) );
-        }
-
-        amenu.query();
-
-        const int choice = amenu.ret;
-
-        if( choice == ei_scan_book ) {
-            if( auto *you = p->as_avatar() ) {
-                if( auto *book = select_scannable_text( *you ) ) {
-                    start_book_scan( *p, *it, *book );
-                }
-            }
-            return 0;
-        }
-
-        if( choice == ei_export ) {
-            return export_files_to_storage( *p, *it ) ? it->type->charges_to_use() : 0;
-        }
-
-        if( choice == ei_delete_storage ) {
-            delete_files_from_storage( *p, *it );
-            return it->type->charges_to_use();
-        }
-
-        if( choice == ei_files ) {
-            browse_digital_files( *p, *it );
-            return it->type->charges_to_use();
-        }
-
-        if( ei_recipe == choice ) {
-            p->moves -= 50;
-
-            uilist rmenu;
-
-            rmenu.text = _( "List recipes:" );
-
-            auto candidate_recipes = digital_recipes;
-            auto legacy = std::istringstream( it->get_var( "EIPC_RECIPES" ) );
-            auto token = std::string{};
-            while( getline( legacy, token, ',' ) ) {
-                if( !token.empty() && recipe_id( token ).is_valid() ) {
-                    candidate_recipes.insert( recipe_id( token ) );
-                }
-            }
-            for( const auto &id : candidate_recipes ) {
-                rmenu.addentry( MENU_AUTOASSIGN, true, -1, id->result_name( /*decorated=*/true ) );
-            }
-
-            rmenu.query();
-
-            return it->type->charges_to_use();
-        }
-
-        if( ei_books == choice ) {
-            auto bmenu = uilist{};
-            bmenu.text = _( "Books on device:" );
-            for( auto index = 0; index < static_cast<int>( books.size() ); ++index ) {
-                bmenu.addentry( index, true, MENU_AUTOASSIGN, books[index]->display_name() );
-            }
-            bmenu.query();
-            if( bmenu.ret >= 0 && bmenu.ret < static_cast<int>( books.size() ) ) {
-                if( auto *you = p->as_avatar() ) {
-                    you->read( books[bmenu.ret] );
-                }
-            }
-            return it->type->charges_to_use();
-        }
-
-        if( ei_uploaded_photos == choice ) {
-            show_photo_selection( *p, *it, "EIPC_EXTENDED_PHOTOS" );
-            return it->type->charges_to_use();
-        }
-
-        if( ei_monsters == choice ) {
-            show_monster_collection( *p, *it );
-            return it->type->charges_to_use();
-        }
-
-        avatar *you = p->as_avatar();
-        item *loc = nullptr;
-        auto filter = [it]( const auto & media ) { return &media != it && is_digital_storage_media( media ); };
-        const std::string title = _( "Insert storage media" );
-
-        if( ei_download == choice ) {
-
-            p->moves -= to_moves<int>( 2_seconds );
-
-            if( you != nullptr ) {
-                loc = game_menus::inv::titled_filter_menu( filter, *you, title );
-            }
-            if( !loc ) {
-                p->add_msg_if_player( m_info, _( "You do not have that item!" ) );
-                return it->type->charges_to_use();
-            }
-            item &mc = *loc;
-
-            if( !mc.has_flag( flag_MC_MOBILE ) && !mc.has_flag( flag_id( "DIGITAL_STORAGE" ) ) ) {
-                p->add_msg_if_player( m_info, _( "This is not compatible storage media." ) );
-                return it->type->charges_to_use();
-            }
-
-            initialize_digital_media( mc );
-
-            if( mc.has_flag( flag_MC_ENCRYPTED ) ) {
-                p->add_msg_if_player( m_info, _( "This storage device is encrypted." ) );
-                return it->type->charges_to_use();
-            }
-            if( !mc.has_flag( flag_MC_HAS_DATA ) && mc.contents.empty() ) {
-                p->add_msg_if_player( m_info, _( "This storage device does not contain any new data." ) );
-                return it->type->charges_to_use();
-            }
-
-            einkpc_download_memory_card( *p, *it, mc );
-
-            return it->type->charges_to_use();
-        }
-
-        if( ei_encrypt == choice ) {
-            if( you != nullptr ) {
-                loc = game_menus::inv::titled_filter_menu( filter, *you, title );
-            }
-            if( loc == nullptr ) {
-                return 0;
-            }
-            if( set_digital_media_encryption( *loc, true ) ) {
-                p->mod_moves( -to_moves<int>( 2_seconds ) );
-                p->add_msg_if_player( m_good, _( "You encrypt the %s." ), loc->tname() );
-            }
-            return it->type->charges_to_use();
-        }
-
-        if( ei_decrypt == choice ) {
-            p->moves -= to_moves<int>( 2_seconds );
-            if( you != nullptr ) {
-                loc = game_menus::inv::titled_filter_menu( filter, *you, title );
-            }
-            if( !loc ) {
-                p->add_msg_if_player( m_info, _( "You do not have that item!" ) );
-                return it->type->charges_to_use();
-            }
-            item &mc = *loc;
-
-            if( !is_digital_storage_media( mc ) ) {
-                p->add_msg_if_player( m_info, _( "This is not compatible storage media." ) );
-                return it->type->charges_to_use();
-            }
-
-            initialize_digital_media( mc );
-
-            if( !mc.has_flag( flag_MC_ENCRYPTED ) ) {
-                p->add_msg_if_player( m_info, _( "This storage device is not encrypted." ) );
-                return it->type->charges_to_use();
-            }
-
-            p->practice( skill_computer, rng( 2, 5 ) );
-
-            /** @EFFECT_INT increases chance of safely decrypting memory card */
-
-            /** @EFFECT_COMPUTER increases chance of safely decrypting memory card */
-            const int success = p->get_skill_level( skill_computer ) * rng( 1,
-                                p->get_skill_level( skill_computer ) ) *
-                                rng( 1, p->int_cur ) - rng( 30, 80 );
-            if( success > 0 ) {
-                p->practice( skill_computer, rng( 5, 10 ) );
-                p->add_msg_if_player( m_good, _( "You successfully decrypted content on %s!" ),
-                                      mc.tname() );
-                set_digital_media_encryption( mc, false );
-                einkpc_download_memory_card( *p, *it, mc );
-            } else {
-                if( success > -10 || one_in( 5 ) ) {
-                    p->add_msg_if_player( m_neutral, _( "You failed to decrypt the %s." ), mc.tname() );
-                } else {
-                    p->add_msg_if_player( m_bad,
-                                          _( "You tripped the firmware protection, and the card deleted its data!" ) );
-                    mc.clear_vars();
-                    mc.contents.clear_items();
-                    mc.unset_flag( flag_MC_ENCRYPTED );
-                    mc.set_var( "DIGITAL_INITIALIZED", 1 );
-                }
-            }
-            return it->type->charges_to_use();
-        }
-    }
-    return 0;
 }
 
 
@@ -6929,7 +6298,7 @@ static object_names_collection enumerate_objects_around_point( const tripoint_bu
     return ret_obj;
 }
 
-static extended_photo_def photo_def_for_camera_point( const tripoint_bub_ms &aim_point,
+static item::extended_photo_def photo_def_for_camera_point( const tripoint_bub_ms &aim_point,
         const tripoint_bub_ms &camera_pos,
         std::vector<monster *> &monster_vec, std::vector<Character *> &character_vec )
 {
@@ -6946,7 +6315,7 @@ static extended_photo_def photo_def_for_camera_point( const tripoint_bub_ms &aim
     int dist = rl_dist( camera_pos, aim_point );
     map &here = get_map();
     const tripoint_range<tripoint_bub_ms> bounds = here.points_in_radius( aim_point, 2 );
-    extended_photo_def photo;
+    item::extended_photo_def photo;
     bool need_store_weather = false;
     int outside_tiles_num = 0;
     int total_tiles_num = 0;
@@ -7290,78 +6659,357 @@ static void item_save_monsters( player &p, item &it, const std::vector<monster *
     it.set_var( "CAMERA_MONSTER_PHOTOS", monster_photos );
 }
 
-// throws exception
-static bool item_read_extended_photos( item &it, std::vector<extended_photo_def> &extended_photos,
-                                       const std::string &var_name, bool insert_at_begin )
+// CDF: E1-7, the Manage files, Store books, view photos, view recipes and book binder uses are
+// defined after the efile_iuse_hooks namespace, whose hooks they call.
+
+// CDF: E1-7, test hooks of the e-file iuse functions (precedent: the hooks at the end of
+// game_inventory.cpp). A menu or a popup cannot be answered headless, so each iuse function below
+// calls these small functions and the tests (tests/efile_iuse_test.cpp) call them directly.
+// Declared here and in the test, not in a header (a header edit would rebuild its includers); keep
+// the declarations identical.
+namespace efile_iuse_hooks
 {
-    bool result = false;
-    std::istringstream extended_photos_data( it.get_var( var_name ) );
-    JsonIn json( extended_photos_data );
-    if( insert_at_begin ) {
-        std::vector<extended_photo_def> temp_vec;
-        result = json.read( temp_vec );
-        extended_photos.insert( std::begin( extended_photos ), std::begin( temp_vec ),
-                                std::end( temp_vec ) );
-    } else {
-        result = json.read( extended_photos );
+// DDA iuse.cpp:5391-5393, the entries of the Manage files menu
+enum efiledevice_choice : int {
+    efd_invalid, efd_browse, efd_read_this, efd_read_external, efd_move_off_this, efd_move_onto_this,
+    efd_combo_bm, efd_copy_onto_this, efd_copy_from_this, efd_wipe, efd_read_all_map_caches
+};
+
+struct menu_row {
+    int id = 0;
+    bool enabled = true;
+    // 0: no key
+    int key = 0;
+    std::string text;
+    // second column of a table menu (the binder: pages)
+    std::string column;
+    // description of the entry, or why it is greyed
+    std::string desc;
+};
+
+// A refusal carries the message to show (empty: the refusal is silent), nullopt: not refused
+std::optional<std::string> efiledevice_refusal( Character &p );
+std::optional<std::string> ebooksave_refusal( Character &p );
+std::vector<menu_row> efiledevice_rows( item &device );
+std::vector<menu_row> camera_rows( item &camera );
+item *camera_prepare_gallery( Character &p, item &camera, std::string &refusal );
+bool camera_shoot_at( player &p, item &camera, item &gallery, const tripoint_bub_ms &aim_point );
+std::vector<menu_row> photo_rows( Character &p, item &gallery );
+std::vector<menu_row> monster_photo_rows( item &gallery );
+void photo_viewed( Character &p );
+std::vector<std::string> view_recipes_names( const item &catalog );
+void ebooksave_assign( player &p, item &reader, const drop_locations &to_scan );
+std::optional<std::string> binder_add_recipe_refusal( Character &p );
+std::vector<menu_row> binder_add_recipe_rows( player &p, item &binder,
+        const std::vector<const recipe *> &recipes );
+bool binder_start_copy( player &p, item &binder, const recipe_id &rec );
+std::vector<menu_row> binder_manage_rows( player &p, const item &binder );
+void binder_remove_recipe( player &p, item &binder, const recipe_id &rec,
+                           const tripoint_bub_ms &pos );
+
+// DDA iuse.cpp:5322-5347, in DDA's order
+std::optional<std::string> efiledevice_refusal( Character &p )
+{
+    if( p.is_npc() ) {
+        return std::string();
     }
-    return result;
+    if( p.is_mounted() ) {
+        return _( "You can't do that while mounted." );
+    }
+    if( p.is_underwater() ) {
+        return _( "You can't do that while underwater." );
+    }
+    if( p.has_trait_flag( trait_flag_CANNOT_USE_COMPUTERS ) ) {
+        return _( "You push some buttons but have no idea how to get it to work." );
+    }
+    if( p.has_trait( trait_ILLITERATE ) ) {
+        return _( "You can't read a computer screen." );
+    }
+    // CDF: HYPEROPIC is a trait here, DDA checks json flags
+    if( p.has_trait( trait_HYPEROPIC ) && !p.worn_with_flag( flag_FIX_FARSIGHT ) &&
+        !p.has_effect( effect_contacts ) && !p.has_bionic( bio_eye_optic ) ) {
+        return _( "You'll need to put on reading glasses before you can see the screen." );
+    }
+    return std::nullopt;
 }
 
-// throws exception
-static void item_write_extended_photos( item &it,
-                                        const std::vector<extended_photo_def> &extended_photos,
-                                        const std::string &var_name )
+std::optional<std::string> ebooksave_refusal( Character &p )
 {
-    std::ostringstream extended_photos_data;
-    JsonOut json( extended_photos_data );
-    json.write( extended_photos );
-    it.set_var( var_name, extended_photos_data.str() );
+    // DDA iuse.cpp:8849-8884, in DDA's order
+    if( p.has_trait_flag( trait_flag_CANNOT_USE_COMPUTERS ) ) {
+        return _( "You push some buttons but it's all meaningless to you." );
+    }
+    if( p.is_npc() ) {
+        return std::string();
+    }
+    if( p.is_underwater() ) {
+        return _( "Unfortunately your device is not waterproof." );
+    }
+    // CDF: HYPEROPIC is a trait here, DDA checks json flags
+    if( p.has_trait( trait_HYPEROPIC ) && !p.worn_with_flag( flag_FIX_FARSIGHT ) &&
+        !p.has_effect( effect_contacts ) && !p.has_bionic( bio_eye_optic ) ) {
+        return _( "You'll need to put on reading glasses before you can see the screen." );
+    }
+    if( character_funcs::fine_detail_vision_mod( p ) > 4 ) {
+        return _( "You can't see to do that!" );
+    }
+    return std::nullopt;
 }
 
-static bool show_photo_selection( player &p, item &it, const std::string &var_name )
+std::vector<menu_row> efiledevice_rows( item &device )
 {
-    if( p.is_blind() ) {
-        p.add_msg_if_player( _( "You can't see the camera screen, you're blind." ) );
+    // DDA iuse.cpp:5395-5415
+    std::vector<menu_row> rows;
+    rows.push_back( { .id = efd_combo_bm, .enabled = true, .key = 'a',
+                      .text = _( "Browse + move files from all devices" ) } );
+    rows.push_back( { .id = efd_browse, .enabled = true, .key = 'b', .text = _( "Browse devices" ) } );
+    if( !device.is_browsed() ) {
+        return rows;
+    }
+    const std::vector<item *> device_efiles = device.efiles();
+    const bool has_files = !device_efiles.empty();
+    rows.push_back( { .id = efd_read_this, .enabled = has_files, .key = 'r',
+                      .text = _( "Read files on this device" ) } );
+    rows.push_back( { .id = efd_read_external, .enabled = true, .key = 'e',
+                      .text = _( "Read files on external devices" ) } );
+    rows.push_back( { .id = efd_move_onto_this, .enabled = true, .key = 'm',
+                      .text = _( "Move files onto this device" ) } );
+    rows.push_back( { .id = efd_copy_onto_this, .enabled = true, .key = 'c',
+                      .text = _( "Copy files onto this device" ) } );
+    rows.push_back( { .id = efd_move_off_this, .enabled = has_files, .key = 'o',
+                      .text = _( "Move files off of this device" ) } );
+    rows.push_back( { .id = efd_copy_from_this, .enabled = has_files, .key = 'f',
+                      .text = _( "Copy files off of this device" ) } );
+    const int unread_map_caches = std::count_if( device_efiles.begin(), device_efiles.end(),
+    []( const item * efile ) {
+        return efile->typeId() == itype_efile_map && efile->get_var( "map_cache" ) != "read";
+    } );
+    rows.push_back( { .id = efd_read_all_map_caches, .enabled = unread_map_caches > 0, .key = 'p',
+                      .text = string_format( _( "Process all map caches on this device (%d)" ),
+                              unread_map_caches ) } );
+    rows.push_back( { .id = efd_wipe, .enabled = true, .key = 'W',
+                      .text = _( "Wipe files from devices" ) } );
+    return rows;
+}
+
+// E1-7: stubs until the chunks fill them
+namespace
+{
+// CDF: E1-7, DDA iuse.cpp:5282-5291 parses the quality with try_parse_integer, which CDF has no
+// header for; the stored quality is one digit (item_save_monsters reads and writes it with atoi).
+int get_quality_from_string( const std::string &s )
+{
+    return atoi( s.c_str() );
+}
+} // namespace
+
+std::vector<menu_row> camera_rows( item &camera )
+{
+    // DDA iuse.cpp:6325-6332, the ids are c_shot and c_view of iuse::camera
+    std::vector<menu_row> rows;
+    rows.push_back( { .id = 0, .enabled = true, .key = 't', .text = _( "Take a photo" ) } );
+    const item *gallery = camera.get_photo_gallery();
+    if( gallery == nullptr ) {
+        rows.push_back( { .id = 1, .enabled = false, .key = 'v',
+                          .text = _( "No photos in memory" ) } );
+    } else {
+        rows.push_back( { .id = 1, .enabled = true, .key = 'v', .text = _( "View photos" ) } );
+    }
+    return rows;
+}
+
+item *camera_prepare_gallery( Character &p, item &camera, std::string &refusal )
+{
+    // DDA iuse.cpp:6320-6353: an existing gallery is used even when the memory is full
+    const bool room_for_photo = camera.remaining_ememory() >= itype_efile_photos->ememory_size;
+    item *edevice_photos = camera.get_photo_gallery();
+    if( edevice_photos != nullptr ) {
+        return edevice_photos;
+    }
+    if( !room_for_photo ) {
+        refusal = _( "Your camera cannot hold any more photos." );
+        p.add_msg_if_player( refusal );
+        return nullptr;
+    }
+    // CDF: DDA inserts an `item new_photos( itype_efile_photos )` into the contents; the CDF idiom
+    // for storing a file is the checked put_in of a spawned item
+    const ret_val<void> stored = camera.put_in( item::spawn( itype_efile_photos ),
+                                 pocket_type::E_FILE_STORAGE, false, nullptr, true );
+    if( !stored.success() ) {
+        return nullptr;
+    }
+    return camera.get_photo_gallery();
+}
+
+bool camera_shoot_at( player &p, item &camera, item &gallery, const tripoint_bub_ms &aim_point_in )
+{
+    // DDA iuse.cpp:6361-6499, after the aim point was chosen
+    bool incorrect_focus = false;
+    tripoint_bub_ms aim_point = aim_point_in;
+    tripoint_range<tripoint_bub_ms> aim_bounds = g->m.points_in_radius( aim_point, 2 );
+
+    std::vector<tripoint_bub_ms> trajectory = line_to( p.bub_pos(), aim_point, 0, 0 );
+    trajectory.push_back( aim_point );
+
+    if( !camera.activation_success() ) {
+        p.add_msg_if_player( _( "You press the trigger on you %s, but nothing happens." ), camera.tname() );
         return false;
     }
 
-    uilist pmenu;
-    pmenu.text = _( "Saved photos:" );
+    // CDF: DDA mod_moves( -to_moves<int>( 1_seconds ) * 0.5 ), the same 50 moves
+    p.moves -= 50;
+    sound_event se;
+    se.origin = p.bub_pos();
+    se.volume = 50;
+    se.category = sounds::sound_t::activity;
+    se.description = _( "Click." );
+    se.id = "tool";
+    se.variant = "camera_shutter";
+    sounds::sound( se );
 
-    std::vector<std::string> descriptions;
-    std::vector<extended_photo_def> extended_photos;
+    for( auto index = size_t{ 0 }; index < trajectory.size(); ++index ) {
+        const auto trajectory_point = trajectory[index];
+        if( index + 1 < trajectory.size() ) {
+            const auto next_point = trajectory[index + 1]; // Trajectory ends on last visible tile
+            if( !g->m.sees( p.bub_pos(), next_point, rl_dist( p.bub_pos(), next_point ) + 3 ) ) {
+                p.add_msg_if_player( _( "You have the wrong camera focus." ) );
+                incorrect_focus = true;
+                // recalculate target point
+                aim_point = trajectory_point;
+                aim_bounds = g->m.points_in_radius( trajectory_point, 2 );
+            }
+        }
+
+        monster *const mon = g->critter_at<monster>( trajectory_point, true );
+        player *const guy = g->critter_at<player>( trajectory_point );
+        if( mon || guy || trajectory_point == aim_point ) {
+            int dist = rl_dist( p.bub_pos(), trajectory_point );
+
+            int camera_bonus = camera.has_flag( flag_CAMERA_PRO ) ? 10 : 0;
+            int photo_quality = 20 - rng( dist, dist * 2 ) * 2 + rng( camera_bonus / 2, camera_bonus );
+            if( photo_quality > 5 ) {
+                photo_quality = 5;
+            }
+            if( photo_quality < 0 ) {
+                photo_quality = 0;
+            }
+            if( p.is_blind() ) {
+                photo_quality /= 2;
+            }
+
+            if( mon ) {
+                monster &z = *mon;
+
+                // shoot past small monsters and hallucinations
+                if( trajectory_point != aim_point && ( z.type->size <= creature_size::small ||
+                                                       z.is_hallucination() ||
+                                                       z.type->in_species( HALLUCINATION ) ) ) {
+                    continue;
+                }
+                if( !aim_bounds.is_point_inside( trajectory_point ) ) {
+                    // take a photo of the monster that's in the way
+                    p.add_msg_if_player( m_warning, _( "A %s got in the way of your photo." ), z.name() );
+                    incorrect_focus = true;
+                } else if( trajectory_point != aim_point ) { // shoot past mon that will be in photo anyway
+                    continue;
+                }
+                // get an special message if the target is a hallucination
+                if( trajectory_point == aim_point && ( z.is_hallucination() ||
+                                                       z.type->in_species( HALLUCINATION ) ) ) {
+                    p.add_msg_if_player( _( "Strange… there's nothing in the center of picture?" ) );
+                }
+            } else if( guy ) {
+                if( trajectory_point == aim_point && guy->is_hallucination() ) {
+                    p.add_msg_if_player( _( "Strange… %s's not visible on the picture?" ), guy->name );
+                } else if( !aim_bounds.is_point_inside( trajectory_point ) ) {
+                    // take a photo of the monster that's in the way
+                    p.add_msg_if_player( m_warning, _( "%s got in the way of your photo." ), guy->name );
+                    incorrect_focus = true;
+                } else if( trajectory_point != aim_point ) {  // shoot past guy that will be in photo anyway
+                    continue;
+                }
+            }
+            if( incorrect_focus ) {
+                photo_quality = photo_quality == 0 ? 0 : photo_quality - 1;
+            }
+
+            std::vector<item::extended_photo_def> extended_photos;
+            std::vector<monster *> monster_vec;
+            std::vector<Character *> character_vec;
+            item::extended_photo_def photo = photo_def_for_camera_point( trajectory_point,
+                                             p.bub_pos(), monster_vec, character_vec );
+            photo.quality = photo_quality;
+
+            try {
+                gallery.read_extended_photos( extended_photos, "CAMERA_EXTENDED_PHOTOS", false );
+                extended_photos.push_back( photo );
+                gallery.write_extended_photos( extended_photos, "CAMERA_EXTENDED_PHOTOS" );
+            } catch( const JsonError &e ) {
+                debugmsg( "Error when adding new photo (loaded photos = %i): %s", extended_photos.size(),
+                          e.c_str() );
+            }
+
+            const bool selfie = std::ranges::contains( character_vec, &p );
+
+            if( selfie ) {
+                p.add_msg_if_player( _( "You took a selfie." ) );
+            } else {
+                if( p.is_blind() ) {
+                    p.add_msg_if_player( _( "You took a photo of %s." ), photo.name );
+                } else {
+                    p.add_msg_if_player( _( "You took a photo of %1$s. It is %2$s." ), photo.name,
+                                          photo_quality_name( photo_quality ) );
+                }
+                std::vector<std::string> blinded_names;
+                for( monster * const &monster_p : monster_vec ) {
+                    if( dist < 4 && one_in( dist + 2 ) && monster_p->has_flag( MF_SEES ) ) {
+                        monster_p->add_effect( effect_blind, rng( 5_turns, 10_turns ) );
+                        blinded_names.push_back( monster_p->name() );
+                    }
+                }
+                for( Character * const &character_p : character_vec ) {
+                    if( dist < 4 && one_in( dist + 2 ) && !character_p->is_blind() ) {
+                        character_p->add_effect( effect_blind, rng( 5_turns, 10_turns ) );
+                        blinded_names.push_back( character_p->name );
+                    }
+                }
+                if( !blinded_names.empty() ) {
+                    p.add_msg_if_player( _( "%s looks blinded." ), enumerate_as_string( blinded_names.begin(),
+                    blinded_names.end(), []( const std::string & it ) {
+                        return colorize( it, c_light_blue );
+                    } ) );
+                }
+            }
+            if( !monster_vec.empty() ) {
+                item_save_monsters( p, gallery, monster_vec, photo_quality );
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+// DDA iuse.cpp:6262-6292
+std::vector<menu_row> photo_rows( Character &p, item &gallery )
+{
+    std::vector<menu_row> rows;
+    std::vector<item::extended_photo_def> extended_photos;
 
     try {
-        item_read_extended_photos( it, extended_photos, var_name );
+        gallery.read_extended_photos( extended_photos, "CAMERA_EXTENDED_PHOTOS", false );
     } catch( const JsonError &e ) {
         debugmsg( "Error reading photos: %s", e.c_str() );
     }
     try { // if there is old photos format, append them; delete old and save new
-        if( item_read_extended_photos( it, extended_photos, "CAMERA_NPC_PHOTOS", true ) ) {
-            it.erase_var( "CAMERA_NPC_PHOTOS" );
-            item_write_extended_photos( it, extended_photos, var_name );
+        if( gallery.read_extended_photos( extended_photos, "CAMERA_NPC_PHOTOS", true ) ) {
+            gallery.erase_var( "CAMERA_NPC_PHOTOS" );
+            gallery.write_extended_photos( extended_photos, "CAMERA_EXTENDED_PHOTOS" );
         }
     } catch( const JsonError &e ) {
         debugmsg( "Error migrating old photo format: %s", e.c_str() );
     }
 
-    if( var_name == "EIPC_EXTENDED_PHOTOS" ) {
-        for( auto *file : it.contents.all_items_top() ) {
-            if( !is_digital_file( *file ) ) {
-                continue;
-            }
-            try {
-                item_read_extended_photos( *file, extended_photos, "CAMERA_EXTENDED_PHOTOS", true );
-                item_read_extended_photos( *file, extended_photos, "CAMERA_NPC_PHOTOS", true );
-            } catch( const JsonError &e ) {
-                debugmsg( "Error reading captured photos: %s", e.c_str() );
-            }
-        }
-    }
-
-    int k = 0;
-    for( const extended_photo_def &extended_photo : extended_photos ) {
+    for( const item::extended_photo_def &extended_photo : extended_photos ) {
         std::string menu_str = extended_photo.name;
 
         size_t index = menu_str.find( p.name );
@@ -7369,77 +7017,575 @@ static bool show_photo_selection( player &p, item &it, const std::string &var_na
             menu_str.replace( index, p.name.length(), _( "You" ) );
         }
 
-        descriptions.push_back( extended_photo.description );
         menu_str += " [" + photo_quality_name( extended_photo.quality ) + "]";
 
-        pmenu.addentry( k++, true, -1, menu_str.c_str() );
+        rows.push_back( { .id = static_cast<int>( rows.size() ), .enabled = true, .key = 0,
+                          .text = menu_str, .desc = extended_photo.description } );
     }
+    return rows;
+}
 
-    int choice;
-    do {
-        pmenu.query();
-        choice = pmenu.ret;
+// DDA iuse.cpp:6531-6557
+std::vector<menu_row> monster_photo_rows( item &gallery )
+{
+    std::vector<menu_row> rows;
 
-        if( choice < 0 ) {
-            break;
+    std::istringstream f_mon( gallery.get_var( "CAMERA_MONSTER_PHOTOS" ) );
+    std::string s;
+    while( getline( f_mon, s, ',' ) ) {
+
+        if( s.empty() ) {
+            continue;
         }
-        auto desc = descriptions[choice];
 
-        //calc window size
-        //more or less the same logic as popups
-        const auto new_win = [&desc]() {
+        const mtype_id mon_type( s );
+        // CDF: two statements so that this is not a function declaration (most vexing parse)
+        const monster dummy( mon_type );
 
-            auto folded_msg = foldstring( desc, FULL_SCREEN_WIDTH - 1 * 2 );
-            int msg_width = 0;
-            int msg_height = folded_msg.size();
+        std::string menu_str = dummy.name();
+        const std::string desc = dummy.type->get_description();
 
-            for( const auto &line : folded_msg ) {
-                msg_width = std::max( msg_width, utf8_width( line, true ) );
+        getline( f_mon, s, ',' );
+        const int quality = get_quality_from_string( s );
+
+        menu_str += " [" + photo_quality_name( quality ) + "]";
+
+        rows.push_back( { .id = static_cast<int>( rows.size() ), .enabled = true, .key = 0,
+                          .text = menu_str, .desc = desc } );
+    }
+    return rows;
+}
+
+// OWNER RULING AUTO-345 (D2): CDF keeps its photo-viewing morale on top of DDA's behaviour
+void photo_viewed( Character &p )
+{
+    apply_photo_viewing_morale( p );
+}
+
+// DDA iuse.cpp:6581-6583
+std::vector<std::string> view_recipes_names( const item &catalog )
+{
+    std::vector<std::string> names;
+    for( const recipe_id &rid : catalog.get_saved_recipes() ) {
+        names.push_back( rid->result_name( /* decorated = */ true ) );
+    }
+    return names;
+}
+
+void ebooksave_assign( player &p, item &reader, const drop_locations &to_scan )
+{
+    // DDA iuse.cpp:8890-8895; CDF: DDA's item_location is an item pointer here
+    std::vector<item *> books;
+    books.reserve( to_scan.size() );
+    for( const drop_location &d : to_scan ) {
+        if( static_cast<bool>( d.loc ) ) {
+            books.push_back( d.loc.get() );
+        }
+    }
+    if( books.empty() ) {
+        return;
+    }
+    p.assign_activity( std::make_unique<player_activity>(
+                           std::make_unique<ebooksave_activity_actor>( books, &reader ) ) );
+}
+
+std::optional<std::string> binder_add_recipe_refusal( Character &p )
+{
+    // DDA iuse.cpp:8901-8923, in DDA's order
+    if( p.is_mounted() ) {
+        // CDF: DDA calls cant_do_mounted, which CDF does not have
+        return _( "You can't do that while mounted." );
+    }
+    if( p.is_underwater() ) {
+        return _( "You rethink trying to write underwater." );
+    }
+    // CDF: items_with returns std::vector<item *>, DDA returns const item *
+    const std::vector<item *> writing_tools =
+        p.crafting_inventory().items_with( [&]( const item & it ) {
+        // Match the local-only crafting drain so the filter doesn't pick
+        // a multimag tool that ammo_sufficient counts via UPS/bionic.
+        const bool enough = it.uses_firing_requirements()
+                            ? ( !it.needs_charges_to_use() || it.tool_uses_remaining_local() > 0 )
+                            : it.ammo_sufficient( &p );
+        return it.has_flag( flag_WRITE_MESSAGE ) && enough;
+    } );
+    if( writing_tools.empty() ) {
+        return _( "You do not have anything to write with." );
+    }
+    if( character_funcs::fine_detail_vision_mod( p ) > 4.0f ) {
+        return _( "It's too dark to write!" );
+    }
+    return std::nullopt;
+}
+
+std::vector<menu_row> binder_add_recipe_rows( player &p, item &binder,
+        const std::vector<const recipe *> &recipes )
+{
+    // DDA iuse.cpp:8927-8965
+    // CDF: items_with returns std::vector<item *>, DDA returns const item *; the filter is the
+    // same one bookbinder_copy_activity_actor::finish uses to spend the charges
+    const std::vector<item *> writing_tools =
+        p.crafting_inventory().items_with( [&]( const item & it ) {
+        // Match the local-only crafting drain so the filter doesn't pick
+        // a multimag tool that ammo_sufficient counts via UPS/bionic.
+        const bool enough = it.uses_firing_requirements()
+                            ? ( !it.needs_charges_to_use() || it.tool_uses_remaining_local() > 0 )
+                            : it.ammo_sufficient( &p );
+        return it.has_flag( flag_WRITE_MESSAGE ) && enough;
+    } );
+    const auto enough_writing_tool_charges = [&writing_tools]( int pages ) {
+        for( const item *it : writing_tools ) {
+            if( !it->needs_charges_to_use() ) {
+                return true;
             }
+            if( it->uses_firing_requirements() ) {
+                // Match the local-only crafting drain path so the precheck
+                // doesn't count externals that the consume side ignores.
+                pages -= it->tool_uses_remaining_local();
+            } else {
+                pages -= it->ammo_remaining() / it->ammo_required();
+            }
+            if( pages <= 0 ) {
+                return true;
+            }
+        }
+        return false;
+    };
 
-            const int win_width = std::min( TERMX, msg_width + 1 * 2 );
-            const int win_height = std::min( TERMY, msg_height + 1 * 2 );
-            const int win_x = ( TERMX - win_width ) / 2;
-            const int win_y = ( TERMY - win_height ) / 2;
+    std::vector<menu_row> rows;
+    rows.reserve( recipes.size() );
+    for( const recipe *r : recipes ) {
+        std::string desc;
+        const int pages = bookbinder_copy_activity_actor::pages_for_recipe( *r );
+        const std::string pages_str = string_format( vgettext( "%1$d page", "%1$d pages", pages ), pages );
 
+        if( !p.has_charges( itype_paper, pages ) ) {
+            desc = _( "You do not have enough paper to copy this recipe." );
+        } else if( !binder.can_contain( *item::spawn( itype_paper, calendar::turn, pages ) ).success() ) {
+            // CDF: paper is a GENERIC item in the binder's MAGAZINE pocket, not ammo, so DDA's
+            // remaining_ammo_capacity() does not apply; ask the pocket the question the actor asks
+            desc = _( "Your recipe book can not fit this recipe." );
+        } else if( binder.get_saved_recipes().count( r->ident() ) != 0 ) {
+            desc = string_format( _( "Your recipe book already has a recipe for %s." ), r->result_name() );
+        } else if( !enough_writing_tool_charges( pages ) ) {
+            desc = _( "Your writing tools do not have enough charges." );
+        }
+        rows.push_back( { .id = -1, .enabled = desc.empty(), .key = 0, .text = r->result_name(),
+                          .column = pages_str, .desc = desc } );
+    }
+    return rows;
+}
 
-            return catacurses::newwin( win_height, win_width, point( win_x, win_y ) );
-        };
-
-        scrollable_text( new_win, "", desc.c_str() );
-        apply_photo_viewing_morale( p );
-
-    } while( true );
+bool binder_start_copy( player &p, item &binder, const recipe_id &rec )
+{
+    // DDA iuse.cpp:8975-8976; CDF: the actor takes item& (DDA copies an item_location)
+    p.assign_activity( std::make_unique<player_activity>(
+                           std::make_unique<bookbinder_copy_activity_actor>( binder, rec ) ) );
     return true;
 }
 
+std::vector<menu_row> binder_manage_rows( player &p, const item &binder )
+{
+    // DDA iuse.cpp:8989-9009; the rows follow the std::set order of the saved recipes
+    std::vector<menu_row> rows;
+    const std::set<recipe_id> binder_recipes = binder.get_saved_recipes();
+    for( const recipe_id &new_recipe : binder_recipes ) {
+        std::string recipe_name = new_recipe->result_name();
+        if( p.knows_recipe( &new_recipe.obj() ) ) {
+            recipe_name += _( " (KNOWN)" );
+        }
+
+        const int pages = bookbinder_copy_activity_actor::pages_for_recipe( *new_recipe );
+        rows.push_back( { .id = static_cast<int>( rows.size() ), .enabled = true, .key = ' ',
+                          .text = recipe_name,
+                          .column = string_format( vgettext( "%1$d page", "%1$d pages", pages ), pages ) } );
+    }
+    return rows;
+}
+
+void binder_remove_recipe( player &p, item &binder, const recipe_id &rec,
+                           const tripoint_bub_ms &pos )
+{
+    // DDA iuse.cpp:9019-9020
+    std::set<recipe_id> binder_recipes = binder.get_saved_recipes();
+    binder_recipes.erase( rec );
+    binder.set_saved_recipes( binder_recipes );
+
+    const int pages = bookbinder_copy_activity_actor::pages_for_recipe( *rec );
+    // CDF: paper is a generic item in the MAGAZINE pocket, not ammo, so DDA's
+    // ammo_consume( pages, ipos, p ) can not be used; take the sheets off the binder instead
+    std::vector<item *> sheets = binder.contents.all_items_top( pocket_type::MAGAZINE );
+    int to_remove = pages;
+    for( item *sheet : sheets ) {
+        if( to_remove == 0 ) {
+            break;
+        }
+        if( sheet->typeId() != itype_paper ) {
+            continue;
+        }
+        const int take = std::min( sheet->charges, to_remove );
+        sheet->charges -= take;
+        to_remove -= take;
+        if( sheet->charges <= 0 ) {
+            // the removed sheets are dropped on purpose
+            sheet->detach();
+        }
+    }
+    // CDF: DDA's ammo_consume used the position and the character to drop the ammo
+    static_cast<void>( p );
+    static_cast<void>( pos );
+}
+} // namespace efile_iuse_hooks
+
+int iuse::binder_add_recipe( player *p, item *binder, bool, const tripoint_bub_ms & )
+{
+    // DDA iuse.cpp:8899-8979, copy a recipe into a book binder
+    if( const auto refusal = efile_iuse_hooks::binder_add_recipe_refusal( *p ) ) {
+        p->add_msg_if_player( m_info, "%s", *refusal );
+        return 0;
+    }
+
+    const recipe_subset res = p->get_recipes_from_books( p->crafting_inventory() );
+    const std::vector<const recipe *> recipes( res.begin(), res.end() );
+
+    uilist menu;
+    menu.text = _( "Choose recipe to copy" );
+    menu.hilight_disabled = true;
+    menu.desc_enabled = true;
+    const std::vector<efile_iuse_hooks::menu_row> rows =
+        efile_iuse_hooks::binder_add_recipe_rows( *p, *binder, recipes );
+    for( const efile_iuse_hooks::menu_row &row : rows ) {
+        // CDF: key 0 stands for DDA's std::nullopt
+        menu.addentry_col( row.id, row.enabled, row.key, row.text, row.column, row.desc );
+    }
+    if( menu.entries.empty() ) {
+        p->add_msg_if_player( m_info, _( "You do not have any recipes you can copy." ) );
+        return 0;
+    }
+    menu.query();
+    if( menu.ret < 0 ) {
+        return 0;
+    }
+
+    efile_iuse_hooks::binder_start_copy( *p, *binder, recipes[menu.ret]->ident() );
+    return 0;
+}
+
+int iuse::binder_manage_recipe( player *p, item *binder, bool, const tripoint_bub_ms &ipos )
+{
+    // DDA iuse.cpp:8981-9026, remove a recipe from a book binder
+    if( p->is_underwater() ) {
+        p->add_msg_if_player( m_info, _( "Doing that would ruin the %1$s." ), binder->tname() );
+        return 0;
+    }
+
+    const std::set<recipe_id> binder_recipes = binder->get_saved_recipes();
+    const std::vector<recipe_id> recipes( binder_recipes.begin(), binder_recipes.end() );
+
+    if( binder_recipes.empty() ) {
+        p->add_msg_if_player( m_info, _( "You have no recipes to manage." ) );
+        return 0;
+    }
+
+    uilist rmenu;
+    rmenu.text = _( "Manage recipes" );
+    const std::vector<efile_iuse_hooks::menu_row> rows =
+        efile_iuse_hooks::binder_manage_rows( *p, *binder );
+    for( const efile_iuse_hooks::menu_row &row : rows ) {
+        rmenu.addentry_col( row.id, row.enabled, row.key, row.text, row.column );
+    }
+
+    rmenu.query();
+    if( rmenu.ret < 0 ) {
+        return 0;
+    }
+    const recipe_id &rec = recipes[rmenu.ret];
+    if( !p->query_yn( _( "Remove the recipe for %1$s?" ), rec->result_name() ) ) {
+        return 0;
+    }
+    efile_iuse_hooks::binder_remove_recipe( *p, *binder, rec, ipos );
+    return 0;
+}
+
+// CDF: E1-7, DDA iuse.cpp:6252-6306 (show_photo_selection); DDA's var_name is always
+// CAMERA_EXTENDED_PHOTOS, so the parameter is dropped
+static bool show_efile_photo_selection( player &p, item &gallery )
+{
+    if( p.is_blind() ) {
+        p.add_msg_if_player( _( "You can't see the camera screen, you're blind." ) );
+        return false;
+    }
+
+    uilist pmenu;
+    pmenu.text = _( "Photos saved on camera:" );
+
+    const std::vector<efile_iuse_hooks::menu_row> rows =
+        efile_iuse_hooks::photo_rows( p, gallery );
+    for( const efile_iuse_hooks::menu_row &row : rows ) {
+        pmenu.addentry( row.id, row.enabled, -1, row.text );
+    }
+
+    while( true ) {
+        pmenu.query();
+        const int choice = pmenu.ret;
+
+        if( choice < 0 || choice >= static_cast<int>( rows.size() ) ) {
+            break;
+        }
+        popup( "%s", rows[choice].desc );
+        efile_iuse_hooks::photo_viewed( p );
+    }
+    return true;
+}
+
+// CDF: E1-7, DDA iuse.cpp:6508-6574
+int iuse::view_photos( player *p, item *it, bool, const tripoint_bub_ms & )
+{
+    enum { c_photos, c_monsters };
+
+    uilist amenu;
+    amenu.text = _( "View which photos?" );
+    amenu.addentry( c_photos, true, 'g', _( "General" ) );
+    amenu.addentry( c_monsters, true, 'm', _( "Monsters" ) );
+    amenu.query();
+    const int choice = amenu.ret;
+
+    if( c_photos == choice ) {
+        show_efile_photo_selection( *p, *it );
+        return 0;
+    }
+    if( c_monsters == choice ) {
+        if( p->is_blind() ) {
+            p->add_msg_if_player( _( "You can't see the camera screen, you're blind." ) );
+            return 0;
+        }
+
+        uilist pmenu;
+        pmenu.text = _( "Your collection of monsters:" );
+
+        const std::vector<efile_iuse_hooks::menu_row> rows =
+            efile_iuse_hooks::monster_photo_rows( *it );
+        for( const efile_iuse_hooks::menu_row &row : rows ) {
+            pmenu.addentry( row.id, row.enabled, -1, row.text );
+        }
+
+        while( true ) {
+            pmenu.query();
+            const int pchoice = pmenu.ret;
+
+            if( pchoice < 0 || pchoice >= static_cast<int>( rows.size() ) ) {
+                break;
+            }
+            popup( "%s", rows[pchoice].desc );
+            efile_iuse_hooks::photo_viewed( *p );
+        }
+        return 0;
+    }
+    return 0;
+}
+
+// CDF: E1-7, DDA iuse.cpp:6576-6588
+int iuse::view_recipes( player *p, item *it, bool, const tripoint_bub_ms & )
+{
+    // CDF: DDA mod_moves( -to_moves<int>( 1_seconds ) * 0.5 ), the same 50 moves
+    p->moves -= 50;
+
+    uilist rmenu;
+    for( const std::string &name : efile_iuse_hooks::view_recipes_names( *it ) ) {
+        rmenu.addentry( 0, true, 0, name );
+    }
+
+    rmenu.text = _( "Recipe list:" );
+    rmenu.query();
+    return 0;
+}
+
+// CDF: E1-7, DDA iuse.cpp:5320-5504 (the "Manage files" menu)
+int iuse::efiledevice( player *p, item *it, bool, const tripoint_bub_ms & )
+{
+    if( const auto refusal = efile_iuse_hooks::efiledevice_refusal( *p ) ) {
+        if( !refusal->empty() ) {
+            p->add_msg_if_player( m_info, "%s", *refusal );
+        }
+        return 0;
+    }
+
+    // CDF: DDA's used_edevice item_location is an item pointer here
+    item *used_edevice = it;
+    auto read_edevice = [&p, used_edevice]( bool edevice_selection ) {
+        avatar *a = p->as_avatar();
+        item *edevice = used_edevice;
+        if( a ) {
+            if( edevice_selection ) {
+                const drop_locations edevices = game_menus::inv::edevice_select( *p, used_edevice,
+                                                 true, false, true, efile_action::EF_READ );
+                if( edevices.empty() ) {
+                    return;
+                }
+                // CDF: a drop location holds an item pointer
+                edevice = edevices.front().loc.get();
+                if( edevice == nullptr ) {
+                    return;
+                }
+            }
+            const drop_locations efiles = game_menus::inv::efile_select( *p, edevice, {},
+                                           efile_action::EF_READ, false );
+            if( !efiles.empty() ) {
+                item *current_efile = efiles.back().loc.get();
+                if( current_efile != nullptr ) {
+                    // CDF: DDA a->use( item_location ), CDF shows the use menu of the file
+                    a->invoke_item( current_efile );
+                }
+            } else {
+                popup( _( "This device has no files!" ) );
+            }
+        } else {
+            debugmsg( "NPC attempted to read e-file; not yet supported" );
+        }
+    };
+
+    auto read_all_map_caches = [&p, used_edevice]() {
+        avatar *a = p->as_avatar();
+        if( a ) {
+            const std::vector<item *> efiles_snapshot = used_edevice->efiles();
+            for( item *efile : efiles_snapshot ) {
+                if( efile->typeId() == itype_efile_map && efile->get_var( "map_cache" ) != "read" ) {
+                    // CDF: DDA a->use( item_location( used_edevice, efile ) )
+                    a->invoke_item( efile );
+                }
+            }
+        } else {
+            debugmsg( "NPC attempted to read e-file; not yet supported" );
+        }
+    };
+
+    uilist amenu;
+    amenu.text = _( "Select operation:" );
+    for( const efile_iuse_hooks::menu_row &row : efile_iuse_hooks::efiledevice_rows( *it ) ) {
+        amenu.addentry( row.id, row.enabled, row.key, row.text );
+    }
+
+    amenu.query();
+    const int choice = amenu.ret;
+
+    efile_action new_action = efile_action::EF_INVALID;
+    efile_combo new_combo = efile_combo::COMBO_NONE;
+
+    switch( choice ) {
+        case efile_iuse_hooks::efd_combo_bm:
+            new_action = efile_action::EF_BROWSE;
+            new_combo = efile_combo::COMBO_MOVE_ONTO_BROWSE;
+            break;
+        case efile_iuse_hooks::efd_browse:
+            new_action = efile_action::EF_BROWSE;
+            break;
+        case efile_iuse_hooks::efd_read_this:
+            read_edevice( false );
+            return 0;
+        case efile_iuse_hooks::efd_read_external:
+            read_edevice( true );
+            return 0;
+        case efile_iuse_hooks::efd_read_all_map_caches:
+            read_all_map_caches();
+            return 0;
+        case efile_iuse_hooks::efd_move_onto_this:
+            new_action = efile_action::EF_MOVE_ONTO_THIS;
+            break;
+        case efile_iuse_hooks::efd_move_off_this:
+            new_action = efile_action::EF_MOVE_FROM_THIS;
+            break;
+        case efile_iuse_hooks::efd_copy_onto_this:
+            new_action = efile_action::EF_COPY_ONTO_THIS;
+            break;
+        case efile_iuse_hooks::efd_copy_from_this:
+            new_action = efile_action::EF_COPY_FROM_THIS;
+            break;
+        case efile_iuse_hooks::efd_wipe:
+            new_action = efile_action::EF_WIPE;
+            break;
+        default:
+            return 0;
+    }
+    const bool auto_include_used_device = !efile_activity_actor::efile_action_exclude_used( new_action );
+    const bool not_browsing = new_action != efile_action::EF_BROWSE;
+
+    // gets nearby storage devices
+    const drop_locations processed_devices = game_menus::inv::edevice_select( *p, used_edevice,
+            not_browsing, auto_include_used_device, false, new_action );
+    if( processed_devices.empty() ) {
+        return 0;
+    }
+
+    // CDF: convert drop_locations to item pointers
+    std::vector<item *> processed_edevices;
+    for( const drop_location &drop : processed_devices ) {
+        item *edevice = drop.loc.get();
+        if( edevice == nullptr ) {
+            continue;
+        }
+        for( int i = 0; i < drop.count; i++ ) {
+            processed_edevices.push_back( edevice );
+        }
+    }
+    // build selected files list
+    std::vector<item *> selected_efiles;
+    if( not_browsing ) {
+        const drop_locations efiles = game_menus::inv::efile_select( *p, used_edevice,
+                                       processed_edevices, new_action,
+                                       efile_activity_actor::efile_action_is_from( new_action ) );
+        if( efiles.empty() ) {
+            return 0;
+        }
+        for( const drop_location &drop : efiles ) {
+            if( item *efile = drop.loc.get() ) {
+                selected_efiles.push_back( efile );
+            }
+        }
+    } else {
+        for( item *edevice : processed_edevices ) {
+            for( item *efile : edevice->efiles() ) {
+                selected_efiles.push_back( efile );
+            }
+        }
+    }
+
+    p->assign_activity( std::make_unique<player_activity>( std::make_unique<efile_activity_actor>(
+                           used_edevice, processed_edevices, selected_efiles, new_action, new_combo ) ) );
+    return 0;
+}
+
+// CDF: E1-7, DDA iuse.cpp:8847-8897 (Store books on an e-device)
+int iuse::ebooksave( player *p, item *it, bool, const tripoint_bub_ms & )
+{
+    if( const auto refusal = efile_iuse_hooks::ebooksave_refusal( *p ) ) {
+        if( !refusal->empty() ) {
+            p->add_msg_if_player( m_info, "%s", *refusal );
+        }
+        return 0;
+    }
+    if( !it->is_estorage() ) {
+        debugmsg( "EBOOKSAVE iuse called on item without ESTORAGE pocket_type" );
+        return 0;
+    }
+
+    const drop_locations to_scan = game_menus::inv::ebooksave( *p, it );
+    if( to_scan.empty() ) {
+        return 0;
+    }
+    efile_iuse_hooks::ebooksave_assign( *p, *it, to_scan );
+    return 0;
+}
+
+// CDF: E1-7, DDA iuse.cpp:6308-6506: the photos live in the efile_photos gallery file of the
+// E_FILE pocket (photos are shot and viewed from the hooks below, no BN digital media)
 int iuse::camera( player *p, item *it, bool, const tripoint_bub_ms & )
 {
-    migrate_legacy_digital_media( *it );
-    const auto saved_collection = find_camera_photo_collection( *it );
-    auto *collection = saved_collection ? &saved_collection->get() : nullptr;
-    enum {c_shot, c_photos, c_monsters, c_upload};
-
-    // CAMERA_NPC_PHOTOS is old save variable
-    const auto found_extended_photos = collection &&
-                                       ( !collection->get_var( "CAMERA_NPC_PHOTOS" ).empty() ||
-                                         !collection->get_var( "CAMERA_EXTENDED_PHOTOS" ).empty() );
-    const auto found_monster_photos = collection &&
-                                      !collection->get_var( "CAMERA_MONSTER_PHOTOS" ).empty();
+    enum {c_shot, c_view};
 
     uilist amenu;
     amenu.text = _( "What to do with camera?" );
-    amenu.addentry( c_shot, true, 't', _( "Take a photo" ) );
-    if( !found_extended_photos && !found_monster_photos ) {
-        amenu.addentry( c_photos, false, 'l', _( "No photos in memory" ) );
-    } else {
-        if( found_extended_photos ) {
-            amenu.addentry( c_photos, true, 'l', _( "List photos" ) );
-        }
-        if( found_monster_photos ) {
-            amenu.addentry( c_monsters, true, 'm', _( "Your collection of monsters" ) );
-        }
-        amenu.addentry( c_upload, true, 'u', _( "Upload photos to memory card" ) );
+    for( const efile_iuse_hooks::menu_row &row : efile_iuse_hooks::camera_rows( *it ) ) {
+        amenu.addentry( row.id, row.enabled, row.key, row.text );
     }
 
     amenu.query();
@@ -7450,185 +7596,29 @@ int iuse::camera( player *p, item *it, bool, const tripoint_bub_ms & )
     }
 
     if( c_shot == choice ) {
-        const std::optional<tripoint_bub_ms> aim_point_ = g->look_around();
+        std::string refusal;
+        item *gallery = efile_iuse_hooks::camera_prepare_gallery( *p, *it, refusal );
+        if( gallery == nullptr ) {
+            return 0;
+        }
 
-        if( !aim_point_ ) {
+        const std::optional<tripoint_bub_ms> aim_point = g->look_around();
+
+        if( !aim_point ) {
             p->add_msg_if_player( _( "Never mind." ) );
             return 0;
         }
-        auto aim_point = *aim_point_;
-        bool incorrect_focus = false;
-        tripoint_range<tripoint_bub_ms> aim_bounds = g->m.points_in_radius( aim_point, 2 );
-
-        std::vector<tripoint_bub_ms> trajectory = line_to( p->bub_pos(), aim_point, 0, 0 );
-        trajectory.push_back( aim_point );
-
-        p->moves -= 50;
-        sound_event se;
-        se.origin = p->bub_pos();
-        se.volume = 50;
-        se.category = sounds::sound_t::activity;
-        se.description = _( "Click." );
-        se.id = "tool";
-        se.variant = "camera_shutter";
-        sounds::sound( se );
-
-        for( auto index = size_t{ 0 }; index < trajectory.size(); ++index ) {
-            const auto trajectory_point = trajectory[index];
-            if( index + 1 < trajectory.size() ) {
-                const auto next_point = trajectory[index + 1]; // Trajectory ends on last visible tile
-                if( !g->m.sees( p->bub_pos(), next_point, rl_dist( p->bub_pos(), next_point ) + 3 ) ) {
-                    p->add_msg_if_player( _( "You have the wrong camera focus." ) );
-                    incorrect_focus = true;
-                    // recalculate target point
-                    aim_point = trajectory_point;
-                    aim_bounds = g->m.points_in_radius( trajectory_point, 2 );
-                }
-            }
-
-            monster *const mon = g->critter_at<monster>( trajectory_point, true );
-            player *const guy = g->critter_at<player>( trajectory_point );
-            if( mon || guy || trajectory_point == aim_point ) {
-                int dist = rl_dist( p->bub_pos(), trajectory_point );
-
-                int camera_bonus = it->has_flag( flag_CAMERA_PRO ) ? 10 : 0;
-                int photo_quality = 20 - rng( dist, dist * 2 ) * 2 + rng( camera_bonus / 2, camera_bonus );
-                if( photo_quality > 5 ) {
-                    photo_quality = 5;
-                }
-                if( photo_quality < 0 ) {
-                    photo_quality = 0;
-                }
-                if( p->is_blind() ) {
-                    photo_quality /= 2;
-                }
-
-                if( mon ) {
-                    monster &z = *mon;
-
-                    // shoot past small monsters and hallucinations
-                    if( trajectory_point != aim_point && ( z.type->size <= creature_size::small ||
-                                                           z.is_hallucination() ||
-                                                           z.type->in_species( HALLUCINATION ) ) ) {
-                        continue;
-                    }
-                    if( !aim_bounds.is_point_inside( trajectory_point ) ) {
-                        // take a photo of the monster that's in the way
-                        p->add_msg_if_player( m_warning, _( "A %s got in the way of your photo." ), z.name() );
-                        incorrect_focus = true;
-                    } else if( trajectory_point != aim_point ) { // shoot past mon that will be in photo anyway
-                        continue;
-                    }
-                    // get an special message if the target is a hallucination
-                    if( trajectory_point == aim_point && ( z.is_hallucination() ||
-                                                           z.type->in_species( HALLUCINATION ) ) ) {
-                        p->add_msg_if_player( _( "Strange… there's nothing in the center of picture?" ) );
-                    }
-                } else if( guy ) {
-                    if( trajectory_point == aim_point && guy->is_hallucination() ) {
-                        p->add_msg_if_player( _( "Strange… %s's not visible on the picture?" ), guy->name );
-                    } else if( !aim_bounds.is_point_inside( trajectory_point ) ) {
-                        // take a photo of the monster that's in the way
-                        p->add_msg_if_player( m_warning, _( "%s got in the way of your photo." ), guy->name );
-                        incorrect_focus = true;
-                    } else if( trajectory_point != aim_point ) {  // shoot past guy that will be in photo anyway
-                        continue;
-                    }
-                }
-                if( incorrect_focus ) {
-                    photo_quality = photo_quality == 0 ? 0 : photo_quality - 1;
-                }
-
-                std::vector<extended_photo_def> extended_photos;
-                std::vector<monster *> monster_vec;
-                std::vector<Character *> character_vec;
-                extended_photo_def photo = photo_def_for_camera_point( trajectory_point, p->bub_pos(), monster_vec,
-                                           character_vec );
-                photo.quality = photo_quality;
-
-                auto &album = camera_photo_collection( *it );
-                try {
-                    item_read_extended_photos( album, extended_photos, "CAMERA_EXTENDED_PHOTOS" );
-                    item_read_extended_photos( album, extended_photos, "CAMERA_NPC_PHOTOS", true );
-                    album.erase_var( "CAMERA_NPC_PHOTOS" );
-                    extended_photos.push_back( photo );
-                    item_write_extended_photos( album, extended_photos, "CAMERA_EXTENDED_PHOTOS" );
-                } catch( const JsonError &e ) {
-                    debugmsg( "Error when adding new photo (loaded photos = %i): %s", extended_photos.size(),
-                              e.c_str() );
-                }
-
-                const bool selfie = std::ranges::contains( character_vec, p );
-
-                if( selfie ) {
-                    auto name = photo.name;
-
-                    if( name == colorize( p->name, c_light_blue ) ) {
-                        p->add_msg_if_player( _( "You took a selfie." ) );
-                    } else {
-                        size_t index = name.find( p->name );
-                        if( index != std::string::npos ) {
-                            name.replace( index, p->name.length(), _( "Yourself" ) );
-                        }
-                        p->add_msg_if_player( _( "You took a selfie with %1$s." ), name );
-                    }
-                } else {
-                    if( p->is_blind() ) {
-                        p->add_msg_if_player( _( "You took a photo of %s." ), photo.name );
-                    } else {
-                        p->add_msg_if_player( _( "You took a photo of %1$s. It is %2$s." ), photo.name,
-                                              photo_quality_name( photo_quality ) );
-                    }
-                    std::vector<std::string> blinded_names;
-                    for( monster * const &monster_p : monster_vec ) {
-                        if( dist < 4 && one_in( dist + 2 ) && monster_p->has_flag( MF_SEES ) ) {
-                            monster_p->add_effect( effect_blind, rng( 5_turns, 10_turns ) );
-                            blinded_names.push_back( monster_p->name() );
-                        }
-                    }
-                    for( Character * const &character_p : character_vec ) {
-                        if( dist < 4 && one_in( dist + 2 ) && !character_p->is_blind() ) {
-                            character_p->add_effect( effect_blind, rng( 5_turns, 10_turns ) );
-                            blinded_names.push_back( character_p->name );
-                        }
-                    }
-                    if( !blinded_names.empty() ) {
-                        p->add_msg_if_player( _( "%s looks blinded." ), enumerate_as_string( blinded_names.begin(),
-                        blinded_names.end(), []( const std::string & it ) {
-                            return colorize( it, c_light_blue );
-                        } ) );
-                    }
-                }
-                if( !monster_vec.empty() ) {
-                    item_save_monsters( *p, album, monster_vec, photo_quality );
-                }
-                update_camera_photo_collection( *it, static_cast<int>( extended_photos.size() ) );
-                return it->type->charges_to_use();
-            }
-        }
+        efile_iuse_hooks::camera_shoot_at( *p, *it, *gallery, *aim_point );
         return it->type->charges_to_use();
     }
 
-    if( c_photos == choice ) {
-        show_photo_selection( *p, *collection, "CAMERA_EXTENDED_PHOTOS" );
-        return it->type->charges_to_use();
-    }
-
-    if( c_monsters == choice ) {
-        if( p->is_blind() ) {
-            p->add_msg_if_player( _( "You can't see the camera screen, you're blind." ) );
+    if( c_view == choice ) {
+        item *gallery = it->get_photo_gallery();
+        if( gallery == nullptr ) {
             return 0;
         }
-        show_monster_collection( *p, *collection );
+        iuse::view_photos( p, gallery, false, p->bub_pos() );
         return it->type->charges_to_use();
-    }
-
-    if( c_upload == choice ) {
-        if( p->is_blind() ) {
-            p->add_msg_if_player( _( "You can't see the camera screen, you're blind." ) );
-            return 0;
-        }
-        return export_files_to_storage( *p, *it, collection ) ? it->type->charges_to_use() : 0;
     }
     return 0;
 }

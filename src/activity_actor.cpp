@@ -9,6 +9,7 @@
 #include "avatar.h"
 #include "avatar_action.h"
 #include "avatar_functions.h"
+#include "cached_options.h"
 #include "calendar.h"
 #include "character.h"
 #include "character_functions.h"
@@ -58,6 +59,7 @@
 #include "reload/reload.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
+#include "requirements.h"
 #include "ret_val.h"
 #include "rng.h"
 #include "sounds.h"
@@ -70,11 +72,14 @@
 #include "vehicle/vpart_position.h"
 #include "itype_slots/islot_gun.h"
 #include "itype_slots/islot_magazine.h"
+#include "itype_slots/islot_tool.h"
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <list>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -89,7 +94,10 @@ static const construction_group_str_id
 advanced_object_deconstruction( "advanced_object_deconstruction" );
 
 static const itype_id itype_bone_human( "bone_human" );
+static const itype_id itype_efile_junk( "efile_junk" );
+static const itype_id itype_efile_photos( "efile_photos" );
 static const itype_id itype_electrohack( "electrohack" );
+static const itype_id itype_paper( "paper" );
 static const itype_id itype_plut_cell( "plut_cell" );
 static const itype_id itype_plut_cell_charge( "plut_cell_charge" );
 
@@ -3554,6 +3562,1126 @@ std::unique_ptr<activity_actor> enchant_activity_actor::deserialize( JsonIn &jsi
     return actor;
 }
 
+// CDF: E1-1 declared the e-file actors in activity_actor_definitions.h, E1-5a filled the bookbinder
+// (DDA activity_actor.cpp:1130-1200) and ebooksave (:3611-3770) actors, E1-5b the efile actor
+// (:3828-4436), E1-5c the port compatibility, the transfer rate, the external transfer storage and
+// the recipe catalog and photo gallery merge. The iuse functions that create the actors (E1-7)
+// are stubs until then.
+
+namespace io
+{
+template<>
+std::string enum_to_string<efile_action>( efile_action data )
+{
+    // *INDENT-OFF*
+    switch( data ) {
+        case efile_action::EF_BROWSE: return "EF_BROWSE";
+        case efile_action::EF_READ: return "EF_READ";
+        case efile_action::EF_MOVE_FROM_THIS: return "EF_MOVE_FROM_THIS";
+        case efile_action::EF_MOVE_ONTO_THIS: return "EF_MOVE_ONTO_THIS";
+        case efile_action::EF_COPY_FROM_THIS: return "EF_COPY_FROM_THIS";
+        case efile_action::EF_COPY_ONTO_THIS: return "EF_COPY_ONTO_THIS";
+        case efile_action::EF_WIPE: return "EF_WIPE";
+        case efile_action::EF_INVALID: return "EF_INVALID";
+        case efile_action::EF_ACTION_COUNT: break;
+    }
+    // *INDENT-ON*
+    debugmsg( "Invalid efile_action" );
+    abort();
+}
+
+template<>
+std::string enum_to_string<efile_combo>( efile_combo data )
+{
+    // *INDENT-OFF*
+    switch( data ) {
+        case efile_combo::COMBO_MOVE_ONTO_BROWSE: return "COMBO_MOVE_ONTO_BROWSE";
+        case efile_combo::COMBO_NONE: return "COMBO_NONE";
+        case efile_combo::EFILE_COMBO_COUNT: break;
+    }
+    // *INDENT-ON*
+    debugmsg( "Invalid efile_combo" );
+    abort();
+}
+} // namespace io
+
+int bookbinder_copy_activity_actor::pages_for_recipe( const recipe &r )
+{
+    return 1 + r.difficulty / 2;
+}
+
+bool bookbinder_copy_activity_actor::can_resume_with_internal( const activity_actor &other,
+        const Character & ) const
+{
+    const bookbinder_copy_activity_actor &act = static_cast<const bookbinder_copy_activity_actor &>( other );
+    return rec_id == act.rec_id && book_binder == act.book_binder;
+}
+
+void bookbinder_copy_activity_actor::start( player_activity &act, Character & )
+{
+    // CDF: item_location in DDA, safe_reference here
+    if( !book_binder || !rec_id.is_valid() ) {
+        act.set_to_null();
+        return;
+    }
+    pages = bookbinder_copy_activity_actor::pages_for_recipe( *rec_id );
+    // CDF: DDA sets act.moves_total and act.moves_left; CDF actors keep time in progress.
+    progress.emplace( rec_id->result_name(), to_moves<int>( pages * 10_minutes ) );
+}
+
+void bookbinder_copy_activity_actor::do_turn( player_activity &, Character &p )
+{
+    // CDF: item_location in DDA, safe_reference here
+    if( !book_binder ) {
+        p.cancel_activity();
+        return;
+    }
+    if( character_funcs::fine_detail_vision_mod( p ) > 4.0f ) {
+        p.cancel_activity();
+        p.add_msg_if_player( m_info, _( "It's too dark to write!" ) );
+        return;
+    }
+}
+
+void bookbinder_copy_activity_actor::finish( player_activity &act, Character &p )
+{
+    // CDF: item_location in DDA, safe_reference here
+    if( !book_binder ) {
+        act.set_to_null();
+        return;
+    }
+
+    detached_ptr<item> paper_sheets = item::spawn( itype_paper, calendar::turn, pages );
+    if( !book_binder->can_contain( *paper_sheets ).success() ) {
+        debugmsg( "Book binder can not contain '%s' recipe when it should.", rec_id.str() );
+        act.set_to_null();
+        return;
+    }
+
+    std::set<recipe_id> recipes = book_binder->get_saved_recipes();
+
+    if( recipes.emplace( rec_id ).second ) { // if .second is true then recipe was inserted
+        book_binder->set_saved_recipes( recipes );
+        p.add_msg_if_player( m_good, _( "You copy the recipe for %1$s into your recipe book." ),
+                             rec_id->result_name() );
+
+        p.use_charges( itype_paper, pages );
+
+        // CDF: items_with returns std::vector<item *>, DDA returns const item *.
+        const std::vector<item *> writing_tools_filter =
+            p.crafting_inventory().items_with( [&]( const item & it ) {
+            // Match the local-only crafting drain so the filter doesn't pick
+            // a multimag tool that ammo_sufficient counts via UPS/bionic.
+            const bool enough = it.uses_firing_requirements()
+                                ? ( !it.needs_charges_to_use() || it.tool_uses_remaining_local() > 0 )
+                                : it.ammo_sufficient( &p );
+            return it.has_flag( flag_WRITE_MESSAGE ) && enough;
+        } );
+
+        std::vector<tool_comp> writing_tools;
+        writing_tools.reserve( writing_tools_filter.size() );
+        for( const item *tool : writing_tools_filter ) {
+            writing_tools.emplace_back( tool->typeId(), 1 );
+        }
+
+        p.consume_tools( writing_tools, pages );
+        // CDF: item::spawn with the detached_ptr put_in overload.
+        book_binder->put_in( item::spawn( itype_paper, calendar::turn, pages ),
+                             pocket_type::MAGAZINE );
+    } else {
+        debugmsg( "Recipe book already has '%s' recipe when it should not.", rec_id.str() );
+    }
+
+    act.set_to_null();
+}
+
+void bookbinder_copy_activity_actor::serialize( JsonOut &jsout ) const
+{
+    jsout.start_object();
+    jsout.member( "progress", progress );
+    jsout.member( "book_binder", book_binder );
+    jsout.member( "rec_id", rec_id );
+    jsout.member( "pages", pages );
+    jsout.end_object();
+}
+
+// CDF: DDA's deserialize (activity_actor.cpp:1198-1215) reads lockpick fields and forgets rec_id
+// and pages; read the members that serialize writes.
+std::unique_ptr<activity_actor> bookbinder_copy_activity_actor::deserialize( JsonIn &jsin )
+{
+    std::unique_ptr<bookbinder_copy_activity_actor> actor =
+        std::make_unique<bookbinder_copy_activity_actor>();
+
+    JsonObject data = jsin.get_object();
+
+    data.read( "progress", actor->progress );
+    data.read( "book_binder", actor->book_binder );
+    data.read( "rec_id", actor->rec_id );
+    data.read( "pages", actor->pages );
+
+    return actor;
+}
+
+ebooksave_activity_actor::ebooksave_activity_actor( const std::vector<item *> &books_to_scan,
+        item *reader ) : ereader( reader )
+{
+    for( item *book : books_to_scan ) {
+        books.emplace_back( book );
+    }
+}
+
+namespace
+{
+// CDF: the members are safe_references, the DDA statics take items; only valid books count
+auto live_books( const std::vector<safe_reference<item>> &refs ) -> std::vector<item *>
+{
+    std::vector<item *> result;
+    for( const safe_reference<item> &ref : refs ) {
+        if( ref ) {
+            result.push_back( ref.get() );
+        }
+    }
+    return result;
+}
+} // namespace
+
+int ebooksave_activity_actor::total_pages( const std::vector<item *> &books )
+{
+    int pages = 0;
+    for( const item *book : books ) {
+        pages += item::pages_in_book( *book->type );
+    }
+    return pages;
+}
+
+time_duration ebooksave_activity_actor::required_time( const std::vector<item *> &books )
+{
+    return total_pages( books ) * time_per_page;
+}
+
+// TODO(multimag): UI estimate uses ammo_required for legacy compatibility;
+// for multimag conversions of e-readers this would need a uses-based formula.
+int ebooksave_activity_actor::required_charges( const std::vector<item *> &books,
+        const item *ereader )
+{
+    const int charges = total_pages( books ) / pages_per_charge;
+    return charges * ereader->ammo_required();
+}
+
+void ebooksave_activity_actor::start( player_activity &act, Character & )
+{
+    // CDF: item_location in DDA, safe_reference here
+    if( !ereader ) {
+        act.set_to_null();
+        return;
+    }
+    const time_duration scanning_time = required_time( live_books( books ) );
+    // CDF: DDA sets act.moves_total; CDF actors keep time in progress.
+    progress.emplace( ereader->type_name(), to_moves<int>( scanning_time ) );
+    start_scanning_next_book( act );
+}
+
+void ebooksave_activity_actor::do_turn( player_activity &act, Character &who )
+{
+    // CDF: item_location in DDA, safe_reference here
+    if( !ereader ) {
+        who.cancel_activity();
+        return;
+    }
+    if( books.empty() ) {
+        // CDF: nothing left to scan (the list was empty or every book vanished): the progress is
+        // zero, so finish() ends the activity. DDA calls books.back() on the empty list here.
+        return;
+    }
+    // only consume charges every pages_per_charge pages
+    if( action_time_scale::once_every_this_tick( pages_per_charge * time_per_page ) ) {
+        if( !ereader->ammo_sufficient( &who ) ) {
+            // CDF: no add_msg_if_player_sees
+            who.add_msg_player_or_npc( _( "Your %s ran out of batteries." ),
+                                       _( "<npcname>'s %s ran out of batteries." ),
+                                       item::nname( ereader->typeId() ) );
+            who.cancel_activity();
+            return;
+        }
+
+        ereader->consume_tool_uses( 1, get_map(), who.bub_pos(), &who );
+    }
+
+    turns_left_on_current_book--;
+    if( turns_left_on_current_book > 0 ) {
+        return; // not fully scanned yet
+    }
+
+    // We have now spent enough time to fully scan current book
+    completed_scanning_current_book( act, who );
+}
+
+void ebooksave_activity_actor::finish( player_activity &act, Character &who )
+{
+    if( !ereader ) {
+        // CDF: the reader vanished (item_location in DDA, safe_reference here): the books cannot
+        // be stored any more, so drop them instead of walking the list
+        books.clear();
+    }
+    while( !books.empty() ) {
+        // We can end up here with books left if the player has speed>100
+        completed_scanning_current_book( act, who );
+    }
+    // CDF: no add_msg_if_player_sees free function, and vgettext instead of DDA's n_gettext
+    who.add_msg_player_or_npc( m_info, _( "You scan %d %s into your device." ),
+                               _( "<npcname> scans %d %s into their device." ), handled_books,
+                               vgettext( "book", "books", handled_books ) );
+    act.set_to_null();
+}
+
+void ebooksave_activity_actor::canceled( player_activity &act, Character &who )
+{
+    // CDF: no add_msg_if_player_sees free function
+    who.add_msg_player_or_npc( m_info, _( "You stop scanning the remaining books." ),
+                               _( "<npcname> stops scanning books." ) );
+    act.set_to_null();
+}
+
+void ebooksave_activity_actor::start_scanning_next_book( player_activity & )
+{
+    while( !books.empty() && !books.back() ) {
+        books.pop_back();
+    }
+    if( books.empty() ) {
+        progress.mod_moves_left( -progress.get_moves_left() );
+        return;
+    }
+    const item &current_book = *books.back();
+    const int pages_in_current_book = item::pages_in_book( *current_book.type );
+    turns_left_on_current_book = to_turns<int>( pages_in_current_book * time_per_page );
+    progress.mod_moves_left( to_moves<int>( required_time( live_books( books ) ) )
+                             - progress.get_moves_left() );
+}
+
+void ebooksave_activity_actor::completed_scanning_current_book( player_activity &act,
+        Character &who )
+{
+    safe_reference<item> scanned_book = books.back();
+    books.pop_back();
+    if( scanned_book && ereader ) {
+        // CDF: put_in( const item &, pocket_type ) stores a COPY (the DDA spelling), so the
+        // original stays. A refusal (the pocket is full) is not counted as scanned; quiet = true:
+        // no debugmsg.
+        const ret_val<void> stored =
+            ereader->put_in( *scanned_book, pocket_type::E_FILE_STORAGE, false, &who, true );
+        if( stored.success() ) {
+            // DDA activity_actor.cpp:3697-3706: the avatar identifies the scanned book (CDF:
+            // is_book() stands for DDA's is_identifiable()).
+            if( avatar *player_avatar = who.as_avatar() ) {
+                const itype_id &book_id = scanned_book->typeId();
+                if( scanned_book->is_book() && !player_avatar->has_identified( book_id ) ) {
+                    player_avatar->identify( *scanned_book );
+                }
+            }
+            handled_books++;
+        }
+    }
+    start_scanning_next_book( act );
+}
+
+void ebooksave_activity_actor::serialize( JsonOut &jsout ) const
+{
+    jsout.start_object();
+    jsout.member( "progress", progress );
+    jsout.member( "books", books );
+    jsout.member( "ereader", ereader );
+    jsout.member( "handled_books", handled_books );
+    jsout.member( "turns_left_on_current_book", turns_left_on_current_book );
+    jsout.end_object();
+}
+
+std::unique_ptr<activity_actor> ebooksave_activity_actor::deserialize( JsonIn &jsin )
+{
+    std::unique_ptr<ebooksave_activity_actor> actor =
+        std::make_unique<ebooksave_activity_actor>();
+
+    JsonObject data = jsin.get_object();
+
+    data.read( "progress", actor->progress );
+    data.read( "books", actor->books );
+    data.read( "ereader", actor->ereader );
+    data.read( "handled_books", actor->handled_books );
+    data.read( "turns_left_on_current_book", actor->turns_left_on_current_book );
+
+    return actor;
+}
+
+namespace
+{
+// CDF: a dropped item keeps a valid safe_reference, while DDA's item_location of a carried item
+// goes invalid when the item is dropped. A device can be used when it is carried (any depth) or
+// lies on the map or in a vehicle within PICKUP_RANGE on the same level (the menus offer such
+// devices).
+auto edevice_in_reach( const safe_reference<item> &edevice, const Character &who ) -> bool
+{
+    if( !edevice ) {
+        return false;
+    }
+    const item &device = *edevice;
+    if( who.has_item( device ) ) {
+        return true;
+    }
+    if( !device.has_position() ) {
+        return false;
+    }
+    const tripoint_bub_ms device_pos = device.bub_pos();
+    const tripoint_bub_ms who_pos = who.bub_pos();
+    return device_pos.z() == who_pos.z() && rl_dist( device_pos, who_pos ) <= PICKUP_RANGE;
+}
+
+// CDF: DDA's item_location of a file goes invalid when the file leaves its device (or the device
+// goes); a safe_reference follows the file wherever it moves. So "the file exists" is "the file is
+// valid and sits in the device the action expects it in".
+auto efile_in_place( const safe_reference<item> &efile,
+                     const safe_reference<item> &expected_parent ) -> bool
+{
+    return efile && expected_parent && efile->parent_item() == expected_parent.get();
+}
+} // namespace
+
+efile_activity_actor::efile_activity_actor( item *used, const std::vector<item *> &targets,
+        const std::vector<item *> &files, efile_action action, efile_combo combo ) :
+    used_edevice( used ), action_type( action ), combo_type( combo )
+{
+    for( item *target : targets ) {
+        target_edevices.emplace_back( target );
+    }
+    for( item *file : files ) {
+        selected_efiles.emplace_back( file );
+    }
+}
+
+void efile_activity_actor::start( player_activity &, Character &who )
+{
+    if( combo_type == COMBO_MOVE_ONTO_BROWSE ) {
+        target_edevices_copy = target_edevices;
+    }
+    //handle combo move e-device (browsing may have included used e-device)
+    if( action_type == EF_MOVE_ONTO_THIS ) {
+        auto i = target_edevices.begin();
+        while( i != target_edevices.end() ) {
+            if( i->get() == used_edevice.get() ) {
+                i = target_edevices.erase( i );
+                break;
+            } else {
+                i++;
+            }
+        }
+    }
+    for( safe_reference<item> &i : target_edevices ) {
+        // CDF: a destroyed device leaves an invalid reference; DDA never has one
+        if( i && !i->has_pocket_type( pocket_type::E_FILE_STORAGE ) ) {
+            debugmsg( "invalid item %s provided to efile activity; must have "
+                      "\"E_FILE_STORAGE\" pocket", i->tname() );
+        }
+    }
+    //only skip if loaded through deserialization
+    if( !started_processing ) {
+        started_processing = true;
+        computer_low_skill = who.get_skill_level( skill_computer ) < 1;
+    }
+
+    time_duration total_time = 0_seconds;
+    if( !processed_edevices_remain() ) {
+        // CDF: the members are safe_references, the statics take item pointers
+        total_time = total_processing_time( used_edevice ? used_edevice.get() : nullptr,
+                                            live_books( target_edevices ),
+                                            live_books( selected_efiles ), action_type, who,
+                                            computer_low_skill );
+        target_edevices_count = target_edevices.size();
+    } else {
+        done_processing = true;
+    }
+    // CDF: the time is kept in progress, always as one task (also for 0 moves)
+    progress.emplace( used_edevice ? used_edevice->tname() : std::string(),
+                      to_moves<int>( total_time ) );
+}
+
+void efile_activity_actor::do_turn( player_activity &act, Character &who )
+{
+    map &here = get_map();
+
+    auto edevice_reduce_charge = [&]( const safe_reference<item> &edevice ) {
+        if( action_time_scale::once_every_this_tick( charge_time( action_type ) ) ) {
+            if( !edevice->ammo_sufficient( &who ) ) {
+                // CDF: no add_msg_if_player_sees; DDA shows the same message to player and npcs
+                who.add_msg_player_or_npc( m_warning, _( "The %s ran out of batteries!" ),
+                                           _( "The %s ran out of batteries!" ),
+                                           edevice->display_name() );
+                return false;
+            }
+            edevice->consume_tool_uses( 1, here, edevice->bub_pos(), &who );
+        }
+        return true;
+    };
+
+    //check for zero devices selected, for combo call
+    if( progress.get_moves_left() > 0 ) {
+        //if an e-device was booted, make sure it still exists
+        if( turns_left_on_current_edevice ) {
+            if( !edevice_in_reach( used_edevice, who ) || !edevice_reduce_charge( used_edevice ) ) {
+                //if the used device runs out of power or is missing, fail all remaining devices
+                do {
+                    failed_processing_current_edevice();
+                } while( !done_processing );
+            } else {
+                const safe_reference<item> &next_edevice = get_currently_processed_edevice();
+                if( !edevice_in_reach( next_edevice, who ) ||
+                    !edevice_reduce_charge( next_edevice ) ) {
+                    failed_processing_current_edevice();
+                }
+            }
+        }
+    }
+    //done check (handles return)
+    if( done_processing ) {
+        progress.mod_moves_left( -progress.get_moves_left() );
+        return;
+    }
+    //computer practice
+    if( one_in( 3 ) && computer_low_skill ) {
+        // CDF: practice returns void, re-read the skill level
+        who.practice( skill_computer, 1 );
+        computer_low_skill = who.get_skill_level( skill_computer ) < 1;
+    }
+
+    if( !next_edevice_booted ) {
+        if( !turns_left_on_current_edevice ) {
+            // CDF: the device is missing before it was booted: DDA dereferences an empty
+            // optional here
+            if( !edevice_in_reach( used_edevice, who ) ||
+                !edevice_in_reach( get_currently_processed_edevice(), who ) ) {
+                failed_processing_current_edevice();
+                if( done_processing ) {
+                    progress.mod_moves_left( -progress.get_moves_left() );
+                }
+                return;
+            }
+            start_processing_next_edevice(); //only sets if device exists
+            if( !turns_left_on_current_edevice ) {
+                failed_processing_current_edevice();
+                if( done_processing ) {
+                    progress.mod_moves_left( -progress.get_moves_left() );
+                }
+                return;
+            }
+        }
+        ( *turns_left_on_current_edevice )--;
+        if( turns_left_on_current_edevice == 0 ) {
+            next_edevice_booted = true;
+            start_processing_next_efile( act, who ); //sets turns_left_file if file exists
+        }
+    }
+    if( next_edevice_booted ) {
+        // should not be an "else" because files start processing in same turn
+        // CDF: the file must exist AND sit where the action expects it (a from-action works on the
+        // used device's files, the others on the current device's files)
+        const safe_reference<item> &expected_parent = efile_action_is_from( action_type ) ?
+                used_edevice : get_currently_processed_edevice();
+        if( !efile_in_place( get_currently_processed_efile(), expected_parent ) ) {
+            failed_processing_current_efile( act, who );
+            return; // the next file, or the end of this device, is handled on the next turn
+        }
+        if( turns_left_on_current_efile > 0 ) {
+            turns_left_on_current_efile--;
+        }
+        if( turns_left_on_current_efile == 0 ) {
+            completed_processing_current_efile( act, who );
+            start_processing_next_efile( act, who );
+        }
+    }
+}
+
+void efile_activity_actor::finish( player_activity &act, Character &who )
+{
+    act.set_to_null();
+    const std::string action_name = efile_action_name( action_type, true, true );
+    const int total_edevices = target_edevices_count;
+    if( total_edevices == 0 && processed_edevices == 0 ) {
+        who.add_msg_player_or_npc( m_info, _( "No devices needed to be processed." ),
+                                   _( "<npcname> had no devices to process." ) );
+    } else if( processed_edevices == 0 ) {
+        who.add_msg_player_or_npc( m_warning, _( "You failed to %s %d device(s)." ),
+                                   _( "<npcname> failed to %s %d device(s)." ),
+                                   efile_action_name( action_type, false, true ), total_edevices );
+    } else {
+        who.add_msg_player_or_npc( m_good, _( "You successfully %s %d/%d device(s)." ),
+                                   _( "<npcname> successfully %s %d/%d device(s)." ),
+                                   action_name, processed_edevices, total_edevices );
+    }
+    combo_next_activity( who );
+}
+
+void efile_activity_actor::canceled( player_activity &act, Character &who )
+{
+    who.add_msg_player_or_npc( m_info, _( "You stop processing the remaining devices." ),
+                               _( "<npcname> stops processing devices." ) );
+    act.set_to_null();
+}
+
+void efile_activity_actor::serialize( JsonOut &jsout ) const
+{
+    jsout.start_object();
+    jsout.member( "progress", progress );
+    jsout.member( "used_edevice", used_edevice );
+    jsout.member( "target_edevices", target_edevices );
+    jsout.member( "target_edevices_copy", target_edevices_copy );
+    jsout.member( "action_type", action_type );
+    jsout.member( "combo_type", combo_type );
+    jsout.member( "selected_efiles", selected_efiles );
+    jsout.member( "currently_processed_efiles", currently_processed_efiles );
+    jsout.member( "target_edevices_count", target_edevices_count );
+    jsout.member( "processed_edevices", processed_edevices );
+    jsout.member( "failed_edevices", failed_edevices );
+    jsout.member( "processed_efiles", processed_efiles );
+    jsout.member( "failed_efiles", failed_efiles );
+    jsout.member( "started_processing", started_processing );
+    jsout.member( "done_processing", done_processing );
+    jsout.member( "next_edevice_booted", next_edevice_booted );
+    jsout.member( "computer_low_skill", computer_low_skill );
+    jsout.member( "turns_left_on_current_edevice", turns_left_on_current_edevice );
+    jsout.member( "turns_left_on_current_efile", turns_left_on_current_efile );
+    jsout.end_object();
+}
+
+std::unique_ptr<activity_actor> efile_activity_actor::deserialize( JsonIn &jsin )
+{
+    std::unique_ptr<efile_activity_actor> actor = std::make_unique<efile_activity_actor>();
+
+    JsonObject data = jsin.get_object();
+
+    data.read( "progress", actor->progress );
+    data.read( "used_edevice", actor->used_edevice );
+    data.read( "target_edevices", actor->target_edevices );
+    data.read( "target_edevices_copy", actor->target_edevices_copy );
+    data.read( "action_type", actor->action_type );
+    data.read( "combo_type", actor->combo_type );
+    data.read( "selected_efiles", actor->selected_efiles );
+    data.read( "currently_processed_efiles", actor->currently_processed_efiles );
+    data.read( "target_edevices_count", actor->target_edevices_count );
+    data.read( "processed_edevices", actor->processed_edevices );
+    data.read( "failed_edevices", actor->failed_edevices );
+    data.read( "processed_efiles", actor->processed_efiles );
+    data.read( "failed_efiles", actor->failed_efiles );
+    data.read( "started_processing", actor->started_processing );
+    data.read( "done_processing", actor->done_processing );
+    data.read( "next_edevice_booted", actor->next_edevice_booted );
+    data.read( "computer_low_skill", actor->computer_low_skill );
+    data.read( "turns_left_on_current_edevice", actor->turns_left_on_current_edevice );
+    data.read( "turns_left_on_current_efile", actor->turns_left_on_current_efile );
+
+    return actor;
+}
+
+std::string efile_activity_actor::efile_action_name( efile_action action_type, bool past_tense,
+        bool extended )
+{
+    std::vector<std::string> base_names = { _( "browse" ), _( "read" ), _( "move" ), _( "move" ),
+                                            _( "copy" ), _( "copy" ), _( "wipe" )
+                                          };
+    std::vector<std::string> past_names = { _( "browsed" ), _( "read" ), _( "moved" ), _( "moved" ),
+                                            _( "copied" ), _( "copied" ), _( "wiped" )
+                                          };
+    std::vector<std::string> extensions = { "", "", _( " files onto" ), _( " files off of" ),
+                                            _( " files onto" ), _( " files off of" ), ""
+                                          };
+    const std::string name_output = ( past_tense ? past_names : base_names )[action_type];
+    return extended ? name_output + extensions[action_type] : name_output;
+}
+
+bool efile_activity_actor::efile_action_exclude_used( efile_action action_type )
+{
+    return action_type == EF_MOVE_FROM_THIS || action_type == EF_COPY_FROM_THIS ||
+           action_type == EF_MOVE_ONTO_THIS || action_type == EF_COPY_ONTO_THIS;
+}
+
+bool efile_activity_actor::efile_action_is_from( efile_action action_type )
+{
+    return action_type == EF_MOVE_FROM_THIS || action_type == EF_COPY_FROM_THIS;
+}
+
+bool efile_activity_actor::efile_skip_copy( const efile_transfer &transfer, const item &efile )
+{
+    const auto check_for_file = [&efile]( const item * edevice ) {
+        // CDF: a vanished device cannot already hold the file
+        if( edevice == nullptr ) {
+            return false;
+        }
+        for( const item *i : edevice->efiles() ) {
+            if( i->typeId() == efile.typeId() ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    if( efile.is_ecopiable() && !efile.has_flag( flag_E_FILE_COLLECTION ) ) {
+        return check_for_file( transfer.used_edevice ) && check_for_file( transfer.target_edevice );
+    }
+    return false;
+}
+
+time_duration efile_activity_actor::efile_processing_time( item *efile,
+        const efile_transfer &transfer, efile_action action_type, Character &who,
+        bool computer_low_skill )
+{
+    time_duration processing_time;
+    if( action_type == EF_BROWSE ) {
+        processing_time = time_per_browsed_efile;
+    } else if( action_type == EF_WIPE ) {
+        processing_time = 1_seconds + ( efile->ememory_size() / local_etransfer_rate ) * 1_seconds;
+    } else if( efile_skip_copy( transfer, *efile ) ) {
+        return 1_seconds;
+    } else {
+        //otherwise, this is a basic file transfer
+        processing_time = 1_seconds + ( efile->ememory_size() / current_etransfer_rate(
+                                            who, transfer, efile ) ) * 1_seconds;
+    }
+    if( computer_low_skill ) {
+        processing_time *= 3;
+    }
+    return processing_time;
+}
+
+time_duration efile_activity_actor::total_processing_time( item *used_edevice,
+        const std::vector<item *> &currently_processed_edevices,
+        const std::vector<item *> &selected_efiles,
+        efile_action action_type, Character &who, bool computer_low_skill )
+{
+    time_duration total_time = device_bootup_time * currently_processed_edevices.size();
+    for( item *edevice : currently_processed_edevices ) {
+        for( item *efile : selected_efiles ) {
+            efile_transfer transfer( used_edevice, edevice );
+            total_time += efile_processing_time( efile, transfer, action_type, who,
+                                                 computer_low_skill );
+        }
+    }
+
+    return total_time;
+}
+
+units::ememory efile_activity_actor::current_etransfer_rate( Character &who,
+        const efile_transfer &transfer, item *efile )
+{
+    if( transfer.used_edevice == nullptr || transfer.target_edevice == nullptr ) {
+        // a vanished device: the activity fails on its first turn, the time does not matter
+        return local_etransfer_rate;
+    }
+    item *target_edevice = transfer.target_edevice;
+    item *used_edevice = transfer.used_edevice;
+    item *external_transfer_edevice = find_external_transfer_estorage( who, efile, target_edevice,
+                                       used_edevice );
+
+    const auto get_etransfer_rate = []( const item * edevice ) {
+        units::ememory rate = edevice->type->tool ? edevice->type->tool->etransfer_rate : 0_KB;
+        if( rate == 0_KB ) {
+            debugmsg( "%s is candidate for transferring e-files but has no etransfer_rate",
+                      edevice->tname() );
+            rate = 1_KB;
+        }
+        return rate;
+    };
+
+    units::ememory used_rate = get_etransfer_rate( used_edevice );
+    units::ememory target_rate = get_etransfer_rate( target_edevice );
+    units::ememory external_transfer_rate = external_transfer_edevice ?
+                                            get_etransfer_rate( external_transfer_edevice ) / 2 : 0_KB;
+    units::ememory slow_transfer_rate = 1_MB; //bluetooth
+
+    units::ememory final_rate = std::min( used_rate, target_rate );
+
+    edevice_compatible compat = edevices_compatible( used_edevice, target_edevice );
+    if( compat == ECOMPAT_FAST ) {
+        //do nothing
+    } else if( compat == ECOMPAT_SLOW ) {
+        if( external_transfer_rate > slow_transfer_rate ) {
+            final_rate = external_transfer_rate;
+        } else {
+            final_rate = slow_transfer_rate; //bluetooth
+        }
+    } else {
+        debugmsg( "incompatible devices %s, %s provided to efile_activity_actor",
+                  used_edevice->display_name(), target_edevice->display_name() );
+    }
+    return final_rate;
+}
+
+std::vector<item *> efile_activity_actor::filter_edevice_efiles( item *edevice,
+        std::vector<item *> &filter_files )
+{
+    std::vector<item *> filtered_efiles;
+    std::vector<item *>::iterator it = filter_files.begin();
+    while( it != filter_files.end() ) {
+        if( ( *it )->parent_item() == edevice ) {
+            filtered_efiles.emplace_back( *it );
+            it = filter_files.erase( it );
+        } else {
+            ++it;
+        }
+    }
+    return filtered_efiles;
+}
+
+item *efile_activity_actor::find_external_transfer_estorage( Character &p, item *efile, item *ed1,
+        item *ed2 )
+{
+    // CDF: a vanished device or file
+    if( efile == nullptr || ed1 == nullptr || ed2 == nullptr ) {
+        return nullptr;
+    }
+    item *fastest_edevice = nullptr;
+    if( edevices_compatible( ed1, ed2 ) == ECOMPAT_FAST ) {
+        return fastest_edevice;
+    }
+    units::ememory largest_efile_size = efile->ememory_size();
+    //search for fastest, large-enough, browsed, non-tool, estorage device in radius or on person
+    units::ememory fastest_rate = 0_KB;
+    const std::function<bool( item *, item * )> func = [&]( item * it, item * ) {
+        return it->is_browsed() &&
+               !edevice_has_use( it ) && //is not a usable e-device (e.g. a USB drive)
+               it->is_estorage() &&
+               it->remaining_ememory() >= largest_efile_size &&
+               it->is_tool();
+    };
+    std::vector<item *> nearby_etds = p.nearby( func, PICKUP_RANGE );
+    for( item *candidate : nearby_etds ) {
+        if( candidate->type->tool->etransfer_rate > fastest_rate ) {
+            fastest_edevice = candidate;
+        }
+    }
+    return fastest_edevice;
+}
+
+bool efile_activity_actor::edevice_has_use( const item *edevice )
+{
+    return edevice != nullptr && edevice->type->can_use( "E_FILE_DEVICE" );
+}
+
+efile_activity_actor::edevice_compatible efile_activity_actor::edevices_compatible( item *ed1,
+        item *ed2 )
+{
+    if( ed1 == nullptr || ed2 == nullptr ) {
+        // CDF: a vanished device has no port
+        return ECOMPAT_NONE;
+    }
+    return edevices_compatible( *ed1, *ed2 );
+}
+
+efile_activity_actor::edevice_compatible efile_activity_actor::edevices_compatible(
+    const item &ed1, const item &ed2 )
+{
+    if( !ed1.is_tool() || !ed2.is_tool() ) {
+        return efile_activity_actor::ECOMPAT_NONE;
+    }
+    const std::string &port1 = ed1.type->tool->e_port;
+    const std::string &port2 = ed2.type->tool->e_port;
+    if( port1 == port2 ) {
+        return efile_activity_actor::ECOMPAT_SLOW;
+    }
+    const std::vector<std::string> &banned1 = ed1.type->tool->e_ports_banned;
+    const std::vector<std::string> &banned2 = ed2.type->tool->e_ports_banned;
+    for( const std::string &ban : banned1 ) {
+        if( ban == port2 ) {
+            return efile_activity_actor::ECOMPAT_NONE;
+        }
+    }
+    for( const std::string &ban : banned2 ) {
+        if( ban == port1 ) {
+            return efile_activity_actor::ECOMPAT_NONE;
+        }
+    }
+    return efile_activity_actor::ECOMPAT_FAST;
+}
+
+void efile_activity_actor::start_processing_next_edevice()
+{
+    const safe_reference<item> &current_edevice = get_currently_processed_edevice();
+    const time_duration process_time = device_bootup_time;
+    bool ignore_filter = efile_action_is_from( action_type );
+    if( current_edevice ) {
+        turns_left_on_current_edevice = to_turns<int>( process_time );
+        if( ignore_filter ) {
+            currently_processed_efiles = selected_efiles;
+        } else {
+            // CDF: the static works on item pointers, the members are safe_references
+            std::vector<item *> remaining = live_books( selected_efiles );
+            const std::vector<item *> filtered = filter_edevice_efiles( current_edevice.get(),
+                                                 remaining );
+            currently_processed_efiles.clear();
+            for( item *efile : filtered ) {
+                currently_processed_efiles.emplace_back( efile );
+            }
+            selected_efiles.clear();
+            for( item *efile : remaining ) {
+                selected_efiles.emplace_back( efile );
+            }
+        }
+    }
+}
+
+void efile_activity_actor::start_processing_next_efile( player_activity &, Character &who )
+{
+    // CDF: files that vanished or left their device are dropped here (DDA dereferences an invalid
+    // location)
+    const safe_reference<item> &expected_parent = efile_action_is_from( action_type ) ?
+            used_edevice : get_currently_processed_edevice();
+    while( !processed_efiles_remain() &&
+           !efile_in_place( get_currently_processed_efile(), expected_parent ) ) {
+        currently_processed_efiles.pop_back();
+        failed_efiles++;
+    }
+    if( !processed_efiles_remain() ) {
+        //separate for easy debugging
+        item *current_efile = get_currently_processed_efile().get();
+        const efile_transfer transfer( used_edevice ? used_edevice.get() : nullptr,
+                                       get_currently_processed_edevice().get() );
+        const time_duration transfer_time = efile_processing_time( current_efile, transfer,
+                                            action_type, who, computer_low_skill );
+        turns_left_on_current_efile = to_turns<int>( transfer_time );
+    } else {
+        completed_processing_current_edevice();
+    }
+}
+
+void efile_activity_actor::failed_processing_current_edevice()
+{
+    failed_edevices++;
+
+    turns_left_on_current_edevice.reset();
+    next_edevice_booted = false;
+    // CDF: the list can be empty here
+    if( !target_edevices.empty() ) {
+        target_edevices.pop_back();
+    }
+    if( processed_edevices_remain() ) {
+        done_processing = true;
+    }
+}
+
+void efile_activity_actor::completed_processing_current_edevice()
+{
+    if( action_type == EF_BROWSE ) {
+        // CDF: the list can be empty here
+        if( get_currently_processed_edevice() ) {
+            get_currently_processed_edevice()->set_browsed( true );
+        }
+    }
+    processed_edevices++;
+
+    next_edevice_booted = false;
+    turns_left_on_current_edevice.reset();
+    // CDF: the list can be empty here
+    if( !target_edevices.empty() ) {
+        target_edevices.pop_back();
+    }
+    if( processed_edevices_remain() ) {
+        done_processing = true;
+    }
+}
+
+void efile_activity_actor::failed_processing_current_efile( player_activity &act, Character &who )
+{
+    // CDF: DDA does not remove the failed file from the list
+    if( !currently_processed_efiles.empty() ) {
+        currently_processed_efiles.pop_back();
+    }
+    failed_efiles++;
+    start_processing_next_efile( act, who );
+}
+
+void efile_activity_actor::completed_processing_current_efile( player_activity &, Character &who )
+{
+    const safe_reference<item> current_edevice = get_currently_processed_edevice();
+    const safe_reference<item> current_efile = get_currently_processed_efile();
+    if( !current_efile || !current_edevice || !used_edevice ) {
+        // CDF: a vanished file or device (the callers check, this is the guard)
+        failed_efiles++;
+        if( !currently_processed_efiles.empty() ) {
+            currently_processed_efiles.pop_back();
+        }
+        return;
+    }
+    const efile_transfer current_transfer( used_edevice.get(), current_edevice.get() );
+
+    // CDF: a file that leaves a device is detached from it and dies with its detached_ptr
+    const auto remove_efile = []( item & efile_remove ) {
+        detached_ptr<item> removed = efile_remove.detach();
+    };
+    // DDA activity_actor.cpp:4035-4059: instead of storing the file, combine it with the
+    // recipe catalog / photo gallery the target device already has. Returns true when the
+    // file was merged.
+    const auto merge_into_target = []( item & edevice, const item & efile ) {
+        if( efile.type->memory_card_data ) {
+            item *edevice_recipe_catalog = edevice.get_recipe_catalog();
+            if( edevice_recipe_catalog != nullptr ) {
+                std::set<recipe_id> merged_catalogs = edevice_recipe_catalog->get_saved_recipes();
+                for( const recipe_id &recipe : efile.get_saved_recipes() ) {
+                    merged_catalogs.emplace( recipe );
+                }
+                edevice_recipe_catalog->set_saved_recipes( merged_catalogs );
+                return true;
+            }
+        } else if( efile.typeId() == itype_efile_photos ) {
+            // CDF: get_item_with skips the e-file pocket
+            item *edevice_photos = edevice.get_photo_gallery();
+            if( edevice_photos != nullptr ) {
+                std::vector<item::extended_photo_def> extended_photos;
+                edevice_photos->read_extended_photos( extended_photos, "CAMERA_EXTENDED_PHOTOS",
+                                                     false );
+                efile.read_extended_photos( extended_photos, "CAMERA_EXTENDED_PHOTOS", true );
+                edevice_photos->write_extended_photos( extended_photos,
+                                                       "CAMERA_EXTENDED_PHOTOS" );
+                return true;
+            }
+        }
+        return false;
+    };
+    // CDF, D-B: a move keeps the file's identity (detach from the source, attach to the target;
+    // DDA copies and removes), a copy stores a copy (put_in( const item & )). A recipe catalog or
+    // photo gallery is merged into the target's own instead of stored (merge_into_target). A
+    // skipped file (the target already holds it, efile_skip_copy) is not stored; a moved skipped
+    // file is still removed from the source, as in DDA.
+    const auto add_efile = [&]( const safe_reference<item> &edevice, item &efile, bool copy ) {
+        const bool skip = efile_skip_copy( current_transfer, efile );
+        if( copy ) {
+            if( !skip && !merge_into_target( *edevice, efile ) ) {
+                edevice->put_in( efile, pocket_type::E_FILE_STORAGE, false, &who, true );
+            }
+            return;
+        }
+        item *source = efile.parent_item();
+        detached_ptr<item> detached = efile.detach();
+        if( skip || merge_into_target( *edevice, *detached ) ) {
+            // nothing to store: the moved file dies here (a skipped file is still removed from
+            // the source, as in DDA)
+            return;
+        }
+        const ret_val<void> stored = edevice->put_in( std::move( detached ),
+                                     pocket_type::E_FILE_STORAGE, false, &who, true );
+        if( !stored.success() && source != nullptr ) {
+            // the target refused the file: it goes back where it came from
+            source->put_in( std::move( detached ), pocket_type::E_FILE_STORAGE, false, &who, true );
+        }
+    };
+
+    who.add_msg_player_or_npc( m_info, _( "You %1$s %2$s." ), _( "<npcname> %1$s %2$s." ),
+                               efile_action_name( action_type, true, false ),
+                               current_efile->display_name() );
+    switch( action_type ) {
+        case EF_BROWSE:
+            if( current_efile->typeId() == itype_efile_junk ) {
+                remove_efile( *current_efile );
+                break;
+            }
+            if( current_efile->get_recipe_catalog() != nullptr ) {
+                if( current_efile->get_saved_recipes().empty() ) {
+                    current_efile->generate_recipes();
+                }
+            }
+            current_efile->set_browsed( true );
+            break;
+        case EF_MOVE_ONTO_THIS:
+            add_efile( used_edevice, *current_efile, false );
+            break;
+        case EF_MOVE_FROM_THIS:
+            add_efile( current_edevice, *current_efile, false );
+            break;
+        case EF_COPY_ONTO_THIS:
+            add_efile( used_edevice, *current_efile, true );
+            break;
+        case EF_COPY_FROM_THIS:
+            add_efile( current_edevice, *current_efile, true );
+            break;
+        case EF_WIPE:
+            remove_efile( *current_efile );
+            break;
+        default:
+            break;
+    }
+    processed_efiles++;
+    if( !currently_processed_efiles.empty() ) {
+        currently_processed_efiles.pop_back();
+    }
+}
+
+safe_reference<item> &efile_activity_actor::get_currently_processed_edevice()
+{
+    // CDF: DDA calls back() unguarded; an empty list gives an invalid reference
+    static safe_reference<item> none;
+    return target_edevices.empty() ? none : target_edevices.back();
+}
+
+safe_reference<item> &efile_activity_actor::get_currently_processed_efile()
+{
+    // CDF: DDA calls back() unguarded; an empty list gives an invalid reference
+    static safe_reference<item> none;
+    return currently_processed_efiles.empty() ? none : currently_processed_efiles.back();
+}
+
+bool efile_activity_actor::processed_edevices_remain() const
+{
+    // DDA's odd naming: true when NONE remain
+    return target_edevices.empty();
+}
+
+bool efile_activity_actor::processed_efiles_remain() const
+{
+    // DDA's odd naming: true when NONE remain
+    return currently_processed_efiles.empty();
+}
+
+void efile_activity_actor::combo_next_activity( Character &who )
+{
+    efile_combo new_combo = COMBO_NONE;
+    efile_action new_action = EF_INVALID;
+    std::vector<item *> all_updated_files;
+    // CDF: the devices that are still there (a vanished one is skipped)
+    const std::vector<item *> combo_devices = live_books( target_edevices_copy );
+
+    if( combo_type == COMBO_MOVE_ONTO_BROWSE && used_edevice ) {
+        for( item *edevice : combo_devices ) {
+            for( item *efile : edevice->efiles() ) {
+                all_updated_files.push_back( efile );
+            }
+        }
+
+        units::ememory total_ememory;
+        for( item *edevice : combo_devices ) {
+            if( edevice->is_browsed() ) {
+                for( item *efile : edevice->efiles() ) {
+                    total_ememory += efile->ememory_size();
+                }
+            }
+        }
+        if( total_ememory <= used_edevice->remaining_ememory() ) {
+            new_action = EF_MOVE_ONTO_THIS;
+        } else {
+            who.add_msg_player_or_npc( m_warning,
+                    _( "File size exceeds available memory; canceling file move." ),
+                    _( "<npcname> cancels the file move: the files are too big." ) );
+        }
+    }
+    if( new_action != EF_INVALID ) {
+        // CDF: assign_activity( ..., false ) as reload_activity_actor::finish does: the finished
+        // activity is not resumed
+        std::unique_ptr<efile_activity_actor> combo_actor = std::make_unique<efile_activity_actor>(
+                    used_edevice.get(), combo_devices, all_updated_files, new_action, new_combo );
+        who.assign_activity( std::make_unique<player_activity>( std::move( combo_actor ) ), false );
+    }
+}
+
+time_duration efile_activity_actor::charge_time( efile_action action )
+{
+    if( action == EF_BROWSE ) {
+        return charge_per_browse_time;
+    }
+    return charge_per_transfer_time;
+}
+
 namespace activity_actors
 {
 
@@ -3562,6 +4690,7 @@ const std::unordered_map<activity_id, std::unique_ptr<activity_actor>( * )( Json
 deserialize_functions = {
     { activity_id( "ACT_AIM" ), &aim_activity_actor::deserialize },
     { activity_id( "ACT_AUTODRIVE" ), &autodrive_activity_actor::deserialize },
+    { activity_id( "ACT_BINDER_COPY_RECIPE" ), &bookbinder_copy_activity_actor::deserialize },
     { activity_id( "ACT_BOLTCUTTING" ), &boltcutting_activity_actor::deserialize },
     { activity_id( "ACT_BUILD" ), &construction_activity_actor::deserialize },
     { activity_id( "ACT_CRAFT" ), &craft_activity_actor::deserialize },
@@ -3569,6 +4698,8 @@ deserialize_functions = {
     { activity_id( "ACT_DIG_CHANNEL" ), &dig_channel_activity_actor::deserialize },
     { activity_id( "ACT_DISASSEMBLE" ), &disassemble_activity_actor::deserialize },
     { activity_id( "ACT_DROP" ), &drop_activity_actor::deserialize },
+    { activity_id( "ACT_EBOOKSAVE" ), &ebooksave_activity_actor::deserialize },
+    { activity_id( "ACT_E_FILE" ), &efile_activity_actor::deserialize },
     { activity_id( "ACT_HACKING" ), &hacking_activity_actor::deserialize },
     { activity_id( "ACT_HACKSAW" ), &hacksaw_activity_actor::deserialize },
     { activity_id( "ACT_LOCKPICK" ), &lockpick_activity_actor::deserialize },

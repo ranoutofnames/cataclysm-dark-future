@@ -1816,7 +1816,7 @@ void inventory_selector::add_item( inventory_column &target_column,
 void inventory_selector::add_items( inventory_column &target_column,
                                     const std::function<item*( item * )> &locator,
                                     const std::vector<std::list<item *>> &stacks,
-                                    const item_category *custom_category )
+                                    const item_category *custom_category, bool add_efiles )
 {
     const item_category *nat_category = nullptr;
 
@@ -1840,7 +1840,7 @@ void inventory_selector::add_items( inventory_column &target_column,
     for( const std::list<item *> &stack : stacks ) {
         std::transform( stack.begin(), stack.end(), std::back_inserter( roots ), locator );
     }
-    add_nested_map_items( target_column, roots, custom_category );
+    add_nested_map_items( target_column, roots, custom_category, add_efiles );
 }
 
 // CDF: PK1/G36, DDA inventory_ui.cpp:2337-2358 (_add_map_items): the items of a map square and of
@@ -1848,7 +1848,7 @@ void inventory_selector::add_items( inventory_column &target_column,
 // child rows and the box row gets a chevron. add_items made the top-level rows (stacked, as CDF
 // does); this adds what is nested below them. The ammo selector overrides this with its own walk.
 void inventory_selector::add_nested_map_items( inventory_column &target_column,
-        const std::vector<item *> &roots, const item_category *custom_category )
+        const std::vector<item *> &roots, const item_category *custom_category, bool add_efiles )
 {
     for( item *root : roots ) {
         const bool shown = preset.is_shown( root );
@@ -1863,8 +1863,15 @@ void inventory_selector::add_nested_map_items( inventory_column &target_column,
             children_category = naturalize_category( *custom_category, root->bub_pos() );
         }
         inventory_column temp( preset );
-        const bool vis_contents = add_contained_items( root, temp, children_category, topmost,
-                                  child_indent );
+        // CDF: E1-6, DDA inventory_ui.cpp:2017-2040 does this in add_entry_rec, which the map
+        // roots do not use
+        bool vis_contents;
+        if( add_efiles && root->is_estorage() ) {
+            vis_contents = add_contained_efile_rows( root );
+        } else {
+            vis_contents = add_contained_items( root, temp, children_category, topmost,
+                                                child_indent, add_efiles );
+        }
         if( vis_contents && shown ) {
             for( inventory_entry &entry : target_column.entries ) {
                 if( entry.is_item() &&
@@ -1971,14 +1978,19 @@ bool inventory_selector::add_entry_rec( inventory_column &entry_column,
                                         inventory_column &children_column, item *loc,
                                         const item_category *entry_category,
                                         const item_category *children_category,
-                                        const item *topmost_parent, int indent )
+                                        const item *topmost_parent, int indent, bool add_efiles )
 {
     // is_shown can be costly, so ask once per item
     const bool shown = preset.is_shown( loc );
     inventory_column temp_children( preset );
-    bool vis_contents = add_contained_items( loc, temp_children, children_category,
-                        get_topmost_parent( topmost_parent, loc, shown ),
-                        shown ? indent + 2 : indent );
+    bool vis_contents;
+    if( add_efiles && loc->is_estorage() ) {
+        vis_contents = add_contained_efile_rows( loc );
+    } else {
+        vis_contents = add_contained_items( loc, temp_children, children_category,
+                                            get_topmost_parent( topmost_parent, loc, shown ),
+                                            shown ? indent + 2 : indent, add_efiles );
+    }
     if( shown ) {
         add_shown_entry( entry_column, std::vector<item *>( 1, loc ), entry_category,
                          topmost_parent, vis_contents, indent );
@@ -1989,7 +2001,7 @@ bool inventory_selector::add_entry_rec( inventory_column &entry_column,
 }
 
 bool inventory_selector::add_contained_items( item *container, inventory_column &column,
-        const item_category *custom_category, const item *topmost_parent, int indent )
+        const item_category *custom_category, const item *topmost_parent, int indent, bool add_efiles )
 {
     if( container->has_flag( flag_NO_UNLOAD ) ) {
         return false;
@@ -2022,10 +2034,97 @@ bool inventory_selector::add_contained_items( item *container, inventory_column 
             hacked_col = &own_gear_column;
         }
         vis_top |= add_entry_rec( *hacked_col, temp, it, hacked_cat, custom_category,
-                                  topmost_parent, indent );
+                                  topmost_parent, indent, add_efiles );
     }
     temp.move_entries_to( column );
     return vis_top;
+}
+
+// Per DDA inventory_ui.cpp:2165-2220 (item * for item_location).
+bool inventory_selector::add_contained_ebooks( item *container )
+{
+    bool ret = false;
+    if( !container->is_estorage() ) {
+        return ret;
+    }
+    for( item *it : container->contents.ebooks() ) {
+        add_entry( own_inv_column, std::vector<item *>( 1, it ) );
+        ret = true;
+    }
+    // CDF: E1-12, remembered so the view-mode key can add the same rows again
+    if( ret && std::ranges::find( ebook_sources, container ) == ebook_sources.end() ) {
+        ebook_sources.push_back( container );
+    }
+    return ret;
+}
+
+bool inventory_selector::add_contained_efiles( item *container )
+{
+    const bool ret = add_contained_efile_rows( container );
+    // CDF: E1-12, remembered so the view-mode key can add the same rows again
+    if( ret && std::ranges::find( efile_sources, container ) == efile_sources.end() ) {
+        efile_sources.push_back( container );
+    }
+    return ret;
+}
+
+bool inventory_selector::add_contained_efile_rows( item *container )
+{
+    bool ret = false;
+    if( !container->is_estorage() ) {
+        return ret;
+    }
+    for( item *it : container->efiles() ) {
+        add_entry( own_inv_column, std::vector<item *>( 1, it ) );
+        ret = true;
+    }
+    return ret;
+}
+
+void inventory_selector::add_character_ebooks( Character &character )
+{
+    for( item *ereader : character.all_items_loc() ) {
+        add_contained_ebooks( ereader );
+    }
+}
+
+void inventory_selector::remove_duplicate_itypes( bool include_variants )
+{
+    // CDF: E1-12, remembered so the view-mode key can remove the duplicates of the rebuilt rows too
+    duplicates_removed = true;
+    duplicates_include_variants = include_variants;
+    for( inventory_column *column : columns ) {
+        column->remove_duplicate_itypes( include_variants );
+    }
+}
+
+void inventory_column::remove_duplicate_itypes( bool include_variants )
+{
+    // CDF: no itype variants, so the variant test of DDA :3606-3613 has nothing to compare
+    static_cast<void>( include_variants );
+    std::set<itype_id> item_types;
+    std::vector<item *> held_locs;
+
+    auto audit_entries = [&]( std::vector<inventory_entry> &audited_entries ) {
+        for( inventory_entry &inv_entry : audited_entries ) {
+            for( item *loc : inv_entry.locations ) {
+                if( item_types.insert( loc->typeId() ).second ) {
+                    held_locs.emplace_back( loc );
+                }
+            }
+        }
+    };
+    // sort out duplicates, clear list, then reconstruct entries
+    audit_entries( entries );
+    audit_entries( entries_hidden );
+    clear();
+    entries_hidden.clear();
+    for( item *loc : held_locs ) {
+        // CDF: DDA's reconstructed entry is always enabled; keep the denial so a greyed item
+        // stays greyed
+        add_entry( inventory_entry( std::vector<item *>( 1, loc ), nullptr,
+                                    preset.get_denial( loc ).empty() ) );
+    }
 }
 
 void inventory_selector::add_contained_items( item *container )
@@ -2051,9 +2150,10 @@ void inventory_selector::action_examine( const item *sitem )
     }, data );
 }
 
-void inventory_selector::add_character_items( Character &character )
+void inventory_selector::add_character_items( Character &character, bool add_efiles )
 {
     character_items_added = true;
+    efiles_in_rows |= add_efiles;
     // Per DDA inventory_ui.cpp:2195-2212: one listing path for both view modes. Every worn/wielded
     // row is made by add_entry_rec, which sets the row's chevron when it has visible contents.
     // CDF: item * instead of DDA's item_location (OPENCODE_RULES).
@@ -2068,12 +2168,13 @@ void inventory_selector::add_character_items( Character &character )
     if( !weapon.is_null() ) {
         add_entry_rec( own_gear_column, hierarchy ? own_gear_column : own_inv_column, &weapon,
                        &item_category_id( "WEAPON_HELD" ).obj(),
-                       hierarchy ? &item_category_id( "WEAPON_HELD" ).obj() : nullptr, nullptr, 0 );
+                       hierarchy ? &item_category_id( "WEAPON_HELD" ).obj() : nullptr, nullptr, 0,
+                       add_efiles );
     }
     for( item *worn_item : character.top_items_loc() ) {
         const item_category *custom_cat = wielded_worn_category( worn_item, u );
         add_entry_rec( own_gear_column, hierarchy ? own_gear_column : own_inv_column, worn_item,
-                       custom_cat, hierarchy ? custom_cat : nullptr, nullptr, 0 );
+                       custom_cat, hierarchy ? custom_cat : nullptr, nullptr, 0, add_efiles );
     }
     // Per DDA inventory_ui.cpp:2209-2211: in categories mode the non-worn contents of the
     // worn/wielded rows keep their own categories in the inventory column instead of sitting
@@ -2086,17 +2187,18 @@ void inventory_selector::add_character_items( Character &character )
     if( item *storage = character.get_body_storage() ) {
         inventory_column &loose_column = hierarchy ? own_gear_column : own_inv_column;
         for( item *it : storage->all_items_top() ) {
-            add_entry_rec( loose_column, loose_column, it, nullptr, nullptr, nullptr, 0 );
+            add_entry_rec( loose_column, loose_column, it, nullptr, nullptr, nullptr, 0, add_efiles );
         }
     }
 }
 
-void inventory_selector::add_map_items( const tripoint_bub_ms &target )
+void inventory_selector::add_map_items( const tripoint_bub_ms &target, bool add_efiles )
 {
     // CDF: remember the source so toggle_categorize_contained() can rebuild these rows.
     if( std::find( added_squares.begin(), added_squares.end(), target ) == added_squares.end() ) {
         added_squares.push_back( target );
     }
+    efiles_in_rows |= add_efiles;
     if( g->m.accessible_items( target ) ) {
         const auto items = g->m.i_at( target );
         const std::string name = to_upper_case( g->m.name( target ) );
@@ -2104,16 +2206,18 @@ void inventory_selector::add_map_items( const tripoint_bub_ms &target )
 
         add_items( map_column, []( item * it ) {
             return it;
-        }, restack_items( items.begin(), items.end(), preset.get_checking_components() ), &map_cat );
+        }, restack_items( items.begin(), items.end(), preset.get_checking_components() ), &map_cat,
+        add_efiles );
     }
 }
 
-void inventory_selector::add_vehicle_items( const tripoint_bub_ms &target )
+void inventory_selector::add_vehicle_items( const tripoint_bub_ms &target, bool add_efiles )
 {
     // CDF: remember the source so toggle_categorize_contained() can rebuild these rows.
     if( std::find( added_squares.begin(), added_squares.end(), target ) == added_squares.end() ) {
         added_squares.push_back( target );
     }
+    efiles_in_rows |= add_efiles;
     const std::optional<vpart_reference> vp = g->m.veh_at( target ).part_with_feature( "CARGO", true );
     if( !vp ) {
         return;
@@ -2128,10 +2232,10 @@ void inventory_selector::add_vehicle_items( const tripoint_bub_ms &target )
 
     add_items( map_column, []( item * it ) {
         return it;
-    }, restack_items( items.begin(), items.end(), check_components ), &vehicle_cat );
+    }, restack_items( items.begin(), items.end(), check_components ), &vehicle_cat, add_efiles );
 }
 
-void inventory_selector::add_nearby_items( int radius )
+void inventory_selector::add_nearby_items( int radius, bool add_efiles )
 {
     nearby_radius = radius;
     if( radius >= 0 ) {
@@ -2141,8 +2245,8 @@ void inventory_selector::add_nearby_items( int radius )
                 !g->m.clear_path( u.bub_pos(), pos, rl_dist( u.bub_pos(), pos ), 1, 100 ) ) {
                 continue;
             }
-            add_map_items( pos );
-            add_vehicle_items( pos );
+            add_map_items( pos, add_efiles );
+            add_vehicle_items( pos, add_efiles );
         }
     }
 }
@@ -2182,6 +2286,13 @@ void inventory_selector::toggle_categorize_contained()
     }
     const bool had_character_items = character_items_added;
     const std::vector<tripoint_bub_ms> squares = added_squares;
+    // CDF: E1-12, the e-file menus add their rows from devices, not from the character or the map:
+    // copy them too, DDA toggles in place (inventory_ui.cpp:3821)
+    const std::vector<item *> ebook_devices = ebook_sources;
+    const std::vector<item *> efile_devices = efile_sources;
+    const bool add_efiles = efiles_in_rows;
+    const bool dedupe = duplicates_removed;
+    const bool dedupe_variants = duplicates_include_variants;
     _uimode = _uimode == uimode::hierarchy ? uimode::categories : uimode::hierarchy;
     // Per DDA inventory_ui.cpp:3497-3503: remember the mode for the next opening. CDF: DDA writes it
     // back in the destructor; here the toggle is the only writer of _uimode, so it writes it back.
@@ -2198,14 +2309,23 @@ void inventory_selector::toggle_categorize_contained()
         col->set_hierarchy( _uimode == uimode::hierarchy );
     }
     if( had_character_items ) {
-        add_character_items( u );
+        add_character_items( u, add_efiles );
     }
     for( const tripoint_bub_ms &pos : squares ) {
-        add_map_items( pos );
-        add_vehicle_items( pos );
+        add_map_items( pos, add_efiles );
+        add_vehicle_items( pos, add_efiles );
     }
     if( fake_items_added ) {
         add_fake_items( u );
+    }
+    for( item *device : ebook_devices ) {
+        add_contained_ebooks( device );
+    }
+    for( item *device : efile_devices ) {
+        add_contained_efiles( device );
+    }
+    if( dedupe ) {
+        remove_duplicate_itypes( dedupe_variants );
     }
     if( highlighted != nullptr ) {
         select( highlighted );
@@ -2224,6 +2344,11 @@ void inventory_selector::clear_items()
     is_empty = true;
     character_items_added = false;
     added_squares.clear();
+    ebook_sources.clear();
+    efile_sources.clear();
+    efiles_in_rows = false;
+    duplicates_removed = false;
+    duplicates_include_variants = false;
     for( auto &column : columns ) {
         column->clear();
     }
@@ -4119,9 +4244,12 @@ auto unload_selector::execute() -> unload_selection
 
 inventory_multiselector::inventory_multiselector( player &p,
         const inventory_selector_preset &preset,
-        const std::string &selection_column_title ) :
+        const std::string &selection_column_title, const GetStats &stats,
+        bool allow_select_contained ) :
     inventory_selector( p, preset ),
-    selection_col( new selection_column( "SELECTION_COLUMN", selection_column_title ) )
+    selection_col( new selection_column( "SELECTION_COLUMN", selection_column_title ) ),
+    allow_select_contained( allow_select_contained ),
+    stats_callback( stats )
 {
     // Per DDA inventory_ui.cpp:4383-4388. These replace CDF's RIGHT and DROP_NON_FAVORITE here.
     ctxt.register_action( "TOGGLE_ENTRY", to_translation( "Mark/unmark selected item" ) );
@@ -4211,8 +4339,26 @@ int inventory_multiselector::query_count( char init, bool /*end_with_toggle*/ )
 
 inventory_selector::header_stats inventory_multiselector::get_raw_stats() const
 {
-    // Per DDA inventory_ui.cpp:4669-4675: without a stats callback the multiselector shows no
-    // stats bar (compare and haul menus).
+    // Per DDA inventory_ui.cpp:4669-4675: the callback turns the marked selection-column entries
+    // into the stats bar; without a callback the multiselector shows no stats bar (compare and
+    // haul menus).
+    if( stats_callback ) {
+        drop_locations chosen;
+        for( const inventory_entry *entry : get_selection_column_items() ) {
+            if( entry->chosen_count == 0 || entry->locations.empty() ) {
+                continue;
+            }
+            if( entry->locations.size() == 1 ) {
+                chosen.emplace_back( *entry->locations[0],
+                                     static_cast<int>( entry->chosen_count ) );
+            } else {
+                for( size_t i = 0; i < entry->chosen_count && i < entry->locations.size(); ++i ) {
+                    chosen.emplace_back( *entry->locations[i], 1 );
+                }
+            }
+        }
+        return stats_callback( chosen );
+    }
     return {};
 }
 
@@ -5449,7 +5595,7 @@ void ammo_inventory_selector::add_rows_below( inventory_column &column, item &co
 // square's header like the loose items of that square (the header is made at the first row, so a
 // square with nothing nested adds no category).
 void ammo_inventory_selector::add_nested_map_items( inventory_column &target_column,
-        const std::vector<item *> &roots, const item_category *custom_category )
+        const std::vector<item *> &roots, const item_category *custom_category, bool )
 {
     for( item *root : roots ) {
         const item_category *header = nullptr;

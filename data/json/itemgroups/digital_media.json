@@ -11,7 +11,7 @@
     "subtype": "distribution",
     "entries": [
       { "item": "usb_drive", "contents-group": "ghost_in_the_machine_files" },
-      { "item": "sd_memory_card", "contents-group": "ghost_in_the_machine_files" }
+      { "item": "memory_card", "contents-group": "ghost_in_the_machine_files" }
     ]
   },
   {
@@ -34,7 +34,6 @@
       { "group": "digital_content_saved_text", "prob": 41 },
       { "group": "digital_content_common_books", "prob": 30 },
       { "group": "digital_content_software", "prob": 45 },
-      { "item": "digital_music_collection", "prob": 2, "charges": [ 5, 15 ] },
       { "group": "digital_content_recordings", "prob": 58 },
       { "group": "digital_content_recipe_archives", "prob": 50 },
       { "group": "digital_content_maps", "prob": 10 },
@@ -47,37 +46,41 @@
     ]
   },
   {
-    "id": "digital_storage_media",
+    "id": "efile_storage_media",
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "item": "usb_drive", "prob": 7, "custom-flags": [ "MC_RANDOM_STUFF" ] },
-      { "item": "sd_memory_card", "prob": 7, "custom-flags": [ "MC_RANDOM_STUFF" ] },
-      { "item": "usb_drive", "prob": 1, "custom-flags": [ "MC_ENCRYPTED", "MC_RANDOM_STUFF" ] },
-      { "item": "sd_memory_card", "prob": 1, "custom-flags": [ "MC_ENCRYPTED", "MC_RANDOM_STUFF" ] }
-    ]
+      { "item": "usb_drive", "prob": 7, "contents-group": "digital_content_personal" },
+      { "item": "memory_card", "prob": 7, "contents-group": "digital_content_personal" },
+      { "item": "usb_drive", "prob": 1, "contents-group": "digital_content_encrypted" },
+      { "item": "memory_card", "prob": 1, "contents-group": "digital_content_encrypted" },
+      { "item": "software_utility", "prob": 1 }
+    ],
+    "//": "CDF: E1-10b. Used removable storage: the files come from digital_content_personal (the CDF loot-only e-files, owner ruling O7) through contents-group, rolled once per device (DDA used_* groups with contents-group, itemgroups/electronics.json).  A card is the DDA memory_card (O8, was sd_memory_card).  software_utility and software_cryptow carry a default container (a usb_drive), so they spawn as a drive of their own next to the drives with files; inside a contents-group they would be a drive in a drive."
   },
   {
-    "id": "digital_storage_media_encrypted",
+    "id": "efile_storage_media_encrypted",
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "item": "usb_drive", "custom-flags": [ "MC_ENCRYPTED", "MC_RANDOM_STUFF" ] },
-      { "item": "sd_memory_card", "custom-flags": [ "MC_ENCRYPTED", "MC_RANDOM_STUFF" ] }
-    ]
+      { "item": "usb_drive", "contents-group": "digital_content_encrypted", "prob": 10 },
+      { "item": "memory_card", "contents-group": "digital_content_encrypted", "prob": 10 },
+      { "item": "software_cryptow", "prob": 1 }
+    ],
+    "//": "CDF: E1-10b. Storage encryption is retired (D3, DDA has none); the group keeps its id and its valuable content (digital_content_encrypted)."
   },
   {
     "id": "sd_memory_card_personal",
     "type": "item_group",
     "subtype": "collection",
-    "entries": [ { "group": "digital_storage_media" } ],
-    "//": "Compatibility alias for mixed removable-media loot."
+    "entries": [ { "group": "efile_storage_media" } ],
+    "//": "Compatibility alias for mixed removable-media loot (the card is the DDA memory_card now)."
   },
   {
     "id": "sd_memory_card_encrypted",
     "type": "item_group",
     "subtype": "collection",
-    "entries": [ { "group": "digital_storage_media_encrypted" } ],
+    "entries": [ { "group": "efile_storage_media_encrypted" } ],
     "//": "Compatibility alias for encrypted removable-media loot."
   },
   {
@@ -85,13 +88,7 @@
     "type": "item_group",
     "subtype": "collection",
     "entries": [ { "group": "sd_memory_card_encrypted" } ],
-    "//": "Obsolete compatibility alias; science cards now use ordinary encrypted-card contents."
-  },
-  {
-    "id": "digital_content_reader",
-    "type": "item_group",
-    "subtype": "collection",
-    "entries": [ { "group": "digital_builtin_music" }, { "group": "digital_content_personal" } ]
+    "//": "Obsolete compatibility alias; science cards use the valuable-contents media."
   },
   {
     "id": "digital_content_personal",
@@ -101,7 +98,6 @@
       { "group": "digital_content_saved_text", "prob": 41 },
       { "group": "digital_content_common_books", "prob": 30, "count": [ 1, 3 ] },
       { "group": "digital_content_software", "prob": 35 },
-      { "item": "digital_music_collection", "prob": 12, "charges": [ 5, 15 ] },
       { "group": "digital_content_recordings", "prob": 59 },
       { "group": "digital_content_recipe_archives", "prob": 17 },
       { "group": "digital_content_maps", "prob": 10 },
@@ -114,20 +110,12 @@
     ]
   },
   {
-    "id": "digital_content_science",
-    "type": "item_group",
-    "subtype": "collection",
-    "entries": [ { "group": "digital_content_encrypted" } ],
-    "//": "Compatibility alias for saved media with the former science contents group or flag."
-  },
-  {
     "id": "digital_content_encrypted",
     "type": "item_group",
     "subtype": "collection",
     "entries": [
       { "item": "digital_corrupted_file", "prob": 1 },
       { "item": "software_hacking", "prob": 10 },
-      { "item": "software_cryptow", "prob": 5 },
       { "group": "digital_content_maps", "prob": 10 },
       { "item": "digital_saved_email", "prob": 10 },
       { "group": "digital_content_recipe_archives", "prob": 10 },
@@ -145,32 +133,32 @@
     "id": "digital_content_common_books",
     "type": "item_group",
     "subtype": "distribution",
-    "entries": [ { "group": "homebooks", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] } ]
+    "entries": [ { "group": "homebooks_no_survnote" } ]
   },
   {
     "id": "digital_content_science_journals",
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "item": "recipe_alpha", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_raptor", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_chimera", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_elfa", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_medicalmut", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_serum", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_labchem", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_augs", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_mil_augs", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_caseless", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_atomic_battery", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_mininuke_launch", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "textbook_robots", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "textbook_atomic_lab", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_animal", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_creepy", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_maiar", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_lab_cvd", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] },
-      { "item": "recipe_lab_elec", "custom-flags": [ "DIGITAL", "IRREMOVABLE", "NO_DROP" ] }
+      { "item": "recipe_alpha" },
+      { "item": "recipe_raptor" },
+      { "item": "recipe_chimera" },
+      { "item": "recipe_elfa" },
+      { "item": "recipe_medicalmut" },
+      { "item": "recipe_serum" },
+      { "item": "recipe_labchem" },
+      { "item": "recipe_augs" },
+      { "item": "recipe_mil_augs" },
+      { "item": "recipe_caseless" },
+      { "item": "recipe_atomic_battery" },
+      { "item": "recipe_mininuke_launch" },
+      { "item": "textbook_robots" },
+      { "item": "textbook_atomic_lab" },
+      { "item": "recipe_animal" },
+      { "item": "recipe_creepy" },
+      { "item": "recipe_maiar" },
+      { "item": "recipe_lab_cvd" },
+      { "item": "recipe_lab_elec" }
     ]
   },
   {
@@ -196,7 +184,6 @@
     "subtype": "distribution",
     "entries": [
       { "item": "software_useless", "prob": 15 },
-      { "item": "software_utility", "prob": 10 },
       { "item": "software_electronics_reference", "prob": 5 },
       { "item": "digital_hello_world", "prob": 15 }
     ]
@@ -270,11 +257,5 @@
       { "item": "digital_muay_thai_video" },
       { "item": "digital_taekwondo_video" }
     ]
-  },
-  {
-    "id": "digital_builtin_music",
-    "type": "item_group",
-    "subtype": "collection",
-    "entries": [ { "item": "digital_music_collection", "charges": 20 } ]
   }
 ]

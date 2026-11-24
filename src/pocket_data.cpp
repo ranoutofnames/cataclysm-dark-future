@@ -144,10 +144,8 @@ void pocket_data::load( const JsonObject &jo )
     optional( jo, was_loaded, "holster", holster );
     optional( jo, was_loaded, "ablative", ablative );
     optional( jo, was_loaded, "inherits_flags", inherits_flags );
-    // CDF: units::ememory does not exist yet (E1); the key is only marked visited
-    if( jo.has_member( "ememory_max" ) ) {
-        jo.get_member( "ememory_max" );
-    }
+    // CDF: E1-1, DDA item_pocket.cpp:203
+    optional( jo, was_loaded, "ememory_max", ememory_max );
     // if ablative also flag as a holster so it only holds 1 item
     if( ablative ) {
         holster = true;
@@ -196,7 +194,8 @@ std::string pocket_data::check_definition() const
 {
     std::string res;
     if( type == pocket_type::MOD || type == pocket_type::CORPSE ||
-        type == pocket_type::MIGRATION || type == pocket_type::SOFTWARE ) {
+        type == pocket_type::MIGRATION || type == pocket_type::SOFTWARE ||
+        type == pocket_type::E_FILE_STORAGE ) {
         return res;
     }
     for( const itype_id &it : item_id_restriction ) {
@@ -341,6 +340,7 @@ bool pocket_data::operator==( const pocket_data &rhs ) const
            volume_multiplier == rhs.volume_multiplier &&
            volume_encumber_modifier == rhs.volume_encumber_modifier &&
            magazine_well == rhs.magazine_well &&
+           ememory_max == rhs.ememory_max &&
            sealed_by_type == rhs.sealed_by_type &&
            no_active_items == rhs.no_active_items;
 }

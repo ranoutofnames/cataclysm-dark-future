@@ -6,7 +6,7 @@ The Lua bindings for the same model are in the [Lua pockets guide](../../mod/lua
 
 ## Pocket types and wells
 
-The pocket types are the values of the `pocket_type` enum, defined in `pocket_type.h`. They are `CONTAINER` (general storage, holsters and bandoliers), `MAGAZINE` (ammo inside a magazine), `MAGAZINE_WELL` (magazines or batteries inside a gun or tool), `MOD` (gunmods and toolmods), `CORPSE`, `SOFTWARE`, `CABLE` (power and data cables with their connections) and `MIGRATION` (items that have no home in the item's current pockets). The enum is saved as strings, so its order can change freely.
+The pocket types are the values of the `pocket_type` enum, defined in `pocket_type.h`. They are `CONTAINER` (general storage, holsters and bandoliers), `MAGAZINE` (ammo inside a magazine), `MAGAZINE_WELL` (magazines or batteries inside a gun or tool), `MOD` (gunmods and toolmods), `CORPSE`, `SOFTWARE`, `E_FILE_STORAGE` (electronic files on an e-device, held by their `ememory_size`), `CABLE` (power and data cables with their connections) and `MIGRATION` (items that have no home in the item's current pockets). `EBOOK` is obsolete: it stays in the enum only for old saves, and no data uses it. The enum is saved as strings, so its order can change freely.
 
 Each pocket is one `item_pocket` object, defined in `item_pocket.h`. `get_type` returns the pocket's type, and `saved_type` returns the type kept for saving.
 

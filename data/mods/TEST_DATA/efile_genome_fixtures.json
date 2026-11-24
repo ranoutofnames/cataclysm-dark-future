@@ -1,0 +1,26 @@
+[
+  {
+    "//": "CDF: E1-11a fixture for tests/efile_genome_test.cpp. The shape of the Robofac mission MISSION_ROBOFAC_INTERCOM_2 (data/json/npcs/robofac/NPC_ROBOFAC_INTERCOM.json:111): a find-item goal for mind_scan_robofac, which is an e-file (512 GB) stored on the data_card device, not a crafting item.  The real mission is not used because its end block edits the overmap.",
+    "id": "TEST_EFILE_FIND_MIND_SCAN",
+    "type": "mission_definition",
+    "name": { "str": "Test mind scan search" },
+    "description": "Find the mind scan on the data card.",
+    "goal": "MGOAL_FIND_ITEM",
+    "difficulty": 1,
+    "value": 0,
+    "item": "mind_scan_robofac",
+    "count": 1,
+    "origins": [ "ORIGIN_SECONDARY" ],
+    "dialogue": {
+      "describe": "I need a mind scan.",
+      "offer": "Find the mind scan for me.",
+      "accepted": "Thanks.",
+      "rejected": "Never mind.",
+      "advice": "Use the mind splicer.",
+      "inquire": "Found it?",
+      "success": "Good.",
+      "success_lie": "Sure.",
+      "failure": "Too bad."
+    }
+  }
+]

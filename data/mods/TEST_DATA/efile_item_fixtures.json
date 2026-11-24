@@ -1,0 +1,55 @@
+[
+  {
+    "//": "CDF: E1-3 fixtures for the item-level e-file API (tests/efile_item_test.cpp, tests/dda_item_test.cpp, tests/iteminfo_test.cpp).  efile_photos and efile_recipes were defined here until E1-4 added the real ones to data/json/items/software.json (item.cpp hard-codes the two ids, DDA item.cpp:2780-2800); test_laptop stands for DDA usb_drive until E1-10.",
+    "id": "test_software_fixture",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "copy-from": "test_abstract_efile",
+    "name": { "str_sp": "test software" },
+    "description": "A test piece of software: category software, stored only on e-devices.",
+    "category": "software",
+    "ememory_size": "64 MB",
+    "delete": { "flags": [ "E_STORABLE" ] },
+    "extend": { "flags": [ "E_STORABLE_EXCLUSIVE" ] }
+  },
+  {
+    "id": "test_software_boxed_fixture",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "copy-from": "test_software_fixture",
+    "name": { "str_sp": "test boxed software" },
+    "description": "Test software that spawns in a test laptop (DDA check_spawning_in_container software branch).",
+    "container": "test_laptop"
+  },
+  {
+    "id": "test_laptop_no_dark",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "copy-from": "test_laptop",
+    "name": { "str": "test laptop without a dark screen" },
+    "description": "A test laptop that cannot be used in the dark.",
+    "delete": { "flags": [ "CAN_USE_IN_DARK" ] }
+  },
+  {
+    "id": "test_efile_box",
+    "type": "ITEM",
+    "subtypes": [ "GENERIC" ],
+    "name": { "str": "test e-file box" },
+    "description": "A container-like item that holds only an e-file pocket, to show its files in the name and category.",
+    "category": "container",
+    "weight": "200 g",
+    "volume": "100 ml",
+    "symbol": ",",
+    "color": "light_gray",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "1 GB"
+      }
+    ]
+  }
+]

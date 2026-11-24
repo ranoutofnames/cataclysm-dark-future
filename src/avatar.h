@@ -201,10 +201,17 @@ class avatar : public player
                           const Character *learner = nullptr ) const;
         /** Handles reading effects and returns true if activity started */
         bool read( item *loc, bool continuous = false );
+        /**
+         * CDF: E1-1, DDA avatar.h:257 (avatar.cpp:496-535). Reads @p book using the e-reader @p ereader
+         * (nullptr = a paper book). Until E1-8 an e-reader is not used and this reads like the overload above.
+         */
+        bool read( item *book, item *ereader, bool continuous );
         /** Completes book reading action. **/
         void do_read( item *loc );
         /** Note that we've read a book at least once. **/
         bool has_identified( const itype_id &item_id ) const;
+        /** CDF: E1-5b, DDA avatar.h identify (avatar.cpp:810-850). Notes @p item as read once and skims it. **/
+        void identify( const item &item );
 
         void add_snippet( snippet_id snippet );
         bool has_seen_snippet( const snippet_id &snippet ) const;

@@ -11,6 +11,7 @@
 #include "item.h"
 #include "item_contents.h"
 #include "item_group.h"
+#include "itype.h"
 #include "kill_tracker.h"
 #include "line.h"
 #include "material.h"
@@ -34,6 +35,9 @@
 #include <numeric>
 #include <unordered_map>
 #include <utility>
+
+// CDF: E1-9
+static const item_category_id itemcat_software( "software" );
 
 auto mission_type::create(const character_id& npc_id) const -> mission {
     mission ret;
@@ -256,6 +260,23 @@ void mission::step_complete(const int _step) {
     }
 }
 
+namespace {
+// CDF: E1-11a. Only software is bridged into the crafting inventory (crafting.cpp, plan risk R4), so any
+// other file a mission asks for (mind_scan_robofac, stored on the Robofac data card) is looked up on
+// the e-devices the character carries, where the E_FILE pocket keeps it.
+auto stored_files(Character& who, const itype_id& id) -> std::vector<item*> {
+    auto found = std::vector<item*>{};
+    who.visit_items([&found, &id](item* node, item*) {
+        if (!node->is_estorage()) { return VisitResponse::NEXT; }
+        for (item* file : node->efiles()) {
+            if (file->typeId() == id) { found.push_back(file); }
+        }
+        return VisitResponse::NEXT;
+    });
+    return found;
+}
+} // namespace
+
 void mission::wrap_up() {
     auto& u = g->u;
     if (u.getID() != player_id) {
@@ -303,8 +324,29 @@ void mission::wrap_up() {
         } break;
 
         case MGOAL_FIND_ITEM:
-            comps.emplace_back(type->item_id, item_count);
-            u.consume_items(comps);
+            // CDF: E1-9, DDA mission.cpp:519-533: a software is stored on an e-device, and consuming it
+            // removes the whole device that holds the file (DDA behaviour, AUTO-370a)
+            if (type->item_id->category_force == itemcat_software) {
+                for (int consumed = 0; consumed < item_count; consumed++) {
+                    if (!u.consume_software_container(type->item_id)) {
+                        debugmsg("Tried to consume more software %s than available",
+                                 type->item_id.c_str());
+                        break;
+                    }
+                }
+            } else {
+                // CDF: E1-11a: a file of a carried e-device goes first, the device stays
+                auto remaining = item_count;
+                for (item* file : stored_files(u, type->item_id)) {
+                    if (remaining <= 0) { break; }
+                    const detached_ptr<item> consumed = file->detach();
+                    --remaining;
+                }
+                if (remaining > 0) {
+                    comps.emplace_back(type->item_id, remaining);
+                    u.consume_items(comps);
+                }
+            }
             break;
         case MGOAL_FIND_ANY_ITEM:
             u.remove_mission_items(uid);
@@ -356,9 +398,16 @@ auto mission::is_complete(const character_id& _npc_id) const -> bool {
 
         case MGOAL_FIND_ITEM: {
             if (npc_id.is_valid() && npc_id != _npc_id) { return false; }
+            // CDF: E1-9, DDA mission.cpp:620-642 counts the software of the e-devices carried or nearby:
+            // the crafting inventory offers the installed software (Character::crafting_inventory), so
+            // it counts here without a second count_softwares
             const temp_crafting_inventory& tmp_inv = u.crafting_inventory();
             // TODO: check for count_by_charges and use appropriate player::has_* function
             if (!tmp_inv.has_amount(type->item_id, item_count)) {
+                // CDF: E1-11a: a file stored on a carried e-device (the mind scan on the data card)
+                if (static_cast<int>(stored_files(u, type->item_id).size()) >= item_count) {
+                    return true;
+                }
                 return tmp_inv.has_amount(type->item_id, 1)
                     && tmp_inv.charges_of(type->item_id, item_count) >= item_count;
             }

@@ -6,6 +6,7 @@
     "subcategory": "CSC_CHEM_CHEMICALS",
     "skill_used": "cooking",
     "difficulty": 4,
+    "book_learn": [ [ "digital_chemical_synthesis_sheet", 4 ] ],
     "time": "10 m",
     "autolearn": true,
     "batch_time_factors": [ 80, 5 ],

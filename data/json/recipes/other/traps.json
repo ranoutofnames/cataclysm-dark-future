@@ -88,6 +88,7 @@
     "category": "CC_OTHER",
     "subcategory": "CSC_OTHER_TRAPS",
     "skill_used": "traps",
+    "book_learn": [ [ "digital_basic_trap_blueprints", 0 ] ],
     "time": "2 m 30 s",
     "reversible": true,
     "autolearn": true,
@@ -101,6 +102,7 @@
     "category": "CC_OTHER",
     "subcategory": "CSC_OTHER_TRAPS",
     "skill_used": "traps",
+    "book_learn": [ [ "digital_basic_trap_blueprints", 0 ] ],
     "time": "15 s",
     "reversible": true,
     "autolearn": true,
@@ -120,7 +122,13 @@
     "decomp_learn": 2,
     "autolearn": true,
     "using": [ [ "blacksmithing_standard", 3 ], [ "steel_standard", 11 ] ],
-    "book_learn": [ [ "mag_traps", 1 ], [ "manual_mechanics", 2 ], [ "manual_traps", 1 ], [ "howto_traps", 1 ] ],
+    "book_learn": [
+      [ "mag_traps", 1 ],
+      [ "manual_mechanics", 2 ],
+      [ "manual_traps", 1 ],
+      [ "howto_traps", 1 ],
+      [ "digital_mechanical_trap_blueprints", 3 ]
+    ],
     "qualities": [ { "id": "WRENCH", "level": 1 } ],
     "components": [ [ [ "spring", 1 ] ] ]
   },
@@ -132,6 +140,7 @@
     "skill_used": "traps",
     "skills_required": [ "mechanics", 1 ],
     "difficulty": 3,
+    "book_learn": [ [ "digital_mechanical_trap_blueprints", 3 ] ],
     "time": "4 m 30 s",
     "reversible": true,
     "decomp_learn": 2,
@@ -208,7 +217,7 @@
     "difficulty": 5,
     "time": "10 m",
     "reversible": true,
-    "book_learn": [ [ "manual_traps_mil", 5 ] ],
+    "book_learn": [ [ "manual_traps_mil", 5 ], [ "digital_advanced_trap_blueprints", 5 ] ],
     "qualities": [ { "id": "SCREW", "level": 1 } ],
     "components": [
       [ [ "adhesive", 1, "LIST" ] ],

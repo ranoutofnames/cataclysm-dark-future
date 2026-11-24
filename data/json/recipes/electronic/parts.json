@@ -299,7 +299,13 @@
     "time": "50 m",
     "reversible": true,
     "decomp_learn": 4,
-    "book_learn": [ [ "textbook_mechanics", 6 ], [ "textbook_electronics", 8 ], [ "textbook_fabrication", 8 ], [ "welding_book", 5 ] ],
+    "book_learn": [
+      [ "textbook_mechanics", 6 ],
+      [ "textbook_electronics", 8 ],
+      [ "textbook_fabrication", 8 ],
+      [ "welding_book", 5 ],
+      [ "digital_electronic_blueprints", 4 ]
+    ],
     "using": [ [ "welding_standard", 10 ] ],
     "qualities": [ { "id": "HAMMER", "level": 2 }, { "id": "SAW_M", "level": 1 }, { "id": "WRENCH", "level": 1 } ],
     "components": [ [ [ "frame", 1 ] ], [ [ "3d_printer_basic", 1 ] ], [ [ "cable", 5 ] ] ]
@@ -315,7 +321,13 @@
     "time": "50 m",
     "reversible": true,
     "decomp_learn": 5,
-    "book_learn": [ [ "textbook_mechanics", 6 ], [ "textbook_electronics", 8 ], [ "textbook_fabrication", 8 ], [ "welding_book", 5 ] ],
+    "book_learn": [
+      [ "textbook_mechanics", 6 ],
+      [ "textbook_electronics", 8 ],
+      [ "textbook_fabrication", 8 ],
+      [ "welding_book", 5 ],
+      [ "digital_electronic_blueprints", 5 ]
+    ],
     "using": [ [ "welding_standard", 10 ] ],
     "qualities": [ { "id": "HAMMER", "level": 2 }, { "id": "SAW_M", "level": 1 }, { "id": "WRENCH", "level": 1 } ],
     "components": [ [ [ "frame", 1 ] ], [ [ "3d_printer_advanced", 1 ] ], [ [ "cable", 5 ] ] ]

@@ -488,7 +488,7 @@ fields, `pocket_data` wins and `--check-mods` warns.
 ```json
 "pocket_data": [
   {
-    "pocket_type": "CONTAINER",          // CONTAINER (default), MAGAZINE, MAGAZINE_WELL, MOD, CABLE, CORPSE or SOFTWARE
+    "pocket_type": "CONTAINER",          // CONTAINER (default), MAGAZINE, MAGAZINE_WELL, MOD, CABLE, CORPSE, E_FILE_STORAGE or SOFTWARE (EBOOK is obsolete and holds nothing)
     "max_contains_volume": "2 L",        // total volume of the contents
     "max_contains_weight": "10 kg",      // total weight of the contents
     "max_item_volume": "500 ml",         // largest single item (optional)
@@ -513,6 +513,7 @@ fields, `pocket_data` wins and `--check-mods` warns.
     "allowed_speedloaders": [ "speedloader_9mm" ], // ammo items that fill this pocket as a speedloader (see below)
     "skill_restriction": [ "pistol" ],           // CDF: only guns using one of these skills
     "magazine_well": "100 ml",                   // volume of the contents that may stick out of the item
+    "ememory_max": "32 GB",                      // E_FILE_STORAGE only: the memory of the pocket (required there, see efiles.md)
     "description": "A zipped pocket."
   }
 ]
@@ -525,6 +526,14 @@ are lengths such as `"30 cm"` (units `mm`, `cm`, `m`, `km`); see "Item length" b
 `pocket_data`; some of them have no consumer yet. `MIGRATION` pockets can't be defined in JSON: every item creates one when something
 doesn't fit in its other pockets, and the game moves such items out (to the parent container, the
 carrier, or the ground) the next time the pocket layout changes.
+
+An `E_FILE_STORAGE` pocket holds electronic files (items with the flag `E_STORABLE` or
+`E_STORABLE_EXCLUSIVE`, or books) and counts them by memory, not by volume, weight or length:
+`ememory_max` (a size such as `"256 GB"`) is required and must be above 0, and each file's size is its
+`ememory_size`. DDA devices also give the pocket `rigid`, `max_contains_volume` `"1 ml"`,
+`max_contains_weight` `"1 g"` and `weight_multiplier` 0 so the files add nothing to the device. An item
+has at most one such pocket; the item then is an e-device (see [E-files](efiles.md)). The pocket is
+saved as `"pocket_type": 6`, and is never spilled.
 
 A `MAGAZINE` pocket is an integral magazine: it takes the ammo named in `ammo_restriction`, up to the
 given count per ammo type, and it is part of the item (a gun or tool with a built-in magazine). A
@@ -610,7 +619,6 @@ any, takes it. Their coverage and encumbrance count for the carrier.
 | gun or tool with `magazines` | one MAGAZINE_WELL pocket, `item_restriction` from the magazines |
 | gun or tool that takes mods | one MOD pocket |
 | corpse | one CORPSE pocket |
-| `usb_drive` | one SOFTWARE pocket |
 
 A gun's `clip_size` makes no pocket: a gun with an integral magazine defines a MAGAZINE pocket in
 `pocket_data`. Armor `storage` becomes pockets (see Item length). A gunmod with `magazine_adaptor` replaces the magazines the

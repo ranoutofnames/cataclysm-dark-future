@@ -123,8 +123,20 @@
       { "group": "vending_drink_items", "prob": 25 },
       {
         "distribution": [
-          { "item": "laptop", "prob": 50, "charges-min": 0, "charges-max": 500 },
-          { "item": "eink_tablet_pc", "prob": 50, "charges-min": 0, "charges-max": 50 }
+          {
+            "item": "laptop",
+            "prob": 50,
+            "charges-min": 0,
+            "charges-max": 500,
+            "contents-group": "civilian_laptop_efiles"
+          },
+          {
+            "item": "eink_tablet_pc",
+            "prob": 50,
+            "charges-min": 0,
+            "charges-max": 50,
+            "contents-group": "civilian_einktablet_efiles"
+          }
         ],
         "prob": 20
       },
@@ -136,12 +148,20 @@
         "prob": 5
       },
       {
-        "distribution": [ { "item": "cane", "prob": 50 }, { "item": "teleumbrella", "prob": 25 }, { "item": "teleumbrella", "prob": 25 } ],
+        "distribution": [
+          { "item": "cane", "prob": 50 },
+          { "item": "teleumbrella", "prob": 25 },
+          { "item": "teleumbrella", "prob": 25 }
+        ],
         "prob": 10
       },
       { "item": "file", "prob": 10 },
       {
-        "distribution": [ { "item": "thermos", "prob": 75 }, { "item": "flask_hip", "prob": 25 }, { "item": "bottle_metal", "prob": 25 } ],
+        "distribution": [
+          { "item": "thermos", "prob": 75 },
+          { "item": "flask_hip", "prob": 25 },
+          { "item": "bottle_metal", "prob": 25 }
+        ],
         "prob": 10
       },
       { "item": "spray_can", "prob": 10 },
@@ -258,7 +278,7 @@
       },
       { "distribution": [ { "group": "harddrugs", "prob": 25 }, { "group": "baddrugs", "prob": 75 } ], "prob": 10 },
       {
-        "distribution": [ { "group": "digital_storage_media", "prob": 70 }, { "group": "digital_storage_media_encrypted", "prob": 5 } ],
+        "distribution": [ { "group": "efile_storage_media", "prob": 70 }, { "group": "efile_storage_media_encrypted", "prob": 5 } ],
         "prob": 10
       },
       {

@@ -146,10 +146,27 @@ Returns the total capacity of every container pocket, holsters and plates includ
 
 To compare contents with room, use `volume_carried` against `carried_capacity()`.
 
-## Battery charge in a mod
+## Battery charge of an e-device
 
-The e-book mod reads its battery through `ammo_remaining`, not through `charges`: its percentage is the ammo left divided by the ammo capacity. The line is in the mod file `data/mods/ebook_lua/main.lua`, not in the API, and the arithmetic may change with the mod.
+An e-device (a phone, a tablet, a laptop) powers its use with its battery, so its charge is read through
+`ammo_remaining`, not through `charges`. A percentage is the ammo left divided by the ammo capacity:
 
 `local charge_p = math.floor(item:ammo_remaining() / item:ammo_capacity(false) * 100 + 0.5)`
 
-Proved by the test case `ebook_lua_battery_arithmetic_uses_ammo_remaining`.
+## E-file pockets
+
+The pocket types of `item:get_pockets()`, `item:can_contain_item()` and `item:try_put_in()` include the
+e-file pocket: `PocketType.E_FILE_STORAGE` holds electronic files (see
+`docs/en/mod/json/reference/items/efiles.md`), and `PocketType.EBOOK` is an obsolete type that exists as a
+name only and holds nothing. Both are values of the `PocketType` table, like `PocketType.CONTAINER`.
+
+```lua
+for _, it in pairs(gapi.get_avatar():all_items(false)) do
+  if #it:get_pockets(PocketType.E_FILE_STORAGE) > 0 then
+    print(it:tname(1, false, 0) .. " is an e-device")
+  end
+end
+```
+
+The test case `lua_pocket_type_has_the_efile_values` (tag `[lua]`) checks that both values are reachable
+and that a laptop has one `E_FILE_STORAGE` pocket.

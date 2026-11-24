@@ -107,6 +107,18 @@ class item_contents
         std::vector<item *> cables();
         std::vector<const item *> cables() const;
 
+        // CDF: E1-1, DDA item_contents.h:166-176: the files in the E_FILE_STORAGE pockets
+        /** The software items (category `software`) stored in E_FILE_STORAGE pockets. */
+        std::vector<const item *> softwares() const;
+        /** The books stored in E_FILE_STORAGE pockets. */
+        std::vector<item *> ebooks();
+        std::vector<const item *> ebooks() const;
+        /** Every file stored in E_FILE_STORAGE pockets. */
+        std::vector<item *> efiles();
+        std::vector<const item *> efiles() const;
+        /** Sum of ememory_size() across all files; avoids building the efiles() list. */
+        units::ememory occupied_ememory() const;
+
         /**
          * this is an artifact of the previous code using
          * front() everywhere for contents. this is to aid

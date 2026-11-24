@@ -1,17 +1,15 @@
 local M = {}
-local storage = game.mod_storage[game.current_mod]
 local ghost_id = MonsterTypeId.new("mon_signal_maw")
+
+-- CDF: E1-10c. The BN digital-media system gave every file an identity (DIGITAL_FILE_ID) and kept the
+-- spent ones in the mod storage.  The e-file engine has no file identity: a file that was opened is
+-- marked on the file itself (copies of a spent file stay spent, a copy made before opening is a new
+-- file that can still be opened once).
+local SPENT_VAR = "corrupted_file_spent"
 
 ---@param params ItemUseParams
 function M.open(params)
-  local file_id = params.item:get_var_str("DIGITAL_FILE_ID", "")
-  if file_id == "" then
-    gapi.add_msg(MsgType.info, locale.gettext("The file cannot be opened.  Try importing it again."))
-    return 0
-  end
-
-  storage.spent_corrupted_files = storage.spent_corrupted_files or {}
-  if storage.spent_corrupted_files[file_id] then
+  if params.item:get_var_str(SPENT_VAR, "") ~= "" then
     gapi.add_msg(MsgType.info, locale.gettext("The preview is gone.  There is only static."))
     return 0
   end
@@ -25,7 +23,7 @@ function M.open(params)
     return 0
   end
 
-  storage.spent_corrupted_files[file_id] = true
+  params.item:set_var_str(SPENT_VAR, "1")
   creature.friendly = 0
   params.user:mod_moves(-100)
   gapi.add_msg(

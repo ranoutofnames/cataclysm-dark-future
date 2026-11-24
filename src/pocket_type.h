@@ -19,11 +19,16 @@ enum class pocket_type : int {
     CORPSE,
     // software on a storage device
     SOFTWARE,
+    // CDF: E1-1, DDA pocket_type.h:14: electronic files (books and e-scannable items) stored on
+    // an e-device. Holds files by their ememory_size, not by volume, weight or length.
+    E_FILE_STORAGE,
     // CDF: LINKUP1a, DDA pocket_type.h:15: pocket for storing power/data cables and handling
     // their connections. The extension cable content arrives with LINKUP1b.
     CABLE,
     // items that have no proper home in the item's current pockets
     MIGRATION,
+    // CDF: E1-1, DDA pocket_type.h:17: obsolete e-book pocket, an enum value only (no data uses it)
+    EBOOK,
     LAST
 };
 

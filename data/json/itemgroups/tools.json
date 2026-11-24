@@ -539,12 +539,12 @@
       [ "file", 2 ],
       [ "atomic_lamp", 1 ],
       [ "smart_lamp", 2 ],
-      [ "control_laptop", 1 ],
-      [ "wrist_comp_control", 1 ],
+      { "item": "control_laptop", "prob": 1, "contents-group": "efiles_science" },
+      { "item": "wrist_comp_control", "prob": 1, "contents-group": "civilian_smartphone_efiles" },
       [ "bot_haulerbot", 3 ],
       [ "bot_manhack", 2 ],
       [ "teleporter", 1 ],
-      [ "laptop", 4 ],
+      { "item": "laptop", "prob": 4, "contents-group": "efiles_science" },
       [ "plut_cell", 4 ],
       { "item": "superglue", "prob": 30, "charges": [ 5, 10 ] },
       [ "pliers", 10 ],
@@ -558,7 +558,7 @@
       [ "multitool", 10 ],
       [ "screwdriver_set", 10 ],
       [ "flashlight", 10 ],
-      { "group": "digital_storage_media_encrypted", "prob": 40 },
+      { "group": "efile_storage_media_encrypted", "prob": 40 },
       [ "camera_pro", 2 ],
       [ "element", 5 ],
       [ "light_battery_cell", 10 ],
@@ -569,8 +569,20 @@
       [ "clamp", 10 ],
       [ "wrench", 10 ],
       [ "bionic_scanner", 5 ],
-      { "collection": [ { "item": "delivery_drone_item" }, { "item": "remotevehcontrol", "prob": 50 } ], "prob": 25 },
-      { "collection": [ { "item": "combat_drone_item" }, { "item": "remotevehcontrol", "prob": 50 } ], "prob": 5 }
+      {
+        "collection": [
+          { "item": "delivery_drone_item" },
+          { "item": "remotevehcontrol", "prob": 50 }
+        ],
+        "prob": 25
+      },
+      {
+        "collection": [
+          { "item": "combat_drone_item" },
+          { "item": "remotevehcontrol", "prob": 50 }
+        ],
+        "prob": 5
+      }
     ]
   },
   {

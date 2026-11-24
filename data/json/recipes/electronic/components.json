@@ -1,7 +1,7 @@
 [
   {
     "type": "recipe",
-    "result": "sd_memory_card",
+    "result": "memory_card",
     "category": "CC_ELECTRONIC",
     "subcategory": "CSC_ELECTRONIC_COMPONENTS",
     "skill_used": "electronics",

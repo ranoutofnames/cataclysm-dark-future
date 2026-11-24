@@ -88,6 +88,8 @@ static const activity_id ACT_CRAFT( "ACT_CRAFT" );
 
 static const efftype_id effect_contacts( "contacts" );
 
+static const item_category_id itemcat_software( "software" );
+
 static const itype_id itype_plut_cell( "plut_cell" );
 
 static const skill_id skill_cooking( "cooking" );
@@ -657,6 +659,27 @@ const temp_crafting_inventory &Character::crafting_inventory( const tripoint_bub
         } else {
             cached_temp_crafting_inventory.add_item_loc( *item::spawn_temporary( it, calendar::turn ) );
         }
+    }
+
+    // CDF: E1-9, risk R4 of the E1 plan. The default item walks skip the files of an e-device (E1-2;
+    // DDA's visit_contents walks only CONTAINER pockets too), but CDF recipes name software as a tool
+    // (toolsets.json: hacking_standard, utility_software_standard, math_software_standard, used with
+    // the factor -1) and DDA has no such recipe (it asks u_has_software in effects). A BN-only use of
+    // the removed mechanism is bridged: the software of the devices in this inventory is added to it.
+    // Only software is added: other files are no crafting items.
+    std::vector<item *> installed_software;
+    cached_temp_crafting_inventory.visit_items( [&installed_software]( item * node, item * ) {
+        if( node->is_estorage() ) {
+            for( item *file : node->efiles() ) {
+                if( file->is_software() ) {
+                    installed_software.push_back( file );
+                }
+            }
+        }
+        return VisitResponse::NEXT;
+    } );
+    for( item *file : installed_software ) {
+        cached_temp_crafting_inventory.add_item_loc( *file );
     }
 
     cached_moves = moves;
@@ -1544,7 +1567,9 @@ comp_selection<item_comp> Character::select_item_component( const std::vector<it
             // Can't use pseudo items as components
             if( player_inv ) {
                 bool found = false;
-                if( has_amount( type, count, false, filter ) ) {
+                // CDF: E1-9, DDA crafting.cpp:4145: a software stored on a carried e-device counts
+                if( ( type->category_force == itemcat_software && count_softwares( type ) > 0 ) ||
+                    has_amount( type, count, false, filter ) ) {
                     player_has.push_back( component );
                     found = true;
                 }
@@ -2631,3 +2656,28 @@ int charges_for_continuing( int full_charges )
 
 
 } // namespace crafting
+
+// CDF: E1-9/E1-12, DDA crafting.cpp:4493-4505. The DDA loop calls remove_item() on the location of
+// the e-DEVICE that stores the software (the name says "container"), so the whole carrying device
+// goes, with every file on it (AUTO-370a). E1-9 detached only the file; E1-12 follows DDA.
+bool Character::consume_software_container( const itype_id &software_id )
+{
+    item *device = nullptr;
+    visit_items( [&]( item * node, item * ) {
+        if( node->is_estorage() ) {
+            for( item *soft : node->efiles() ) {
+                if( soft->is_software() && soft->typeId() == software_id ) {
+                    device = node;
+                    return VisitResponse::ABORT;
+                }
+            }
+        }
+        return VisitResponse::NEXT;
+    } );
+    if( device == nullptr ) {
+        return false;
+    }
+    // the detached device, with its files, is destroyed here
+    detached_ptr<item> consumed = device->detach();
+    return true;
+}

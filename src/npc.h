@@ -909,7 +909,8 @@ class npc : public player
         void finish_read( item *it );
         bool can_read( const item &book, std::vector<std::string> &fail_reasons );
         int time_to_read( const item &book, const Character &reader ) const;
-        void do_npc_read();
+        /** CDF: E1-1, DDA npc.h:1038: ebook = read through an e-reader. The flag is ignored until E1-8. */
+        void do_npc_read( bool ebook = false );
         void stow_weapon( );
         using Character::wield;
         bool wield( item &it ) override;

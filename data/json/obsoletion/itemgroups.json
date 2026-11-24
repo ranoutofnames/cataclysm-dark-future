@@ -121,8 +121,8 @@
       [ "crackpipe", 10 ],
       [ "weed", 10 ],
       [ "joint", 10 ],
-      [ "smart_phone", 15 ],
-      [ "wrist_comp_budget", 5 ],
+      { "item": "smart_phone", "prob": 15, "contents-group": "civilian_smartphone_efiles" },
+      { "item": "wrist_comp_budget", "prob": 5, "contents-group": "civilian_smartphone_efiles" },
       [ "camera", 20 ],
       [ "chem_hexamine", 5 ]
     ]
@@ -159,8 +159,8 @@
       [ "cig", 20 ],
       [ "weed", 10 ],
       [ "joint", 10 ],
-      [ "smart_phone", 30 ],
-      [ "wrist_comp_budget", 20 ]
+      { "item": "smart_phone", "prob": 30, "contents-group": "civilian_smartphone_efiles" },
+      { "item": "wrist_comp_budget", "prob": 20, "contents-group": "civilian_smartphone_efiles" }
     ]
   },
   {
@@ -196,8 +196,8 @@
       [ "cig", 20 ],
       [ "weed", 10 ],
       [ "joint", 10 ],
-      [ "smart_phone", 30 ],
-      [ "wrist_comp_budget", 20 ]
+      { "item": "smart_phone", "prob": 30, "contents-group": "civilian_smartphone_efiles" },
+      { "item": "wrist_comp_budget", "prob": 20, "contents-group": "civilian_smartphone_efiles" }
     ]
   },
   {

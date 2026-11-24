@@ -1,0 +1,28 @@
+[
+  {
+    "//": "CDF: E1-6 fixture for tests/efile_menu_test.cpp. An e-device whose e-file pocket is forbidden (DDA pocket key `forbidden`, checked by game_menus::inv::edevice_select, DDA game_inventory.cpp:1759-1764): it must never be offered as a target. Otherwise like test_efile_etd (no use action).",
+    "id": "test_efile_forbidden_device",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
+    "name": { "str": "test forbidden card" },
+    "description": "A test memory card whose e-file pocket is forbidden.",
+    "weight": "1 g",
+    "volume": "1 ml",
+    "symbol": ",",
+    "color": "white",
+    "material": [ "plastic" ],
+    "etransfer_rate": "12 MB",
+    "e_port": "memory card",
+    "pocket_data": [
+      {
+        "pocket_type": "E_FILE_STORAGE",
+        "rigid": true,
+        "forbidden": true,
+        "max_contains_volume": "1 ml",
+        "max_contains_weight": "1 g",
+        "weight_multiplier": 0.0,
+        "ememory_max": "64 GB"
+      }
+    ]
+  }
+]
